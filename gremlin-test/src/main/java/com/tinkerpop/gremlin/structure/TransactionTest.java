@@ -120,19 +120,19 @@ public class TransactionTest extends AbstractGremlinTest {
         final Vertex v1 = g.addVertex();
         final Edge e1 = v1.addEdge("l", v1);
         assertVertexEdgeCounts(1, 1);
-        assertEquals(v1.id(), g.v(v1.id()).id());
-        assertEquals(e1.id(), g.e(e1.id()).id());
+        assertEquals(v1.id(), g.V(v1.id()).id());
+        assertEquals(e1.id(), g.E(e1.id()).id());
         g.tx().commit();
         assertVertexEdgeCounts(1, 1);
-        assertEquals(v1.id(), g.v(v1.id()).id());
-        assertEquals(e1.id(), g.e(e1.id()).id());
+        assertEquals(v1.id(), g.V(v1.id()).id());
+        assertEquals(e1.id(), g.E(e1.id()).id());
 
-        g.v(v1.id()).remove();
+        g.V(v1.id()).remove();
         assertVertexEdgeCounts(0, 0);
         g.tx().rollback();
         assertVertexEdgeCounts(1, 1);
 
-        g.v(v1.id()).remove();
+        g.V(v1.id()).remove();
         assertVertexEdgeCounts(0, 0);
         g.tx().commit();
         assertVertexEdgeCounts(0, 0);
@@ -146,8 +146,8 @@ public class TransactionTest extends AbstractGremlinTest {
         final Vertex v1 = g.addVertex();
         final Edge e1 = v1.addEdge("l", v1);
         assertVertexEdgeCounts(1, 1);
-        assertEquals(v1.id(), g.v(v1.id()).id());
-        assertEquals(e1.id(), g.e(e1.id()).id());
+        assertEquals(v1.id(), g.V(v1.id()).id());
+        assertEquals(e1.id(), g.E(e1.id()).id());
         g.tx().rollback();
         assertVertexEdgeCounts(0, 0);
     }
@@ -160,40 +160,40 @@ public class TransactionTest extends AbstractGremlinTest {
         final Edge e1 = v1.addEdge("l", v1);
         g.tx().commit();
         assertVertexEdgeCounts(1, 1);
-        assertEquals(v1.id(), g.v(v1.id()).id());
-        assertEquals(e1.id(), g.e(e1.id()).id());
+        assertEquals(v1.id(), g.V(v1.id()).id());
+        assertEquals(e1.id(), g.E(e1.id()).id());
 
         v1.property("name", "marko");
         assertEquals("marko", v1.<String>value("name"));
-        assertEquals("marko", g.v(v1.id()).<String>value("name"));
+        assertEquals("marko", g.V(v1.id()).next().<String>value("name"));
         g.tx().commit();
 
         assertEquals("marko", v1.<String>value("name"));
-        assertEquals("marko", g.v(v1.id()).<String>value("name"));
+        assertEquals("marko", g.V(v1.id()).next().<String>value("name"));
 
         v1.singleProperty("name", "stephen");
 
         assertEquals("stephen", v1.<String>value("name"));
-        assertEquals("stephen", g.v(v1.id()).<String>value("name"));
+        assertEquals("stephen", g.V(v1.id()).next().<String>value("name"));
 
         g.tx().commit();
 
         assertEquals("stephen", v1.<String>value("name"));
-        assertEquals("stephen", g.v(v1.id()).<String>value("name"));
+        assertEquals("stephen", g.V(v1.id()).next().<String>value("name"));
 
         e1.property("name", "xxx");
 
         assertEquals("xxx", e1.<String>value("name"));
-        assertEquals("xxx", g.e(e1.id()).<String>value("name"));
+        assertEquals("xxx", g.E(e1.id()).next().<String>value("name"));
 
         g.tx().commit();
 
         assertEquals("xxx", e1.<String>value("name"));
-        assertEquals("xxx", g.e(e1.id()).<String>value("name"));
+        assertEquals("xxx", g.E(e1.id()).next().<String>value("name"));
 
         assertVertexEdgeCounts(1, 1);
-        assertEquals(v1.id(), g.v(v1.id()).id());
-        assertEquals(e1.id(), g.e(e1.id()).id());
+        assertEquals(v1.id(), g.V(v1.id()).id());
+        assertEquals(e1.id(), g.E(e1.id()).id());
     }
 
     @Test
@@ -203,34 +203,34 @@ public class TransactionTest extends AbstractGremlinTest {
         final Vertex v1 = g.addVertex("name", "marko");
         final Edge e1 = v1.addEdge("l", v1, "name", "xxx");
         assertVertexEdgeCounts(1, 1);
-        assertEquals(v1.id(), g.v(v1.id()).id());
-        assertEquals(e1.id(), g.e(e1.id()).id());
+        assertEquals(v1.id(), g.V(v1.id()).id());
+        assertEquals(e1.id(), g.E(e1.id()).id());
         assertEquals("marko", v1.<String>value("name"));
         assertEquals("xxx", e1.<String>value("name"));
         g.tx().commit();
 
         assertEquals("marko", v1.<String>value("name"));
-        assertEquals("marko", g.v(v1.id()).<String>value("name"));
+        assertEquals("marko", g.V(v1.id()).next().<String>value("name"));
 
         v1.singleProperty("name", "stephen");
 
         assertEquals("stephen", v1.<String>value("name"));
-        assertEquals("stephen", g.v(v1.id()).<String>value("name"));
+        assertEquals("stephen", g.V(v1.id()).next().<String>value("name"));
 
         g.tx().rollback();
 
         assertEquals("marko", v1.<String>value("name"));
-        assertEquals("marko", g.v(v1.id()).<String>value("name"));
+        assertEquals("marko", g.V(v1.id()).next().<String>value("name"));
 
         e1.property("name", "yyy");
 
         assertEquals("yyy", e1.<String>value("name"));
-        assertEquals("yyy", g.e(e1.id()).<String>value("name"));
+        assertEquals("yyy", g.E(e1.id()).next().<String>value("name"));
 
         g.tx().rollback();
 
         assertEquals("xxx", e1.<String>value("name"));
-        assertEquals("xxx", g.e(e1.id()).<String>value("name"));
+        assertEquals("xxx", g.E(e1.id()).next().<String>value("name"));
 
         assertVertexEdgeCounts(1, 1);
     }
@@ -244,7 +244,7 @@ public class TransactionTest extends AbstractGremlinTest {
         g.close();
 
         g = graphProvider.openTestGraph(config);
-        final Vertex v2 = g.v(oid);
+        final Vertex v2 = g.V(oid).next();
         assertEquals("marko", v2.<String>value("name"));
     }
 
@@ -259,7 +259,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
         g = graphProvider.openTestGraph(config);
         try {
-            g.v(oid);
+            g.V(oid);
             fail("Vertex should not be found as close behavior was set to rollback");
         } catch (Exception ex) {
             validateException(Graph.Exceptions.elementNotFound(Vertex.class, oid), ex);

@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -12,6 +14,7 @@ import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -23,11 +26,11 @@ import java.util.function.UnaryOperator;
 /**
  * A {@link GraphStrategy} implementation which enables custom element IDs even for those graphs which don't
  * otherwise support them.
- * <p>
+ * <p/>
  * For those graphs which support vertex indices but not edge indices (or vice versa), the strategy can be configured
  * to use custom IDs only for vertices or only for edges.  ID generation is also configurable via ID {@link Supplier}
  * functions.
- * <p>
+ * <p/>
  * If the {@link IdGraphStrategy} is used in combination with a sequence of other strategies and when ID assignment
  * is enabled for an element, calls to strategies following this one are not made.  It is important to consider that
  * aspect of its operation when doing strategy composition.  Typically, the {@link IdGraphStrategy} should be
@@ -83,6 +86,26 @@ public class IdGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return supportsEdgeId ? (f) -> (id) -> (Edge) ctx.getBaseGraph().E().has(idKey, id).next() : UnaryOperator.identity();
+    }
+
+    @Override
+    public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return supportsVertexId ? (f) -> (ids) -> ctx.getBaseGraph().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
+    }
+
+    @Override
+    public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return supportsVertexId ? (f) -> (ids) -> ctx.getBaseGraph().V().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
+    }
+
+    @Override
+    public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return supportsEdgeId ? (f) -> (ids) -> ctx.getBaseGraph().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
+    }
+
+    @Override
+    public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return supportsVertexId ? (f) -> (ids) -> ctx.getBaseGraph().V().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override

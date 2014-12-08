@@ -13,17 +13,17 @@ class GroovyMapTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_mapXnameX(final Object v1Id) {
-            g.v(v1Id).map { v -> v.name };
+            g.V(v1Id).map { v -> v.name };
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_v1_outE_label_mapXlengthX(final Object v1Id) {
-            g.v(v1Id).outE.label.map { l -> l.length() };
+            g.V(v1Id).outE.label.map { l -> l.length() };
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_v1_out_mapXnameX_mapXlengthX(final Object v1Id) {
-            g.v(v1Id).out.map { v -> v.name }.map { n -> n.length() };
+            g.V(v1Id).out.map { v -> v.name }.map { n -> n.length() };
         }
 
         @Override
@@ -41,17 +41,17 @@ class GroovyMapTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_mapXnameX(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).map { v -> v.name }", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).map { v -> v.name }", g);
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_v1_outE_label_mapXlengthX(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).outE.label.map { l -> l.length() }", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).outE.label.map { l -> l.length() }", g);
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_v1_out_mapXnameX_mapXlengthX(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).out.map { v -> v.name }.map { n -> n.length() }", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).out.map { v -> v.name }.map { n -> n.length() }", g);
         }
 
         /*@Override

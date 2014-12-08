@@ -67,7 +67,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_sideEffectXstore_aX_name(final Object v1Id) {
-            return g.v(v1Id).withSideEffect("a", ArrayList::new).sideEffect(traverser -> {
+            return g.V(v1Id).withSideEffect("a", ArrayList::new).sideEffect(traverser -> {
                 traverser.<List>get("a").clear();
                 traverser.<List<Vertex>>get("a").add(traverser.get());
             }).values("name");
@@ -75,7 +75,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_out_sideEffectXincr_cX_name(final Object v1Id) {
-            return g.v(v1Id).withSideEffect("c", () -> {
+            return g.V(v1Id).withSideEffect("c", () -> {
                 final List<Integer> list = new ArrayList<>();
                 list.add(0);
                 return list;
@@ -88,7 +88,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_out_sideEffectXX_name(final Object v1Id) {
-            return g.v(v1Id).out().sideEffect(traverser -> {
+            return g.V(v1Id).out().sideEffect(traverser -> {
             }).values("name");
         }
     }

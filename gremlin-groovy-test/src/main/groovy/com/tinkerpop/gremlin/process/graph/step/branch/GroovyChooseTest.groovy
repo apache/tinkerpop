@@ -22,7 +22,7 @@ public abstract class GroovyChooseTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id) {
-            g.v(v1Id).choose({ 0 }, [0: g.of().out.name]);
+            g.V(v1Id).choose({ 0 }, [0: g.of().out.name]);
         }
 
         @Override
@@ -52,7 +52,7 @@ public abstract class GroovyChooseTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).choose({ 0 }, [0: g.of().out.name])", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).choose({ 0 }, [0: g.of().out.name])", g);
         }
 
         @Override

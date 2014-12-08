@@ -12,11 +12,11 @@ public abstract class GroovyUntilTest {
 
     public static class StandardTest extends UntilTest {
         public Traversal<Vertex, String> get_g_v1_untilXa_loops_gt_1X_out_asXaX_name(final Object v1Id) {
-            g.v(v1Id).until('a') { it.loops() > 1 }.out.as('a').name
+            g.V(v1Id).until('a') { it.loops() > 1 }.out.as('a').name
         }
 
         public Traversal<Vertex, String> get_g_v1_untilXa_1X_out_asXaX_name(final Object v1Id) {
-            g.v(v1Id).until('a', 1).out.as('a').name
+            g.V(v1Id).until('a', 1).out.as('a').name
         }
 
         public Traversal<Vertex, Long> get_g_V_untilXa_loops_gt_1X_out_asXaX_count() {
@@ -34,11 +34,11 @@ public abstract class GroovyUntilTest {
 
     public static class ComputerTest extends UntilTest {
         public Traversal<Vertex, String> get_g_v1_untilXa_loops_gt_1X_out_asXaX_name(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).until('a') { it.loops() > 1 }.out.as('a').name", g)
+            ComputerTestHelper.compute("g.V(${v1Id}).until('a') { it.loops() > 1 }.out.as('a').name", g)
         }
 
         public Traversal<Vertex, String> get_g_v1_untilXa_1X_out_asXaX_name(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).until('a', 1).out.as('a').name", g)
+            ComputerTestHelper.compute("g.V(${v1Id}).until('a', 1).out.as('a').name", g)
         }
 
         public Traversal<Vertex, Long> get_g_V_untilXa_loops_gt_1X_out_asXaX_count() {

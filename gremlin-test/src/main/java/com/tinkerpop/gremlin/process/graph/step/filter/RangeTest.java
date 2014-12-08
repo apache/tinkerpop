@@ -132,7 +132,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_limitX2X(final Object v1Id) {
-            return g.v(v1Id).out().limit(2);
+            return g.V(v1Id).out().limit(2);
         }
 
         @Override
@@ -142,22 +142,22 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outEXcreatedX_rangeX0_1X_inV(final Object v1Id) {
-            return g.v(v1Id).out("knows").outE("created").range(0, 1).inV();
+            return g.V(v1Id).out("knows").outE("created").range(0, 1).inV();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outXcreatedX_rangeX0_1X(final Object v1Id) {
-            return g.v(v1Id).out("knows").out("created").range(0, 1);
+            return g.V(v1Id).out("knows").out("created").range(0, 1);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_rangeX1_3X(final Object v1Id) {
-            return g.v(v1Id).out("created").in("created").range(1, 3);
+            return g.V(v1Id).out("created").in("created").range(1, 3);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_3X_outV(final Object v1Id) {
-            return g.v(v1Id).out("created").inE("created").range(1, 3).outV();
+            return g.V(v1Id).out("created").inE("created").range(1, 3).outV();
         }
 
         @Override

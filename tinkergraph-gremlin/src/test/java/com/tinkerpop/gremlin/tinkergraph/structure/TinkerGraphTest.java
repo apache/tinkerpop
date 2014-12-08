@@ -520,8 +520,8 @@ public class TinkerGraphTest {
 
         g.E().sideEffect(oe -> {
             final Edge e = oe.get();
-            final Vertex v2 = ng.v(Integer.parseInt(e.inV().next().id().toString()));
-            final Vertex v1 = ng.v(Integer.parseInt(e.outV().next().id().toString()));
+            final Vertex v2 = ng.V(Integer.parseInt(e.inV().next().id().toString())).next();
+            final Vertex v1 = ng.V(Integer.parseInt(e.outV().next().id().toString())).next();
 
             if (e.label().equals("followedBy"))
                 v1.addEdge("followedBy", v2, T.id, Integer.parseInt(e.id().toString()), "weight", e.value("weight"));

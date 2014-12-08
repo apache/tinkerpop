@@ -14,12 +14,12 @@ public abstract class GroovyPathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_name_path(final Object v1Id) {
-            g.v(v1Id).identity.name.path
+            g.V(v1Id).identity.name.path
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
-            g.v(v1Id).out.path { it.age } { it.name }
+            g.V(v1Id).out.path { it.age } { it.name }
         }
 
         @Override
@@ -42,13 +42,13 @@ public abstract class GroovyPathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_name_path(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).identity.name.path", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).identity.name.path", g);
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
-            g.v(v1Id).out.path { it.age } { it.name }
-            // TODO:ComputerTestHelper.compute("g.v(${v1Id}).out.path { it.age } { it.name }", g);
+            g.V(v1Id).out.path { it.age } { it.name }
+            // TODO:ComputerTestHelper.compute("g.V(${v1Id}).out.path { it.age } { it.name }", g);
         }
 
         @Override

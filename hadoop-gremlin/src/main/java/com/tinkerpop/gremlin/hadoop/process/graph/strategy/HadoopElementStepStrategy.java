@@ -50,8 +50,7 @@ public class HadoopElementStepStrategy extends AbstractTraversalStrategy {
                 identityStep.setLabel(label);
                 TraversalHelper.insertStep(identityStep, 0, traversal);
             }
-            TraversalHelper.insertStep(new HasStep(traversal, new HasContainer(T.id, Compare.eq, element.id())), 0, traversal);
-            TraversalHelper.insertStep(new GraphStep<>(traversal, EmptyGraph.instance(), element.getClass()), 0, traversal);
+            TraversalHelper.insertStep(new GraphStep<>(traversal, EmptyGraph.instance(), element.getClass(), element.id()), 0, traversal);
         }
     }
 

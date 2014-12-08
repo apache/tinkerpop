@@ -218,12 +218,12 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXkeyX(final Object v1Id, final String key) {
-            return g.v(v1Id).has(key);
+            return g.V(v1Id).has(key);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXname_markoX(final Object v1Id) {
-            return g.v(v1Id).has("name", "marko");
+            return g.V(v1Id).has("name", "marko");
         }
 
         @Override
@@ -243,12 +243,12 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id) {
-            return g.v(v1Id).has("age", Compare.gt, 30);
+            return g.V(v1Id).has("age", Compare.gt, 30);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id) {
-            return g.v(v1Id).out().has(T.id, v2Id);
+            return g.V(v1Id).out().has(T.id, v2Id);
         }
 
         @Override
@@ -258,7 +258,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_e7_hasXlabelXknowsX(final Object e7Id) {
-            return g.e(e7Id).has(T.label, "knows");
+            return g.E(e7Id).has(T.label, "knows");
         }
 
         @Override
@@ -294,12 +294,12 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXkeyX(final Object v1Id, final String key) {
-            return g.v(v1Id).<Vertex>has(key).submit(g.compute());
+            return g.V(v1Id).<Vertex>has(key).submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXname_markoX(final Object v1Id) {
-            return g.v(v1Id).<Vertex>has("name", "marko").submit(g.compute());
+            return g.V(v1Id).<Vertex>has("name", "marko").submit(g.compute());
         }
 
         @Override
@@ -319,12 +319,12 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id) {
-            return g.v(v1Id).<Vertex>has("age", Compare.gt, 30).submit(g.compute());
+            return g.V(v1Id).<Vertex>has("age", Compare.gt, 30).submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id) {
-            return g.v(v1Id).out().<Vertex>has(T.id, v2Id).submit(g.compute());
+            return g.V(v1Id).out().<Vertex>has(T.id, v2Id).submit(g.compute());
         }
 
         @Override
@@ -334,7 +334,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_e7_hasXlabelXknowsX(final Object e7Id) {
-            return g.e(e7Id).<Edge>has(T.label, "knows").submit(g.compute());
+            return g.E(e7Id).<Edge>has(T.label, "knows").submit(g.compute());
         }
 
         @Override

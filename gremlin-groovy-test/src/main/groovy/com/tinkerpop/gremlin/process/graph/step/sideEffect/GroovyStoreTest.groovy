@@ -18,7 +18,7 @@ public abstract class GroovyStoreTest {
 
         @Override
         public Traversal<Vertex, Collection> get_g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX(final Object v1Id) {
-            g.v(v1Id).store('a') { it.name }.out().store('a') { it.name }.name.cap('a');
+            g.V(v1Id).store('a') { it.name }.out().store('a') { it.name }.name.cap('a');
         }
 
         @Override
@@ -41,7 +41,7 @@ public abstract class GroovyStoreTest {
 
         @Override
         public Traversal<Vertex, Collection> get_g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).store('a') { it.name }.out().store('a') { it.name }.name.cap('a')", g)
+            ComputerTestHelper.compute("g.V(${v1Id}).store('a') { it.name }.out().store('a') { it.name }.name.cap('a')", g)
         }
 
         @Override

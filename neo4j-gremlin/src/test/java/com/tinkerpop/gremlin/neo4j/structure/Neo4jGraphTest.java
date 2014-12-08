@@ -252,7 +252,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         marko.addEdge("friend", pete);
         this.g.tx().commit();
 
-        Object result = engine.eval("g.v(" + marko.id().toString() + ").outE('friend')", bindings);
+        Object result = engine.eval("g.V(" + marko.id().toString() + ").outE('friend')", bindings);
         assertTrue(result instanceof GraphTraversal);
 
         this.g.tx().commit();
@@ -273,7 +273,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         marko.addEdge("friend", pete);
         this.g.tx().commit();
 
-        Object result = engine.eval("g.v(" + marko.id().toString() + ").out('friend')", bindings);
+        Object result = engine.eval("g.V(" + marko.id().toString() + ").out('friend')", bindings);
         assertTrue(result instanceof GraphTraversal);
 
         this.g.tx().commit();

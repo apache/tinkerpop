@@ -65,11 +65,11 @@ class SugarLoaderTest extends AbstractGremlinTest {
         assertEquals(g.V(), g.V)
         assertEquals(g.V().out(), g.V.out)
         assertEquals(g.V().out().values('name'), g.V.out.name)
-        assertEquals(g.v(1).out().out().values('name'), g.v(1).out.out.name);
-        g.v(1).name = 'okram'
-        assertEquals('okram', g.v(1).name);
-        g.v(1)['name'] = 'marko a. rodriguez'
-        assertEquals(g.v(1).values('name').toSet(), ["okram", "marko a. rodriguez"] as Set);
+        assertEquals(g.V(1).out().out().values('name'), g.V(1).out.out.name);
+        g.V(1).next().name = 'okram'
+        assertEquals('okram', g.V(1).next().name);
+        g.V(1).next()['name'] = 'marko a. rodriguez'
+        assertEquals(g.V(1).values('name').toSet(), ["okram", "marko a. rodriguez"] as Set);
     }
 
     @Test
@@ -113,23 +113,23 @@ class SugarLoaderTest extends AbstractGremlinTest {
         println "  Groovy-style: " + clock(5000) { g.V.name }
         assertEquals(g.V().values('name'), g.V.name)
 
-        println("\ng.v(1).name")
-        println "  Java8-style:  " + clock(5000) { g.v(1).value('name') }
-        println "  Groovy-style: " + clock(5000) { g.v(1).name }
-        assertEquals(g.v(1).value('name'), g.v(1).name)
+        println("\ng.V(1).name")
+        println "  Java8-style:  " + clock(5000) { g.V(1).values('name') }
+        println "  Groovy-style: " + clock(5000) { g.V(1).name }
+        assertEquals(g.V(1).values('name'), g.V(1).name)
 
-        /*println("\ng.v(1)['name'] = 'okram'")
-        println "  Java8-style:  " + clock(5000) { g.v(1).property('name', 'okram') }
-        println "  Groovy-style: " + clock(5000) { g.v(1)['name'] = 'okram' }
+        /*println("\ng.V(1)['name'] = 'okram'")
+        println "  Java8-style:  " + clock(5000) { g.V(1).property('name', 'okram') }
+        println "  Groovy-style: " + clock(5000) { g.V(1)['name'] = 'okram' }
 
-        println("\ng.v(1).name = 'okram'")
-        println "  Java8-style:  " + clock(5000) { g.v(1).singleProperty('name', 'okram') }
-        println "  Groovy-style: " + clock(5000) { g.v(1).name = 'okram' }*/
+        println("\ng.V(1).name = 'okram'")
+        println "  Java8-style:  " + clock(5000) { g.V(1).singleProperty('name', 'okram') }
+        println "  Groovy-style: " + clock(5000) { g.V(1).name = 'okram' }*/
 
-        println("\ng.v(1).outE")
-        println "  Java8-style:  " + clock(5000) { g.v(1).outE() }
-        println "  Groovy-style: " + clock(5000) { g.v(1).outE }
-        assertEquals(g.v(1).outE().inV(), g.v(1).outE.inV)
+        println("\ng.V(1).outE")
+        println "  Java8-style:  " + clock(5000) { g.V(1).outE() }
+        println "  Groovy-style: " + clock(5000) { g.V(1).outE }
+        assertEquals(g.V(1).outE().inV(), g.V(1).outE.inV)
 
         println("\ng.V.as('a').map{[it.a.name, it.name]}")
         println "  Java8-style:  " + clock(5000) {

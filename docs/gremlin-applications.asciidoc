@@ -495,7 +495,7 @@ This message can be serialized in any fashion that is supported by Gremlin Serve
 { "requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1",
   "op":"eval",
   "processor":"",
-  "args":{"gremlin":"g.v(x).out",
+  "args":{"gremlin":"g.V(x).out()",
           "bindings":{"x":1},
           "language":"gremlin-groovy"}}
 ----
@@ -510,7 +510,7 @@ The first byte represents the length of the "mime type" string value that follow
 
 NOTE: Gremlin Server will only accept masked packets as it pertains to websocket packet header construction.
 
-When Gremlin Server receives that request, it will decode it given the "mime type", pass it to the requested `OpProcessor` which will execute the `op` defined in the message.  In this case, it will evaluate the script `g.v(x).out` using the `bindings` supplied in the `args` and stream back the results in a series of `ResponseMessages`.  A `ResponseMessage` looks like this:
+When Gremlin Server receives that request, it will decode it given the "mime type", pass it to the requested `OpProcessor` which will execute the `op` defined in the message.  In this case, it will evaluate the script `g.V(x).out()` using the `bindings` supplied in the `args` and stream back the results in a series of `ResponseMessages`.  A `ResponseMessage` looks like this:
 
 [width="100%",cols="3,10",options="header"]
 |=========================================================
@@ -700,17 +700,17 @@ NOTE: It's recommended to choose a continuously running layout algorithm like Fr
 Consider the following traversal:
 
 [source,groovy]
-g.v(2).in().out('knows').
+g.V(2).in().out('knows').
       has('age',gt,30).outE('created').
       has('weight',gt,0.5f).inV()
 
 To visualize it insert the appropriately named `store('n')` steps where `n` is an integer, and the vertices will be highlighted in ascending store step order.
 
 [source,groovy]
-gremlin> g.v(2).in('knows').out('knows').has('age',gt,30).
+gremlin> g.V(2).in('knows').out('knows').has('age',gt,30).
                outE('created').has('weight',gt,0.5f).inV().values('name')
 ==>ripple
-gremlin> traversal = g.v(2).store('1').
+gremlin> traversal = g.V(2).store('1').
                            in('knows').store('2').
                            out('knows').has('age',gt,30).store('3').
                            outE('created').has('weight',gt,0.5f).inV().store('4')
@@ -786,9 +786,9 @@ IMPORTANT: It is important that the sugar plugin is loaded in a Gremlin Console 
 [source,groovy]
 gremlin> :plugin use tinkerpop.sugar
 ==>tinkerpop.sugar activated
-gremlin> g.v(1).values('name')  // conventional
+gremlin> g.V(1).values('name')  // conventional
 ==>marko
-gremlin> g.v(1).name  // sugar
+gremlin> g.V(1).name  // sugar
 ==>marko
 gremlin> g.V().map{it.get().value('name')}  // conventional
 ==>marko
@@ -851,8 +851,8 @@ Benchmarking allows execution time comparisons of different pieces of code. Whil
 gremlin> :plugin use tinkerpop.sugar // activate sugar plugin for use in benchmark
 ==>tinkerpop.sugar activated
 gremlin> benchmark{ 
-gremlin>   'sugar' {g.v(1).name.next()}
-gremlin>   'nosugar' {g.v(1).values('name').next()}}.prettyPrint()
+gremlin>   'sugar' {g.V(1).name.next()}
+gremlin>   'nosugar' {g.V(1).values('name').next()}}.prettyPrint()
 Environment
 ===========
 * Groovy: 2.3.6

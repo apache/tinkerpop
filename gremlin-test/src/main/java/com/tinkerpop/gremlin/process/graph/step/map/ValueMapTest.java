@@ -120,7 +120,7 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, List<String>>> get_g_v1_outXcreatedX_valueMap(final Object v1Id) {
-            return g.v(v1Id).out("created").valueMap();
+            return g.V(v1Id).out("created").valueMap();
         }
     }
 
@@ -142,7 +142,7 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, List<String>>> get_g_v1_outXcreatedX_valueMap(final Object v1Id) {
-            return (Traversal) g.v(v1Id).out("created").valueMap().submit(g.compute());
+            return (Traversal) g.V(v1Id).out("created").valueMap().submit(g.compute());
         }
     }
 }

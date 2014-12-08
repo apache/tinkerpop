@@ -56,7 +56,7 @@ public class PropertyTest {
         public void shouldReturnEmptyPropertyIfKeyNonExistent() {
             final Vertex v = g.addVertex("name", "marko");
             tryCommit(g, (graph) -> {
-                final Vertex v1 = g.v(v.id());
+                final Vertex v1 = g.V(v.id()).next();
                 final VertexProperty p = v1.property("nonexistent-key");
                 assertEquals(VertexProperty.empty(), p);
             });
@@ -68,7 +68,7 @@ public class PropertyTest {
         public void shouldAllowRemovalFromVertexWhenAlreadyRemoved() {
             final Vertex v = g.addVertex("name", "marko");
             tryCommit(g);
-            final Vertex v1 = g.v(v.id());
+            final Vertex v1 = g.V(v.id()).next();
             try {
                 final Property p = v1.property("name");
                 p.remove();
@@ -87,7 +87,7 @@ public class PropertyTest {
         public void shouldAllowRemovalFromEdgeWhenAlreadyRemoved() {
             final Vertex v = g.addVertex("name", "marko");
             tryCommit(g);
-            final Vertex v1 = g.v(v.id());
+            final Vertex v1 = g.V(v.id()).next();
 
             try {
                 final Edge edge = v1.addEdge("knows", g.addVertex());
@@ -106,7 +106,7 @@ public class PropertyTest {
         public void shouldReturnHiddenKeysWithHiddenPrefix() {
             final Vertex v = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw", Graph.Key.hide("other"), "rw", "acl", "r");
             tryCommit(g);
-            final Vertex v1 = g.v(v.id());
+            final Vertex v1 = g.V(v.id()).next();
             assertEquals(2, v1.hiddenKeys().size());
             assertTrue(v1.hiddenKeys().stream().allMatch(key -> Graph.Key.isHidden(key)));
             assertTrue(v1.hiddenKeys().stream().allMatch(k -> k.equals(Graph.Key.hide("acl")) || k.equals(Graph.Key.hide("other"))));
@@ -121,7 +121,7 @@ public class PropertyTest {
         public void shouldReHideAnAlreadyHiddenKeyWhenGettingHiddenValue() {
             final Vertex v = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw", Graph.Key.hide("other"), "rw");
             tryCommit(g);
-            final Vertex v1 = g.v(v.id());
+            final Vertex v1 = g.V(v.id()).next();
             v1.hiddenKeys().stream().forEach(hiddenKey -> assertTrue(v1.hiddenValues(hiddenKey).hasNext()));
             assertTrue(v1.hiddenValues(Graph.Key.hide("other")).hasNext());
             assertFalse(v1.hiddenValues("other").hasNext());
@@ -129,7 +129,7 @@ public class PropertyTest {
             final Vertex u = g.addVertex();
             Edge e = v1.addEdge("knows", u, Graph.Key.hide("acl"), "private", "acl", "public");
             tryCommit(g);
-            final Edge e1 = g.e(e.id());
+            final Edge e1 = g.E(e.id()).next();
             e1.hiddenKeys().stream().forEach(hiddenKey -> assertTrue(e1.hiddenValues(hiddenKey).hasNext()));
             assertTrue(e1.hiddenValues(Graph.Key.hide("acl")).hasNext());
             assertFalse(e1.hiddenValues("acl").hasNext());

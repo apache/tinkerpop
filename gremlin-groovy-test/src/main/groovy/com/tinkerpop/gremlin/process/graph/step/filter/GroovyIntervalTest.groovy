@@ -12,14 +12,14 @@ public abstract class GroovyIntervalTest {
     public static class StandardTest extends IntervalTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
-            g.v(v1Id).outE.interval('weight', 0.0d, 0.6d).inV
+            g.V(v1Id).outE.interval('weight', 0.0d, 0.6d).inV
         }
     }
 
     public static class ComputerTest extends IntervalTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).outE.interval('weight', 0.0d, 0.6d).inV", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).outE.interval('weight', 0.0d, 0.6d).inV", g);
         }
     }
 }

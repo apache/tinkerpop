@@ -103,17 +103,17 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_mapXnameX(final Object v1Id) {
-            return g.v(v1Id).<String>map(v -> v.get().value("name"));
+            return g.V(v1Id).<String>map(v -> v.get().value("name"));
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_v1_outE_label_mapXlengthX(final Object v1Id) {
-            return g.v(v1Id).outE().label().map(l -> l.get().length());
+            return g.V(v1Id).outE().label().map(l -> l.get().length());
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_v1_out_mapXnameX_mapXlengthX(final Object v1Id) {
-            return g.v(v1Id).out().map(v -> v.get().value("name")).map(n -> n.get().toString().length());
+            return g.V(v1Id).out().map(v -> v.get().value("name")).map(n -> n.get().toString().length());
         }
 
         @Override
@@ -134,17 +134,17 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_mapXnameX(final Object v1Id) {
-            return g.v(v1Id).<String>map(v -> v.get().value("name")).submit(g.compute());
+            return g.V(v1Id).<String>map(v -> v.get().value("name")).submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_v1_outE_label_mapXlengthX(final Object v1Id) {
-            return g.v(v1Id).<String>outE().label().map(l -> l.get().length()).submit(g.compute());
+            return g.V(v1Id).<String>outE().label().map(l -> l.get().length()).submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_v1_out_mapXnameX_mapXlengthX(final Object v1Id) {
-            return g.v(v1Id).<String>out().map(v -> v.get().value("name")).map(n -> n.get().toString().length()).submit(g.compute());
+            return g.V(v1Id).<String>out().map(v -> v.get().value("name")).map(n -> n.get().toString().length()).submit(g.compute());
         }
 
         @Override

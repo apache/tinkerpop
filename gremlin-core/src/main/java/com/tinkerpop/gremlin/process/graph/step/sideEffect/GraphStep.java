@@ -56,6 +56,10 @@ public class GraphStep<E extends Element> extends StartStep<E> implements Traver
         return (G) this.graph;
     }
 
+    public Object[] getIds() {
+        return this.ids;
+    }
+
     @Override
     public void generateTraversers(final TraverserGenerator traverserGenerator) {
         if (PROFILING_ENABLED) TraversalMetrics.start(this);

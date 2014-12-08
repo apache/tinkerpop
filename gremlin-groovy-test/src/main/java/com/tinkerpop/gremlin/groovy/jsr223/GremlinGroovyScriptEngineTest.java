@@ -55,7 +55,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         engine.put("g", g);
         engine.put("list", list);
         assertEquals(list.size(), 0);
-        engine.eval("g.v(1).out().fill(list)");
+        engine.eval("g.V(1).out().fill(list)");
         assertEquals(list.size(), 3);
     }
 
@@ -189,7 +189,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
     public void shouldProperlyHandleBindings() throws Exception {
         final ScriptEngine engine = new GremlinGroovyScriptEngine();
         engine.put("g", g);
-        Assert.assertEquals(g.v(1), engine.eval("g.v(1)"));
+        Assert.assertEquals(g.V(1).next(), engine.eval("g.V(1).next()"));
 
         final Bindings bindings = engine.createBindings();
         bindings.put("g", g);
@@ -200,12 +200,12 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         bindings.put("l", 100l);
         bindings.put("d", 1.55555d);
 
-        Assert.assertEquals(engine.eval("g.E().has('weight',f).next()", bindings), g.e(7));
-        Assert.assertEquals(engine.eval("g.V().has('name',s).next()", bindings), g.v(1));
-        Assert.assertEquals(engine.eval("g.V().sideEffect{it.get().property('bbb',it.get().value('name')=='marko')}.iterate();g.V().has('bbb',b).next()", bindings), g.v(1));
-        Assert.assertEquals(engine.eval("g.V().sideEffect{it.get().property('iii',it.get().value('name')=='marko'?1:0)}.iterate();g.V().has('iii',i).next()", bindings), g.v(1));
-        Assert.assertEquals(engine.eval("g.V().sideEffect{it.get().property('lll',it.get().value('name')=='marko'?100l:0l)}.iterate();g.V().has('lll',l).next()", bindings), g.v(1));
-        Assert.assertEquals(engine.eval("g.V().sideEffect{it.get().property('ddd',it.get().value('name')=='marko'?1.55555d:0)}.iterate();g.V().has('ddd',d).next()", bindings), g.v(1));
+        Assert.assertEquals(engine.eval("g.E().has('weight',f).next()", bindings), g.E(7).next());
+        Assert.assertEquals(engine.eval("g.V().has('name',s).next()", bindings), g.V(1).next());
+        Assert.assertEquals(engine.eval("g.V().sideEffect{it.get().property('bbb',it.get().value('name')=='marko')}.iterate();g.V().has('bbb',b).next()", bindings), g.V(1).next());
+        Assert.assertEquals(engine.eval("g.V().sideEffect{it.get().property('iii',it.get().value('name')=='marko'?1:0)}.iterate();g.V().has('iii',i).next()", bindings), g.V(1).next());
+        Assert.assertEquals(engine.eval("g.V().sideEffect{it.get().property('lll',it.get().value('name')=='marko'?100l:0l)}.iterate();g.V().has('lll',l).next()", bindings), g.V(1).next());
+        Assert.assertEquals(engine.eval("g.V().sideEffect{it.get().property('ddd',it.get().value('name')=='marko'?1.55555d:0)}.iterate();g.V().has('ddd',d).next()", bindings), g.V(1).next());
     }
 
     @Test
@@ -286,23 +286,23 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
 
         // strong referenced global closure
         engine.eval("def isVadas(v){v.value('name')=='vadas'}", bindings);
-        assertEquals(true, engine.eval("isVadas(g.v(2))", bindings));
+        assertEquals(true, engine.eval("isVadas(g.V(2).next())", bindings));
 
         // phantom referenced global closure
         bindings.put(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_PHANTOM);
         engine.eval("def isMarko(v){v.value('name')=='marko'}", bindings);
 
         try {
-            engine.eval("isMarko(g.v(1))", bindings);
+            engine.eval("isMarko(g.V(1).next())", bindings);
             fail("the isMarko function should not be present");
         } catch (Exception ex) {
 
         }
 
-        assertEquals(true, engine.eval("def isMarko(v){v.value('name')=='marko'}; isMarko(g.v(1))", bindings));
+        assertEquals(true, engine.eval("def isMarko(v){v.value('name')=='marko'}; isMarko(g.V(1).next())", bindings));
 
         try {
-            engine.eval("isMarko(g.v(1))", bindings);
+            engine.eval("isMarko(g.V(1).next())", bindings);
             fail("the isMarko function should not be present");
         } catch (Exception ex) {
 
@@ -311,7 +311,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         bindings.remove(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE);
 
         // isVadas class was a hard reference so it should still be hanging about
-        assertEquals(true, engine.eval("isVadas(g.v(2))", bindings));
+        assertEquals(true, engine.eval("isVadas(g.V(2).next())", bindings));
     }
 
     @Test
@@ -325,14 +325,14 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
 
         // this works on its own when the function and the line that uses it is in one "script".  this is the
         // current workaround
-        assertEquals(g.v(2), engine.eval("def isVadas(v){v.value('name')=='vadas'};g.V().filter{isVadas(it.get())}.next()", bindings));
+        assertEquals(g.V(2).next(), engine.eval("def isVadas(v){v.value('name')=='vadas'};g.V().filter{isVadas(it.get())}.next()", bindings));
 
         // let's reset this piece and make sure isVadas is not hanging around.
         engine.reset();
 
         // validate that isVadas throws an exception since it is not defined
         try {
-            engine.eval("isVadas(g.v(2))", bindings);
+            engine.eval("isVadas(g.V(2).next())", bindings);
 
             // fail the test if the above doesn't throw an exception
             fail();
@@ -345,10 +345,10 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         engine.eval("def isVadas(v){v.value('name')=='vadas'}", bindings);
 
         // make sure the function works on its own...no problem
-        assertEquals(true, engine.eval("isVadas(g.v(2))", bindings));
+        assertEquals(true, engine.eval("isVadas(g.V(2).next())", bindings));
 
         // make sure the function works in a closure...this generates a StackOverflowError
-        assertEquals(g.v(2), engine.eval("g.V().filter{isVadas(it.get())}.next()", bindings));
+        assertEquals(g.V(2).next(), engine.eval("g.V().filter{isVadas(it.get())}.next()", bindings));
     }
 
     @Test
@@ -361,14 +361,14 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         bindings.put("g", g);
 
         // works when it's all defined together
-        assertEquals(true, engine.eval("class c { static def isVadas(v){v.value('name')=='vadas'}};c.isVadas(g.v(2))", bindings));
+        assertEquals(true, engine.eval("class c { static def isVadas(v){v.value('name')=='vadas'}};c.isVadas(g.V(2).next())", bindings));
 
         // let's reset this piece and make sure isVadas is not hanging around.
         engine.reset();
 
         // validate that isVadas throws an exception since it is not defined
         try {
-            engine.eval("c.isVadas(g.v(2))", bindings);
+            engine.eval("c.isVadas(g.V(2).next())", bindings);
 
             // fail the test if the above doesn't throw an exception
             fail("Function should be gone");
@@ -387,7 +387,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         engine.eval("class c { static def isVadas(v){v.name=='vadas'}};null;", bindings);
 
         // make sure the class works on its own...this generates: groovy.lang.MissingPropertyException: No such property: c for class: Script2
-        assertEquals(true, engine.eval("c.isVadas(g.v(2))", bindings));
+        assertEquals(true, engine.eval("c.isVadas(g.V(2).next())", bindings));
     }
 
     @Test

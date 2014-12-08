@@ -22,7 +22,7 @@ public abstract class GroovyValueMapTest {
 
         @Override
         public Traversal<Vertex, Map<String, List<String>>> get_g_v1_outXcreatedX_valueMap(final Object v1Id) {
-            g.v(v1Id).out('created').valueMap
+            g.V(v1Id).out('created').valueMap
         }
     }
 
@@ -39,7 +39,7 @@ public abstract class GroovyValueMapTest {
 
         @Override
         public Traversal<Vertex, Map<String, List<String>>> get_g_v1_outXcreatedX_valueMap(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).out('created').valueMap", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).out('created').valueMap", g);
         }
     }
 }

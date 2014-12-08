@@ -483,7 +483,7 @@ gremlin> w = GraphSONWriter.build().create()
 ==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter@1af146
 gremlin> f = new FileOutputStream('test.txt')
 ==>java.io.FileOutputStream@5c8eee0f
-gremlin> w.writeVertex(f, g.v(1), Direction.BOTH)
+gremlin> w.writeVertex(f, g.V(1).next(), Direction.BOTH)
 ==>null
 gremlin> f.close()
 ----
@@ -813,7 +813,7 @@ gremlin> bg = g.getBaseGraph()
 ==>tinkergraph[vertices:0 edges:0]
 gremlin> bg.addVertex('name','stephen')
 ==>v[0]
-gremlin> g.v(0l).values('name')
+gremlin> g.V(0l).values('name')
 ==>stephen
 ----
 
@@ -829,7 +829,7 @@ gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
 gremlin> v = g.addVertex(id, "42a")
 ==>v[42a]
-gremlin> g.v("42a")
+gremlin> g.V("42a")
 ==>v[42a]
 
 Other `Graph` implementations, however, generate element identifiers automatically and cannot be assigned:

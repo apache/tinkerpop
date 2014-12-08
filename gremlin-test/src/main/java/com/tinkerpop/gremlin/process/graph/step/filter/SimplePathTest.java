@@ -68,7 +68,7 @@ public abstract class SimplePathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
-            return g.v(v1Id).out("created").in("created").simplePath();
+            return g.V(v1Id).out("created").in("created").simplePath();
         }
 
         @Override
@@ -89,7 +89,7 @@ public abstract class SimplePathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
-            return g.v(v1Id).out("created").in("created").simplePath().submit(g.compute());
+            return g.V(v1Id).out("created").in("created").simplePath().submit(g.compute());
         }
 
         @Override

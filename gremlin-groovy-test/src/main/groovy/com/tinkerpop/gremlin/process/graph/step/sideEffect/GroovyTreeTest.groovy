@@ -24,12 +24,12 @@ public abstract class GroovyTreeTest {
 
         @Override
         public Traversal<Vertex, Tree> get_g_v1_out_out_treeXnameX(final Object v1Id) {
-            g.v(v1Id).out.out.tree { it.name };
+            g.V(v1Id).out.out.tree { it.name };
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_v1_out_out_treeXa_nameX_both_both_capXaX(final Object v1Id) {
-            g.v(v1Id).out.out.tree('a') { it.name }.both.both.cap('a');
+            g.V(v1Id).out.out.tree('a') { it.name }.both.both.cap('a');
         }
 
         @Override
@@ -52,14 +52,14 @@ public abstract class GroovyTreeTest {
 
         @Override
         public Traversal<Vertex, Tree> get_g_v1_out_out_treeXnameX(final Object v1Id) {
-            g.v(v1Id).out.out.tree { it.name };
-            // TODO: ComputerTestHelper.compute("g.v(${v1Id}).out.out.tree { it.name }",g)
+            g.V(v1Id).out.out.tree { it.name };
+            // TODO: ComputerTestHelper.compute("g.V(${v1Id}).out.out.tree { it.name }",g)
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_v1_out_out_treeXa_nameX_both_both_capXaX(final Object v1Id) {
-            g.v(v1Id).out.out.tree('a') { it.name }.both.both.cap('a');
-            // TODO: ComputerTestHelper.compute("g.v(${v1Id}).out.out.tree('a') { it.name }.both.both.cap('a')", g)
+            g.V(v1Id).out.out.tree('a') { it.name }.both.both.cap('a');
+            // TODO: ComputerTestHelper.compute("g.V(${v1Id}).out.out.tree('a') { it.name }.both.both.cap('a')", g)
         }
 
         @Override

@@ -117,7 +117,7 @@ public class VertexTest {
         @Test(expected = NoSuchElementException.class)
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldThrowNoSuchElementExceptionIfVertexWithIdNotPresent() {
-            g.v("this-id-should-not-be-in-the-modern-graph");
+            g.V("this-id-should-not-be-in-the-modern-graph").next();
         }
 
         @Test
@@ -228,7 +228,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldEvaluateVerticesEquivalentWithSuppliedIds() {
             final Vertex v = g.addVertex(T.id, GraphManager.get().convertId("1"));
-            final Vertex u = g.v(GraphManager.get().convertId("1"));
+            final Vertex u = g.V(GraphManager.get().convertId("1")).next();
             assertEquals(v, u);
         }
 
@@ -238,13 +238,13 @@ public class VertexTest {
             final Vertex v = g.addVertex();
             assertNotNull(v);
 
-            final Vertex u = g.v(v.id());
+            final Vertex u = g.V(v.id()).next();
             assertNotNull(u);
             assertEquals(v, u);
 
-            assertEquals(g.v(u.id()), g.v(u.id()));
-            assertEquals(g.v(v.id()), g.v(u.id()));
-            assertEquals(g.v(v.id()), g.v(v.id()));
+            assertEquals(g.V(u.id()), g.V(u.id()));
+            assertEquals(g.V(v.id()), g.V(u.id()));
+            assertEquals(g.V(v.id()), g.V(v.id()));
         }
 
         @Test
@@ -252,7 +252,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
             final Vertex v = g.addVertex(T.id, GraphManager.get().convertId("1"));
-            final Vertex u = g.v(GraphManager.get().convertId("1"));
+            final Vertex u = g.V(GraphManager.get().convertId("1")).next();
             assertEquals(v, u);
 
             final Set<Vertex> set = new HashSet<>();
@@ -260,8 +260,8 @@ public class VertexTest {
             set.add(v);
             set.add(u);
             set.add(u);
-            set.add(g.v(GraphManager.get().convertId("1")));
-            set.add(g.v(GraphManager.get().convertId("1")));
+            set.add(g.V(GraphManager.get().convertId("1")).next());
+            set.add(g.V(GraphManager.get().convertId("1")).next());
 
             assertEquals(1, set.size());
             assertEquals(v.hashCode(), u.hashCode());

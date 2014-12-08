@@ -14,7 +14,7 @@ public abstract class GroovySimplePathTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
-            g.v(v1Id).out('created').in('created').simplePath
+            g.V(v1Id).out('created').in('created').simplePath
         }
 
         @Override
@@ -32,7 +32,7 @@ public abstract class GroovySimplePathTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).out('created').in('created').simplePath", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).out('created').in('created').simplePath", g);
         }
 
         @Override

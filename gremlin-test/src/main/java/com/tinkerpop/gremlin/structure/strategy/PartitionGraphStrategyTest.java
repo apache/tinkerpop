@@ -95,13 +95,13 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldThrowExceptionOnvInDifferentPartition() {
         final Vertex vA = g.addVertex("any", "a");
-        assertEquals(vA.id(), g.v(vA.id()).id());
+        assertEquals(vA.id(), g.V(vA.id()).id().next());
 
         final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
         strategy.clearReadPartitions();
 
         try {
-            g.v(vA.id());
+            g.V(vA.id());
         } catch (Exception ex) {
             final Exception expected = Graph.Exceptions.elementNotFound(Vertex.class, vA.id());
             assertEquals(expected.getClass(), ex.getClass());
@@ -114,13 +114,13 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     public void shouldThrowExceptionOneInDifferentPartition() {
         final Vertex vA = g.addVertex("any", "a");
         final Edge e = vA.addEdge("knows", vA);
-        assertEquals(e.id(), g.e(e.id()).id());
+        assertEquals(e.id(), g.E(e.id()).id().next());
 
         final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
         strategy.clearReadPartitions();
 
         try {
-            g.e(e.id());
+            g.E(e.id());
         } catch (Exception ex) {
             final Exception expected = Graph.Exceptions.elementNotFound(Edge.class, e.id());
             assertEquals(expected.getClass(), ex.getClass());
@@ -152,10 +152,10 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         strategy.addReadPartition("A");
         assertEquals(new Long(2), g.V().count().next());
         assertEquals(new Long(1), g.E().count().next());
-        assertEquals(new Long(1), g.v(vA.id()).outE().count().next());
-        assertEquals(eAtoAA.id(), g.v(vA.id()).outE().next().id());
-        assertEquals(new Long(1), g.v(vA.id()).out().count().next());
-        assertEquals(vAA.id(), g.v(vA.id()).out().next().id());
+        assertEquals(new Long(1), g.V(vA.id()).outE().count().next());
+        assertEquals(eAtoAA.id(), g.V(vA.id()).outE().next().id());
+        assertEquals(new Long(1), g.V(vA.id()).out().count().next());
+        assertEquals(vAA.id(), g.V(vA.id()).out().next().id());
 
         strategy.addReadPartition("B");
         assertEquals(new Long(3), g.V().count().next());
@@ -172,18 +172,18 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         // two edges are in the "C" partition, but one each of their incident vertices are not
         assertEquals(new Long(0), g.E().count().next());
 
-        assertEquals(new Long(0), g.v(vC.id()).inE().count().next());
-        assertEquals(new Long(0), g.v(vC.id()).in().count().next());
+        assertEquals(new Long(0), g.V(vC.id()).inE().count().next());
+        assertEquals(new Long(0), g.V(vC.id()).in().count().next());
 
         strategy.addReadPartition("B");
         // only one edge in, due to excluded vertices; vA is not in {B,C}
-        assertEquals(new Long(1), g.v(vC.id()).inE().count().next());
-        assertEquals(new Long(1), g.v(vC.id()).in().count().next());
-        assertEquals(vC.id(), g.e(eBtovC.id()).inV().id().next());
-        assertEquals(vB.id(), g.e(eBtovC.id()).outV().id().next());
+        assertEquals(new Long(1), g.V(vC.id()).inE().count().next());
+        assertEquals(new Long(1), g.V(vC.id()).in().count().next());
+        assertEquals(vC.id(), g.E(eBtovC.id()).inV().id().next());
+        assertEquals(vB.id(), g.E(eBtovC.id()).outV().id().next());
 
         try {
-            g.e(eAtovC.id());
+            g.E(eAtovC.id()).next();
             fail("Edge should not be in the graph because vA is not in partitions {B,C}");
         } catch (Exception ex) {
             assertTrue(ex instanceof NoSuchElementException);

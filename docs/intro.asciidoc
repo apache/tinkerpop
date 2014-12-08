@@ -195,7 +195,7 @@ gremlin> g.V().has('name','marko').out('knows').values('name')
 Or, if the vertex marko is already realized with a direct reference pointer, then the traversal can be spawned off that vertex. This illustrates that vertex (as well as edge) also have `GraphTraversal`-return methods and an exploration of their respective JavaDocs will demonstrate what is available.
 
 [source,groovy]
-gremlin> marko = g.v(1)
+gremlin> marko = g.V(1).next()
 ==>v[1]
 gremlin> marko.out('knows') <1>
 ==>v[2]

@@ -24,6 +24,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
 
@@ -127,14 +128,17 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             boolean voteToHalt = true;
             final Iterator<? extends Element> starts = startStep.returnsVertices() ? new SingleIterator<>(vertex) : vertex.iterators().edgeIterator(Direction.OUT);
             while (starts.hasNext()) {
-                final Traverser.Admin<Element> traverser = traverserGenerator.generate(starts.next(), startStep, 1l);
-                traverser.setFuture(future);
-                traverser.detach();
-                if (traverser.isHalted())
-                    haltedTraversers.add((Traverser.Admin) traverser);
-                else {
-                    voteToHalt = false;
-                    messenger.sendMessage(MessageScope.Global.of(vertex), new TraverserSet<>(traverser));
+                final Element start = starts.next();
+                if (ElementHelper.idExists(start.id(), startStep.getIds())) {
+                    final Traverser.Admin<Element> traverser = traverserGenerator.generate(start, startStep, 1l);
+                    traverser.setFuture(future);
+                    traverser.detach();
+                    if (traverser.isHalted())
+                        haltedTraversers.add((Traverser.Admin) traverser);
+                    else {
+                        voteToHalt = false;
+                        messenger.sendMessage(MessageScope.Global.of(vertex), new TraverserSet<>(traverser));
+                    }
                 }
             }
             memory.and(VOTE_TO_HALT, voteToHalt);

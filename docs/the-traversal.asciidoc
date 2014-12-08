@@ -50,15 +50,15 @@ IMPORTANT: If a specific traversal step can do the necessary step-computation, u
 
 image:map-lambda.png[width=150,float=right]
 [source,groovy]
-gremlin> g.v(1).as('a').out() <1>
+gremlin> g.V(1).as('a').out() <1>
 ==>v[3]
 ==>v[2]
 ==>v[4]
-gremlin> g.v(1).as('a').out().map{it.get('a')} <2>
+gremlin> g.V(1).as('a').out().map{it.get('a')} <2>
 ==>v[1]
 ==>v[1]
 ==>v[1]
-gremlin> g.v(1).as('a').out.back('a') <3>
+gremlin> g.V(1).as('a').out.back('a') <3>
 ==>v[1]
 ==>v[1]
 ==>v[1]
@@ -108,22 +108,22 @@ image::addedge-step.png[width=450]
 link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit in the data was is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is defined by the traversal description. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived. This is made possible with `addE()`-step (*sideEffect*).
 
 [source,groovy]
-gremlin> g.v(1).as('a').out('created')
+gremlin> g.V(1).as('a').out('created')
 ==>v[3]
-gremlin> g.v(1).as('a').out('created').in('created')
+gremlin> g.V(1).as('a').out('created').in('created')
 ==>v[1]
 ==>v[4]
 ==>v[6]
-gremlin> g.v(1).as('a').out('created').in('created').except('a') // marko can't be a co-developer with himself
+gremlin> g.V(1).as('a').out('created').in('created').except('a') // marko can't be a co-developer with himself
 ==>v[4]
 ==>v[6]
-gremlin> g.v(1).as('a').out('created').in('created').except('a').addBothE('co-developer','a')
+gremlin> g.V(1).as('a').out('created').in('created').except('a').addBothE('co-developer','a')
 ==>v[4]
 ==>v[6]
-gremlin> g.v(1).out('co-developer').values('name')
+gremlin> g.V(1).out('co-developer').values('name')
 ==>josh
 ==>peter
-gremlin> g.v(1).out('co-developer').in('co-developer')
+gremlin> g.V(1).out('co-developer').in('co-developer')
 ==>v[1]
 ==>v[1]
 
@@ -139,20 +139,20 @@ image::aggregate-step.png[width=800]
 The `aggregate()`-step (*sideEffect*) is used to aggregate all the objects at a particular point of traversal into a Collection. The step uses link:http://en.wikipedia.org/wiki/Eager_evaluation[eager evaluation] in that no objects continue on until all previous objects have been fully aggregated (as opposed to <<store-step,`store()`>> which link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazily] fills a collection). The eager evaluation nature is crucial in situations where everything at a particular point is required for future computation. An example is provided below.
 
 [source,groovy]
-gremlin> g.v(1).out('created') // what has marko created?
+gremlin> g.V(1).out('created') // what has marko created?
 ==>v[3]
-gremlin> g.v(1).out('created').aggregate('x') // aggregate all his creations
+gremlin> g.V(1).out('created').aggregate('x') // aggregate all his creations
 ==>[v[3]]
-gremlin> g.v(1).out('created').aggregate('x').in('created') // who are marko's collaborators
+gremlin> g.V(1).out('created').aggregate('x').in('created') // who are marko's collaborators
 ==>v[1]
 ==>v[4]
 ==>v[6]
-gremlin> g.v(1).out('created').aggregate('x').in('created').out('created') // what have marko's collaborators created?
+gremlin> g.V(1).out('created').aggregate('x').in('created').out('created') // what have marko's collaborators created?
 ==>v[3]
 ==>v[5]
 ==>v[3]
 ==>v[3]
-gremlin> g.v(1).out('created').aggregate('x').in('created').out('created').except('x').values('name') // what have marko's collaborators created that he hasn't created?
+gremlin> g.V(1).out('created').aggregate('x').in('created').out('created').except('x').values('name') // what have marko's collaborators created that he hasn't created?
 ==>ripple
 
 In link:http://en.wikipedia.org/wiki/Recommender_system[recommendation systems], the above pattern is used:
@@ -236,7 +236,7 @@ image::cyclicpath-step.png[width=400]
 Each traverser maintains its history through the traversal over the graph -- i.e. its <<path-data-structure,path>>. If it is important that the traverser repeat its course, then `cyclic()`-path should be used (*filter*). The step analyzes the path of the traverser thus far and if there are any repeats, the traverser is filtered out over the traversal computation. If non-cyclic behavior is desired, see <<simplepath-step,`simplePath()`>>.
 
 [source,groovy]
-gremlin> g.v(1).both().both()
+gremlin> g.V(1).both().both()
 ==>v[1]  // back to v[1]
 ==>v[4]
 ==>v[6]
@@ -244,11 +244,11 @@ gremlin> g.v(1).both().both()
 ==>v[5]
 ==>v[3]
 ==>v[1]  // back to v[1]
-gremlin> g.v(1).both().both().cyclicPath()
+gremlin> g.V(1).both().both().cyclicPath()
 ==>v[1]
 ==>v[1]
 ==>v[1]
-gremlin> g.v(1).both().both().cyclicPath().path()
+gremlin> g.V(1).both().both().cyclicPath().path()
 ==>[v[1], v[3], v[1]]
 ==>[v[1], v[2], v[1]]
 ==>[v[1], v[4], v[1]]
@@ -291,18 +291,18 @@ Except Step
 The `except()`-step (*filter*) can be used to remove objects from the traversal stream. If `except()` is provided a string, then the excepting object is located at `traverser.sideEffects().get(label)`. If `except()` is provided a collection, then any object contained in that collection is filtered out. Please see the related <<retain-step,`retain()`>>-step.
 
 [source,groovy]
-gremlin> g.v(1).as('x').out('created').in('created')
+gremlin> g.V(1).as('x').out('created').in('created')
 ==>v[1]
 ==>v[4]
 ==>v[6]
-gremlin> g.v(1).as('x').out('created').in('created').except('x') // co-developers
+gremlin> g.V(1).as('x').out('created').in('created').except('x') // co-developers
 ==>v[4]
 ==>v[6]
-gremlin> g.v(1).as('x').out('created').in('created').values('name')
+gremlin> g.V(1).as('x').out('created').in('created').values('name')
 ==>marko
 ==>josh
 ==>peter
-gremlin> g.v(1).as('x').out('created').in('created').values('name').except(['marko','stephen'])
+gremlin> g.V(1).as('x').out('created').in('created').values('name').except(['marko','stephen'])
 ==>josh
 ==>peter
 
@@ -313,12 +313,12 @@ Fold Step
 There are situations when the traversal stream needs a "barrier" to aggregate all the objects and emit a computation that is a function of the aggregate. The `fold()`-step (*map*) is one particular instance of this. Please see <<unfold-step,`unfold()`>>-step for the inverse functionality.
 
 [source,groovy]
-gremlin> g.v(1).out('knows').values('name')
+gremlin> g.V(1).out('knows').values('name')
 ==>vadas
 ==>josh
-gremlin> g.v(1).out('knows').values('name').fold() <1>
+gremlin> g.V(1).out('knows').values('name').fold() <1>
 ==>[vadas, josh]
-gremlin> g.v(1).out('knows').values('name').fold(0){a,b -> a + b.get().length()} <2>
+gremlin> g.V(1).out('knows').values('name').fold(0){a,b -> a + b.get().length()} <2>
 ==>9
 
 <1> A parameterless `fold()` will aggregate all the objects into a list and then emit the list.
@@ -406,15 +406,15 @@ image::inject-step.png[width=800]
 One of the major features of TinkerPop3 is "injectable steps." This makes it possible to insert objects arbitrarily into a traversal stream. This is how <<jump-step,jump()>> is implemented. In general, `inject()`-step (*sideEffect*) exists and a few examples are provided below.
 
 [source,groovy]
-gremlin> g.v(4).out().values('name').inject('daniel')
+gremlin> g.V(4).out().values('name').inject('daniel')
 ==>ripple
 ==>lop
 ==>daniel
-gremlin> g.v(4).out().values('name').inject('daniel').map{it.get().length()}
+gremlin> g.V(4).out().values('name').inject('daniel').map{it.get().length()}
 ==>6
 ==>3
 ==>6
-gremlin> g.v(4).out().values('name').inject('daniel').map{it.get().length()}.path()
+gremlin> g.V(4).out().values('name').inject('daniel').map{it.get().length()}.path()
 ==>[v[4], v[5], ripple, 6]
 ==>[v[4], v[3], lop, 3]
 ==>[daniel, 6]
@@ -428,7 +428,7 @@ gremlin> g.of().inject(1,2)
 gremlin> g.of().inject(1,2).map{it.get() + 1}
 ==>2
 ==>3
-gremlin> g.of().inject(1,2).map{it.get() + 1}.map{g.v(it.get())}.values('name')
+gremlin> g.of().inject(1,2).map{it.get() + 1}.map{g.V(it.get()).next()}.values('name')
 ==>vadas
 ==>lop
 
@@ -456,13 +456,13 @@ Jump Step
 TinkerPop3 introduces the `jump()`-step (*branch*). This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with `jump`, the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of `jump()` in action.
 
 [source,groovy]
-gremlin> g.v(1).as('a').out().jump('a'){it.loops()<2}.values('name') <1>
+gremlin> g.V(1).as('a').out().jump('a'){it.loops()<2}.values('name') <1>
 ==>ripple
 ==>lop
-gremlin> g.v(1).as('a').jump('b'){it.loops()>1}.out().jump('a').as('b').values('name') <2>
+gremlin> g.V(1).as('a').jump('b'){it.loops()>1}.out().jump('a').as('b').values('name') <2>
 ==>ripple
 ==>lop
-gremlin> g.v(1).jump('a').out().out().out().as('a').values('name') <3>
+gremlin> g.V(1).jump('a').out().out().out().as('a').values('name') <3>
 ==>marko
 
 <1> do-while semantics as found in the classic `loop()`-step in TinkerPop2.
@@ -472,14 +472,14 @@ gremlin> g.v(1).jump('a').out().out().out().as('a').values('name') <3>
 If a predetermined number of loops is known, it is possible to avoid the use of the jump-predicate.
 
 [source,groovy]
-gremlin> g.v(1).as('a').out().jump('a',2).values('name')
+gremlin> g.V(1).as('a').out().jump('a',2).values('name')
 ==>ripple
 ==>lop
 
 The `jump()`-step also supports an "emit predicate." Whereby the traverser is split in two -- the traverser exits the code block as well as continues back within the code block.
 
 [source,groovy]
-gremlin> g.v(1).as('a').out().jump('a'){it.loops()<2}{true}.values('name')
+gremlin> g.V(1).as('a').out().jump('a'){it.loops()<2}{true}.values('name')
 ==>lop
 ==>vadas
 ==>josh
@@ -770,7 +770,7 @@ The `Path` data structure is an ordered list of objects, where each object is as
 image::path-data-structure.png[width=350]
 
 [source,groovy]
-gremlin> path = g.v(1).as('a').has('name').as('b').out('knows').out('created').as('c').has('name','ripple').values('name').as('d').identity().as('e').path().next()
+gremlin> path = g.V(1).as('a').has('name').as('b').out('knows').out('created').as('c').has('name','ripple').values('name').as('d').identity().as('e').path().next()
 ==>[v[1], v[4], v[5], ripple]
 gremlin> path.size()
 ==>4
@@ -903,17 +903,17 @@ Retain Step
 The `retain()`-step (*filter*) can be used to filter objects from the traversal stream that don't match the provided criteria. If `retain()` is provided a string, the retaining object is retrieved via `traverser.sideEffects().get(label)`. If `retain()` is provided a collection, then any object not contained in that collection is filtered out. Please see the related <<except-step,`except()`>>-step.
 
 [source,groovy]
-gremlin> g.v(1).as('x').out('created').in('created')
+gremlin> g.V(1).as('x').out('created').in('created')
 ==>v[1]
 ==>v[4]
 ==>v[6]
-gremlin> g.v(1).as('x').out('created').in('created').retain('x')
+gremlin> g.V(1).as('x').out('created').in('created').retain('x')
 ==>v[1]
-gremlin> g.v(1).as('x').out('created').in('created').values('name')
+gremlin> g.V(1).as('x').out('created').in('created').values('name')
 ==>marko
 ==>josh
 ==>peter
-gremlin> g.v(1).as('x').out('created').in('created').values('name').retain(['marko','stephen'])
+gremlin> g.V(1).as('x').out('created').in('created').values('name').retain(['marko','stephen'])
 ==>marko
 
 [[sack-step]]
@@ -1089,7 +1089,7 @@ image::simplepath-step.png[width=400]
 When it is important that a traverser not repeat its path through the graph, `simplePath()`-step should be used (*filter*). The <<path-data-structure,path>> information of the traverser is analyzed and if the path has repeated objects in it, the traverser is filtered. If cyclic behavior is desired, see <<cyclicpath-step,`cyclicPath()`>>.
 
 [source,groovy]
-gremlin> g.v(1).both().both()
+gremlin> g.V(1).both().both()
 ==>v[1]   // back to v[1]
 ==>v[4]
 ==>v[6]
@@ -1097,12 +1097,12 @@ gremlin> g.v(1).both().both()
 ==>v[5]
 ==>v[3]
 ==>v[1]   // back to v[1]
-gremlin> g.v(1).both().both().simplePath()
+gremlin> g.V(1).both().both().simplePath()
 ==>v[4]
 ==>v[6]
 ==>v[5]
 ==>v[3]
-gremlin> g.v(1).both().both().simplePath().path()
+gremlin> g.V(1).both().both().simplePath().path()
 ==>[v[1], v[3], v[4]]
 ==>[v[1], v[3], v[6]]
 ==>[v[1], v[4], v[5]]
@@ -1151,7 +1151,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 ----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> sg = g.v(3).as('a').inE().outV().jump('a'){it.loops()<3}{true}.subgraph({true}).next()   <1>
+gremlin> sg = g.V(3).as('a').inE().outV().jump('a'){it.loops()<3}{true}.subgraph({true}).next()   <1>
 ==>tinkergraph[vertices:4 edges:4]
 gremlin> sg.E()
 ==>e[8][1-knows->4]
@@ -1233,11 +1233,11 @@ Unfold Step
 If the object reaching `unfold()` (*flatMap*) is an iterator, iterable, or map, then it is unrolled into a linear form. If not, then the object is simply emitted. Please see <<fold-step,`fold()`>>-step for the inverse behavior.
 
 [source,groovy]
-gremlin> g.v(1).out().fold().inject('gremlin',[1.23,2.34])
+gremlin> g.V(1).out().fold().inject('gremlin',[1.23,2.34])
 ==>gremlin
 ==>[1.23, 2.34]
 ==>[v[3], v[2], v[4]]
-gremlin> g.v(1).out().fold().inject('gremlin',[1.23,2.34]).unfold()
+gremlin> g.V(1).out().fold().inject('gremlin',[1.23,2.34]).unfold()
 ==>gremlin
 ==>1.23
 ==>2.34
@@ -1273,13 +1273,13 @@ image::union-step.png[width=650]
 The `union()`-step (*branch*) supports the merging of the results of an arbitrary number of traversals. When a traverser reaches a `union()`-step, it is copied to each of its internal steps. The traverses emitted from `union()` are the outputs of the respective internal traversals.
 
 [source,groovy]
-gremlin> g.v(4).union(
+gremlin> g.V(4).union(
             g.of().in().values('age'),
             g.of().out().values('lang'))
 ==>29
 ==>java
 ==>java
-gremlin> g.v(4).union(
+gremlin> g.V(4).union(
             g.of().in().values('age'),
             g.of().out().values('lang')).path()
 ==>[v[4], v[1], 29]
@@ -1293,10 +1293,10 @@ Until Step
 Gremlin provides *while-do* looping. This was demonstrated in the <<jump-step,Jump Step>> section of the documentation. However, when only using `jump()` for *while-do*, the representation can be confusing as there are numerous `jump` constructions. For the sake of simplicity, `until()`-step exists (*branch*).
 
 [source,groovy]
-gremlin> g.v(1).as('a').jump('b'){it.loops() > 1}.out().jump('a').as('b').values('name') <1>
+gremlin> g.V(1).as('a').jump('b'){it.loops() > 1}.out().jump('a').as('b').values('name') <1>
 ==>ripple
 ==>lop
-gremlin> g.v(1).until('b'){it.loops() > 1}.out().as('b').values('name') <2>
+gremlin> g.V(1).until('b'){it.loops() > 1}.out().as('b').values('name') <2>
 ==>ripple
 ==>lop
 
@@ -1390,37 +1390,37 @@ The vertex steps (*flatMap*) are fundamental to the Gremlin language and are per
 * `otherV()` : Move to the vertex that was not the vertex that was moved from.
 
 [source,groovy]
-gremlin> g.v(4)
+gremlin> g.V(4)
 ==>v[4]
-gremlin> g.v(4).outE()  // all outgoing edges
+gremlin> g.V(4).outE()  // all outgoing edges
 ==>e[10][4-created->5]
 ==>e[11][4-created->3]
-gremlin> g.v(4).outE(1)  // at most one outgoing edge per incoming vertex
+gremlin> g.V(4).outE(1)  // at most one outgoing edge per incoming vertex
 ==>e[10][4-created->5]
-gremlin> g.v(4).inE('knows')  // all incoming knows-edges
+gremlin> g.V(4).inE('knows')  // all incoming knows-edges
 ==>e[8][1-knows->4]
-gremlin> g.v(4).inE('created') // all incoming created-edges
-gremlin> g.v(4).bothE('knows','created','blah')
+gremlin> g.V(4).inE('created') // all incoming created-edges
+gremlin> g.V(4).bothE('knows','created','blah')
 ==>e[10][4-created->5]
 ==>e[11][4-created->3]
 ==>e[8][1-knows->4]
-gremlin> g.v(4).bothE('knows','created','blah').otherV()
+gremlin> g.V(4).bothE('knows','created','blah').otherV()
 ==>v[5]
 ==>v[3]
 ==>v[1]
-gremlin> g.v(4).both('knows','created','blah')
+gremlin> g.V(4).both('knows','created','blah')
 ==>v[5]
 ==>v[3]
 ==>v[1]
-gremlin> g.v(4).outE().inV() // moving forward touching edges,vertices
+gremlin> g.V(4).outE().inV() // moving forward touching edges,vertices
 ==>v[5]
 ==>v[3]
-gremlin> g.v(4).out()  // moving forward only touching vertices
+gremlin> g.V(4).out()  // moving forward only touching vertices
 ==>v[5]
 ==>v[3]
-gremlin> g.v(4).inE().outV()
+gremlin> g.V(4).inE().outV()
 ==>v[1]
-gremlin> g.v(4).inE().bothV()
+gremlin> g.V(4).inE().bothV()
 ==>v[1]
 ==>v[4]
 

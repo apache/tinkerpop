@@ -14,7 +14,7 @@ public abstract class GroovyJumpTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_name(final Object v1Id) {
-            g.v(v1Id).as('x').out.jump('x') { it.loops() < 2 }.name
+            g.V(v1Id).as('x').out.jump('x') { it.loops() < 2 }.name
         }
 
         @Override
@@ -60,7 +60,7 @@ public abstract class GroovyJumpTest {
         @Override
         public Traversal<Vertex, Path> get_g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path(
                 final Object v1Id) {
-            g.v(v1Id).out().jump('x') { it.out.hasNext() }.in.jump("y").as("x").out.as('y').path;
+            g.V(v1Id).out().jump('x') { it.out.hasNext() }.in.jump("y").as("x").out.as('y').path;
         }
 
         @Override
@@ -70,7 +70,7 @@ public abstract class GroovyJumpTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_asXaX_jumpXb_loops_gt_1X_out_jumpXaX_asXbX_name(final Object v1Id) {
-            g.v(v1Id).as('a').jump('b') { it.loops() > 1 }.out.jump('a').as('b').name
+            g.V(v1Id).as('a').jump('b') { it.loops() > 1 }.out.jump('a').as('b').name
         }
     }
 
@@ -78,7 +78,7 @@ public abstract class GroovyJumpTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_name(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).as('x').out.jump('x') { it.loops() < 2 }.name", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).as('x').out.jump('x') { it.loops() < 2 }.name", g);
         }
 
         @Override
@@ -124,7 +124,7 @@ public abstract class GroovyJumpTest {
         @Override
         public Traversal<Vertex, Path> get_g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path(
                 final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).out().jump('x') { it.out.hasNext() }.in.jump('y').as('x').out.as('y').path", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).out().jump('x') { it.out.hasNext() }.in.jump('y').as('x').out.as('y').path", g);
         }
 
         @Override
@@ -134,7 +134,7 @@ public abstract class GroovyJumpTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_asXaX_jumpXb_loops_gt_1X_out_jumpXaX_asXbX_name(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).as('a').jump('b') { it.loops() > 1 }.out.jump('a').as('b').name", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).as('a').jump('b') { it.loops() > 1 }.out.jump('a').as('b').name", g);
         }
     }
 

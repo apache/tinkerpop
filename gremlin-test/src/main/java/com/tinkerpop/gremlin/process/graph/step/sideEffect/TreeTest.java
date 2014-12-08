@@ -90,12 +90,12 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Tree> get_g_v1_out_out_treeXnameX(final Object v1Id) {
-            return (Traversal) g.v(v1Id).out().out().tree(v -> ((Vertex) v).value("name"));
+            return (Traversal) g.V(v1Id).out().out().tree(v -> ((Vertex) v).value("name"));
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_v1_out_out_treeXa_nameX_both_both_capXaX(final Object v1Id) {
-            return g.v(v1Id).out().out().tree("a", v -> ((Vertex) v).value("name")).both().both().cap("a");
+            return g.V(v1Id).out().out().tree("a", v -> ((Vertex) v).value("name")).both().both().cap("a");
         }
 
         @Override
@@ -122,13 +122,13 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Tree> get_g_v1_out_out_treeXnameX(final Object v1Id) {
             // TODO: micropaths don't have vertex properties
-            return (Traversal) g.v(v1Id).out().out().tree(v -> ((Vertex) v).value("name"));
+            return (Traversal) g.V(v1Id).out().out().tree(v -> ((Vertex) v).value("name"));
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_v1_out_out_treeXa_nameX_both_both_capXaX(final Object v1Id) {
             // TODO: micropaths don't have vertex properties
-            return g.v(v1Id).out().out().tree("a", v -> ((Vertex) v).value("name")).both().both().<Tree>cap("a");
+            return g.V(v1Id).out().out().tree("a", v -> ((Vertex) v).value("name")).both().both().<Tree>cap("a");
         }
 
         @Override

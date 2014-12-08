@@ -354,17 +354,17 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         assertBranchFactor(
                 2.0,
                 g.of().as("a").out("knows").as("b"),
-                new SingleIterator<>(g.v(1)));
+                new SingleIterator<>(g.V(1)));
 
         assertBranchFactor(
                 0.0,
                 g.of().as("a").out("foo").as("b"),
-                new SingleIterator<>(g.v(1)));
+                new SingleIterator<>(g.V(1)));
 
         assertBranchFactor(
                 7.0,
                 g.of().as("a").both().both().as("b"),
-                new SingleIterator<>(g.v(1)));
+                new SingleIterator<>(g.V(1)));
 
         assertBranchFactor(
                 0.5,

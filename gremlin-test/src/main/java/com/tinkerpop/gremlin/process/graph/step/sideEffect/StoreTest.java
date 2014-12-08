@@ -101,7 +101,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Collection> get_g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX(final Object v1Id) {
-            return g.v(v1Id).store("a", v -> v.get().value("name")).out().store("a", v -> v.get().value("name")).values("name").cap("a");
+            return g.V(v1Id).store("a", v -> v.get().value("name")).out().store("a", v -> v.get().value("name")).values("name").cap("a");
         }
 
         @Override
@@ -127,7 +127,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Collection> get_g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX(final Object v1Id) {
-            return g.v(v1Id).store("a", v -> v.get().value("name")).out().store("a", v -> v.get().value("name")).values("name").<Collection>cap("a").submit(g.compute());
+            return g.V(v1Id).store("a", v -> v.get().value("name")).out().store("a", v -> v.get().value("name")).values("name").<Collection>cap("a").submit(g.compute());
         }
 
         @Override

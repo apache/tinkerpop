@@ -178,9 +178,9 @@ public class StrategyWrappedGraphTest  {
             assertEquals(new Long(1), toRemove.bothE().count().next());
             assertFalse(toRemove.property("deleted").isPresent());
 
-            swg.v(toRemove.id()).remove();
+            swg.V(toRemove.id()).remove();
 
-            final Vertex removed = g.v(toRemove.id());
+            final Vertex removed = g.V(toRemove.id()).next();
             assertNotNull(removed);
             assertEquals(1, removed.properties().count().next().intValue());
             assertEquals(new Long(0), removed.bothE().count().next());
@@ -212,9 +212,9 @@ public class StrategyWrappedGraphTest  {
             assertEquals(1, e.properties().count().next().intValue());
             assertFalse(e.property("deleted").isPresent());
 
-            swg.e(e.id()).remove();
+            swg.E(e.id()).remove();
 
-            final Edge removed = g.e(e.id());
+            final Edge removed = g.E(e.id()).next();
             assertNotNull(removed);
             assertEquals(1, removed.properties().count().next().intValue());
             assertTrue(removed.property("deleted").isPresent());
@@ -428,14 +428,14 @@ public class StrategyWrappedGraphTest  {
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, AbstractGremlinTest, Stream<Edge>>>> tests = new ArrayList<>();
             tests.add(Pair.with("g.E()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.E())));
-            tests.add(Pair.with("g.e(11)", (Graph g, AbstractGremlinTest instance) -> Stream.of(g.e(instance.convertToEdgeId("josh", "created", "lop")))));
-            tests.add(Pair.with("g.v(1).outE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).outE())));
-            tests.add(Pair.with("g.v(4).bothE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).bothE())));
-            tests.add(Pair.with("g.v(4).inE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).inE())));
-            tests.add(Pair.with("g.v(11).property(weight).element()", (Graph g, AbstractGremlinTest instance) -> Stream.of((Edge) g.e(instance.convertToEdgeId("josh", "created", "lop")).property("weight").element())));
-            tests.add(Pair.with("g.v(4).iterators().edge(Direction.BOTH)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).iterators().edgeIterator(Direction.BOTH))));
-            tests.add(Pair.with("g.v(1).iterators().edge(Direction.OUT)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().edgeIterator(Direction.OUT))));
-            tests.add(Pair.with("g.v(4).iterators().edge(Direction.IN)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).iterators().edgeIterator(Direction.IN))));
+            tests.add(Pair.with("g.E(11)", (Graph g, AbstractGremlinTest instance) -> Stream.of(g.E(instance.convertToEdgeId("josh", "created", "lop")).next())));
+            tests.add(Pair.with("g.V(1).outE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("marko")).outE())));
+            tests.add(Pair.with("g.V(4).bothE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("josh")).bothE())));
+            tests.add(Pair.with("g.V(4).inE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("josh")).inE())));
+            tests.add(Pair.with("g.V(11).property(weight).element()", (Graph g, AbstractGremlinTest instance) -> Stream.of((Edge) g.E(instance.convertToEdgeId("josh", "created", "lop")).next().property("weight").element())));
+            tests.add(Pair.with("g.V(4).next().iterators().edge(Direction.BOTH)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("josh")).next().iterators().edgeIterator(Direction.BOTH))));
+            tests.add(Pair.with("g.V(1).next().iterators().edge(Direction.OUT)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("marko")).next().iterators().edgeIterator(Direction.OUT))));
+            tests.add(Pair.with("g.V(4).next().iterators().edge(Direction.IN)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("josh")).next().iterators().edgeIterator(Direction.IN))));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];
@@ -473,21 +473,21 @@ public class StrategyWrappedGraphTest  {
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, AbstractGremlinTest, Stream<Vertex>>>> tests = new ArrayList<>();
             tests.add(Pair.with("g.V()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V())));
-            tests.add(Pair.with("g.v(1)", (Graph g, AbstractGremlinTest instance) -> Stream.of(g.v(instance.convertToVertexId("marko")))));
-            tests.add(Pair.with("g.v(1).outE().inV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).outE().inV())));
-            tests.add(Pair.with("g.v(4).bothE().bothV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).bothE().bothV())));
-            tests.add(Pair.with("g.v(4).inE().outV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).inE().outV())));
-            tests.add(Pair.with("g.v(1).out()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).out())));
-            tests.add(Pair.with("g.v(4).iterators().vertices(Direction.BOTH)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).iterators().vertexIterator(Direction.BOTH))));
-            tests.add(Pair.with("g.v(1).iterators().vertices(Direction.OUT)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().vertexIterator(Direction.OUT))));
-            tests.add(Pair.with("g.v(4).iterators().vertices(Direction.IN)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).iterators().vertexIterator(Direction.IN))));
-            tests.add(Pair.with("g.v(4).iterators().vertices(Direction.BOTH, \"created\")", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).iterators().vertexIterator(Direction.BOTH, "created"))));
-            tests.add(Pair.with("g.e(11).iterators().vertices(Direction.IN)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.e(instance.convertToEdgeId("josh", "created", "lop")).iterators().vertexIterator(Direction.IN))));
-            tests.add(Pair.with("g.e(11).iterators().vertices(Direction.OUT)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.e(instance.convertToEdgeId("josh", "created", "lop")).iterators().vertexIterator(Direction.OUT))));
-            tests.add(Pair.with("g.e(11).iterators().vertices(Direction.BOTH)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.e(instance.convertToEdgeId("josh", "created", "lop")).iterators().vertexIterator(Direction.BOTH))));
-            tests.add(Pair.with("g.v(1).iterators().properties(name).next().element()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().propertyIterator("name").next().element())));
-            tests.add(Pair.with("g.v(1).outE().otherV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).outE().otherV())));
-            tests.add(Pair.with("g.v(4).inE().otherV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).inE().otherV())));
+            tests.add(Pair.with("g.V(1)", (Graph g, AbstractGremlinTest instance) -> Stream.of(g.V(instance.convertToVertexId("marko")).next())));
+            tests.add(Pair.with("g.V(1).outE().inV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("marko")).outE().inV())));
+            tests.add(Pair.with("g.V(4).bothE().bothV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("josh")).bothE().bothV())));
+            tests.add(Pair.with("g.V(4).inE().outV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("josh")).inE().outV())));
+            tests.add(Pair.with("g.V(1).out()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("marko")).out())));
+            tests.add(Pair.with("g.V(4).iterators().vertices(Direction.BOTH)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("josh")).next().iterators().vertexIterator(Direction.BOTH))));
+            tests.add(Pair.with("g.V(1).iterators().vertices(Direction.OUT)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("marko")).next().iterators().vertexIterator(Direction.OUT))));
+            tests.add(Pair.with("g.V(4).iterators().vertices(Direction.IN)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("josh")).next().iterators().vertexIterator(Direction.IN))));
+            tests.add(Pair.with("g.V(4).iterators().vertices(Direction.BOTH, \"created\")", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("josh")).next().iterators().vertexIterator(Direction.BOTH, "created"))));
+            tests.add(Pair.with("g.E(11).iterators().vertices(Direction.IN)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.E(instance.convertToEdgeId("josh", "created", "lop")).next().iterators().vertexIterator(Direction.IN))));
+            tests.add(Pair.with("g.E(11).iterators().vertices(Direction.OUT)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.E(instance.convertToEdgeId("josh", "created", "lop")).next().iterators().vertexIterator(Direction.OUT))));
+            tests.add(Pair.with("g.E(11).iterators().vertices(Direction.BOTH)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.E(instance.convertToEdgeId("josh", "created", "lop")).next().iterators().vertexIterator(Direction.BOTH))));
+            tests.add(Pair.with("g.V(1).iterators().properties(name).next().element()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("marko")).next().iterators().propertyIterator("name").next().element())));
+            tests.add(Pair.with("g.V(1).outE().otherV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("marko")).outE().otherV())));
+            tests.add(Pair.with("g.V(4).inE().otherV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("josh")).inE().otherV())));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];
@@ -524,9 +524,9 @@ public class StrategyWrappedGraphTest  {
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, AbstractGremlinTest, Stream<Graph>>>> tests = new ArrayList<>();
-            tests.add(Pair.with("g.v(1).graph()", (Graph g, AbstractGremlinTest instance) -> Stream.of(g.v(instance.convertToVertexId("marko")).graph())));
-            tests.add(Pair.with("g.v(1).iterators().edgeIterator(BOTH).map(Edge::graph)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().edgeIterator(Direction.BOTH)).map(Edge::graph)));
-            tests.add(Pair.with("g.v(1).iterators().propertyIterator().map(Edge::graph)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().propertyIterator()).map(VertexProperty::graph)));
+            tests.add(Pair.with("g.V(1).graph()", (Graph g, AbstractGremlinTest instance) -> Stream.of(g.V(instance.convertToVertexId("marko")).next().graph())));
+            tests.add(Pair.with("g.V(1).iterators().edgeIterator(BOTH).map(Edge::graph)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("marko")).next().iterators().edgeIterator(Direction.BOTH)).map(Edge::graph)));
+            tests.add(Pair.with("g.V(1).iterators().propertyIterator().map(Edge::graph)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("marko")).next().iterators().propertyIterator()).map(VertexProperty::graph)));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];

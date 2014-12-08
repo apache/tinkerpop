@@ -118,12 +118,12 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_name_path(final Object v1Id) {
-            return g.v(v1Id).values("name").path();
+            return g.V(v1Id).values("name").path();
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
-            return g.v(v1Id).out().path(v -> ((Vertex) v).value("age"), v -> ((Vertex) v).value("name"));
+            return g.V(v1Id).out().path(v -> ((Vertex) v).value("age"), v -> ((Vertex) v).value("name"));
         }
 
         @Override
@@ -153,13 +153,13 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_name_path(final Object v1Id) {
-            return g.v(v1Id).identity().values("name").path().submit(g.compute());
+            return g.V(v1Id).identity().values("name").path().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
             // TODO: Detached elements do not store properties (attach)
-            return g.v(v1Id).out().path(v -> ((Vertex) v).value("age"), v -> ((Vertex) v).value("name")); // .submit(g.compute())
+            return g.V(v1Id).out().path(v -> ((Vertex) v).value("age"), v -> ((Vertex) v).value("name")); // .submit(g.compute())
         }
 
         @Override

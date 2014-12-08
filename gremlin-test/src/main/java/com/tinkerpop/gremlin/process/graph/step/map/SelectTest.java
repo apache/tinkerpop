@@ -140,22 +140,22 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
-            return g.v(v1Id).as("a").out("knows").as("b").select();
+            return g.V(v1Id).as("a").out("knows").as("b").select();
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
-            return g.v(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).value("name"));
+            return g.V(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).value("name"));
         }
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
-            return g.v(v1Id).as("a").out("knows").as("b").select(Arrays.asList("a"));
+            return g.V(v1Id).as("a").out("knows").as("b").select(Arrays.asList("a"));
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
-            return g.v(v1Id).as("a").out("knows").as("b").select(Arrays.asList("a"), v -> ((Vertex) v).value("name"));
+            return g.V(v1Id).as("a").out("knows").as("b").select(Arrays.asList("a"), v -> ((Vertex) v).value("name"));
         }
 
         @Override
@@ -183,24 +183,24 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
-            return g.v(v1Id).as("a").out("knows").as("b").<Vertex>select().submit(g.compute());
+            return g.V(v1Id).as("a").out("knows").as("b").<Vertex>select().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
             // TODO: Micro elements do not store properties
-            return g.v(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).value("name")); //.submit(g.compute());
+            return g.V(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).value("name")); //.submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
-            return g.v(v1Id).as("a").out("knows").as("b").<Vertex>select(Arrays.asList("a")).submit(g.compute());
+            return g.V(v1Id).as("a").out("knows").as("b").<Vertex>select(Arrays.asList("a")).submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
             // TODO: Micro elements do not store properties
-            return g.v(v1Id).as("a").out("knows").as("b").select(Arrays.asList("a"), v -> ((Vertex) v).value("name"));  // .submit(g.compute());
+            return g.V(v1Id).as("a").out("knows").as("b").select(Arrays.asList("a"), v -> ((Vertex) v).value("name"));  // .submit(g.compute());
         }
 
         @Override

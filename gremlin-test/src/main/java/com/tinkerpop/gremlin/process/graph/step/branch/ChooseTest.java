@@ -117,7 +117,7 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id) {
-            return g.v(v1Id).choose(t -> 0, new HashMap<Integer,Traversal<Vertex,String>>() {{
+            return g.V(v1Id).choose(t -> 0, new HashMap<Integer,Traversal<Vertex,String>>() {{
                 put(0, g.<Vertex>of().out().<String>values("name"));
             }});
         }
@@ -155,7 +155,7 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id) {
-            return g.v(v1Id).choose(t -> 0, new HashMap() {{
+            return g.V(v1Id).choose(t -> 0, new HashMap() {{
                 put(0, g.of().out().values("name"));
             }}).submit(g.compute());
         }

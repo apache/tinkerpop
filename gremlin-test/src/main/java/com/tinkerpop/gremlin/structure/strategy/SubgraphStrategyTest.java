@@ -39,64 +39,64 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
         // from vertex
 
-        assertEquals(2, g.v(convertToVertexId("josh")).outE().count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).outE().count().next().longValue());
-        assertEquals(2, g.v(convertToVertexId("josh")).out().count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).out().count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).inE().count().next().longValue());
-        assertEquals(0, sg.v(convertToVertexId("josh")).inE().count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).in().count().next().longValue());
-        assertEquals(0, sg.v(convertToVertexId("josh")).in().count().next().longValue());
-        assertEquals(3, g.v(convertToVertexId("josh")).bothE().count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).bothE().count().next().longValue());
-        assertEquals(3, g.v(convertToVertexId("josh")).both().count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).both().count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).outE().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).outE().count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).out().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).out().count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).inE().count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).inE().count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).in().count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).in().count().next().longValue());
+        assertEquals(3, g.V(convertToVertexId("josh")).bothE().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).bothE().count().next().longValue());
+        assertEquals(3, g.V(convertToVertexId("josh")).both().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).both().count().next().longValue());
 
         // with label
 
-        assertEquals(2, g.v(convertToVertexId("josh")).outE("created").count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).outE("created").count().next().longValue());
-        assertEquals(2, g.v(convertToVertexId("josh")).out("created").count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).out("created").count().next().longValue());
-        assertEquals(2, g.v(convertToVertexId("josh")).bothE("created").count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).bothE("created").count().next().longValue());
-        assertEquals(2, g.v(convertToVertexId("josh")).both("created").count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).both("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).outE("created").count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).outE("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).out("created").count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).out("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).bothE("created").count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).bothE("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).both("created").count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).both("created").count().next().longValue());
 
-        assertEquals(1, g.v(convertToVertexId("josh")).inE("knows").count().next().longValue());
-        assertEquals(0, sg.v(convertToVertexId("josh")).inE("knows").count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).in("knows").count().next().longValue());
-        assertEquals(0, sg.v(convertToVertexId("josh")).in("knows").count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).bothE("knows").count().next().longValue());
-        assertEquals(0, sg.v(convertToVertexId("josh")).bothE("knows").count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).both("knows").count().next().longValue());
-        assertEquals(0, sg.v(convertToVertexId("josh")).both("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).inE("knows").count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).inE("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).in("knows").count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).in("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).bothE("knows").count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).bothE("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).both("knows").count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).both("knows").count().next().longValue());
 
         // with label and branch factor
 
-        assertEquals(1, g.v(convertToVertexId("josh")).local(g.<Vertex>of().outE("created").limit(1)).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).local(g.<Vertex>of().outE("created").limit(1)).count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).local(g.<Vertex>of().outE("created").limit(1)).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).local(g.<Vertex>of().outE("created").limit(1)).count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE("created").limit(1)).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE("created").limit(1)).count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).local(g.<Vertex>of().outE("created").limit(1)).count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).local(g.<Vertex>of().outE("created").limit(1)).count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).local(g.<Vertex>of().outE("created").limit(1)).count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).local(g.<Vertex>of().outE("created").limit(1)).count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE("created").limit(1)).count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE("created").limit(1)).count().next().longValue());
 
         // from edge
 
-        assertEquals(2, g.e(convertToEdgeId("josh", "created", "lop")).bothV().count().next().longValue());
-        assertEquals(2, sg.e(convertToEdgeId("josh", "created", "lop")).bothV().count().next().longValue());
+        assertEquals(2, g.E(convertToEdgeId("josh", "created", "lop")).bothV().count().next().longValue());
+        assertEquals(2, sg.E(convertToEdgeId("josh", "created", "lop")).bothV().count().next().longValue());
 
-        assertEquals(2, g.e(convertToEdgeId("peter", "created", "lop")).bothV().count().next().longValue());
+        assertEquals(2, g.E(convertToEdgeId("peter", "created", "lop")).bothV().count().next().longValue());
         try {
-            sg.e(convertToEdgeId("peter", "created", "lop"));
+            sg.E(convertToEdgeId("peter", "created", "lop")).next();
             fail("Edge 12 should not be in the graph because peter is not a vertex");
         } catch (Exception ex) {
             assertTrue(ex instanceof NoSuchElementException);
         }
 
-        assertEquals(2, g.e(convertToEdgeId("marko", "knows", "vadas")).bothV().count().next().longValue());
+        assertEquals(2, g.E(convertToEdgeId("marko", "knows", "vadas")).bothV().count().next().longValue());
         try {
-            sg.e(convertToEdgeId("marko", "knows", "vadas"));
+            sg.E(convertToEdgeId("marko", "knows", "vadas")).next();
             fail("Edge 7 should not be in the graph because marko is not a vertex");
         } catch (Exception ex) {
             assertTrue(ex instanceof NoSuchElementException);
@@ -132,70 +132,70 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         assertEquals(6, g.E().count().next().longValue());
         assertEquals(3, sg.E().count().next().longValue());
 
-        assertEquals(2, g.v(convertToVertexId("marko")).outE("knows").count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("marko")).outE("knows").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("marko")).outE("knows").count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("marko")).outE("knows").count().next().longValue());
 
         // wrapped Traversal<Vertex, Vertex> takes into account the edges it must pass through
-        assertEquals(2, g.v(convertToVertexId("marko")).out("knows").count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("marko")).out("knows").count().next().longValue());
-        assertEquals(2, g.v(convertToVertexId("josh")).out("created").count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).out("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("marko")).out("knows").count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("marko")).out("knows").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).out("created").count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).out("created").count().next().longValue());
 
         // from vertex
 
-        assertEquals(2, g.v(convertToVertexId("josh")).outE().count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).outE().count().next().longValue());
-        assertEquals(2, g.v(convertToVertexId("josh")).out().count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).out().count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).outE().count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).outE().count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).out().count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).out().count().next().longValue());
 
-        assertEquals(1, g.v(convertToVertexId("josh")).inE().count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).inE().count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).in().count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).in().count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).inE().count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).inE().count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).in().count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).in().count().next().longValue());
 
-        assertEquals(3, g.v(convertToVertexId("josh")).bothE().count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).bothE().count().next().longValue());
-        assertEquals(3, g.v(convertToVertexId("josh")).both().count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).both().count().next().longValue());
+        assertEquals(3, g.V(convertToVertexId("josh")).bothE().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).bothE().count().next().longValue());
+        assertEquals(3, g.V(convertToVertexId("josh")).both().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).both().count().next().longValue());
 
         // with label
 
-        assertEquals(2, g.v(convertToVertexId("josh")).outE("created").count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).outE("created").count().next().longValue());
-        assertEquals(2, g.v(convertToVertexId("josh")).out("created").count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).out("created").count().next().longValue());
-        assertEquals(2, g.v(convertToVertexId("josh")).bothE("created").count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).bothE("created").count().next().longValue());
-        assertEquals(2, g.v(convertToVertexId("josh")).both("created").count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).both("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).outE("created").count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).outE("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).out("created").count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).out("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).bothE("created").count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).bothE("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).both("created").count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).both("created").count().next().longValue());
 
-        assertEquals(1, g.v(convertToVertexId("josh")).inE("knows").count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).inE("knows").count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).in("knows").count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).in("knows").count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).bothE("knows").count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).bothE("knows").count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).both("knows").count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).both("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).inE("knows").count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).inE("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).in("knows").count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).in("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).bothE("knows").count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).bothE("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).both("knows").count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).both("knows").count().next().longValue());
 
         // with branch factor
 
-        assertEquals(1, g.v(convertToVertexId("josh")).limit(1).local(g.<Vertex>of().bothE().limit(1)).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).limit(1).local(g.<Vertex>of().bothE().limit(1)).count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).limit(1).local(g.<Vertex>of().bothE().limit(1)).inV().count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).limit(1).local(g.<Vertex>of().bothE().limit(1)).inV().count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).inV().count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).inV().count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).limit(1).local(g.<Vertex>of().bothE().limit(1)).count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).limit(1).local(g.<Vertex>of().bothE().limit(1)).count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).limit(1).local(g.<Vertex>of().bothE().limit(1)).inV().count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).limit(1).local(g.<Vertex>of().bothE().limit(1)).inV().count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).inV().count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).inV().count().next().longValue());
 
         // from edge
 
-        assertEquals(2, g.e(convertToEdgeId("marko", "knows", "josh")).bothV().count().next().longValue());
-        assertEquals(2, sg.e(convertToEdgeId("marko", "knows", "josh")).bothV().count().next().longValue());
+        assertEquals(2, g.E(convertToEdgeId("marko", "knows", "josh")).bothV().count().next().longValue());
+        assertEquals(2, sg.E(convertToEdgeId("marko", "knows", "josh")).bothV().count().next().longValue());
 
-        assertEquals(3, g.e(convertToEdgeId("marko", "knows", "josh")).outV().outE().count().next().longValue());
-        assertEquals(2, sg.e(convertToEdgeId("marko", "knows", "josh")).outV().outE().count().next().longValue());
+        assertEquals(3, g.E(convertToEdgeId("marko", "knows", "josh")).outV().outE().count().next().longValue());
+        assertEquals(2, sg.E(convertToEdgeId("marko", "knows", "josh")).outV().outE().count().next().longValue());
     }
 
     @Test
@@ -227,57 +227,57 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
         // from vertex
 
-        assertEquals(2, g.v(convertToVertexId("josh")).outE().count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).outE().count().next().longValue());
-        assertEquals(2, g.v(convertToVertexId("josh")).out().count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).out().count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).outE().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).outE().count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).out().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).out().count().next().longValue());
 
-        assertEquals(1, g.v(convertToVertexId("josh")).inE().count().next().longValue());
-        assertEquals(0, sg.v(convertToVertexId("josh")).inE().count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).in().count().next().longValue());
-        assertEquals(0, sg.v(convertToVertexId("josh")).in().count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).inE().count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).inE().count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).in().count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).in().count().next().longValue());
 
-        assertEquals(3, g.v(convertToVertexId("josh")).bothE().count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).bothE().count().next().longValue());
-        assertEquals(3, g.v(convertToVertexId("josh")).both().count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).both().count().next().longValue());
+        assertEquals(3, g.V(convertToVertexId("josh")).bothE().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).bothE().count().next().longValue());
+        assertEquals(3, g.V(convertToVertexId("josh")).both().count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).both().count().next().longValue());
 
         // with label
 
-        assertEquals(2, g.v(convertToVertexId("josh")).outE("created").count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).outE("created").count().next().longValue());
-        assertEquals(2, g.v(convertToVertexId("josh")).out("created").count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).out("created").count().next().longValue());
-        assertEquals(2, g.v(convertToVertexId("josh")).bothE("created").count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).bothE("created").count().next().longValue());
-        assertEquals(2, g.v(convertToVertexId("josh")).both("created").count().next().longValue());
-        assertEquals(2, sg.v(convertToVertexId("josh")).both("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).outE("created").count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).outE("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).out("created").count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).out("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).bothE("created").count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).bothE("created").count().next().longValue());
+        assertEquals(2, g.V(convertToVertexId("josh")).both("created").count().next().longValue());
+        assertEquals(2, sg.V(convertToVertexId("josh")).both("created").count().next().longValue());
 
-        assertEquals(1, g.v(convertToVertexId("josh")).inE("knows").count().next().longValue());
-        assertEquals(0, sg.v(convertToVertexId("josh")).inE("knows").count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).in("knows").count().next().longValue());
-        assertEquals(0, sg.v(convertToVertexId("josh")).in("knows").count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).bothE("knows").count().next().longValue());
-        assertEquals(0, sg.v(convertToVertexId("josh")).bothE("knows").count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).both("knows").count().next().longValue());
-        assertEquals(0, sg.v(convertToVertexId("josh")).both("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).inE("knows").count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).inE("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).in("knows").count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).in("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).bothE("knows").count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).bothE("knows").count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).both("knows").count().next().longValue());
+        assertEquals(0, sg.V(convertToVertexId("josh")).both("knows").count().next().longValue());
 
         // with branch factor
 
-        assertEquals(1, g.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE().limit(1)).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE().limit(1)).count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE().limit(1)).inV().count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE().limit(1)).inV().count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).inV().count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).inV().count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE().limit(1)).count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE().limit(1)).count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE().limit(1)).inV().count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE().limit(1)).inV().count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).count().next().longValue());
+        assertEquals(1, g.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).inV().count().next().longValue());
+        assertEquals(1, sg.V(convertToVertexId("josh")).local(g.<Vertex>of().bothE("knows", "created").limit(1)).inV().count().next().longValue());
 
         // from edge
 
-        assertEquals(2, g.e(convertToEdgeId("marko", "created", "lop")).bothV().count().next().longValue());
+        assertEquals(2, g.E(convertToEdgeId("marko", "created", "lop")).bothV().count().next().longValue());
         try {
-            sg.e(convertToEdgeId("marko", "created", "lop"));
+            sg.E(convertToEdgeId("marko", "created", "lop")).next();
             fail("Edge 9 should not be in the graph because marko is not a vertex");
         } catch (Exception ex) {
             assertTrue(ex instanceof NoSuchElementException);
@@ -294,7 +294,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.getStrategy().setGraphStrategy(strategyToTest);
 
-        sg.v(convertToVertexId("marko"));
+        sg.V(convertToVertexId("marko")).next();
     }
 
     @Test(expected = NoSuchElementException.class)
@@ -318,6 +318,6 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.getStrategy().setGraphStrategy(strategyToTest);
 
-        sg.e(sg.e(convertToEdgeId("marko", "knows", "vadas")));
+        sg.E(sg.E(convertToEdgeId("marko", "knows", "vadas")).next()).next();
     }
 }

@@ -63,8 +63,8 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
             return super.toString();
         else
             return 0 == this.ids.length ?
-                    TraversalHelper.makeStepString(this, this.hasContainers) :
-                    TraversalHelper.makeStepString(this, Arrays.toString(this.ids), this.hasContainers);
+                    TraversalHelper.makeStepString(this, this.returnClass.getSimpleName().toLowerCase(), this.hasContainers) :
+                    TraversalHelper.makeStepString(this, this.returnClass.getSimpleName().toLowerCase(), Arrays.toString(this.ids), this.hasContainers);
     }
 
     private final <E extends Element> Iterator<E> iteratorList(final Iterator<E> iterator) {

@@ -42,7 +42,7 @@ public class IdGraphStrategyTest {
                 assertEquals("test", v.property(strategy.getIdKey()).value());
                 assertEquals("else", v.property("something").value());
 
-                final Vertex found = g.v("test");
+                final Vertex found = g.V("test").next();
                 assertEquals("test", found.id());
                 assertEquals("test", found.property(strategy.getIdKey()).value());
                 assertEquals("else", found.property("something").value());
@@ -62,7 +62,7 @@ public class IdGraphStrategyTest {
                 assertEquals("edge-id", e.property(strategy.getIdKey()).value());
                 assertEquals("this", e.property("try").value());
 
-                final Edge found = g.e("edge-id");
+                final Edge found = g.E("edge-id").next();
                 assertEquals("edge-id", found.id());
                 assertEquals("edge-id", found.property(strategy.getIdKey()).value());
                 assertEquals("this", found.property("try").value());
@@ -80,7 +80,7 @@ public class IdGraphStrategyTest {
                 assertNotNull(UUID.fromString(v.property(strategy.getIdKey()).value().toString()));
                 assertEquals("else", v.property("something").value());
 
-                final Vertex found = g.v(v.id());
+                final Vertex found = g.V(v.id()).next();
                 assertNotNull(UUID.fromString(found.id().toString()));
                 assertNotNull(UUID.fromString(found.property(strategy.getIdKey()).value().toString()));
                 assertEquals("else", found.property("something").value());
@@ -99,7 +99,7 @@ public class IdGraphStrategyTest {
                 assertNotNull(UUID.fromString(e.property(strategy.getIdKey()).value().toString()));
                 assertEquals("this", e.property("try").value());
 
-                final Edge found = g.e(e.id());
+                final Edge found = g.E(e.id()).next();
                 assertNotNull(UUID.fromString(found.id().toString()));
                 assertNotNull(UUID.fromString(found.property(strategy.getIdKey()).value().toString()));
                 assertEquals("this", found.property("try").value());
@@ -123,7 +123,7 @@ public class IdGraphStrategyTest {
                 assertEquals("100", v.property(strategy.getIdKey()).value());
                 assertEquals("else", v.property("something").value());
 
-                final Vertex found = g.v("100");
+                final Vertex found = g.V("100").next();
                 assertEquals("100", found.id());
                 assertEquals("100", found.property(strategy.getIdKey()).value());
                 assertEquals("else", found.property("something").value());
@@ -149,7 +149,7 @@ public class IdGraphStrategyTest {
                 assertEquals("100", e.property(strategy.getIdKey()).value());
                 assertEquals("this", e.property("try").value());
 
-                final Edge found = g.e("100");
+                final Edge found = g.E("100").next();
                 assertEquals("100", found.id());
                 assertEquals("100", found.property(strategy.getIdKey()).value());
                 assertEquals("this", found.property("try").value());
@@ -175,7 +175,7 @@ public class IdGraphStrategyTest {
                 assertFalse(v.property(strategy.getIdKey()).isPresent());
                 assertEquals("else", v.property("something").value());
 
-                final Vertex found = g.v(o);
+                final Vertex found = g.V(o).next();
                 assertEquals(o, found.id());
                 assertFalse(found.property(strategy.getIdKey()).isPresent());
                 assertEquals("else", found.property("something").value());
@@ -195,7 +195,7 @@ public class IdGraphStrategyTest {
                 assertEquals("should be ok to set this as supportsEdgeId=true", v.property(strategy.getIdKey()).value());
                 assertEquals("else", v.property("something").value());
 
-                final Vertex found = g.v(o);
+                final Vertex found = g.V(o).next();
                 assertEquals(o, found.id());
                 assertEquals("should be ok to set this as supportsEdgeId=true", found.property(strategy.getIdKey()).value());
                 assertEquals("else", found.property("something").value());
@@ -236,7 +236,7 @@ public class IdGraphStrategyTest {
                 assertFalse(e.property(strategy.getIdKey()).isPresent());
                 assertEquals("this", e.property("try").value());
 
-                final Edge found = g.e("edge-id");
+                final Edge found = g.E("edge-id").next();
                 assertEquals("edge-id", found.id());
                 assertFalse(found.property(strategy.getIdKey()).isPresent());
                 assertEquals("this", found.property("try").value());
@@ -256,7 +256,7 @@ public class IdGraphStrategyTest {
                 assertEquals("this", e.property("try").value());
                 assertEquals("should be ok to set this as supportsEdgeId=false", e.property(strategy.getIdKey()).value());
 
-                final Edge found = g.e("edge-id");
+                final Edge found = g.E("edge-id").next();
                 assertEquals("edge-id", found.id());
                 assertEquals("this", found.property("try").value());
                 assertEquals("should be ok to set this as supportsEdgeId=false", found.property(strategy.getIdKey()).value());
