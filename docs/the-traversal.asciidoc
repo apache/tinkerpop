@@ -492,6 +492,37 @@ The first time through the jump-sequence, the vertices lop, vadas, and josh are 
 
 The `jump()`-step highlights one of the major benefits of `Traverser<T>` in TinkerPop3: the ability to take a traverser and place it anywhere in the Traversal step-sequence. Because a traverser maintains all the metadata associated with its particular walk, and no step maintains state information about a traverser, traversers can be arbitrarily relocated without ill-effects.
 
+[[local-step]]
+Local Step
+~~~~~~~~~~
+
+image::local-step.png[width=450]
+
+A `GraphTraversal` operates on a continuous stream of objects. In many situations, it is important to operate on a single element within that stream. To do such object-local traversal computations, `local()`-step exists (*map*). Note that the examples below use the <<the-crew-toy-graph,The Crew>> toy data set.
+
+[source,groovy]
+gremlin> g.V().as('person').
+           properties('location').orderBy('startTime').limit(2).
+           value().as('location').select{it.value('name')}{it} <1>
+==>[person:daniel, location:spremberg]
+==>[person:stephen, location:centreville]
+gremlin> g.V().as('person').
+           local(g.of().properties('location').orderBy('startTime').limit(2)).
+           value().as('location').select{it.value('name')}{it} <2>
+==>[person:marko, location:san diego]
+==>[person:marko, location:santa cruz]
+==>[person:stephen, location:centreville]
+==>[person:stephen, location:dulles]
+==>[person:matthias, location:bremen]
+==>[person:matthias, location:baltimore]
+==>[person:daniel, location:spremberg]
+==>[person:daniel, location:kaiserslautern]
+
+<1> Get the first two people and their respective location according to the most historic location start time.
+<2> For every person, get their two most historic locations.
+
+The two traversals above look nearly identical save the inclusion of `local()` which wraps a section of the traversal in a object-local traversal. As such, the `orderBy()` and the `limit()` refer to a particular object, not to the stream as a whole.
+
 [[match-step]]
 Match Step
 ~~~~~~~~~~
