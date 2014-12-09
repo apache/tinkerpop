@@ -133,6 +133,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                     ctx.write(response);
                 }
             } catch (Exception ex) {
+                // tossed to exeptionCaught which delegates to sendError method
                 throw new RuntimeException(ex);
             }
         }
@@ -222,6 +223,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
     private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message) {
         logger.warn("Invalid request - responding with {} and {}", status, message);
+        errorMeter.mark();
         final FullHttpResponse response = new DefaultFullHttpResponse(
                 HTTP_1_1, status, Unpooled.copiedBuffer("{\"message\": \"" + message + "\"}", CharsetUtil.UTF_8));
         response.headers().set(CONTENT_TYPE, "application/json");
