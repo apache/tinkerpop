@@ -85,7 +85,6 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         final Stream<Neo4jVertex> stream1 = StreamFactory.stream(iterator1)
                 .filter(node -> ElementHelper.idExists(node.getId(), this.ids))
                 .map(node -> new Neo4jVertex(node, this.getGraph(Neo4jGraph.class)));
-        //return stream1;
         final Stream<Neo4jVertex> stream2 = StreamFactory.stream(iterator2)
                 .filter(node -> ElementHelper.idExists(node.getId(), this.ids))
                 .filter(node -> node.getProperty(T.key.getAccessor()).equals(hasContainer.key))
