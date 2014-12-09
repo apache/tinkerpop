@@ -241,28 +241,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PropertiesStep<>(this, PropertyType.VALUE, propertyKeys));
     }
 
-    public default <E2> GraphTraversal<S, ? extends Property<E2>> hiddens(final String... propertyKeys) {
-        return this.asAdmin().addStep(new PropertiesStep<>(this, PropertyType.HIDDEN_PROPERTY, propertyKeys));
-    }
-
-    public default <E2> GraphTraversal<S, E2> hiddenValues(final String... propertyKeys) {
-        return this.asAdmin().addStep(new PropertiesStep<>(this, PropertyType.HIDDEN_VALUE, propertyKeys));
-    }
-
     public default <E2> GraphTraversal<S, Map<String, E2>> propertyMap(final String... propertyKeys) {
         return this.asAdmin().addStep(new PropertyMapStep<>(this, PropertyType.PROPERTY, propertyKeys));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final String... propertyKeys) {
         return this.asAdmin().addStep(new PropertyMapStep<>(this, PropertyType.VALUE, propertyKeys));
-    }
-
-    public default <E2> GraphTraversal<S, Map<String, E2>> hiddenMap(final String... propertyKeys) {
-        return this.asAdmin().addStep(new PropertyMapStep<>(this, PropertyType.HIDDEN_PROPERTY, propertyKeys));
-    }
-
-    public default <E2> GraphTraversal<S, Map<String, E2>> hiddenValueMap(final String... propertyKeys) {
-        return this.asAdmin().addStep(new PropertyMapStep<>(this, PropertyType.HIDDEN_VALUE, propertyKeys));
     }
 
     public default GraphTraversal<S, String> key() {

@@ -32,11 +32,6 @@ public class EmptyProperty<V> implements Property<V> {
     }
 
     @Override
-    public boolean isHidden() {
-        throw Exceptions.propertyDoesNotExist();
-    }
-
-    @Override
     public Element element() {
         throw Exceptions.propertyDoesNotExist();
     }

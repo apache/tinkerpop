@@ -20,20 +20,8 @@ public interface Neo4jVertexTraversal extends Neo4jElementTraversal<Vertex>, Ver
         return (Neo4jTraversal) this.start().propertyMap(propertyKeys);
     }
 
-    public default <E2> Neo4jTraversal<Vertex, VertexProperty<E2>> hiddens(final String... propertyKeys) {
-        return (Neo4jTraversal) this.start().hiddens(propertyKeys);
-    }
-
-    public default <E2> Neo4jTraversal<Vertex, Map<String, List<VertexProperty<E2>>>> hiddenMap(final String... propertyKeys) {
-        return (Neo4jTraversal) this.start().hiddenMap(propertyKeys);
-    }
-
     public default <E2> Neo4jTraversal<Vertex, Map<String, List<E2>>> valueMap(final String... propertyKeys) {
         return this.start().valueMap(propertyKeys);
-    }
-
-    public default <E2> Neo4jTraversal<Vertex, Map<String, List<E2>>> hiddenValueMap(final String... propertyKeys) {
-        return this.start().hiddenValueMap(propertyKeys);
     }
 
     public default <E2> Neo4jTraversal<Vertex, E2> value() {

@@ -81,10 +81,11 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     private Stream<Neo4jVertex> getVerticesUsingLabelAndProperty(final String label, final HasContainer hasContainer) {
         //System.out.println("labelProperty: " + label + ":" + hasContainer);
         final ResourceIterator<Node> iterator1 = this.getGraph(Neo4jGraph.class).getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), hasContainer.key, hasContainer.value).iterator();
-        final ResourceIterator<Node> iterator2 = this.getGraph(Neo4jGraph.class).getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(Graph.Key.unHide(hasContainer.key)), T.value.getAccessor(), hasContainer.value).iterator();
+        final ResourceIterator<Node> iterator2 = this.getGraph(Neo4jGraph.class).getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(hasContainer.key), T.value.getAccessor(), hasContainer.value).iterator();
         final Stream<Neo4jVertex> stream1 = StreamFactory.stream(iterator1)
                 .filter(node -> ElementHelper.idExists(node.getId(), this.ids))
                 .map(node -> new Neo4jVertex(node, this.getGraph(Neo4jGraph.class)));
+        //return stream1;
         final Stream<Neo4jVertex> stream2 = StreamFactory.stream(iterator2)
                 .filter(node -> ElementHelper.idExists(node.getId(), this.ids))
                 .filter(node -> node.getProperty(T.key.getAccessor()).equals(hasContainer.key))

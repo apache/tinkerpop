@@ -190,7 +190,7 @@ public class KryoReader implements GraphReader {
         if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
             appendToArgList(propertyArgs, T.id, p.id());
         p.iterators().propertyIterator().forEachRemaining(it -> appendToArgList(propertyArgs, it.key(), it.value()));
-        v.property(hidden ? Graph.Key.hide(p.key()) : p.key(), p.value(), propertyArgs.toArray());
+        v.property(p.key(), p.value(), propertyArgs.toArray());
     }
 
     private static void appendToArgList(final List<Object> propertyArgs, final Object key, final Object val) {

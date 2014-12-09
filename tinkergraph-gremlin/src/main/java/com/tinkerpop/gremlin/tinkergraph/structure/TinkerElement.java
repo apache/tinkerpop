@@ -53,14 +53,7 @@ public abstract class TinkerElement implements Element, Element.Iterators {
     public Set<String> keys() {
         return TinkerHelper.inComputerMode(this.graph) ?
                 Element.super.keys() :
-                this.properties.keySet().stream().filter(key -> !Graph.Key.isHidden(key)).collect(Collectors.toSet());
-    }
-
-    @Override
-    public Set<String> hiddenKeys() {
-        return TinkerHelper.inComputerMode(this.graph) ?
-                Element.super.hiddenKeys() :
-                this.properties.keySet().stream().filter(Graph.Key::isHidden).collect(Collectors.toSet());
+                this.properties.keySet();
     }
 
     @Override
@@ -86,7 +79,7 @@ public abstract class TinkerElement implements Element, Element.Iterators {
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
         return (Iterator) (TinkerHelper.inComputerMode(this.graph) ?
                 this.graph.graphView.getProperties(TinkerElement.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator() :
-                this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(),propertyKeys)).flatMap(entry -> entry.getValue().stream()).collect(Collectors.toList()).iterator());
+                this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).flatMap(entry -> entry.getValue().stream()).collect(Collectors.toList()).iterator());
     }
 
 

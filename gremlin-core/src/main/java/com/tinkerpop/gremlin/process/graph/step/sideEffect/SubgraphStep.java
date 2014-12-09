@@ -60,7 +60,7 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
                     .forEach(e -> {
                         final Vertex newVOut = getOrCreateVertex(e.outV().next());
                         final Vertex newVIn = getOrCreateVertex(e.inV().next());
-                        newVOut.addEdge(e.label(), newVIn, ElementHelper.getProperties(e, subgraphSupportsUserIds, false, Collections.emptySet(), Collections.emptySet()));
+                        newVOut.addEdge(e.label(), newVIn, ElementHelper.getProperties(e, subgraphSupportsUserIds, false, Collections.emptySet()));
                         // TODO: If userSuppliedIds exist, don't do this to save sideEffects
                         this.edgeIdsAdded.add(e.id());
                     });
@@ -85,7 +85,7 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
         }
 
         if (null == foundVertex) {
-            foundVertex = this.subgraph.addVertex(ElementHelper.getProperties(vertex, this.subgraphSupportsUserIds, true, Collections.emptySet(), Collections.emptySet()));
+            foundVertex = this.subgraph.addVertex(ElementHelper.getProperties(vertex, this.subgraphSupportsUserIds, true, Collections.emptySet()));
             if (!this.subgraphSupportsUserIds)
                 this.idVertexMap.put(vertex.id(), foundVertex);
         }

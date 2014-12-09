@@ -37,7 +37,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldConstructDetachedEdge() {
-        g.E(convertToEdgeId("marko", "knows", "vadas")).next().property(Graph.Key.hide("year"), 2002);
+        g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("year", 2002);
         final DetachedEdge detachedEdge = DetachedFactory.detach(g.E(convertToEdgeId("marko", "knows", "vadas")).next(), true);
         assertEquals(convertToEdgeId("marko", "knows", "vadas"), detachedEdge.id());
         assertEquals("knows", detachedEdge.label());
@@ -49,7 +49,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         assertEquals("person", detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
 
         assertEquals(2, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
-        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator(Graph.Key.hide("year"))).count());
+        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator("year")).count());
         assertEquals(0.5d, detachedEdge.iterators().propertyIterator("weight").next().value());
     }
 
@@ -58,7 +58,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldConstructDetachedEdgeAsReference() {
-        g.E(convertToEdgeId("marko", "knows", "vadas")).next().property(Graph.Key.hide("year"), 2002);
+        g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("year", 2002);
         final DetachedEdge detachedEdge = DetachedFactory.detach(g.E(convertToEdgeId("marko", "knows", "vadas")).next(), false);
         assertEquals(convertToEdgeId("marko", "knows", "vadas"), detachedEdge.id());
         assertEquals("knows", detachedEdge.label());
@@ -100,7 +100,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     public void shouldConstructDetachedEdgeFromParts() {
         final Map<String, Object> properties = new HashMap<>();
         properties.put("x", "a");
-        properties.put(Graph.Key.hide("y"), "b");
+        properties.put("y", "b");
 
         final DetachedEdge de = new DetachedEdge(10, "bought", properties, Pair.with(1, "person"), Pair.with(2, "product"));
 
@@ -117,11 +117,9 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
 
         assertEquals("a", de.property("x").value());
         assertEquals("x", de.property("x").key());
-        assertFalse(de.property("x").isHidden());
 
-        assertEquals("b", de.property(Graph.Key.hide("y")).value());
-        assertEquals(Graph.Key.hide("y"), de.property(Graph.Key.hide("y")).key());
-        assertTrue(de.property(Graph.Key.hide("y")).isHidden());
+        assertEquals("b", de.property("y").value());
+        assertEquals("y", de.property("y").key());
     }
 
     @Test(expected = UnsupportedOperationException.class)

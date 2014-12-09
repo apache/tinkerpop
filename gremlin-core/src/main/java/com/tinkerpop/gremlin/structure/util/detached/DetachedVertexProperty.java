@@ -58,11 +58,6 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     }
 
     @Override
-    public boolean isHidden() {
-        return Graph.Key.isHidden(this.key);
-    }
-
-    @Override
     public String key() {
         return this.key;
     }

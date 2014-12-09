@@ -40,34 +40,18 @@ public abstract interface Element {
     public Graph graph();
 
     /**
-     * Get the keys from non-hidden properties.
+     * Get the keys from properties.
      *
-     * @return The non-hidden key set
+     * @return The property key set
      */
     public default Set<String> keys() {
         final Set<String> keys = new HashSet<>();
-        this.iterators().propertyIterator().forEachRemaining(property -> {
-            if (!Graph.Key.isHidden(property.key())) keys.add(property.key());
-        });
+        this.iterators().propertyIterator().forEachRemaining(property -> keys.add(property.key()));
         return keys;
     }
 
     /**
-     * Get the keys of hidden properties.
-     *
-     * @return The hidden key set
-     */
-    public default Set<String> hiddenKeys() {
-        final Set<String> hiddenKeys = new HashSet<>();
-        this.iterators().propertyIterator().forEachRemaining(property -> {
-            if (Graph.Key.isHidden(property.key())) hiddenKeys.add(property.key());
-        });
-        return hiddenKeys;
-    }
-
-    /**
-     * Get a {@link Property} for the {@code Element} given its key.  Hidden properties can be retrieved by specifying
-     * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hide}.
+     * Get a {@link Property} for the {@code Element} given its key.
      */
     public default <V> Property<V> property(final String key) {
         final Iterator<? extends Property<V>> iterator = this.iterators().propertyIterator(key);
@@ -75,8 +59,7 @@ public abstract interface Element {
     }
 
     /**
-     * Add or set a property value for the {@code Element} given its key.  Hidden properties can be set by specifying
-     * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hide}.
+     * Add or set a property value for the {@code Element} given its key.
      */
     public <V> Property<V> property(final String key, final V value);
 

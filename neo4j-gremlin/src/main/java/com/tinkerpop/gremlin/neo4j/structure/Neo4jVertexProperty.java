@@ -147,25 +147,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
             this.vertex.graph.tx().readWrite();
             final Set<String> keys = new HashSet<>();
             for (final String key : this.node.getPropertyKeys()) {
-                if (!Graph.Key.isHidden(key) && !Graph.System.isSystem(key))
-                    keys.add(key);
-            }
-            return keys;
-        } else {
-            return Collections.emptySet();
-        }
-    }
-
-    @Override
-    public Set<String> hiddenKeys() {
-        if (!this.vertex.graph.supportsMetaProperties)
-            throw VertexProperty.Exceptions.metaPropertiesNotSupported();
-
-        if (isNode()) {
-            this.vertex.graph.tx().readWrite();
-            final Set<String> keys = new HashSet<>();
-            for (final String key : this.node.getPropertyKeys()) {
-                if (Graph.Key.isHidden(key))
+                if (!Graph.System.isSystem(key))
                     keys.add(key);
             }
             return keys;

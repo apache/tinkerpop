@@ -132,37 +132,6 @@ public class JsonMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeHiddenVertexProperties() throws Exception {
-        final Graph g = TinkerGraph.open();
-        final Vertex v = g.addVertex("abc", 123);
-        v.property(Graph.Key.hide("hidden"), "stephen");
-
-        final Iterable iterable = g.V().toList();
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
-        final JSONObject json = new JSONObject(results);
-
-        assertNotNull(json);
-        assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
-
-        assertNotNull(converted);
-        assertEquals(1, converted.length());
-
-        final JSONObject vertexAsJson = converted.optJSONObject(0);
-        assertNotNull(vertexAsJson);
-
-        assertEquals(((Long) v.id()).intValue(), vertexAsJson.get(GraphSONTokens.ID)); // lossy
-        assertEquals(GraphSONTokens.VERTEX, vertexAsJson.get(GraphSONTokens.TYPE));
-
-        final JSONObject properties = vertexAsJson.optJSONObject(GraphSONTokens.PROPERTIES);
-        assertNotNull(properties);
-
-        assertEquals(2, properties.length());
-        assertEquals(123, properties.getJSONArray("abc").getJSONObject(0).getInt(GraphSONTokens.VALUE));
-        assertEquals("stephen", properties.getJSONArray(Graph.Key.hide("hidden")).getJSONObject(0).getString(GraphSONTokens.VALUE));
-    }
-
-    @Test
     public void serializeEdge() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v1 = g.addVertex();

@@ -19,20 +19,8 @@ public interface Neo4jEdgeTraversal extends Neo4jElementTraversal<Edge>, EdgeTra
         return (Neo4jTraversal) this.start().propertyMap(propertyKeys);
     }
 
-    public default <E2> Neo4jTraversal<Edge, Property<E2>> hiddens(final String... propertyKeys) {
-        return (Neo4jTraversal) this.start().hiddens(propertyKeys);
-    }
-
-    public default <E2> Neo4jTraversal<Edge, Map<String, Property<E2>>> hiddenMap(final String... propertyKeys) {
-        return (Neo4jTraversal) this.start().hiddenMap(propertyKeys);
-    }
-
     public default <E2> Neo4jTraversal<Edge, Map<String, E2>> valueMap(final String... propertyKeys) {
         return this.start().valueMap(propertyKeys);
-    }
-
-    public default <E2> Neo4jTraversal<Edge, Map<String, E2>> hiddenValueMap(final String... propertyKeys) {
-        return this.start().hiddenValueMap(propertyKeys);
     }
 
     public default <E2> Neo4jTraversal<Edge, E2> value() {

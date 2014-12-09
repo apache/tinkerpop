@@ -28,11 +28,6 @@ public class HadoopProperty<V> implements Property<V>, WrappedProperty<Property<
     }
 
     @Override
-    public boolean isHidden() {
-        return this.baseProperty.isHidden();
-    }
-
-    @Override
     public Property<V> getBaseProperty() {
         return this.baseProperty;
     }

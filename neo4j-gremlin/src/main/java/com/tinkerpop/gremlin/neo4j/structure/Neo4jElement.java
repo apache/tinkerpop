@@ -47,12 +47,6 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
     }
 
     @Override
-    public Set<String> hiddenKeys() {
-        this.graph.tx().readWrite();
-        return Element.super.hiddenKeys();
-    }
-
-    @Override
     public <V> Property<V> property(final String key) {
         this.graph.tx().readWrite();
         try {

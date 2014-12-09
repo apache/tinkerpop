@@ -26,13 +26,13 @@ public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
         if (this.returnType.forValues()) {
             this.setFunction(traverser ->
                     traverser.get() instanceof Vertex ?
-                            (Map) ElementHelper.vertexPropertyValueMap((Vertex) traverser.get(), this.returnType.forHiddens(), propertyKeys) :
-                            (Map) ElementHelper.propertyValueMap(traverser.get(), this.returnType.forHiddens(), propertyKeys));
+                            (Map) ElementHelper.vertexPropertyValueMap((Vertex) traverser.get(), propertyKeys) :
+                            (Map) ElementHelper.propertyValueMap(traverser.get(), propertyKeys));
         } else {
             this.setFunction(traverser ->
                     traverser.get() instanceof Vertex ?
-                            (Map) ElementHelper.vertexPropertyMap((Vertex) traverser.get(), this.returnType.forHiddens(), propertyKeys) :
-                            (Map) ElementHelper.propertyMap(traverser.get(), this.returnType.forHiddens(), propertyKeys));
+                            (Map) ElementHelper.vertexPropertyMap((Vertex) traverser.get(), propertyKeys) :
+                            (Map) ElementHelper.propertyMap(traverser.get(), propertyKeys));
         }
     }
 

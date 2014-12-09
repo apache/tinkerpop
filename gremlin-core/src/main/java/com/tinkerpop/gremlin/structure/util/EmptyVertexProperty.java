@@ -61,11 +61,6 @@ public class EmptyVertexProperty<V> implements VertexProperty<V> {
     }
 
     @Override
-    public boolean isHidden() {
-        return false;
-    }
-
-    @Override
     public void remove() {
 
     }

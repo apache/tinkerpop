@@ -29,8 +29,7 @@ public interface Vertex extends Element, VertexTraversal {
     /**
      * Add an outgoing edge to the vertex with provided label and edge properties as key/value pairs.
      * These key/values must be provided in an even number where the odd numbered arguments are {@link String}
-     * property keys and the even numbered arguments are the related property values.  Hidden properties can be
-     * set by specifying the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hide}.
+     * property keys and the even numbered arguments are the related property values.
      *
      * @param label     The label of the edge
      * @param inVertex  The vertex to receive an incoming edge from the current vertex

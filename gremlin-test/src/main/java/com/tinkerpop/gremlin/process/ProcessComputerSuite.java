@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process;
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
-import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategy;
 import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategyTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpTest;
@@ -21,7 +20,6 @@ import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
 import com.tinkerpop.gremlin.process.graph.step.map.FoldTest;
-import com.tinkerpop.gremlin.process.graph.step.map.HiddenValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.LocalTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
@@ -106,7 +104,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // map
             BackTest.ComputerTest.class,
             FoldTest.ComputerTest.class,
-            HiddenValueMapTest.ComputerTest.class,
             LocalTest.ComputerTest.class,
             MapTest.ComputerTest.class,
             // TODO: MatchTest.ComputerTest.class,
@@ -176,7 +173,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // map
             BackTest.class,
             // FoldTest.class,
-            HiddenValueMapTest.class,
             LocalTest.class,
             MapTest.class,
             // MatchTest.class,

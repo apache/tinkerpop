@@ -35,26 +35,24 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldConstructDetachedVertex() {
-        final Vertex v = g.addVertex("test", "123", Graph.Key.hide("test"), "321");
+        final Vertex v = g.addVertex("test", "123");
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
 
         assertEquals(v.id(), detachedVertex.id());
         assertEquals(v.label(), detachedVertex.label());
         assertEquals("123", detachedVertex.value("test"));
-        assertEquals("321", detachedVertex.iterators().propertyIterator(Graph.Key.hide("test")).next().value().toString());
-        assertEquals(2, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+        assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
     }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldConstructDetachedVertexAsReference() {
-        final Vertex v = g.addVertex("test", "123", Graph.Key.hide("test"), "321");
+        final Vertex v = g.addVertex("test", "123", "test", "321");
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, false);
 
         assertEquals(v.id(), detachedVertex.id());
         assertEquals(v.label(), detachedVertex.label());
         assertEquals(0, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
-        //  assertEquals(0, StreamFactory.stream(detachedVertex.iterators().hiddenPropertyIterator()).count());
     }
 
     @Test
@@ -63,9 +61,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         final DetachedVertex v1 = DetachedFactory.detach(convertToVertex(g, "marko"), true);
 
         assertEquals("person", v1.label());
-        //  assertEquals(true, v1.iterators().hiddenValueIterator("visible").next());
-        assertEquals(2, v1.keys().size());
-        assertEquals(1, v1.hiddenKeys().size());
+        assertEquals(3, v1.keys().size());
         v1.iterators().propertyIterator("location").forEachRemaining(vp -> {
             assertTrue(vp instanceof DetachedVertexProperty);
             if (vp.value().equals("san diego")) {
@@ -132,7 +128,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         propY2.put("value", "d");
         propY2.put("id", 126);
         propY2.put("label", VertexProperty.DEFAULT_LABEL);
-        properties.put(Graph.Key.hide("y"), Arrays.asList(propY1, propY2));
+        properties.put("y", Arrays.asList(propY1, propY2));
 
         final DetachedVertex dv = new DetachedVertex(1, "test", properties);
 
@@ -157,7 +153,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         propX1.put("id", 123);
         propX1.put("label", VertexProperty.DEFAULT_LABEL);
         propX1.put("properties", ElementHelper.asMap("propX1a", "a", "propX11", 1, "same", 123.01d, "extra", "something"));
-        propX1.put("hidden", ElementHelper.asMap(Graph.Key.hide("propX1ha"), "ha", Graph.Key.hide("propX1h1"), 11, Graph.Key.hide("same"), 321.01d));
+        //propX1.put("hidden", ElementHelper.asMap("propX1ha", "ha", "propX1h1", 11,"same", 321.01d));
         final Map<String, Object> propX2 = new HashMap<>();
         propX2.put("value", "c");
         propX2.put("id", 124);
@@ -172,7 +168,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         propY2.put("value", "d");
         propY2.put("id", 126);
         propY2.put("label", VertexProperty.DEFAULT_LABEL);
-        properties.put(Graph.Key.hide("y"), Arrays.asList(propY1, propY2));
+        //properties.put(Graph.Key.hide("y"), Arrays.asList(propY1, propY2));
 
         final DetachedVertex dv = new DetachedVertex(1, "test", properties);
 

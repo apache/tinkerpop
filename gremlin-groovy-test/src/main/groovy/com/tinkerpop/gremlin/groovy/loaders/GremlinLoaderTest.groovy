@@ -17,13 +17,6 @@ import static org.junit.Assert.assertEquals
 class GremlinLoaderTest extends AbstractGremlinTest {
 
     @Test
-    public void shouldHideAndUnhideKeys() {
-        assertEquals(Graph.Key.hide("g"), -"g");
-        assertEquals("g", -Graph.Key.hide("g"));
-        assertEquals("g", -(-"g"));
-    }
-
-    @Test
     @FeatureRequirements([
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS),
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS),

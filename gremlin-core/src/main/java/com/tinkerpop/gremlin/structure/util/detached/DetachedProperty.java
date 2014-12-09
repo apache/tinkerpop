@@ -41,11 +41,6 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     }
 
     @Override
-    public boolean isHidden() {
-        return Graph.Key.isHidden(this.key);
-    }
-
-    @Override
     public String key() {
         return this.key;
     }

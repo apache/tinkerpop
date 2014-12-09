@@ -65,13 +65,6 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
     }
 
     @Override
-    public Set<String> hiddenKeys() {
-        return this.strategyWrappedGraph.getStrategy().compose(
-                s -> s.getVertexPropertyHiddenKeysStrategy(strategyContext),
-                this.baseVertexProperty::hiddenKeys).get();
-    }
-
-    @Override
     public Vertex element() {
         return new StrategyWrappedVertex(this.strategyWrappedGraph.getStrategy().compose(
                 s -> s.getVertexPropertyGetElementStrategy(strategyContext),
@@ -100,11 +93,6 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
     public V value() throws NoSuchElementException {
         return this.strategyWrappedGraph.getStrategy().compose(
                 s -> s.getVertexPropertyValueStrategy(strategyContext), this.baseVertexProperty::value).get();
-    }
-
-    @Override
-    public boolean isHidden() {
-        return this.baseVertexProperty.isHidden();
     }
 
     @Override

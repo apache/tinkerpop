@@ -84,15 +84,6 @@ public interface Property<V> {
     }
 
     /**
-     * Whether the property has a hidden key or not.
-     *
-     * @return True if the property key is hidden
-     */
-    public default boolean isHidden() {
-        return Graph.Key.isHidden(this.key());
-    }
-
-    /**
      * Get the element that this property is associated with.
      *
      * @return The element associated with this property (i.e. {@link Vertex}, {@link Edge}, or {@link VertexProperty}).
@@ -140,8 +131,7 @@ public interface Property<V> {
         }
 
         public static IllegalStateException propertyDoesNotExist(final String key) {
-            return Graph.Key.isHidden(key) ? new IllegalStateException("The hidden property does not exist as the key has no associated value: " + Graph.Key.unHide(key)) :
-                    new IllegalStateException("The property does not exist as the key has no associated value: " + key);
+            return new IllegalStateException("The property does not exist as the key has no associated value: " + key);
         }
 
         public static IllegalArgumentException dataTypeOfPropertyValueNotSupported(final Object val) {

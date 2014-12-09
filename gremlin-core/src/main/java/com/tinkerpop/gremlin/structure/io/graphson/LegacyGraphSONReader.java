@@ -159,7 +159,7 @@ public class LegacyGraphSONReader implements GraphReader {
             return this;
         }
 
-        public LegacyGraphSONReader build() {
+        public LegacyGraphSONReader create() {
             final ObjectMapper mapper = GraphSONObjectMapper.build()
                     .customModule(custom)
                     .embedTypes(embedTypes)

@@ -79,52 +79,9 @@ public interface Graph extends AutoCloseable {
     }
 
     /**
-     * Key is a helper class for manipulating keys wherever they may be (e.g. properties, sideEffects, sideEffects, etc.)
-     */
-    public class Key {
-
-        /**
-         * The prefix to denote that a key is hidden.
-         */
-        private static final String HIDDEN_PREFIX = "~";
-        private static final int HIDDEN_PREFIX_LENGTH = HIDDEN_PREFIX.length();
-
-        /**
-         * Turn the provided key into a hidden key. If the key is already hidden, return key.
-         *
-         * @param key The key to hide
-         * @return The hidden key
-         */
-        public static String hide(final String key) {
-            return isHidden(key) ? key : HIDDEN_PREFIX.concat(key);
-        }
-
-        /**
-         * Turn the provided hidden key into an unhidden key. If the key is not hidden, return key.
-         *
-         * @param key The hidden key
-         * @return The unhidden representation of the key
-         */
-        public static String unHide(final String key) {
-            return isHidden(key) ? key.substring(HIDDEN_PREFIX_LENGTH) : key;
-        }
-
-        /**
-         * Determines whether the provided key is hidden or not.
-         *
-         * @param key The key to check for hidden status
-         * @return Whether the provided key is hidden or not
-         */
-        public static boolean isHidden(final String key) {
-            return key.startsWith(HIDDEN_PREFIX);
-        }
-    }
-
-    /**
      * Add a {@link Vertex} to the graph given an optional series of key/value pairs.  These key/values
      * must be provided in an even number where the odd numbered arguments are {@link String} property keys and the
-     * even numbered arguments are the related property values.  Hidden properties can be set by specifying
-     * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hide}.
+     * even numbered arguments are the related property values.
      *
      * @param keyValues The key/value pairs to turn into vertex properties
      * @return The newly created vertex

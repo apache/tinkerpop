@@ -51,11 +51,6 @@ public class HadoopVertexProperty<V> implements VertexProperty<V>, VertexPropert
     }
 
     @Override
-    public boolean isHidden() {
-        return this.baseVertexProperty.isHidden();
-    }
-
-    @Override
     public boolean isPresent() {
         return this.baseVertexProperty.isPresent();
     }

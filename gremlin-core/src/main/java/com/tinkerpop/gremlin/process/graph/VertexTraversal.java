@@ -19,20 +19,8 @@ public interface VertexTraversal extends ElementTraversal<Vertex> {
         return this.start().propertyMap(propertyKeys);
     }
 
-    public default <E2> GraphTraversal<Vertex, VertexProperty<E2>> hiddens(final String... propertyKeys) {
-        return (GraphTraversal) this.start().hiddens(propertyKeys);
-    }
-
-    public default <E2> GraphTraversal<Vertex, Map<String, List<VertexProperty<E2>>>> hiddenMap(final String... propertyKeys) {
-        return this.start().hiddenMap(propertyKeys);
-    }
-
     public default <E2> GraphTraversal<Vertex, Map<String, List<E2>>> valueMap(final String... propertyKeys) {
         return this.start().valueMap(propertyKeys);
-    }
-
-    public default <E2> GraphTraversal<Vertex, Map<String, List<E2>>> hiddenValueMap(final String... propertyKeys) {
-        return this.start().hiddenValueMap(propertyKeys);
     }
 
     // necessary so VertexProperty.value() as a non-traversal method works

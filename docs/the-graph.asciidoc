@@ -159,48 +159,6 @@ gremlin> g.V().has('name',g.variables().get('creator').get()).
 ==>[a:santa cruz, b:[startTime:2001, endTime:2004]]
 ==>[a:brussels, b:[startTime:2004, endTime:2005]]
 ==>[a:santa fe, b:[startTime:2005]]
-gremlin> g.V().properties('visible') // hidden properties are not accessible via properties()
-gremlin> g.V().as('a').hiddens('visible').value().as('b').select(){it.value('name')}{it} // determine which vertices are visible
-==>[a:marko, b:true]
-==>[a:stephen, b:true]
-==>[a:matthias, b:true]
-==>[a:daniel, b:false]
-==>[a:gremlin, b:true]
-==>[a:tinkergraph, b:false]
-
-Hidden Properties
------------------
-
-image:hidden-properties.png[width=175,float=right] A hidden property is a property that is hidden from the various property accessor methods. Hidden properties are typically used in situations where administrative data about an element must be stored that is not so much a description of the element itself. An itemization of use cases are presented below.
-
- * *Permissions*: What user or groups have read/write permission to this element?
- * *Time keeping*: When was this element created? When does this element expire?
- * *Presentation*: What color should this element be presented as?
- * *Provenance*: Which user created this element?
- * *Auditing*: Has this element been deleted from the system? Who deleted this element?
-
-The hidden properties API is presented in the example below represented in the Gremlin-Groovy REPL. This REPL is accessible via `bin/gremlin.sh` (or `bin/gremlin.bat` for Windows users).
-
-[source,groovy]
-gremlin> g = TinkerGraph.open()
-==>tinkergraph[vertices:0 edges:0]
-gremlin> v = g.addVertex('name','pierre')
-==>v[0]
-gremlin> v.property('location','belgium')
-==>vp[location->belgium]
-gremlin> v.property(Graph.Key.hide('status'),'user')
-==>vp[status->user]
-gremlin> v.keys()
-==>name
-==>location
-gremlin> v.hiddenKeys()
-==>status
-gremlin> p = v.property(Graph.Key.hide('status'))
-==>vp[status->user]
-gremlin> p.isHidden()
-==>true
-gremlin> v.property('status')
-==>vp[empty]
 
 Graph Variables
 ---------------
@@ -868,7 +826,7 @@ PartitionGraphStrategy
 ----
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> strategy = new PartitionGraphStrategy(Graph.Key.hide("partition"), "A")
+gremlin> strategy = new PartitionGraphStrategy("com.example.partition", "A")
 ==>PartitionGraphStrategy
 gremlin> sg = new StrategyWrappedGraph(g)
 ==>strategywrappedgraph[tinkergraph[vertices:0 edges:0]]

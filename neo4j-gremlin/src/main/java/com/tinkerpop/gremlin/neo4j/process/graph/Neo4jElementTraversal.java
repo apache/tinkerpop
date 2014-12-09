@@ -153,14 +153,6 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().properties(propertyKeys);
     }
 
-    public default <E2> Neo4jTraversal<A, ? extends Property<E2>> hiddens(final String... propertyKeys) {
-        return this.start().hiddens(propertyKeys);
-    }
-
-    public default <E2> Neo4jTraversal<A, E2> hiddenValues(final String... propertyKeys) {
-        return this.start().hiddenValues(propertyKeys);
-    }
-
     public default <E2> Neo4jTraversal<A, E2> values(final String... propertyKeys) {
         return this.start().values(propertyKeys);
     }

@@ -18,20 +18,8 @@ public interface EdgeTraversal extends ElementTraversal<Edge> {
         return this.start().propertyMap(propertyKeys);
     }
 
-    public default <E2> GraphTraversal<Edge, Property<E2>> hiddens(final String... propertyKeys) {
-        return (GraphTraversal) this.start().hiddens(propertyKeys);
-    }
-
-    public default <E2> GraphTraversal<Edge, Map<String, Property<E2>>> hiddenMap(final String... propertyKeys) {
-        return this.start().hiddenMap(propertyKeys);
-    }
-
     public default <E2> GraphTraversal<Edge, Map<String, E2>> valueMap(final String... propertyKeys) {
         return this.start().valueMap(propertyKeys);
-    }
-
-    public default <E2> GraphTraversal<Edge, Map<String, E2>> hiddenValueMap(final String... propertyKeys) {
-        return this.start().hiddenValueMap(propertyKeys);
     }
 
     // necessary so VertexProperty.value() as a non-traversal method works

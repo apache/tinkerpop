@@ -144,8 +144,7 @@ public class IdGraphStrategy implements GraphStrategy {
     }
 
     /**
-     * Gets the property name of the key used to lookup graph elements.  This is a "hidden" key created by
-     * {@link com.tinkerpop.gremlin.structure.Graph.Key#hide(String)}.  Use this value to create an index in the underlying graph instance.
+     * Gets the property name of the key used to lookup graph elements. Use this value to create an index in the underlying graph instance.
      */
     public String getIdKey() {
         return this.idKey;
@@ -190,7 +189,7 @@ public class IdGraphStrategy implements GraphStrategy {
         private Supplier<?> edgeIdSupplier;
         private boolean supportsVertexId;
         private boolean supportsEdgeId;
-        private boolean hiddenIdKey;
+
 
         private Builder(final String idKey) {
             this.idKey = idKey;
@@ -198,15 +197,14 @@ public class IdGraphStrategy implements GraphStrategy {
             this.vertexIdSupplier = this::supplyStringId;
             this.supportsEdgeId = true;
             this.supportsVertexId = true;
-            this.hiddenIdKey = false;
+
         }
 
         public IdGraphStrategy create() {
             if (!this.supportsEdgeId && !this.supportsVertexId)
                 throw new IllegalStateException("Since supportsEdgeId and supportsVertexId are false, there is no need to use IdGraphStrategy");
 
-            final String keyForId = this.hiddenIdKey ? Graph.Key.hide(this.idKey) : this.idKey;
-            return new IdGraphStrategy(keyForId, this.vertexIdSupplier, this.edgeIdSupplier,
+            return new IdGraphStrategy(this.idKey, this.vertexIdSupplier, this.edgeIdSupplier,
                     this.supportsVertexId, this.supportsEdgeId);
         }
 
@@ -249,14 +247,6 @@ public class IdGraphStrategy implements GraphStrategy {
          */
         public Builder supportsVertexId(final boolean supports) {
             this.supportsVertexId = supports;
-            return this;
-        }
-
-        /**
-         * Converts the key supplied to the constructor of the builder to a hidden key.
-         */
-        public Builder useHiddenIdKey(final boolean hidden) {
-            this.hiddenIdKey = hidden;
             return this;
         }
 

@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class PartitionGraphStrategyTest extends AbstractGremlinTest {
-    private static final String partition = Graph.Key.hide("partition");
+    private static final String partition = "gremlin.partitionGraphStrategy.partition";
 
     public PartitionGraphStrategyTest() {
         super(new PartitionGraphStrategy(partition, "A"));

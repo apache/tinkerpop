@@ -4,10 +4,12 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.PropertyType;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -21,9 +23,11 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Revers
         super(traversal);
         this.returnType = propertyType;
         this.propertyKeys = propertyKeys;
-        this.setFunction(traverser -> StreamFactory.stream(traverser.get().iterators().propertyIterator(this.propertyKeys))
-                .filter(p -> (this.returnType.forHiddens() && p.isHidden()) || (!this.returnType.forHiddens() && !p.isHidden()))
-                .map(p -> (E) (this.returnType.forValues() ? p.value() : p)).iterator());
+        if (this.returnType.forValues()) {
+            this.setFunction(traverser -> (Iterator) IteratorUtils.map(traverser.get().iterators().propertyIterator(this.propertyKeys), Property::value));
+        } else {
+            this.setFunction(traverser -> (Iterator) traverser.get().iterators().propertyIterator(this.propertyKeys));
+        }
     }
 
     public PropertyType getReturnType() {

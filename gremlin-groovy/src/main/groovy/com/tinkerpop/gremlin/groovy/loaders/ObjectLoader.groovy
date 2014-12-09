@@ -28,9 +28,5 @@ class ObjectLoader {
             }
             return tempMap;
         }
-
-        String.metaClass.negative = {
-            return Graph.Key.isHidden((String) delegate) ? Graph.Key.unHide((String) delegate) : Graph.Key.hide((String) delegate);
-        }
     }
 }

@@ -66,12 +66,12 @@ public class TinkerFactory {
     }
 
     public static void generateTheCrew(final TinkerGraph g) {
-        final Vertex marko = g.addVertex(T.id, 1, T.label, "person", "name", "marko", Graph.Key.hide("visible"), true);
-        final Vertex stephen = g.addVertex(T.id, 7, T.label, "person", "name", "stephen", Graph.Key.hide("visible"), true);
-        final Vertex matthias = g.addVertex(T.id, 8, T.label, "person", "name", "matthias", Graph.Key.hide("visible"), true);
-        final Vertex daniel = g.addVertex(T.id, 9, T.label, "person", "name", "daniel", Graph.Key.hide("visible"), false);
-        final Vertex gremlin = g.addVertex(T.id, 10, T.label, "software", "name", "gremlin", Graph.Key.hide("visible"), true);
-        final Vertex tinkergraph = g.addVertex(T.id, 11, T.label, "software", "name", "tinkergraph", Graph.Key.hide("visible"), false);
+        final Vertex marko = g.addVertex(T.id, 1, T.label, "person", "name", "marko", "visible", true);
+        final Vertex stephen = g.addVertex(T.id, 7, T.label, "person", "name", "stephen", "visible", true);
+        final Vertex matthias = g.addVertex(T.id, 8, T.label, "person", "name", "matthias", "visible", true);
+        final Vertex daniel = g.addVertex(T.id, 9, T.label, "person", "name", "daniel", "visible", false);
+        final Vertex gremlin = g.addVertex(T.id, 10, T.label, "software", "name", "gremlin", "visible", true);
+        final Vertex tinkergraph = g.addVertex(T.id, 11, T.label, "software", "name", "tinkergraph", "visible", false);
 
         marko.property("location", "san diego", "startTime", 1997, "endTime", 2001);
         marko.property("location", "santa cruz", "startTime", 2001, "endTime", 2004);
@@ -108,7 +108,7 @@ public class TinkerFactory {
         daniel.addEdge("uses", gremlin, T.id, 24, "skill", 5);
         daniel.addEdge("uses", tinkergraph, T.id, 25, "skill", 3);
 
-        gremlin.addEdge("traverses", tinkergraph, T.id, 26, Graph.Key.hide("visible"), false);
+        gremlin.addEdge("traverses", tinkergraph, T.id, 26, "visible", false);
 
         g.variables().set("creator", "marko");
         g.variables().set("lastModified", 2014);
