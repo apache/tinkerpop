@@ -501,6 +501,8 @@ image::local-step.png[width=450]
 A `GraphTraversal` operates on a continuous stream of objects. In many situations, it is important to operate on a single element within that stream. To do such object-local traversal computations, `local()`-step exists (*map*). Note that the examples below use the <<the-crew-toy-graph,The Crew>> toy data set.
 
 [source,groovy]
+gremlin> g = TinkerFactory.createTheCrew()
+==>tinkergraph[vertices:6 edges:14]
 gremlin> g.V().as('person').
            properties('location').orderBy('startTime').limit(2).
            value().as('location').select{it.value('name')}{it} <1>
