@@ -2,16 +2,16 @@ package com.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
 import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
-import com.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
 import org.apache.giraph.worker.WorkerContext;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphWorkerContext extends WorkerContext {
+public final class GiraphWorkerContext extends WorkerContext {
 
-    private VertexProgram vertexProgram;
+    private VertexProgram<?> vertexProgram;
     private GiraphMemory memory;
     private GiraphMessenger messenger;
 
@@ -37,15 +37,15 @@ public class GiraphWorkerContext extends WorkerContext {
         this.vertexProgram.workerIterationEnd(new ImmutableMemory(this.memory));
     }
 
-    public final VertexProgram getVertexProgram() {
+    public VertexProgram<?> getVertexProgram() {
         return this.vertexProgram;
     }
 
-    public final GiraphMemory getMemory() {
+    public GiraphMemory getMemory() {
         return this.memory;
     }
 
-    public final GiraphMessenger getMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterable<ObjectWritable> messages) {
+    public GiraphMessenger getMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterable<ObjectWritable> messages) {
         this.messenger.setCurrentVertex(giraphComputeVertex, messages);
         return this.messenger;
     }

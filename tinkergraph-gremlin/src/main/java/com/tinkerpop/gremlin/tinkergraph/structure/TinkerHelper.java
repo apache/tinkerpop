@@ -74,14 +74,6 @@ public class TinkerHelper {
         graph.graphView = null;
     }
 
-    public static Collection<Vertex> getVertices(final TinkerGraph graph) {
-        return graph.vertices.values();
-    }
-
-    public static Collection<Edge> getEdges(final TinkerGraph graph) {
-        return graph.edges.values();
-    }
-
     public static List<TinkerVertex> queryVertexIndex(final TinkerGraph graph, final String key, final Object value) {
         return graph.vertexIndex.get(key, value);
     }

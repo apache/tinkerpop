@@ -3,12 +3,14 @@ package com.tinkerpop.gremlin.hadoop.process.computer.giraph;
 import com.tinkerpop.gremlin.hadoop.Constants;
 import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategy;
 import com.tinkerpop.gremlin.process.computer.util.MapMemory;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedVertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
@@ -35,6 +37,7 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
 
     private static final String VERTEX_ID = Graph.System.system("giraph.gremlin.vertexId");
     private TinkerVertex tinkerVertex;
+    private StrategyWrappedVertex wrappedVertex;
     private static KryoWriter KRYO_WRITER = KryoWriter.build().create();
     private static KryoReader KRYO_READER = KryoReader.build().create();
 
@@ -53,18 +56,21 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
 
     @Override
     public void compute(final Iterable<ObjectWritable> messages) {
-        if (null == this.tinkerVertex) inflateTinkerVertex();
         final VertexProgram vertexProgram = ((GiraphWorkerContext) this.getWorkerContext()).getVertexProgram();
         final GiraphMemory memory = ((GiraphWorkerContext) this.getWorkerContext()).getMemory();
         final GiraphMessenger messenger = ((GiraphWorkerContext) this.getWorkerContext()).getMessenger(this, messages);
+        ///
+        if (null == this.tinkerVertex) inflateTinkerVertex();
+        if (null == this.wrappedVertex)
+            this.wrappedVertex = ComputerDataStrategy.wrapVertex(this.tinkerVertex, vertexProgram);
         ///////////
         if (!(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HADOOP_HALT)).getObject())
-            vertexProgram.execute(this.tinkerVertex, messenger, memory);  // TODO provide a wrapper around TinkerVertex for Edge and non-ComputeKeys manipulation
+            vertexProgram.execute(this.wrappedVertex, messenger, memory);  // TODO provide a wrapper around TinkerVertex for Edge and non-ComputeKeys manipulation
         else if (this.getConf().getBoolean(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, false)) {
             final MapMemory mapMemory = new MapMemory();
             memory.asMap().forEach(mapMemory::set);
             mapMemory.setIteration(memory.getIteration() - 1);
-            this.tinkerVertex.singleProperty(Constants.MAP_MEMORY, mapMemory);
+            this.wrappedVertex.singleProperty(Constants.MAP_MEMORY, mapMemory);
         }
     }
 

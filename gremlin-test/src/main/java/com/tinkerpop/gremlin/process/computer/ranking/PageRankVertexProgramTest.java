@@ -4,12 +4,10 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
-import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -26,7 +24,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
         final ComputerResult result = g.compute().program(PageRankVertexProgram.build().create()).submit().get();
         result.graph().V().forEachRemaining(v -> {
             assertTrue(v.keys().contains("name"));
-            assertTrue(v.hiddenKeys().contains(PageRankVertexProgram.PAGE_RANK));
+            assertFalse(v.keys().contains(PageRankVertexProgram.PAGE_RANK));
             final String name = v.value("name");
             final Double pageRank = v.value(PageRankVertexProgram.PAGE_RANK);
             //System.out.println(name + "-----" + pageRank);

@@ -49,7 +49,7 @@ import java.util.function.Supplier;
  */
 public final class TraversalVertexProgram implements VertexProgram<TraverserSet<?>> {
 
-    public static final String HALTED_TRAVERSERS = Graph.Key.hide("gremlin.traversalVertexProgram.haltedTraversers");
+    public static final String HALTED_TRAVERSERS = "gremlin.traversalVertexProgram.haltedTraversers";
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalVertexProgram.traversalSupplier";
 

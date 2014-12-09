@@ -4,13 +4,13 @@ import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategy;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -71,18 +71,23 @@ public class TinkerGraphComputer implements GraphComputer {
             this.mapReduces.addAll(this.vertexProgram.getMapReducers());
         }
 
+        final StrategyWrappedGraph sg = new StrategyWrappedGraph(this.graph);
+        if (null != this.vertexProgram)
+            sg.getStrategy().setGraphStrategy(new ComputerDataStrategy(this.vertexProgram.getElementComputeKeys()));
+
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReduces);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
             if (null != this.vertexProgram) {
                 TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
+
                 // execute the vertex program
                 this.vertexProgram.setup(this.memory);
                 this.memory.completeSubRound();
                 final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), this.vertexProgram);
                 while (true) {
                     workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationStart(this.memory.asImmutable()));
-                    final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(TinkerHelper.getVertices(this.graph).iterator());
+                    final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.iterators().vertexIterator());
                     workers.executeVertexProgram(vertexProgram -> {
                         while (true) {
                             final Vertex vertex = vertices.next();
@@ -109,7 +114,7 @@ public class TinkerGraphComputer implements GraphComputer {
                 final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), mapReduce);
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                     final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
-                    final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(TinkerHelper.getVertices(this.graph).iterator());
+                    final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.iterators().vertexIterator());
                     workers.executeMapReduce(workerMapReduce -> {
                         while (true) {
                             final Vertex vertex = vertices.next();
@@ -139,7 +144,7 @@ public class TinkerGraphComputer implements GraphComputer {
             // update runtime and return the newly computed graph
             this.memory.setRuntime(System.currentTimeMillis() - time);
             this.memory.complete();
-            return new ComputerResult(this.graph, this.memory.asImmutable());
+            return new ComputerResult(sg, this.memory.asImmutable());
         });
     }
 

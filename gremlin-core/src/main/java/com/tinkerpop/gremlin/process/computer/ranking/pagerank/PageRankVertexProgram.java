@@ -5,13 +5,12 @@ import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageCombiner;
 import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
+import com.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -31,8 +30,8 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
     private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(() -> GraphTraversal.<Vertex>of().outE());
     private MessageScope.Local<Double> countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
 
-    public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRankVertexProgram.pageRank");
-    public static final String EDGE_COUNT = Graph.Key.hide("gremlin.pageRankVertexProgram.edgeCount");
+    public static final String PAGE_RANK = "gremlin.pageRankVertexProgram.pageRank";
+    public static final String EDGE_COUNT = "gremlin.pageRankVertexProgram.edgeCount";
 
     private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
