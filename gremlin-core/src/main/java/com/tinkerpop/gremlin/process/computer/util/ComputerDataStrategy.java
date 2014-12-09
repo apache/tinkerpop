@@ -15,32 +15,23 @@ import java.util.function.UnaryOperator;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class ComputerDataStrategy implements GraphStrategy {
 
-    private final String prefix;
+    private final Set<String> elementComputeKeys;
 
-    public ComputerDataStrategy(final String prefix) {
-        this.prefix = prefix;
+    public ComputerDataStrategy(final Set<String> elementComputeKeys) {
+        this.elementComputeKeys = elementComputeKeys;
     }
 
     @Override
     public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertiesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
-        return (f) -> (keys) -> {
-            if (keys.length == 0)
-                return IteratorUtils.filter(f.apply(keys), property -> !property.key().startsWith(prefix));
-
-            return f.apply(keys);
-        };
+        return (f) -> (keys) -> keys.length == 0 ? IteratorUtils.filter(f.apply(keys), property -> !this.elementComputeKeys.contains(property.key())) : f.apply(keys);
     }
 
     @Override
     public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
-        return (f) -> () -> {
-            // todo: this is dumb = fixy fix
-            final Iterator<String> keys = f.get().iterator();
-            final Iterator<String> filteredKeys = IteratorUtils.filter(keys, k -> !k.startsWith(prefix));
-            return new HashSet<>(IteratorUtils.convertToList(filteredKeys));
-        };
+        return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !this.elementComputeKeys.contains(key)), new HashSet<>());
     }
 }
