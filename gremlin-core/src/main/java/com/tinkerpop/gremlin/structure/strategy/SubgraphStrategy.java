@@ -4,17 +4,16 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.IteratorUtils;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
@@ -38,30 +37,6 @@ public class SubgraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> (id) -> {
-            final Vertex v = f.apply(id);
-            if (!this.testVertex(v)) {
-                throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-            }
-            return v;
-        };
-    }
-
-    @Override
-    public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> (id) -> {
-            final Edge e = f.apply(id);
-
-            if (!this.testEdge(e)) {
-                throw Graph.Exceptions.elementNotFound(Edge.class, id);
-            }
-
-            return e;
-        };
-    }
-
-    @Override
     public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return (f) -> (direction, labels) -> StreamFactory
                 .stream(ctx.getCurrent().edgeIterator(direction, labels))
@@ -74,21 +49,21 @@ public class SubgraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
-        return (f) -> (direction, labels) -> StreamFactory.stream(f.apply(direction, labels)).filter(this::testEdge).iterator();
+        return (f) -> (direction, labels) -> IteratorUtils.filter(f.apply(direction, labels), this::testEdge);
     }
 
     @Override
     public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
-        return (f) -> direction -> StreamFactory.stream(f.apply(direction)).filter(this::testVertex).iterator();
+        return (f) -> direction -> IteratorUtils.filter(f.apply(direction), this::testVertex);
     }
 
     @Override
-    public UnaryOperator<Function<Object[],GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+    public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return (f) -> ids -> f.apply(ids).filter(t -> this.testVertex(t.get())); // TODO: we should make sure index hits go first.
     }
 
     @Override
-    public UnaryOperator<Function<Object[],GraphTraversal<Edge, Edge>>> getGraphEStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+    public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return (f) -> ids -> f.apply(ids).filter(t -> this.testEdge(t.get()));  // TODO: we should make sure index hits go first.
     }
 

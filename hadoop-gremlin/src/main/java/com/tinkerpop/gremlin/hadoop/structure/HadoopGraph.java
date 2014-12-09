@@ -8,8 +8,6 @@ import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
@@ -109,18 +107,6 @@ public class HadoopGraph implements Graph, Graph.Iterators {
 
     public static HadoopGraph open(final Configuration configuration) {
         return new HadoopGraph(Optional.ofNullable(configuration).orElse(EMPTY_CONFIGURATION));
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Vertex.class, vertexIds));
-    }
-
-    @Override
-    public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Edge.class, edgeIds));
     }
 
     @Override

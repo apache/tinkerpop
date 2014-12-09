@@ -72,6 +72,7 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class IoTest extends AbstractGremlinTest {
 
@@ -196,7 +197,7 @@ public class IoTest extends AbstractGremlinTest {
             r.readGraph(in, g2);
         }
 
-        final Vertex v2 = g2.v("1");
+        final Vertex v2 = g2.V("1").next();
         assertEquals("\u00E9", v2.property("text").value());
 
         // need to manually close the "g2" instance

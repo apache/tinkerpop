@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import com.tinkerpop.gremlin.util.IteratorUtils;
-import com.tinkerpop.gremlin.util.function.FunctionUtils;
 
 import java.util.Iterator;
 
@@ -45,16 +44,16 @@ public class HadoopEdge extends HadoopElement implements Edge, Edge.Iterators, W
     public Iterator<Vertex> vertexIterator(final Direction direction) {
         switch (direction) {
             case OUT:
-                return new SingleIterator<>(this.graph.v(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id()));
+                return new SingleIterator<>(this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id())).next();
             case IN:
-                return new SingleIterator<>(this.graph.v(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id()));
+                return new SingleIterator<>(this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id())).next();
             default:
-                return new DoubleIterator<>(this.graph.v(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id()), this.graph.v(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id()));
+                return new DoubleIterator<>(this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id()).next(), this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id()).next());
         }
     }
 
     @Override
     public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
-        return IteratorUtils.<Property<V>,Property<V>>map(this.getBaseEdge().iterators().propertyIterator(propertyKeys), property -> new HadoopProperty<>(property, HadoopEdge.this));
+        return IteratorUtils.<Property<V>, Property<V>>map(this.getBaseEdge().iterators().propertyIterator(propertyKeys), property -> new HadoopProperty<>(property, HadoopEdge.this));
     }
 }

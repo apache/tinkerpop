@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,11 +54,8 @@ public class ElementHelper {
      * @return a pre-existing vertex or a newly created vertex
      */
     public static Vertex getOrAddVertex(final Graph graph, final Object id, final String label) {
-        try {
-            return graph.v(id);
-        } catch (final NoSuchElementException e) {
-            return graph.addVertex(T.id, id, T.label, label);
-        }
+        final Iterator<Vertex> iterator = graph.iterators().vertexIterator(id);
+        return iterator.hasNext() ? iterator.next() : graph.addVertex(T.id, id, T.label, label);
     }
 
     /**

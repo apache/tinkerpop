@@ -93,26 +93,6 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     ////////////// STRUCTURE API METHODS //////////////////
 
     @Override
-    public Vertex v(final Object id) {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, null);
-        final Vertex vertex = this.vertices.get(id);
-        if (null == vertex)
-            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-        else
-            return vertex;
-    }
-
-    @Override
-    public Edge e(final Object id) {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, null);
-        final Edge edge = this.edges.get(id);
-        if (null == edge)
-            throw Graph.Exceptions.elementNotFound(Edge.class, id);
-        else
-            return edge;
-    }
-
-    @Override
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         return new TinkerGraphTraversal<>(this, Vertex.class, vertexIds);
     }

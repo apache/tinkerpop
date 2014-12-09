@@ -29,9 +29,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * A @{link GraphReader} that constructs a graph from a JSON-based representation of a graph and its elements.
@@ -91,10 +89,9 @@ public class GraphSONReader implements GraphReader {
                     while (parser.nextToken() != JsonToken.END_ARRAY) {
                         final Map<String, Object> vertexData = parser.readValueAs(mapTypeReference);
                         readVertexData(vertexData, detachedVertex -> {
-                            final Vertex v = Optional.ofNullable(graph.v(detachedVertex.id())).orElse(
-                                    graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id()));
+                            final Iterator<Vertex> iterator = graph.iterators().vertexIterator(detachedVertex.id());
+                            final Vertex v = iterator.hasNext() ? iterator.next() : graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id());
                             detachedVertex.iterators().propertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
-                            //detachedVertex.iterators().hiddenPropertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, true));
                             return v;
                         });
                     }
@@ -102,12 +99,11 @@ public class GraphSONReader implements GraphReader {
                     while (parser.nextToken() != JsonToken.END_ARRAY) {
                         final Map<String, Object> edgeData = parser.readValueAs(mapTypeReference);
                         readEdgeData(edgeData, detachedEdge -> {
-                            final Vertex vOut = graph.v(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                            final Vertex vIn = graph.v(detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
+                            final Vertex vOut = graph.iterators().vertexIterator(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()).next();
+                            final Vertex vIn = graph.iterators().vertexIterator(detachedEdge.iterators().vertexIterator(Direction.IN).next().id()).next();
                             // batchgraph checks for edge id support and uses it if possible.
                             final Edge e = vOut.addEdge(edgeData.get(GraphSONTokens.LABEL).toString(), vIn, T.id, detachedEdge.id());
                             detachedEdge.iterators().propertyIterator().forEachRemaining(p -> e.<Object>property(p.key(), p.value()));
-                           // detachedEdge.iterators().hiddenPropertyIterator().forEachRemaining(p -> e.<Object>property(Graph.Key.hide(p.key()), p.value()));
                             return e;
                         });
                     }
@@ -162,7 +158,7 @@ public class GraphSONReader implements GraphReader {
         if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
             propertyArgs.addAll(Arrays.asList(T.id, p.id()));
         p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
-       // p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
+        // p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
         v.property(hidden ? Graph.Key.hide(p.key()) : p.key(), p.value(), propertyArgs.toArray());
     }
 

@@ -37,6 +37,7 @@ import java.util.function.Function;
  * This implementation is not thread-safe.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class KryoReader implements GraphReader {
     private final Kryo kryo;
@@ -189,7 +190,6 @@ public class KryoReader implements GraphReader {
         if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
             appendToArgList(propertyArgs, T.id, p.id());
         p.iterators().propertyIterator().forEachRemaining(it -> appendToArgList(propertyArgs, it.key(), it.value()));
-        //p.iterators().hiddenPropertyIterator().forEachRemaining(it -> appendToArgList(propertyArgs, Graph.Key.hide(it.key()), it.value()));
         v.property(hidden ? Graph.Key.hide(p.key()) : p.key(), p.value(), propertyArgs.toArray());
     }
 
@@ -294,11 +294,10 @@ public class KryoReader implements GraphReader {
             while (!next.equals(EdgeTerminator.INSTANCE)) {
                 final List<Object> edgeArgs = new ArrayList<>();
                 final DetachedEdge detachedEdge = (DetachedEdge) next;
-                final Vertex vOut = graphToWriteTo.v(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                final Vertex inV = graphToWriteTo.v(detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
+                final Vertex vOut = graphToWriteTo.iterators().vertexIterator(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()).next();
+                final Vertex inV = graphToWriteTo.iterators().vertexIterator(detachedEdge.iterators().vertexIterator(Direction.IN).next().id()).next();
 
                 detachedEdge.iterators().propertyIterator().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(p.key(), p.value())));
-                //detachedEdge.iterators().hiddenPropertyIterator().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(Graph.Key.hide(p.key()), p.value())));
 
                 appendToArgList(edgeArgs, T.id, detachedEdge.id());
 

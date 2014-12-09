@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.VertexTraversal;
+import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -18,6 +19,7 @@ import com.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -35,7 +37,7 @@ import java.util.function.Function;
  * That is, BatchGraph only supports the following methods:
  * - {@link #addVertex(Object...)} for adding vertices
  * - {@link Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)} for adding edges
- * - {@link #v(Object)} to be used when adding edges
+ * - {@link #V(Object...)} to be used when adding edges
  * - Property getter, setter and removal methods for vertices and edges.
  * <br />
  * An important limitation of BatchGraph is that edge properties can only be set immediately after the edge has been added.
@@ -49,8 +51,9 @@ import java.util.function.Function;
  *
  * @author Matthias Broecheler (http://www.matthiasb.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BatchGraph<G extends Graph> implements Graph {
+public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
     /**
      * Default buffer size is 10000.
      */
@@ -127,7 +130,7 @@ public class BatchGraph<G extends Graph> implements Graph {
         if (internal instanceof Vertex) {
             return (Vertex) internal;
         } else if (internal != null) { //its an internal id
-            final Vertex v = baseGraph.v(internal);
+            final Vertex v = baseGraph.V(internal).next();
             cache.set(v, externalID);
             return v;
         } else return null;
@@ -178,45 +181,6 @@ public class BatchGraph<G extends Graph> implements Graph {
         return new BatchVertex(id);
     }
 
-    /**
-     * {@inheritDoc}
-     * <br/>
-     * If the input data are sorted, then out vertex will be repeated for several edges in a row.
-     * In this case, bypass cache and instead immediately return a new vertex using the known id.
-     * This gives a modest performance boost, especially when the cache is large or there are
-     * on average many edges per vertex.
-     */
-    @Override
-    public Vertex v(final Object id) {
-        if ((previousOutVertexId != null) && (previousOutVertexId.equals(id)))
-            return new BatchVertex(previousOutVertexId);
-        else {
-            Vertex v = retrieveFromCache(id);
-            if (null == v) {
-                if (!incrementalLoading) return null;
-                else {
-                    final Iterator<Vertex> iter = baseGraph.V().has(vertexIdKey, id);
-                    if (!iter.hasNext()) return null;
-                    v = iter.next();
-                    if (iter.hasNext())
-                        throw new IllegalStateException("There are multiple vertices with the provided id in the database: " + id);
-                    cache.set(v, id);
-                }
-            }
-            return new BatchVertex(id);
-        }
-    }
-
-    @Override
-    public Edge e(final Object id) {
-        throw retrievalNotSupported();
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        throw retrievalNotSupported();
-    }
-
     @Override
     public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
         throw retrievalNotSupported();
@@ -224,6 +188,34 @@ public class BatchGraph<G extends Graph> implements Graph {
 
     @Override
     public Iterators iterators() {
+        return this;
+    }
+
+    @Override
+    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+        if (vertexIds.length > 1)
+            throw new IllegalArgumentException("BatchGraph only allows a single vertex id at one time");
+        if ((this.previousOutVertexId != null) && (this.previousOutVertexId.equals(vertexIds[0]))) {
+            return new SingleIterator<>(new BatchVertex(this.previousOutVertexId));
+        } else {
+            Vertex vertex = retrieveFromCache(vertexIds[0]);
+            if (null == vertex) {
+                if (!this.incrementalLoading) return Collections.emptyIterator();
+                else {
+                    final Iterator<Vertex> iterator = this.baseGraph.V().has(this.vertexIdKey, vertexIds[0]);
+                    if (!iterator.hasNext()) return Collections.emptyIterator();
+                    vertex = iterator.next();
+                    if (iterator.hasNext())
+                        throw new IllegalStateException("There are multiple vertices with the provided id in the graph: " + vertexIds[0]);
+                    this.cache.set(vertex, vertexIds[0]);
+                }
+            }
+            return new SingleIterator<>(new BatchVertex(vertexIds[0]));
+        }
+    }
+
+    @Override
+    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
         throw retrievalNotSupported();
     }
 

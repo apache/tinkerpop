@@ -28,6 +28,7 @@ import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "vertexWithIdAlreadyExists",
@@ -325,10 +326,10 @@ public class GraphTest extends AbstractGremlinTest {
         }
 
         if (graph.features().vertex().supportsUserSuppliedIds()) {
-            final Vertex va = graph.v(graphProvider.convertId("1"));
-            final Vertex vb = graph.v(graphProvider.convertId("2"));
-            final Vertex vc = graph.v(graphProvider.convertId("3"));
-            final Vertex vd = graph.v(graphProvider.convertId("4"));
+            final Vertex va = graph.iterators().vertexIterator(graphProvider.convertId("1")).next();
+            final Vertex vb = graph.iterators().vertexIterator(graphProvider.convertId("2")).next();
+            final Vertex vc = graph.iterators().vertexIterator(graphProvider.convertId("3")).next();
+            final Vertex vd = graph.iterators().vertexIterator(graphProvider.convertId("4")).next();
 
             assertEquals(a, va);
             assertEquals(b, vb);

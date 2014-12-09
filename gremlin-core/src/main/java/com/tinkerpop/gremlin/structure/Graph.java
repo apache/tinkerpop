@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
@@ -140,35 +142,16 @@ public interface Graph extends AutoCloseable {
     }
 
     /**
-     * Get a {@link Vertex} given its unique identifier.
-     *
-     * @param id The unique identifier of the vertex to locate
-     * @throws NoSuchElementException if the vertex is not found.
-     */
-    public default Vertex v(final Object id) throws NoSuchElementException {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, null);
-        return (Vertex) this.V().has(T.id, id).next();
-    }
-
-    /**
-     * Get a {@link Edge} given its unique identifier.
-     *
-     * @param id The unique identifier of the edge to locate
-     * @throws NoSuchElementException if the edge is not found.
-     */
-    public default Edge e(final Object id) throws NoSuchElementException {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, null);
-        return (Edge) this.E().has(T.id, id).next();
-    }
-
-    /**
      * Starts a {@link GraphTraversal} over the vertices in the graph.
      * If vertexIds are provided, then the traversal starts at those vertices, else all vertices in the graph.
      *
      * @param vertexIds the ids of the vertices to get (if none are provided, get all vertices)
      * @return a graph traversal over the vertices of the graph
      */
-    public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds);
+    public default GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
+        return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Vertex.class, vertexIds));
+    }
 
     /**
      * Starts a {@link GraphTraversal} over the edges in the graph.
@@ -177,7 +160,10 @@ public interface Graph extends AutoCloseable {
      * @param edgeIds the ids of the edges to get (if none are provided, get all edges)
      * @return a graph traversal over the edges of the graph
      */
-    public GraphTraversal<Edge, Edge> E(final Object... edgeIds);
+    public default GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
+        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
+        return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Edge.class, edgeIds));
+    }
 
     /**
      * Constructs a new domain specific {@link Traversal} for this graph.

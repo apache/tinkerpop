@@ -100,16 +100,6 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getGraphvStrategy(ctx));
-    }
-
-    @Override
-    public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getGrapheStrategy(ctx));
-    }
-
-    @Override
     public UnaryOperator<Supplier<Object>> getVertexIdStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getVertexIdStrategy(ctx));
     }

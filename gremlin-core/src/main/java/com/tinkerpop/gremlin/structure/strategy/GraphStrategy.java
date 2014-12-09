@@ -615,30 +615,6 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#v(Object)}.
-     *
-     * @param ctx the context within which this strategy function is called
-     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
-     * {@link com.tinkerpop.gremlin.structure.Graph#v(Object)} signature
-     * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
-     */
-    public default UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return UnaryOperator.identity();
-    }
-
-    /**
-     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#e(Object)}.
-     *
-     * @param ctx the context within which this strategy function is called
-     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
-     * {@link com.tinkerpop.gremlin.structure.Graph#e(Object)} signature
-     * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
-     */
-    public default UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return UnaryOperator.identity();
-    }
-
-    /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#close()}.
      *
      * @param ctx the context within which this strategy function is called

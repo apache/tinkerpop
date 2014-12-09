@@ -13,7 +13,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
-import com.tinkerpop.gremlin.util.IteratorUtils;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -21,9 +20,7 @@ import org.apache.commons.configuration.ConfigurationConverter;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
-import org.neo4j.graphdb.NotInTransactionException;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.HighlyAvailableGraphDatabaseFactory;
 import org.neo4j.graphdb.schema.Schema;
@@ -33,16 +30,17 @@ import org.neo4j.tooling.GlobalGraphOperations;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
@@ -200,41 +198,6 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     }
 
     @Override
-    public Vertex v(final Object id) {
-        this.tx().readWrite();
-        if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-
-        try {
-            final Node node = this.baseGraph.getNodeById(evaluateToLong(id));
-            if (!node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
-                return new Neo4jVertex(node, this);
-        } catch (final NotFoundException e) {
-            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-        } catch (final NumberFormatException e) {
-            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-        } catch (final NotInTransactionException e) {
-            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-        }
-        throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-    }
-
-    @Override
-    public Edge e(final Object id) {
-        this.tx().readWrite();
-        if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, id);
-
-        try {
-            return new Neo4jEdge(this.baseGraph.getRelationshipById(evaluateToLong(id)), this);
-        } catch (final NotFoundException e) {
-            throw Graph.Exceptions.elementNotFound(Edge.class, id);
-        } catch (final NumberFormatException e) {
-            throw Graph.Exceptions.elementNotFound(Edge.class, id);
-        } catch (final NotInTransactionException e) {
-            throw Graph.Exceptions.elementNotFound(Edge.class, id);
-        }
-    }
-
-    @Override
     public <S> Neo4jTraversal<S, S> of() {
         return Neo4jTraversal.of(this);
     }
@@ -266,18 +229,34 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
 
     @Override
     public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
-        return 0 == vertexIds.length ? (Iterator) StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllNodes())
+        return 0 == vertexIds.length ? StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllNodes())
                 .filter(node -> !Neo4jHelper.isDeleted(node))
                 .filter(node -> !node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
-                .map(node -> new Neo4jVertex(node, this)).iterator() : IteratorUtils.map(Arrays.asList(vertexIds).iterator(), id -> new Neo4jVertex(this.getBaseGraph().getNodeById((long) id), this));
+                .map(node -> (Vertex) new Neo4jVertex(node, this)).iterator() :
+                Stream.of(vertexIds).filter(id -> id instanceof Number).filter(id -> {
+                    try {
+                        this.getBaseGraph().getNodeById(((Number) id).longValue());
+                        return true;
+                    } catch (final NotFoundException e) {
+                        return false;
+                    }
+                }).map(id -> (Vertex) new Neo4jVertex(this.getBaseGraph().getNodeById(((Number) id).longValue()), this)).iterator();
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Object... edgeIds) {
-        return 0 == edgeIds.length ? (Iterator) StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllRelationships())
+        return 0 == edgeIds.length ? StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllRelationships())
                 .filter(relationship -> !Neo4jHelper.isDeleted(relationship))
                 .filter(relationship -> !relationship.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
-                .map(relationship -> new Neo4jEdge(relationship, this)).iterator() : IteratorUtils.map(Arrays.asList(edgeIds).iterator(), id -> new Neo4jEdge(this.getBaseGraph().getRelationshipById((long) id), this));
+                .map(relationship -> (Edge) new Neo4jEdge(relationship, this)).iterator() :
+                Stream.of(edgeIds).filter(id -> id instanceof Number).filter(id -> {
+                    try {
+                        this.getBaseGraph().getRelationshipById(((Number) id).longValue());
+                        return true;
+                    } catch (final NotFoundException e) {
+                        return false;
+                    }
+                }).map(id -> (Edge) new Neo4jEdge(this.getBaseGraph().getRelationshipById(((Number) id).longValue()), this)).iterator();
 
     }
 
@@ -336,17 +315,6 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
         final Neo4jTraversal traversal = Neo4jTraversal.of(this);
         traversal.addStep(new StartStep(traversal, new Neo4jCypherIterator(this.cypher.execute(query, parameters).iterator(), this)));
         return traversal;
-    }
-
-    private static Long evaluateToLong(final Object id) throws NumberFormatException {
-        Long longId;
-        if (id instanceof Long)
-            longId = (Long) id;
-        else if (id instanceof Number)
-            longId = ((Number) id).longValue();
-        else
-            longId = Double.valueOf(id.toString()).longValue();
-        return longId;
     }
 
     class Neo4jTransaction implements Transaction {

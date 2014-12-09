@@ -31,7 +31,7 @@ import java.util.function.Function;
 public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWritable, ObjectWritable> implements WrappedVertex<TinkerVertex> {
 
     //TODO: Dangerous that the underlying TinkerGraph Vertex can have edges written to it.
-    //TODO: LongWritable as the key is not general enough -- GremlinWritable causes problems though :|
+    //TODO: LongWritable as the key is not general enough -- ObjectWritable causes problems though :|
 
     private static final String VERTEX_ID = Graph.System.system("giraph.gremlin.vertexId");
     private TinkerVertex tinkerVertex;
@@ -88,7 +88,7 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
             final TinkerGraph tinkerGraph = TinkerGraph.open();
             KRYO_READER.readGraph(bis, tinkerGraph);
             bis.close();
-            this.tinkerVertex = (TinkerVertex) tinkerGraph.v(tinkerGraph.variables().get(VERTEX_ID).get());
+            this.tinkerVertex = (TinkerVertex) tinkerGraph.iterators().vertexIterator(tinkerGraph.variables().get(VERTEX_ID).get()).next();
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

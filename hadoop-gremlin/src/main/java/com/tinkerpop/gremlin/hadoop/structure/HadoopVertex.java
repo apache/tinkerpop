@@ -59,12 +59,12 @@ public class HadoopVertex extends HadoopElement implements Vertex, Vertex.Iterat
 
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels) {
-        return IteratorUtils.map(this.getBaseVertex().iterators().vertexIterator(direction, edgeLabels), vertex -> HadoopVertex.this.graph.v(vertex.id()));
+        return IteratorUtils.map(this.getBaseVertex().iterators().vertexIterator(direction, edgeLabels), vertex -> HadoopVertex.this.graph.iterators().vertexIterator(vertex.id()).next());
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
-        return IteratorUtils.map(this.getBaseVertex().iterators().edgeIterator(direction, edgeLabels), edge -> HadoopVertex.this.graph.e(edge.id()));
+        return IteratorUtils.map(this.getBaseVertex().iterators().edgeIterator(direction, edgeLabels), edge -> HadoopVertex.this.graph.iterators().edgeIterator(edge.id()).next());
     }
 
     @Override
