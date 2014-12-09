@@ -257,3 +257,27 @@ marko.as('a').out().jump('a',2).values('name')
 IMPORTANT: In TinkerPop2, the `jump()`-step was called `loop()`. Jump has been generalized to support both do-while and while-do semantics which is explained in <<jump-step,Jump Step>>.
 
 CAUTION: A Traversal's result are never ordered unless explicitly by means of <<order-step,`order()`>> or <<orderby-step,`orderBy()`>>. Thus, never rely on the iteration sequence between TinkerPop3 releases and even within a release (as compiler optimizations may alter the flow).
+
+On Gremlin Language Variants
+----------------------------
+
+Gremlin is written in Java8. There are various language variants of Gremlin such as Gremlin-Groovy (packaged with TinkerPop3), Gremlin-Scala, Gremlin-JavaScript, Gremlin-Clojure, etc. It is best to think of Gremlin as a style of graph traversing that is no bound to a particular programming language per se. Within a programming language familiar to the developer, there is a Gremlin variant that they can use that leverages the idioms of that language. At minimum, a programming language providing a Gremlin implementation must support link:http://en.wikipedia.org/wiki/Method_chaining[function chaining] and link:http://en.wikipedia.org/wiki/Anonymous_function[lambdas/anonymous functions].
+
+Throughout the documentation, the examples provided are primarily written in Gremlin-Groovy. The reason for this is the <<gremlin-console,Gremlin Console>> whereby an interactive programming environment exists that does not require code compilation. For learning TinkerPop3 and interacting with a live graph system in an ad hoc manner, the Gremlin Console is invaluable. However, for developers interested in working with Gremlin-Java, a few Groovy-to-Java patterns are presented below.
+
+[source,groovy]
+g.V().out('knows').values('name') <1>
+g.V().out('knows').map{it.value('name') + ' is the friend name'} <2>
+g.V().out('knows').sideEffect{println it} <3>
+g.V().as('person').out('knows').as('friend').select{it.value('name')} <4>
+
+[source,java]
+g.V().out("knows").values("name") <1>
+g.V().out("knows").map(v -> v.value("name") + " is the friend name") <2>
+g.V().out("knows").sideEffect(System.out::println) <3>
+g.V().as("person").out("knows").as("friend").select(v -> ((Vertex)v).value("name")) <4>
+
+<1> All the non-lambda step chaining is identical in Gremlin-Groovy and Gremlin-Java. However, note that Groovy supports `'` strings as well as `"` strings.
+<2> In Groovy, lambdas are called closures and have a different syntax, where Groovy supports the `it` keyword and Java doesn't with all parameters requiring naming.
+<3> Java supports link:https://docs.oracle.com/javase/tutorial/java/javaOO/methodreferences.html[method references] as lambdas which is not possible in Gremlin-Groovy.
+<4> Groovy is lenient on object typing and Java is not. When the parameter type of the lambda is not known, typecasting is required.
