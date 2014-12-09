@@ -8,6 +8,8 @@ import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -23,7 +25,7 @@ public class ComputerDataStrategyTest extends AbstractGremlinTest {
     @Test
     public void shouldFilterHiddenProperties() {
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
-        sg.getStrategy().setGraphStrategy(new ComputerDataStrategy("***"));
+        sg.getStrategy().setGraphStrategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
 
         final Vertex v = sg.addVertex("***hidden-guy", "X", "not-hidden-guy", "Y");
         final Iterator<VertexProperty<Object>> props = v.iterators().propertyIterator();
@@ -36,7 +38,7 @@ public class ComputerDataStrategyTest extends AbstractGremlinTest {
     @Test
     public void shouldAccessHiddenProperties() {
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
-        sg.getStrategy().setGraphStrategy(new ComputerDataStrategy("***"));
+        sg.getStrategy().setGraphStrategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
 
         final Vertex v = sg.addVertex("***hidden-guy", "X", "not-hidden-guy", "Y");
         final Iterator<VertexProperty<Object>> props = v.iterators().propertyIterator("***hidden-guy");
@@ -49,7 +51,7 @@ public class ComputerDataStrategyTest extends AbstractGremlinTest {
     @Test
     public void shouldHideHiddenKeys() {
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
-        sg.getStrategy().setGraphStrategy(new ComputerDataStrategy("***"));
+        sg.getStrategy().setGraphStrategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
 
         final Vertex v = sg.addVertex("***hidden-guy", "X", "not-hidden-guy", "Y");
         final Set<String> keys = v.keys();
