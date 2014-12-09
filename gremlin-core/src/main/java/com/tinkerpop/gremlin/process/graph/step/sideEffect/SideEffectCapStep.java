@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
-import com.tinkerpop.gremlin.process.traversers.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
-import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.traversers.SimpleTraverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -61,6 +61,12 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
 
     public void onEngine(final TraversalEngine traversalEngine) {
         this.onGraphComputer = traversalEngine.equals(TraversalEngine.COMPUTER);
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.done = false;
     }
 
     @Override

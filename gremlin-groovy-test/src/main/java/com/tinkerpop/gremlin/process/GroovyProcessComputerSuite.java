@@ -21,6 +21,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.GroovyWhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyBackTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyFoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyHiddenValueMapTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyLocalTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPathTest;
@@ -80,6 +81,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyBackTest.ComputerTest.class,
             GroovyFoldTest.ComputerTest.class,
             GroovyHiddenValueMapTest.ComputerTest.class,
+            GroovyLocalTest.ComputerTest.class,
             GroovyMapTest.ComputerTest.class,
             // TODO: GroovyMatchTest.ComputerTest.class,
             // TODO: GroovyOrderByTest.ComputerTest.class,

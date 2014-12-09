@@ -266,12 +266,14 @@ Gremlin is written in Java8. There are various language variants of Gremlin such
 Throughout the documentation, the examples provided are primarily written in Gremlin-Groovy. The reason for this is the <<gremlin-console,Gremlin Console>> whereby an interactive programming environment exists that does not require code compilation. For learning TinkerPop3 and interacting with a live graph system in an ad hoc manner, the Gremlin Console is invaluable. However, for developers interested in working with Gremlin-Java, a few Groovy-to-Java patterns are presented below.
 
 [source,groovy]
+// Gremlin-Groovy
 g.V().out('knows').values('name') <1>
 g.V().out('knows').map{it.value('name') + ' is the friend name'} <2>
 g.V().out('knows').sideEffect{println it} <3>
 g.V().as('person').out('knows').as('friend').select{it.value('name')} <4>
 
 [source,java]
+// Gremlin-Java
 g.V().out("knows").values("name") <1>
 g.V().out("knows").map(v -> v.value("name") + " is the friend name") <2>
 g.V().out("knows").sideEffect(System.out::println) <3>
