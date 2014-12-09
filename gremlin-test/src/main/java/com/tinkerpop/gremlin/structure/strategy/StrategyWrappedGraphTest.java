@@ -473,6 +473,8 @@ public class StrategyWrappedGraphTest  {
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, AbstractGremlinTest, Stream<Vertex>>>> tests = new ArrayList<>();
             tests.add(Pair.with("g.V()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V())));
+            tests.add(Pair.with("g.iterators().vertexIterator()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.iterators().vertexIterator())));
+            tests.add(Pair.with("g.iterators().vertexIterator(1)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.iterators().vertexIterator(1))));
             tests.add(Pair.with("g.V(1)", (Graph g, AbstractGremlinTest instance) -> Stream.of(g.V(instance.convertToVertexId("marko")).next())));
             tests.add(Pair.with("g.V(1).outE().inV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("marko")).outE().inV())));
             tests.add(Pair.with("g.V(4).bothE().bothV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("josh")).bothE().bothV())));

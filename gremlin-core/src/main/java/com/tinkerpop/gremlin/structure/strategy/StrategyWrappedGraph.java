@@ -129,12 +129,12 @@ public class StrategyWrappedGraph implements Graph, Graph.Iterators, StrategyWra
 
     @Override
     public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
-        return getStrategy().compose(s -> s.getGraphIteratorsVerticesStrategy(this.graphContext), this.baseGraph.iterators()::vertexIterator).apply(vertexIds);
+        return new StrategyWrappedVertex.StrategyWrappedVertexIterator(getStrategy().compose(s -> s.getGraphIteratorsVerticesStrategy(this.graphContext), this.baseGraph.iterators()::vertexIterator).apply(vertexIds), this);
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Object... edgeIds) {
-        return getStrategy().compose(s -> s.getGraphIteratorsEdgesStrategy(this.graphContext), this.baseGraph.iterators()::edgeIterator).apply(edgeIds);
+        return new StrategyWrappedEdge.StrategyWrappedEdgeIterator(getStrategy().compose(s -> s.getGraphIteratorsEdgesStrategy(this.graphContext), this.baseGraph.iterators()::edgeIterator).apply(edgeIds), this);
     }
 
     @Override
