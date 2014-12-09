@@ -428,6 +428,8 @@ public class StrategyWrappedGraphTest  {
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, AbstractGremlinTest, Stream<Edge>>>> tests = new ArrayList<>();
             tests.add(Pair.with("g.E()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.E())));
+            tests.add(Pair.with("g.iterators().edgeIterator()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.iterators().edgeIterator())));
+            tests.add(Pair.with("g.iterators().edgeIterator(11)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.iterators().edgeIterator(11))));
             tests.add(Pair.with("g.E(11)", (Graph g, AbstractGremlinTest instance) -> Stream.of(g.E(instance.convertToEdgeId("josh", "created", "lop")).next())));
             tests.add(Pair.with("g.V(1).outE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("marko")).outE())));
             tests.add(Pair.with("g.V(4).bothE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V(instance.convertToVertexId("josh")).bothE())));
