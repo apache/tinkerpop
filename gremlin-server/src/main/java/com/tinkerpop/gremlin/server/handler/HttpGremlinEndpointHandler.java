@@ -13,8 +13,8 @@ import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
-import com.tinkerpop.gremlin.server.util.IteratorUtil;
 import com.tinkerpop.gremlin.server.util.MetricManager;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,7 +26,6 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
-import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,10 +42,12 @@ import java.util.UUID;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaders.Names.*;
-import static io.netty.handler.codec.http.HttpHeaders.*;
-import static io.netty.handler.codec.http.HttpMethod.*;
+import static io.netty.handler.codec.http.HttpHeaders.is100ContinueExpected;
+import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static io.netty.handler.codec.http.HttpMethod.GET;
+import static io.netty.handler.codec.http.HttpMethod.POST;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static io.netty.handler.codec.http.HttpVersion.*;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -89,7 +90,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
 
-            final Triplet<String, Map<String,Object>, Optional<String>> requestArguments;
+            final Triplet<String, Map<String, Object>, Optional<String>> requestArguments;
             try {
                 requestArguments = getGremlinScript(req);
             } catch (IllegalArgumentException iae) {
@@ -113,7 +114,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
                 final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
                         .code(ResponseStatusCode.SUCCESS)
-                        .result(IteratorUtil.convertToList(result)).create();
+                        .result(IteratorUtils.convertToList(result)).create();
 
                 final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(
                         serializer.serializeResponseAsString(responseMessage).getBytes(UTF8)));
@@ -124,7 +125,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 final String origin = req.headers().get(ORIGIN);
                 if (origin != null)
                     response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
-            
+
                 if (!isKeepAlive(req)) {
                     ctx.write(response).addListener(ChannelFutureListener.CLOSE);
                 } else {
@@ -144,7 +145,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-    private static Triplet<String, Map<String,Object>, Optional<String>> getGremlinScript(final FullHttpRequest request) {
+    private static Triplet<String, Map<String, Object>, Optional<String>> getGremlinScript(final FullHttpRequest request) {
         if (request.getMethod() == GET) {
             final QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
             final List<String> gremlinParms = decoder.parameters().get(Tokens.ARGS_GREMLIN);
@@ -154,12 +155,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             if (script.isEmpty()) throw new IllegalArgumentException("no gremlin script supplied");
 
             // query string parameters - take the first instance of a key only - ignore the rest
-            final Map<String,Object> bindings = new HashMap<>();
+            final Map<String, Object> bindings = new HashMap<>();
             decoder.parameters().entrySet().stream().filter(kv -> !kv.getKey().equals(Tokens.ARGS_GREMLIN))
                     .forEach(kv -> bindings.put(kv.getKey(), kv.getValue().get(0)));
 
             final List<String> languageParms = decoder.parameters().get(Tokens.ARGS_LANGUAGE);
-            final Optional<String> language =  (null == languageParms || languageParms.size() == 0) ?
+            final Optional<String> language = (null == languageParms || languageParms.size() == 0) ?
                     Optional.empty() : Optional.ofNullable(languageParms.get(0));
 
             return Triplet.with(script, bindings, language);
@@ -175,14 +176,15 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
 
             final JsonNode bindingsNode = body.get(Tokens.ARGS_BINDINGS);
-            if (bindingsNode != null && !bindingsNode.isObject()) throw new IllegalArgumentException("bindings must be a Map");
+            if (bindingsNode != null && !bindingsNode.isObject())
+                throw new IllegalArgumentException("bindings must be a Map");
 
-            final Map<String,Object> bindings = new HashMap<>();
+            final Map<String, Object> bindings = new HashMap<>();
             if (bindingsNode != null)
                 bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
 
             final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
-            final Optional<String> language =  null == languageNode ?
+            final Optional<String> language = null == languageNode ?
                     Optional.empty() : Optional.ofNullable(languageNode.asText());
 
             return Triplet.with(scriptNode.asText(), bindings, language);

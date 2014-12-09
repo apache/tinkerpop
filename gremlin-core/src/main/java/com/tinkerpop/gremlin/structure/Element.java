@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.util.IteratorUtils;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.HashSet;
 import java.util.Iterator;

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -22,7 +22,7 @@ public final class UnfoldStep<S, E> extends FlatMapStep<S, E> {
             else if (s instanceof Map)
                 return ((Map) s).entrySet().iterator();
             else
-                return new SingleIterator(s);
+                return IteratorUtils.of((E)s);
         });
     }
 }

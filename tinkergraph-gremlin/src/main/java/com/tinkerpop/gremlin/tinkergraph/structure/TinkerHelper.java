@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
-import com.tinkerpop.gremlin.util.IteratorUtils;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collection;
 import java.util.HashSet;

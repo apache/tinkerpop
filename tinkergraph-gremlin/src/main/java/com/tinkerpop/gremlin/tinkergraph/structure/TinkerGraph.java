@@ -14,9 +14,11 @@ import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerTraversal;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -176,12 +178,24 @@ public class TinkerGraph implements Graph, Graph.Iterators {
 
     @Override
     public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
-        return 0 == vertexIds.length ? this.vertices.values().iterator() : Stream.of(vertexIds).filter(this.vertices::containsKey).map(this.vertices::get).iterator();
+        if (1 == vertexIds.length) {
+            final Vertex vertex = this.vertices.get(vertexIds[0]);
+            return null == vertex ? Collections.emptyIterator() : IteratorUtils.of(vertex);
+        } else if (0 == vertexIds.length) {
+            return this.vertices.values().iterator();
+        } else
+            return Stream.of(vertexIds).filter(this.vertices::containsKey).map(this.vertices::get).iterator();
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Object... edgeIds) {
-        return 0 == edgeIds.length ? this.edges.values().iterator() : Stream.of(edgeIds).filter(this.edges::containsKey).map(this.edges::get).iterator();
+        if (1 == edgeIds.length) {
+            final Edge edge = this.edges.get(edgeIds[0]);
+            return null == edge ? Collections.emptyIterator() : IteratorUtils.of(edge);
+        } else if (0 == edgeIds.length)
+            return this.edges.values().iterator();
+        else
+            return Stream.of(edgeIds).filter(this.edges::containsKey).map(this.edges::get).iterator();
     }
 
     /**

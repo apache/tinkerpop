@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.IteratorUtils;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.hadoop.io.LongWritable;
 
 /**

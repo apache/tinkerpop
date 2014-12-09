@@ -1,15 +1,59 @@
-package com.tinkerpop.gremlin.util;
+package com.tinkerpop.gremlin.util.iterator;
 
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class IteratorUtils {
+
+    public static final <S> Iterator<S> of(final S a) {
+        return new SingleIterator<>(a);
+    }
+
+    public static final <S> Iterator<S> of(final S a, S b) {
+        return new DoubleIterator<>(a, b);
+    }
+
+    ///////////////
+
+    public static Iterator convertToIterator(final Object o) {
+        final Iterator itty;
+        if (o instanceof Iterable)
+            itty = ((Iterable) o).iterator();
+        else if (o instanceof Iterator)
+            itty = (Iterator) o;
+        else if (o instanceof Object[])
+            itty = new ArrayIterator<>((Object[]) o);
+        else if (o instanceof Stream)
+            itty = ((Stream) o).iterator();
+        else if (o instanceof Map)
+            itty = ((Map) o).entrySet().iterator();
+        else if (o instanceof Throwable)
+            itty = IteratorUtils.of(((Throwable) o).getMessage());
+        else
+            itty = IteratorUtils.of(o);
+        return itty;
+    }
+
+    public static List convertToList(final Object o) {
+        final List list = new ArrayList<>();
+        final Iterator iterator = IteratorUtils.convertToIterator(o);
+        while (iterator.hasNext()) {
+            list.add(iterator.next());
+        }
+        return list;
+    }
+
+    ///////////////
 
     public static final <S, E> Iterator<E> map(final Iterator<S> iterator, final Function<S, E> function) {
         return new Iterator<E>() {

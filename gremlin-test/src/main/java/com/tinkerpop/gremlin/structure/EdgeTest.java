@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -265,6 +266,23 @@ public class EdgeTest {
             final Vertex v = g.addVertex();
             final Edge e = v.addEdge("knows", v);
             assertEquals(0, e.properties().count().next().intValue());
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldReturnOutThenInOnVertexIterator() {
+            final Vertex a = g.addVertex();
+            final Vertex b = g.addVertex();
+            final Edge e = a.addEdge("knows", b);
+            assertEquals(a, e.iterators().vertexIterator(Direction.OUT).next());
+            assertEquals(b, e.iterators().vertexIterator(Direction.IN).next());
+            final Iterator<Vertex> iterator = e.iterators().vertexIterator(Direction.BOTH);
+            assertTrue(iterator.hasNext());
+            assertEquals(a, iterator.next());
+            assertTrue(iterator.hasNext());
+            assertEquals(b, iterator.next());
+            assertFalse(iterator.hasNext());
         }
     }
 

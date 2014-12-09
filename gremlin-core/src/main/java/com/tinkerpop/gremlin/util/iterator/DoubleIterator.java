@@ -1,17 +1,19 @@
-package com.tinkerpop.gremlin.process.util;
+package com.tinkerpop.gremlin.util.iterator;
+
+import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DoubleIterator<T> implements Iterator<T> {
+final class DoubleIterator<T> implements Iterator<T> {
 
     private final T a;
     private final T b;
     private char current = 'a';
 
-    public DoubleIterator(final T a, final T b) {
+    protected DoubleIterator(final T a, final T b) {
         this.a = a;
         this.b = b;
     }

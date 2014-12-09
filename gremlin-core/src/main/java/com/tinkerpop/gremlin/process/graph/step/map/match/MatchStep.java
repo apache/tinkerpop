@@ -5,8 +5,8 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversers.SimpleTraverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -95,7 +95,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
                     }
 
                     this.currentStart = this.starts.next();
-                    this.currentSolution = solveFor(new SingleIterator<>(this.currentStart.get()));
+                    this.currentSolution = solveFor(IteratorUtils.of(this.currentStart.get()));
                     this.currentIndex = 0;
                 } else {
                     throw FastNoSuchElementException.instance();
@@ -245,7 +245,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
                 for (TraversalWrapper<S, S> w : outs) {
                     TraversalUpdater<S, S> updater
-                            = new TraversalUpdater<>(w, new SingleIterator<>(o), currentStart, this.getLabel());
+                            = new TraversalUpdater<>(w, IteratorUtils.of(o), currentStart, this.getLabel());
 
                     Set<String> rightLabels = new HashSet<>();
                     addVariables(w.endLabel, rightLabels);

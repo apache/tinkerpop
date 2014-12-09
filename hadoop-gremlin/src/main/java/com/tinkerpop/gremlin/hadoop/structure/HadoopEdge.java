@@ -2,14 +2,12 @@ package com.tinkerpop.gremlin.hadoop.structure;
 
 import com.tinkerpop.gremlin.hadoop.process.graph.HadoopElementTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.util.DoubleIterator;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
-import com.tinkerpop.gremlin.util.IteratorUtils;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
 
@@ -44,11 +42,13 @@ public class HadoopEdge extends HadoopElement implements Edge, Edge.Iterators, W
     public Iterator<Vertex> vertexIterator(final Direction direction) {
         switch (direction) {
             case OUT:
-                return new SingleIterator<>(this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id())).next();
+                return IteratorUtils.of(this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id())).next();
             case IN:
-                return new SingleIterator<>(this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id())).next();
-            default:
-                return new DoubleIterator<>(this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id()).next(), this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id()).next());
+                return IteratorUtils.of(this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id())).next();
+            default: {
+                final Iterator<Vertex> iterator = getBaseEdge().iterators().vertexIterator(Direction.BOTH);
+                return IteratorUtils.of(this.graph.iterators().vertexIterator(iterator.next().id()).next(), this.graph.iterators().vertexIterator(iterator.next().id()).next());
+            }
         }
     }
 

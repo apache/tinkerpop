@@ -1,16 +1,18 @@
-package com.tinkerpop.gremlin.process.util;
+package com.tinkerpop.gremlin.util.iterator;
+
+import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SingleIterator<T> implements Iterator<T> {
+final class SingleIterator<T> implements Iterator<T> {
 
     private final T t;
     private boolean alive = true;
 
-    public SingleIterator(final T t) {
+    protected SingleIterator(final T t) {
         this.t = t;
     }
 

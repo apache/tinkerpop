@@ -7,10 +7,10 @@ import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultS
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -209,7 +209,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @param start a traverser to add to the traversal
          */
         public default void addStart(final Traverser<S> start) {
-            this.addStarts(new SingleIterator<>(start));
+            this.addStarts(IteratorUtils.of(start));
         }
 
         /**

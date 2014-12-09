@@ -4,8 +4,6 @@ import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jEdgeTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.util.Neo4jGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
-import com.tinkerpop.gremlin.process.util.DoubleIterator;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -13,6 +11,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
@@ -77,11 +76,11 @@ public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, Wra
         this.graph.tx().readWrite();
         switch (direction) {
             case OUT:
-                return new SingleIterator<>(new Neo4jVertex(this.getBaseEdge().getStartNode(), this.graph));
+                return IteratorUtils.of(new Neo4jVertex(this.getBaseEdge().getStartNode(), this.graph));
             case IN:
-                return new SingleIterator<>(new Neo4jVertex(this.getBaseEdge().getEndNode(), this.graph));
+                return IteratorUtils.of(new Neo4jVertex(this.getBaseEdge().getEndNode(), this.graph));
             default:
-                return new DoubleIterator<>(new Neo4jVertex(this.getBaseEdge().getStartNode(), this.graph), new Neo4jVertex(this.getBaseEdge().getEndNode(), this.graph));
+                return IteratorUtils.of(new Neo4jVertex(this.getBaseEdge().getStartNode(), this.graph), new Neo4jVertex(this.getBaseEdge().getEndNode(), this.graph));
         }
     }
 }

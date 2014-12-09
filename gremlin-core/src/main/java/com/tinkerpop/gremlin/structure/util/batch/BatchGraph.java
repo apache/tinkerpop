@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.VertexTraversal;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -16,6 +15,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
@@ -196,7 +196,7 @@ public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
         if (vertexIds.length > 1)
             throw new IllegalArgumentException("BatchGraph only allows a single vertex id at one time");
         if ((this.previousOutVertexId != null) && (this.previousOutVertexId.equals(vertexIds[0]))) {
-            return new SingleIterator<>(new BatchVertex(this.previousOutVertexId));
+            return IteratorUtils.of(new BatchVertex(this.previousOutVertexId));
         } else {
             Vertex vertex = retrieveFromCache(vertexIds[0]);
             if (null == vertex) {
@@ -210,7 +210,7 @@ public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
                     this.cache.set(vertex, vertexIds[0]);
                 }
             }
-            return new SingleIterator<>(new BatchVertex(vertexIds[0]));
+            return IteratorUtils.of(new BatchVertex(vertexIds[0]));
         }
     }
 

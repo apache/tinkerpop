@@ -9,9 +9,9 @@ import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.handler.StateKey;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
-import com.tinkerpop.gremlin.server.util.IteratorUtil;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import com.tinkerpop.gremlin.util.function.TriConsumer;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.channel.ChannelHandlerContext;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -47,7 +47,7 @@ public final class SessionOps {
 
     public static void evalOp(final Context context) throws OpProcessorException {
         evalOp(context, (Context ctx, RequestMessage msg, Object o) -> {
-            ctx.getChannelHandlerContext().write(Pair.with(msg, IteratorUtil.convertToIterator(o)));
+            ctx.getChannelHandlerContext().write(Pair.with(msg, IteratorUtils.convertToIterator(o)));
         });
     }
 

@@ -16,7 +16,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
-import com.tinkerpop.gremlin.util.IteratorUtils;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
 import org.neo4j.graphdb.Direction;
