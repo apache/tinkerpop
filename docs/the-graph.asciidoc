@@ -806,7 +806,7 @@ Given the nature of identifier assignment, this means that identifiers are gener
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 gremlin> swg = new StrategyGraph(g)
-==>defaultgraphstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
+==>identitygraphstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
 gremlin> swg.getStrategy().setGraphStrategy(IdStrategy.build("idKey").create())
 ==>null
 gremlin> swg.addVertex(id,"42a").id()
