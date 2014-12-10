@@ -7,7 +7,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyWrappedElementTraversal;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertexProperty;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -15,15 +16,15 @@ import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement implements VertexProperty<V>, StrategyWrapped, VertexProperty.Iterators {
-    private final VertexProperty<V> baseVertexProperty;
+public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement implements VertexProperty<V>, StrategyWrapped, WrappedVertexProperty<VertexProperty<V>>, VertexProperty.Iterators {
+
     private final Strategy.Context<StrategyWrappedVertexProperty<V>> strategyContext;
 
     public StrategyWrappedVertexProperty(final VertexProperty<V> baseVertexProperty, final StrategyWrappedGraph strategyWrappedGraph) {
         super(baseVertexProperty, strategyWrappedGraph);
         this.strategyContext = new Strategy.Context<>(strategyWrappedGraph, this);
-        this.baseVertexProperty = baseVertexProperty;
     }
 
     public Strategy.Context<StrategyWrappedVertexProperty<V>> getStrategyContext() {
@@ -47,28 +48,28 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
     public Object id() {
         return this.strategyWrappedGraph.getStrategy().compose(
                 s -> s.getVertexPropertyIdStrategy(strategyContext),
-                this.baseVertexProperty::id).get();
+                this.getBaseVertexProperty()::id).get();
     }
 
     @Override
     public String label() {
         return this.strategyWrappedGraph.getStrategy().compose(
                 s -> s.getVertexPropertyLabelStrategy(strategyContext),
-                this.baseVertexProperty::label).get();
+                this.getBaseVertexProperty()::label).get();
     }
 
     @Override
     public Set<String> keys() {
         return this.strategyWrappedGraph.getStrategy().compose(
                 s -> s.getVertexPropertyKeysStrategy(strategyContext),
-                this.baseVertexProperty::keys).get();
+                this.getBaseVertexProperty()::keys).get();
     }
 
     @Override
     public Vertex element() {
         return new StrategyWrappedVertex(this.strategyWrappedGraph.getStrategy().compose(
                 s -> s.getVertexPropertyGetElementStrategy(strategyContext),
-                this.baseVertexProperty::element).get(), strategyWrappedGraph);
+                this.getBaseVertexProperty()::element).get(), strategyWrappedGraph);
     }
 
     @Override
@@ -80,55 +81,59 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
     public <U> Property<U> property(final String key, final U value) {
         return new StrategyWrappedProperty<U>(this.strategyWrappedGraph.getStrategy().compose(
                 s -> s.<U, V>getVertexPropertyPropertyStrategy(strategyContext),
-                this.baseVertexProperty::property).<String, U>apply(key, value), this.strategyWrappedGraph);
+                this.getBaseVertexProperty()::property).<String, U>apply(key, value), this.strategyWrappedGraph);
     }
 
     @Override
     public String key() {
         return this.strategyWrappedGraph.getStrategy().compose(
-                s -> s.getVertexPropertyKeyStrategy(strategyContext), this.baseVertexProperty::key).get();
+                s -> s.getVertexPropertyKeyStrategy(this.strategyContext), this.getBaseVertexProperty()::key).get();
     }
 
     @Override
     public V value() throws NoSuchElementException {
         return this.strategyWrappedGraph.getStrategy().compose(
-                s -> s.getVertexPropertyValueStrategy(strategyContext), this.baseVertexProperty::value).get();
+                s -> s.getVertexPropertyValueStrategy(this.strategyContext), this.getBaseVertexProperty()::value).get();
     }
 
     @Override
     public boolean isPresent() {
-        return this.baseVertexProperty.isPresent();
+        return this.getBaseVertexProperty().isPresent();
     }
 
     @Override
     public void remove() {
         this.strategyWrappedGraph.getStrategy().compose(
-                s -> s.getRemoveVertexPropertyStrategy(strategyContext),
+                s -> s.getRemoveVertexPropertyStrategy(this.strategyContext),
                 () -> {
-                    this.baseVertexProperty.remove();
+                    this.getBaseVertexProperty().remove();
                     return null;
                 }).get();
     }
 
     @Override
+    public VertexProperty<V> getBaseVertexProperty() {
+        return (VertexProperty<V>) this.baseElement;
+    }
+
+    @Override
     public String toString() {
-        final GraphStrategy strategy = strategyWrappedGraph.getStrategy().getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.INSTANCE);
-        return StringFactory.graphStrategyPropertyString(strategy, this.baseVertexProperty);
+        return StringFactory.graphStrategyElementString(this);
     }
 
 
     @Override
     public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
-        return StreamFactory.stream(strategyWrappedGraph.getStrategy().compose(
-                s -> s.<U, V>getVertexPropertyIteratorsPropertiesStrategy(strategyContext),
-                (String[] pks) -> baseVertexProperty.iterators().propertyIterator(pks)).apply(propertyKeys))
-                .map(property -> (Property<U>) new StrategyWrappedProperty<>(property, strategyWrappedGraph)).iterator();
+        return IteratorUtils.map(this.strategyWrappedGraph.getStrategy().compose(
+                        s -> s.<U, V>getVertexPropertyIteratorsPropertiesStrategy(this.strategyContext),
+                        (String[] pks) -> this.getBaseVertexProperty().iterators().propertyIterator(pks)).apply(propertyKeys),
+                property -> new StrategyWrappedProperty<>(property, this.strategyWrappedGraph));
     }
 
     @Override
     public <U> Iterator<U> valueIterator(final String... propertyKeys) {
-        return strategyWrappedGraph.getStrategy().compose(
-                s -> s.<U, V>getVertexPropertyIteratorsValuesStrategy(strategyContext),
-                (String[] pks) -> baseVertexProperty.iterators().valueIterator(pks)).apply(propertyKeys);
+        return this.strategyWrappedGraph.getStrategy().compose(
+                s -> s.<U, V>getVertexPropertyIteratorsValuesStrategy(this.strategyContext),
+                (String[] pks) -> this.getBaseVertexProperty().iterators().valueIterator(pks)).apply(propertyKeys);
     }
 }

@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class StrategyWrappedElement implements Element, StrategyWrapped {
     protected final StrategyWrappedGraph strategyWrappedGraph;
@@ -30,7 +30,7 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
 
     @Override
     public int hashCode() {
-        return this.id().hashCode();
+        return this.baseElement.hashCode();
     }
 
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")

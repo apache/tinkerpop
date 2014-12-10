@@ -29,6 +29,7 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_STANDARD)
@@ -93,12 +94,10 @@ public class HadoopGraph implements Graph, Graph.Iterators {
         this.setProperty(Graph.GRAPH, HadoopGraph.class.getName());
     }};
 
-    protected final HadoopGraphVariables variables;
     protected final HadoopConfiguration configuration;
 
     private HadoopGraph(final Configuration configuration) {
         this.configuration = new HadoopConfiguration(configuration);
-        this.variables = new HadoopGraphVariables();
     }
 
     public static HadoopGraph open() {
@@ -131,7 +130,7 @@ public class HadoopGraph implements Graph, Graph.Iterators {
 
     @Override
     public Variables variables() {
-        return this.variables;
+        throw Exceptions.variablesNotSupported();
     }
 
     @Override
@@ -183,73 +182,182 @@ public class HadoopGraph implements Graph, Graph.Iterators {
         }
     }
 
-    @Override
     public Features features() {
-        return new Features() {
-            @Override
-            public GraphFeatures graph() {
-                return new GraphFeatures() {
-                    @Override
-                    public boolean supportsTransactions() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean supportsThreadedTransactions() {
-                        return false;
-                    }
-                };
-            }
-
-            @Override
-            public VertexFeatures vertex() {
-                return new VertexFeatures() {
-                    @Override
-                    public boolean supportsAddVertices() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean supportsAddProperty() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean supportsCustomIds() {
-                        return false;
-                    }
-
-                    @Override
-                    public VertexPropertyFeatures properties() {
-                        return new VertexPropertyFeatures() {
-                            @Override
-                            public boolean supportsAddProperty() {
-                                return false;
-                            }
-                        };
-                    }
-                };
-            }
-
-            @Override
-            public EdgeFeatures edge() {
-                return new EdgeFeatures() {
-                    @Override
-                    public boolean supportsAddEdges() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean supportsAddProperty() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean supportsCustomIds() {
-                        return false;
-                    }
-                };
-            }
-        };
+        return new HadoopGraphFeatures();
     }
+
+    public static class HadoopGraphFeatures implements Features {
+
+        @Override
+        public GraphFeatures graph() {
+            return new GraphFeatures() {
+
+                @Override
+                public boolean supportsTransactions() {
+                    return false;
+                }
+
+                @Override
+                public boolean supportsThreadedTransactions() {
+                    return false;
+                }
+
+                @Override
+                public Features.VariableFeatures variables() {
+                    return new Features.VariableFeatures() {
+                        @Override
+                        public boolean supportsVariables() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsBooleanValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsByteValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsDoubleValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsFloatValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsIntegerValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsLongValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsMapValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsMixedListValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsBooleanArrayValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsByteArrayValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsDoubleArrayValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsFloatArrayValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsIntegerArrayValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsStringArrayValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsLongArrayValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsSerializableValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsStringValues() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsUniformListValues() {
+                            return false;
+                        }
+                    };
+                }
+            };
+        }
+
+        @Override
+        public EdgeFeatures edge() {
+            return new EdgeFeatures() {
+                @Override
+                public boolean supportsAddEdges() {
+                    return false;
+                }
+
+                @Override
+                public boolean supportsAddProperty() {
+                    return false;
+                }
+
+                @Override
+                public boolean supportsCustomIds() {
+                    return false;
+                }
+            };
+        }
+
+        @Override
+        public VertexFeatures vertex() {
+            return new VertexFeatures() {
+                @Override
+                public boolean supportsAddVertices() {
+                    return false;
+                }
+
+                @Override
+                public boolean supportsAddProperty() {
+                    return false;
+                }
+
+                @Override
+                public boolean supportsCustomIds() {
+                    return false;
+                }
+
+                @Override
+                public Features.VertexPropertyFeatures properties() {
+                    return new Features.VertexPropertyFeatures() {
+                        @Override
+                        public boolean supportsAddProperty() {
+                            return false;
+                        }
+                    };
+                }
+            };
+        }
+
+        @Override
+        public String toString() {
+            return StringFactory.featureString(this);
+        }
+    }
+
 }

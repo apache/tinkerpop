@@ -784,7 +784,7 @@ public class FeatureSupportTest {
         private EdgeFeatures edgeFeatures;
         private EdgePropertyFeatures edgePropertyFeatures;
         private GraphFeatures graphFeatures;
-        private Graph.Features.VariableFeatures variableFeatures;
+        private Graph.Features.VariableFeatures variablesFeatures;
         private VertexFeatures vertexFeatures;
         private VertexPropertyFeatures vertexPropertyFeatures;
 
@@ -794,22 +794,22 @@ public class FeatureSupportTest {
             edgeFeatures = f.edge();
             edgePropertyFeatures = edgeFeatures.properties();
             graphFeatures = f.graph();
-            variableFeatures = graphFeatures.variables();
+            variablesFeatures = graphFeatures.variables();
             vertexFeatures = f.vertex();
             vertexPropertyFeatures = vertexFeatures.properties();
         }
 
         @Test
-        public void shouldSupportADataTypeIfGraphHasMemoryEnabled() {
-            assertEquals(variableFeatures.supportsVariables(), (variableFeatures.supportsBooleanValues() || variableFeatures.supportsDoubleValues()
-                    || variableFeatures.supportsFloatValues() || variableFeatures.supportsIntegerValues()
-                    || variableFeatures.supportsLongValues() || variableFeatures.supportsMapValues()
-                    || variableFeatures.supportsMixedListValues()|| variableFeatures.supportsByteValues()
-                    || variableFeatures.supportsBooleanArrayValues() || variableFeatures.supportsByteArrayValues()
-                    || variableFeatures.supportsDoubleArrayValues() || variableFeatures.supportsFloatArrayValues()
-                    || variableFeatures.supportsIntegerArrayValues() || variableFeatures.supportsLongArrayValues()
-                    || variableFeatures.supportsSerializableValues() || variableFeatures.supportsStringValues()
-                    || variableFeatures.supportsUniformListValues() || variableFeatures.supportsStringArrayValues()));
+        public void shouldSupportADataTypeIfGraphHasVariablesEnabled() {
+            assertEquals(variablesFeatures.supportsVariables(), (variablesFeatures.supportsBooleanValues() || variablesFeatures.supportsDoubleValues()
+                    || variablesFeatures.supportsFloatValues() || variablesFeatures.supportsIntegerValues()
+                    || variablesFeatures.supportsLongValues() || variablesFeatures.supportsMapValues()
+                    || variablesFeatures.supportsMixedListValues()|| variablesFeatures.supportsByteValues()
+                    || variablesFeatures.supportsBooleanArrayValues() || variablesFeatures.supportsByteArrayValues()
+                    || variablesFeatures.supportsDoubleArrayValues() || variablesFeatures.supportsFloatArrayValues()
+                    || variablesFeatures.supportsIntegerArrayValues() || variablesFeatures.supportsLongArrayValues()
+                    || variablesFeatures.supportsSerializableValues() || variablesFeatures.supportsStringValues()
+                    || variablesFeatures.supportsUniformListValues() || variablesFeatures.supportsStringArrayValues()));
         }
 
         @Test

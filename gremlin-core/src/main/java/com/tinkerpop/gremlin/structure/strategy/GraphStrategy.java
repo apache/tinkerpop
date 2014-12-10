@@ -687,7 +687,7 @@ public interface GraphStrategy {
     }
 
     public static class DefaultGraphStrategy implements GraphStrategy {
-        public static final DefaultGraphStrategy INSTANCE = new DefaultGraphStrategy();
+        private static final DefaultGraphStrategy INSTANCE = new DefaultGraphStrategy();
 
         private DefaultGraphStrategy() {
         }
@@ -695,6 +695,10 @@ public interface GraphStrategy {
         @Override
         public String toString() {
             return this.getClass().getSimpleName().toLowerCase();
+        }
+
+        public static final GraphStrategy instance() {
+            return INSTANCE;
         }
     }
 }

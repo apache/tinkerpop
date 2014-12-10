@@ -20,6 +20,5 @@ public class StrategyWrappedTraversal<S, E> extends DefaultGraphTraversal<S, E> 
 
     public StrategyWrappedTraversal(final StrategyWrappedGraph graph) {
         super(graph);
-        this.addStep(new StartStep<>(this));
     }
 }

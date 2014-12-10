@@ -27,7 +27,7 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StrategyWrappedGraph implements Graph, Graph.Iterators, StrategyWrapped, WrappedGraph<Graph> {
+public final class StrategyWrappedGraph implements Graph, Graph.Iterators, StrategyWrapped, WrappedGraph<Graph> {
     private final Graph baseGraph;
     private Strategy strategy;
     private Strategy.Context<StrategyWrappedGraph> graphContext;
@@ -39,7 +39,7 @@ public class StrategyWrappedGraph implements Graph, Graph.Iterators, StrategyWra
     public StrategyWrappedGraph(final Graph baseGraph, final Strategy strategy) {
         if (baseGraph instanceof StrategyWrapped) throw new IllegalArgumentException(
                 String.format("The graph %s is already StrategyWrapped and must be a base Graph", baseGraph));
-        if (null == strategy) throw new IllegalArgumentException("strategy cannot be null");
+        if (null == strategy) throw new IllegalArgumentException("Strategy cannot be null");
 
         this.strategy = strategy;
         this.baseGraph = baseGraph;
@@ -62,7 +62,7 @@ public class StrategyWrappedGraph implements Graph, Graph.Iterators, StrategyWra
     }
 
     public Strategy.Context<StrategyWrappedGraph> getGraphContext() {
-        return graphContext;
+        return this.graphContext;
     }
 
     @Override
@@ -75,14 +75,14 @@ public class StrategyWrappedGraph implements Graph, Graph.Iterators, StrategyWra
 
     @Override
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        return new StrategyWrappedGraphTraversal<>(Vertex.class, getStrategy().compose(
+        return new StrategyWrappedGraphTraversal<>(Vertex.class, this.strategy.compose(
                 s -> s.getGraphVStrategy(this.graphContext),
                 this.baseGraph::V).apply(vertexIds), this);
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        return new StrategyWrappedGraphTraversal<>(Edge.class, getStrategy().compose(
+        return new StrategyWrappedGraphTraversal<>(Edge.class, this.strategy.compose(
                 s -> s.getGraphEStrategy(this.graphContext),
                 this.baseGraph::E).apply(edgeIds), this);
     }
@@ -134,7 +134,7 @@ public class StrategyWrappedGraph implements Graph, Graph.Iterators, StrategyWra
 
     @Override
     public Iterator<Edge> edgeIterator(final Object... edgeIds) {
-        return new StrategyWrappedEdge.StrategyWrappedEdgeIterator(getStrategy().compose(s -> s.getGraphIteratorsEdgesStrategy(this.graphContext), this.baseGraph.iterators()::edgeIterator).apply(edgeIds),this);
+        return new StrategyWrappedEdge.StrategyWrappedEdgeIterator(getStrategy().compose(s -> s.getGraphIteratorsEdgesStrategy(this.graphContext), this.baseGraph.iterators()::edgeIterator).apply(edgeIds), this);
     }
 
     @Override
@@ -152,7 +152,7 @@ public class StrategyWrappedGraph implements Graph, Graph.Iterators, StrategyWra
 
     @Override
     public String toString() {
-        final GraphStrategy strategy = this.strategy.getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+        final GraphStrategy strategy = this.strategy.getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.instance());
         return StringFactory.graphStrategyString(strategy, this.baseGraph);
     }
 }

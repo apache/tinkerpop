@@ -306,7 +306,7 @@ public class SequenceStrategy implements GraphStrategy {
 
     @Override
     public String toString() {
-        return String.join("->", graphStrategySequence.stream().map(Object::toString)
+        return String.join("->", this.graphStrategySequence.stream().map(Object::toString)
                 .map(String::toLowerCase).collect(Collectors.<String>toList()));
     }
 

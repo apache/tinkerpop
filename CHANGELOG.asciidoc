@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `HadoopGraph` now connected to the `StructureProcessSuite`.
+* `HadoopGraph` no longer supports `Graph.Variables` as they were in-memory. A persistence mechanism can be introduced in the future.
 * Hidden properties removed in favor of using `GraphStrategy` for such features.
 * `Edge.iterators().vertexIterator(BOTH)` now guarantees `OUT` then `IN` vertex iterator order.
 * `Graph.v(Object)` and `Graph.e(Object)` no longer exist. Instead, use `Graph.V(Object... ids)` and `Graph.E(Object... ids)`.

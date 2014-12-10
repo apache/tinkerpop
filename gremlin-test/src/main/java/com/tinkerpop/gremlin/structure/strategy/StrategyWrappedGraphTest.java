@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static org.junit.Assert.*;
 
 /**
@@ -79,7 +80,7 @@ public class StrategyWrappedGraphTest {
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             return new ArrayList<Object[]>() {{
-                add(new Object[]{GraphStrategy.DefaultGraphStrategy.INSTANCE});
+                add(new Object[]{GraphStrategy.DefaultGraphStrategy.instance()});
                 add(new Object[]{IdStrategy.build("key").create()});
                 add(new Object[]{new PartitionStrategy("partition", "A")});
                 add(new Object[]{new ReadOnlyStrategy()});
@@ -95,10 +96,8 @@ public class StrategyWrappedGraphTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldReturnWrappedVertexToString() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            final Vertex v1 = swg.addVertex(T.label, "Person");
-            final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
-            swg.getStrategy().setGraphStrategy(strategy);
-            assertEquals(StringFactory.graphStrategyVertexString(strategy, originalVertex), v1.toString());
+            final StrategyWrappedVertex v1 = (StrategyWrappedVertex) swg.addVertex(T.label, "Person");
+            assertEquals(StringFactory.graphStrategyElementString(v1), v1.toString());
         }
 
         @Test
@@ -107,10 +106,8 @@ public class StrategyWrappedGraphTest {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             final Vertex v1 = swg.addVertex(T.label, "Person");
             final Vertex v2 = swg.addVertex(T.label, "Person");
-            final Edge e1 = v1.addEdge("friend", v2);
-            final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
-            swg.getStrategy().setGraphStrategy(strategy);
-            assertEquals(StringFactory.graphStrategyEdgeString(strategy, originalEdge), e1.toString());
+            final StrategyWrappedEdge e1 = (StrategyWrappedEdge) v1.addEdge("friend", v2);
+            assertEquals(StringFactory.graphStrategyElementString(e1), e1.toString());
         }
 
         @Test
@@ -118,11 +115,8 @@ public class StrategyWrappedGraphTest {
         public void shouldReturnWrappedVertexPropertyToString() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             final Vertex v1 = swg.addVertex(T.label, "Person", "age", "one");
-            final VertexProperty age = v1.property("age");
-            final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
-            final VertexProperty originalVertexProperty = originalVertex.property("age");
-            swg.getStrategy().setGraphStrategy(strategy);
-            assertEquals(StringFactory.graphStrategyPropertyString(strategy, originalVertexProperty), age.toString());
+            final StrategyWrappedVertexProperty age = (StrategyWrappedVertexProperty) v1.property("age");
+            assertEquals(StringFactory.graphStrategyElementString(age), age.toString());
         }
 
         @Test
@@ -132,20 +126,25 @@ public class StrategyWrappedGraphTest {
             final Vertex v1 = swg.addVertex(T.label, "Person");
             final Vertex v2 = swg.addVertex(T.label, "Person");
             final Edge e1 = v1.addEdge("friend", v2, "weight", "fifty");
-            final Property weight = e1.property("weight");
-            final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
-            final Property originalProperty = originalEdge.property("weight");
-            swg.getStrategy().setGraphStrategy(strategy);
-            assertEquals(StringFactory.graphStrategyPropertyString(strategy, originalProperty), weight.toString());
+            final StrategyWrappedProperty weight = (StrategyWrappedProperty) e1.property("weight");
+            assertEquals(StringFactory.graphStrategyPropertyString(weight), weight.toString());
         }
 
         @Test
-        public void shouldReturnWrappedToString() {
+        public void shouldReturnWrappedGraphToString() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            final GraphStrategy strategy = swg.getStrategy().getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            final GraphStrategy strategy = swg.getStrategy().getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.instance());
             assertNotEquals(g.toString(), swg.toString());
             swg.getStrategy().setGraphStrategy(strategy);
             assertEquals(StringFactory.graphStrategyString(strategy, g), swg.toString());
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
+        public void shouldReturnWrappedVariablesToString() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            final StrategyWrappedVariables variables = (StrategyWrappedVariables) swg.variables();
+            assertEquals(StringFactory.graphStrategyVariables(variables), variables.toString());
         }
     }
 
@@ -273,7 +272,7 @@ public class StrategyWrappedGraphTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.instance());
             final Vertex v = swg.addVertex();
             final Edge e = v.addEdge("to", v, "all", "a", "any", "something", "hideme", "hidden");
 
@@ -318,7 +317,7 @@ public class StrategyWrappedGraphTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
         public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.instance());
             final Vertex v = swg.addVertex();
             final VertexProperty vp = v.property("property", "on-property", "food", "taco", "more", "properties");
 
@@ -362,7 +361,7 @@ public class StrategyWrappedGraphTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.instance());
             final Vertex v = swg.addVertex("all", "a", "any", "something", "hideme", "hidden");
 
             final AtomicBoolean atLeastOne = new AtomicBoolean(false);
@@ -406,7 +405,7 @@ public class StrategyWrappedGraphTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
         public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.instance());
             final Vertex v = swg.addVertex("all", "a", "any", "something", "any", "something-else", "hideme", "hidden", "hideme", "hidden-too");
 
             final AtomicBoolean atLeastOne = new AtomicBoolean(false);
@@ -510,7 +509,7 @@ public class StrategyWrappedGraphTest {
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.instance());
 
             final AtomicBoolean atLeastOne = new AtomicBoolean(false);
             assertTrue(streamGetter.apply(swg, this).allMatch(v -> {
@@ -549,7 +548,7 @@ public class StrategyWrappedGraphTest {
         @LoadGraphWith(LoadGraphWith.GraphData.CREW)
         public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.instance());
 
             final AtomicBoolean atLeastOne = new AtomicBoolean(false);
             assertTrue(streamGetter.apply(swg, this).allMatch(v -> {

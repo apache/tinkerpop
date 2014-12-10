@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.structure.util.wrapped.WrappedProperty;
 
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
@@ -13,7 +14,8 @@ import java.util.function.Supplier;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped {
+public final class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped, WrappedProperty<Property<V>> {
+
     private final Property<V> baseProperty;
     private final Strategy.Context<StrategyWrappedProperty<V>> strategyContext;
     private final StrategyWrappedGraph strategyWrappedGraph;
@@ -33,13 +35,13 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
     @Override
     public String key() {
         return this.strategyWrappedGraph.getStrategy().compose(
-                s -> s.getPropertyKeyStrategy(strategyContext), this.baseProperty::key).get();
+                s -> s.getPropertyKeyStrategy(this.strategyContext), this.baseProperty::key).get();
     }
 
     @Override
     public V value() throws NoSuchElementException {
         return this.strategyWrappedGraph.getStrategy().compose(
-                s -> s.getPropertyValueStrategy(strategyContext), this.baseProperty::value).get();
+                s -> s.getPropertyValueStrategy(this.strategyContext), this.baseProperty::value).get();
     }
 
     @Override
@@ -50,8 +52,8 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
     @Override
     public Element element() {
         final Element baseElement = this.baseProperty.element();
-        return (baseElement instanceof Vertex ? new StrategyWrappedVertex((Vertex) baseElement, strategyWrappedGraph) :
-                new StrategyWrappedEdge((Edge) baseElement, strategyWrappedGraph));
+        return (baseElement instanceof Vertex ? new StrategyWrappedVertex((Vertex) baseElement, this.strategyWrappedGraph) :
+                new StrategyWrappedEdge((Edge) baseElement, this.strategyWrappedGraph));
     }
 
     @Override
@@ -86,7 +88,11 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
 
     @Override
     public String toString() {
-        final GraphStrategy strategy = strategyWrappedGraph.getStrategy().getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.INSTANCE);
-        return StringFactory.graphStrategyPropertyString(strategy, this.baseProperty);
+        return StringFactory.graphStrategyPropertyString(this);
+    }
+
+    @Override
+    public Property<V> getBaseProperty() {
+        return this.baseProperty;
     }
 }

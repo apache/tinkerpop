@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.ArrayList;
@@ -125,7 +126,7 @@ public class IdStrategy implements GraphStrategy {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName().toLowerCase();
+        return StringFactory.graphStrategyString(this);
     }
 
     private void throwIfIdKeyIsSet(final Class<? extends Element> element, final String k) {

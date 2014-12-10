@@ -14,6 +14,9 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedElement;
+import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedProperty;
+import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedVariables;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.javatuples.Pair;
 
@@ -44,6 +47,7 @@ public class StringFactory {
     private static final String DOTS = "...";
     private static final String DASH = "-";
     private static final String ARROW = "->";
+    private static final String STAR = "*";
     private static final String EMPTY_PROPERTY = "p[empty]";
     private static final String EMPTY_VERTEX_PROPERTY = "vp[empty]";
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -103,16 +107,16 @@ public class StringFactory {
         return graphStrategy.getClass().getSimpleName().toLowerCase() + L_BRACKET + graph.toString() + R_BRACKET;
     }
 
-    public static String graphStrategyVertexString(final GraphStrategy graphStrategy, final Vertex vertex) {
-        return graphStrategy + L_BRACKET + vertex.toString() + R_BRACKET;
+    public static String graphStrategyElementString(final StrategyWrappedElement element) {
+        return element.getBaseElement() + STAR;
     }
 
-    public static String graphStrategyEdgeString(final GraphStrategy graphStrategy, final Edge edge) {
-        return graphStrategy + L_BRACKET + edge.toString() + R_BRACKET;
+    public static String graphStrategyPropertyString(final StrategyWrappedProperty property) {
+        return property.getBaseProperty() + STAR;
     }
 
-    public static String graphStrategyPropertyString(final GraphStrategy graphStrategy, final Property property) {
-        return graphStrategy + L_BRACKET + property.toString() + R_BRACKET;
+    public static String graphStrategyVariables(final StrategyWrappedVariables variables) {
+        return variables.getBaseVariables() + STAR;
     }
 
     public static String graphVariablesString(final Graph.Variables variables) {

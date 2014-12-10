@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVariables;
 
 import java.util.Map;
 import java.util.Optional;
@@ -9,7 +11,7 @@ import java.util.Set;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class StrategyWrappedVariables implements StrategyWrapped, Graph.Variables {
+public final class StrategyWrappedVariables implements StrategyWrapped, Graph.Variables, WrappedVariables<Graph.Variables> {
 
     protected final StrategyWrappedGraph strategyWrappedGraph;
     private final Graph.Variables baseVariables;
@@ -30,35 +32,45 @@ public class StrategyWrappedVariables implements StrategyWrapped, Graph.Variable
     @Override
     public Set<String> keys() {
         return this.strategyWrappedGraph.getStrategy().compose(
-                s -> s.getVariableKeysStrategy(variableStrategyContext),
+                s -> s.getVariableKeysStrategy(this.variableStrategyContext),
                 this.baseVariables::keys).get();
     }
 
     @Override
     public <R> Optional<R> get(final String key) {
         return this.strategyWrappedGraph.getStrategy().compose(
-                s -> s.<R>getVariableGetStrategy(variableStrategyContext),
+                s -> s.<R>getVariableGetStrategy(this.variableStrategyContext),
                 this.baseVariables::get).apply(key);
     }
 
     @Override
     public void set(final String key, final Object value) {
         this.strategyWrappedGraph.getStrategy().compose(
-                s -> s.getVariableSetStrategy(variableStrategyContext),
+                s -> s.getVariableSetStrategy(this.variableStrategyContext),
                 this.baseVariables::set).accept(key, value);
     }
 
     @Override
     public void remove(final String key) {
         this.strategyWrappedGraph.getStrategy().compose(
-                s -> s.getVariableRemoveStrategy(variableStrategyContext),
+                s -> s.getVariableRemoveStrategy(this.variableStrategyContext),
                 this.baseVariables::remove).accept(key);
     }
 
     @Override
     public Map<String, Object> asMap() {
         return this.strategyWrappedGraph.getStrategy().compose(
-                s -> s.getVariableAsMapStrategy(variableStrategyContext),
+                s -> s.getVariableAsMapStrategy(this.variableStrategyContext),
                 this.baseVariables::asMap).get();
+    }
+
+    @Override
+    public Graph.Variables getBaseVariables() {
+        return this.baseVariables;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.graphStrategyVariables(this);
     }
 }

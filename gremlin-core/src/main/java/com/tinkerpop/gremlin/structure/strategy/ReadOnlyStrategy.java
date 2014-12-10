@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.Collections;
@@ -86,7 +87,7 @@ public class ReadOnlyStrategy implements GraphStrategy {
 
     @Override
     public String toString() {
-        return ReadOnlyStrategy.class.getSimpleName().toLowerCase();
+        return StringFactory.graphStrategyString(this);
     }
 
     public static <T> UnaryOperator<Supplier<T>> readOnlySupplier() {

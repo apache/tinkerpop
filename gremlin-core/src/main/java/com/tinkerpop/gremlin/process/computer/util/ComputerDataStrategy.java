@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.strategy.Strategy;
 import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
 import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedVertex;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.HashSet;
@@ -44,6 +45,10 @@ public class ComputerDataStrategy implements GraphStrategy {
         return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !this.elementComputeKeys.contains(key)), new HashSet<>());
     }
 
+    @Override
+    public String toString() {
+        return StringFactory.graphStrategyString(this);
+    }
 
     public static StrategyWrappedGraph wrapGraph(final Graph graph, final VertexProgram<?> vertexProgram) {
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(graph);
