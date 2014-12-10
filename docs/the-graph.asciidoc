@@ -56,7 +56,7 @@ image:vertex-properties.png[width=215,float=left] TinkerPop3 introduces the conc
 A collection of use cases are itemized below:
 
  * *Permissions*: Vertex properties can have key/value ACL-type permission information associated with them.
- * *Auditing*: When a vertex vertex property is manipulated, it can have key/value information attached to it saying who the creator, deletor, etc. are.
+ * *Auditing*: When a vertex property is manipulated, it can have key/value information attached to it saying who the creator, deletor, etc. are.
  * *Provenance*: The "name" of a vertex can be declared by multiple users.
 
 A running example using vertex properties is provided below to demonstrate and explain the API.
@@ -115,9 +115,9 @@ gremlin> v.property('name')
 
 <1> A vertex can have zero or more properties with the same key associated with it.
 <2> If a vertex has multiple vertex properties for the same key, then `Vertex.property()` is not allowed.
-<3> A vertex vertex property can have standard key/value properties attached to it.
+<3> A vertex property can have standard key/value properties attached to it.
 <4> Vertex property removal is identical to property removal.
-<5> A vertex vertex property can have any number of key/value properties attached to it.
+<5> A vertex property can have any number of key/value properties attached to it.
 <6> `Vertex.singleProperty()` is a helper method that will remove all existing key'd properties before adding the new single property.
 
 If the concept of vertex properties is difficult to grasp, then it may be best to think of vertex properties in terms of "literal vertices." A vertex can have an edge to a "literal vertex" that has a single value key/value -- e.g. "value=okram." The edge that points to that literal vertex has an edge-label of "name." The properties on the edge represent the literal vertex's properties. The "literal vertex" can not have any other edges to it (only one from the associated vertex).
