@@ -224,7 +224,7 @@ Once there is an understanding for how transactions are configured, most of the 
 ----
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> g.features
+gremlin> g.features()
 ==>FEATURES
 > GraphFeatures
 >-- Transactions: true  <1>
@@ -281,7 +281,7 @@ image:batch-graph.png[width=280,float=left] `BatchGraph` wraps any `Graph` to en
 
 * `Graph.addVertex()` for adding vertices
 * `Vertex.addEdge()` for adding edges
-* `Graph.v()` to be used when adding edges
+* `Graph.V()` to get vertices by their id
 * Property getter, setter and removal methods for vertices and edges as well as `Element.id()`
 
 An important limitation of `BatchGraph` is that edge properties can only be set immediately after the edge has been added. If other vertices or edges have been created in the meantime, setting, getting or removing properties will throw exceptions. This is done to avoid caching of edges which would require memory.
@@ -303,7 +303,7 @@ BatchGraph bgraph = BatchGraph.build(graph).vertexIdType(VertexIdType.STRING).bu
 for (String[] quad : quads) {
     Vertex[] vertices = new Vertex[2];
     for (int i=0;i<2;i++) {
-        vertices[i] = bgraph.v(quad[i]);
+        vertices[i] = bgraph.V(quad[i]);
         if (null == vertices[i]) vertices[i]=bgraph.addVertex(T.id, quad[i]);
     }
     Edge edge = vertices[0].addEdge(quad[2],vertices[1], "annotation",quad[3]);
@@ -775,7 +775,7 @@ gremlin> g.V(0l).values('name')
 ==>stephen
 ----
 
-By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it then possible to read back that added vertex. The following sections explain details of the specific `GraphStrategy` implementations.
+By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it is then possible to read back that added vertex. The following sections explain details of the specific `GraphStrategy` implementations.
 
 IdStrategy
 ~~~~~~~~~~~~~~~
@@ -839,17 +839,17 @@ Add vertices and edges first in one partition, then another:
 [source,groovy]
 ----
 gremlin> v1 = sg.addVertex("name", "one")
-==>partitiongraphstrategy[v[0]]
+==>v[0]*
 gremlin> v2 = sg.addVertex("name", "two")
-==>partitiongraphstrategy[v[1]]
+==>v[3]*
 gremlin> v1.addEdge("knows", v2)
-==>partitiongraphstrategy[e[2][0-knows->1]]
+==>e[6][0-knows->3]*
 gremlin> strategy.setWritePartition("B")
 ==>null
 gremlin> v3 = sg.addVertex("name", "three")
-==>partitiongraphstrategy[v[3]]
+==>v[7]*
 gremlin> v1.addEdge("knows", v3)
-==>partitiongraphstrategy[e[4][0-knows->3]]
+==>e[10][0-knows->7]*
 gremlin> 
 ----
 
@@ -926,8 +926,8 @@ StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
 sg.getStrategy().setGraphStrategy(strategy);
 
 // all vertices are here
-System.out.println("" + sg.V().count() + " of " + g.V().count() + " vertices");
+System.out.println("" + sg.V().count().next() + " of " + g.V().count().next() + " vertices");
 
 // only the given edges are included
-System.out.println("" + sg.E().count() + " of " + g.E().count() + " edges");
+System.out.println("" + sg.E().count().next() + " of " + g.E().count().next() + " edges");
 ----
