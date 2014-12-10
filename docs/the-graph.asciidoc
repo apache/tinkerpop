@@ -735,6 +735,7 @@ Graph Strategy
 
 A Graph Strategy provides a way to expand, inspect or otherwise alter the behavior of a `Graph` implementation.  A Graph Strategy injects arbitrary functions into the `Graph` API, so that when a method call is made, the strategy functions can manipulate the default behavior of the underlying `Graph`.  TinkerPop3 is packaged with the following strategies:
 
+* `IdentityStrategy` - a "do nothing" `GraphStrategy` that executes the function as it is passed into the strategy
 * `IdStrategy` - enables support for custom element identifiers for those graphs which don't otherwise support them
 * `PartitionStrategy` - enables support for logical graph partitioning where the `Graph` can be blinded to different parts of the total graph
 * `ReadOnlyStrategy` - prevents writing to the `Graph`
@@ -778,7 +779,7 @@ gremlin> g.V(0l).values('name')
 By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it then possible to read back that added vertex. The following sections explain details of the specific `GraphStrategy` implementations.
 
 IdStrategy
-~~~~~~~~~~~~~~~
+~~~~~~~~~~
 
 `IdStrategy` which affords complete control over element identifiers. Some `Graph` implementations, such as `TinkerGraph`, allow specification of custom identifiers when creating elements:
 
@@ -818,7 +819,7 @@ When a non-null identifier is passed to `IdGraph.addVertex` or `IdGraph.addEdge`
 IMPORTANT: The key that is used to store the assigned identifier should be indexed in the underlying graph database.  If it is not indexed, then lookups for the elements that use these identifiers will perform a linear scan.
 
 PartitionStrategy
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 `PartitionStrategy` is a `SubgraphStrategy` which creates logical subgraphs through the use of designated properties.  When each element is written to the `Graph`, it is marked with a property value indicating the current write-partition.  As elements are read from the graph, they are matched against the current set of read-partitions.  The read-partitions thereby define the union of a set of vertices and edges. For example:
 
@@ -874,7 +875,7 @@ gremlin> "in B: " + sg.V().count().next() + ", " + sg.E().count().next()
 Note that there are no edges in the set B, as the only edge added to partition B is incident on a vertex of A.
 
 ReadOnlyStrategy
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 `ReadOnlyStrategy` was demonstrated at the start of the `GraphStrategy` section.  It simply prevents write operations that would otherwise mutate the `Graph`.
 
@@ -891,7 +892,7 @@ Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategy and i
 ----
 
 SequenceStrategy
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 `SequenceStrategy` provides a way to string together a set of `GraphStrategy` implementations, such that they are executed in order from first to last.  The `GraphFactory` provides a straightforward way to invisibly use `SequenceStrategy`:
 

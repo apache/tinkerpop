@@ -686,19 +686,4 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
-    public static class IdentityStrategy implements GraphStrategy {
-        private static final IdentityStrategy INSTANCE = new IdentityStrategy();
-
-        private IdentityStrategy() {
-        }
-
-        @Override
-        public String toString() {
-            return this.getClass().getSimpleName().toLowerCase();
-        }
-
-        public static final GraphStrategy instance() {
-            return INSTANCE;
-        }
-    }
 }
