@@ -399,8 +399,8 @@ public class ElementHelper {
             if (propertyMap.containsKey(property.key()))
                 propertyMap.get(property.key()).add(property);
             else {
-                final List list = new ArrayList();
-                list.add(property.value());
+                final List<VertexProperty> list = new ArrayList<>();
+                list.add(property);
                 propertyMap.put(property.key(), list);
             }
         });
