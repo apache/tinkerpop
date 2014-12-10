@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategy;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
+import com.tinkerpop.gremlin.structure.strategy.StrategyGraph;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
@@ -71,7 +71,7 @@ public class TinkerGraphComputer implements GraphComputer {
             this.mapReduces.addAll(this.vertexProgram.getMapReducers());
         }
 
-        final StrategyWrappedGraph sg = new StrategyWrappedGraph(this.graph);
+        final StrategyGraph sg = new StrategyGraph(this.graph);
         if (null != this.vertexProgram)
             sg.getStrategy().setGraphStrategy(new ComputerDataStrategy(this.vertexProgram.getElementComputeKeys()));
 

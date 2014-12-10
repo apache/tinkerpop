@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
-import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedVertex;
+import com.tinkerpop.gremlin.structure.strategy.StrategyVertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
@@ -37,7 +37,7 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
 
     private static final String VERTEX_ID = Graph.System.system("giraph.gremlin.vertexId");
     private TinkerVertex tinkerVertex;
-    private StrategyWrappedVertex wrappedVertex;
+    private StrategyVertex wrappedVertex;
     private static KryoWriter KRYO_WRITER = KryoWriter.build().create();
     private static KryoReader KRYO_READER = KryoReader.build().create();
 

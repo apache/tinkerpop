@@ -148,7 +148,6 @@ public class KryoReader implements GraphReader {
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
                     current.iterators().propertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
-                    //current.iterators().hiddenPropertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, true));
 
                     // the gio file should have been written with a direction specified
                     final boolean hasDirectionSpecified = input.readBoolean();

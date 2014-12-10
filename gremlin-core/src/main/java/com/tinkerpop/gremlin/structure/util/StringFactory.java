@@ -14,9 +14,9 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedElement;
-import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedProperty;
-import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedVariables;
+import com.tinkerpop.gremlin.structure.strategy.StrategyElement;
+import com.tinkerpop.gremlin.structure.strategy.StrategyProperty;
+import com.tinkerpop.gremlin.structure.strategy.StrategyVariables;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.javatuples.Pair;
 
@@ -107,15 +107,15 @@ public class StringFactory {
         return graphStrategy.getClass().getSimpleName().toLowerCase() + L_BRACKET + graph.toString() + R_BRACKET;
     }
 
-    public static String graphStrategyElementString(final StrategyWrappedElement element) {
+    public static String graphStrategyElementString(final StrategyElement element) {
         return element.getBaseElement() + STAR;
     }
 
-    public static String graphStrategyPropertyString(final StrategyWrappedProperty property) {
+    public static String graphStrategyPropertyString(final StrategyProperty property) {
         return property.getBaseProperty() + STAR;
     }
 
-    public static String graphStrategyVariables(final StrategyWrappedVariables variables) {
+    public static String graphStrategyVariables(final StrategyVariables variables) {
         return variables.getBaseVariables() + STAR;
     }
 

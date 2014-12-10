@@ -735,6 +735,7 @@ Graph Strategy
 
 A Graph Strategy provides a way to expand, inspect or otherwise alter the behavior of a `Graph` implementation.  A Graph Strategy injects arbitrary functions into the `Graph` API, so that when a method call is made, the strategy functions can manipulate the default behavior of the underlying `Graph`.  TinkerPop3 is packaged with the following strategies:
 
+* `IdentityStrategy` - a "do nothing" `GraphStrategy` that executes the function as it is passed into the strategy
 * `IdStrategy` - enables support for custom element identifiers for those graphs which don't otherwise support them
 * `PartitionStrategy` - enables support for logical graph partitioning where the `Graph` can be blinded to different parts of the total graph
 * `ReadOnlyStrategy` - prevents writing to the `Graph`
@@ -755,7 +756,7 @@ gremlin> g = GraphFactory.open(conf, new ReadOnlyStrategy())
 ==>readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]
 ----
 
-The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyWrappedGraph` which is a traverser for the underlying `TinkerGraph` and the `ReadOnlyStrategy`.  Since `StrategyWrappedGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
+The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyGraph` which is a traverser for the underlying `TinkerGraph` and the `ReadOnlyStrategy`.  Since `StrategyGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
 
 [source,groovy]
 ----
@@ -778,7 +779,7 @@ gremlin> g.V(0l).values('name')
 By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it is then possible to read back that added vertex. The following sections explain details of the specific `GraphStrategy` implementations.
 
 IdStrategy
-~~~~~~~~~~~~~~~
+~~~~~~~~~~
 
 `IdStrategy` which affords complete control over element identifiers. Some `Graph` implementations, such as `TinkerGraph`, allow specification of custom identifiers when creating elements:
 
@@ -804,8 +805,8 @@ Given the nature of identifier assignment, this means that identifiers are gener
 [source,groovy]
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> swg = new StrategyWrappedGraph(g)
-==>defaultgraphstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
+gremlin> swg = new StrategyGraph(g)
+==>identitygraphstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
 gremlin> swg.getStrategy().setGraphStrategy(IdStrategy.build("idKey").create())
 ==>null
 gremlin> swg.addVertex(id,"42a").id()
@@ -818,7 +819,7 @@ When a non-null identifier is passed to `IdGraph.addVertex` or `IdGraph.addEdge`
 IMPORTANT: The key that is used to store the assigned identifier should be indexed in the underlying graph database.  If it is not indexed, then lookups for the elements that use these identifiers will perform a linear scan.
 
 PartitionStrategy
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 `PartitionStrategy` is a `SubgraphStrategy` which creates logical subgraphs through the use of designated properties.  When each element is written to the `Graph`, it is marked with a property value indicating the current write-partition.  As elements are read from the graph, they are matched against the current set of read-partitions.  The read-partitions thereby define the union of a set of vertices and edges. For example:
 
@@ -828,7 +829,7 @@ gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
 gremlin> strategy = new PartitionStrategy("com.example.partition", "A")
 ==>PartitionStrategy
-gremlin> sg = new StrategyWrappedGraph(g)
+gremlin> sg = new StrategyGraph(g)
 ==>strategywrappedgraph[tinkergraph[vertices:0 edges:0]]
 gremlin> sg.getStrategy().setGraphStrategy(strategy)
 ==>null
@@ -874,7 +875,7 @@ gremlin> "in B: " + sg.V().count().next() + ", " + sg.E().count().next()
 Note that there are no edges in the set B, as the only edge added to partition B is incident on a vertex of A.
 
 ReadOnlyStrategy
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 `ReadOnlyStrategy` was demonstrated at the start of the `GraphStrategy` section.  It simply prevents write operations that would otherwise mutate the `Graph`.
 
@@ -891,7 +892,7 @@ Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategy and i
 ----
 
 SequenceStrategy
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 `SequenceStrategy` provides a way to string together a set of `GraphStrategy` implementations, such that they are executed in order from first to last.  The `GraphFactory` provides a straightforward way to invisibly use `SequenceStrategy`:
 
@@ -908,7 +909,7 @@ The above code demonstrates a `Graph` that uses a `SequenceStrategy` composed of
 SubgraphStrategy
 ~~~~~~~~~~~~~~~~
 
-A general-purpose `SubgraphStrategy` is created by defining a "vertex criterion" and an "edge criterion" as Java 8 `Predicates` and applying them to a `Graph`.  All vertices present in the base `Graph` which pass the vertex criterion will be present in the `StrategyWrappedGraph`.  All edges present in the base `Graph` which pass the edge criterion *and* whose in- and out-vertices both pass the vertex criterion will be present in the `StrategyWrappedGraph`.
+A general-purpose `SubgraphStrategy` is created by defining a "vertex criterion" and an "edge criterion" as Java 8 `Predicates` and applying them to a `Graph`.  All vertices present in the base `Graph` which pass the vertex criterion will be present in the `StrategyGraph`.  All edges present in the base `Graph` which pass the edge criterion *and* whose in- and out-vertices both pass the vertex criterion will be present in the `StrategyGraph`.
 
 NOTE: edges are either entirely visible, or entirely invisible to a subgraph.  You will never find an edge which cannot be traversed due to a missing in- or out-vertex.
 
@@ -922,7 +923,7 @@ Predicate<Vertex> vertexCriterion = vertex -> true;
 Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
 
 GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+StrategyGraph sg = new StrategyGraph(g);
 sg.getStrategy().setGraphStrategy(strategy);
 
 // all vertices are here

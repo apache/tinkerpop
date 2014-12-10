@@ -14,33 +14,33 @@ import java.util.function.Supplier;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped, WrappedProperty<Property<V>> {
+public final class StrategyProperty<V> implements Property<V>, StrategyWrapped, WrappedProperty<Property<V>> {
 
     private final Property<V> baseProperty;
-    private final Strategy.Context<StrategyWrappedProperty<V>> strategyContext;
-    private final StrategyWrappedGraph strategyWrappedGraph;
+    private final Strategy.Context<StrategyProperty<V>> strategyContext;
+    private final StrategyGraph strategyGraph;
 
-    public StrategyWrappedProperty(final Property<V> baseProperty, final StrategyWrappedGraph strategyWrappedGraph) {
+    public StrategyProperty(final Property<V> baseProperty, final StrategyGraph strategyGraph) {
         if (baseProperty instanceof StrategyWrapped) throw new IllegalArgumentException(
                 String.format("The property %s is already StrategyWrapped and must be a base Property", baseProperty));
         this.baseProperty = baseProperty;
-        this.strategyContext = new Strategy.Context<>(strategyWrappedGraph, this);
-        this.strategyWrappedGraph = strategyWrappedGraph;
+        this.strategyContext = new Strategy.Context<>(strategyGraph, this);
+        this.strategyGraph = strategyGraph;
     }
 
-    public Strategy.Context<StrategyWrappedProperty<V>> getStrategyContext() {
+    public Strategy.Context<StrategyProperty<V>> getStrategyContext() {
         return strategyContext;
     }
 
     @Override
     public String key() {
-        return this.strategyWrappedGraph.getStrategy().compose(
+        return this.strategyGraph.getStrategy().compose(
                 s -> s.getPropertyKeyStrategy(this.strategyContext), this.baseProperty::key).get();
     }
 
     @Override
     public V value() throws NoSuchElementException {
-        return this.strategyWrappedGraph.getStrategy().compose(
+        return this.strategyGraph.getStrategy().compose(
                 s -> s.getPropertyValueStrategy(this.strategyContext), this.baseProperty::value).get();
     }
 
@@ -52,8 +52,8 @@ public final class StrategyWrappedProperty<V> implements Property<V>, StrategyWr
     @Override
     public Element element() {
         final Element baseElement = this.baseProperty.element();
-        return (baseElement instanceof Vertex ? new StrategyWrappedVertex((Vertex) baseElement, this.strategyWrappedGraph) :
-                new StrategyWrappedEdge((Edge) baseElement, this.strategyWrappedGraph));
+        return (baseElement instanceof Vertex ? new StrategyVertex((Vertex) baseElement, this.strategyGraph) :
+                new StrategyEdge((Edge) baseElement, this.strategyGraph));
     }
 
     @Override
@@ -78,7 +78,7 @@ public final class StrategyWrappedProperty<V> implements Property<V>, StrategyWr
 
     @Override
     public void remove() {
-        this.strategyWrappedGraph.getStrategy().compose(
+        this.strategyGraph.getStrategy().compose(
                 s -> s.getRemovePropertyStrategy(strategyContext),
                 () -> {
                     this.baseProperty.remove();

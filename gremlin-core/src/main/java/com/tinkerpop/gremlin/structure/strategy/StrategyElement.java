@@ -7,20 +7,20 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class StrategyWrappedElement implements Element, StrategyWrapped {
-    protected final StrategyWrappedGraph strategyWrappedGraph;
+public abstract class StrategyElement implements Element, StrategyWrapped {
+    protected final StrategyGraph strategyGraph;
     protected final Element baseElement;
-    protected final Strategy.Context<StrategyWrappedElement> elementStrategyContext;
+    protected final Strategy.Context<StrategyElement> elementStrategyContext;
 
-    protected StrategyWrappedElement(final Element baseElement, final StrategyWrappedGraph strategyWrappedGraph) {
+    protected StrategyElement(final Element baseElement, final StrategyGraph strategyGraph) {
         if (baseElement instanceof StrategyWrapped) throw new IllegalArgumentException(
                 String.format("The element %s is already StrategyWrapped and must be a base Element", baseElement));
-        this.strategyWrappedGraph = strategyWrappedGraph;
+        this.strategyGraph = strategyGraph;
         this.baseElement = baseElement;
-        this.elementStrategyContext = new Strategy.Context<>(strategyWrappedGraph, this);
+        this.elementStrategyContext = new Strategy.Context<>(strategyGraph, this);
     }
 
-    public Strategy.Context<StrategyWrappedElement> getElementStrategyContext() {
+    public Strategy.Context<StrategyElement> getElementStrategyContext() {
         return elementStrategyContext;
     }
 

@@ -27,16 +27,16 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StrategyWrappedGraph implements Graph, Graph.Iterators, StrategyWrapped, WrappedGraph<Graph> {
+public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, WrappedGraph<Graph> {
     private final Graph baseGraph;
     private Strategy strategy;
-    private Strategy.Context<StrategyWrappedGraph> graphContext;
+    private Strategy.Context<StrategyGraph> graphContext;
 
-    public StrategyWrappedGraph(final Graph baseGraph) {
+    public StrategyGraph(final Graph baseGraph) {
         this(baseGraph, new Strategy.Simple());
     }
 
-    public StrategyWrappedGraph(final Graph baseGraph, final Strategy strategy) {
+    public StrategyGraph(final Graph baseGraph, final Strategy strategy) {
         if (baseGraph instanceof StrategyWrapped) throw new IllegalArgumentException(
                 String.format("The graph %s is already StrategyWrapped and must be a base Graph", baseGraph));
         if (null == strategy) throw new IllegalArgumentException("Strategy cannot be null");
@@ -61,7 +61,7 @@ public final class StrategyWrappedGraph implements Graph, Graph.Iterators, Strat
         return this.strategy;
     }
 
-    public Strategy.Context<StrategyWrappedGraph> getGraphContext() {
+    public Strategy.Context<StrategyGraph> getGraphContext() {
         return this.graphContext;
     }
 
@@ -70,7 +70,7 @@ public final class StrategyWrappedGraph implements Graph, Graph.Iterators, Strat
         final Optional<Vertex> v = Optional.ofNullable(getStrategy().compose(
                 s -> s.getAddVertexStrategy(this.graphContext),
                 this.baseGraph::addVertex).apply(keyValues));
-        return v.isPresent() ? new StrategyWrappedVertex(v.get(), this) : null;
+        return v.isPresent() ? new StrategyVertex(v.get(), this) : null;
     }
 
     @Override
@@ -109,7 +109,7 @@ public final class StrategyWrappedGraph implements Graph, Graph.Iterators, Strat
 
     @Override
     public Variables variables() {
-        return new StrategyWrappedVariables(this.baseGraph.variables(), this);
+        return new StrategyVariables(this.baseGraph.variables(), this);
     }
 
     @Override
@@ -129,12 +129,12 @@ public final class StrategyWrappedGraph implements Graph, Graph.Iterators, Strat
 
     @Override
     public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
-        return new StrategyWrappedVertex.StrategyWrappedVertexIterator(getStrategy().compose(s -> s.getGraphIteratorsVerticesStrategy(this.graphContext), this.baseGraph.iterators()::vertexIterator).apply(vertexIds), this);
+        return new StrategyVertex.StrategyWrappedVertexIterator(getStrategy().compose(s -> s.getGraphIteratorsVerticesStrategy(this.graphContext), this.baseGraph.iterators()::vertexIterator).apply(vertexIds), this);
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Object... edgeIds) {
-        return new StrategyWrappedEdge.StrategyWrappedEdgeIterator(getStrategy().compose(s -> s.getGraphIteratorsEdgesStrategy(this.graphContext), this.baseGraph.iterators()::edgeIterator).apply(edgeIds), this);
+        return new StrategyEdge.StrategyWrappedEdgeIterator(getStrategy().compose(s -> s.getGraphIteratorsEdgesStrategy(this.graphContext), this.baseGraph.iterators()::edgeIterator).apply(edgeIds), this);
     }
 
     @Override
@@ -152,7 +152,7 @@ public final class StrategyWrappedGraph implements Graph, Graph.Iterators, Strat
 
     @Override
     public String toString() {
-        final GraphStrategy strategy = this.strategy.getGraphStrategy().orElse(GraphStrategy.IdentityStrategy.instance());
+        final GraphStrategy strategy = this.strategy.getGraphStrategy().orElse(IdentityStrategy.instance());
         return StringFactory.graphStrategyString(strategy, this.baseGraph);
     }
 }
