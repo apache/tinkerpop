@@ -70,7 +70,7 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
             final MapMemory mapMemory = new MapMemory();
             memory.asMap().forEach(mapMemory::set);
             mapMemory.setIteration(memory.getIteration() - 1);
-            this.wrappedVertex.singleProperty(Constants.MAP_MEMORY, mapMemory);
+            this.wrappedVertex.singleProperty(Constants.MAP_MEMORY, mapMemory);  // TODO: this is a "computer key"
         }
     }
 
