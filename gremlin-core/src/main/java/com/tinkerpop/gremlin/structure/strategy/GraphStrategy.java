@@ -686,10 +686,10 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
-    public static class DefaultGraphStrategy implements GraphStrategy {
-        private static final DefaultGraphStrategy INSTANCE = new DefaultGraphStrategy();
+    public static class IdentityStrategy implements GraphStrategy {
+        private static final IdentityStrategy INSTANCE = new IdentityStrategy();
 
-        private DefaultGraphStrategy() {
+        private IdentityStrategy() {
         }
 
         @Override

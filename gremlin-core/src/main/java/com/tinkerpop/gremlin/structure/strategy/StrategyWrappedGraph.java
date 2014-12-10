@@ -152,7 +152,7 @@ public final class StrategyWrappedGraph implements Graph, Graph.Iterators, Strat
 
     @Override
     public String toString() {
-        final GraphStrategy strategy = this.strategy.getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.instance());
+        final GraphStrategy strategy = this.strategy.getGraphStrategy().orElse(GraphStrategy.IdentityStrategy.instance());
         return StringFactory.graphStrategyString(strategy, this.baseGraph);
     }
 }
