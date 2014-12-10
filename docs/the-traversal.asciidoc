@@ -1303,7 +1303,7 @@ Union Step
 
 image::union-step.png[width=650]
 
-The `union()`-step (*branch*) supports the merging of the results of an arbitrary number of traversals. When a traverser reaches a `union()`-step, it is copied to each of its internal steps. The traverses emitted from `union()` are the outputs of the respective internal traversals.
+The `union()`-step (*branch*) supports the merging of the results of an arbitrary number of traversals. When a traverser reaches a `union()`-step, it is copied to each of its internal steps. The traversers emitted from `union()` are the outputs of the respective internal traversals.
 
 [source,groovy]
 gremlin> g.V(4).union(
