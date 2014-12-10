@@ -756,7 +756,7 @@ gremlin> g = GraphFactory.open(conf, new ReadOnlyStrategy())
 ==>readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]
 ----
 
-The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyWrappedGraph` which is a traverser for the underlying `TinkerGraph` and the `ReadOnlyStrategy`.  Since `StrategyWrappedGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
+The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyGraph` which is a traverser for the underlying `TinkerGraph` and the `ReadOnlyStrategy`.  Since `StrategyGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
 
 [source,groovy]
 ----
@@ -805,7 +805,7 @@ Given the nature of identifier assignment, this means that identifiers are gener
 [source,groovy]
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> swg = new StrategyWrappedGraph(g)
+gremlin> swg = new StrategyGraph(g)
 ==>defaultgraphstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
 gremlin> swg.getStrategy().setGraphStrategy(IdStrategy.build("idKey").create())
 ==>null
@@ -829,7 +829,7 @@ gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
 gremlin> strategy = new PartitionStrategy("com.example.partition", "A")
 ==>PartitionStrategy
-gremlin> sg = new StrategyWrappedGraph(g)
+gremlin> sg = new StrategyGraph(g)
 ==>strategywrappedgraph[tinkergraph[vertices:0 edges:0]]
 gremlin> sg.getStrategy().setGraphStrategy(strategy)
 ==>null
@@ -909,7 +909,7 @@ The above code demonstrates a `Graph` that uses a `SequenceStrategy` composed of
 SubgraphStrategy
 ~~~~~~~~~~~~~~~~
 
-A general-purpose `SubgraphStrategy` is created by defining a "vertex criterion" and an "edge criterion" as Java 8 `Predicates` and applying them to a `Graph`.  All vertices present in the base `Graph` which pass the vertex criterion will be present in the `StrategyWrappedGraph`.  All edges present in the base `Graph` which pass the edge criterion *and* whose in- and out-vertices both pass the vertex criterion will be present in the `StrategyWrappedGraph`.
+A general-purpose `SubgraphStrategy` is created by defining a "vertex criterion" and an "edge criterion" as Java 8 `Predicates` and applying them to a `Graph`.  All vertices present in the base `Graph` which pass the vertex criterion will be present in the `StrategyGraph`.  All edges present in the base `Graph` which pass the edge criterion *and* whose in- and out-vertices both pass the vertex criterion will be present in the `StrategyGraph`.
 
 NOTE: edges are either entirely visible, or entirely invisible to a subgraph.  You will never find an edge which cannot be traversed due to a missing in- or out-vertex.
 
@@ -923,7 +923,7 @@ Predicate<Vertex> vertexCriterion = vertex -> true;
 Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
 
 GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+StrategyGraph sg = new StrategyGraph(g);
 sg.getStrategy().setGraphStrategy(strategy);
 
 // all vertices are here

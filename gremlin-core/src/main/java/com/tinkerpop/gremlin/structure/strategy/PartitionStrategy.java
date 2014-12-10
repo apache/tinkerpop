@@ -71,12 +71,12 @@ public class PartitionStrategy extends SubgraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyGraph> ctx) {
         return (f) -> (keyValues) -> f.apply(this.addKeyValues(keyValues));
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyVertex> ctx) {
         return (f) -> (label, v, keyValues) -> f.apply(label, v, this.addKeyValues(keyValues));
     }
 

@@ -46,15 +46,15 @@ public interface Strategy {
      * @param <T> represents the object that is calling the strategy (i.e. the vertex on which addEdge was called).
      */
     public static class Context<T extends StrategyWrapped> {
-        private final StrategyWrappedGraph g;
+        private final StrategyGraph g;
         private final Map<String, Object> environment;
         private final T current;
 
-        public Context(final StrategyWrappedGraph g, final T current) {
+        public Context(final StrategyGraph g, final T current) {
             this(g, current, null);
         }
 
-        public Context(final StrategyWrappedGraph g, final T current, final Map<String, Object> environment) {
+        public Context(final StrategyGraph g, final T current, final Map<String, Object> environment) {
             if (null == g) throw Graph.Exceptions.argumentCanNotBeNull("g");
             if (null == current) throw Graph.Exceptions.argumentCanNotBeNull("current");
 
@@ -71,7 +71,7 @@ public interface Strategy {
             return g.getBaseGraph();
         }
 
-        public StrategyWrappedGraph getStrategyWrappedGraph() {
+        public StrategyGraph getStrategyWrappedGraph() {
             return g;
         }
 

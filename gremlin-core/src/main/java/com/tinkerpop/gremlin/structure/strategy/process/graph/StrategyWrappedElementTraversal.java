@@ -6,8 +6,8 @@ import com.tinkerpop.gremlin.process.graph.strategy.GraphTraversalStrategyRegist
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedElement;
-import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
+import com.tinkerpop.gremlin.structure.strategy.StrategyElement;
+import com.tinkerpop.gremlin.structure.strategy.StrategyGraph;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -20,7 +20,7 @@ public class StrategyWrappedElementTraversal<A extends Element> extends DefaultG
         TraversalStrategies.GlobalCache.registerStrategies(StrategyWrappedElementTraversal.class, traversalStrategies);
     }
 
-    public StrategyWrappedElementTraversal(final StrategyWrappedElement element, final StrategyWrappedGraph graph) {
+    public StrategyWrappedElementTraversal(final StrategyElement element, final StrategyGraph graph) {
         super(graph);
         this.addStep(new StartStep<>(this, element));
     }

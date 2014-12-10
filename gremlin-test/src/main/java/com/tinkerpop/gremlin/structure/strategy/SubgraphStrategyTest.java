@@ -25,7 +25,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         final Predicate<Edge> edgeCriterion = edge -> true;
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        final StrategyGraph sg = new StrategyGraph(g);
         sg.getStrategy().setGraphStrategy(strategyToTest);
 
         // three vertices are included in the subgraph
@@ -121,7 +121,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         };
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        final StrategyGraph sg = new StrategyGraph(g);
         sg.getStrategy().setGraphStrategy(strategyToTest);
 
         // all vertices are here
@@ -214,7 +214,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         };
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        final StrategyGraph sg = new StrategyGraph(g);
         sg.getStrategy().setGraphStrategy(strategyToTest);
 
         // three vertices are included in the subgraph
@@ -291,7 +291,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         final Predicate<Edge> edgeCriterion = edge -> true;
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        final StrategyGraph sg = new StrategyGraph(g);
         sg.getStrategy().setGraphStrategy(strategyToTest);
 
         sg.V(convertToVertexId("marko")).next();
@@ -315,7 +315,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         };
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        final StrategyGraph sg = new StrategyGraph(g);
         sg.getStrategy().setGraphStrategy(strategyToTest);
 
         sg.E(sg.E(convertToEdgeId("marko", "knows", "vadas")).next()).next();

@@ -6,8 +6,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.strategy.Strategy;
-import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
-import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedVertex;
+import com.tinkerpop.gremlin.structure.strategy.StrategyGraph;
+import com.tinkerpop.gremlin.structure.strategy.StrategyVertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -31,17 +31,17 @@ public class ComputerDataStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertiesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+    public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertiesStrategy(final Strategy.Context<StrategyVertex> ctx) {
         return (f) -> (keys) -> keys.length == 0 ? IteratorUtils.filter(f.apply(keys), property -> !this.elementComputeKeys.contains(property.key())) : f.apply(keys);
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValuesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+    public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValuesStrategy(final Strategy.Context<StrategyVertex> ctx) {
         return (f) -> (keys) -> IteratorUtils.map(ctx.getCurrent().iterators().<V>propertyIterator(keys), vertexProperty -> vertexProperty.value());
     }
 
     @Override
-    public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+    public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final Strategy.Context<StrategyVertex> ctx) {
         return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !this.elementComputeKeys.contains(key)), new HashSet<>());
     }
 
@@ -50,16 +50,16 @@ public class ComputerDataStrategy implements GraphStrategy {
         return StringFactory.graphStrategyString(this);
     }
 
-    public static StrategyWrappedGraph wrapGraph(final Graph graph, final VertexProgram<?> vertexProgram) {
-        final StrategyWrappedGraph sg = new StrategyWrappedGraph(graph);
+    public static StrategyGraph wrapGraph(final Graph graph, final VertexProgram<?> vertexProgram) {
+        final StrategyGraph sg = new StrategyGraph(graph);
         sg.getStrategy().setGraphStrategy(new ComputerDataStrategy(vertexProgram.getElementComputeKeys()));
         return sg;
     }
 
-    public static StrategyWrappedVertex wrapVertex(final Vertex vertex, final VertexProgram<?> vertexProgram) {
-        final StrategyWrappedGraph sg = new StrategyWrappedGraph(vertex.graph());
+    public static StrategyVertex wrapVertex(final Vertex vertex, final VertexProgram<?> vertexProgram) {
+        final StrategyGraph sg = new StrategyGraph(vertex.graph());
         sg.getStrategy().setGraphStrategy(new ComputerDataStrategy(vertexProgram.getElementComputeKeys()));
-        return new StrategyWrappedVertex(vertex, sg);
+        return new StrategyVertex(vertex, sg);
     }
 
 }
