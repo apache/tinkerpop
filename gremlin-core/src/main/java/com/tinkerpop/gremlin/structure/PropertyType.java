@@ -20,11 +20,6 @@ public enum PropertyType {
             return false;
         }
 
-        @Override
-        public final boolean forHiddens() {
-            return false;
-        }
-
     }, VALUE {
         @Override
         public final boolean forProperties() {
@@ -35,44 +30,9 @@ public enum PropertyType {
         public final boolean forValues() {
             return true;
         }
-
-        @Override
-        public final boolean forHiddens() {
-            return false;
-        }
-    }, HIDDEN_PROPERTY {
-        @Override
-        public final boolean forProperties() {
-            return true;
-        }
-
-        @Override
-        public final boolean forValues() {
-            return false;
-        }
-
-        @Override
-        public final boolean forHiddens() {
-            return true;
-        }
-    }, HIDDEN_VALUE {
-        @Override
-        public final boolean forProperties() {
-            return false;
-        }
-
-        @Override
-        public final boolean forValues() {
-            return true;
-        }
-
-        @Override
-        public final boolean forHiddens() {
-            return true;
-        }
     };
 
     public abstract boolean forProperties();
+
     public abstract boolean forValues();
-    public abstract boolean forHiddens();
 }
