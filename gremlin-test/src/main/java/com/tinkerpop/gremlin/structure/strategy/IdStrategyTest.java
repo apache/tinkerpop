@@ -22,19 +22,19 @@ import static org.junit.Assert.assertEquals;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Enclosed.class)
-public class IdGraphStrategyTest {
+public class IdStrategyTest {
     private static final String idKey = "myId";
 
-    public static class DefaultIdGraphStrategyTest extends AbstractGremlinTest {
+    public static class DefaultIdStrategyTest extends AbstractGremlinTest {
 
-        public DefaultIdGraphStrategyTest() {
-            super(IdGraphStrategy.build(idKey).create());
+        public DefaultIdStrategyTest() {
+            super(IdStrategy.build(idKey).create());
         }
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldInjectAnIdAndReturnBySpecifiedIdForVertex() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
+            final IdStrategy strategy = (IdStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex(T.id, "test", "something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
@@ -53,7 +53,7 @@ public class IdGraphStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldInjectAnIdAndReturnBySpecifiedIdForEdge() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
+            final IdStrategy strategy = (IdStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex(T.id, "test", "something", "else");
             final Edge e = v.addEdge("self", v, T.id, "edge-id", "try", "this");
             tryCommit(g, c -> {
@@ -72,7 +72,7 @@ public class IdGraphStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldCreateAnIdAndReturnByCreatedIdForVertex() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
+            final IdStrategy strategy = (IdStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
@@ -90,7 +90,7 @@ public class IdGraphStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldCreateAnIdAndReturnByCreatedIdForEdge() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
+            final IdStrategy strategy = (IdStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
             final Edge e = v.addEdge("self", v, "try", "this");
             tryCommit(g, c -> {
@@ -107,15 +107,15 @@ public class IdGraphStrategyTest {
         }
     }
 
-    public static class VertexIdMakerIdGraphStrategyTest extends AbstractGremlinTest {
-        public VertexIdMakerIdGraphStrategyTest() {
-            super(IdGraphStrategy.build(idKey).vertexIdMaker(() -> "100").create());
+    public static class VertexIdMakerIdStrategyTest extends AbstractGremlinTest {
+        public VertexIdMakerIdStrategyTest() {
+            super(IdStrategy.build(idKey).vertexIdMaker(() -> "100").create());
         }
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldCreateAnIdAndReturnByCreatedId() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
+            final IdStrategy strategy = (IdStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
@@ -132,15 +132,15 @@ public class IdGraphStrategyTest {
         }
     }
 
-    public static class EdgeIdMakerIdGraphStrategyTest extends AbstractGremlinTest {
-        public EdgeIdMakerIdGraphStrategyTest() {
-            super(IdGraphStrategy.build(idKey).edgeIdMaker(() -> "100").create());
+    public static class EdgeIdMakerIdStrategyTest extends AbstractGremlinTest {
+        public EdgeIdMakerIdStrategyTest() {
+            super(IdStrategy.build(idKey).edgeIdMaker(() -> "100").create());
         }
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldCreateAnIdAndReturnByCreatedId() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
+            final IdStrategy strategy = (IdStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
             final Edge e = v.addEdge("self", v, "try", "this");
             tryCommit(g, c -> {
@@ -157,16 +157,16 @@ public class IdGraphStrategyTest {
         }
     }
 
-    public static class VertexIdNotSupportedIdGraphStrategyTest extends AbstractGremlinTest {
-        public VertexIdNotSupportedIdGraphStrategyTest() {
-            super(IdGraphStrategy.build(idKey).supportsVertexId(false).create());
+    public static class VertexIdNotSupportedIdStrategyTest extends AbstractGremlinTest {
+        public VertexIdNotSupportedIdStrategyTest() {
+            super(IdStrategy.build(idKey).supportsVertexId(false).create());
         }
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldInjectAnIdAndReturnBySpecifiedId() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
+            final IdStrategy strategy = (IdStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Object o = GraphManager.get().convertId("1");
             final Vertex v = g.addVertex(T.id, o, "something", "else");
             tryCommit(g, c -> {
@@ -186,7 +186,7 @@ public class IdGraphStrategyTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldAllowDirectSettingOfIdField() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
+            final IdStrategy strategy = (IdStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Object o = GraphManager.get().convertId("1");
             final Vertex v = g.addVertex(T.id, o, "something", "else", strategy.getIdKey(), "should be ok to set this as supportsEdgeId=true");
             tryCommit(g, c -> {
@@ -218,16 +218,16 @@ public class IdGraphStrategyTest {
         }
     }
 
-    public static class EdgeIdNotSupportedIdGraphStrategyTest extends AbstractGremlinTest {
-        public EdgeIdNotSupportedIdGraphStrategyTest() {
-            super(IdGraphStrategy.build(idKey).supportsEdgeId(false).create());
+    public static class EdgeIdNotSupportedIdStrategyTest extends AbstractGremlinTest {
+        public EdgeIdNotSupportedIdStrategyTest() {
+            super(IdStrategy.build(idKey).supportsEdgeId(false).create());
         }
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
         public void shouldInjectAnIdAndReturnBySpecifiedId() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
+            final IdStrategy strategy = (IdStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex(T.id, "test", "something", "else");
             final Edge e = v.addEdge("self", v, T.id, "edge-id", "try", "this");
             tryCommit(g, c -> {
@@ -247,7 +247,7 @@ public class IdGraphStrategyTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
         public void shouldAllowDirectSettingOfIdField() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
+            final IdStrategy strategy = (IdStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex(T.id, "test", "something", "else");
             final Edge e = v.addEdge("self", v, T.id, "edge-id", "try", "this", strategy.getIdKey(), "should be ok to set this as supportsEdgeId=false");
             tryCommit(g, c -> {

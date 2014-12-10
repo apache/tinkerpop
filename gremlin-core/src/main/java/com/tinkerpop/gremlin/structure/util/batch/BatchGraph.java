@@ -47,7 +47,7 @@ import java.util.function.Function;
  * BatchGraph can also automatically set the provided element ids as properties on the respective element. Use
  * {@link Builder#vertexIdKey(String)} and {@link Builder#edgeIdKey(String)} to set the keys
  * for the vertex and edge properties respectively. This allows to make the loaded baseGraph compatible for later
- * operation with {@link com.tinkerpop.gremlin.structure.strategy.IdGraphStrategy}.
+ * operation with {@link com.tinkerpop.gremlin.structure.strategy.IdStrategy}.
  *
  * @author Matthias Broecheler (http://www.matthiasb.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)

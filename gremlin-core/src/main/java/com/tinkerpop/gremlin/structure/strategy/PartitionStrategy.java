@@ -21,13 +21,13 @@ import java.util.function.UnaryOperator;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PartitionGraphStrategy extends SubgraphStrategy {
+public class PartitionStrategy extends SubgraphStrategy {
 
     private String writePartition;
     private final String partitionKey;
     private final Set<String> readPartitions = new HashSet<>();
 
-    public PartitionGraphStrategy(final String partitionKey, final String partition) {
+    public PartitionStrategy(final String partitionKey, final String partition) {
         super(null, null);
         this.vertexPredicate = this::testElement;
         this.edgePredicate = this::testElement;

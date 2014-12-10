@@ -21,10 +21,10 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
-    private static final GraphStrategy readOnlyGraphStrategy = new ReadOnlyGraphStrategy();
+public class ReadOnlyStrategyTest extends AbstractGremlinTest {
+    private static final GraphStrategy readOnlyGraphStrategy = new ReadOnlyStrategy();
 
-    public ReadOnlyGraphStrategyTest() {
+    public ReadOnlyStrategyTest() {
     }
 
     @Test
@@ -157,7 +157,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
             stt.accept(swg);
             fail();
         } catch (Exception ex) {
-            final Exception expectedException = ReadOnlyGraphStrategy.Exceptions.graphUsesReadOnlyStrategy();
+            final Exception expectedException = ReadOnlyStrategy.Exceptions.graphUsesReadOnlyStrategy();
             assertEquals(expectedException.getClass(), ex.getClass());
             assertEquals(expectedException.getMessage(), ex.getMessage());
 

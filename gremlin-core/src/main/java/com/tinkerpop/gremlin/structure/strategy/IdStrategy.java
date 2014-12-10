@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
@@ -31,15 +30,15 @@ import java.util.function.UnaryOperator;
  * to use custom IDs only for vertices or only for edges.  ID generation is also configurable via ID {@link Supplier}
  * functions.
  * <p/>
- * If the {@link IdGraphStrategy} is used in combination with a sequence of other strategies and when ID assignment
+ * If the {@link IdStrategy} is used in combination with a sequence of other strategies and when ID assignment
  * is enabled for an element, calls to strategies following this one are not made.  It is important to consider that
- * aspect of its operation when doing strategy composition.  Typically, the {@link IdGraphStrategy} should be
+ * aspect of its operation when doing strategy composition.  Typically, the {@link IdStrategy} should be
  * executed last in a sequence.
  *
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IdGraphStrategy implements GraphStrategy {
+public class IdStrategy implements GraphStrategy {
 
     private final String idKey;
 
@@ -52,9 +51,9 @@ public class IdGraphStrategy implements GraphStrategy {
     /**
      * Creates a new instance.  Public instantiation should be handled through the {@link Builder}.
      */
-    private IdGraphStrategy(final String idKey, final Supplier<?> vertexIdSupplier,
-                            final Supplier<?> edgeIdSupplier, final boolean supportsVertexId,
-                            final boolean supportsEdgeId) {
+    private IdStrategy(final String idKey, final Supplier<?> vertexIdSupplier,
+                       final Supplier<?> edgeIdSupplier, final boolean supportsVertexId,
+                       final boolean supportsEdgeId) {
         this.idKey = idKey;
         this.edgeIdSupplier = edgeIdSupplier;
         this.vertexIdSupplier = vertexIdSupplier;
@@ -131,12 +130,12 @@ public class IdGraphStrategy implements GraphStrategy {
 
     private void throwIfIdKeyIsSet(final Class<? extends Element> element, final String k) {
         if (supportsAnId(element) && this.idKey.equals(k))
-            throw new IllegalArgumentException(String.format("The key [%s] is protected by %s and cannot be set", idKey, IdGraphStrategy.class.getSimpleName()));
+            throw new IllegalArgumentException(String.format("The key [%s] is protected by %s and cannot be set", idKey, IdStrategy.class.getSimpleName()));
     }
 
     private void throwIfIdKeyIsSet(final Class<? extends Element> element, final Set<String> keys) {
         if (supportsAnId(element) && keys.contains(this.idKey))
-            throw new IllegalArgumentException(String.format("The key [%s] is protected by %s and cannot be set", idKey, IdGraphStrategy.class.getSimpleName()));
+            throw new IllegalArgumentException(String.format("The key [%s] is protected by %s and cannot be set", idKey, IdStrategy.class.getSimpleName()));
     }
 
     private boolean supportsAnId(final Class<? extends Element> element) {
@@ -175,7 +174,7 @@ public class IdGraphStrategy implements GraphStrategy {
     }
 
     /**
-     * Create the {@link Builder} to create a {@link IdGraphStrategy}.
+     * Create the {@link Builder} to create a {@link IdStrategy}.
      *
      * @param idKey The key to use for the index to lookup graph elements.
      */
@@ -200,11 +199,11 @@ public class IdGraphStrategy implements GraphStrategy {
 
         }
 
-        public IdGraphStrategy create() {
+        public IdStrategy create() {
             if (!this.supportsEdgeId && !this.supportsVertexId)
                 throw new IllegalStateException("Since supportsEdgeId and supportsVertexId are false, there is no need to use IdGraphStrategy");
 
-            return new IdGraphStrategy(this.idKey, this.vertexIdSupplier, this.edgeIdSupplier,
+            return new IdStrategy(this.idKey, this.vertexIdSupplier, this.edgeIdSupplier,
                     this.supportsVertexId, this.supportsEdgeId);
         }
 

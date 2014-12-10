@@ -735,10 +735,10 @@ Graph Strategy
 
 A Graph Strategy provides a way to expand, inspect or otherwise alter the behavior of a `Graph` implementation.  A Graph Strategy injects arbitrary functions into the `Graph` API, so that when a method call is made, the strategy functions can manipulate the default behavior of the underlying `Graph`.  TinkerPop3 is packaged with the following strategies:
 
-* `IdGraphStrategy` - enables support for custom element identifiers for those graphs which don't otherwise support them
-* `PartitionGraphStrategy` - enables support for logical graph partitioning where the `Graph` can be blinded to different parts of the total graph
-* `ReadOnlyGraphStrategy` - prevents writing to the `Graph`
-* `SequenceGraphStrategy` - apply multiple `GraphStrategy` implementations in sequenced ordered to a single `Graph` instance
+* `IdStrategy` - enables support for custom element identifiers for those graphs which don't otherwise support them
+* `PartitionStrategy` - enables support for logical graph partitioning where the `Graph` can be blinded to different parts of the total graph
+* `ReadOnlyStrategy` - prevents writing to the `Graph`
+* `SequenceStrategy` - apply multiple `GraphStrategy` implementations in sequenced ordered to a single `Graph` instance
 * `SubgraphStrategy` - create a logical subgraph which selectively includes vertices and edges of a `Graph` according to provided criteria
 
 NOTE: TinkerPop2 had the notion of "Graph Wrappers" which decorated standard `Graph` implementations with additional features.  A Graph strategy is generally analogous to that capability.
@@ -751,19 +751,19 @@ gremlin> conf = new BaseConfiguration()
 ==>org.apache.commons.configuration.BaseConfiguration@5b40ceb
 gremlin> conf.setProperty("gremlin.graph","com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph")
 ==>null
-gremlin> g = GraphFactory.open(conf, new ReadOnlyGraphStrategy())
+gremlin> g = GraphFactory.open(conf, new ReadOnlyStrategy())
 ==>readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]
 ----
 
-The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyGraphStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyWrappedGraph` which is a traverser for the underlying `TinkerGraph` and the `ReadOnlyGraphStrategy`.  Since `StrategyWrappedGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
+The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyWrappedGraph` which is a traverser for the underlying `TinkerGraph` and the `ReadOnlyStrategy`.  Since `StrategyWrappedGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
 
 [source,groovy]
 ----
 gremlin> g.addVertex('name','stephen')
-Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategy and is therefore unmodifiable
+Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategy and is therefore unmodifiable
 ----
 
-The above code tries to mutate the underlying `TinkerGraph`.  Note that `ReadOnlyGraphStrategy` prevents that and throws an exception.  At any point, the `GraphStrategy` can be bypassed by getting the underlying `TinkerGraph`.
+The above code tries to mutate the underlying `TinkerGraph`.  Note that `ReadOnlyStrategy` prevents that and throws an exception.  At any point, the `GraphStrategy` can be bypassed by getting the underlying `TinkerGraph`.
 
 [source,groovy]
 ----
@@ -777,10 +777,10 @@ gremlin> g.V(0l).values('name')
 
 By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it then possible to read back that added vertex. The following sections explain details of the specific `GraphStrategy` implementations.
 
-IdGraphStrategy
+IdStrategy
 ~~~~~~~~~~~~~~~
 
-`IdGraphStrategy` which affords complete control over element identifiers. Some `Graph` implementations, such as `TinkerGraph`, allow specification of custom identifiers when creating elements:
+`IdStrategy` which affords complete control over element identifiers. Some `Graph` implementations, such as `TinkerGraph`, allow specification of custom identifiers when creating elements:
 
 [source,groovy]
 gremlin> g = TinkerGraph.open()
@@ -799,14 +799,14 @@ gremlin> v = g.addVertex(id, "42a")
 Vertex does not support user supplied identifiers
 Display stack trace? [yN]
 
-Given the nature of identifier assignment, this means that identifiers are generally not conserved when moving data between graph instances and implementations, to XML and back again, etc. So for applications which need it, there is `IdGraphStrategy`. Using vertex and edge indices under the hood, `IdGraphStrategy` enables custom identifiers irrespective of whether or not the underlying `Graph` implementation allows them.
+Given the nature of identifier assignment, this means that identifiers are generally not conserved when moving data between graph instances and implementations, to XML and back again, etc. So for applications which need it, there is `IdStrategy`. Using vertex and edge indices under the hood, `IdStrategy` enables custom identifiers irrespective of whether or not the underlying `Graph` implementation allows them.
 
 [source,groovy]
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 gremlin> swg = new StrategyWrappedGraph(g)
 ==>defaultgraphstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
-gremlin> swg.getStrategy().setGraphStrategy(IdGraphStrategy.build("idKey").create())
+gremlin> swg.getStrategy().setGraphStrategy(IdStrategy.build("idKey").create())
 ==>null
 gremlin> swg.addVertex(id,"42a").id()
 ==>42a
@@ -817,17 +817,17 @@ When a non-null identifier is passed to `IdGraph.addVertex` or `IdGraph.addEdge`
 
 IMPORTANT: The key that is used to store the assigned identifier should be indexed in the underlying graph database.  If it is not indexed, then lookups for the elements that use these identifiers will perform a linear scan.
 
-PartitionGraphStrategy
+PartitionStrategy
 ~~~~~~~~~~~~~~~~~~~~~~
 
-`PartitionGraphStrategy` is a `SubgraphStrategy` which creates logical subgraphs through the use of designated properties.  When each element is written to the `Graph`, it is marked with a property value indicating the current write-partition.  As elements are read from the graph, they are matched against the current set of read-partitions.  The read-partitions thereby define the union of a set of vertices and edges. For example:
+`PartitionStrategy` is a `SubgraphStrategy` which creates logical subgraphs through the use of designated properties.  When each element is written to the `Graph`, it is marked with a property value indicating the current write-partition.  As elements are read from the graph, they are matched against the current set of read-partitions.  The read-partitions thereby define the union of a set of vertices and edges. For example:
 
 [source,groovy]
 ----
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> strategy = new PartitionGraphStrategy("com.example.partition", "A")
-==>PartitionGraphStrategy
+gremlin> strategy = new PartitionStrategy("com.example.partition", "A")
+==>PartitionStrategy
 gremlin> sg = new StrategyWrappedGraph(g)
 ==>strategywrappedgraph[tinkergraph[vertices:0 edges:0]]
 gremlin> sg.getStrategy().setGraphStrategy(strategy)
@@ -873,10 +873,10 @@ gremlin> "in B: " + sg.V().count().next() + ", " + sg.E().count().next()
 
 Note that there are no edges in the set B, as the only edge added to partition B is incident on a vertex of A.
 
-ReadOnlyGraphStrategy
+ReadOnlyStrategy
 ~~~~~~~~~~~~~~~~~~~~~
 
-`ReadOnlyGraphStrategy` was demonstrated at the start of the `GraphStrategy` section.  It simply prevents write operations that would otherwise mutate the `Graph`.
+`ReadOnlyStrategy` was demonstrated at the start of the `GraphStrategy` section.  It simply prevents write operations that would otherwise mutate the `Graph`.
 
 [source,groovy]
 ----
@@ -884,26 +884,26 @@ gremlin> conf = new BaseConfiguration()
 ==>org.apache.commons.configuration.BaseConfiguration@5b40ceb
 gremlin> conf.setProperty("gremlin.graph","com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph")
 ==>null
-gremlin> g = GraphFactory.open(conf, new ReadOnlyGraphStrategy())
+gremlin> g = GraphFactory.open(conf, new ReadOnlyStrategy())
 ==>readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]
 gremlin> g.addVertex('name','stephen')
-Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategy and is therefore unmodifiable
+Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategy and is therefore unmodifiable
 ----
 
-SequenceGraphStrategy
+SequenceStrategy
 ~~~~~~~~~~~~~~~~~~~~~
 
-`SequenceGraphStrategy` provides a way to string together a set of `GraphStrategy` implementations, such that they are executed in order from first to last.  The `GraphFactory` provides a straightforward way to invisibly use `SequenceGraphStrategy`:
+`SequenceStrategy` provides a way to string together a set of `GraphStrategy` implementations, such that they are executed in order from first to last.  The `GraphFactory` provides a straightforward way to invisibly use `SequenceStrategy`:
 
 [source,groovy]
 gremlin> conf = new BaseConfiguration()
 ==>org.apache.commons.configuration.BaseConfiguration@6048e26a
 gremlin> conf.setProperty("gremlin.graph",TinkerGraph.class.getName())
 ==>null
-gremlin> g = GraphFactory.open(conf, new ReadOnlyGraphStrategy(), new PartitionGraphStrategy("partition","A"))
+gremlin> g = GraphFactory.open(conf, new ReadOnlyStrategy(), new PartitionStrategy("partition","A"))
 ==>sequencegraphstrategy[tinkergraph[vertices:0 edges:0]]
 
-The above code demonstrates a `Graph` that uses a `SequenceGraphStrategy` composed of `ReadOnlyGraphStrategy` and `PartitionGraphStrategy`.  When the `SequenceGraphStrategy` is invoked, it will first apply the `ReadOnlyGraphStrategy` and then apply the `PartitionGraphStrategy`.  It is important to consider the ordering of the `GraphStrategy` objects when choosing to use `SequenceGraphStrategy` as it makes no attempts to determine if strategies will be in conflict with one another.  Be aware of the nature of the strategies and ensure that applying them in the order assigned will produce the desirable outcome.
+The above code demonstrates a `Graph` that uses a `SequenceStrategy` composed of `ReadOnlyStrategy` and `PartitionhStrategy`.  When the `SequenceStrategy` is invoked, it will first apply the `ReadOnlyStrategy` and then apply the `PartitionStrategy`.  It is important to consider the ordering of the `GraphStrategy` objects when choosing to use `SequenceStrategy` as it makes no attempts to determine if strategies will be in conflict with one another.  Be aware of the nature of the strategies and ensure that applying them in the order assigned will produce the desirable outcome.
 
 SubgraphStrategy
 ~~~~~~~~~~~~~~~~

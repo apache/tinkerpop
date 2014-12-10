@@ -80,10 +80,10 @@ public class StrategyWrappedGraphTest {
         public static Iterable<Object[]> data() {
             return new ArrayList<Object[]>() {{
                 add(new Object[]{GraphStrategy.DefaultGraphStrategy.INSTANCE});
-                add(new Object[]{IdGraphStrategy.build("key").create()});
-                add(new Object[]{new PartitionGraphStrategy("partition", "A")});
-                add(new Object[]{new ReadOnlyGraphStrategy()});
-                add(new Object[]{new SequenceGraphStrategy(new ReadOnlyGraphStrategy(), new PartitionGraphStrategy("partition", "A"))});
+                add(new Object[]{IdStrategy.build("key").create()});
+                add(new Object[]{new PartitionStrategy("partition", "A")});
+                add(new Object[]{new ReadOnlyStrategy()});
+                add(new Object[]{new SequenceStrategy(new ReadOnlyStrategy(), new PartitionStrategy("partition", "A"))});
                 add(new Object[]{new SubgraphStrategy(v -> true, e -> true)});
             }};
         }

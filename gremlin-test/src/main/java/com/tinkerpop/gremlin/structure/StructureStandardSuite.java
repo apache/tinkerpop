@@ -3,10 +3,10 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.algorithm.generator.CommunityGeneratorTest;
 import com.tinkerpop.gremlin.algorithm.generator.DistributionGeneratorTest;
-import com.tinkerpop.gremlin.structure.strategy.IdGraphStrategyTest;
-import com.tinkerpop.gremlin.structure.strategy.PartitionGraphStrategyTest;
-import com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategyTest;
-import com.tinkerpop.gremlin.structure.strategy.SequenceGraphStrategyTest;
+import com.tinkerpop.gremlin.structure.strategy.IdStrategyTest;
+import com.tinkerpop.gremlin.structure.strategy.PartitionStrategyTest;
+import com.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategyTest;
+import com.tinkerpop.gremlin.structure.strategy.SequenceStrategyTest;
 import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraphTest;
 import com.tinkerpop.gremlin.structure.strategy.SubgraphStrategyTest;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdgeTest;
@@ -59,14 +59,14 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             FeatureSupportTest.class,
             GraphTest.class,
             GraphConstructionTest.class,
-            IdGraphStrategyTest.class,
+            IdStrategyTest.class,
             IoTest.class,
             VertexPropertyTest.class,
             VariablesTest.class,
-            PartitionGraphStrategyTest.class,
+            PartitionStrategyTest.class,
             PropertyTest.class,
-            ReadOnlyGraphStrategyTest.class,
-            SequenceGraphStrategyTest.class,
+            ReadOnlyStrategyTest.class,
+            SequenceStrategyTest.class,
             SubgraphStrategyTest.class,
             StrategyWrappedGraphTest.class,
             TransactionTest.class,

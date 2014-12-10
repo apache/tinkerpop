@@ -20,7 +20,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ReadOnlyGraphStrategy implements GraphStrategy {
+public class ReadOnlyStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return readOnlyFunction();
@@ -86,7 +86,7 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
 
     @Override
     public String toString() {
-        return ReadOnlyGraphStrategy.class.getSimpleName().toLowerCase();
+        return ReadOnlyStrategy.class.getSimpleName().toLowerCase();
     }
 
     public static <T> UnaryOperator<Supplier<T>> readOnlySupplier() {
@@ -109,7 +109,7 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
 
     public static class Exceptions {
         public static UnsupportedOperationException graphUsesReadOnlyStrategy() {
-            return new UnsupportedOperationException(String.format("Graph uses %s and is therefore unmodifiable", ReadOnlyGraphStrategy.class));
+            return new UnsupportedOperationException(String.format("Graph uses %s and is therefore unmodifiable", ReadOnlyStrategy.class));
         }
     }
 }

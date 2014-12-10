@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import com.tinkerpop.gremlin.structure.strategy.SequenceGraphStrategy;
+import com.tinkerpop.gremlin.structure.strategy.SequenceStrategy;
 import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
 import com.tinkerpop.gremlin.util.config.YamlConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -31,7 +31,7 @@ public class GraphFactory {
      * @param strategies    One or more {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} implementations
      *                      to plug into the underlying {@link com.tinkerpop.gremlin.structure.Graph} being constructed.
      *                      If multiple strategies are supplied then they are given in order to a
-     *                      {@link com.tinkerpop.gremlin.structure.strategy.SequenceGraphStrategy} for execution.
+     *                      {@link com.tinkerpop.gremlin.structure.strategy.SequenceStrategy} for execution.
      * @return A {@link com.tinkerpop.gremlin.structure.Graph} instance.
      * @throws IllegalArgumentException if {@code configuration}
      */
@@ -68,7 +68,7 @@ public class GraphFactory {
             returnedGraph = swg;
         } else if (strategies != null && strategies.length > 1) {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.getStrategy().setGraphStrategy(new SequenceGraphStrategy(strategies));
+            swg.getStrategy().setGraphStrategy(new SequenceStrategy(strategies));
             returnedGraph = swg;
         } else
             returnedGraph = g;

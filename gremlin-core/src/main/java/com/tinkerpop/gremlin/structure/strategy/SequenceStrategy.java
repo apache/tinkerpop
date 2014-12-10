@@ -28,10 +28,10 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SequenceGraphStrategy implements GraphStrategy {
+public class SequenceStrategy implements GraphStrategy {
     private final List<GraphStrategy> graphStrategySequence;
 
-    public SequenceGraphStrategy(final GraphStrategy... strategies) {
+    public SequenceStrategy(final GraphStrategy... strategies) {
         this.graphStrategySequence = new ArrayList<>(Arrays.asList(strategies));
     }
 

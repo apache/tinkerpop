@@ -35,14 +35,14 @@ import static org.junit.Assert.*;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SequenceGraphStrategyTest extends AbstractGremlinTest {
+public class SequenceStrategyTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
     public void shouldAppendMultiPropertyValuesToVertex() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        swg.getStrategy().setGraphStrategy(new SequenceGraphStrategy(
+        swg.getStrategy().setGraphStrategy(new SequenceStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -97,7 +97,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldOverwritePropertyValuesToVertex() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        swg.getStrategy().setGraphStrategy(new SequenceGraphStrategy(
+        swg.getStrategy().setGraphStrategy(new SequenceStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -154,7 +154,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldAllowForALocalGraphStrategyCallInSequence() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        swg.getStrategy().setGraphStrategy(new SequenceGraphStrategy(
+        swg.getStrategy().setGraphStrategy(new SequenceStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -213,9 +213,9 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldAllowForANeighborhoodGraphStrategyCallInSequence() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        final SequenceGraphStrategy innerSequenceGraphStrategy = new SequenceGraphStrategy();
+        final SequenceStrategy innerSequenceStrategy = new SequenceStrategy();
 
-        innerSequenceGraphStrategy.add(new GraphStrategy() {
+        innerSequenceStrategy.add(new GraphStrategy() {
             @Override
             public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
                 return (f) -> (args) -> {
@@ -233,7 +233,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
                     // dynamically construct a strategy to force this call to addVertex to stay localized
                     // to the innerSequenceGraphStrategy. note that this will only call GraphStrategy implementations
                     // in this sequence
-                    innerSequenceGraphStrategy.getAddVertexStrategy(ctx.getStrategyWrappedGraph().getGraphContext())
+                    innerSequenceStrategy.getAddVertexStrategy(ctx.getStrategyWrappedGraph().getGraphContext())
                             .apply(ctx.getBaseGraph()::addVertex)
                             .apply(Arrays.asList("strategy", "bypassed").toArray());
 
@@ -242,7 +242,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
             }
         });
 
-        innerSequenceGraphStrategy.add(new GraphStrategy() {
+        innerSequenceStrategy.add(new GraphStrategy() {
             @Override
             public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
                 return (f) -> (args) -> {
@@ -253,7 +253,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
             }
         });
 
-        swg.getStrategy().setGraphStrategy(new SequenceGraphStrategy(
+        swg.getStrategy().setGraphStrategy(new SequenceStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -264,7 +264,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
                         };
                     }
                 },
-                innerSequenceGraphStrategy
+                innerSequenceStrategy
         ));
 
         final Vertex v = swg.addVertex("any", "thing");
@@ -288,7 +288,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldAlterArgumentsToAddVertexInOrderOfSequence() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        swg.getStrategy().setGraphStrategy(new SequenceGraphStrategy(
+        swg.getStrategy().setGraphStrategy(new SequenceStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -340,7 +340,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldShortCircuitStrategyWithException() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        swg.getStrategy().setGraphStrategy(new SequenceGraphStrategy(
+        swg.getStrategy().setGraphStrategy(new SequenceStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -378,7 +378,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldShortCircuitStrategyWithNoOp() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        swg.getStrategy().setGraphStrategy(new SequenceGraphStrategy(
+        swg.getStrategy().setGraphStrategy(new SequenceStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -415,7 +415,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldDoSomethingBeforeAndAfter() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        swg.getStrategy().setGraphStrategy(new SequenceGraphStrategy(
+        swg.getStrategy().setGraphStrategy(new SequenceStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -470,7 +470,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     public void shouldHaveAllMethodsImplemented() throws Exception {
         final Method[] methods = GraphStrategy.class.getDeclaredMethods();
         final SpyGraphStrategy spy = new SpyGraphStrategy();
-        final SequenceGraphStrategy strategy = new SequenceGraphStrategy(spy);
+        final SequenceStrategy strategy = new SequenceStrategy(spy);
 
         // invoke all the strategy methods
         Stream.of(methods).forEach(method -> {
