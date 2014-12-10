@@ -58,7 +58,7 @@ gremlin> g.V(1).as('a').out().map{it.get('a')} <2>
 ==>v[1]
 ==>v[1]
 ==>v[1]
-gremlin> g.V(1).as('a').out.back('a') <3>
+gremlin> g.V(1).as('a').out().back('a') <3>
 ==>v[1]
 ==>v[1]
 ==>v[1]
@@ -142,7 +142,7 @@ The `aggregate()`-step (*sideEffect*) is used to aggregate all the objects at a 
 gremlin> g.V(1).out('created') // what has marko created?
 ==>v[3]
 gremlin> g.V(1).out('created').aggregate('x') // aggregate all his creations
-==>[v[3]]
+==>{v[3]}
 gremlin> g.V(1).out('created').aggregate('x').in('created') // who are marko's collaborators
 ==>v[1]
 ==>v[4]
@@ -407,17 +407,17 @@ One of the major features of TinkerPop3 is "injectable steps." This makes it pos
 
 [source,groovy]
 gremlin> g.V(4).out().values('name').inject('daniel')
+==>daniel
 ==>ripple
 ==>lop
-==>daniel
 gremlin> g.V(4).out().values('name').inject('daniel').map{it.get().length()}
 ==>6
-==>3
 ==>6
+==>3
 gremlin> g.V(4).out().values('name').inject('daniel').map{it.get().length()}.path()
+==>[daniel, 6]
 ==>[v[4], v[5], ripple, 6]
 ==>[v[4], v[3], lop, 3]
-==>[daniel, 6]
 
 In the last example above, note that the path starting with `daniel` is only of length 2. This is because the `daniel` string was inserted half-way in the traversal. Finally, a typical use case is provided below -- when the start of the traversal is not a graph object.
 
@@ -445,7 +445,7 @@ gremlin> g.V().interval('age',20,30)
 gremlin> g.V().interval('age',20,30).values('age')
 ==>29
 ==>27
-gremlin> g.V().has('age',gt,20).has('age',lte,30).values('age') // the equivalent expression using only has()
+gremlin> g.V().has('age',gte,20).has('age',lt,30).values('age') // the equivalent expression using only has()
 ==>29
 ==>27
 
@@ -681,7 +681,7 @@ gremlin> g.V().values('name').order(decr)
 ==>marko
 ==>lop
 ==>josh
-gremlin> g.V().values('name').order{a,b -> a.get()[1] <=> b.get[1]} // order by the second letter
+gremlin> g.V().values('name').order{a,b -> a.get()[1] <=> b.get()[1]} // order by the second letter
 ==>marko
 ==>vadas
 ==>peter
@@ -814,7 +814,7 @@ gremlin> path.objects()
 ==>ripple
 gremlin> path.labels()
 ==>[a, b]
-==>[]
+==>[^2]
 ==>[c]
 ==>[d, e]
 gremlin> path.a
@@ -836,8 +836,7 @@ WARNING: When profiling is enabled, traversals are more costly to execute. Thus,
 
 [source,groovy]
 ----
-$ JAVA_OPTIONS=-Dtinkerpop.profiling=true
-$ bin/gremlin.sh
+$ JAVA_OPTIONS=-Dtinkerpop.profiling=true bin/gremlin.sh
 
          \,,,/
          (o o)
@@ -917,13 +916,10 @@ gremlin> g.V().range(0,3)
 ==>v[1]
 ==>v[2]
 ==>v[3]
-==>v[4]
 gremlin> g.V().range(1,3)
 ==>v[2]
 ==>v[3]
-==>v[4]
 gremlin> g.V().as('a').both().jump('a',1000000).range(6,10)
-==>v[1]
 ==>v[1]
 ==>v[1]
 ==>v[1]
@@ -1038,16 +1034,16 @@ gremlin> g.V().as('a').out().as('b').out().as('c').select('a') // if the selecti
 The second use case is best understood in terms of <<match-step,`match()`>>-step where the result of `match()` is a `Map<String,Object>` of variable bindings. However, any step that emits a `Map<String,Object>` can be selected. A contrived example is presented below.
 
 [source,groovy]
-gremlin> g.V()[0..1].as('a').map{[b:1,c:2]} <1>
+gremlin> g.V().range(0, 2).as('a').map{[b:1,c:2]} <1>
 ==>[b:1, c:2]
 ==>[b:1, c:2]
-gremlin> g.V()[0..1].as('a').map{[b:1,c:2]}.select() <2>
+gremlin> g.V().range(0, 2).as('a').map{[b:1,c:2]}.select() <2>
 ==>[a:v[1], b:1, c:2]
 ==>[a:v[2], b:1, c:2]
-gremlin> g.V()[0..1].as('a').map{[b:1,c:2]}.select(['a','c']) <3>
+gremlin> g.V().range(0, 2).as('a').map{[b:1,c:2]}.select(['a','c']) <3>
 ==>[a:v[1], c:2]
 ==>[a:v[2], c:2]
-gremlin> g.V()[0..1].as('a').map{[b:1,c:2]}.select('c') <4>
+gremlin> g.V().range(0, 2).as('a').map{[b:1,c:2]}.select('c') <4>
 ==>2
 ==>2
 
@@ -1148,10 +1144,12 @@ Store Step
 When link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy] aggregation is needed, `store()`-step (*sideEffect*) should be used over <<aggregate-step,`aggregate()`>>. The two steps differ in that `store()` does not block and only stores objects in its side-effect collection as they pass through.
 
 [source,groovy]
-gremlin> g.V().aggregate('x').range(0,1).cap('x')
-==>[v[1], v[2], v[3], v[4], v[5], v[6]]
-gremlin> g.V().store('x').range(0,1).cap('x')
-==>[v[1], v[2], v[3]]
+----
+gremlin> g.V().aggregate('x').range(0, 1).cap('x')
+==>{v[1]=1, v[2]=1, v[3]=1, v[4]=1, v[5]=1, v[6]=1}
+gremlin> g.V().store('x').range(0, 1).cap('x')
+==>{v[1]=1, v[2]=1}
+----
 
 It is interesting to note that there are three results in the `store()` side-effect even though the interval selection is for 2 objects. Realize that when the third object is on its way to the `range()` filter (i.e. `[0..1]`), it passes through `store()` and thus, stored before filtered.
 
@@ -1165,18 +1163,15 @@ Extracting a portion of a graph from a larger one for analysis, visualization or
 ----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> sg = TinkerGraph.open() <1>
-==>tinkergraph[vertices:0 edges:0]
-gremlin> g.E().withSideEffect('sg',sg).subgraph('sg', {it.label == 'knows'}) <2>
+gremlin> sg = g.E().subgraph { it.label() == 'knows' }.next() <1>
 ==>tinkergraph[vertices:3 edges:2]
-gremlin> sg.E() <3>
+gremlin> sg.E() <2>
 ==>e[7][1-knows->2]
 ==>e[8][1-knows->4]
 ----
 
-<1> The empty graph to which the subgraph will be generated.
-<2> As this function produces "edge-induced" subgraphs, the traversal must contain edges in the path.  Those edges found in that path are evaluated by a `Predicate` function to determine if they should be copied to the subgraph in conjunction with their associated vertices.
-<3> The subgraph contains only "knows" edges.
+<1> As this function produces "edge-induced" subgraphs, the traversal must contain edges in the path.  Those edges found in that path are evaluated by a `Predicate` function to determine if they should be copied to the subgraph in conjunction with their associated vertices.
+<2> The subgraph contains only "knows" edges.
 
 A more common subgraphing use case is to get all of the graph structure surrounding a single vertex:
 
@@ -1206,6 +1201,8 @@ NOTE: The method `clock(int runs, Closure code)` is a utility preloaded in the <
 image::timelimit-step.png[width=500]
 
 [source,groovy]
+gremlin> :pin use tinkerpop.utilities
+==>tinkerpop.utilities activated
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> g.V().as('x').both().groupCount('m').jump('x',16).cap('m').next().sort{-it.value}
@@ -1428,8 +1425,6 @@ gremlin> g.V(4)
 gremlin> g.V(4).outE()  // all outgoing edges
 ==>e[10][4-created->5]
 ==>e[11][4-created->3]
-gremlin> g.V(4).outE(1)  // at most one outgoing edge per incoming vertex
-==>e[10][4-created->5]
 gremlin> g.V(4).inE('knows')  // all incoming knows-edges
 ==>e[8][1-knows->4]
 gremlin> g.V(4).inE('created') // all incoming created-edges
