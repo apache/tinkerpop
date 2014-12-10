@@ -931,3 +931,21 @@ System.out.println("" + sg.V().count().next() + " of " + g.V().count().next() + 
 // only the given edges are included
 System.out.println("" + sg.E().count().next() + " of " + g.E().count().next() + " edges");
 ----
+
+[source,groovy]
+----
+g = TinkerFactory.createClassic()
+
+vertexCriterion = { true }
+edgeCriterion = { it.id() >= 8 && it.id() <= 10 }
+
+strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion)
+sg = new StrategyWrappedGraph(g)
+sg.getStrategy().setGraphStrategy(strategy)
+
+// all vertices are here
+sg.V().count().next() + " of " + g.V().count().next() + " vertices"
+
+// only the given edges are included
+sg.E().count().next() + " of " + g.E().count().next() + " edges"
+----
