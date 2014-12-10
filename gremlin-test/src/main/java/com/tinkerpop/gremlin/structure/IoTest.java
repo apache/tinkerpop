@@ -2023,7 +2023,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final Vertex v1 = (Vertex) g1.V().has("name", "marko").next();
         assertEquals("person", v1.label());
-        assertEquals(3, v1.keys().size());
+        assertEquals(2, v1.keys().size());
         assertEquals(4, (int) StreamFactory.stream(v1.iterators().propertyIterator("location")).count());
         v1.iterators().propertyIterator("location").forEachRemaining(vp -> {
             if (vp.value().equals("san diego")) {
@@ -2073,8 +2073,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final Vertex v7 = (Vertex) g1.V().has("name", "stephen").next();
         assertEquals("person", v7.label());
-        // assertEquals(true, v7.iterators().hiddenValueIterator(Graph.Key.hide("visible")).next());
-        assertEquals(3, v7.keys().size());
+        assertEquals(2, v7.keys().size());
         assertEquals(3, (int) StreamFactory.stream(v7.iterators().propertyIterator("location")).count());
         v7.iterators().propertyIterator("location").forEachRemaining(vp -> {
             if (vp.value().equals("centreville")) {
@@ -2120,8 +2119,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final Vertex v8 = (Vertex) g1.V().has("name", "matthias").next();
         assertEquals("person", v8.label());
-        // assertEquals(true, v8.iterators().hiddenValueIterator(Graph.Key.hide("visible")).next());
-        assertEquals(3, v8.keys().size());
+        assertEquals(2, v8.keys().size());
         assertEquals(4, (int) StreamFactory.stream(v8.iterators().propertyIterator("location")).count());
         v8.iterators().propertyIterator("location").forEachRemaining(vp -> {
             if (vp.value().equals("bremen")) {
@@ -2167,7 +2165,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final Vertex v9 = (Vertex) g1.V().has("name", "daniel").next();
         assertEquals("person", v9.label());
-        assertEquals(3, v9.keys().size());
+        assertEquals(2, v9.keys().size());
         assertEquals(3, (int) StreamFactory.stream(v9.iterators().propertyIterator("location")).count());
         v9.iterators().propertyIterator("location").forEachRemaining(vp -> {
             if (vp.value().equals("spremberg")) {
@@ -2205,7 +2203,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final Vertex v10 = (Vertex) g1.V().has("name", "gremlin").next();
         assertEquals("software", v10.label());
-        assertEquals(2, v10.keys().size());
+        assertEquals(1, v10.keys().size());
         assertId(g1, lossyForId, v10, 10);
 
         final List<Edge> v10Edges = v10.bothE().toList();
@@ -2240,8 +2238,7 @@ public class IoTest extends AbstractGremlinTest {
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 24);
             } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("traverses")) {
-                assertEquals(false, e.value("~visible"));
-                assertEquals(1, e.keys().size());
+                assertEquals(0, e.keys().size());
                 assertId(g1, lossyForId, e, 26);
             } else {
                 fail("Edge not expected");
@@ -2250,7 +2247,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final Vertex v11 = (Vertex) g1.V().has("name", "tinkergraph").next();
         assertEquals("software", v11.label());
-        assertEquals(2, v11.keys().size());
+        assertEquals(1, v11.keys().size());
         assertId(g1, lossyForId, v11, 11);
 
         final List<Edge> v11Edges = v11.bothE().toList();
@@ -2281,8 +2278,7 @@ public class IoTest extends AbstractGremlinTest {
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 25);
             } else if (e.outV().values("name").next().equals("gremlin") && e.label().equals("traverses")) {
-                assertEquals(false, e.value("~visible"));
-                assertEquals(1, e.keys().size());
+                assertEquals(0, e.keys().size());
                 assertId(g1, lossyForId, e, 26);
             } else {
                 fail("Edge not expected");

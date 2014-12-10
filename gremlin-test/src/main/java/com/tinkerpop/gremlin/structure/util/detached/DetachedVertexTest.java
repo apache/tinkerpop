@@ -61,7 +61,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         final DetachedVertex v1 = DetachedFactory.detach(convertToVertex(g, "marko"), true);
 
         assertEquals("person", v1.label());
-        assertEquals(3, v1.keys().size());
+        assertEquals(2, v1.keys().size());
         v1.iterators().propertyIterator("location").forEachRemaining(vp -> {
             assertTrue(vp instanceof DetachedVertexProperty);
             if (vp.value().equals("san diego")) {
