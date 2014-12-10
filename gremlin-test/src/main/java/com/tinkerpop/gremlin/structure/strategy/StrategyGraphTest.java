@@ -418,8 +418,6 @@ public class StrategyGraphTest {
         }
     }
 
-    /*
-    TODO!!!! Neo4j is busted here.
     @RunWith(Parameterized.class)
     public static class EdgeShouldBeWrappedTest extends AbstractGremlinTest {
         @Parameterized.Parameters(name = "{0}")
@@ -454,18 +452,18 @@ public class StrategyGraphTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldWrap() {
-            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            final StrategyGraph swg = new StrategyGraph(g);
+            swg.getStrategy().setGraphStrategy(IdentityStrategy.instance());
 
             final AtomicBoolean atLeastOne = new AtomicBoolean(false);
             assertTrue(streamGetter.apply(swg, this).allMatch(e -> {
                 atLeastOne.set(true);
-                return e instanceof StrategyWrappedEdge;
+                return e instanceof StrategyEdge;
             }));
 
             assertTrue(atLeastOne.get());
         }
-    }*/
+    }
 
     @RunWith(Parameterized.class)
     public static class VertexShouldBeWrappedTest extends AbstractGremlinTest {
