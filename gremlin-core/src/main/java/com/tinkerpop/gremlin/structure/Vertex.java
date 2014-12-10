@@ -72,7 +72,7 @@ public interface Vertex extends Element, VertexTraversal {
     }
 
     /**
-     * Gets the {@link Vertex.Iterators} set.
+     * Get the {@link Vertex.Iterators} implementation associated with this {@code Vertex}.
      * <p/>
      * {@inheritDoc}
      */

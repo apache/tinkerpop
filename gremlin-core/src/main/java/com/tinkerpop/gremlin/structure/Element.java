@@ -40,7 +40,8 @@ public abstract interface Element {
     public Graph graph();
 
     /**
-     * Get the keys from properties.
+     * Get the keys of the properties associated with this element.
+     * The default implementation iterators the properties and stores the keys into a {@link HashSet}.
      *
      * @return The property key set
      */
@@ -52,6 +53,7 @@ public abstract interface Element {
 
     /**
      * Get a {@link Property} for the {@code Element} given its key.
+     * The default implementation calls the raw {@link Element#iterators#propertyIterator}.
      */
     public default <V> Property<V> property(final String key) {
         final Iterator<? extends Property<V>> iterator = this.iterators().propertyIterator(key);
@@ -65,17 +67,13 @@ public abstract interface Element {
 
     /**
      * Get the value of a {@link Property} given it's key.
+     * The default implementation calls {@link Element#property} and then returns the associated value.
      *
      * @throws NoSuchElementException if the property does not exist on the {@code Element}.
      */
     public default <V> V value(final String key) throws NoSuchElementException {
         final Property<V> property = this.property(key);
         return property.orElseThrow(() -> Property.Exceptions.propertyDoesNotExist(key));
-    }
-
-    public default <V> V value(final String key, final V orElse) {
-        final Property<V> property = this.property(key);
-        return property.orElse(orElse);
     }
 
     /**

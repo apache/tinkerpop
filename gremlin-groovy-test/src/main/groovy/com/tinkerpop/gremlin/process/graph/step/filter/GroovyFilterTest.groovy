@@ -24,7 +24,7 @@ public abstract class GroovyFilterTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX() {
-            g.V.filter { it.get().value('lang', null) == 'java' }
+            g.V.filter { it.property('lang').orElse("none") == 'java' }
         }
 
         @Override
@@ -34,7 +34,7 @@ public abstract class GroovyFilterTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X(final Object v1Id) {
-            g.V(v1Id).out.filter { it.get().value('age', 0) > 30 }
+            g.V(v1Id).out.filter { it.property('age').orElse(0) > 30 }
         }
 
         @Override
@@ -67,7 +67,7 @@ public abstract class GroovyFilterTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX() {
-            ComputerTestHelper.compute("g.V.filter { it.get().value('lang', null) == 'java' }",g);
+            ComputerTestHelper.compute("g.V.filter { it.property('lang').orElse('none') == 'java' }",g);
         }
 
         @Override
@@ -77,7 +77,7 @@ public abstract class GroovyFilterTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).out.filter { it.get().value('age', 0) > 30 }",g);
+            ComputerTestHelper.compute("g.V(${v1Id}).out.filter { it.property('age').orElse(0) > 30 }",g);
         }
 
         @Override
