@@ -601,16 +601,6 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public UnaryOperator<Supplier<Set<String>>> getVertexHiddenKeysStrategy(Strategy.Context<StrategyVertex> ctx) {
-            return spy();
-        }
-
-        @Override
-        public UnaryOperator<Supplier<Set<String>>> getEdgeHiddenKeysStrategy(Strategy.Context<StrategyEdge> ctx) {
-            return spy();
-        }
-
-        @Override
         public <V> UnaryOperator<Function<String, V>> getVertexValueStrategy(final Strategy.Context<StrategyVertex> ctx) {
             return spy();
         }
@@ -708,11 +698,6 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
 
         @Override
         public <V> UnaryOperator<Supplier<Set<String>>> getVertexPropertyKeysStrategy(final Strategy.Context<StrategyVertexProperty<V>> ctx) {
-            return spy();
-        }
-
-        @Override
-        public <V> UnaryOperator<Supplier<Set<String>>> getVertexPropertyHiddenKeysStrategy(final Strategy.Context<StrategyVertexProperty<V>> ctx) {
             return spy();
         }
 
