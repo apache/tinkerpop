@@ -71,7 +71,7 @@ public interface Strategy {
             return g.getBaseGraph();
         }
 
-        public StrategyGraph getStrategyWrappedGraph() {
+        public StrategyGraph getStrategyGraph() {
             return g;
         }
 
