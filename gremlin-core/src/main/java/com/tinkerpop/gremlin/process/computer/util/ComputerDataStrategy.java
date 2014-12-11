@@ -52,13 +52,13 @@ public class ComputerDataStrategy implements GraphStrategy {
 
     public static StrategyGraph wrapGraph(final Graph graph, final VertexProgram<?> vertexProgram) {
         final StrategyGraph sg = new StrategyGraph(graph);
-        sg.setGraphStrategy(new ComputerDataStrategy(vertexProgram.getElementComputeKeys()));
+        sg.setStrategy(new ComputerDataStrategy(vertexProgram.getElementComputeKeys()));
         return sg;
     }
 
     public static StrategyVertex wrapVertex(final Vertex vertex, final VertexProgram<?> vertexProgram) {
         final StrategyGraph sg = new StrategyGraph(vertex.graph());
-        sg.setGraphStrategy(new ComputerDataStrategy(vertexProgram.getElementComputeKeys()));
+        sg.setStrategy(new ComputerDataStrategy(vertexProgram.getElementComputeKeys()));
         return new StrategyVertex(vertex, sg);
     }
 

@@ -59,14 +59,14 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
     /**
      * Set the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} to utilized in the various Gremlin Structure methods that it supports.
      */
-    public void setGraphStrategy(final GraphStrategy strategy) {
+    public void setStrategy(final GraphStrategy strategy) {
         this.strategy = strategy;
     }
 
     /**
      * Gets the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} for the {@link com.tinkerpop.gremlin.structure.Graph}.
      */
-    public GraphStrategy getGraphStrategy() {
+    public GraphStrategy getStrategy() {
         return this.strategy;
     }
 

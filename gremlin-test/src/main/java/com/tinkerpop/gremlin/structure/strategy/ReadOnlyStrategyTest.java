@@ -146,14 +146,14 @@ public class ReadOnlyStrategyTest extends AbstractGremlinTest {
     public void shouldNotAllowVariableAsMapModifications() {
         g.variables().set("will", "be read-only");
         final StrategyGraph swg = new StrategyGraph(g);
-        swg.setGraphStrategy(readOnlyGraphStrategy);
+        swg.setStrategy(readOnlyGraphStrategy);
         swg.variables().asMap().put("will", "not work");
     }
 
     private void assertException(final ThrowingConsumer<Graph> stt) {
         try {
             final StrategyGraph swg = new StrategyGraph(g);
-            swg.setGraphStrategy(readOnlyGraphStrategy);
+            swg.setStrategy(readOnlyGraphStrategy);
             stt.accept(swg);
             fail();
         } catch (Exception ex) {

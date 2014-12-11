@@ -807,7 +807,7 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 gremlin> sg = new StrategyGraph(g)
 ==>identitygraphstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
-gremlin> sg.setGraphStrategy(IdStrategy.build("idKey").create())
+gremlin> sg.setStrategy(IdStrategy.build("idKey").create())
 ==>null
 gremlin> sg.addVertex(id,"42a").id()
 ==>42a
@@ -831,7 +831,7 @@ gremlin> strategy = new PartitionStrategy("com.example.partition", "A")
 ==>PartitionStrategy
 gremlin> sg = new StrategyGraph(g)
 ==>strategywrappedgraph[tinkergraph[vertices:0 edges:0]]
-gremlin> sg.setGraphStrategy(strategy)
+gremlin> sg.setStrategy(strategy)
 ==>null
 ----
 
@@ -924,7 +924,7 @@ Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() 
 
 GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
 StrategyGraph sg = new StrategyGraph(g);
-sg.setGraphStrategy(strategy);
+sg.setStrategy(strategy);
 
 // all vertices are here
 System.out.println("" + sg.V().count().next() + " of " + g.V().count().next() + " vertices");
@@ -942,7 +942,7 @@ edgeCriterion = { it.id() >= 8 && it.id() <= 10 }
 
 strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion)
 sg = new StrategyWrappedGraph(g)
-sg.setGraphStrategy(strategy)
+sg.setStrategy(strategy)
 
 // all vertices are here
 sg.V().count().next() + " of " + g.V().count().next() + " vertices"

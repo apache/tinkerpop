@@ -64,11 +64,11 @@ public class GraphFactory {
         final Graph returnedGraph;
         if (strategies != null && strategies.length == 1) {
             final StrategyGraph swg = new StrategyGraph(g);
-            swg.setGraphStrategy(strategies[0]);
+            swg.setStrategy(strategies[0]);
             returnedGraph = swg;
         } else if (strategies != null && strategies.length > 1) {
             final StrategyGraph swg = new StrategyGraph(g);
-            swg.setGraphStrategy(new SequenceStrategy(strategies));
+            swg.setStrategy(new SequenceStrategy(strategies));
             returnedGraph = swg;
         } else
             returnedGraph = g;
