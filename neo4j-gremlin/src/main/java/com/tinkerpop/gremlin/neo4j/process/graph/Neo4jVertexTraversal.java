@@ -24,6 +24,11 @@ public interface Neo4jVertexTraversal extends Neo4jElementTraversal<Vertex>, Ver
         return this.start().valueMap(propertyKeys);
     }
 
+
+    public default <E2> Neo4jTraversal<Vertex, Map<String, List<E2>>> valueMap(final boolean includeTokens, final String... propertyKeys) {
+        return this.start().valueMap(includeTokens,propertyKeys);
+    }
+
     public default <E2> Neo4jTraversal<Vertex, E2> value() {
         return this.start().value();
     }

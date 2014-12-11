@@ -518,6 +518,10 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal.Admin<S, E>, GraphT
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.valueMap(arg0);
 	}
 
+	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, E2>> valueMap(boolean arg0, java.lang.String... arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.valueMap(arg0, arg1);
+	}
+
 	public default <E2> Neo4jTraversal<S, E2> values(java.lang.String... arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.values(arg0);
 	}

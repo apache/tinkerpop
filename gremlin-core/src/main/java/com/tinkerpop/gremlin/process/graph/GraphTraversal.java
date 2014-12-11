@@ -242,11 +242,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> propertyMap(final String... propertyKeys) {
-        return this.asAdmin().addStep(new PropertyMapStep<>(this, PropertyType.PROPERTY, propertyKeys));
+        return this.asAdmin().addStep(new PropertyMapStep<>(this, false, PropertyType.PROPERTY, propertyKeys));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final String... propertyKeys) {
-        return this.asAdmin().addStep(new PropertyMapStep<>(this, PropertyType.VALUE, propertyKeys));
+        return this.asAdmin().addStep(new PropertyMapStep<>(this, false, PropertyType.VALUE, propertyKeys));
+    }
+
+    public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
+        return this.asAdmin().addStep(new PropertyMapStep<>(this, includeTokens, PropertyType.VALUE, propertyKeys));
     }
 
     public default GraphTraversal<S, String> key() {

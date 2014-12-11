@@ -22,6 +22,10 @@ public interface EdgeTraversal extends ElementTraversal<Edge> {
         return this.start().valueMap(propertyKeys);
     }
 
+    public default <E2> GraphTraversal<Edge, Map<String, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
+        return this.start().valueMap(includeTokens, propertyKeys);
+    }
+
     // necessary so VertexProperty.value() as a non-traversal method works
     public default <E2> GraphTraversal<Edge, E2> value() {
         return this.start().value();

@@ -23,6 +23,10 @@ public interface Neo4jEdgeTraversal extends Neo4jElementTraversal<Edge>, EdgeTra
         return this.start().valueMap(propertyKeys);
     }
 
+    public default <E2> Neo4jTraversal<Edge, Map<String, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
+        return this.start().valueMap(includeTokens, propertyKeys);
+    }
+
     public default <E2> Neo4jTraversal<Edge, E2> value() {
         return this.start().value();
     }

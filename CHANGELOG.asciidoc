@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `PropertyMapStep` (`valueMap()`) now takes a boolean to state if the tokens of the element are desired along with its properties.
 * `HadoopGraph` now connected to the `StructureProcessSuite`.
 * `HadoopGraph` no longer supports `Graph.Variables` as they were in-memory. A persistence mechanism can be introduced in the future.
 * Hidden properties removed in favor of using `GraphStrategy` for such features.

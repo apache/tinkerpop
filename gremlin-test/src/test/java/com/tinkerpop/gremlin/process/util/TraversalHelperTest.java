@@ -89,7 +89,7 @@ public class TraversalHelperTest {
         Step step1 = new IdentityStep(traversal);
         Step step2 = new TimeLimitStep<>(traversal, 100);
         Step step3 = new RandomStep<>(traversal, 0.5);
-        Step step4 = new PropertyMapStep(traversal, PropertyType.PROPERTY, "name");
+        Step step4 = new PropertyMapStep(traversal, false, PropertyType.PROPERTY, "name");
         Step step5 = new ShuffleStep<>(traversal);
         traversal.asAdmin().addStep(step1);
         traversal.asAdmin().addStep(step2);

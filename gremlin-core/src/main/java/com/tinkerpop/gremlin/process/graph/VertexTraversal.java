@@ -23,6 +23,11 @@ public interface VertexTraversal extends ElementTraversal<Vertex> {
         return this.start().valueMap(propertyKeys);
     }
 
+    public default <E2> GraphTraversal<Vertex, Map<String, List<E2>>> valueMap(final boolean includeTokens, final String... propertyKeys) {
+        return this.start().valueMap(includeTokens, propertyKeys);
+    }
+
+
     // necessary so VertexProperty.value() as a non-traversal method works
     public default <E2> GraphTraversal<Vertex, E2> value() {
         return this.start().value();

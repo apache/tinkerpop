@@ -21,4 +21,8 @@ public interface VertexPropertyTraversal extends ElementTraversal<VertexProperty
     public default <E2> GraphTraversal<VertexProperty, Map<String, E2>> valueMap(final String... propertyKeys) {
         return this.start().valueMap(propertyKeys);
     }
+
+    public default <E2> GraphTraversal<VertexProperty, Map<String, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
+        return this.start().valueMap(includeTokens,propertyKeys);
+    }
 }
