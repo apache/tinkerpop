@@ -645,20 +645,18 @@ gremlin> traversal = g.V().match('a',
                select(['a','c']){it.value('name')}; null <2>
 ==>null
 gremlin> traversal.toString()
-==>[TinkerGraphStep(vertex), MatchStep, WhereStep, SelectStep] <3>
-gremlin> traversal.getStrategies().apply()
-==>null
+==>[TinkerGraphStep(vertex), MatchStep, WhereStep, SelectStep([a, c])] <3>
+gremlin> traversal <4>
+==>[a:marko, c:josh] <5>
 gremlin> traversal.toString()
-==>[TinkerGraphStep(vertex), MatchStep, SelectStep] <4>
-gremlin> traversal <5>
-==>[a:marko, c:josh] <6>
+==>[TinkerGraphStep(vertex), MatchStep, SelectStep([a, c])] <6>
 
 <1> A `where()`-step with a traversal containing variable bindings declared in `match()`.
 <2> A useful trick to ensure that that the traversal is not iterated by Gremlin Console.
 <3> The string representation of the traversal prior to its strategies being applied.
-<4> The string representation of the traversal after the strategies have been applied (and thus, `where()` is folded into `match()`)
-<5> The Gremlin Console will automatically iterate anything that is an iterator or is iterable.
-<6> Both marko and josh are co-developers and marko knows josh.
+<4> The Gremlin Console will automatically iterate anything that is an iterator or is iterable.
+<5> Both marko and josh are co-developers and marko knows josh.
+<6> The string representation of the traversal after the strategies have been applied (and thus, `where()` is folded into `match()`)
 
 [[order-step]]
 Order Step
