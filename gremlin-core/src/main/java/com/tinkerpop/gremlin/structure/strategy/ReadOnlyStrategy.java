@@ -23,65 +23,65 @@ import java.util.function.UnaryOperator;
  */
 public class ReadOnlyStrategy implements GraphStrategy {
     @Override
-    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.StrategyContext<StrategyGraph> ctx) {
+    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext<StrategyGraph> ctx) {
         return readOnlyFunction();
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.StrategyContext<StrategyVertex> ctx) {
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final StrategyContext<StrategyVertex> ctx) {
         return readOnlyTriFunction();
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getEdgePropertyStrategy(final Strategy.StrategyContext<StrategyEdge> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getEdgePropertyStrategy(final StrategyContext<StrategyEdge> ctx) {
         return (f) -> (t, u) -> {
             throw Exceptions.graphUsesReadOnlyStrategy();
         };
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final Strategy.StrategyContext<StrategyVertex> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final StrategyContext<StrategyVertex> ctx) {
         return (f) -> (t, u) -> {
             throw Exceptions.graphUsesReadOnlyStrategy();
         };
     }
 
     @Override
-    public <V, U> UnaryOperator<BiFunction<String, V, Property<V>>> getVertexPropertyPropertyStrategy(final Strategy.StrategyContext<StrategyVertexProperty<U>> ctx) {
+    public <V, U> UnaryOperator<BiFunction<String, V, Property<V>>> getVertexPropertyPropertyStrategy(final StrategyContext<StrategyVertexProperty<U>> ctx) {
         return (f) -> (t, u) -> {
             throw Exceptions.graphUsesReadOnlyStrategy();
         };
     }
 
     @Override
-    public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final Strategy.StrategyContext<StrategyEdge> ctx) {
+    public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final StrategyContext<StrategyEdge> ctx) {
         return readOnlySupplier();
     }
 
     @Override
-    public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.StrategyContext<StrategyVertex> ctx) {
+    public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final StrategyContext<StrategyVertex> ctx) {
         return readOnlySupplier();
     }
 
     @Override
-    public <V> UnaryOperator<Supplier<Void>> getRemovePropertyStrategy(final Strategy.StrategyContext<StrategyProperty<V>> ctx) {
+    public <V> UnaryOperator<Supplier<Void>> getRemovePropertyStrategy(final StrategyContext<StrategyProperty<V>> ctx) {
         return readOnlySupplier();
     }
 
     @Override
-    public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(final Strategy.StrategyContext<StrategyVariables> ctx) {
+    public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(final StrategyContext<StrategyVariables> ctx) {
         return (f) -> (k, v) -> {
             throw Exceptions.graphUsesReadOnlyStrategy();
         };
     }
 
     @Override
-    public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(final Strategy.StrategyContext<StrategyVariables> ctx) {
+    public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(final StrategyContext<StrategyVariables> ctx) {
         return (f) -> () -> Collections.unmodifiableMap(f.get());
     }
 
     @Override
-    public <V> UnaryOperator<Supplier<Void>> getRemoveVertexPropertyStrategy(final Strategy.StrategyContext<StrategyVertexProperty<V>> ctx) {
+    public <V> UnaryOperator<Supplier<Void>> getRemoveVertexPropertyStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx) {
         return readOnlySupplier();
     }
 

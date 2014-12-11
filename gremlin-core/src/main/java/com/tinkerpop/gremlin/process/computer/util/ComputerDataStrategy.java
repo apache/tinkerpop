@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import com.tinkerpop.gremlin.structure.strategy.Strategy;
+import com.tinkerpop.gremlin.structure.strategy.StrategyContext;
 import com.tinkerpop.gremlin.structure.strategy.StrategyGraph;
 import com.tinkerpop.gremlin.structure.strategy.StrategyVertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -31,17 +31,17 @@ public class ComputerDataStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertyIteratorStrategy(final Strategy.StrategyContext<StrategyVertex> ctx) {
+    public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyVertex> ctx) {
         return (f) -> (keys) -> keys.length == 0 ? IteratorUtils.filter(f.apply(keys), property -> !this.elementComputeKeys.contains(property.key())) : f.apply(keys);
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValueIteratorStrategy(final Strategy.StrategyContext<StrategyVertex> ctx) {
+    public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValueIteratorStrategy(final StrategyContext<StrategyVertex> ctx) {
         return (f) -> (keys) -> IteratorUtils.map(ctx.getCurrent().iterators().<V>propertyIterator(keys), vertexProperty -> vertexProperty.value());
     }
 
     @Override
-    public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final Strategy.StrategyContext<StrategyVertex> ctx) {
+    public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final StrategyContext<StrategyVertex> ctx) {
         return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !this.elementComputeKeys.contains(key)), new HashSet<>());
     }
 

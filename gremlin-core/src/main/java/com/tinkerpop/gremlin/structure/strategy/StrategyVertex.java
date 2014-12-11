@@ -21,14 +21,14 @@ import java.util.Set;
  */
 public final class StrategyVertex extends StrategyElement implements Vertex, StrategyWrapped, WrappedVertex<Vertex>, Vertex.Iterators {
 
-    private final Strategy.StrategyContext<StrategyVertex> strategyContext;
+    private final StrategyContext<StrategyVertex> strategyContext;
 
     public StrategyVertex(final Vertex baseVertex, final StrategyGraph strategyGraph) {
         super(baseVertex, strategyGraph);
-        this.strategyContext = new Strategy.StrategyContext<>(strategyGraph, this);
+        this.strategyContext = new StrategyContext<>(strategyGraph, this);
     }
 
-    public Strategy.StrategyContext<StrategyVertex> getStrategyContext() {
+    public StrategyContext<StrategyVertex> getStrategyContext() {
         return this.strategyContext;
     }
 
