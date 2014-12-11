@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
+import com.tinkerpop.gremlin.structure.util.StringFactory;
+
 /**
  * A pass through implementation of {@link GraphStrategy} where all strategy functions are simply executed as
  * they were originally implemented.
@@ -14,7 +16,7 @@ public class IdentityStrategy implements GraphStrategy {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName().toLowerCase();
+        return StringFactory.graphStrategyString(this);
     }
 
     public static final GraphStrategy instance() {
