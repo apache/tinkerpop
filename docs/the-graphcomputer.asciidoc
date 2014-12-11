@@ -156,7 +156,7 @@ gremlin> result = g.compute().
                       mapReduce(LambdaMapReduce.build().
                         map("b.emit(a.value('counter'))").
                         reduce("c.emit(a,b.sum())").
-                        memory('a.next().value1').
+                        memory('a.next()').
                         memoryKey('sum').create()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],memory[size:1]]
 gremlin> result.memory().sum
@@ -348,7 +348,7 @@ gremlin> result.memory().a
 ==>27=1
 ==>29=3
 gremlin> result.memory().iteration
-==>5
+==>2
 gremlin> result.memory().runtime
 ==>7
 

@@ -132,15 +132,15 @@ gremlin> gremlin = g.addVertex(label,'software','name','gremlin')
 gremlin> gremlin.property('created',2009)
 ==>vp[created->2009]
 gremlin> blueprints = g.addVertex(label,'software','name','blueprints')
-==>v[1]
+==>v[3]
 gremlin> gremlin.addEdge('dependsOn',blueprints)
-==>e[2][0-dependsOn->1]
+==>e[5][0-dependsOn->3]
 gremlin> blueprints.property('created',2010)
 ==>vp[created->2010]
 gremlin> blueprints.property('created').remove()
 ==>null
 gremlin> gremlin.addEdge('encapsulates',blueprints)
-==>e[3][0-encapsulates->1]
+==>e[7][0-encapsulates->3]
 gremlin> blueprints.remove()
 ==>null
 gremlin> gremlin.remove()
@@ -268,18 +268,18 @@ Throughout the documentation, the examples provided are primarily written in Gre
 [source,groovy]
 // Gremlin-Groovy
 g.V().out('knows').values('name') <1>
-g.V().out('knows').map{it.value('name') + ' is the friend name'} <2>
-g.V().out('knows').sideEffect{println it} <3>
-g.V().as('person').out('knows').as('friend').select{it.value('name')} <4>
+g.V().out('knows').map{it.get().value('name') + ' is the friend name'} <2>
+g.V().out('knows').sideEffect(System.out.&println) <3>
+g.V().as('person').out('knows').as('friend').select{it.get().value('name')} <4>
 
 [source,java]
 // Gremlin-Java
 g.V().out("knows").values("name") <1>
-g.V().out("knows").map(v -> v.value("name") + " is the friend name") <2>
+g.V().out("knows").map(t -> t.get().value("name") + " is the friend name") <2>
 g.V().out("knows").sideEffect(System.out::println) <3>
-g.V().as("person").out("knows").as("friend").select(v -> ((Vertex)v).value("name")) <4>
+g.V().as("person").out("knows").as("friend").select((Function<Vertex, String>) v -> v.value("name")) <4>
 
 <1> All the non-lambda step chaining is identical in Gremlin-Groovy and Gremlin-Java. However, note that Groovy supports `'` strings as well as `"` strings.
 <2> In Groovy, lambdas are called closures and have a different syntax, where Groovy supports the `it` keyword and Java doesn't with all parameters requiring naming.
-<3> Java supports link:https://docs.oracle.com/javase/tutorial/java/javaOO/methodreferences.html[method references] as lambdas which is not possible in Gremlin-Groovy.
+<3> The syntax for method references differs slightly between link:https://docs.oracle.com/javase/tutorial/java/javaOO/methodreferences.html[Java] and link:http://mrhaki.blogspot.de/2009/08/groovy-goodness-turn-methods-into.html[Gremlin-Groovy].
 <4> Groovy is lenient on object typing and Java is not. When the parameter type of the lambda is not known, typecasting is required.

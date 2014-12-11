@@ -714,7 +714,7 @@ gremlin> traversal = g.V(2).store('1').
                            in('knows').store('2').
                            out('knows').has('age',gt,30).store('3').
                            outE('created').has('weight',gt,0.5f).inV().store('4')
-==>[v[5]]
+==>{v[5]=1}
 gremlin> traversal.sideEffects().get('1')
 ==>v[2]
 gremlin> traversal.sideEffects().get('2')
