@@ -34,13 +34,13 @@ public final class StrategyProperty<V> implements Property<V>, StrategyWrapped, 
 
     @Override
     public String key() {
-        return this.strategyGraph.getStrategy().compose(
+        return this.strategyGraph.compose(
                 s -> s.getPropertyKeyStrategy(this.strategyContext), this.baseProperty::key).get();
     }
 
     @Override
     public V value() throws NoSuchElementException {
-        return this.strategyGraph.getStrategy().compose(
+        return this.strategyGraph.compose(
                 s -> s.getPropertyValueStrategy(this.strategyContext), this.baseProperty::value).get();
     }
 
@@ -78,7 +78,7 @@ public final class StrategyProperty<V> implements Property<V>, StrategyWrapped, 
 
     @Override
     public void remove() {
-        this.strategyGraph.getStrategy().compose(
+        this.strategyGraph.compose(
                 s -> s.getRemovePropertyStrategy(strategyContext),
                 () -> {
                     this.baseProperty.remove();

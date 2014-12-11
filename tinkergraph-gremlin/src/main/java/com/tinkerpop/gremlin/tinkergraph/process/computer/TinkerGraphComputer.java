@@ -73,7 +73,7 @@ public class TinkerGraphComputer implements GraphComputer {
 
         final StrategyGraph sg = new StrategyGraph(this.graph);
         if (null != this.vertexProgram)
-            sg.getStrategy().setGraphStrategy(new ComputerDataStrategy(this.vertexProgram.getElementComputeKeys()));
+            sg.setGraphStrategy(new ComputerDataStrategy(this.vertexProgram.getElementComputeKeys()));
 
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReduces);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {

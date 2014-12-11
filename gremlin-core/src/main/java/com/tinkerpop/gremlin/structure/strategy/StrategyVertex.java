@@ -34,28 +34,28 @@ public final class StrategyVertex extends StrategyElement implements Vertex, Str
 
     @Override
     public Graph graph() {
-        return this.strategyGraph.getStrategy().compose(
+        return this.strategyGraph.compose(
                 s -> s.getVertexGraphStrategy(this.strategyContext),
                 () -> this.strategyGraph).get();
     }
 
     @Override
     public Object id() {
-        return this.strategyGraph.getStrategy().compose(
+        return this.strategyGraph.compose(
                 s -> s.getVertexIdStrategy(this.strategyContext),
                 this.getBaseVertex()::id).get();
     }
 
     @Override
     public String label() {
-        return this.strategyGraph.getStrategy().compose(
+        return this.strategyGraph.compose(
                 s -> s.getVertexLabelStrategy(this.strategyContext),
                 this.getBaseVertex()::label).get();
     }
 
     @Override
     public Set<String> keys() {
-        return this.strategyGraph.getStrategy().compose(
+        return this.strategyGraph.compose(
                 s -> s.getVertexKeysStrategy(this.strategyContext),
                 this.getBaseVertex()::keys).get();
     }
@@ -67,14 +67,14 @@ public final class StrategyVertex extends StrategyElement implements Vertex, Str
 
     @Override
     public <V> V value(final String key) throws NoSuchElementException {
-        return this.strategyGraph.getStrategy().compose(
+        return this.strategyGraph.compose(
                 s -> s.<V>getVertexValueStrategy(this.strategyContext),
                 this.getBaseVertex()::value).apply(key);
     }
 
     @Override
     public void remove() {
-        this.strategyGraph.getStrategy().compose(
+        this.strategyGraph.compose(
                 s -> s.getRemoveVertexStrategy(this.strategyContext),
                 () -> {
                     this.getBaseVertex().remove();
@@ -90,7 +90,7 @@ public final class StrategyVertex extends StrategyElement implements Vertex, Str
     @Override
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
         final Vertex baseInVertex = (inVertex instanceof StrategyVertex) ? ((StrategyVertex) inVertex).getBaseVertex() : inVertex;
-        return new StrategyEdge(this.strategyGraph.getStrategy().compose(
+        return new StrategyEdge(this.strategyGraph.compose(
                 s -> s.getAddEdgeStrategy(this.strategyContext),
                 this.getBaseVertex()::addEdge)
                 .apply(label, baseInVertex, keyValues), this.strategyGraph);
@@ -98,14 +98,14 @@ public final class StrategyVertex extends StrategyElement implements Vertex, Str
 
     @Override
     public <V> VertexProperty<V> property(final String key, final V value) {
-        return new StrategyVertexProperty<>(this.strategyGraph.getStrategy().compose(
+        return new StrategyVertexProperty<>(this.strategyGraph.compose(
                 s -> s.<V>getVertexPropertyStrategy(this.strategyContext),
                 this.getBaseVertex()::property).apply(key, value), this.strategyGraph);
     }
 
     @Override
     public <V> VertexProperty<V> property(final String key) {
-        return new StrategyVertexProperty<>(this.strategyGraph.getStrategy().compose(
+        return new StrategyVertexProperty<>(this.strategyGraph.compose(
                 s -> s.<V>getVertexGetPropertyStrategy(this.strategyContext),
                 this.getBaseVertex()::property).apply(key), this.strategyGraph);
     }
@@ -123,28 +123,28 @@ public final class StrategyVertex extends StrategyElement implements Vertex, Str
 
     @Override
     public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
-        return new StrategyEdge.StrategyWrappedEdgeIterator(this.strategyGraph.getStrategy().compose(
+        return new StrategyEdge.StrategyWrappedEdgeIterator(this.strategyGraph.compose(
                 s -> s.getVertexIteratorsEdgeIteratorStrategy(this.strategyContext),
                 (Direction d, String[] l) -> this.getBaseVertex().iterators().edgeIterator(d, l)).apply(direction, edgeLabels), this.strategyGraph);
     }
 
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
-        return new StrategyWrappedVertexIterator(this.strategyGraph.getStrategy().compose(
+        return new StrategyWrappedVertexIterator(this.strategyGraph.compose(
                 s -> s.getVertexIteratorsVertexIteratorStrategy(strategyContext),
                 (Direction d, String[] l) -> this.getBaseVertex().iterators().vertexIterator(d, l)).apply(direction, labels), this.strategyGraph);
     }
 
     @Override
     public <V> Iterator<V> valueIterator(final String... propertyKeys) {
-        return this.strategyGraph.getStrategy().compose(
+        return this.strategyGraph.compose(
                 s -> s.<V>getVertexIteratorsValueIteratorStrategy(strategyContext),
                 (String[] pks) -> this.getBaseVertex().iterators().valueIterator(pks)).apply(propertyKeys);
     }
 
     @Override
     public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
-        return IteratorUtils.map(this.strategyGraph.getStrategy().compose(
+        return IteratorUtils.map(this.strategyGraph.compose(
                         s -> s.<V>getVertexIteratorsPropertyIteratorStrategy(this.strategyContext),
                         (String[] pks) -> this.getBaseVertex().iterators().propertyIterator(pks)).apply(propertyKeys),
                 property -> new StrategyVertexProperty<>(property, this.strategyGraph));

@@ -16,6 +16,8 @@ import org.apache.commons.configuration.Configuration;
 
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * A wrapper class for {@link Graph} instances that host and apply a {@link GraphStrategy}.  The wrapper implements
@@ -29,14 +31,14 @@ import java.util.Optional;
  */
 public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, WrappedGraph<Graph> {
     private final Graph baseGraph;
-    private Strategy strategy;
+    private GraphStrategy strategy;
     private StrategyContext<StrategyGraph> graphContext;
 
     public StrategyGraph(final Graph baseGraph) {
-        this(baseGraph, new Strategy.Simple());
+        this(baseGraph, IdentityStrategy.instance());
     }
 
-    public StrategyGraph(final Graph baseGraph, final Strategy strategy) {
+    public StrategyGraph(final Graph baseGraph, final GraphStrategy strategy) {
         if (baseGraph instanceof StrategyWrapped) throw new IllegalArgumentException(
                 String.format("The graph %s is already StrategyWrapped and must be a base Graph", baseGraph));
         if (null == strategy) throw new IllegalArgumentException("Strategy cannot be null");
@@ -55,10 +57,29 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
     }
 
     /**
-     * Gets the strategy hosted within the wrapper.
+     * Set the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} to utilized in the various Gremlin Structure methods that it supports.
      */
-    public Strategy getStrategy() {
+    public void setGraphStrategy(final GraphStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    /**
+     * Gets the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} for the {@link com.tinkerpop.gremlin.structure.Graph}.
+     */
+    public GraphStrategy getGraphStrategy() {
         return this.strategy;
+    }
+
+    /**
+     * Return a {@link GraphStrategy} function that takes the base function of the form denoted by {@code T} as
+     * an argument and returns back a function with {@code T}.
+     *
+     * @param f    a function to execute if a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
+     * @param impl the base implementation of an operation.
+     * @return a function that will be applied in the Gremlin Structure implementation
+     */
+    public <T> T compose(final Function<GraphStrategy, UnaryOperator<T>> f, final T impl) {
+        return f.apply(this.strategy).apply(impl);
     }
 
     public StrategyContext<StrategyGraph> getGraphContext() {
@@ -67,7 +88,7 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
-        final Optional<Vertex> v = Optional.ofNullable(getStrategy().compose(
+        final Optional<Vertex> v = Optional.ofNullable(compose(
                 s -> s.getAddVertexStrategy(this.graphContext),
                 this.baseGraph::addVertex).apply(keyValues));
         return v.isPresent() ? new StrategyVertex(v.get(), this) : null;
@@ -75,14 +96,14 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
 
     @Override
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        return new StrategyWrappedGraphTraversal<>(Vertex.class, this.strategy.compose(
+        return new StrategyWrappedGraphTraversal<>(Vertex.class, this.compose(
                 s -> s.getGraphVStrategy(this.graphContext),
                 this.baseGraph::V).apply(vertexIds), this);
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        return new StrategyWrappedGraphTraversal<>(Edge.class, this.strategy.compose(
+        return new StrategyWrappedGraphTraversal<>(Edge.class, this.compose(
                 s -> s.getGraphEStrategy(this.graphContext),
                 this.baseGraph::E).apply(edgeIds), this);
     }
@@ -129,30 +150,26 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
 
     @Override
     public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
-        return new StrategyVertex.StrategyWrappedVertexIterator(getStrategy().compose(s -> s.getGraphIteratorsVertexIteratorStrategy(this.graphContext), this.baseGraph.iterators()::vertexIterator).apply(vertexIds), this);
+        return new StrategyVertex.StrategyWrappedVertexIterator(compose(s -> s.getGraphIteratorsVertexIteratorStrategy(this.graphContext), this.baseGraph.iterators()::vertexIterator).apply(vertexIds), this);
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Object... edgeIds) {
-        return new StrategyEdge.StrategyWrappedEdgeIterator(getStrategy().compose(s -> s.getGraphIteratorsEdgeIteratorStrategy(this.graphContext), this.baseGraph.iterators()::edgeIterator).apply(edgeIds), this);
+        return new StrategyEdge.StrategyWrappedEdgeIterator(compose(s -> s.getGraphIteratorsEdgeIteratorStrategy(this.graphContext), this.baseGraph.iterators()::edgeIterator).apply(edgeIds), this);
     }
 
     @Override
     public void close() throws Exception {
         // compose function doesn't seem to want to work here even though it works with other Supplier<Void>
         // strategy functions. maybe the "throws Exception" is hosing it up.......
-        if (this.strategy.getGraphStrategy().isPresent()) {
-            this.strategy.getGraphStrategy().get().getGraphCloseStrategy(this.graphContext).apply(FunctionUtils.wrapSupplier(() -> {
-                baseGraph.close();
-                return null;
-            })).get();
-        } else
+        this.strategy.getGraphCloseStrategy(this.graphContext).apply(FunctionUtils.wrapSupplier(() -> {
             baseGraph.close();
+            return null;
+        })).get();
     }
 
     @Override
     public String toString() {
-        final GraphStrategy strategy = this.strategy.getGraphStrategy().orElse(IdentityStrategy.instance());
         return StringFactory.graphStrategyString(strategy, this.baseGraph);
     }
 }
