@@ -92,8 +92,6 @@ public class LegacyGraphSONReader implements GraphReader {
 
             graph.tx().commit();
         } catch (Exception ex) {
-            // rollback whatever portion failed
-            graph.tx().rollback();
             throw new IOException(ex);
         }
 
