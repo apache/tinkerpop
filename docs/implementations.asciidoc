@@ -486,8 +486,8 @@ gremlin> g.tx().open() // direct Neo4j access requires explicit transaction crea
 ==>null
 gremlin> import org.neo4j.graphdb.*
 ...
-gremlin> g.getBaseGraph().schema().indexFor(DynamicLabel.label('name')).on('person').create()
-==>IndexDefinition[label:name, on:person]
+gremlin> g.getBaseGraph().schema().indexFor(DynamicLabel.label('person')).on('name').create()
+==>IndexDefinition[label:person, on:name]
 gremlin> g.tx().commit()
 ==>null
 gremlin> g.addVertex(label,'person','name','marko')
