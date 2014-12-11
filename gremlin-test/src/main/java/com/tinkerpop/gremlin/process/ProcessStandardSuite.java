@@ -24,7 +24,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MatchTest;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderByTest;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
-import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleTest;
@@ -110,7 +109,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             MatchTest.StandardTest.class,
             OrderTest.StandardTest.class,
             OrderByTest.StandardTest.class,
-            PathTest.StandardTest.class,
+            com.tinkerpop.gremlin.process.graph.step.map.PathTest.StandardTest.class,
             PropertiesTest.StandardTest.class,
             SelectTest.StandardTest.class,
             ShuffleTest.StandardTest.class,
@@ -139,7 +138,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // compliance
             TraversalCoverageTest.class,
             CoreTraversalTest.class,
-            PathStructureTest.class,
+            PathTest.class,
 
             // algorithms
             // PageRankVertexProgramTest.class
@@ -177,7 +176,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             MatchTest.class,
             OrderTest.class,
             OrderByTest.class,
-            PathTest.class,
+            com.tinkerpop.gremlin.process.graph.step.map.PathTest.class,
             SelectTest.class,
             ShuffleTest.class,
             VertexTest.class,
@@ -205,7 +204,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // compliance
             TraversalCoverageTest.class,
             CoreTraversalTest.class,
-            PathStructureTest.class,
+            PathTest.class,
 
             // algorithms
             // PageRankVertexProgramTest.class

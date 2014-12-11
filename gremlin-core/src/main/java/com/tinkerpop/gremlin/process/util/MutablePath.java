@@ -44,7 +44,8 @@ public class MutablePath implements Path, Serializable, Cloneable {
     public Path extend(final String label, final Object object) {
         this.objects.add(object);
         final HashSet<String> temp = new HashSet<>();
-        temp.add(label);
+        if (TraversalHelper.isLabeled(label))
+            temp.add(label);
         this.labels.add(temp);
         return this;
     }
@@ -52,7 +53,12 @@ public class MutablePath implements Path, Serializable, Cloneable {
     @Override
     public Path extend(final Set<String> labels, final Object object) {
         this.objects.add(object);
-        this.labels.add(new HashSet<>(labels));
+        final HashSet<String> temp = new HashSet<>();
+        for (final String label : labels) {
+            if (TraversalHelper.isLabeled(label))
+                temp.add(label);
+        }
+        this.labels.add(temp);
         return this;
     }
 
