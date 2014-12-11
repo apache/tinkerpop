@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -222,8 +223,8 @@ public abstract class AbstractGremlinTest {
 
     public static Consumer<Graph> assertVertexEdgeCounts(final int expectedVertexCount, final int expectedEdgeCount) {
         return (g) -> {
-            assertEquals(new Long(expectedVertexCount), g.V().count().next());
-            assertEquals(new Long(expectedEdgeCount), g.E().count().next());
+            assertEquals(expectedVertexCount, IteratorUtils.count(g.iterators().vertexIterator()));
+            assertEquals(expectedEdgeCount, IteratorUtils.count(g.iterators().edgeIterator()));
         };
     }
 

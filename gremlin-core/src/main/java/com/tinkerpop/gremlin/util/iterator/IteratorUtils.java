@@ -61,6 +61,12 @@ public class IteratorUtils {
         return collection;
     }
 
+    public static final long count(final Iterator iterator) {
+        long ix = 0;
+        for ( ; iterator.hasNext() ; ++ix ) iterator.next();
+        return ix;
+    }
+
     ///////////////
 
     public static final <S, E> Iterator<E> map(final Iterator<S> iterator, final Function<S, E> function) {

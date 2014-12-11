@@ -11,11 +11,13 @@ import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -116,8 +118,14 @@ public class VertexTest {
 
         @Test(expected = NoSuchElementException.class)
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldThrowNoSuchElementExceptionIfVertexWithIdNotPresent() {
+        public void shouldThrowNoSuchElementExceptionIfVertexWithIdNotPresentViaTraversal() {
             g.V("this-id-should-not-be-in-the-modern-graph").next();
+        }
+
+        @Test(expected = NoSuchElementException.class)
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldThrowNoSuchElementExceptionIfVertexWithIdNotPresentViaIterators() {
+            g.iterators().vertexIterator("this-id-should-not-be-in-the-modern-graph").next();
         }
 
         @Test
@@ -226,9 +234,18 @@ public class VertexTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-        public void shouldEvaluateVerticesEquivalentWithSuppliedIds() {
+        public void shouldEvaluateVerticesEquivalentWithSuppliedIdsViaTraversal() {
             final Vertex v = g.addVertex(T.id, GraphManager.get().convertId("1"));
             final Vertex u = g.V(GraphManager.get().convertId("1")).next();
+            assertEquals(v, u);
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+        public void shouldEvaluateVerticesEquivalentWithSuppliedIdsViaIterators() {
+            final Vertex v = g.addVertex(T.id, GraphManager.get().convertId("1"));
+            final Vertex u = g.iterators().vertexIterator(GraphManager.get().convertId("1")).next();
             assertEquals(v, u);
         }
 
@@ -238,13 +255,13 @@ public class VertexTest {
             final Vertex v = g.addVertex();
             assertNotNull(v);
 
-            final Vertex u = g.V(v.id()).next();
+            final Vertex u = g.iterators().vertexIterator(v.id()).next();
             assertNotNull(u);
             assertEquals(v, u);
 
-            assertEquals(g.V(u.id()), g.V(u.id()));
-            assertEquals(g.V(v.id()), g.V(u.id()));
-            assertEquals(g.V(v.id()), g.V(v.id()));
+            assertEquals(g.iterators().vertexIterator(u.id()).next(), g.iterators().vertexIterator(u.id()).next());
+            assertEquals(g.iterators().vertexIterator(v.id()).next(), g.iterators().vertexIterator(u.id()).next());
+            assertEquals(g.iterators().vertexIterator(v.id()).next(), g.iterators().vertexIterator(v.id()).next());
         }
 
         @Test
@@ -252,7 +269,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
             final Vertex v = g.addVertex(T.id, GraphManager.get().convertId("1"));
-            final Vertex u = g.V(GraphManager.get().convertId("1")).next();
+            final Vertex u = g.iterators().vertexIterator(GraphManager.get().convertId("1")).next();
             assertEquals(v, u);
 
             final Set<Vertex> set = new HashSet<>();
@@ -260,8 +277,8 @@ public class VertexTest {
             set.add(v);
             set.add(u);
             set.add(u);
-            set.add(g.V(GraphManager.get().convertId("1")).next());
-            set.add(g.V(GraphManager.get().convertId("1")).next());
+            set.add(g.iterators().vertexIterator(GraphManager.get().convertId("1")).next());
+            set.add(g.iterators().vertexIterator(GraphManager.get().convertId("1")).next());
 
             assertEquals(1, set.size());
             assertEquals(v.hashCode(), u.hashCode());
@@ -378,11 +395,13 @@ public class VertexTest {
             for (int i = 0; i < 25; i++) {
                 g.addVertex("myId", i);
             }
-            g.V().forEachRemaining(v -> g.V().forEachRemaining(u -> v.addEdge("knows", u, "myEdgeId", 12)));
+            g.V().forEachRemaining(v -> g.iterators().vertexIterator().forEachRemaining(u -> v.addEdge("knows", u, "myEdgeId", 12)));
 
             tryCommit(g, assertVertexEdgeCounts(25, 625));
 
-            for (Vertex v : g.V().toList()) {
+            final List<Vertex> vertices = new ArrayList<>();
+            IteratorUtils.fill(g.iterators().vertexIterator(), vertices);
+            for (Vertex v : vertices) {
                 v.remove();
                 tryCommit(g);
             }
