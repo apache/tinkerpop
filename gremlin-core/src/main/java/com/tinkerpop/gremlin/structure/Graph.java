@@ -975,4 +975,16 @@ public interface Graph extends AutoCloseable {
     public @interface OptOuts {
         OptOut[] value();
     }
+
+    /**
+     * Defines a method as a "helper method".  These methods will usually be default methods in the
+     * core structure interfaces.  Any method marked with this annotation represent methods that should not
+     * be implemented by vendors.  The test suite will enforce this convention and create a failure situation
+     * if violated.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @Inherited
+    public @interface Helper {
+    }
 }

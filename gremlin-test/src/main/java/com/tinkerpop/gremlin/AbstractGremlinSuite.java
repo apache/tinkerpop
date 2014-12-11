@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin;
 
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.GraphTest;
 import org.javatuples.Pair;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -17,9 +16,10 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -82,10 +82,28 @@ public abstract class AbstractGremlinSuite extends Suite {
         registerOptOuts(pair.getValue1());
 
         try {
-            GraphManager.set(pair.getValue0().newInstance());
+            final GraphProvider graphProvider = pair.getValue0().newInstance();
+            validateHelpersNotImplemented(graphProvider);
+
+            GraphManager.set(graphProvider);
         } catch (Exception ex) {
             throw new InitializationError(ex);
         }
+    }
+
+    private void validateHelpersNotImplemented(final GraphProvider graphProvider) {
+        final List<String> overridenMethods = new ArrayList<>();
+        graphProvider.getImplementations().forEach(clazz ->
+            Stream.of(clazz.getDeclaredMethods())
+                    .filter(AbstractGremlinSuite::isHelperMethodOverriden)
+                    .map(m -> m.getDeclaringClass().getName() + "." + m.getName())
+                    .forEach(overridenMethods::add)
+        );
+
+        if (overridenMethods.size() > 0)
+            throw new RuntimeException(String.format(
+                "Implementations cannot override methods marked by @Helper annotation - check the following methods [%s]",
+                    String.join(",", overridenMethods)));
     }
 
     private void validateOptInToSuite(final Class<? extends Graph> klass) throws InitializationError {
@@ -122,6 +140,18 @@ public abstract class AbstractGremlinSuite extends Suite {
             System.err.println(String.format("Review the testsToExecute given to the test suite as the following are missing: %s", notSupplied));
 
         return testsToExecute;
+    }
+
+    public static boolean isHelperMethodOverriden(final Method myMethod) {
+        final Class<?> declaringClass = myMethod.getDeclaringClass();
+        for (Class<?> iface : declaringClass.getInterfaces()) {
+            try {
+                return iface.getMethod(myMethod.getName(), myMethod.getParameterTypes()).isAnnotationPresent(Graph.Helper.class);
+            } catch (NoSuchMethodException ignored) {
+            }
+        }
+
+        return false;
     }
 
     public static Pair<Class<? extends GraphProvider>,Class<? extends Graph>> getGraphProviderClass(final Class<?> klass) throws InitializationError {
