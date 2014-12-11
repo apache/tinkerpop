@@ -40,21 +40,21 @@ public interface Strategy {
     }
 
     /**
-     * The {@link Context} object is provided to the methods of {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} so that the strategy functions
+     * The {@link com.tinkerpop.gremlin.structure.strategy.Strategy.StrategyContext} object is provided to the methods of {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} so that the strategy functions
      * it constructs have some knowledge of the environment.
      *
      * @param <T> represents the object that is calling the strategy (i.e. the vertex on which addEdge was called).
      */
-    public static class Context<T extends StrategyWrapped> {
+    public static class StrategyContext<T extends StrategyWrapped> {
         private final StrategyGraph g;
         private final Map<String, Object> environment;
         private final T current;
 
-        public Context(final StrategyGraph g, final T current) {
+        public StrategyContext(final StrategyGraph g, final T current) {
             this(g, current, null);
         }
 
-        public Context(final StrategyGraph g, final T current, final Map<String, Object> environment) {
+        public StrategyContext(final StrategyGraph g, final T current, final Map<String, Object> environment) {
             if (null == g) throw Graph.Exceptions.argumentCanNotBeNull("g");
             if (null == current) throw Graph.Exceptions.argumentCanNotBeNull("current");
 

@@ -30,7 +30,7 @@ import java.util.Optional;
 public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, WrappedGraph<Graph> {
     private final Graph baseGraph;
     private Strategy strategy;
-    private Strategy.Context<StrategyGraph> graphContext;
+    private Strategy.StrategyContext<StrategyGraph> graphContext;
 
     public StrategyGraph(final Graph baseGraph) {
         this(baseGraph, new Strategy.Simple());
@@ -43,7 +43,7 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
 
         this.strategy = strategy;
         this.baseGraph = baseGraph;
-        this.graphContext = new Strategy.Context<>(this, this);
+        this.graphContext = new Strategy.StrategyContext<>(this, this);
     }
 
     /**
@@ -61,7 +61,7 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
         return this.strategy;
     }
 
-    public Strategy.Context<StrategyGraph> getGraphContext() {
+    public Strategy.StrategyContext<StrategyGraph> getGraphContext() {
         return this.graphContext;
     }
 

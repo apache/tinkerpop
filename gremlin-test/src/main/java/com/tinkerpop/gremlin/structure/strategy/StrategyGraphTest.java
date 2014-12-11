@@ -158,7 +158,7 @@ public class StrategyGraphTest {
             // but doesn't actually blow it away
             swg.getStrategy().setGraphStrategy(new GraphStrategy() {
                 @Override
-                public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context<StrategyVertex> ctx) {
+                public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.StrategyContext<StrategyVertex> ctx) {
                     return (t) -> () -> {
                         final Vertex v = ctx.getCurrent().getBaseVertex();
                         v.bothE().remove();
@@ -194,7 +194,7 @@ public class StrategyGraphTest {
             // but doesn't actually blow it away
             swg.getStrategy().setGraphStrategy(new GraphStrategy() {
                 @Override
-                public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final Strategy.Context<StrategyEdge> ctx) {
+                public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final Strategy.StrategyContext<StrategyEdge> ctx) {
                     return (t) -> () -> {
                         final Edge e = ctx.getCurrent().getBaseEdge();
                         e.properties().forEachRemaining(Property::remove);
@@ -225,7 +225,7 @@ public class StrategyGraphTest {
             final AtomicInteger counter = new AtomicInteger(0);
             swg.getStrategy().setGraphStrategy(new GraphStrategy() {
                 @Override
-                public UnaryOperator<Supplier<Void>> getGraphCloseStrategy(final Strategy.Context<StrategyGraph> ctx) {
+                public UnaryOperator<Supplier<Void>> getGraphCloseStrategy(final Strategy.StrategyContext<StrategyGraph> ctx) {
                     return (t) -> () -> {
                         counter.incrementAndGet();
                         return null;

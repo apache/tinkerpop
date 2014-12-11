@@ -31,17 +31,17 @@ public class ComputerDataStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertyIteratorStrategy(final Strategy.Context<StrategyVertex> ctx) {
+    public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertyIteratorStrategy(final Strategy.StrategyContext<StrategyVertex> ctx) {
         return (f) -> (keys) -> keys.length == 0 ? IteratorUtils.filter(f.apply(keys), property -> !this.elementComputeKeys.contains(property.key())) : f.apply(keys);
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValueIteratorStrategy(final Strategy.Context<StrategyVertex> ctx) {
+    public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValueIteratorStrategy(final Strategy.StrategyContext<StrategyVertex> ctx) {
         return (f) -> (keys) -> IteratorUtils.map(ctx.getCurrent().iterators().<V>propertyIterator(keys), vertexProperty -> vertexProperty.value());
     }
 
     @Override
-    public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final Strategy.Context<StrategyVertex> ctx) {
+    public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final Strategy.StrategyContext<StrategyVertex> ctx) {
         return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !this.elementComputeKeys.contains(key)), new HashSet<>());
     }
 

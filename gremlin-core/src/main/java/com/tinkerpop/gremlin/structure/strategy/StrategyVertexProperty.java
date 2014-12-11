@@ -20,14 +20,14 @@ import java.util.Set;
  */
 public final class StrategyVertexProperty<V> extends StrategyElement implements VertexProperty<V>, StrategyWrapped, WrappedVertexProperty<VertexProperty<V>>, VertexProperty.Iterators {
 
-    private final Strategy.Context<StrategyVertexProperty<V>> strategyContext;
+    private final Strategy.StrategyContext<StrategyVertexProperty<V>> strategyContext;
 
     public StrategyVertexProperty(final VertexProperty<V> baseVertexProperty, final StrategyGraph strategyGraph) {
         super(baseVertexProperty, strategyGraph);
-        this.strategyContext = new Strategy.Context<>(strategyGraph, this);
+        this.strategyContext = new Strategy.StrategyContext<>(strategyGraph, this);
     }
 
-    public Strategy.Context<StrategyVertexProperty<V>> getStrategyContext() {
+    public Strategy.StrategyContext<StrategyVertexProperty<V>> getStrategyContext() {
         return strategyContext;
     }
 

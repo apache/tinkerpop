@@ -63,7 +63,7 @@ public class IdStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyGraph> ctx) {
+    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.StrategyContext<StrategyGraph> ctx) {
         return (f) -> (keyValues) -> {
             throwIfIdKeyIsSet(Vertex.class, ElementHelper.getKeys(keyValues));
             return f.apply(this.injectId(supportsVertexId, keyValues, vertexIdSupplier).toArray());
@@ -71,7 +71,7 @@ public class IdStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyVertex> ctx) {
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.StrategyContext<StrategyVertex> ctx) {
         return (f) -> (label, v, keyValues) -> {
             throwIfIdKeyIsSet(Edge.class, ElementHelper.getKeys(keyValues));
             return f.apply(label, v, this.injectId(supportsEdgeId, keyValues, edgeIdSupplier).toArray());
@@ -79,37 +79,37 @@ public class IdStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgeIteratorStrategy(final Strategy.Context<StrategyGraph> ctx) {
+    public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgeIteratorStrategy(final Strategy.StrategyContext<StrategyGraph> ctx) {
         return supportsVertexId ? (f) -> (ids) -> ctx.getBaseGraph().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVertexIteratorStrategy(final Strategy.Context<StrategyGraph> ctx) {
+    public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVertexIteratorStrategy(final Strategy.StrategyContext<StrategyGraph> ctx) {
         return supportsVertexId ? (f) -> (ids) -> ctx.getBaseGraph().V().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final Strategy.Context<StrategyGraph> ctx) {
+    public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final Strategy.StrategyContext<StrategyGraph> ctx) {
         return supportsEdgeId ? (f) -> (ids) -> ctx.getBaseGraph().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final Strategy.Context<StrategyGraph> ctx) {
+    public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final Strategy.StrategyContext<StrategyGraph> ctx) {
         return supportsVertexId ? (f) -> (ids) -> ctx.getBaseGraph().V().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Supplier<Object>> getVertexIdStrategy(final Strategy.Context<StrategyVertex> ctx) {
+    public UnaryOperator<Supplier<Object>> getVertexIdStrategy(final Strategy.StrategyContext<StrategyVertex> ctx) {
         return supportsVertexId ? (f) -> () -> ctx.getCurrent().getBaseVertex().value(idKey) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Supplier<Object>> getEdgeIdStrategy(final Strategy.Context<StrategyEdge> ctx) {
+    public UnaryOperator<Supplier<Object>> getEdgeIdStrategy(final Strategy.StrategyContext<StrategyEdge> ctx) {
         return supportsEdgeId ? (f) -> () -> ctx.getCurrent().getBaseEdge().value(idKey) : UnaryOperator.identity();
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final Strategy.Context<StrategyVertex> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final Strategy.StrategyContext<StrategyVertex> ctx) {
         return (f) -> (k, v) -> {
             throwIfIdKeyIsSet(ctx.getCurrent().getClass(), k);
             return f.apply(k, v);
@@ -117,7 +117,7 @@ public class IdStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getEdgePropertyStrategy(final Strategy.Context<StrategyEdge> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getEdgePropertyStrategy(final Strategy.StrategyContext<StrategyEdge> ctx) {
         return (f) -> (k, v) -> {
             throwIfIdKeyIsSet(ctx.getCurrent().getClass(), k);
             return f.apply(k, v);

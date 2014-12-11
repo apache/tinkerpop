@@ -20,14 +20,14 @@ import java.util.Set;
  */
 public final class StrategyEdge extends StrategyElement implements Edge, Edge.Iterators, StrategyWrapped, WrappedEdge<Edge> {
 
-    private final Strategy.Context<StrategyEdge> strategyContext;
+    private final Strategy.StrategyContext<StrategyEdge> strategyContext;
 
     public StrategyEdge(final Edge baseEdge, final StrategyGraph strategyGraph) {
         super(baseEdge, strategyGraph);
-        this.strategyContext = new Strategy.Context<>(strategyGraph, this);
+        this.strategyContext = new Strategy.StrategyContext<>(strategyGraph, this);
     }
 
-    public Strategy.Context<StrategyEdge> getStrategyContext() {
+    public Strategy.StrategyContext<StrategyEdge> getStrategyContext() {
         return strategyContext;
     }
 
