@@ -805,13 +805,13 @@ Given the nature of identifier assignment, this means that identifiers are gener
 [source,groovy]
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> swg = new StrategyGraph(g)
+gremlin> sg = new StrategyGraph(g)
 ==>identitygraphstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
-gremlin> swg.getStrategy().setGraphStrategy(IdStrategy.build("idKey").create())
+gremlin> sg.setGraphStrategy(IdStrategy.build("idKey").create())
 ==>null
-gremlin> swg.addVertex(id,"42a").id()
+gremlin> sg.addVertex(id,"42a").id()
 ==>42a
-gremlin> swg.addVertex().id()
+gremlin> sg.addVertex().id()
 ==>ef74e843-4c6e-40d2-929f-2552e2f96bf2
 
 When a non-null identifier is passed to `IdGraph.addVertex` or `IdGraph.addEdge`, that value will be used to uniquely identify the element. When the `id` is not provided, `IdGraph` will generate an identifier on its own.
@@ -831,7 +831,7 @@ gremlin> strategy = new PartitionStrategy("com.example.partition", "A")
 ==>PartitionStrategy
 gremlin> sg = new StrategyGraph(g)
 ==>strategywrappedgraph[tinkergraph[vertices:0 edges:0]]
-gremlin> sg.getStrategy().setGraphStrategy(strategy)
+gremlin> sg.setGraphStrategy(strategy)
 ==>null
 ----
 
@@ -924,7 +924,7 @@ Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() 
 
 GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
 StrategyGraph sg = new StrategyGraph(g);
-sg.getStrategy().setGraphStrategy(strategy);
+sg.setGraphStrategy(strategy);
 
 // all vertices are here
 System.out.println("" + sg.V().count().next() + " of " + g.V().count().next() + " vertices");
@@ -942,7 +942,7 @@ edgeCriterion = { it.id() >= 8 && it.id() <= 10 }
 
 strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion)
 sg = new StrategyWrappedGraph(g)
-sg.getStrategy().setGraphStrategy(strategy)
+sg.setGraphStrategy(strategy)
 
 // all vertices are here
 sg.V().count().next() + " of " + g.V().count().next() + " vertices"
