@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Transaction retry functions now work with "manual" transactions.
 * Improved error messaging when importing "legacy" GraphSON that was not generated with "extended" properties.
 * Renamed "iterator" related methods in the `GraphStrategy` interface to be consistent with the method names they represent.
 * `PropertyMapStep` (`valueMap()`) now takes a boolean to state if the tokens of the element are desired along with its properties.

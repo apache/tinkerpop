@@ -323,6 +323,11 @@ public interface Transaction extends Closeable {
                         }
 
                     try {
+                        // ensure that a transaction is open for this try. even if there was an open transaction
+                        // from the first try it would be rolled back on failure and unless automatic transactions
+                        // are used, the transaction would be closed on the next retry.
+                        if (!g.tx().isOpen()) g.tx().open();
+
                         returnValue = w.apply(g);
                         g.tx().commit();
 

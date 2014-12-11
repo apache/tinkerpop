@@ -328,7 +328,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldExcecuteCompetingThreadsOnMultipleDbInstances() throws Exception {
+    public void shouldExecuteCompetingThreadsOnMultipleDbInstances() throws Exception {
         // the idea behind this test is to simulate a gremlin-server environment where two graphs of the same type
         // are being mutated by multiple threads. originally replicated a bug that was part of OrientDB.
 
@@ -578,6 +578,46 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldSupportTransactionRetry() {
         final Graph graph = g;
+
+        // first fail the tx
+        final AtomicInteger attempts = new AtomicInteger(0);
+        try {
+            g.tx().submit(FunctionUtils.wrapFunction(grx -> {
+                grx.addVertex();
+                attempts.incrementAndGet();
+                throw new Exception("fail");
+            })).retry();
+        } catch (Exception ex) {
+            assertEquals("fail", ex.getCause().getCause().getMessage());
+        }
+
+        assertEquals(Transaction.Workload.DEFAULT_TRIES, attempts.get());
+        assertVertexEdgeCounts(0, 0);
+
+        // this tx will work after several tries
+        final AtomicInteger tries = new AtomicInteger(0);
+        g.tx().submit(FunctionUtils.wrapFunction(grx -> {
+            final int tryNumber = tries.incrementAndGet();
+            if (tryNumber == Transaction.Workload.DEFAULT_TRIES - 2)
+                return graph.addVertex();
+            else
+                throw new Exception("fail");
+        })).retry();
+
+        assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, tries.get());
+        assertVertexEdgeCounts(1, 0);
+
+        // make sure a commit happened and a new tx started
+        g.tx().rollback();
+        assertVertexEdgeCounts(1, 0);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldSupportTransactionRetryWhenUsingManualTransactions() {
+        final Graph graph = g;
+        g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
 
         // first fail the tx
         final AtomicInteger attempts = new AtomicInteger(0);
