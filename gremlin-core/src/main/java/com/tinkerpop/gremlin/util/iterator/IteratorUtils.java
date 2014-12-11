@@ -46,12 +46,8 @@ public class IteratorUtils {
     }
 
     public static List convertToList(final Object o) {
-        final List list = new ArrayList<>();
         final Iterator iterator = IteratorUtils.convertToIterator(o);
-        while (iterator.hasNext()) {
-            list.add(iterator.next());
-        }
-        return list;
+        return list(iterator);
     }
 
     public static final <S extends Collection<T>, T> S fill(final Iterator<T> iterator, final S collection) {
@@ -65,6 +61,14 @@ public class IteratorUtils {
         long ix = 0;
         for ( ; iterator.hasNext() ; ++ix ) iterator.next();
         return ix;
+    }
+
+    public static <S> List<S> list(final Iterator<S> iterator) {
+        final List<S> list = new ArrayList<>();
+        while (iterator.hasNext()) {
+            list.add(iterator.next());
+        }
+        return list;
     }
 
     ///////////////
