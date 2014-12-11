@@ -506,12 +506,12 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVerticesStrategy(final Strategy.Context<StrategyGraph> ctx) {
+        public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVertexIteratorStrategy(final Strategy.Context<StrategyGraph> ctx) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgesStrategy(final Strategy.Context<StrategyGraph> ctx) {
+        public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgeIteratorStrategy(final Strategy.Context<StrategyGraph> ctx) {
             return spy();
         }
 
@@ -641,32 +641,32 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertiesStrategy(final Strategy.Context<StrategyVertex> ctx) {
+        public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertyIteratorStrategy(final Strategy.Context<StrategyVertex> ctx) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Function<String[], Iterator<Property<V>>>> getEdgeIteratorsPropertiesStrategy(final Strategy.Context<StrategyEdge> ctx) {
+        public <V> UnaryOperator<Function<String[], Iterator<Property<V>>>> getEdgeIteratorsPropertyIteratorStrategy(final Strategy.Context<StrategyEdge> ctx) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValuesStrategy(final Strategy.Context<StrategyVertex> ctx) {
+        public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValueIteratorStrategy(final Strategy.Context<StrategyVertex> ctx) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Function<String[], Iterator<V>>> getEdgeIteratorsValuesStrategy(final Strategy.Context<StrategyEdge> ctx) {
+        public <V> UnaryOperator<Function<String[], Iterator<V>>> getEdgeIteratorsValueIteratorStrategy(final Strategy.Context<StrategyEdge> ctx) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVerticesStrategy(final Strategy.Context<StrategyVertex> ctx) {
+        public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVertexIteratorStrategy(final Strategy.Context<StrategyVertex> ctx) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgesStrategy(final Strategy.Context<StrategyVertex> ctx) {
+        public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgeIteratorStrategy(final Strategy.Context<StrategyVertex> ctx) {
             return spy();
         }
 
@@ -676,7 +676,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVerticesStrategy(final Strategy.Context<StrategyEdge> ctx) {
+        public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVertexIteratorStrategy(final Strategy.Context<StrategyEdge> ctx) {
             return spy();
         }
 
@@ -712,12 +712,12 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public <V, U> UnaryOperator<Function<String[], Iterator<Property<V>>>> getVertexPropertyIteratorsPropertiesStrategy(final Strategy.Context<StrategyVertexProperty<U>> ctx) {
+        public <V, U> UnaryOperator<Function<String[], Iterator<Property<V>>>> getVertexPropertyIteratorsPropertyIteratorStrategy(final Strategy.Context<StrategyVertexProperty<U>> ctx) {
             return spy();
         }
 
         @Override
-        public <V, U> UnaryOperator<Function<String[], Iterator<V>>> getVertexPropertyIteratorsValuesStrategy(final Strategy.Context<StrategyVertexProperty<U>> ctx) {
+        public <V, U> UnaryOperator<Function<String[], Iterator<V>>> getVertexPropertyIteratorsValueIteratorStrategy(final Strategy.Context<StrategyVertexProperty<U>> ctx) {
             return spy();
         }
 

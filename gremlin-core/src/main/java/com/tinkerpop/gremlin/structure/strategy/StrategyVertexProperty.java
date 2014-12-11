@@ -125,7 +125,7 @@ public class StrategyVertexProperty<V> extends StrategyElement implements Vertex
     @Override
     public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
         return IteratorUtils.map(this.strategyGraph.getStrategy().compose(
-                        s -> s.<U, V>getVertexPropertyIteratorsPropertiesStrategy(this.strategyContext),
+                        s -> s.<U, V>getVertexPropertyIteratorsPropertyIteratorStrategy(this.strategyContext),
                         (String[] pks) -> this.getBaseVertexProperty().iterators().propertyIterator(pks)).apply(propertyKeys),
                 property -> new StrategyProperty<>(property, this.strategyGraph));
     }
@@ -133,7 +133,7 @@ public class StrategyVertexProperty<V> extends StrategyElement implements Vertex
     @Override
     public <U> Iterator<U> valueIterator(final String... propertyKeys) {
         return this.strategyGraph.getStrategy().compose(
-                s -> s.<U, V>getVertexPropertyIteratorsValuesStrategy(this.strategyContext),
+                s -> s.<U, V>getVertexPropertyIteratorsValueIteratorStrategy(this.strategyContext),
                 (String[] pks) -> this.getBaseVertexProperty().iterators().valueIterator(pks)).apply(propertyKeys);
     }
 }

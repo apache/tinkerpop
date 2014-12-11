@@ -37,7 +37,7 @@ public class SubgraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVerticesStrategy(final Strategy.Context<StrategyVertex> ctx) {
+    public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVertexIteratorStrategy(final Strategy.Context<StrategyVertex> ctx) {
         return (f) -> (direction, labels) -> StreamFactory
                 .stream(ctx.getCurrent().edgeIterator(direction, labels))
                 .filter(this::testEdge)
@@ -48,12 +48,12 @@ public class SubgraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgesStrategy(final Strategy.Context<StrategyVertex> ctx) {
+    public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgeIteratorStrategy(final Strategy.Context<StrategyVertex> ctx) {
         return (f) -> (direction, labels) -> IteratorUtils.filter(f.apply(direction, labels), this::testEdge);
     }
 
     @Override
-    public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVerticesStrategy(final Strategy.Context<StrategyEdge> ctx) {
+    public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVertexIteratorStrategy(final Strategy.Context<StrategyEdge> ctx) {
         return (f) -> direction -> IteratorUtils.filter(f.apply(direction), this::testVertex);
     }
 

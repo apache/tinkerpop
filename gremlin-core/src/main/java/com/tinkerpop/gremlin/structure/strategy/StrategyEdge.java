@@ -114,21 +114,21 @@ public final class StrategyEdge extends StrategyElement implements Edge, Edge.It
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction) {
         return new StrategyVertex.StrategyWrappedVertexIterator(this.strategyGraph.getStrategy().compose(
-                s -> s.getEdgeIteratorsVerticesStrategy(this.strategyContext),
+                s -> s.getEdgeIteratorsVertexIteratorStrategy(this.strategyContext),
                 (Direction d) -> this.getBaseEdge().iterators().vertexIterator(d)).apply(direction), this.strategyGraph);
     }
 
     @Override
     public <V> Iterator<V> valueIterator(final String... propertyKeys) {
         return this.strategyGraph.getStrategy().compose(
-                s -> s.<V>getEdgeIteratorsValuesStrategy(this.strategyContext),
+                s -> s.<V>getEdgeIteratorsValueIteratorStrategy(this.strategyContext),
                 (String[] pks) -> this.getBaseEdge().iterators().valueIterator(pks)).apply(propertyKeys);
     }
 
     @Override
     public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
         return IteratorUtils.map(this.strategyGraph.getStrategy().compose(
-                        s -> s.<V>getEdgeIteratorsPropertiesStrategy(this.strategyContext),
+                        s -> s.<V>getEdgeIteratorsPropertyIteratorStrategy(this.strategyContext),
                         (String[] pks) -> this.getBaseEdge().iterators().propertyIterator(pks)).apply(propertyKeys),
                 property -> new StrategyProperty<>(property, this.strategyGraph));
     }

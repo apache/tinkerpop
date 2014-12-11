@@ -124,28 +124,28 @@ public class StrategyVertex extends StrategyElement implements Vertex, StrategyW
     @Override
     public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
         return new StrategyEdge.StrategyWrappedEdgeIterator(this.strategyGraph.getStrategy().compose(
-                s -> s.getVertexIteratorsEdgesStrategy(this.strategyContext),
+                s -> s.getVertexIteratorsEdgeIteratorStrategy(this.strategyContext),
                 (Direction d, String[] l) -> this.getBaseVertex().iterators().edgeIterator(d, l)).apply(direction, edgeLabels), this.strategyGraph);
     }
 
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
         return new StrategyWrappedVertexIterator(this.strategyGraph.getStrategy().compose(
-                s -> s.getVertexIteratorsVerticesStrategy(strategyContext),
+                s -> s.getVertexIteratorsVertexIteratorStrategy(strategyContext),
                 (Direction d, String[] l) -> this.getBaseVertex().iterators().vertexIterator(d, l)).apply(direction, labels), this.strategyGraph);
     }
 
     @Override
     public <V> Iterator<V> valueIterator(final String... propertyKeys) {
         return this.strategyGraph.getStrategy().compose(
-                s -> s.<V>getVertexIteratorsValuesStrategy(strategyContext),
+                s -> s.<V>getVertexIteratorsValueIteratorStrategy(strategyContext),
                 (String[] pks) -> this.getBaseVertex().iterators().valueIterator(pks)).apply(propertyKeys);
     }
 
     @Override
     public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
         return IteratorUtils.map(this.strategyGraph.getStrategy().compose(
-                        s -> s.<V>getVertexIteratorsPropertiesStrategy(this.strategyContext),
+                        s -> s.<V>getVertexIteratorsPropertyIteratorStrategy(this.strategyContext),
                         (String[] pks) -> this.getBaseVertex().iterators().propertyIterator(pks)).apply(propertyKeys),
                 property -> new StrategyVertexProperty<>(property, this.strategyGraph));
     }
