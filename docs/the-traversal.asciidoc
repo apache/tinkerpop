@@ -812,7 +812,7 @@ gremlin> path.objects()
 ==>ripple
 gremlin> path.labels()
 ==>[a, b]
-==>[^2]
+==>[]
 ==>[c]
 ==>[d, e]
 gremlin> path.a

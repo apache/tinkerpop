@@ -39,13 +39,17 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
 
     private ImmutablePath(final Path previousPath, final String currentLabel, final Object currentObject) {
         this.previousPath = previousPath;
-        this.currentLabels.add(currentLabel);
+        if (TraversalHelper.isLabeled(currentLabel))
+            this.currentLabels.add(currentLabel);
         this.currentObject = currentObject;
     }
 
     private ImmutablePath(final Path previousPath, final Set<String> currentLabels, final Object currentObject) {
         this.previousPath = previousPath;
-        this.currentLabels.addAll(currentLabels);
+        for (final String currentLabel : currentLabels) {
+            if (TraversalHelper.isLabeled(currentLabel))
+                this.currentLabels.add(currentLabel);
+        }
         this.currentObject = currentObject;
     }
 
