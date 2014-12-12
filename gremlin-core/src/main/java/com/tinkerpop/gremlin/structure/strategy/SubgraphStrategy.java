@@ -17,21 +17,21 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 /**
- * A GraphStrategy which creates a logical subgraph to selectively include vertices and edges of a Graph according to
- * provided criteria.  A vertex is in the subgraph if it meets the specified {@link #vertexPredicate}.  An edge
- * is in the subgraph if it meets the specified {@link #edgePredicate} and its associated vertices meet the
- * specified {@link #vertexPredicate}.
+ * A {@link GraphStrategy} which creates a logical subgraph to selectively include vertices and edges of a
+ * {@link com.tinkerpop.gremlin.structure.Graph} according to provided criteria.  A vertex is in the subgraph if
+ * it meets the specified {@link #vertexPredicate}.  An edge is in the subgraph if it meets the specified
+ * {@link #edgePredicate} and its associated vertices meet the specified {@link #vertexPredicate}.
  *
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class SubgraphStrategy implements GraphStrategy {
 
-    protected Predicate<Vertex> vertexPredicate;
-    protected Predicate<Edge> edgePredicate;
+    private final Predicate<Vertex> vertexPredicate;
+    private final Predicate<Edge> edgePredicate;
     // TODO protected Predicate<VertexProperty> vertexPropertyPredicate;
 
-    public SubgraphStrategy(final Predicate<Vertex> vertexPredicate, final Predicate<Edge> edgePredicate) {
+    protected SubgraphStrategy(final Predicate<Vertex> vertexPredicate, final Predicate<Edge> edgePredicate) {
         this.vertexPredicate = vertexPredicate;
         this.edgePredicate = edgePredicate;
     }
@@ -86,10 +86,6 @@ public class SubgraphStrategy implements GraphStrategy {
                 : testVertex(edge.inV().next()) && testVertex(edge.outV().next()));
     }
 
-    private boolean testElement(final Element element) {
-        return element instanceof Vertex ? testVertex((Vertex) element) : testEdge((Edge) element);
-    }
-
     private static final Vertex otherVertex(final Direction direction, final Vertex start, final Edge edge) {
         if (direction.equals(Direction.BOTH)) {
             final Vertex inVertex = edge.iterators().vertexIterator(Direction.IN).next();
@@ -104,5 +100,31 @@ public class SubgraphStrategy implements GraphStrategy {
     @Override
     public String toString() {
         return StringFactory.graphStrategyString(this);
+    }
+
+    public static Builder build() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private Predicate<Vertex> vertexPredicate = v -> true;
+        private Predicate<Edge> edgePredicate  = v -> true;
+
+        private Builder() {}
+
+        public Builder vertexPredicate(final Predicate<Vertex> vertexPredicate) {
+            this.vertexPredicate = vertexPredicate;
+            return this;
+        }
+
+        public Builder edgePredicate(final Predicate<Edge> edgePredicate) {
+            this.edgePredicate = edgePredicate;
+            return this;
+        }
+
+        public SubgraphStrategy create() {
+            return new SubgraphStrategy(vertexPredicate, edgePredicate);
+        }
     }
 }

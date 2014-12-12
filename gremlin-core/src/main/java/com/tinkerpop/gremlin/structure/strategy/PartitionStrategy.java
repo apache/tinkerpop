@@ -1,11 +1,15 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -14,6 +18,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -27,17 +32,13 @@ import java.util.function.UnaryOperator;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PartitionStrategy extends SubgraphStrategy {
+public class PartitionStrategy implements GraphStrategy {
 
     private String writePartition;
     private final String partitionKey;
     private final Set<String> readPartitions = new HashSet<>();
 
     private PartitionStrategy(final String partitionKey, final String partition) {
-        super(null, null);
-        this.vertexPredicate = this::testElement;
-        this.edgePredicate = this::testElement;
-
         this.writePartition = partition;
         this.addReadPartition(partition);
         this.partitionKey = partitionKey;
@@ -75,6 +76,63 @@ public class PartitionStrategy extends SubgraphStrategy {
     public void clearReadPartitions() {
         this.readPartitions.clear();
     }
+
+    ///////////// old subgraph strategy methods
+    @Override
+    public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVertexIteratorStrategy(final StrategyContext<StrategyVertex> ctx) {
+        return (f) -> (direction, labels) -> StreamFactory
+                .stream(ctx.getCurrent().edgeIterator(direction, labels))
+                .filter(this::testEdge)
+                .map(edge -> otherVertex(direction, ctx.getCurrent(), edge))
+                .filter(this::testVertex)
+                .map(v -> ((StrategyVertex) v).getBaseVertex()).iterator();
+        // TODO: why do we have to unwrap? Note that we are not doing f.apply() like the other methods. Is this bad?
+    }
+
+    @Override
+    public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyVertex> ctx) {
+        return (f) -> (direction, labels) -> IteratorUtils.filter(f.apply(direction, labels), this::testEdge);
+    }
+
+    @Override
+    public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVertexIteratorStrategy(final StrategyContext<StrategyEdge> ctx) {
+        return (f) -> direction -> IteratorUtils.filter(f.apply(direction), this::testVertex);
+    }
+
+    @Override
+    public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx) {
+        return (f) -> ids -> f.apply(ids).filter(t -> this.testVertex(t.get())); // TODO: we should make sure index hits go first.
+    }
+
+    @Override
+    public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx) {
+        return (f) -> ids -> f.apply(ids).filter(t -> this.testEdge(t.get()));  // TODO: we should make sure index hits go first.
+    }
+
+    private boolean testVertex(final Vertex vertex) {
+        return testElement(vertex);
+    }
+
+    private boolean testEdge(final Edge edge) {
+        // the edge must pass the edge predicate, and both of its incident vertices must also pass the vertex predicate
+        // inV() and/or outV() will be empty if they do not.  it is sometimes the case that an edge is unwrapped
+        // in which case it may not be filtered.  in such cases, the vertices on such edges should be tested.
+        return testElement(edge)
+                && (edge instanceof StrategyWrapped ? edge.inV().hasNext() && edge.outV().hasNext()
+                : testVertex(edge.inV().next()) && testVertex(edge.outV().next()));
+    }
+
+    private static final Vertex otherVertex(final Direction direction, final Vertex start, final Edge edge) {
+        if (direction.equals(Direction.BOTH)) {
+            final Vertex inVertex = edge.iterators().vertexIterator(Direction.IN).next();
+            return ElementHelper.areEqual(start, inVertex) ?
+                    edge.iterators().vertexIterator(Direction.OUT).next() :
+                    inVertex;
+        } else {
+            return edge.iterators().vertexIterator(direction.opposite()).next();
+        }
+    }
+    ///////////////////////////
 
     @Override
     public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyVertex> ctx) {

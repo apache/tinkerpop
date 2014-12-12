@@ -24,7 +24,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         final Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         final Predicate<Edge> edgeCriterion = edge -> true;
 
-        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = SubgraphStrategy.build().vertexPredicate(vertexCriterion).edgePredicate(edgeCriterion).create();
         final StrategyGraph sg = g.strategy(strategyToTest);
 
         // three vertices are included in the subgraph
@@ -119,7 +119,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
             else return false;
         };
 
-        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = SubgraphStrategy.build().vertexPredicate(vertexCriterion).edgePredicate(edgeCriterion).create();
         final StrategyGraph sg = g.strategy(strategyToTest);
 
         // all vertices are here
@@ -211,7 +211,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
             else return false;
         };
 
-        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = SubgraphStrategy.build().vertexPredicate(vertexCriterion).edgePredicate(edgeCriterion).create();
         final StrategyGraph sg = g.strategy(strategyToTest);
 
         // three vertices are included in the subgraph
@@ -287,7 +287,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         final Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         final Predicate<Edge> edgeCriterion = edge -> true;
 
-        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = SubgraphStrategy.build().vertexPredicate(vertexCriterion).edgePredicate(edgeCriterion).create();
         final StrategyGraph sg = g.strategy(strategyToTest);
 
         sg.V(convertToVertexId("marko")).next();
@@ -310,7 +310,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
             else return false;
         };
 
-        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = SubgraphStrategy.build().vertexPredicate(vertexCriterion).edgePredicate(edgeCriterion).create();
         final StrategyGraph sg = g.strategy(strategyToTest);
 
         sg.E(sg.E(convertToEdgeId("marko", "knows", "vadas")).next()).next();

@@ -888,7 +888,7 @@ Graph g = TinkerFactory.createClassic();
 Predicate<Vertex> vertexCriterion = vertex -> true;
 Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
 
-GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+GraphStrategy strategy = SubgraphStrategy.build().vertexPredicate(vertexCriterion).edgePredicate(edgeCriterion).create();
 StrategyGraph sg = g.strategy(strategy);
 
 // all vertices are here
@@ -905,7 +905,7 @@ g = TinkerFactory.createClassic()
 vertexCriterion = { true }
 edgeCriterion = { it.id() >= 8 && it.id() <= 10 }
 
-strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion)
+strategy = SubgraphStrategy.build().vertexPredicate(vertexCriterion).edgePredicate(edgeCriterion).create()
 sg = g.strategy(strategy)
 
 // all vertices are here
