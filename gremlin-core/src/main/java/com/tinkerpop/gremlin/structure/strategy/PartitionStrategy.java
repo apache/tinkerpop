@@ -4,18 +4,24 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.function.TriFunction;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
- * A GraphStrategy which enables support for logical graph partitioning where the Graph can be blinded to different parts of the total Graph
+ * A {@link GraphStrategy} which enables support for logical graph partitioning where the Graph can be blinded to
+ * different parts of the total {@link com.tinkerpop.gremlin.structure.Graph}.  Note that the {@code partitionKey}
+ * is hidden by this strategy.  Use the base {@link com.tinkerpop.gremlin.structure.Graph} to access that.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -68,6 +74,36 @@ public class PartitionStrategy extends SubgraphStrategy {
 
     public void clearReadPartitions() {
         this.readPartitions.clear();
+    }
+
+    @Override
+    public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyVertex> ctx) {
+        return (f) -> (keys) -> IteratorUtils.filter(f.apply(keys), property -> !partitionKey.equals(property.key()));
+    }
+
+    @Override
+    public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValueIteratorStrategy(final StrategyContext<StrategyVertex> ctx) {
+        return (f) -> (keys) -> IteratorUtils.map(ctx.getCurrent().iterators().<V>propertyIterator(keys), vertexProperty -> vertexProperty.value());
+    }
+
+    @Override
+    public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final StrategyContext<StrategyVertex> ctx) {
+        return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !partitionKey.equals(key)), new HashSet<>());
+    }
+
+    @Override
+    public <V> UnaryOperator<Function<String[], Iterator<Property<V>>>> getEdgeIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyEdge> ctx) {
+        return (f) -> (keys) -> IteratorUtils.filter(f.apply(keys), property -> !partitionKey.equals(property.key()));
+    }
+
+    @Override
+    public <V> UnaryOperator<Function<String[], Iterator<V>>> getEdgeIteratorsValueIteratorStrategy(final StrategyContext<StrategyEdge> ctx) {
+        return (f) -> (keys) -> IteratorUtils.map(ctx.getCurrent().iterators().<V>propertyIterator(keys), property -> property.value());
+    }
+
+    @Override
+    public UnaryOperator<Supplier<Set<String>>> getEdgeKeysStrategy(final StrategyContext<StrategyEdge> ctx) {
+        return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !partitionKey.equals(key)), new HashSet<>());
     }
 
     @Override

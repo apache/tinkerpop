@@ -29,7 +29,20 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
-        assertEquals("A", v.property(partition).value());
+        assertEquals("A", ((StrategyVertex) v).getBaseVertex().property(partition).value());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldHidePartitionKeyOnVertex() {
+        final Vertex v = g.addVertex("any", "thing");
+
+        assertNotNull(v);
+        assertEquals("thing", v.property("any").value());
+        assertFalse(v.iterators().propertyIterator(partition).hasNext());
+        assertFalse(v.iterators().valueIterator(partition).hasNext());
+        assertFalse(v.keys().contains(partition));
+        assertEquals("A", ((StrategyVertex) v).getBaseVertex().property(partition).value());
     }
 
     @Test
@@ -41,16 +54,32 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
 
         assertNotNull(v1);
         assertEquals("thing", v1.property("any").value());
-        assertEquals("A", v2.property(partition).value());
+        assertEquals("A", ((StrategyVertex) v2).getBaseVertex().property(partition).value());
 
         assertNotNull(v2);
         assertEquals("thing", v2.property("some").value());
-        assertEquals("A", v2.property(partition).value());
+        assertEquals("A", ((StrategyVertex) v2).getBaseVertex().property(partition).value());
 
         assertNotNull(e);
         assertEquals("thing", e.property("every").value());
         assertEquals("connectsTo", e.label());
-        assertEquals("A", e.property(partition).value());
+        assertEquals("A", ((StrategyEdge) e).getBaseEdge().property(partition).value());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldHidePartitionKeyOnEdge() {
+        final Vertex v1 = g.addVertex("any", "thing");
+        final Vertex v2 = g.addVertex("some", "thing");
+        final Edge e = v1.addEdge("connectsTo", v2, "every", "thing");
+
+        assertNotNull(e);
+        assertEquals("thing", e.property("every").value());
+        assertEquals("connectsTo", e.label());
+        assertFalse(e.iterators().propertyIterator(partition).hasNext());
+        assertFalse(e.iterators().valueIterator(partition).hasNext());
+        assertFalse(e.keys().contains(partition));
+        assertEquals("A", ((StrategyEdge) e).getBaseEdge().property(partition).value());
     }
 
     @Test
@@ -63,11 +92,11 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
 
         assertNotNull(vA);
         assertEquals("a", vA.property("any").value());
-        assertEquals("A", vA.property(partition).value());
+        assertEquals("A", ((StrategyVertex) vA).getBaseVertex().property(partition).value());
 
         assertNotNull(vB);
         assertEquals("b", vB.property("any").value());
-        assertEquals("B", vB.property(partition).value());
+        assertEquals("B", ((StrategyVertex) vB).getBaseVertex().property(partition).value());
 
         /* not applicable to SubgraphStrategy
         final GraphTraversal t = g.V();
