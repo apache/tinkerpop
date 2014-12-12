@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import com.tinkerpop.gremlin.structure.util.Comparators;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLOutputFactory;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -164,7 +166,7 @@ public class GraphMLWriter implements GraphWriter {
 
     private void writeEdges(final XMLStreamWriter writer, final Graph graph) throws XMLStreamException {
         if (normalize) {
-            final List<Edge> edges = graph.E().toList();
+            final List<Edge> edges = IteratorUtils.list(graph.iterators().edgeIterator());
             Collections.sort(edges, Comparators.ELEMENT_COMPARATOR);
 
             for (Edge edge : edges) {
@@ -193,7 +195,9 @@ public class GraphMLWriter implements GraphWriter {
                 writer.writeEndElement();
             }
         } else {
-            for (Edge edge : graph.E().toList()) {
+            final Iterator<Edge> iterator = graph.iterators().edgeIterator();
+            while (iterator.hasNext()) {
+                final Edge edge = iterator.next();
                 writer.writeStartElement(GraphMLTokens.EDGE);
                 writer.writeAttribute(GraphMLTokens.ID, edge.id().toString());
                 writer.writeAttribute(GraphMLTokens.SOURCE, edge.outV().next().id().toString());
@@ -262,7 +266,7 @@ public class GraphMLWriter implements GraphWriter {
             }
             Collections.sort((List<Vertex>) vertices, Comparators.ELEMENT_COMPARATOR);
         } else
-            vertices = graph.V().toList();
+            vertices = IteratorUtils.list(graph.iterators().vertexIterator());
 
         return vertices;
     }

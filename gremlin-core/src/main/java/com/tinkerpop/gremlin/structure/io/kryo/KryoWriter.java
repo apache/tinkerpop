@@ -52,7 +52,7 @@ public class KryoWriter implements GraphWriter {
         if (supportsGraphMemory)
             kryo.writeObject(output, new HashMap(g.variables().asMap()));
 
-        final Iterator<Vertex> vertices = g.V();
+        final Iterator<Vertex> vertices = g.iterators().vertexIterator();
         final boolean hasSomeVertices = vertices.hasNext();
         output.writeBoolean(hasSomeVertices);
         while (vertices.hasNext()) {
