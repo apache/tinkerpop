@@ -10,6 +10,8 @@ TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Removed the `Strategy` interface and gave `StrategyGraph` direct access to the `GraphStrategy`.
+* Added `Graph.strategy()` to help instantiate `StrategyGraph` instances.
+* Modified the signature of all `GraphStrategy` methods to include an parameter that contains a reference to the "composing strategy".
 * `PartitionStrategy` hides the specified partition key from view when iterating properties, keys, etc.
 * Change construction of `GraphStrategy` implementations to be consistent with singleton instances and builder pattern.
 * Added `Graph.Helper` annotation to "protected" certain default interface methods from implementation by vendors.
