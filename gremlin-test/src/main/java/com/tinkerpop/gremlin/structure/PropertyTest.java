@@ -56,7 +56,7 @@ public class PropertyTest {
         public void shouldReturnEmptyPropertyIfKeyNonExistent() {
             final Vertex v = g.addVertex("name", "marko");
             tryCommit(g, (graph) -> {
-                final Vertex v1 = g.V(v.id()).next();
+                final Vertex v1 = g.iterators().vertexIterator(v.id()).next();
                 final VertexProperty p = v1.property("nonexistent-key");
                 assertEquals(VertexProperty.empty(), p);
             });
@@ -68,7 +68,7 @@ public class PropertyTest {
         public void shouldAllowRemovalFromVertexWhenAlreadyRemoved() {
             final Vertex v = g.addVertex("name", "marko");
             tryCommit(g);
-            final Vertex v1 = g.V(v.id()).next();
+            final Vertex v1 = g.iterators().vertexIterator(v.id()).next();
             try {
                 final Property p = v1.property("name");
                 p.remove();
@@ -87,7 +87,7 @@ public class PropertyTest {
         public void shouldAllowRemovalFromEdgeWhenAlreadyRemoved() {
             final Vertex v = g.addVertex("name", "marko");
             tryCommit(g);
-            final Vertex v1 = g.V(v.id()).next();
+            final Vertex v1 = g.iterators().vertexIterator(v.id()).next();
 
             try {
                 final Edge edge = v1.addEdge("knows", g.addVertex());
@@ -204,8 +204,9 @@ public class PropertyTest {
 
 
     /**
-     * Checks that properties added to an {@link com.tinkerpop.gremlin.structure.Element} are validated in a consistent way when they are set after
-     * {@link com.tinkerpop.gremlin.structure.Vertex} or {@link com.tinkerpop.gremlin.structure.Edge} construction by throwing an appropriate exception.
+     * Checks that properties added to an {@link com.tinkerpop.gremlin.structure.Element} are validated in a
+     * consistent way when they are set after {@link Vertex} or {@link Edge} construction by throwing an
+     * appropriate exception.
      */
     @RunWith(Parameterized.class)
     @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
@@ -264,53 +265,6 @@ public class PropertyTest {
             } catch (Exception ex) {
                 validateException(expectedException, ex);
             }
-        }
-    }
-
-    /**
-     * This set of tests didn't fit well in VertexProperty as they do not relate to edges and they did not work
-     * well in Edge tests either as they don't use an "Enclosed" runner.  This seemed like the next best place.
-     */
-    @RunWith(Parameterized.class)
-    public static class EdgePropertiesShouldHideCorrectly extends AbstractGremlinTest {
-
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            final List<Pair<String, BiFunction<Graph, Edge, Boolean>>> tests = new ArrayList<>();
-            tests.add(Pair.with("e.property(\"age\").isPresent()", (Graph g, Edge e) -> e.property("age").isPresent()));
-            tests.add(Pair.with("e.value(\"age\").equals(16)", (Graph g, Edge e) -> e.value("age").equals(16)));
-            tests.add(Pair.with("e.properties(\"age\").count().next().intValue() == 1", (Graph g, Edge e) -> e.properties("age").count().next().intValue() == 1));
-            tests.add(Pair.with("e.properties(\"age\").value().next().equals(16)", (Graph g, Edge e) -> e.properties("age").value().next().equals(16)));
-            tests.add(Pair.with("e.propertyMap(\"age\").next().size() == 1", (Graph g, Edge e) -> e.propertyMap("age").next().size() == 1));
-            tests.add(Pair.with("e.valueMap(\"age\").next().size() == 1", (Graph g, Edge e) -> e.valueMap("age").next().size() == 1));
-            tests.add(Pair.with("e.keys().size() == 3", (Graph g, Edge e) -> e.keys().size() == 3));
-            tests.add(Pair.with("e.keys().contains(\"age\")", (Graph g, Edge e) -> e.keys().contains("age")));
-            tests.add(Pair.with("e.keys().contains(\"name\")", (Graph g, Edge e) -> e.keys().contains("name")));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(\"age\")).count() == 1", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().propertyIterator("age")).count() == 1));
-
-            return tests.stream().map(d -> {
-                final Object[] o = new Object[2];
-                o[0] = d.getValue0();
-                o[1] = d.getValue1();
-                return o;
-            }).collect(Collectors.toList());
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public String name;
-
-        @Parameterized.Parameter(value = 1)
-        public BiFunction<Graph, Edge, Boolean> streamGetter;
-
-        @Test
-        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
-        public void shouldHandleHiddenVertexProperties() {
-            final Vertex v = g.addVertex();
-            final Edge e = v.addEdge("self", v, "age", 16, "name", "marko", "food", "taco");
-            tryCommit(g, g -> {
-                assertTrue(streamGetter.apply(g, e));
-            });
         }
     }
 
