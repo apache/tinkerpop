@@ -48,6 +48,12 @@ public class StrategyGraphTest {
             new StrategyGraph(swg);
         }
 
+        @Test(expected = IllegalArgumentException.class)
+        public void shouldNotAllowAStrategyWrappedGraphToBeReWrappedViaStrategy() {
+            final StrategyGraph swg = new StrategyGraph(g);
+            swg.strategy(IdentityStrategy.instance());
+        }
+
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldHaveGraphWrappedFromVertex() {

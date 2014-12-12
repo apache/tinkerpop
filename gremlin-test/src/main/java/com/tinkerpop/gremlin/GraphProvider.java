@@ -63,7 +63,8 @@ public interface GraphProvider {
      * already been modified by the implementation as necessary for {@link Graph} creation.
      */
     default public Graph openTestGraph(final Configuration config, final GraphStrategy strategy) {
-        return null == strategy ? GraphFactory.open(config) : GraphFactory.open(config, strategy);
+        final Graph g = GraphFactory.open(config);
+        return null == strategy ? g : g.strategy(strategy);
     }
 
     /**
