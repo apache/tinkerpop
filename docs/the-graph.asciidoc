@@ -855,7 +855,7 @@ ReadOnlyStrategy
 [source,groovy]
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> sg = g.strategy(new ReadOnlyStrategy())
+gremlin> sg = g.strategy(ReadOnlyStrategy.instance())
 ==>readonlystrategy[tinkergraph[vertices:0 edges:0]]
 gremlin> sg.addVertex("name","stephen")
 Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategy and is therefore unmodifiable

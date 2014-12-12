@@ -22,8 +22,6 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ReadOnlyStrategyTest extends AbstractGremlinTest {
-    private static final GraphStrategy readOnlyGraphStrategy = new ReadOnlyStrategy();
-
     public ReadOnlyStrategyTest() {
     }
 
@@ -145,13 +143,13 @@ public class ReadOnlyStrategyTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
     public void shouldNotAllowVariableAsMapModifications() {
         g.variables().set("will", "be read-only");
-        final StrategyGraph swg = g.strategy(readOnlyGraphStrategy);
+        final StrategyGraph swg = g.strategy(ReadOnlyStrategy.instance());
         swg.variables().asMap().put("will", "not work");
     }
 
     private void assertException(final ThrowingConsumer<Graph> stt) {
         try {
-            final StrategyGraph swg = g.strategy(readOnlyGraphStrategy);
+            final StrategyGraph swg = g.strategy(ReadOnlyStrategy.instance());
             stt.accept(swg);
             fail();
         } catch (Exception ex) {

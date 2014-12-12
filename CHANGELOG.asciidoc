@@ -11,6 +11,7 @@ TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Removed the `Strategy` interface and gave `StrategyGraph` direct access to the `GraphStrategy`.
 * `PartitionStrategy` hides the specified partition key from view when iterating properties, keys, etc.
+* Change construction of `GraphStrategy` implementations to be consistent with singleton instances and builder pattern.
 * Added `Graph.Helper` annotation to "protected" certain default interface methods from implementation by vendors.
 * Transaction retry functions now work with "manual" transactions.
 * Improved error messaging when importing "legacy" GraphSON that was not generated with "extended" properties.
