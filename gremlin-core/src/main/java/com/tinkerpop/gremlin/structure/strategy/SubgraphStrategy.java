@@ -31,7 +31,7 @@ public class SubgraphStrategy implements GraphStrategy {
     private final Predicate<Edge> edgePredicate;
     // TODO protected Predicate<VertexProperty> vertexPropertyPredicate;
 
-    protected SubgraphStrategy(final Predicate<Vertex> vertexPredicate, final Predicate<Edge> edgePredicate) {
+    private SubgraphStrategy(final Predicate<Vertex> vertexPredicate, final Predicate<Edge> edgePredicate) {
         this.vertexPredicate = vertexPredicate;
         this.edgePredicate = edgePredicate;
     }
