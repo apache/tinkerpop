@@ -22,8 +22,7 @@ public class ComputerDataStrategyTest extends AbstractGremlinTest {
 
     @Test
     public void shouldFilterHiddenProperties() {
-        final StrategyGraph sg = new StrategyGraph(g);
-        sg.setStrategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
+        final StrategyGraph sg = g.strategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
 
         final Vertex v = sg.addVertex("***hidden-guy", "X", "not-hidden-guy", "Y");
         final Iterator<VertexProperty<String>> props = v.iterators().propertyIterator();
@@ -39,8 +38,7 @@ public class ComputerDataStrategyTest extends AbstractGremlinTest {
 
     @Test
     public void shouldAccessHiddenProperties() {
-        final StrategyGraph sg = new StrategyGraph(g);
-        sg.setStrategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
+        final StrategyGraph sg = g.strategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
 
         final Vertex v = sg.addVertex("***hidden-guy", "X", "not-hidden-guy", "Y");
         final Iterator<VertexProperty<String>> props = v.iterators().propertyIterator("***hidden-guy");
@@ -56,8 +54,7 @@ public class ComputerDataStrategyTest extends AbstractGremlinTest {
 
     @Test
     public void shouldHideHiddenKeys() {
-        final StrategyGraph sg = new StrategyGraph(g);
-        sg.setStrategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
+        final StrategyGraph sg = g.strategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
 
         final Vertex v = sg.addVertex("***hidden-guy", "X", "not-hidden-guy", "Y");
         final Set<String> keys = v.keys();

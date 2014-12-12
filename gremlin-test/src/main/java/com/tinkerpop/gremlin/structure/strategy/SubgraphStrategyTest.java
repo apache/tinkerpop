@@ -25,8 +25,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         final Predicate<Edge> edgeCriterion = edge -> true;
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyGraph sg = new StrategyGraph(g);
-        sg.setStrategy(strategyToTest);
+        final StrategyGraph sg = g.strategy(strategyToTest);
 
         // three vertices are included in the subgraph
         assertEquals(6, g.V().count().next().longValue());
@@ -121,8 +120,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         };
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyGraph sg = new StrategyGraph(g);
-        sg.setStrategy(strategyToTest);
+        final StrategyGraph sg = g.strategy(strategyToTest);
 
         // all vertices are here
         assertEquals(6, g.V().count().next().longValue());
@@ -214,8 +212,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         };
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyGraph sg = new StrategyGraph(g);
-        sg.setStrategy(strategyToTest);
+        final StrategyGraph sg = g.strategy(strategyToTest);
 
         // three vertices are included in the subgraph
         assertEquals(6, g.V().count().next().longValue());
@@ -291,8 +288,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         final Predicate<Edge> edgeCriterion = edge -> true;
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyGraph sg = new StrategyGraph(g);
-        sg.setStrategy(strategyToTest);
+        final StrategyGraph sg = g.strategy(strategyToTest);
 
         sg.V(convertToVertexId("marko")).next();
     }
@@ -315,8 +311,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         };
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyGraph sg = new StrategyGraph(g);
-        sg.setStrategy(strategyToTest);
+        final StrategyGraph sg = g.strategy(strategyToTest);
 
         sg.E(sg.E(convertToEdgeId("marko", "knows", "vadas")).next()).next();
     }

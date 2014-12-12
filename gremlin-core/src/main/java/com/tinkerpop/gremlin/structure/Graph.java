@@ -6,6 +6,10 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.strategy.IdentityStrategy;
+import com.tinkerpop.gremlin.structure.strategy.SequenceStrategy;
+import com.tinkerpop.gremlin.structure.strategy.StrategyGraph;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
@@ -159,6 +163,17 @@ public interface Graph extends AutoCloseable {
      * Configure and control the transactions for those graphs that support this feature.
      */
     public Transaction tx();
+
+    /**
+     * Constructs a {@link StrategyGraph} from one or more {@link GraphStrategy} objects.  If more than one
+     * {@link GraphStrategy} is supplied they are folded into a single {@link SequenceStrategy}.
+     */
+    public default StrategyGraph strategy(final GraphStrategy... strategies) {
+        if (strategies.length == 0) throw new IllegalArgumentException("Provide at least one GraphStrategy implementation.");
+
+        final GraphStrategy graphStrategy = strategies.length == 1 ? strategies[0] : new SequenceStrategy(strategies);
+        return new StrategyGraph(this, graphStrategy);
+    }
 
     /**
      * A collection of global {@link Variables} associated with the graph.

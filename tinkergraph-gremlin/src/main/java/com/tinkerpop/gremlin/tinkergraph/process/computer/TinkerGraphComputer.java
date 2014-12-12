@@ -6,8 +6,8 @@ import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategy;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.strategy.StrategyGraph;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
@@ -71,9 +71,8 @@ public class TinkerGraphComputer implements GraphComputer {
             this.mapReduces.addAll(this.vertexProgram.getMapReducers());
         }
 
-        final StrategyGraph sg = new StrategyGraph(this.graph);
-        if (null != this.vertexProgram)
-            sg.setStrategy(new ComputerDataStrategy(this.vertexProgram.getElementComputeKeys()));
+        final Graph sg = null == this.vertexProgram ? graph :
+                graph.strategy(new ComputerDataStrategy(this.vertexProgram.getElementComputeKeys()));
 
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReduces);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
