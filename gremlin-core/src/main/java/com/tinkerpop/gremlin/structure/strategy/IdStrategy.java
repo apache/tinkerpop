@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.function.TriFunction;
@@ -63,7 +64,7 @@ public class IdStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext<StrategyGraph> ctx) {
+    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (keyValues) -> {
             throwIfIdKeyIsSet(Vertex.class, ElementHelper.getKeys(keyValues));
             return f.apply(this.injectId(supportsVertexId, keyValues, vertexIdSupplier).toArray());
@@ -71,7 +72,7 @@ public class IdStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final StrategyContext<StrategyVertex> ctx) {
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (label, v, keyValues) -> {
             throwIfIdKeyIsSet(Edge.class, ElementHelper.getKeys(keyValues));
             return f.apply(label, v, this.injectId(supportsEdgeId, keyValues, edgeIdSupplier).toArray());
@@ -79,37 +80,37 @@ public class IdStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyGraph> ctx) {
+    public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
         return supportsVertexId ? (f) -> (ids) -> ctx.getBaseGraph().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVertexIteratorStrategy(final StrategyContext<StrategyGraph> ctx) {
+    public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVertexIteratorStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
         return supportsVertexId ? (f) -> (ids) -> ctx.getBaseGraph().V().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx) {
+    public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
         return supportsEdgeId ? (f) -> (ids) -> ctx.getBaseGraph().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx) {
+    public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
         return supportsVertexId ? (f) -> (ids) -> ctx.getBaseGraph().V().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Supplier<Object>> getVertexIdStrategy(final StrategyContext<StrategyVertex> ctx) {
+    public UnaryOperator<Supplier<Object>> getVertexIdStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
         return supportsVertexId ? (f) -> () -> ctx.getCurrent().getBaseVertex().value(idKey) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Supplier<Object>> getEdgeIdStrategy(final StrategyContext<StrategyEdge> ctx) {
+    public UnaryOperator<Supplier<Object>> getEdgeIdStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
         return supportsEdgeId ? (f) -> () -> ctx.getCurrent().getBaseEdge().value(idKey) : UnaryOperator.identity();
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final StrategyContext<StrategyVertex> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (k, v) -> {
             throwIfIdKeyIsSet(ctx.getCurrent().getClass(), k);
             return f.apply(k, v);
@@ -117,7 +118,7 @@ public class IdStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getEdgePropertyStrategy(final StrategyContext<StrategyEdge> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getEdgePropertyStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (k, v) -> {
             throwIfIdKeyIsSet(ctx.getCurrent().getClass(), k);
             return f.apply(k, v);

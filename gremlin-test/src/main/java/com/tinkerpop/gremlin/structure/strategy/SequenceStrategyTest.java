@@ -44,7 +44,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         final StrategyGraph swg = g.strategy(SequenceStrategy.build().sequence(
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working1"));
@@ -54,7 +54,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working2"));
@@ -65,13 +65,13 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return UnaryOperator.identity();
                     }
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working3"));
@@ -98,7 +98,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         final StrategyGraph swg = g.strategy(SequenceStrategy.build().sequence(
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working1"));
@@ -108,7 +108,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.remove("anonymous");
@@ -121,13 +121,13 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return UnaryOperator.identity();
                     }
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.remove("anonymous");
@@ -154,7 +154,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         final StrategyGraph swg = g.strategy(SequenceStrategy.build().sequence(
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working"));
@@ -164,7 +164,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext<StrategyGraph> ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("ts", "timestamped"));
@@ -173,7 +173,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                     }
 
                     @Override
-                    public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final StrategyContext<StrategyVertex> ctx) {
+                    public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (k, v) -> {
                             ctx.getCurrent().getBaseVertex().property("timestamp", "timestamped");
 
@@ -181,7 +181,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                             // to this GraphStrategy (i.e. the first GraphStrategy in the sequence is ignored)
                             // note that this will not call GraphStrategy implementations after this one in the
                             // sequence either
-                            this.getAddVertexStrategy(ctx.getStrategyGraph().getGraphContext())
+                            this.getAddVertexStrategy(ctx.getStrategyGraph().getGraphContext(), composingStrategy)
                                     .apply(ctx.getBaseGraph()::addVertex)
                                     .apply(Arrays.asList("strategy", "bypassed").toArray());
 
@@ -209,11 +209,9 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldAllowForANeighborhoodGraphStrategyCallInSequence() {
-        final SequenceStrategy innerSequenceStrategy = new SequenceStrategy(new ArrayList<>());
-
-        innerSequenceStrategy.add(new GraphStrategy() {
+        final SequenceStrategy innerSequenceStrategy = SequenceStrategy.build().sequence(new GraphStrategy() {
             @Override
-            public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext<StrategyGraph> ctx) {
+            public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
                 return (f) -> (args) -> {
                     final List<Object> o = new ArrayList<>(Arrays.asList(args));
                     o.addAll(Arrays.asList("ts1", "timestamped"));
@@ -222,37 +220,35 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
             }
 
             @Override
-            public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final StrategyContext<StrategyVertex> ctx) {
+            public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
                 return (f) -> (k, v) -> {
                     ctx.getCurrent().getBaseVertex().property("timestamp", "timestamped");
 
                     // dynamically construct a strategy to force this call to addVertex to stay localized
                     // to the innerSequenceGraphStrategy. note that this will only call GraphStrategy implementations
                     // in this sequence
-                    innerSequenceStrategy.getAddVertexStrategy(ctx.getStrategyGraph().getGraphContext())
+                    composingStrategy.getAddVertexStrategy(ctx.getStrategyGraph().getGraphContext(), composingStrategy)
                             .apply(ctx.getBaseGraph()::addVertex)
                             .apply(Arrays.asList("strategy", "bypassed").toArray());
 
                     return f.apply(k, v);
                 };
             }
-        });
-
-        innerSequenceStrategy.add(new GraphStrategy() {
+        }, new GraphStrategy() {
             @Override
-            public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext<StrategyGraph> ctx) {
+            public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
                 return (f) -> (args) -> {
                     final List<Object> o = new ArrayList<>(Arrays.asList(args));
                     o.addAll(Arrays.asList("ts2", "timestamped"));
                     return f.apply(o.toArray());
                 };
             }
-        });
+        }).create();
 
         final StrategyGraph swg = g.strategy(SequenceStrategy.build().sequence(
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working"));
@@ -286,7 +282,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         final StrategyGraph swg = g.strategy(SequenceStrategy.build().sequence(
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working1"));
@@ -296,7 +292,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.replaceAll(it -> it.equals("working1") ? "working2" : it);
@@ -307,13 +303,13 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return UnaryOperator.identity();
                     }
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.replaceAll(it -> it.equals("working2") ? "working3" : it);
@@ -337,7 +333,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         final StrategyGraph swg = g.strategy(SequenceStrategy.build().sequence(
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working1"));
@@ -347,7 +343,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             throw new RuntimeException("test");
                         };
@@ -355,7 +351,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working3"));
@@ -374,7 +370,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         final StrategyGraph swg = g.strategy(SequenceStrategy.build().sequence(
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working1"));
@@ -384,14 +380,14 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         // if "f" is not applied then the next step and following steps won't process
                         return (f) -> (args) -> null;
                     }
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working3"));
@@ -410,7 +406,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         final StrategyGraph swg = g.strategy(SequenceStrategy.build().sequence(
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final Vertex v = f.apply(args);
                             // this  means that the next strategy and those below it executed including
@@ -426,7 +422,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final Vertex v = f.apply(args);
                             // this  means that the next strategy and those below it executed including
@@ -441,7 +437,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working3"));
@@ -467,12 +463,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         // invoke all the strategy methods
         Stream.of(methods).forEach(method -> {
             try {
-                if (method.getName().equals("applyStrategyToTraversal"))
-                    method.invoke(strategy, new DefaultGraphTraversal<>());
-                else
-                    method.invoke(strategy, new StrategyContext(new StrategyGraph(g), new StrategyWrapped() {
-                    }));
-
+                method.invoke(strategy, new StrategyContext(new StrategyGraph(g), new StrategyWrapped() {}), strategy);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 fail("Should be able to invoke function");
@@ -498,253 +489,253 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVertexIteratorStrategy(final StrategyContext<StrategyGraph> ctx) {
+        public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVertexIteratorStrategy(final StrategyContext<StrategyGraph> ctx, GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyGraph> ctx) {
+        public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext<StrategyGraph> ctx) {
+        public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final StrategyContext<StrategyVertex> ctx) {
+        public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final StrategyContext<StrategyEdge> ctx) {
+        public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final StrategyContext<StrategyVertex> ctx) {
+        public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Supplier<Void>> getRemovePropertyStrategy(final StrategyContext<StrategyProperty<V>> ctx) {
+        public <V> UnaryOperator<Supplier<Void>> getRemovePropertyStrategy(final StrategyContext<StrategyProperty<V>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Function<String, VertexProperty<V>>> getVertexGetPropertyStrategy(final StrategyContext<StrategyVertex> ctx) {
+        public <V> UnaryOperator<Function<String, VertexProperty<V>>> getVertexGetPropertyStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Function<String, Property<V>>> getEdgeGetPropertyStrategy(final StrategyContext<StrategyEdge> ctx) {
+        public <V> UnaryOperator<Function<String, Property<V>>> getEdgeGetPropertyStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final StrategyContext<StrategyVertex> ctx) {
+        public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getEdgePropertyStrategy(final StrategyContext<StrategyEdge> ctx) {
+        public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getEdgePropertyStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<Object>> getVertexIdStrategy(final StrategyContext<StrategyVertex> ctx) {
+        public UnaryOperator<Supplier<Object>> getVertexIdStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<Graph>> getVertexGraphStrategy(final StrategyContext<StrategyVertex> ctx) {
+        public UnaryOperator<Supplier<Graph>> getVertexGraphStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<Object>> getEdgeIdStrategy(final StrategyContext<StrategyEdge> ctx) {
+        public UnaryOperator<Supplier<Object>> getEdgeIdStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<Graph>> getEdgeGraphStrategy(final StrategyContext<StrategyEdge> ctx) {
+        public UnaryOperator<Supplier<Graph>> getEdgeGraphStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<String>> getVertexLabelStrategy(final StrategyContext<StrategyVertex> ctx) {
+        public UnaryOperator<Supplier<String>> getVertexLabelStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<String>> getEdgeLabelStrategy(final StrategyContext<StrategyEdge> ctx) {
+        public UnaryOperator<Supplier<String>> getEdgeLabelStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final StrategyContext<StrategyVertex> ctx) {
+        public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<Set<String>>> getEdgeKeysStrategy(final StrategyContext<StrategyEdge> ctx) {
+        public UnaryOperator<Supplier<Set<String>>> getEdgeKeysStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Function<String, V>> getVertexValueStrategy(final StrategyContext<StrategyVertex> ctx) {
+        public <V> UnaryOperator<Function<String, V>> getVertexValueStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Function<String, V>> getEdgeValueStrategy(final StrategyContext<StrategyEdge> ctx) {
+        public <V> UnaryOperator<Function<String, V>> getEdgeValueStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<Set<String>>> getVariableKeysStrategy(final StrategyContext<StrategyVariables> ctx) {
+        public UnaryOperator<Supplier<Set<String>>> getVariableKeysStrategy(final StrategyContext<StrategyVariables> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <R> UnaryOperator<Function<String, Optional<R>>> getVariableGetStrategy(final StrategyContext<StrategyVariables> ctx) {
+        public <R> UnaryOperator<Function<String, Optional<R>>> getVariableGetStrategy(final StrategyContext<StrategyVariables> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(final StrategyContext<StrategyVariables> ctx) {
+        public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(final StrategyContext<StrategyVariables> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Consumer<String>> getVariableRemoveStrategy(final StrategyContext<StrategyVariables> ctx) {
+        public UnaryOperator<Consumer<String>> getVariableRemoveStrategy(final StrategyContext<StrategyVariables> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(final StrategyContext<StrategyVariables> ctx) {
+        public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(final StrategyContext<StrategyVariables> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<Void>> getGraphCloseStrategy(final StrategyContext<StrategyGraph> ctx) {
+        public UnaryOperator<Supplier<Void>> getGraphCloseStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyVertex> ctx) {
+        public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Function<String[], Iterator<Property<V>>>> getEdgeIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyEdge> ctx) {
+        public <V> UnaryOperator<Function<String[], Iterator<Property<V>>>> getEdgeIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValueIteratorStrategy(final StrategyContext<StrategyVertex> ctx) {
+        public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValueIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Function<String[], Iterator<V>>> getEdgeIteratorsValueIteratorStrategy(final StrategyContext<StrategyEdge> ctx) {
+        public <V> UnaryOperator<Function<String[], Iterator<V>>> getEdgeIteratorsValueIteratorStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVertexIteratorStrategy(final StrategyContext<StrategyVertex> ctx) {
+        public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVertexIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyVertex> ctx) {
+        public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Supplier<Void>> getRemoveVertexPropertyStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx) {
+        public <V> UnaryOperator<Supplier<Void>> getRemoveVertexPropertyStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVertexIteratorStrategy(final StrategyContext<StrategyEdge> ctx) {
+        public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVertexIteratorStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Supplier<Object>> getVertexPropertyIdStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx) {
+        public <V> UnaryOperator<Supplier<Object>> getVertexPropertyIdStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Supplier<String>> getVertexPropertyLabelStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx) {
+        public <V> UnaryOperator<Supplier<String>> getVertexPropertyLabelStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Supplier<Graph>> getVertexPropertyGraphStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx) {
+        public <V> UnaryOperator<Supplier<Graph>> getVertexPropertyGraphStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
 
         @Override
-        public <V> UnaryOperator<Supplier<Set<String>>> getVertexPropertyKeysStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx) {
+        public <V> UnaryOperator<Supplier<Set<String>>> getVertexPropertyKeysStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Supplier<Vertex>> getVertexPropertyGetElementStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx) {
+        public <V> UnaryOperator<Supplier<Vertex>> getVertexPropertyGetElementStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V, U> UnaryOperator<BiFunction<String, V, Property<V>>> getVertexPropertyPropertyStrategy(final StrategyContext<StrategyVertexProperty<U>> ctx) {
+        public <V, U> UnaryOperator<BiFunction<String, V, Property<V>>> getVertexPropertyPropertyStrategy(final StrategyContext<StrategyVertexProperty<U>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V, U> UnaryOperator<Function<String[], Iterator<Property<V>>>> getVertexPropertyIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyVertexProperty<U>> ctx) {
+        public <V, U> UnaryOperator<Function<String[], Iterator<Property<V>>>> getVertexPropertyIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyVertexProperty<U>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V, U> UnaryOperator<Function<String[], Iterator<V>>> getVertexPropertyIteratorsValueIteratorStrategy(final StrategyContext<StrategyVertexProperty<U>> ctx) {
+        public <V, U> UnaryOperator<Function<String[], Iterator<V>>> getVertexPropertyIteratorsValueIteratorStrategy(final StrategyContext<StrategyVertexProperty<U>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Function<Object[],GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx) {
+        public UnaryOperator<Function<Object[],GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Function<Object[],GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx) {
+        public UnaryOperator<Function<Object[],GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<GraphTraversal>> getGraphOfStrategy(final StrategyContext<StrategyGraph> ctx) {
+        public UnaryOperator<Supplier<GraphTraversal>> getGraphOfStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Supplier<V>> getVertexPropertyValueStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx) {
+        public <V> UnaryOperator<Supplier<V>> getVertexPropertyValueStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Supplier<V>> getPropertyValueStrategy(final StrategyContext<StrategyProperty<V>> ctx) {
+        public <V> UnaryOperator<Supplier<V>> getPropertyValueStrategy(final StrategyContext<StrategyProperty<V>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Supplier<String>> getVertexPropertyKeyStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx) {
+        public <V> UnaryOperator<Supplier<String>> getVertexPropertyKeyStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<Supplier<String>> getPropertyKeyStrategy(final StrategyContext<StrategyProperty<V>> ctx) {
+        public <V> UnaryOperator<Supplier<String>> getPropertyKeyStrategy(final StrategyContext<StrategyProperty<V>> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
     }

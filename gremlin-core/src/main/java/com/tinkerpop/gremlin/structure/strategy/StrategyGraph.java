@@ -82,7 +82,7 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
     @Override
     public Vertex addVertex(final Object... keyValues) {
         final Optional<Vertex> v = Optional.ofNullable(compose(
-                s -> s.getAddVertexStrategy(this.graphContext),
+                s -> s.getAddVertexStrategy(this.graphContext, strategy),
                 this.baseGraph::addVertex).apply(keyValues));
         return v.isPresent() ? new StrategyVertex(v.get(), this) : null;
     }
@@ -90,14 +90,14 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
     @Override
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         return new StrategyWrappedGraphTraversal<>(Vertex.class, this.compose(
-                s -> s.getGraphVStrategy(this.graphContext),
+                s -> s.getGraphVStrategy(this.graphContext, strategy),
                 this.baseGraph::V).apply(vertexIds), this);
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
         return new StrategyWrappedGraphTraversal<>(Edge.class, this.compose(
-                s -> s.getGraphEStrategy(this.graphContext),
+                s -> s.getGraphEStrategy(this.graphContext, strategy),
                 this.baseGraph::E).apply(edgeIds), this);
     }
 
@@ -143,19 +143,19 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
 
     @Override
     public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
-        return new StrategyVertex.StrategyWrappedVertexIterator(compose(s -> s.getGraphIteratorsVertexIteratorStrategy(this.graphContext), this.baseGraph.iterators()::vertexIterator).apply(vertexIds), this);
+        return new StrategyVertex.StrategyWrappedVertexIterator(compose(s -> s.getGraphIteratorsVertexIteratorStrategy(this.graphContext, strategy), this.baseGraph.iterators()::vertexIterator).apply(vertexIds), this);
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Object... edgeIds) {
-        return new StrategyEdge.StrategyWrappedEdgeIterator(compose(s -> s.getGraphIteratorsEdgeIteratorStrategy(this.graphContext), this.baseGraph.iterators()::edgeIterator).apply(edgeIds), this);
+        return new StrategyEdge.StrategyWrappedEdgeIterator(compose(s -> s.getGraphIteratorsEdgeIteratorStrategy(this.graphContext, strategy), this.baseGraph.iterators()::edgeIterator).apply(edgeIds), this);
     }
 
     @Override
     public void close() throws Exception {
         // compose function doesn't seem to want to work here even though it works with other Supplier<Void>
         // strategy functions. maybe the "throws Exception" is hosing it up.......
-        this.strategy.getGraphCloseStrategy(this.graphContext).apply(FunctionUtils.wrapSupplier(() -> {
+        this.strategy.getGraphCloseStrategy(this.graphContext, strategy).apply(FunctionUtils.wrapSupplier(() -> {
             baseGraph.close();
             return null;
         })).get();

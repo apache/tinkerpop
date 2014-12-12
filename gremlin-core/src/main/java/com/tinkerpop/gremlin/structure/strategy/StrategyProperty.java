@@ -19,6 +19,7 @@ public final class StrategyProperty<V> implements Property<V>, StrategyWrapped, 
     private final Property<V> baseProperty;
     private final StrategyContext<StrategyProperty<V>> strategyContext;
     private final StrategyGraph strategyGraph;
+    private final GraphStrategy strategy;
 
     public StrategyProperty(final Property<V> baseProperty, final StrategyGraph strategyGraph) {
         if (baseProperty instanceof StrategyWrapped) throw new IllegalArgumentException(
@@ -26,6 +27,7 @@ public final class StrategyProperty<V> implements Property<V>, StrategyWrapped, 
         this.baseProperty = baseProperty;
         this.strategyContext = new StrategyContext<>(strategyGraph, this);
         this.strategyGraph = strategyGraph;
+        this.strategy = strategyGraph.getStrategy();
     }
 
     public StrategyContext<StrategyProperty<V>> getStrategyContext() {
@@ -35,13 +37,13 @@ public final class StrategyProperty<V> implements Property<V>, StrategyWrapped, 
     @Override
     public String key() {
         return this.strategyGraph.compose(
-                s -> s.getPropertyKeyStrategy(this.strategyContext), this.baseProperty::key).get();
+                s -> s.getPropertyKeyStrategy(this.strategyContext, strategy), this.baseProperty::key).get();
     }
 
     @Override
     public V value() throws NoSuchElementException {
         return this.strategyGraph.compose(
-                s -> s.getPropertyValueStrategy(this.strategyContext), this.baseProperty::value).get();
+                s -> s.getPropertyValueStrategy(this.strategyContext, strategy), this.baseProperty::value).get();
     }
 
     @Override
@@ -79,7 +81,7 @@ public final class StrategyProperty<V> implements Property<V>, StrategyWrapped, 
     @Override
     public void remove() {
         this.strategyGraph.compose(
-                s -> s.getRemovePropertyStrategy(strategyContext),
+                s -> s.getRemovePropertyStrategy(strategyContext, strategy),
                 () -> {
                     this.baseProperty.remove();
                     return null;
