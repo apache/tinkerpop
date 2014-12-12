@@ -744,39 +744,23 @@ A Graph Strategy provides a way to expand, inspect or otherwise alter the behavi
 
 NOTE: TinkerPop2 had the notion of "Graph Wrappers" which decorated standard `Graph` implementations with additional features.  A Graph strategy is generally analogous to that capability.
 
-To use a `GraphStrategy` instance, use the `GraphFactory` to instantiate the `Graph` as follows:
+To use a `GraphStrategy` instance, use the `Graph.strategy()` method to instantiate the `StrategyGraph` as follows:
 
 [source,groovy]
 ----
-gremlin> conf = new BaseConfiguration()
-==>org.apache.commons.configuration.BaseConfiguration@5b40ceb
-gremlin> conf.setProperty("gremlin.graph","com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph")
-==>null
-gremlin> g = GraphFactory.open(conf, new ReadOnlyStrategy())
-==>readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]
+gremlin> g = TinkerFactory.createModern()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> sg = g.strategy(IdentityStrategy.instance())
+==>identitystrategy[tinkergraph[vertices:6 edges:6]]
 ----
 
-The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyGraph` which is a traverser for the underlying `TinkerGraph` and the `ReadOnlyStrategy`.  Since `StrategyGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
+The above code specifies the creation of a `TinkerGraph` with the use of `IdentityStrategy`.  Note that the `strategy` method returns a `StrategyGraph`, which implements the `Graph` interface. It can be used in the same manner as `TinkerGraph` or any other implementation.  At any point, the `GraphStrategy` can be bypassed by getting the underlying `TinkerGraph`.
 
 [source,groovy]
 ----
-gremlin> g.addVertex('name','stephen')
-Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategy and is therefore unmodifiable
+gremlin> sg.getBaseGraph()
+==>tinkergraph[vertices:6 edges:6]
 ----
-
-The above code tries to mutate the underlying `TinkerGraph`.  Note that `ReadOnlyStrategy` prevents that and throws an exception.  At any point, the `GraphStrategy` can be bypassed by getting the underlying `TinkerGraph`.
-
-[source,groovy]
-----
-gremlin> bg = g.getBaseGraph()
-==>tinkergraph[vertices:0 edges:0]
-gremlin> bg.addVertex('name','stephen')
-==>v[0]
-gremlin> g.V(0l).values('name')
-==>stephen
-----
-
-By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it is then possible to read back that added vertex. The following sections explain details of the specific `GraphStrategy` implementations.
 
 IdStrategy
 ~~~~~~~~~~
@@ -805,14 +789,12 @@ Given the nature of identifier assignment, this means that identifiers are gener
 [source,groovy]
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> sg = new StrategyGraph(g)
-==>identitygraphstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
-gremlin> sg.setStrategy(IdStrategy.build("idKey").create())
-==>null
+gremlin> sg = g.strategy(IdStrategy.build("idKey").create())
+==>idstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
 gremlin> sg.addVertex(id,"42a").id()
 ==>42a
 gremlin> sg.addVertex().id()
-==>ef74e843-4c6e-40d2-929f-2552e2f96bf2
+==>527d44d2-9a3a-4c15-89b6-021e3d613884
 
 When a non-null identifier is passed to `IdGraph.addVertex` or `IdGraph.addEdge`, that value will be used to uniquely identify the element. When the `id` is not provided, `IdGraph` will generate an identifier on its own.
 
@@ -824,40 +806,32 @@ PartitionStrategy
 `PartitionStrategy` is a `SubgraphStrategy` which creates logical subgraphs through the use of designated properties.  When each element is written to the `Graph`, it is marked with a property value indicating the current write-partition.  As elements are read from the graph, they are matched against the current set of read-partitions.  The read-partitions thereby define the union of a set of vertices and edges. For example:
 
 [source,groovy]
-----
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> strategy = new PartitionStrategy("com.example.partition", "A")
-==>PartitionStrategy
-gremlin> sg = new StrategyGraph(g)
-==>strategywrappedgraph[tinkergraph[vertices:0 edges:0]]
-gremlin> sg.setStrategy(strategy)
-==>null
-----
+gremlin> partitionStrategy = new PartitionStrategy("com.example.partition", "A")
+==>partitionstrategy
+gremlin> sg = g.strategy(partitionStrategy)
+==>partitionstrategy[tinkergraph[vertices:0 edges:0]]
 
 Add vertices and edges first in one partition, then another:
 
 [source,groovy]
-----
 gremlin> v1 = sg.addVertex("name", "one")
 ==>v[0]*
 gremlin> v2 = sg.addVertex("name", "two")
 ==>v[3]*
 gremlin> v1.addEdge("knows", v2)
 ==>e[6][0-knows->3]*
-gremlin> strategy.setWritePartition("B")
+gremlin> partitionStrategy.setWritePartition("B")
 ==>null
 gremlin> v3 = sg.addVertex("name", "three")
 ==>v[7]*
 gremlin> v1.addEdge("knows", v3)
 ==>e[10][0-knows->7]*
-gremlin> 
-----
 
 Define sets of partitions which provide access to different subgraphs, or slices of the data:
 
 [source,groovy]
-----
 gremlin> "in A: " + sg.V().count().next() + ", " + sg.E().count().next()
 ==>in A: 2, 1
 gremlin> strategy.addReadPartition("B")
@@ -870,7 +844,6 @@ gremlin> strategy.addReadPartition("B")
 ==>null
 gremlin> "in B: " + sg.V().count().next() + ", " + sg.E().count().next()
 ==>in B: 1, 0
-----
 
 Note that there are no edges in the set B, as the only edge added to partition B is incident on a vertex of A.
 
@@ -880,31 +853,24 @@ ReadOnlyStrategy
 `ReadOnlyStrategy` was demonstrated at the start of the `GraphStrategy` section.  It simply prevents write operations that would otherwise mutate the `Graph`.
 
 [source,groovy]
-----
-gremlin> conf = new BaseConfiguration()
-==>org.apache.commons.configuration.BaseConfiguration@5b40ceb
-gremlin> conf.setProperty("gremlin.graph","com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph")
-==>null
-gremlin> g = GraphFactory.open(conf, new ReadOnlyStrategy())
-==>readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]
-gremlin> g.addVertex('name','stephen')
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> sg = g.strategy(new ReadOnlyStrategy())
+==>readonlystrategy[tinkergraph[vertices:0 edges:0]]
+gremlin> sg.addVertex("name","stephen")
 Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategy and is therefore unmodifiable
-----
+Display stack trace? [yN]
 
 SequenceStrategy
 ~~~~~~~~~~~~~~~~
 
-`SequenceStrategy` provides a way to string together a set of `GraphStrategy` implementations, such that they are executed in order from first to last.  The `GraphFactory` provides a straightforward way to invisibly use `SequenceStrategy`:
+`SequenceStrategy` provides a way to string together a set of `GraphStrategy` implementations, such that they are executed in order from first to last.  The `Graph.strategy()` method provides a straightforward way to invisibly use `SequenceStrategy`:
 
 [source,groovy]
-gremlin> conf = new BaseConfiguration()
-==>org.apache.commons.configuration.BaseConfiguration@6048e26a
-gremlin> conf.setProperty("gremlin.graph",TinkerGraph.class.getName())
-==>null
-gremlin> g = GraphFactory.open(conf, new ReadOnlyStrategy(), new PartitionStrategy("partition","A"))
-==>sequencegraphstrategy[tinkergraph[vertices:0 edges:0]]
+gremlin> sg = g.strategy(new ReadOnlyStrategy(), new PartitionStrategy("com.example.partition","A"))
+==>sequencestrategy[tinkergraph[vertices:0 edges:0]]
 
-The above code demonstrates a `Graph` that uses a `SequenceStrategy` composed of `ReadOnlyStrategy` and `PartitionhStrategy`.  When the `SequenceStrategy` is invoked, it will first apply the `ReadOnlyStrategy` and then apply the `PartitionStrategy`.  It is important to consider the ordering of the `GraphStrategy` objects when choosing to use `SequenceStrategy` as it makes no attempts to determine if strategies will be in conflict with one another.  Be aware of the nature of the strategies and ensure that applying them in the order assigned will produce the desirable outcome.
+The above code demonstrates a `Graph` that uses a `SequenceStrategy` composed of `ReadOnlyStrategy` and `PartitionStrategy`.  When the `SequenceStrategy` is invoked, it will first apply the `ReadOnlyStrategy` and then apply the `PartitionStrategy`.  It is important to consider the ordering of the `GraphStrategy` objects when choosing to use `SequenceStrategy` as it makes no attempts to determine if strategies will be in conflict with one another.  Be aware of the nature of the strategies and ensure that applying them in the order assigned will produce the desirable outcome.
 
 SubgraphStrategy
 ~~~~~~~~~~~~~~~~
@@ -923,8 +889,7 @@ Predicate<Vertex> vertexCriterion = vertex -> true;
 Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
 
 GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-StrategyGraph sg = new StrategyGraph(g);
-sg.setStrategy(strategy);
+StrategyGraph sg = g.strategy(strategy);
 
 // all vertices are here
 System.out.println("" + sg.V().count().next() + " of " + g.V().count().next() + " vertices");
@@ -941,8 +906,7 @@ vertexCriterion = { true }
 edgeCriterion = { it.id() >= 8 && it.id() <= 10 }
 
 strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion)
-sg = new StrategyWrappedGraph(g)
-sg.setStrategy(strategy)
+sg = g.strategy(strategy)
 
 // all vertices are here
 sg.V().count().next() + " of " + g.V().count().next() + " vertices"
