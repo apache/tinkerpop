@@ -19,7 +19,7 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
     private static final String partition = "gremlin.partitionGraphStrategy.partition";
 
     public PartitionStrategyTest() {
-        super(new PartitionStrategy(partition, "A"));
+        super(PartitionStrategy.build().partitionKey(partition).startPartition("A").create());
     }
 
     @Test

@@ -33,7 +33,7 @@ public class PartitionStrategy extends SubgraphStrategy {
     private final String partitionKey;
     private final Set<String> readPartitions = new HashSet<>();
 
-    public PartitionStrategy(final String partitionKey, final String partition) {
+    private PartitionStrategy(final String partitionKey, final String partition) {
         super(null, null);
         this.vertexPredicate = this::testElement;
         this.edgePredicate = this::testElement;
@@ -126,5 +126,38 @@ public class PartitionStrategy extends SubgraphStrategy {
     @Override
     public String toString() {
         return StringFactory.graphStrategyString(this);
+    }
+
+    public static Builder build() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String startPartition = "default";
+        private String partitionKey = "_partition" ;
+
+        private Builder() {}
+
+        /**
+         * The initial partition to filter by. If this value is not set, it will be defaulted to "default".
+         */
+        public Builder startPartition(final String startPartition) {
+            if (null == startPartition) throw new IllegalArgumentException("The startPartition cannot be null");
+            this.startPartition = startPartition;
+            return this;
+        }
+
+        /**
+         * The name of the partition key.  If this is not set, then the value is defaulted to "_partition".
+         */
+        public Builder partitionKey(final String partitionKey) {
+            if (null == partitionKey) throw new IllegalArgumentException("The partitionKey cannot be null");
+            this.partitionKey = partitionKey;
+            return this;
+        }
+
+        public PartitionStrategy create() {
+            return new PartitionStrategy(partitionKey, startPartition);
+        }
     }
 }

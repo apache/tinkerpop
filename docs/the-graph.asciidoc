@@ -808,7 +808,7 @@ PartitionStrategy
 [source,groovy]
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> partitionStrategy = new PartitionStrategy("com.example.partition", "A")
+gremlin> partitionStrategy = PartitionStrategy.build().partitionKey("com.example.partition").startPartition("A").create()
 ==>partitionstrategy
 gremlin> sg = g.strategy(partitionStrategy)
 ==>partitionstrategy[tinkergraph[vertices:0 edges:0]]
