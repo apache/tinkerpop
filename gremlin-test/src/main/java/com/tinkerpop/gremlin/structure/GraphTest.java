@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.GraphProvider;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -70,7 +71,7 @@ public class GraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    public void shouldHaveExceptionConsistencyWhenFindVertexByIdThatIsNonExistent() {
+    public void shouldHaveExceptionConsistencyWhenFindVertexByIdThatIsNonExistentViaTraversal() {
         try {
             g.V(10000l).next();
             fail("Call to g.V(10000l) should throw an exception");
@@ -81,9 +82,31 @@ public class GraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    public void shouldHaveExceptionConsistencyWhenFindEdgeByIdThatIsNonExistent() {
+    public void shouldHaveExceptionConsistencyWhenFindVertexByIdThatIsNonExistentViaIterator() {
+        try {
+            g.iterators().vertexIterator(10000l).next();
+            fail("Call to g.V(10000l) should throw an exception");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Vertex.class, 10000l).getClass()));
+        }
+
+    }
+
+    @Test
+    public void shouldHaveExceptionConsistencyWhenFindEdgeByIdThatIsNonExistentViaTraversal() {
         try {
             g.E(10000l).next();
+            fail("Call to g.E(10000l) should throw an exception");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Edge.class, 10000l).getClass()));
+        }
+
+    }
+
+    @Test
+    public void shouldHaveExceptionConsistencyWhenFindEdgeByIdThatIsNonExistentViaIterator() {
+        try {
+            g.iterators().edgeIterator(10000l).next();
             fail("Call to g.E(10000l) should throw an exception");
         } catch (Exception ex) {
             assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Edge.class, 10000l).getClass()));
@@ -113,7 +136,7 @@ public class GraphTest extends AbstractGremlinTest {
     public void shouldAddVertexWithUserSuppliedNumericId() {
         g.addVertex(T.id, 1000l);
         tryCommit(g, graph -> {
-            final Vertex v = g.V(1000l).next();
+            final Vertex v = g.iterators().vertexIterator(1000l).next();
             assertEquals(1000l, v.id());
         });
     }
@@ -125,7 +148,7 @@ public class GraphTest extends AbstractGremlinTest {
     public void shouldAddVertexWithUserSuppliedStringId() {
         g.addVertex(T.id, "1000");
         tryCommit(g, graph -> {
-            final Vertex v = g.V("1000").next();
+            final Vertex v = g.iterators().vertexIterator("1000").next();
             assertEquals("1000", v.id());
         });
     }
@@ -138,7 +161,7 @@ public class GraphTest extends AbstractGremlinTest {
         final UUID uuid = UUID.randomUUID();
         g.addVertex(T.id, uuid);
         tryCommit(g, graph -> {
-            final Vertex v = g.V(uuid).next();
+            final Vertex v = g.iterators().vertexIterator(uuid).next();
             assertEquals(uuid, v.id());
         });
     }
@@ -151,13 +174,13 @@ public class GraphTest extends AbstractGremlinTest {
         final UUID uuid = UUID.randomUUID();
         g.addVertex(T.id, uuid);
         tryCommit(g, graph -> {
-            final Vertex v = g.V(uuid).next();
+            final Vertex v = g.iterators().vertexIterator(uuid).next();
             assertEquals(uuid, v.id());
         });
 
         g.addVertex(T.id, uuid.toString());
         tryCommit(g, graph -> {
-            final Vertex v = g.V(uuid.toString()).next();
+            final Vertex v = g.iterators().vertexIterator(uuid.toString()).next();
             assertEquals(uuid.toString(), v.id());
         });
 
@@ -166,7 +189,7 @@ public class GraphTest extends AbstractGremlinTest {
         IoTest.CustomId customId = new IoTest.CustomId("test", uuid);
         g.addVertex(T.id, customId);
         tryCommit(g, graph -> {
-            final Vertex v = g.V(customId).next();
+            final Vertex v = g.iterators().vertexIterator(customId).next();
             assertEquals(customId, v.id());
         });
     }
@@ -177,7 +200,7 @@ public class GraphTest extends AbstractGremlinTest {
     public void shouldOverwriteEarlierKeyValuesWithLaterKeyValuesOnAddVertexIfNoMultiProperty() {
         final Vertex v = g.addVertex("test", "A", "test", "B", "test", "C");
         tryCommit(g, graph -> {
-            assertEquals(1, StreamFactory.stream(v.iterators().propertyIterator("test")).count());
+            assertEquals(1, IteratorUtils.count(v.iterators().propertyIterator("test")));
             assertTrue(StreamFactory.stream(v.iterators().valueIterator("test")).anyMatch(t -> t.equals("C")));
         });
     }
@@ -188,7 +211,7 @@ public class GraphTest extends AbstractGremlinTest {
     public void shouldOverwriteEarlierKeyValuesWithLaterKeyValuesOnAddVertexIfMultiProperty() {
         final Vertex v = g.addVertex("test", "A", "test", "B", "test", "C");
         tryCommit(g, graph -> {
-            assertEquals(3, StreamFactory.stream(v.iterators().propertyIterator("test")).count());
+            assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator("test")));
             assertTrue(StreamFactory.stream(v.iterators().valueIterator("test")).anyMatch(t -> t.equals("A")));
             assertTrue(StreamFactory.stream(v.iterators().valueIterator("test")).anyMatch(t -> t.equals("B")));
             assertTrue(StreamFactory.stream(v.iterators().valueIterator("test")).anyMatch(t -> t.equals("C")));
@@ -316,14 +339,14 @@ public class GraphTest extends AbstractGremlinTest {
 
         tryCommit(graph, assertVertexEdgeCounts(4, 4));
 
-        for (Vertex v : graph.V().toList()) {
+        graph.iterators().vertexIterator().forEachRemaining(v -> {
             assertEquals(new Long(1), v.outE().count().next());
             assertEquals(new Long(1), v.inE().count().next());
-        }
+        });
 
-        for (Edge x : graph.E().toList()) {
+        graph.iterators().edgeIterator().forEachRemaining(x -> {
             assertEquals(graphProvider.convertLabel("knows"), x.label());
-        }
+        });
 
         if (graph.features().vertex().supportsUserSuppliedIds()) {
             final Vertex va = graph.iterators().vertexIterator(graphProvider.convertId("1")).next();
@@ -539,16 +562,16 @@ public class GraphTest extends AbstractGremlinTest {
         assertVertexEdgeCounts(2, 1).accept(reopenedGraph);
 
         if (graph.features().vertex().properties().supportsStringValues()) {
-            for (Vertex vertex : reopenedGraph.V().toList()) {
+            reopenedGraph.iterators().vertexIterator().forEachRemaining(vertex -> {
                 assertTrue(vertex.property("name").value().equals("marko") || vertex.property("name").value().equals("pavel"));
-            }
+            });
         }
 
-        for (Edge edge : reopenedGraph.E().toList()) {
+        reopenedGraph.iterators().edgeIterator().forEachRemaining(edge -> {
             assertEquals(graphProvider.convertId("collaborator"), edge.label());
             if (graph.features().edge().properties().supportsStringValues())
                 assertEquals("internet", edge.property("location").value());
-        }
+        });
 
         graphProvider.clear(reopenedGraph, graphProvider.standardGraphConfiguration(this.getClass(), name.getMethodName()));
     }
