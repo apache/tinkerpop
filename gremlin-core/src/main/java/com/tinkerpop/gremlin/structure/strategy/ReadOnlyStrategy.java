@@ -26,7 +26,7 @@ public class ReadOnlyStrategy implements GraphStrategy {
 
     private ReadOnlyStrategy() { }
 
-    public static final GraphStrategy instance() {
+    public static final ReadOnlyStrategy instance() {
         return instance;
     }
 

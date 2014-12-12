@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class IdentityStrategy implements GraphStrategy {
-    private static final IdentityStrategy INSTANCE = new IdentityStrategy();
+    private static final IdentityStrategy instance = new IdentityStrategy();
 
     private IdentityStrategy() {
     }
@@ -19,7 +19,7 @@ public class IdentityStrategy implements GraphStrategy {
         return StringFactory.graphStrategyString(this);
     }
 
-    public static final GraphStrategy instance() {
-        return INSTANCE;
+    public static final IdentityStrategy instance() {
+        return instance;
     }
 }
