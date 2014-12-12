@@ -66,7 +66,7 @@ public class GraphFactory {
             final StrategyGraph swg = new StrategyGraph(g, strategies[0]);
             returnedGraph = swg;
         } else if (strategies != null && strategies.length > 1) {
-            final StrategyGraph swg = new StrategyGraph(g, new SequenceStrategy(strategies));
+            final StrategyGraph swg = new StrategyGraph(g, SequenceStrategy.build().sequence(strategies).create());
             returnedGraph = swg;
         } else
             returnedGraph = g;

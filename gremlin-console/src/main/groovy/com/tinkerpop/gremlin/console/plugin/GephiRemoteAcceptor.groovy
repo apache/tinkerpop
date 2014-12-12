@@ -231,7 +231,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     }
 
     def addVertexToGephi(def Vertex v, def boolean ignoreEdges = false) {
-        // grab the first property value from the list of values
+        // grab the first property value from the strategies of values
         def props = v.valueMap().next().collectEntries {kv -> [(kv.key):kv.value[0]]}
         props << [label:v.label()]
 

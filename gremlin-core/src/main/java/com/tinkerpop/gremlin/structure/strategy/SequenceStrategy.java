@@ -31,9 +31,11 @@ import java.util.stream.Collectors;
 public class SequenceStrategy implements GraphStrategy {
     private final List<GraphStrategy> graphStrategySequence;
 
-    public SequenceStrategy(final GraphStrategy... strategies) {
-        this.graphStrategySequence = new ArrayList<>(Arrays.asList(strategies));
+    public SequenceStrategy(final List<GraphStrategy> strategies) {
+        this.graphStrategySequence = strategies;
     }
+
+    // todo: need to get rid of this mutability
 
     public void add(final GraphStrategy strategy) {
         this.graphStrategySequence.add(strategy);
@@ -322,5 +324,31 @@ public class SequenceStrategy implements GraphStrategy {
                 return f.apply(t);
             }
         };
+    }
+
+    public static Builder build() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private List<GraphStrategy> strategies = new ArrayList<>();
+
+        private Builder() {
+            strategies.add(IdentityStrategy.instance());
+        }
+
+        /**
+         * Provide the sequence of {@link GraphStrategy} implementations to execute.  If this value is not set,
+         * then a {@code SequenceStrategy} is initialized with a single
+         * {@link com.tinkerpop.gremlin.structure.strategy.IdentityStrategy} instance.
+         */
+        public Builder sequence(final GraphStrategy... strategies) {
+            this.strategies = new ArrayList<>(Arrays.asList(strategies));
+            return this;
+        }
+
+        public SequenceStrategy create() {
+            return new SequenceStrategy(strategies);
+        }
     }
 }

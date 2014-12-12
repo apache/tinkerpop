@@ -84,7 +84,7 @@ public class StrategyGraphTest {
                 add(new Object[]{IdStrategy.build("key").create()});
                 add(new Object[]{PartitionStrategy.build().partitionKey("partition").startPartition("A").create()});
                 add(new Object[]{ReadOnlyStrategy.instance()});
-                add(new Object[]{new SequenceStrategy(ReadOnlyStrategy.instance(), PartitionStrategy.build().partitionKey("partition").startPartition("A").create())});
+                add(new Object[]{SequenceStrategy.build().sequence(ReadOnlyStrategy.instance(), PartitionStrategy.build().partitionKey("partition").startPartition("A").create()).create()});
                 add(new Object[]{new SubgraphStrategy(v -> true, e -> true)});
             }};
         }

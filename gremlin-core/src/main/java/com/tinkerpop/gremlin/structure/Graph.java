@@ -171,7 +171,7 @@ public interface Graph extends AutoCloseable {
     public default StrategyGraph strategy(final GraphStrategy... strategies) {
         if (strategies.length == 0) throw new IllegalArgumentException("Provide at least one GraphStrategy implementation.");
 
-        final GraphStrategy graphStrategy = strategies.length == 1 ? strategies[0] : new SequenceStrategy(strategies);
+        final GraphStrategy graphStrategy = strategies.length == 1 ? strategies[0] : SequenceStrategy.build().sequence(strategies).create();
         return new StrategyGraph(this, graphStrategy);
     }
 

@@ -73,7 +73,7 @@ class Console {
 
         GremlinLoader.load()
 
-        // check for available plugins.  if they are in the "active" plugins list then "activate" them
+        // check for available plugins.  if they are in the "active" plugins strategies then "activate" them
         def activePlugins = Mediator.readPluginState()
         ServiceLoader.load(GremlinPlugin.class, groovy.getInterp().getClassLoader()).each { plugin ->
             if (!mediator.availablePlugins.containsKey(plugin.class.name)) {
@@ -141,7 +141,7 @@ class Console {
             } else {
                 try {
                     // if the result is an empty iterator then the tempIterator needs to be set to one, as a
-                    // future assignment to the list that produced the iterator will maintain that reference
+                    // future assignment to the strategies that produced the iterator will maintain that reference
                     // and try to iterate it above.  in other words, this:
                     //
                     // x =[]
