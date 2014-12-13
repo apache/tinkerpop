@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -37,33 +38,34 @@ public class SubgraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVertexIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
+    public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVertexIteratorStrategy(final StrategyContext<StrategyVertex, Vertex> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (direction, labels) -> StreamFactory
-                .stream(ctx.getCurrent().edgeIterator(direction, labels))
+                .stream(ctx.getCurrentBase().iterators().edgeIterator(direction, labels))
                 .filter(this::testEdge)
                 .map(edge -> otherVertex(direction, ctx.getCurrent(), edge))
-                .filter(this::testVertex)
-                .map(v -> ((StrategyVertex) v).getBaseVertex()).iterator();
-        // TODO: why do we have to unwrap? Note that we are not doing f.apply() like the other methods. Is this bad?
+                .filter(this::testVertex).iterator();
+        // TODO: Note that we are not doing f.apply() like the other methods. Is this bad?
+        // by not calling f.apply() to get the iterator, we're possibly bypassing strategy methods that
+        // could have been sequenced
     }
 
     @Override
-    public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
+    public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyVertex, Vertex> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (direction, labels) -> IteratorUtils.filter(f.apply(direction, labels), this::testEdge);
     }
 
     @Override
-    public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVertexIteratorStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
+    public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVertexIteratorStrategy(final StrategyContext<StrategyEdge, Edge> ctx, final GraphStrategy composingStrategy) {
         return (f) -> direction -> IteratorUtils.filter(f.apply(direction), this::testVertex);
     }
 
     @Override
-    public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
+    public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph, Graph> ctx, final GraphStrategy composingStrategy) {
         return (f) -> ids -> f.apply(ids).filter(t -> this.testVertex(t.get())); // TODO: we should make sure index hits go first.
     }
 
     @Override
-    public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
+    public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph, Graph> ctx, final GraphStrategy composingStrategy) {
         return (f) -> ids -> f.apply(ids).filter(t -> this.testEdge(t.get()));  // TODO: we should make sure index hits go first.
     }
 

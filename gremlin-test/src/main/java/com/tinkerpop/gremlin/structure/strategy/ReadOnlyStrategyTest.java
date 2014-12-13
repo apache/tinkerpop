@@ -156,7 +156,16 @@ public class ReadOnlyStrategyTest extends AbstractGremlinTest {
             final Exception expectedException = ReadOnlyStrategy.Exceptions.graphUsesReadOnlyStrategy();
             assertEquals(expectedException.getClass(), ex.getClass());
             assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
 
+        try {
+            final StrategyGraph swg = g.strategy(ReadOnlyStrategy.instance(), SafeStrategy.instance());
+            stt.accept(swg);
+            fail();
+        } catch (Exception ex) {
+            final Exception expectedException = ReadOnlyStrategy.Exceptions.graphUsesReadOnlyStrategy();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
         }
     }
 }

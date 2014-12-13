@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.strategy.IdentityStrategy;
+import com.tinkerpop.gremlin.structure.strategy.SafeStrategy;
 import com.tinkerpop.gremlin.structure.strategy.SequenceStrategy;
 import com.tinkerpop.gremlin.structure.strategy.StrategyGraph;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
@@ -21,8 +22,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -168,11 +172,20 @@ public interface Graph extends AutoCloseable {
      * Constructs a {@link StrategyGraph} from one or more {@link GraphStrategy} objects.  If more than one
      * {@link GraphStrategy} is supplied they are folded into a single {@link SequenceStrategy}.
      */
+    @Graph.Helper
     public default StrategyGraph strategy(final GraphStrategy... strategies) {
         if (strategies.length == 0) throw new IllegalArgumentException("Provide at least one GraphStrategy implementation.");
 
-        final GraphStrategy graphStrategy = strategies.length == 1 ? strategies[0] : SequenceStrategy.build().sequence(strategies).create();
-        return new StrategyGraph(this, graphStrategy);
+        final List<GraphStrategy> strategyList = new ArrayList(Arrays.asList(strategies));
+        final boolean constructAsSafe = strategyList.remove(SafeStrategy.instance());
+
+        if (strategyList.size() == 0)
+            throw new IllegalArgumentException(String.format("Provide at least one GraphStrategy implementation in addition to %s.",
+                    SafeStrategy.class.getSimpleName()));
+
+        final GraphStrategy[] revisedStrategies = strategyList.toArray(new GraphStrategy[strategyList.size()]);
+        final GraphStrategy graphStrategy = revisedStrategies.length == 1 ? revisedStrategies[0] : SequenceStrategy.build().sequence(revisedStrategies).create();
+        return new StrategyGraph(this, graphStrategy, constructAsSafe);
     }
 
     /**

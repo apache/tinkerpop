@@ -31,17 +31,17 @@ public class ComputerDataStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy strategyComposer) {
+    public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyVertex, Vertex> ctx, final GraphStrategy strategyComposer) {
         return (f) -> (keys) -> keys.length == 0 ? IteratorUtils.filter(f.apply(keys), property -> !this.elementComputeKeys.contains(property.key())) : f.apply(keys);
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValueIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy strategyComposer) {
+    public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValueIteratorStrategy(final StrategyContext<StrategyVertex, Vertex> ctx, final GraphStrategy strategyComposer) {
         return (f) -> (keys) -> IteratorUtils.map(ctx.getCurrent().iterators().<V>propertyIterator(keys), vertexProperty -> vertexProperty.value());
     }
 
     @Override
-    public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy strategyComposer) {
+    public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final StrategyContext<StrategyVertex, Vertex> ctx, final GraphStrategy strategyComposer) {
         return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !this.elementComputeKeys.contains(key)), new HashSet<>());
     }
 
@@ -51,12 +51,11 @@ public class ComputerDataStrategy implements GraphStrategy {
     }
 
     public static StrategyGraph wrapGraph(final Graph graph, final VertexProgram<?> vertexProgram) {
-        return new StrategyGraph(graph, new ComputerDataStrategy(vertexProgram.getElementComputeKeys()));
+        return graph.strategy(new ComputerDataStrategy(vertexProgram.getElementComputeKeys()));
     }
 
     public static StrategyVertex wrapVertex(final Vertex vertex, final VertexProgram<?> vertexProgram) {
-        final StrategyGraph sg = new StrategyGraph(vertex.graph(), new ComputerDataStrategy(vertexProgram.getElementComputeKeys()));
-        return new StrategyVertex(vertex, sg);
+        return new StrategyVertex(vertex, vertex.graph().strategy(new ComputerDataStrategy(vertexProgram.getElementComputeKeys())));
     }
 
 }

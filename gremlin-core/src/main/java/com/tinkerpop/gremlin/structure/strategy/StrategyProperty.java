@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 public final class StrategyProperty<V> implements Property<V>, StrategyWrapped, WrappedProperty<Property<V>> {
 
     private final Property<V> baseProperty;
-    private final StrategyContext<StrategyProperty<V>> strategyContext;
+    private final StrategyContext<StrategyProperty<V>, Property<V>> strategyContext;
     private final StrategyGraph strategyGraph;
     private final GraphStrategy strategy;
 
@@ -25,12 +25,12 @@ public final class StrategyProperty<V> implements Property<V>, StrategyWrapped, 
         if (baseProperty instanceof StrategyWrapped) throw new IllegalArgumentException(
                 String.format("The property %s is already StrategyWrapped and must be a base Property", baseProperty));
         this.baseProperty = baseProperty;
-        this.strategyContext = new StrategyContext<>(strategyGraph, this);
+        this.strategyContext = new StrategyContext<>(strategyGraph, this, baseProperty);
         this.strategyGraph = strategyGraph;
         this.strategy = strategyGraph.getStrategy();
     }
 
-    public StrategyContext<StrategyProperty<V>> getStrategyContext() {
+    public StrategyContext<StrategyProperty<V>, Property<V>> getStrategyContext() {
         return strategyContext;
     }
 
@@ -95,6 +95,11 @@ public final class StrategyProperty<V> implements Property<V>, StrategyWrapped, 
 
     @Override
     public Property<V> getBaseProperty() {
+        if (strategyGraph.isSafe()) throw StrategyGraph.Exceptions.strategyGraphIsSafe();
+        return this.baseProperty;
+    }
+
+    Property<V> getBasePropertySafe() {
         return this.baseProperty;
     }
 }

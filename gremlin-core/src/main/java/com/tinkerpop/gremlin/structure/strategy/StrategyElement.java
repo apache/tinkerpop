@@ -11,7 +11,7 @@ public abstract class StrategyElement implements Element, StrategyWrapped {
     protected final StrategyGraph strategyGraph;
     protected final GraphStrategy strategy;
     protected final Element baseElement;
-    protected final StrategyContext<StrategyElement> elementStrategyContext;
+    protected final StrategyContext<StrategyElement, Element> elementStrategyContext;
 
     protected StrategyElement(final Element baseElement, final StrategyGraph strategyGraph) {
         if (baseElement instanceof StrategyWrapped) throw new IllegalArgumentException(
@@ -19,14 +19,19 @@ public abstract class StrategyElement implements Element, StrategyWrapped {
         this.strategyGraph = strategyGraph;
         this.strategy = strategyGraph.getStrategy();
         this.baseElement = baseElement;
-        this.elementStrategyContext = new StrategyContext<>(strategyGraph, this);
+        this.elementStrategyContext = new StrategyContext<>(strategyGraph, this, baseElement);
     }
 
-    public StrategyContext<StrategyElement> getElementStrategyContext() {
+    public StrategyContext<StrategyElement, Element> getElementStrategyContext() {
         return elementStrategyContext;
     }
 
     public Element getBaseElement() {
+        if (strategyGraph.isSafe()) throw StrategyGraph.Exceptions.strategyGraphIsSafe();
+        return this.baseElement;
+    }
+
+    Element getBaseElementSafe() {
         return this.baseElement;
     }
 

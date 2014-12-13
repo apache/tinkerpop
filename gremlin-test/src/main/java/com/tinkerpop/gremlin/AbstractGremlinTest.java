@@ -38,7 +38,7 @@ import static org.junit.Assume.assumeThat;
 public abstract class AbstractGremlinTest {
     protected Graph g;
     protected Configuration config;
-    protected GraphStrategy strategyToTest;
+    protected GraphStrategy[] strategiesToTest;
     protected GraphProvider graphProvider;
 
     protected static String tempPath;
@@ -60,8 +60,8 @@ public abstract class AbstractGremlinTest {
         this(null);
     }
 
-    public AbstractGremlinTest(final GraphStrategy strategyToTest) {
-        this.strategyToTest = strategyToTest;
+    public AbstractGremlinTest(final GraphStrategy... strategiesToTest) {
+        this.strategiesToTest = strategiesToTest;
     }
 
     @Before
@@ -74,7 +74,7 @@ public abstract class AbstractGremlinTest {
         graphProvider.clear(config);
 
         // not sure how the strategy can ever be null, but it seems to happen in the performance tests
-        g = graphProvider.openTestGraph(config, strategyToTest);
+        g = graphProvider.openTestGraph(config, strategiesToTest);
 
         final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
 
@@ -129,7 +129,7 @@ public abstract class AbstractGremlinTest {
             graphProvider.clear(g, config);
             g = null;
             config = null;
-            strategyToTest = null;
+            strategiesToTest = null;
             graphProvider = null;
         }
     }

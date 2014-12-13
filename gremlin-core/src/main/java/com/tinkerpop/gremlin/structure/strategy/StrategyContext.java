@@ -12,21 +12,26 @@ import java.util.Map;
  *
  * @param <T> represents the object that is calling the strategy (i.e. the vertex on which addEdge was called).
  */
-public class StrategyContext<T extends StrategyWrapped> {
+public class StrategyContext<T extends StrategyWrapped, B> {
     private final StrategyGraph g;
+    private final Graph baseGraph;
     private final Map<String, Object> environment;
     private final T current;
+    private final B currentBase;
 
-    public StrategyContext(final StrategyGraph g, final T current) {
-        this(g, current, null);
+    public StrategyContext(final StrategyGraph g, final T current, final B currentBase) {
+        this(g, current, currentBase, null);
     }
 
-    public StrategyContext(final StrategyGraph g, final T current, final Map<String, Object> environment) {
+    public StrategyContext(final StrategyGraph g, final T current, final B currentBase, final Map<String, Object> environment) {
         if (null == g) throw Graph.Exceptions.argumentCanNotBeNull("g");
         if (null == current) throw Graph.Exceptions.argumentCanNotBeNull("current");
+        if (null == currentBase) throw Graph.Exceptions.argumentCanNotBeNull("currentBase");
 
         this.g = g;
+        this.baseGraph = g.getBaseGraphSafe();
         this.current = current;
+        this.currentBase = currentBase;
         this.environment = null == environment ? new HashMap<>() : environment;
     }
 
@@ -34,8 +39,12 @@ public class StrategyContext<T extends StrategyWrapped> {
         return current;
     }
 
+    public B getCurrentBase() {
+        return currentBase;
+    }
+
     public Graph getBaseGraph() {
-        return g.getBaseGraph();
+        return baseGraph;
     }
 
     public StrategyGraph getStrategyGraph() {

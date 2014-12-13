@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
@@ -64,7 +65,7 @@ public class IdStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
+    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext<StrategyGraph, Graph> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (keyValues) -> {
             throwIfIdKeyIsSet(Vertex.class, ElementHelper.getKeys(keyValues));
             return f.apply(this.injectId(supportsVertexId, keyValues, vertexIdSupplier).toArray());
@@ -72,7 +73,7 @@ public class IdStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final StrategyContext<StrategyVertex, Vertex> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (label, v, keyValues) -> {
             throwIfIdKeyIsSet(Edge.class, ElementHelper.getKeys(keyValues));
             return f.apply(label, v, this.injectId(supportsEdgeId, keyValues, edgeIdSupplier).toArray());
@@ -80,37 +81,37 @@ public class IdStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
+    public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyGraph, Graph> ctx, final GraphStrategy composingStrategy) {
         return supportsVertexId ? (f) -> (ids) -> ctx.getBaseGraph().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVertexIteratorStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
+    public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVertexIteratorStrategy(final StrategyContext<StrategyGraph, Graph> ctx, final GraphStrategy composingStrategy) {
         return supportsVertexId ? (f) -> (ids) -> ctx.getBaseGraph().V().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
+    public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph, Graph> ctx, final GraphStrategy composingStrategy) {
         return supportsEdgeId ? (f) -> (ids) -> ctx.getBaseGraph().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
+    public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph, Graph> ctx, final GraphStrategy composingStrategy) {
         return supportsVertexId ? (f) -> (ids) -> ctx.getBaseGraph().V().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Supplier<Object>> getVertexIdStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
-        return supportsVertexId ? (f) -> () -> ctx.getCurrent().getBaseVertex().value(idKey) : UnaryOperator.identity();
+    public UnaryOperator<Supplier<Object>> getVertexIdStrategy(final StrategyContext<StrategyVertex, Vertex> ctx, final GraphStrategy composingStrategy) {
+        return supportsVertexId ? (f) -> () -> ctx.getCurrentBase().value(idKey) : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Supplier<Object>> getEdgeIdStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
-        return supportsEdgeId ? (f) -> () -> ctx.getCurrent().getBaseEdge().value(idKey) : UnaryOperator.identity();
+    public UnaryOperator<Supplier<Object>> getEdgeIdStrategy(final StrategyContext<StrategyEdge, Edge> ctx, final GraphStrategy composingStrategy) {
+        return supportsEdgeId ? (f) -> () -> ctx.getCurrentBase().value(idKey) : UnaryOperator.identity();
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
+    public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final StrategyContext<StrategyVertex, Vertex> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (k, v) -> {
             throwIfIdKeyIsSet(ctx.getCurrent().getClass(), k);
             return f.apply(k, v);
@@ -118,7 +119,7 @@ public class IdStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getEdgePropertyStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
+    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getEdgePropertyStrategy(final StrategyContext<StrategyEdge, Edge> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (k, v) -> {
             throwIfIdKeyIsSet(ctx.getCurrent().getClass(), k);
             return f.apply(k, v);

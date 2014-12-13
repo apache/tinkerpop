@@ -31,21 +31,23 @@ import java.util.function.UnaryOperator;
  */
 public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, WrappedGraph<Graph> {
     private final Graph baseGraph;
-    private GraphStrategy strategy;
-    private StrategyContext<StrategyGraph> graphContext;
+    private final GraphStrategy strategy;
+    private final StrategyContext<StrategyGraph, Graph> graphContext;
+    private final boolean safe;
 
     public StrategyGraph(final Graph baseGraph) {
-        this(baseGraph, IdentityStrategy.instance());
+        this(baseGraph, IdentityStrategy.instance(), false);
     }
 
-    public StrategyGraph(final Graph baseGraph, final GraphStrategy strategy) {
+    public StrategyGraph(final Graph baseGraph, final GraphStrategy strategy, final boolean safe) {
         if (baseGraph instanceof StrategyWrapped) throw new IllegalArgumentException(
                 String.format("The graph %s is already StrategyWrapped and must be a base Graph", baseGraph));
         if (null == strategy) throw new IllegalArgumentException("Strategy cannot be null");
 
+        this.safe = safe;
         this.strategy = strategy;
         this.baseGraph = baseGraph;
-        this.graphContext = new StrategyContext<>(this, this);
+        this.graphContext = new StrategyContext<>(this, this, baseGraph);
     }
 
     /**
@@ -53,7 +55,21 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
      */
     @Override
     public Graph getBaseGraph() {
+        if (safe) throw Exceptions.strategyGraphIsSafe();
         return this.baseGraph;
+    }
+
+    /**
+     * Allows the underlying base {@link Graph} to be retrieved by classes in this package. This enables
+     * {@link GraphStrategy} implementations to access the base graph via the {@link StrategyContext}, but users
+     * of {@code StrategyGraph} cannot if in safe mode.
+     */
+    Graph getBaseGraphSafe() {
+        return this.baseGraph;
+    }
+
+    public boolean isSafe() {
+        return safe;
     }
 
     /**
@@ -75,7 +91,7 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
         return f.apply(this.strategy).apply(impl);
     }
 
-    public StrategyContext<StrategyGraph> getGraphContext() {
+    public StrategyContext<StrategyGraph, Graph> getGraphContext() {
         return this.graphContext;
     }
 
@@ -164,5 +180,11 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
     @Override
     public String toString() {
         return StringFactory.graphStrategyString(strategy, this.baseGraph);
+    }
+
+    public static class Exceptions {
+        public static IllegalStateException strategyGraphIsSafe() {
+            return new IllegalStateException("StrategyGraph is in safe mode - its elements cannot be unwrapped.");
+        }
     }
 }
