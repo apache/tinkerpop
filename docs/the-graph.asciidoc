@@ -867,7 +867,7 @@ SequenceStrategy
 `SequenceStrategy` provides a way to string together a set of `GraphStrategy` implementations, such that they are executed in order from first to last.  The `Graph.strategy()` method provides a straightforward way to invisibly use `SequenceStrategy`:
 
 [source,groovy]
-gremlin> sg = g.strategy(new ReadOnlyStrategy(), new PartitionStrategy("com.example.partition","A"))
+gremlin> sg = g.strategy(ReadOnlyStrategy.instance(), PartitionStrategy.build().partitionKey("com.example.partition").startPartition("A").create())
 ==>sequencestrategy[tinkergraph[vertices:0 edges:0]]
 
 The above code demonstrates a `Graph` that uses a `SequenceStrategy` composed of `ReadOnlyStrategy` and `PartitionStrategy`.  When the `SequenceStrategy` is invoked, it will first apply the `ReadOnlyStrategy` and then apply the `PartitionStrategy`.  It is important to consider the ordering of the `GraphStrategy` objects when choosing to use `SequenceStrategy` as it makes no attempts to determine if strategies will be in conflict with one another.  Be aware of the nature of the strategies and ensure that applying them in the order assigned will produce the desirable outcome.
