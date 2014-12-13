@@ -28,10 +28,6 @@ public final class StrategyVertex extends StrategyElement implements Vertex, Str
         this.strategyContext = new StrategyContext<>(strategyGraph, this, baseVertex);
     }
 
-    public StrategyContext<StrategyVertex, Vertex> getStrategyContext() {
-        return this.strategyContext;
-    }
-
     @Override
     public Graph graph() {
         return this.strategyGraph.compose(

@@ -22,10 +22,6 @@ public abstract class StrategyElement implements Element, StrategyWrapped {
         this.elementStrategyContext = new StrategyContext<>(strategyGraph, this, baseElement);
     }
 
-    public StrategyContext<StrategyElement, Element> getElementStrategyContext() {
-        return elementStrategyContext;
-    }
-
     public Element getBaseElement() {
         if (strategyGraph.isSafe()) throw StrategyGraph.Exceptions.strategyGraphIsSafe();
         return this.baseElement;

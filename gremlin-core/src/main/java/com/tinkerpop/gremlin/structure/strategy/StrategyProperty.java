@@ -30,10 +30,6 @@ public final class StrategyProperty<V> implements Property<V>, StrategyWrapped, 
         this.strategy = strategyGraph.getStrategy();
     }
 
-    public StrategyContext<StrategyProperty<V>, Property<V>> getStrategyContext() {
-        return strategyContext;
-    }
-
     @Override
     public String key() {
         return this.strategyGraph.compose(

@@ -2,10 +2,6 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.structure.Graph;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * The {@link StrategyContext} object is provided to the methods of {@link GraphStrategy} so that the strategy functions
  * it constructs have some knowledge of the environment.
@@ -16,15 +12,10 @@ import java.util.Map;
 public final class StrategyContext<T extends StrategyWrapped, B> {
     private final StrategyGraph g;
     private final Graph baseGraph;
-    private final Map<String, Object> environment;
     private final T current;
     private final B currentBase;
 
     StrategyContext(final StrategyGraph g, final T current, final B currentBase) {
-        this(g, current, currentBase, null);
-    }
-
-    StrategyContext(final StrategyGraph g, final T current, final B currentBase, final Map<String, Object> environment) {
         if (null == g) throw Graph.Exceptions.argumentCanNotBeNull("g");
         if (null == current) throw Graph.Exceptions.argumentCanNotBeNull("current");
         if (null == currentBase) throw Graph.Exceptions.argumentCanNotBeNull("currentBase");
@@ -33,7 +24,6 @@ public final class StrategyContext<T extends StrategyWrapped, B> {
         this.baseGraph = g.getBaseGraphSafe();
         this.current = current;
         this.currentBase = currentBase;
-        this.environment = null == environment ? new HashMap<>() : environment;
     }
 
     /**
@@ -66,13 +56,20 @@ public final class StrategyContext<T extends StrategyWrapped, B> {
 
     /**
      * Gets the current {@link com.tinkerpop.gremlin.structure.strategy.StrategyGraph} instance.
-     * @return
      */
     public StrategyGraph getStrategyGraph() {
         return g;
     }
 
-    public Map<String, Object> getEnvironment() {
-        return Collections.unmodifiableMap(environment);
+    /**
+     * Constructs a new {@code StrategyContext}.  This odd construction method makes it possible to only be able
+     * to create a {@code StrategyContext} if an instance is available (or if the code is in the same package).
+     * By adding this security, it becomes possible for {@link com.tinkerpop.gremlin.structure.strategy.SafeStrategy}
+     * to work.  If anyone could create a {@link com.tinkerpop.gremlin.structure.strategy.StrategyContext} outside
+     * of usage within a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} implementation it would
+     * be possible to access the underlying non-strategy enabled elements.
+     */
+    public <SW extends StrategyWrapped, BASE> StrategyContext<SW, BASE> from(final StrategyGraph g, final SW current, final BASE currentBase) {
+        return new StrategyContext<>(g, current, currentBase);
     }
 }

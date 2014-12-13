@@ -27,10 +27,6 @@ public final class StrategyVertexProperty<V> extends StrategyElement implements 
         this.strategyContext = new StrategyContext<>(strategyGraph, this, baseVertexProperty);
     }
 
-    public StrategyContext<StrategyVertexProperty<V>, VertexProperty<V>> getStrategyContext() {
-        return strategyContext;
-    }
-
     @Override
     public GraphTraversal<VertexProperty, VertexProperty> start() {
         return new StrategyElementTraversal<>(this, strategyGraph);

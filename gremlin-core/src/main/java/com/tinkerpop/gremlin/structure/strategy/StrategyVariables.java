@@ -27,10 +27,6 @@ public final class StrategyVariables implements StrategyWrapped, Graph.Variables
         this.strategy = strategyGraph.getStrategy();
     }
 
-    public StrategyContext<StrategyVariables, Graph.Variables> getVariableStrategyContext() {
-        return variableStrategyContext;
-    }
-
     @Override
     public Set<String> keys() {
         return this.strategyGraph.compose(

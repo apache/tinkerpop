@@ -27,10 +27,6 @@ public final class StrategyEdge extends StrategyElement implements Edge, Edge.It
         this.strategyContext = new StrategyContext<>(strategyGraph, this, baseEdge);
     }
 
-    public StrategyContext<StrategyEdge, Edge> getStrategyContext() {
-        return strategyContext;
-    }
-
     @Override
     public Edge.Iterators iterators() {
         return this;

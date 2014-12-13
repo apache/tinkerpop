@@ -91,10 +91,6 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
         return f.apply(this.strategy).apply(impl);
     }
 
-    public StrategyContext<StrategyGraph, Graph> getGraphContext() {
-        return this.graphContext;
-    }
-
     @Override
     public Vertex addVertex(final Object... keyValues) {
         final Optional<Vertex> v = Optional.ofNullable(compose(

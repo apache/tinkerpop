@@ -181,7 +181,8 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                             // to this GraphStrategy (i.e. the first GraphStrategy in the sequence is ignored)
                             // note that this will not call GraphStrategy implementations after this one in the
                             // sequence either
-                            this.getAddVertexStrategy(ctx.getStrategyGraph().getGraphContext(), composingStrategy)
+                            final StrategyContext<StrategyGraph, Graph> innerCtx = ctx.from(ctx.getStrategyGraph(), ctx.getStrategyGraph(), ctx.getBaseGraph());
+                            this.getAddVertexStrategy(innerCtx, composingStrategy)
                                     .apply(ctx.getBaseGraph()::addVertex)
                                     .apply(Arrays.asList("strategy", "bypassed").toArray());
 
@@ -227,7 +228,8 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                     // dynamically construct a strategy to force this call to addVertex to stay localized
                     // to the innerSequenceGraphStrategy. note that this will only call GraphStrategy implementations
                     // in this sequence
-                    composingStrategy.getAddVertexStrategy(ctx.getStrategyGraph().getGraphContext(), composingStrategy)
+                    final StrategyContext<StrategyGraph, Graph> innerCtx = ctx.from(ctx.getStrategyGraph(), ctx.getStrategyGraph(), ctx.getBaseGraph());
+                    composingStrategy.getAddVertexStrategy(innerCtx, composingStrategy)
                             .apply(ctx.getBaseGraph()::addVertex)
                             .apply(Arrays.asList("strategy", "bypassed").toArray());
 
