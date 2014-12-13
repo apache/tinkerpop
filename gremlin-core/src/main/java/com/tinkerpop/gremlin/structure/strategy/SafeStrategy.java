@@ -6,8 +6,10 @@ package com.tinkerpop.gremlin.structure.strategy;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SafeStrategy implements GraphStrategy {
+public final class SafeStrategy implements GraphStrategy {
     private static final SafeStrategy instance = new SafeStrategy();
+
+    private SafeStrategy() {}
 
     public static SafeStrategy instance() {
         return instance;

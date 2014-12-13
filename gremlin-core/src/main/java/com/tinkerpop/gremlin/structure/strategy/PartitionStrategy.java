@@ -33,7 +33,7 @@ import java.util.function.UnaryOperator;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PartitionStrategy implements GraphStrategy {
+public final class PartitionStrategy implements GraphStrategy {
 
     private String writePartition;
     private final String partitionKey;

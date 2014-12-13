@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SequenceStrategy implements GraphStrategy {
+public final class SequenceStrategy implements GraphStrategy {
     private final List<GraphStrategy> graphStrategySequence;
 
     private SequenceStrategy(final List<GraphStrategy> strategies) {

@@ -26,7 +26,7 @@ import java.util.function.UnaryOperator;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubgraphStrategy implements GraphStrategy {
+public final class SubgraphStrategy implements GraphStrategy {
 
     private final Predicate<Vertex> vertexPredicate;
     private final Predicate<Edge> edgePredicate;

@@ -41,7 +41,7 @@ import java.util.function.UnaryOperator;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IdStrategy implements GraphStrategy {
+public final class IdStrategy implements GraphStrategy {
 
     private final String idKey;
 

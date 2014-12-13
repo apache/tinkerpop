@@ -12,7 +12,7 @@ import java.util.Map;
  *
  * @param <T> represents the object that is calling the strategy (i.e. the vertex on which addEdge was called).
  */
-public class StrategyContext<T extends StrategyWrapped, B> {
+public final class StrategyContext<T extends StrategyWrapped, B> {
     private final StrategyGraph g;
     private final Graph baseGraph;
     private final Map<String, Object> environment;

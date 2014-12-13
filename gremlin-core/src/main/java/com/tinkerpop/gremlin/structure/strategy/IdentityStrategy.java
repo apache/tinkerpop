@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IdentityStrategy implements GraphStrategy {
+public final class IdentityStrategy implements GraphStrategy {
     private static final IdentityStrategy instance = new IdentityStrategy();
 
     private IdentityStrategy() {

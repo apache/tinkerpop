@@ -22,7 +22,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ReadOnlyStrategy implements GraphStrategy {
+public final class ReadOnlyStrategy implements GraphStrategy {
     private static final ReadOnlyStrategy instance = new ReadOnlyStrategy();
 
     private ReadOnlyStrategy() { }
