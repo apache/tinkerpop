@@ -9,15 +9,15 @@ import com.tinkerpop.gremlin.structure.strategy.StrategyGraph;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StrategyWrappedTraversal<S, E> extends DefaultGraphTraversal<S, E> {
+public class StrategyTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
         GraphTraversalStrategyRegistry.instance().getTraversalStrategies().forEach(traversalStrategies::addStrategy);
-        TraversalStrategies.GlobalCache.registerStrategies(StrategyWrappedTraversal.class, traversalStrategies);
+        TraversalStrategies.GlobalCache.registerStrategies(StrategyTraversal.class, traversalStrategies);
     }
 
-    public StrategyWrappedTraversal(final StrategyGraph graph) {
+    public StrategyTraversal(final StrategyGraph graph) {
         super(graph);
     }
 }

@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyWrappedElementTraversal;
+import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyElementTraversal;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -117,7 +117,7 @@ public final class StrategyVertex extends StrategyElement implements Vertex, Str
 
     @Override
     public GraphTraversal<Vertex, Vertex> start() {
-        return new StrategyWrappedElementTraversal<>(this, strategyGraph);
+        return new StrategyElementTraversal<>(this, strategyGraph);
     }
 
     @Override
@@ -128,14 +128,14 @@ public final class StrategyVertex extends StrategyElement implements Vertex, Str
 
     @Override
     public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
-        return new StrategyEdge.StrategyWrappedEdgeIterator(this.strategyGraph.compose(
+        return new StrategyEdge.StrategyEdgeIterator(this.strategyGraph.compose(
                 s -> s.getVertexIteratorsEdgeIteratorStrategy(this.strategyContext, strategy),
                 (Direction d, String[] l) -> this.getBaseVertexSafe().iterators().edgeIterator(d, l)).apply(direction, edgeLabels), this.strategyGraph);
     }
 
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
-        return new StrategyWrappedVertexIterator(this.strategyGraph.compose(
+        return new StrategyVertexIterator(this.strategyGraph.compose(
                 s -> s.getVertexIteratorsVertexIteratorStrategy(strategyContext, strategy),
                 (Direction d, String[] l) -> this.getBaseVertexSafe().iterators().vertexIterator(d, l)).apply(direction, labels), this.strategyGraph);
     }
@@ -155,11 +155,11 @@ public final class StrategyVertex extends StrategyElement implements Vertex, Str
                 property -> new StrategyVertexProperty<>(property, this.strategyGraph));
     }
 
-    public static class StrategyWrappedVertexIterator implements Iterator<Vertex> {
+    public static class StrategyVertexIterator implements Iterator<Vertex> {
         private final Iterator<Vertex> vertices;
         private final StrategyGraph strategyGraph;
 
-        public StrategyWrappedVertexIterator(final Iterator<Vertex> iterator, final StrategyGraph strategyGraph) {
+        public StrategyVertexIterator(final Iterator<Vertex> iterator, final StrategyGraph strategyGraph) {
             this.vertices = iterator;
             this.strategyGraph = strategyGraph;
         }

@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyWrappedElementTraversal;
+import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyElementTraversal;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -107,7 +107,7 @@ public final class StrategyEdge extends StrategyElement implements Edge, Edge.It
 
     @Override
     public GraphTraversal<Edge, Edge> start() {
-        return new StrategyWrappedElementTraversal<>(this, this.strategyGraph);
+        return new StrategyElementTraversal<>(this, this.strategyGraph);
     }
 
     @Override
@@ -118,7 +118,7 @@ public final class StrategyEdge extends StrategyElement implements Edge, Edge.It
 
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction) {
-        return new StrategyVertex.StrategyWrappedVertexIterator(this.strategyGraph.compose(
+        return new StrategyVertex.StrategyVertexIterator(this.strategyGraph.compose(
                 s -> s.getEdgeIteratorsVertexIteratorStrategy(this.strategyContext, strategy),
                 (Direction d) -> this.getBaseEdgeSafe().iterators().vertexIterator(d)).apply(direction), this.strategyGraph);
     }
@@ -139,12 +139,12 @@ public final class StrategyEdge extends StrategyElement implements Edge, Edge.It
     }
 
 
-    public static class StrategyWrappedEdgeIterator implements Iterator<Edge> {
+    public static class StrategyEdgeIterator implements Iterator<Edge> {
         private final Iterator<Edge> edges;
         private final StrategyGraph strategyGraph;
 
-        public StrategyWrappedEdgeIterator(final Iterator<Edge> itty,
-                                           final StrategyGraph strategyGraph) {
+        public StrategyEdgeIterator(final Iterator<Edge> itty,
+                                    final StrategyGraph strategyGraph) {
             this.edges = itty;
             this.strategyGraph = strategyGraph;
         }

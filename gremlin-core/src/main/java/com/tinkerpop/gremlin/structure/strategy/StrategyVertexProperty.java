@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyWrappedElementTraversal;
+import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyElementTraversal;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertexProperty;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -33,7 +33,7 @@ public final class StrategyVertexProperty<V> extends StrategyElement implements 
 
     @Override
     public GraphTraversal<VertexProperty, VertexProperty> start() {
-        return new StrategyWrappedElementTraversal<>(this, strategyGraph);
+        return new StrategyElementTraversal<>(this, strategyGraph);
     }
 
 

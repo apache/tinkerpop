@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyWrappedGraphTraversal;
-import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyWrappedTraversal;
+import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyGraphTraversal;
+import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyTraversal;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
@@ -105,21 +105,21 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
 
     @Override
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        return new StrategyWrappedGraphTraversal<>(Vertex.class, this.compose(
+        return new StrategyGraphTraversal<>(Vertex.class, this.compose(
                 s -> s.getGraphVStrategy(this.graphContext, strategy),
                 this.baseGraph::V).apply(vertexIds), this);
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        return new StrategyWrappedGraphTraversal<>(Edge.class, this.compose(
+        return new StrategyGraphTraversal<>(Edge.class, this.compose(
                 s -> s.getGraphEStrategy(this.graphContext, strategy),
                 this.baseGraph::E).apply(edgeIds), this);
     }
 
     @Override
     public <S> GraphTraversal<S, S> of() {
-        return new StrategyWrappedTraversal<>(this);
+        return new StrategyTraversal<>(this);
     }
 
     @Override
@@ -159,12 +159,12 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
 
     @Override
     public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
-        return new StrategyVertex.StrategyWrappedVertexIterator(compose(s -> s.getGraphIteratorsVertexIteratorStrategy(this.graphContext, strategy), this.baseGraph.iterators()::vertexIterator).apply(vertexIds), this);
+        return new StrategyVertex.StrategyVertexIterator(compose(s -> s.getGraphIteratorsVertexIteratorStrategy(this.graphContext, strategy), this.baseGraph.iterators()::vertexIterator).apply(vertexIds), this);
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Object... edgeIds) {
-        return new StrategyEdge.StrategyWrappedEdgeIterator(compose(s -> s.getGraphIteratorsEdgeIteratorStrategy(this.graphContext, strategy), this.baseGraph.iterators()::edgeIterator).apply(edgeIds), this);
+        return new StrategyEdge.StrategyEdgeIterator(compose(s -> s.getGraphIteratorsEdgeIteratorStrategy(this.graphContext, strategy), this.baseGraph.iterators()::edgeIterator).apply(edgeIds), this);
     }
 
     @Override

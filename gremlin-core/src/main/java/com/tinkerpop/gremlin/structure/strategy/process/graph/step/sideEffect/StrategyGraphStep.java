@@ -14,15 +14,15 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StrategyWrappedGraphStep<E extends Element> extends GraphStep<E> {
+public class StrategyGraphStep<E extends Element> extends GraphStep<E> {
 
     private final GraphTraversal<?, E> graphTraversal;
 
-    public StrategyWrappedGraphStep(final Traversal traversal, final StrategyGraph strategyGraph, final Class<E> returnClass, final GraphTraversal<?, E> graphTraversal) {
+    public StrategyGraphStep(final Traversal traversal, final StrategyGraph strategyGraph, final Class<E> returnClass, final GraphTraversal<?, E> graphTraversal) {
         super(traversal, strategyGraph, returnClass);
         this.graphTraversal = graphTraversal;
         this.setIteratorSupplier(() -> (Iterator) (Vertex.class.isAssignableFrom(this.returnClass) ?
-                new StrategyVertex.StrategyWrappedVertexIterator((Iterator) this.graphTraversal, strategyGraph) :
-                new StrategyEdge.StrategyWrappedEdgeIterator((Iterator) this.graphTraversal, strategyGraph)));
+                new StrategyVertex.StrategyVertexIterator((Iterator) this.graphTraversal, strategyGraph) :
+                new StrategyEdge.StrategyEdgeIterator((Iterator) this.graphTraversal, strategyGraph)));
     }
 }
