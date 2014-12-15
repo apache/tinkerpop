@@ -739,7 +739,6 @@ A Graph Strategy provides a way to expand, inspect or otherwise alter the behavi
 * `IdStrategy` - enables support for custom element identifiers for those graphs which don't otherwise support them
 * `PartitionStrategy` - enables support for logical graph partitioning where the `Graph` can be blinded to different parts of the total graph
 * `ReadOnlyStrategy` - prevents writing to the `Graph`
-* `SafeStrategy` - prevents access to the underlying base `Graph` elements which prevents bypassing other `GraphStrategy` implementations
 * `SequenceStrategy` - apply multiple `GraphStrategy` implementations in sequenced ordered to a single `Graph` instance
 * `SubgraphStrategy` - create a logical subgraph which selectively includes vertices and edges of a `Graph` according to provided criteria
 
@@ -861,20 +860,6 @@ gremlin> sg = g.strategy(ReadOnlyStrategy.instance())
 gremlin> sg.addVertex("name","stephen")
 Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategy and is therefore unmodifiable
 Display stack trace? [yN]
-
-SafeStrategy
-~~~~~~~~~~~~
-
-`SafeStrategy` protects access to the underlying elements of the `StrategyGraph` and its components.  `SafeStrategy` is more of a "marker" `GraphStrategy` implementation and only takes effect when passed directly to the `Graph.strategy()` method.  In other words, it will be ignored if embedded in a `SequenceStrategy`.  The `SafeStrategy` is useful when attempting to protect the integrity of a constructed `StrategyGraph`, preventing users from accessing the base `Graph` it encapsulates.
-
-[source,groovy]
-gremlin> g = TinkerGraph.open().strategy(SafeStrategy.instance(),ReadOnlyStrategy.instance())
-==>readonlystrategy[tinkergraph[vertices:0 edges:0]]
-gremlin> g.getBaseGraph()
-StrategyGraph is in safe mode - its elements cannot be unwrapped.
-Display stack trace? [yN]
-
-The above example demonstrates one of the  most common use cases of `SafeStrategy`.  Using it in conjunction with `ReadOnlyStrategy` prevents access to the underlying `TinkerGraph`, thus enforcing the semantics of `ReadOnlyStrategy` if one wants to use the `Graph` instance.  This capability is most useful when exposing a `Graph` in Gremlin Server, thus preventing unexpected remote usage.
 
 SequenceStrategy
 ~~~~~~~~~~~~~~~~
