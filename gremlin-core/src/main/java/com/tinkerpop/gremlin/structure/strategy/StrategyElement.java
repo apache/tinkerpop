@@ -23,11 +23,6 @@ public abstract class StrategyElement implements Element, StrategyWrapped {
     }
 
     public Element getBaseElement() {
-        if (strategyGraph.isSafe()) throw StrategyGraph.Exceptions.strategyGraphIsSafe();
-        return this.baseElement;
-    }
-
-    Element getBaseElementSafe() {
         return this.baseElement;
     }
 

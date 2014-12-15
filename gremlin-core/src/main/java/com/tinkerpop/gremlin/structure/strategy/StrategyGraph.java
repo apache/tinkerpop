@@ -33,18 +33,16 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
     private final Graph baseGraph;
     private final GraphStrategy strategy;
     private final StrategyContext<StrategyGraph, Graph> graphContext;
-    private final boolean safe;
 
     public StrategyGraph(final Graph baseGraph) {
-        this(baseGraph, IdentityStrategy.instance(), false);
+        this(baseGraph, IdentityStrategy.instance());
     }
 
-    public StrategyGraph(final Graph baseGraph, final GraphStrategy strategy, final boolean safe) {
+    public StrategyGraph(final Graph baseGraph, final GraphStrategy strategy) {
         if (baseGraph instanceof StrategyWrapped) throw new IllegalArgumentException(
                 String.format("The graph %s is already StrategyWrapped and must be a base Graph", baseGraph));
         if (null == strategy) throw new IllegalArgumentException("Strategy cannot be null");
 
-        this.safe = safe;
         this.strategy = strategy;
         this.baseGraph = baseGraph;
         this.graphContext = new StrategyContext<>(this, this, baseGraph);
@@ -55,21 +53,7 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
      */
     @Override
     public Graph getBaseGraph() {
-        if (safe) throw Exceptions.strategyGraphIsSafe();
         return this.baseGraph;
-    }
-
-    /**
-     * Allows the underlying base {@link Graph} to be retrieved by classes in this package. This enables
-     * {@link GraphStrategy} implementations to access the base graph via the {@link StrategyContext}, but users
-     * of {@code StrategyGraph} cannot if in safe mode.
-     */
-    Graph getBaseGraphSafe() {
-        return this.baseGraph;
-    }
-
-    public boolean isSafe() {
-        return safe;
     }
 
     /**

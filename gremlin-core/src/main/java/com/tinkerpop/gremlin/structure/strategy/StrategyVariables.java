@@ -64,11 +64,6 @@ public final class StrategyVariables implements StrategyWrapped, Graph.Variables
 
     @Override
     public Graph.Variables getBaseVariables() {
-        if (strategyGraph.isSafe()) throw StrategyGraph.Exceptions.strategyGraphIsSafe();
-        return this.baseVariables;
-    }
-
-    Graph.Variables getBaseVariablesSafe() {
         return this.baseVariables;
     }
 

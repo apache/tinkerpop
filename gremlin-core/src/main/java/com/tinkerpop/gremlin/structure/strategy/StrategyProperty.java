@@ -91,11 +91,6 @@ public final class StrategyProperty<V> implements Property<V>, StrategyWrapped, 
 
     @Override
     public Property<V> getBaseProperty() {
-        if (strategyGraph.isSafe()) throw StrategyGraph.Exceptions.strategyGraphIsSafe();
-        return this.baseProperty;
-    }
-
-    Property<V> getBasePropertySafe() {
         return this.baseProperty;
     }
 }

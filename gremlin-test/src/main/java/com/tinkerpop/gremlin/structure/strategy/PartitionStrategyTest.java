@@ -122,66 +122,6 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldWriteVerticesToMultiplePartitionsInSafeMode() {
-        final Graph baseGraph = ((StrategyGraph) g).getBaseGraph();
-        final PartitionStrategy partitionStrategy = PartitionStrategy.build().partitionKey(partition).startPartition("A").create();
-        final Graph safeGraph = baseGraph.strategy(SafeStrategy.instance(), partitionStrategy);
-
-        final Vertex vA = safeGraph.addVertex("any", "a");
-        partitionStrategy.setWritePartition("B");
-        final Vertex vB = safeGraph.addVertex("any", "b");
-
-        assertNotNull(vA);
-        assertEquals("a", vA.property("any").value());
-
-        try {
-            assertEquals("A", ((StrategyVertex) vA).getBaseVertex().property(partition).value());
-            fail("Should not be able to get the base vertex because we're in safe mode");
-        } catch (Exception ex) {
-            assertEquals(StrategyGraph.Exceptions.strategyGraphIsSafe().getClass(), ex.getClass());
-        }
-
-        // the following is technically not allowed - safe can only be accessed in package
-        assertEquals("A", ((StrategyVertex) vA).getBaseVertexSafe().property(partition).value());
-
-        assertNotNull(vB);
-        assertEquals("b", vB.property("any").value());
-
-        try {
-            assertEquals("B", ((StrategyVertex) vB).getBaseVertex().property(partition).value());
-            fail("Should not be able to get the base vertex because we're in safe mode");
-        } catch (Exception ex) {
-            assertEquals(StrategyGraph.Exceptions.strategyGraphIsSafe().getClass(), ex.getClass());
-        }
-
-        // the following is technically not allowed - safe can only be accessed in package
-        assertEquals("B", ((StrategyVertex) vB).getBaseVertexSafe().property(partition).value());
-
-        /* not applicable to SubgraphStrategy
-        final GraphTraversal t = g.V();
-        assertTrue(t.strategies().get().stream().anyMatch(o -> o.getClass().equals(PartitionGraphStrategy.PartitionGraphTraversalStrategy.class)));
-        */
-
-        safeGraph.V().forEachRemaining(v -> {
-            assertTrue(v instanceof StrategyVertex);
-            assertEquals("a", v.property("any").value());
-        });
-
-        partitionStrategy.removeReadPartition("A");
-        partitionStrategy.addReadPartition("B");
-
-        safeGraph.V().forEachRemaining(v -> {
-            assertTrue(v instanceof StrategyVertex);
-            assertEquals("b", v.property("any").value());
-        });
-
-        partitionStrategy.addReadPartition("A");
-        assertEquals(new Long(2), safeGraph.V().count().next());
-    }
-
-
-    @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldThrowExceptionOnvInDifferentPartition() {
         final Vertex vA = g.addVertex("any", "a");
         assertEquals(vA.id(), g.V(vA.id()).id().next());

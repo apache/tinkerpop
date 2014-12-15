@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.algorithm.generator.DistributionGeneratorTest;
 import com.tinkerpop.gremlin.structure.strategy.IdStrategyTest;
 import com.tinkerpop.gremlin.structure.strategy.PartitionStrategyTest;
 import com.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategyTest;
-import com.tinkerpop.gremlin.structure.strategy.SafeStrategyTest;
 import com.tinkerpop.gremlin.structure.strategy.SequenceStrategyTest;
 import com.tinkerpop.gremlin.structure.strategy.StrategyGraphTest;
 import com.tinkerpop.gremlin.structure.strategy.SubgraphStrategyTest;
@@ -67,7 +66,6 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             PartitionStrategyTest.class,
             PropertyTest.class,
             ReadOnlyStrategyTest.class,
-            SafeStrategyTest.class,
             SequenceStrategyTest.class,
             SubgraphStrategyTest.class,
             StrategyGraphTest.class,

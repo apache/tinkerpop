@@ -41,7 +41,7 @@ public final class SequenceStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVertexIteratorStrategy(final StrategyContext<StrategyGraph, Graph> ctx, GraphStrategy composingStrategy) {
+    public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVertexIteratorStrategy(final StrategyContext<StrategyGraph, Graph> ctx, final GraphStrategy composingStrategy) {
         return this.composeStrategyUnaryOperator(s -> s.getGraphIteratorsVertexIteratorStrategy(ctx, this));
     }
 

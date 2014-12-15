@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -181,7 +180,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                             // to this GraphStrategy (i.e. the first GraphStrategy in the sequence is ignored)
                             // note that this will not call GraphStrategy implementations after this one in the
                             // sequence either
-                            final StrategyContext<StrategyGraph, Graph> innerCtx = ctx.from(ctx.getStrategyGraph(), ctx.getStrategyGraph(), ctx.getBaseGraph());
+                            final StrategyContext<StrategyGraph, Graph> innerCtx = new StrategyContext<>(ctx.getStrategyGraph(), ctx.getStrategyGraph(), ctx.getBaseGraph());
                             this.getAddVertexStrategy(innerCtx, composingStrategy)
                                     .apply(ctx.getBaseGraph()::addVertex)
                                     .apply(Arrays.asList("strategy", "bypassed").toArray());
@@ -228,7 +227,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                     // dynamically construct a strategy to force this call to addVertex to stay localized
                     // to the innerSequenceGraphStrategy. note that this will only call GraphStrategy implementations
                     // in this sequence
-                    final StrategyContext<StrategyGraph, Graph> innerCtx = ctx.from(ctx.getStrategyGraph(), ctx.getStrategyGraph(), ctx.getBaseGraph());
+                    final StrategyContext<StrategyGraph, Graph> innerCtx = new StrategyContext<>(ctx.getStrategyGraph(), ctx.getStrategyGraph(), ctx.getBaseGraph());
                     composingStrategy.getAddVertexStrategy(innerCtx, composingStrategy)
                             .apply(ctx.getBaseGraph()::addVertex)
                             .apply(Arrays.asList("strategy", "bypassed").toArray());

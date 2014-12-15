@@ -43,37 +43,32 @@ public final class StrategyEdge extends StrategyElement implements Edge, Edge.It
     public Object id() {
         return this.strategyGraph.compose(
                 s -> s.getEdgeIdStrategy(this.strategyContext, strategy),
-                this.getBaseEdgeSafe()::id).get();
+                this.getBaseEdge()::id).get();
     }
 
     @Override
     public String label() {
         return this.strategyGraph.compose(
                 s -> s.getEdgeLabelStrategy(this.strategyContext, strategy),
-                this.getBaseEdgeSafe()::label).get();
+                this.getBaseEdge()::label).get();
     }
 
     @Override
     public <V> V value(final String key) throws NoSuchElementException {
         return this.strategyGraph.compose(
                 s -> s.<V>getEdgeValueStrategy(this.strategyContext, strategy),
-                this.getBaseEdgeSafe()::value).apply(key);
+                this.getBaseEdge()::value).apply(key);
     }
 
     @Override
     public Set<String> keys() {
         return this.strategyGraph.compose(
                 s -> s.getEdgeKeysStrategy(this.strategyContext, strategy),
-                this.getBaseEdgeSafe()::keys).get();
+                this.getBaseEdge()::keys).get();
     }
 
     @Override
     public Edge getBaseEdge() {
-        if (strategyGraph.isSafe()) throw StrategyGraph.Exceptions.strategyGraphIsSafe();
-        return (Edge) this.baseElement;
-    }
-
-    Edge getBaseEdgeSafe() {
         return (Edge) this.baseElement;
     }
 
@@ -81,14 +76,14 @@ public final class StrategyEdge extends StrategyElement implements Edge, Edge.It
     public <V> Property<V> property(final String key) {
         return new StrategyProperty<>(this.strategyGraph.compose(
                 s -> s.<V>getEdgeGetPropertyStrategy(this.strategyContext, strategy),
-                this.getBaseEdgeSafe()::property).apply(key), this.strategyGraph);
+                this.getBaseEdge()::property).apply(key), this.strategyGraph);
     }
 
     @Override
     public <V> Property<V> property(final String key, final V value) {
         return new StrategyProperty<>(this.strategyGraph.compose(
                 s -> s.<V>getEdgePropertyStrategy(this.strategyContext, strategy),
-                this.getBaseEdgeSafe()::property).apply(key, value), this.strategyGraph);
+                this.getBaseEdge()::property).apply(key, value), this.strategyGraph);
     }
 
     @Override
@@ -96,7 +91,7 @@ public final class StrategyEdge extends StrategyElement implements Edge, Edge.It
         this.strategyGraph.compose(
                 s -> s.getRemoveEdgeStrategy(this.strategyContext, strategy),
                 () -> {
-                    this.getBaseEdgeSafe().remove();
+                    this.getBaseEdge().remove();
                     return null;
                 }).get();
     }
@@ -116,21 +111,21 @@ public final class StrategyEdge extends StrategyElement implements Edge, Edge.It
     public Iterator<Vertex> vertexIterator(final Direction direction) {
         return new StrategyVertex.StrategyVertexIterator(this.strategyGraph.compose(
                 s -> s.getEdgeIteratorsVertexIteratorStrategy(this.strategyContext, strategy),
-                (Direction d) -> this.getBaseEdgeSafe().iterators().vertexIterator(d)).apply(direction), this.strategyGraph);
+                (Direction d) -> this.getBaseEdge().iterators().vertexIterator(d)).apply(direction), this.strategyGraph);
     }
 
     @Override
     public <V> Iterator<V> valueIterator(final String... propertyKeys) {
         return this.strategyGraph.compose(
                 s -> s.<V>getEdgeIteratorsValueIteratorStrategy(this.strategyContext, strategy),
-                (String[] pks) -> this.getBaseEdgeSafe().iterators().valueIterator(pks)).apply(propertyKeys);
+                (String[] pks) -> this.getBaseEdge().iterators().valueIterator(pks)).apply(propertyKeys);
     }
 
     @Override
     public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
         return IteratorUtils.map(this.strategyGraph.compose(
                         s -> s.<V>getEdgeIteratorsPropertyIteratorStrategy(this.strategyContext, strategy),
-                        (String[] pks) -> this.getBaseEdgeSafe().iterators().propertyIterator(pks)).apply(propertyKeys),
+                        (String[] pks) -> this.getBaseEdge().iterators().propertyIterator(pks)).apply(propertyKeys),
                 property -> new StrategyProperty<>(property, this.strategyGraph));
     }
 

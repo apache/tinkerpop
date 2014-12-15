@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.function.TriFunction;
@@ -102,12 +101,12 @@ public final class IdStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Supplier<Object>> getVertexIdStrategy(final StrategyContext<StrategyVertex, Vertex> ctx, final GraphStrategy composingStrategy) {
-        return supportsVertexId ? (f) -> () -> ctx.getCurrentBase().value(idKey) : UnaryOperator.identity();
+        return supportsVertexId ? (f) -> () -> ctx.getBaseCurrent().value(idKey) : UnaryOperator.identity();
     }
 
     @Override
     public UnaryOperator<Supplier<Object>> getEdgeIdStrategy(final StrategyContext<StrategyEdge, Edge> ctx, final GraphStrategy composingStrategy) {
-        return supportsEdgeId ? (f) -> () -> ctx.getCurrentBase().value(idKey) : UnaryOperator.identity();
+        return supportsEdgeId ? (f) -> () -> ctx.getBaseCurrent().value(idKey) : UnaryOperator.identity();
     }
 
     @Override

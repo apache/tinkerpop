@@ -82,7 +82,7 @@ public final class PartitionStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVertexIteratorStrategy(final StrategyContext<StrategyVertex, Vertex> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (direction, labels) -> StreamFactory
-                .stream(ctx.getCurrentBase().iterators().edgeIterator(direction, labels))
+                .stream(ctx.getBaseCurrent().iterators().edgeIterator(direction, labels))
                 .filter(this::testEdge)
                 .map(edge -> otherVertex(direction, ctx.getCurrent(), edge))
                 .filter(this::testVertex).iterator();
