@@ -29,11 +29,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * BatchGraph is a wrapper that enables batch loading of a large number of edges and vertices by chunking the entire
+ * {@code BatchGraph} is a wrapper that enables batch loading of a large number of edges and vertices by chunking the entire
  * load into smaller batches and maintaining a sideEffects-efficient vertex cache so that the entire transactional state can
  * be flushed after each chunk is loaded.
  * <br />
- * BatchGraph is ONLY meant for loading data and does not support any retrieval or removal operations.
+ * {@code BatchGraph} is ONLY meant for loading data and does not support any retrieval or removal operations.
  * That is, BatchGraph only supports the following methods:
  * - {@link #addVertex(Object...)} for adding vertices
  * - {@link Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)} for adding edges
@@ -44,10 +44,16 @@ import java.util.function.Function;
  * If other vertices or edges have been created in the meantime, setting, getting or removing properties will throw
  * exceptions. This is done to avoid caching of edges which would require a great amount of sideEffects.
  * <br />
- * BatchGraph can also automatically set the provided element ids as properties on the respective element. Use
+ * {@code BatchGraph} can also automatically set the provided element ids as properties on the respective element. Use
  * {@link Builder#vertexIdKey(String)} and {@link Builder#edgeIdKey(String)} to set the keys
  * for the vertex and edge properties respectively. This allows to make the loaded baseGraph compatible for later
  * operation with {@link com.tinkerpop.gremlin.structure.strategy.IdStrategy}.
+ * <br/>
+ * Note that {@code BatchGraph} itself is not a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} because
+ * it requires that the {@link Vertex} implementation not hold on to the underlying {@link Vertex} reference and
+ * {@link com.tinkerpop.gremlin.structure.strategy.StrategyVertex} does that by it's very nature.  While it might
+ * be possible to work around this issue, it is likely better for performance to simply leave this as a "half-wrapper"
+ * implementation, instead of forcing it into a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
  *
  * @author Matthias Broecheler (http://www.matthiasb.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
