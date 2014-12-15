@@ -4,11 +4,15 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.Comparators;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 
 /**
@@ -54,14 +58,14 @@ class GraphSONGraph {
 
             jsonGenerator.writeArrayFieldStart(GraphSONTokens.VERTICES);
             if (normalize)
-                g.V().order().by(Comparators.HELD_VERTEX_COMPARATOR).forEachRemaining(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
+                g.V().order().by(Comparators.VERTEX_COMPARATOR).forEachRemaining(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             else
                 g.iterators().vertexIterator().forEachRemaining(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             jsonGenerator.writeEndArray();
 
             jsonGenerator.writeArrayFieldStart(GraphSONTokens.EDGES);
             if (normalize)
-                g.E().order().by(Comparators.HELD_EDGE_COMPARATOR).forEachRemaining(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
+                g.E().order().by(Comparators.EDGE_COMPARATOR).forEachRemaining(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             else
                 g.iterators().edgeIterator().forEachRemaining(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             jsonGenerator.writeEndArray();

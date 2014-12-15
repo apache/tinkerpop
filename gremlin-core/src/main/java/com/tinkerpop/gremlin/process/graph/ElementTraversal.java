@@ -303,31 +303,23 @@ public abstract interface ElementTraversal<A extends Element> {
     }
 
     public default GraphTraversal<A, A> subgraph(final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(null, edgeIdHolder, vertexMap, includeEdge);
+        return this.start().subgraph(edgeIdHolder, vertexMap, includeEdge);
     }
 
     public default GraphTraversal<A, A> subgraph(final String sideEffectKey, final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(sideEffectKey, null, null, includeEdge);
+        return this.start().subgraph(sideEffectKey, includeEdge);
     }
 
     public default GraphTraversal<A, A> subgraph(final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(null, null, null, includeEdge);
-    }
-
-    public default GraphTraversal<A, A> aggregate(final String sideEffectKey, final Function<Traverser<A>, ?> preAggregateFunction) {
-        return this.start().aggregate(sideEffectKey, preAggregateFunction);
-    }
-
-    public default GraphTraversal<A, A> aggregate(final Function<Traverser<A>, ?> preAggregateFunction) {
-        return this.start().aggregate(null, preAggregateFunction);
-    }
-
-    public default GraphTraversal<A, A> aggregate() {
-        return this.start().aggregate(null, null);
+        return this.start().subgraph(includeEdge);
     }
 
     public default GraphTraversal<A, A> aggregate(final String sideEffectKey) {
-        return this.start().aggregate(sideEffectKey, null);
+        return this.start().aggregate(sideEffectKey);
+    }
+
+    public default GraphTraversal<A, A> aggregate() {
+        return this.start().aggregate();
     }
 
     public default GraphTraversal<A, A> groupBy(final String sideEffectKey, final Function<Traverser<A>, ?> keyFunction, final Function<Traverser<A>, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
@@ -360,7 +352,7 @@ public abstract interface ElementTraversal<A extends Element> {
     }
 
     public default GraphTraversal<A, A> groupCount() {
-        return this.start().groupCount(null);
+        return this.start().groupCount();
     }
 
     public default GraphTraversal<A, Vertex> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {

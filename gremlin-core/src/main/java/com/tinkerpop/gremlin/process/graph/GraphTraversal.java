@@ -436,20 +436,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.subgraph(null, null, null, includeEdge);
     }
 
-    public default GraphTraversal<S, E> aggregate(final String sideEffectKey, final Function<Traverser<E>, ?> preAggregateFunction) {
-        return this.asAdmin().addStep(new AggregateStep<>(this, sideEffectKey, preAggregateFunction));
-    }
-
-    public default GraphTraversal<S, E> aggregate(final Function<Traverser<E>, ?> preAggregateFunction) {
-        return this.aggregate(null, preAggregateFunction);
+    public default GraphTraversal<S, E> aggregate(final String sideEffectKey) {
+        return this.asAdmin().addStep(new AggregateStep<>(this, sideEffectKey));
     }
 
     public default GraphTraversal<S, E> aggregate() {
-        return this.aggregate(null, null);
-    }
-
-    public default GraphTraversal<S, E> aggregate(final String sideEffectKey) {
-        return this.aggregate(sideEffectKey, null);
+        return this.aggregate(null);
     }
 
     public default GraphTraversal<S, E> groupBy(final String sideEffectKey, final Function<Traverser<E>, ?> keyFunction, final Function<Traverser<E>, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
