@@ -134,8 +134,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().values(propertyKeys);
     }
 
-    public default GraphTraversal<A, Path> path(final Function... pathFunctions) {
-        return this.start().path(pathFunctions);
+    public default GraphTraversal<A, Path> path() {
+        return this.start().path();
     }
 
     public default <E2> GraphTraversal<A, E2> back(final String stepLabel) {
@@ -186,10 +186,6 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default GraphTraversal<A, A> dedup() {
         return this.start().dedup();
-    }
-
-    public default GraphTraversal<A, A> dedup(final Function<Traverser<A>, ?> uniqueFunction) {
-        return this.start().dedup(uniqueFunction);
     }
 
     public default GraphTraversal<A, A> except(final String sideEffectKey) {
@@ -391,20 +387,12 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().sack(sackOperator, elementPropertyKey);
     }
 
-    public default GraphTraversal<A, A> store(final String sideEffectKey, final Function<Traverser<A>, ?> preStoreFunction) {
-        return this.start().store(sideEffectKey, preStoreFunction);
-    }
-
     public default GraphTraversal<A, A> store(final String sideEffectKey) {
-        return this.start().store(sideEffectKey, null);
-    }
-
-    public default GraphTraversal<A, A> store(final Function<Traverser<A>, ?> preStoreFunction) {
-        return this.start().store(null, preStoreFunction);
+        return this.start().store(sideEffectKey);
     }
 
     public default GraphTraversal<A, A> store() {
-        return this.start().store(null, null);
+        return this.start().store();
     }
 
     ///////////////////// BRANCH STEPS /////////////////////

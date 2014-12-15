@@ -53,8 +53,7 @@ public final class AggregateStep<S> extends BarrierStep<S> implements SideEffect
 
     @Override
     public void setFunctionRing(final FunctionRing<S, Object> functionRing) {
-        if (functionRing.size() > 1)
-            throw new IllegalArgumentException("The aggregate-step can only leverage one object function not " + functionRing.size());
+        FunctionRingAcceptor.singleFunctionSupported(functionRing, this);
         this.preAggregateFunction = functionRing.next();
     }
 }

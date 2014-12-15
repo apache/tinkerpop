@@ -52,8 +52,7 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
 
     @Override
     public void setFunctionRing(final FunctionRing<S, Object> functionRing) {
-        if (functionRing.size() > 1)
-            throw new IllegalArgumentException("groupCount can only leverage one object function not " + functionRing.size());
+        FunctionRingAcceptor.singleFunctionSupported(functionRing, this);
         this.preGroupFunction = functionRing.next();
     }
 }

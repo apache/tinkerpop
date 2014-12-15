@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.ElementTraversal;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -15,7 +14,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -137,8 +135,8 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().values(propertyKeys);
     }
 
-    public default Neo4jTraversal<A, Path> path(final Function... pathFunctions) {
-        return this.start().path(pathFunctions);
+    public default Neo4jTraversal<A, Path> path() {
+        return this.start().path();
     }
 
     public default <E2> Neo4jTraversal<A, E2> back(final String stepLabel) {
@@ -173,7 +171,7 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().fold(seed, foldFunction);
     }
 
-    public default <E2> Neo4jTraversal<A, E2> local(final Traversal<A,E2> localTraversal) {
+    public default <E2> Neo4jTraversal<A, E2> local(final Traversal<A, E2> localTraversal) {
         return this.start().local(localTraversal);
     }
 
@@ -189,10 +187,6 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 
     public default Neo4jTraversal<A, A> dedup() {
         return this.start().dedup();
-    }
-
-    public default Neo4jTraversal<A, A> dedup(final Function<Traverser<A>, ?> uniqueFunction) {
-        return this.start().dedup(uniqueFunction);
     }
 
     public default Neo4jTraversal<A, A> except(final String sideEffectKey) {
@@ -306,31 +300,23 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
     }
 
     public default Neo4jTraversal<A, A> subgraph(final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(null, edgeIdHolder, vertexMap, includeEdge);
+        return this.start().subgraph(edgeIdHolder, vertexMap, includeEdge);
     }
 
     public default Neo4jTraversal<A, A> subgraph(final String sideEffectKey, final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(sideEffectKey, null, null, includeEdge);
+        return this.start().subgraph(sideEffectKey, includeEdge);
     }
 
     public default Neo4jTraversal<A, A> subgraph(final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(null, null, null, includeEdge);
-    }
-
-    public default Neo4jTraversal<A, A> aggregate(final String sideEffectKey, final Function<Traverser<A>, ?> preAggregateFunction) {
-        return this.start().aggregate(sideEffectKey, preAggregateFunction);
-    }
-
-    public default Neo4jTraversal<A, A> aggregate(final Function<Traverser<A>, ?> preAggregateFunction) {
-        return this.start().aggregate(null, preAggregateFunction);
+        return this.start().subgraph(includeEdge);
     }
 
     public default Neo4jTraversal<A, A> aggregate() {
-        return this.start().aggregate(null, null);
+        return this.start().aggregate();
     }
 
     public default Neo4jTraversal<A, A> aggregate(final String sideEffectKey) {
-        return this.start().aggregate(sideEffectKey, null);
+        return this.start().aggregate(sideEffectKey);
     }
 
     public default Neo4jTraversal<A, A> groupBy(final String sideEffectKey, final Function<Traverser<A>, ?> keyFunction, final Function<Traverser<A>, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
@@ -363,7 +349,7 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
     }
 
     public default Neo4jTraversal<A, A> groupCount() {
-        return this.start().groupCount(null);
+        return this.start().groupCount();
     }
 
     public default Neo4jTraversal<A, Vertex> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
@@ -402,21 +388,12 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().sack(sackOperator, elementPropertyKey);
     }
 
-
-    public default Neo4jTraversal<A, A> store(final String sideEffectKey, final Function<Traverser<A>, ?> preStoreFunction) {
-        return this.start().store(sideEffectKey, preStoreFunction);
-    }
-
     public default Neo4jTraversal<A, A> store(final String sideEffectKey) {
-        return this.start().store(sideEffectKey, null);
-    }
-
-    public default Neo4jTraversal<A, A> store(final Function<Traverser<A>, ?> preStoreFunction) {
-        return this.start().store(null, preStoreFunction);
+        return this.start().store(sideEffectKey);
     }
 
     public default Neo4jTraversal<A, A> store() {
-        return this.start().store(null, null);
+        return this.start().store();
     }
 
     ///////////////////// BRANCH STEPS /////////////////////

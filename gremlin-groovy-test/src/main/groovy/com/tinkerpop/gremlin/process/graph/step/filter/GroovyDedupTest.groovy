@@ -19,8 +19,8 @@ public abstract class GroovyDedupTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_both_dedupXlangX_name() {
-            g.V.both.dedup { it.get().property('lang').orElse(null) }.name
+        public Traversal<Vertex, String> get_g_V_both_dedup_byXlangX_name() {
+            g.V.both.dedup.by { it.property('lang').orElse(null) }.name
         }
 
         @Override
@@ -36,8 +36,8 @@ public abstract class GroovyDedupTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_both_dedupXlangX_name() {
-            ComputerTestHelper.compute("g.V.both.dedup{it.get().property('lang').orElse(null)}.name", g);
+        public Traversal<Vertex, String> get_g_V_both_dedup_byXlangX_name() {
+            ComputerTestHelper.compute("g.V.both.dedup.by{it.property('lang').orElse(null)}.name", g);
         }
 
         @Override

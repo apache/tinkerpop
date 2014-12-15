@@ -35,7 +35,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_outXcreatedX_groupCountXnameX() {
+    public void g_V_outXcreatedX_groupCount_byXnameX() {
         final Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_outXcreatedX_groupCount_byXnameX();
         printTraversalForm(traversal);
         final Map<Object, Long> map = traversal.next();

@@ -64,11 +64,27 @@ class StepLoader {
             return (GraphTraversal) delegate;
         }*/
 
+        GraphTraversal.metaClass.by = { final Closure closure ->
+            final Step end = TraversalHelper.getEnd((GraphTraversal) delegate);
+            if (end instanceof FunctionRingAcceptor) {
+                ((FunctionRingAcceptor) end).setFunctionRing(new ByRing(new GFunction(closure)));
+            } else {
+                ((ByComparatorAcceptor) end).setByComparator(new ByComparator<>(new GComparator(closure)));
+            }
+            return (GraphTraversal) delegate;
+        }
+
         GraphTraversal.metaClass.by = { final Closure closureA, final Closure closureB ->
             final Step end = TraversalHelper.getEnd((GraphTraversal) delegate);
-            ((ByComparatorAcceptor) end).setByComparator(new ByComparator<>(new GComparator(closureA), new GComparator(closureB)));
-            return (GraphTraversal)delegate;
+            if (end instanceof FunctionRingAcceptor) {
+                ((FunctionRingAcceptor) end).setFunctionRing(new ByRing(new GFunction(closureA), new GFunction(closureB)));
+            } else {
+                ((ByComparatorAcceptor) end).setByComparator(new ByComparator<>(new GComparator(closureA), new GComparator(closureB)));
+            }
+            return (GraphTraversal) delegate;
         }
+
+
 
 
         GraphTraversal.metaClass.tree = { final String memoryKey ->

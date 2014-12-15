@@ -242,8 +242,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PropertyValueStep<>(this));
     }
 
-    public default GraphTraversal<S, Path> path(final Function... pathFunctions) {
-        return this.asAdmin().addStep(new PathStep<>(this, pathFunctions));
+    public default GraphTraversal<S, Path> path() {
+        return this.asAdmin().addStep(new PathStep<>(this));
     }
 
     public default <E2> GraphTraversal<S, E2> back(final String stepLabel) {
@@ -296,10 +296,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> dedup() {
         return this.asAdmin().addStep(new DedupStep<>(this));
-    }
-
-    public default GraphTraversal<S, E> dedup(final Function<Traverser<E>, ?> uniqueFunction) {
-        return this.asAdmin().addStep(new DedupStep<>(this, uniqueFunction));
     }
 
     public default GraphTraversal<S, E> except(final String variable) {
@@ -512,20 +508,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SackElementValueStep<>(this, sackOperator, elementPropertyKey));
     }
 
-    public default GraphTraversal<S, E> store(final String sideEffectKey, final Function<Traverser<E>, ?> preStoreFunction) {
-        return this.asAdmin().addStep(new StoreStep<>(this, sideEffectKey, preStoreFunction));
-    }
-
     public default GraphTraversal<S, E> store(final String sideEffectKey) {
-        return this.store(sideEffectKey, null);
-    }
-
-    public default GraphTraversal<S, E> store(final Function<Traverser<E>, ?> preStoreFunction) {
-        return this.store(null, preStoreFunction);
+        return this.asAdmin().addStep(new StoreStep<>(this, sideEffectKey));
     }
 
     public default GraphTraversal<S, E> store() {
-        return this.store(null, null);
+        return this.store(null);
     }
 
     ///////////////////// BRANCH STEPS /////////////////////
@@ -610,6 +598,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         TraversalHelper.verifyStepLabelIsNotASideEffectKey(label, this);
         if (this.asAdmin().getSteps().size() == 0) this.asAdmin().addStep(new StartStep<>(this));
         TraversalHelper.getEnd(this).setLabel(label);
+        return this;
+    }
+
+    public default GraphTraversal<S, E> by(final Function<E, ?> objectFunction) {
+        ((FunctionRingAcceptor<E, ?>) TraversalHelper.getEnd(this)).setFunctionRing(new ByRing<>(objectFunction));
         return this;
     }
 

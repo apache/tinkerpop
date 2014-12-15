@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
@@ -123,26 +124,22 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
-            return g.V(v1Id).out().path(v -> ((Vertex) v).value("age"), v -> ((Vertex) v).value("name"));
+            return g.V(v1Id).out().path().by("age", "name");
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
-            return g.V().as("x").out()
-                    .jump("x", o -> o.loops() < 2)
-                    .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang"));
+            return g.V().as("x").out().jump("x", o -> o.loops() < 2).path().by(Function.identity(),"name", "lang");
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit_name_langX() {
-            return g.V().as("x").out()
-                    .jump("x", 2)
-                    .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang"));
+            return g.V().as("x").out().jump("x", 2).path().by(Function.identity(),"name", "lang");
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_out_out_pathXname_ageX() {
-            return g.V().out().out().path(v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("age"));
+            return g.V().out().out().path().by("name", "age");
         }
     }
 
@@ -159,29 +156,25 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
             // TODO: Detached elements do not store properties (attach)
-            return g.V(v1Id).out().path(v -> ((Vertex) v).value("age"), v -> ((Vertex) v).value("name")); // .submit(g.compute())
+            return g.V(v1Id).out().path().by("age", "name"); // .submit(g.compute())
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
             // TODO: Detached elements do not store properties (attach)
-            return g.V().as("x").out()
-                    .jump("x", t -> t.loops() < 2)
-                    .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang")); // .submit(g.compute());
+            return g.V().as("x").out().jump("x", t -> t.loops() < 2).path().by(Function.identity(),"name", "lang");
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit_name_langX() {
             // TODO: Detached elements do not store properties (attach)
-            return g.V().as("x").out()
-                    .jump("x", 2)
-                    .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang"));
+            return g.V().as("x").out().jump("x", 2).path().by(Function.identity(),"name", "lang");
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_out_out_pathXname_ageX() {
             // TODO: Detached elements do not store properties (attach)
-            return g.V().out().out().path(v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("age"));
+            return g.V().out().out().path().by("name", "age");
         }
     }
 }
