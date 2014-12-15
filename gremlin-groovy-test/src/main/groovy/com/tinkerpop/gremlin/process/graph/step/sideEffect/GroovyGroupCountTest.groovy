@@ -12,8 +12,8 @@ public abstract class GroovyGroupCountTest {
     public static class StandardTest extends GroupCountTest {
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCountXnameX() {
-            g.V().out('created').groupCount { it.name }
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
+            g.V().out('created').groupCount.by('name')
         }
 
         @Override
@@ -32,21 +32,21 @@ public abstract class GroovyGroupCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX() {
-            g.V().as('x').out().groupCount('a') { it.name }.jump('x') { it.loops() < 2 }.cap('a')
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXaX_byXnameX_jumpXx_loops_lt_2X_capXaX() {
+            g.V().as('x').out().groupCount('a').by('name').jump('x') { it.loops() < 2 }.cap('a')
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_2X_capXaX() {
-            g.V().as('x').out().groupCount('a') { it.name }.jump('x', 2).cap('a')
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXaX_byXnameX_jumpXx_2X_capXaX() {
+            g.V().as('x').out().groupCount('a').by('name').jump('x', 2).cap('a')
         }
     }
 
     public static class ComputerTest extends GroupCountTest {
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCountXnameX() {
-            ComputerTestHelper.compute("g.V().out('created').groupCount { it.name }", g)
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
+            ComputerTestHelper.compute("g.V().out('created').groupCount.by('name')", g)
         }
 
         @Override
@@ -65,13 +65,13 @@ public abstract class GroovyGroupCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX() {
-            ComputerTestHelper.compute("g.V().as('x').out().groupCount('a') { it.name }.jump('x') { it.loops() < 2 }.cap('a')", g)
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXaX_byXnameX_jumpXx_loops_lt_2X_capXaX() {
+            ComputerTestHelper.compute("g.V().as('x').out().groupCount('a').by('name').jump('x') { it.loops() < 2 }.cap('a')", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_2X_capXaX() {
-            ComputerTestHelper.compute("g.V().as('x').out().groupCount('a') { it.name }.jump('x', 2).cap('a')", g)
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXaX_byXnameX_jumpXx_2X_capXaX() {
+            ComputerTestHelper.compute("g.V().as('x').out().groupCount('a').by('name').jump('x', 2).cap('a')", g)
         }
     }
 }

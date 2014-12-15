@@ -173,20 +173,12 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().sack();
     }
 
-    public default <E2> Neo4jTraversal<A, Map<String, E2>> select(final List<String> labels, Function... stepFunctions) {
-        return this.start().select(labels, stepFunctions);
+    public default <E2> Neo4jTraversal<A, Map<String, E2>> select(final String... stepLabels) {
+        return this.start().select(stepLabels);
     }
 
-    public default <E2> Neo4jTraversal<A, Map<String, E2>> select(final Function... stepFunctions) {
-        return this.start().select(stepFunctions);
-    }
-
-    public default <E2> Neo4jTraversal<A, E2> select(final String label, Function stepFunction) {
-        return this.start().select(label, stepFunction);
-    }
-
-    public default <E2> Neo4jTraversal<A, E2> select(final String label) {
-        return this.start().select(label, null);
+    public default <E2> Neo4jTraversal<A, E2> select(final String stepLabel) {
+        return this.start().select(stepLabel);
     }
 
     public default Neo4jTraversal<A, A> unfold() {
@@ -386,20 +378,12 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, null);
     }
 
-    public default Neo4jTraversal<A, A> groupCount(final String sideEffectKey, final Function<Traverser<A>, ?> preGroupFunction) {
-        return this.start().groupCount(sideEffectKey, preGroupFunction);
-    }
-
-    public default Neo4jTraversal<A, A> groupCount(final Function<Traverser<A>, ?> preGroupFunction) {
-        return this.start().groupCount(null, preGroupFunction);
-    }
-
     public default Neo4jTraversal<A, A> groupCount(final String sideEffectKey) {
-        return this.start().groupCount(sideEffectKey, null);
+        return this.start().groupCount(sideEffectKey);
     }
 
     public default Neo4jTraversal<A, A> groupCount() {
-        return this.start().groupCount(null, null);
+        return this.start().groupCount(null);
     }
 
     public default Neo4jTraversal<A, Vertex> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {

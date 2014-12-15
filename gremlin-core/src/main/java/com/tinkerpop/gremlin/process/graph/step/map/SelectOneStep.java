@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -13,12 +12,22 @@ import java.util.function.Function;
 public final class SelectOneStep<S, E> extends SelectStep {
 
     private final Function<Traverser<S>, Map<String, E>> tempFunction;
+    private final String selectLabel;
 
-    public SelectOneStep(final Traversal traversal, final String selectLabel, final Function stepFunction) {
-        super(traversal, Arrays.asList(selectLabel), stepFunction);
+    public SelectOneStep(final Traversal traversal, final String selectLabel) {
+        super(traversal, selectLabel);
+        this.selectLabel = selectLabel;
         this.tempFunction = this.selectFunction;
-        this.setFunction(traverser -> this.tempFunction.apply(((Traverser<S>) traverser)).get(selectLabel));
+        this.setFunction(traverser -> this.tempFunction.apply(((Traverser<S>) traverser)).get(this.selectLabel));
     }
+
+    @Override
+    public SelectOneStep<S, E> clone() throws CloneNotSupportedException {
+        final SelectOneStep<S, E> clone = (SelectOneStep<S, E>) super.clone();
+        clone.setFunction(traverser -> this.tempFunction.apply(((Traverser<S>) traverser)).get(this.selectLabel));
+        return clone;
+    }
+
 }
 
 

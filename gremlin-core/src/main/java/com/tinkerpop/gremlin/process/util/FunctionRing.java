@@ -31,6 +31,10 @@ public class FunctionRing<A, B> implements Cloneable {
         this.currentFunction = -1;
     }
 
+    public int size() {
+        return this.functions.length;
+    }
+
     public boolean roundComplete() {
         return this.currentFunction == this.functions.length - 1;
     }
