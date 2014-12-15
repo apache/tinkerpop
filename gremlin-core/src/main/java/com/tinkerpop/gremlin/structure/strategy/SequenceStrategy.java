@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,10 @@ public final class SequenceStrategy implements GraphStrategy {
 
     private SequenceStrategy(final List<GraphStrategy> strategies) {
         this.graphStrategySequence = strategies;
+    }
+
+    public List<GraphStrategy> getGraphStrategySequence() {
+        return Collections.unmodifiableList(graphStrategySequence);
     }
 
     @Override
