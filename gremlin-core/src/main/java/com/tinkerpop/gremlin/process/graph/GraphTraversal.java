@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.marker.ByComparatorAcceptor;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionRingAcceptor;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
@@ -35,7 +36,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.KeyStep;
 import com.tinkerpop.gremlin.process.graph.step.map.LabelStep;
 import com.tinkerpop.gremlin.process.graph.step.map.LocalStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
-import com.tinkerpop.gremlin.process.graph.step.map.OrderByStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PathStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesStep;
@@ -67,6 +67,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.util.ByComparator;
 import com.tinkerpop.gremlin.process.util.ByRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -75,7 +76,6 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -207,27 +207,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> order() {
-        return this.order((a, b) -> a.compareTo(b));
-    }
-
-    public default GraphTraversal<S, E> order(final Comparator<Traverser<E>>... comparators) {
-        return this.asAdmin().addStep(new OrderStep<>(this, comparators));
-    }
-
-    public default GraphTraversal<S, E> orderBy(final Object key) {
-        return this.orderBy(key, Order.incr);
-    }
-
-    public default <C> GraphTraversal<S, E> orderBy(final Object key, final Comparator<C> valueComparator) {
-        return this.asAdmin().addStep(new OrderByStep(this, key, valueComparator));
-    }
-
-    public default <C1, C2> GraphTraversal<S, E> orderBy(final Object keyA, final Comparator<C1> valueComparatorA, final Object keyB, final Comparator<C2> valueComparatorB) {
-        return this.asAdmin().addStep(new OrderByStep(this, keyA, valueComparatorA, keyB, valueComparatorB));
-    }
-
-    public default <C1, C2, C3> GraphTraversal<S, E> orderBy(final Object keyA, final Comparator<C1> propertyValueComparatorA, final Object keyB, final Comparator<C2> valueComparatorB, final Object keyC, final Comparator<C3> valueComparatorC) {
-        return this.asAdmin().addStep(new OrderByStep(this, keyA, propertyValueComparatorA, keyB, valueComparatorB, keyC, valueComparatorC));
+        return this.asAdmin().addStep(new OrderStep<>(this));
     }
 
     public default GraphTraversal<S, E> shuffle() {
@@ -656,23 +636,30 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
-    /*
-        public default <C> GraphTraversal<S, E> by(final Object key, final Comparator<C> valueComparator) {
-        return this.asAdmin().addStep(new OrderByStep(this, key, valueComparator));
+    public default <C> GraphTraversal<S, E> by(final Object keyA, final Comparator<C> valueComparatorA) {
+        ((ByComparatorAcceptor<E>) TraversalHelper.getEnd(this)).setByComparator(new ByComparator<>(keyA, valueComparatorA));
+        return this;
     }
 
     public default <C1, C2> GraphTraversal<S, E> by(final Object keyA, final Comparator<C1> valueComparatorA, final Object keyB, final Comparator<C2> valueComparatorB) {
-        return this.asAdmin().addStep(new OrderByStep(this, keyA, valueComparatorA, keyB, valueComparatorB));
+        ((ByComparatorAcceptor<E>) TraversalHelper.getEnd(this)).setByComparator(new ByComparator<>(keyA, valueComparatorA, keyB, valueComparatorB));
+        return this;
     }
 
-    public default <C1, C2, C3> GraphTraversal<S, E> by(final Object keyA, final Comparator<C1> propertyValueComparatorA, final Object keyB, final Comparator<C2> valueComparatorB, final Object keyC, final Comparator<C3> valueComparatorC) {
-        return this.asAdmin().addStep(new OrderByStep(this, keyA, propertyValueComparatorA, keyB, valueComparatorB, keyC, valueComparatorC));
+    public default <C1, C2, C3> GraphTraversal<S, E> by(final Object keyA, final Comparator<C1> valueComparatorA, final Object keyB, final Comparator<C2> valueComparatorB, final Object keyC, final Comparator<C3> valueComparatorC) {
+        ((ByComparatorAcceptor<E>) TraversalHelper.getEnd(this)).setByComparator(new ByComparator<>(keyA, valueComparatorA, keyB, valueComparatorB, keyC, valueComparatorC));
+        return this;
     }
 
+    public default GraphTraversal<S, E> by(final Comparator<E> comparatorA) {
+        ((ByComparatorAcceptor<E>) TraversalHelper.getEnd(this)).setByComparator(new ByComparator<>(comparatorA));
+        return this;
+    }
 
-    public default GraphTraversal<S,E> by(final Object keyA, final Comparator valueComparatorA, final Object keyB, final Comparator valueComparatorB, final Object keyC, final Comparator valueComparatorC) {
-
-    }*/
+    public default GraphTraversal<S, E> by(final Comparator<E> comparatorA, final Comparator<E> comparatorB) {
+        ((ByComparatorAcceptor<E>) TraversalHelper.getEnd(this)).setByComparator(new ByComparator<>(comparatorA, comparatorB));
+        return this;
+    }
 
     public default GraphTraversal<S, E> profile() {
         return this.asAdmin().addStep(new ProfileStep<>(this));

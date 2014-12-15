@@ -25,7 +25,7 @@ public abstract class GroovyDedupTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value() {
-            g.V().both().properties('name').order { a, b -> a.get().value() <=> b.get().value() }.dedup.value
+            g.V().both().properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value
         }
     }
 
@@ -42,7 +42,7 @@ public abstract class GroovyDedupTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value() {
-            ComputerTestHelper.compute("g.V.both.properties('name').order { a, b -> a.get().value() <=> b.get().value() }.dedup.value", g);
+            ComputerTestHelper.compute("g.V.both.properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value", g);
         }
     }
 }

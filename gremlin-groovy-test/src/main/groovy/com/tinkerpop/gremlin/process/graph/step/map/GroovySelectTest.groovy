@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.map
 
+import com.tinkerpop.gremlin.groovy.function.GFunction
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
@@ -44,7 +45,7 @@ public abstract class GroovySelectTest {
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_selectXname_itX() {
-            g.V().as('a').name.order().as('b').select.by('name') { it }
+            g.V().as('a').name.order().as('b').select.by('name', new GFunction({ it }));
         }
     }
 
@@ -85,7 +86,7 @@ public abstract class GroovySelectTest {
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_selectXname_itX() {
-            g.V().as('a').name.order().as('b').select.by('name') { it } // TODO: computer
+            g.V().as('a').name.order().as('b').select.by('name', new GFunction({ it })) // TODO: computer
         }
     }
 }

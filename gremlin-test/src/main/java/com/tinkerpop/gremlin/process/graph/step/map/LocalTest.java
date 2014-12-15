@@ -4,15 +4,14 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -68,7 +67,7 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_orderByXvalueX_limitX2XX_value() {
-            return g.V().local(g.<Vertex>of().properties("location").orderBy(T.value).range(0, 2)).value();
+            return g.V().local(g.<Vertex>of().properties("location").order().by(T.value, Order.incr).range(0, 2)).value();
         }
 
         @Override
@@ -90,7 +89,7 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_orderByXvalueX_limitX2XX_value() {
-            return g.V().local(g.<Vertex>of().properties("location").orderBy(T.value).range(0, 2)).<String>value().submit(g.compute());
+            return g.V().local(g.<Vertex>of().properties("location").order().by(T.value, Order.incr).range(0, 2)).<String>value().submit(g.compute());
         }
 
         @Override

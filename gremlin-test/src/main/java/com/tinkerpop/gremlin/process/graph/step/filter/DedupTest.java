@@ -84,7 +84,7 @@ public abstract class DedupTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value() {
-            return g.V().both().properties("name").order((a, b) -> ((String) a.get().value()).compareTo((String) b.get().value())).dedup().value();
+            return g.V().both().<String>properties("name").order().by((a, b) -> a.value().compareTo(b.value())).dedup().value();
         }
     }
 }

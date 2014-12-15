@@ -1,12 +1,12 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.gremlin.groovy.function.GBinaryOperator
 import com.tinkerpop.gremlin.groovy.function.GComparator
 import com.tinkerpop.gremlin.groovy.function.GFunction
-import com.tinkerpop.gremlin.groovy.function.GUnaryOperator
-import com.tinkerpop.gremlin.process.T
+import com.tinkerpop.gremlin.process.Step
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
+import com.tinkerpop.gremlin.process.graph.marker.ByComparatorAcceptor
 import com.tinkerpop.gremlin.process.graph.marker.FunctionRingAcceptor
+import com.tinkerpop.gremlin.process.util.ByComparator
 import com.tinkerpop.gremlin.process.util.ByRing
 import com.tinkerpop.gremlin.process.util.TraversalHelper
 
@@ -34,25 +34,40 @@ class StepLoader {
             return ((GraphTraversal) delegate).branch(GFunction.make(labelClosures));
         }
 
-        GraphTraversal.metaClass.order = { final Closure... orderClosures ->
-            return ((GraphTraversal) delegate).order(GComparator.make(orderClosures));
-        }
-
         GraphTraversal.metaClass.path = { final Closure... pathClosures ->
             return ((GraphTraversal) delegate).path(GFunction.make(pathClosures));
         }
 
-        GraphTraversal.metaClass.by = { final Object... objects ->
-            final Object[] newObjects = new Object[objects.length];
-            for (int i = 0; i < objects.length; i++) {
-                if (objects[i] instanceof Closure) {
-                    newObjects[i] = new GFunction((Closure) objects[i]);
-                } else {
-                    newObjects[i] = objects[i];
+        /*GraphTraversal.metaClass.by = { final Object... objects ->
+            final Step end = TraversalHelper.getEnd((GraphTraversal) delegate);
+            if (end instanceof FunctionRingAcceptor) {
+                final Object[] newObjects = new Object[objects.length];
+                for (int i = 0; i < objects.length; i++) {
+                    if (objects[i] instanceof Closure) {
+                        newObjects[i] = new GFunction((Closure) objects[i]);
+                    } else {
+                        newObjects[i] = objects[i];
+                    }
                 }
+                ((FunctionRingAcceptor) end).setFunctionRing(new ByRing<>(newObjects));
+            } else {
+                final Comparator[] newObjects = new Comparator[objects.length];
+                for (int i = 0; i < objects.length; i++) {
+                    if (objects[i] instanceof Closure) {
+                        newObjects[i] = new GComparator((Closure) objects[i]);
+                    } else {
+                        newObjects[i] = (Comparator) objects[i];
+                    }
+                }
+                ((ByComparatorAcceptor) end).setByComparator(new ByComparator<>(newObjects[0]));
             }
-            ((FunctionRingAcceptor) TraversalHelper.getEnd((GraphTraversal) delegate)).setFunctionRing(new ByRing<>(newObjects));
             return (GraphTraversal) delegate;
+        }*/
+
+        GraphTraversal.metaClass.by = { final Closure closureA, final Closure closureB ->
+            final Step end = TraversalHelper.getEnd((GraphTraversal) delegate);
+            ((ByComparatorAcceptor) end).setByComparator(new ByComparator<>(new GComparator(closureA), new GComparator(closureB)));
+            return (GraphTraversal)delegate;
         }
 
 

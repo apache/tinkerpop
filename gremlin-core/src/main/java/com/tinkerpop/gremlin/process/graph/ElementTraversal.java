@@ -13,7 +13,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -121,26 +120,6 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default GraphTraversal<A, A> order() {
         return this.start().order();
-    }
-
-    public default GraphTraversal<A, A> order(final Comparator<Traverser<A>>... comparators) {
-        return this.start().order(comparators);
-    }
-
-    public default GraphTraversal<A, A> orderBy(final Object key) {
-        return this.start().orderBy(key);
-    }
-
-    public default <C> GraphTraversal<A, A> orderBy(final Object key, final Comparator<C> valueComparatorA) {
-        return this.start().orderBy(key, valueComparatorA);
-    }
-
-    public default <C1, C2> GraphTraversal<A, A> orderBy(final Object keyA, final Comparator<C1> valueComparatorA, final Object keyB, final Comparator<C2> valueComparatorB) {
-        return this.start().orderBy(keyA, valueComparatorA, keyB, valueComparatorB);
-    }
-
-    public default <C1, C2, C3> GraphTraversal<A, A> orderBy(final Object keyA, final Comparator<C1> valueComparatorA, final Object keyB, final Comparator<C2> valueComparatorB, final Object keyC, final Comparator<C3> valueComparatorC) {
-        return this.start().orderBy(keyA, valueComparatorA, keyB, valueComparatorB, keyC, valueComparatorC);
     }
 
     public default GraphTraversal<A, A> shuffle() {
