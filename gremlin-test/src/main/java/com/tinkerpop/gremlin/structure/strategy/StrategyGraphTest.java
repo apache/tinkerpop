@@ -161,7 +161,7 @@ public class StrategyGraphTest {
             // but doesn't actually blow it away
             final StrategyGraph swg = g.strategy(new GraphStrategy() {
                 @Override
-                public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final StrategyContext<StrategyVertex, Vertex> ctx, final GraphStrategy composingStrategy) {
+                public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
                     return (t) -> () -> {
                         final Vertex v = ctx.getCurrent().getBaseVertex();
                         v.bothE().remove();
@@ -195,7 +195,7 @@ public class StrategyGraphTest {
             // but doesn't actually blow it away
             final StrategyGraph swg = g.strategy(new GraphStrategy() {
                 @Override
-                public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final StrategyContext<StrategyEdge, Edge> ctx, final GraphStrategy composingStrategy) {
+                public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
                     return (t) -> () -> {
                         final Edge e = ctx.getCurrent().getBaseEdge();
                         e.properties().forEachRemaining(Property::remove);
@@ -224,7 +224,7 @@ public class StrategyGraphTest {
             final AtomicInteger counter = new AtomicInteger(0);
             final StrategyGraph swg = g.strategy(new GraphStrategy() {
                 @Override
-                public UnaryOperator<Supplier<Void>> getGraphCloseStrategy(final StrategyContext<StrategyGraph, Graph> ctx, final GraphStrategy composingStrategy) {
+                public UnaryOperator<Supplier<Void>> getGraphCloseStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
                     return (t) -> () -> {
                         counter.incrementAndGet();
                         return null;

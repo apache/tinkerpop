@@ -7,23 +7,19 @@ import com.tinkerpop.gremlin.structure.Graph;
  * it constructs have some knowledge of the environment.
  *
  * @param <T> represents the object that is triggering the strategy (i.e. the vertex on which addEdge was called).
- * @param <B> represents the base object that is triggering the strategy
  */
-public final class StrategyContext<T extends StrategyWrapped, B> {
+public final class StrategyContext<T extends StrategyWrapped> {
     private final StrategyGraph g;
     private final Graph baseGraph;
     private final T current;
-    private final B currentBase;
 
-    public StrategyContext(final StrategyGraph g, final T current, final B currentBase) {
+    public StrategyContext(final StrategyGraph g, final T current) {
         if (null == g) throw Graph.Exceptions.argumentCanNotBeNull("g");
         if (null == current) throw Graph.Exceptions.argumentCanNotBeNull("current");
-        if (null == currentBase) throw Graph.Exceptions.argumentCanNotBeNull("currentBase");
 
         this.g = g;
         this.baseGraph = g.getBaseGraph();
         this.current = current;
-        this.currentBase = currentBase;
     }
 
     /**
@@ -31,14 +27,6 @@ public final class StrategyContext<T extends StrategyWrapped, B> {
      */
     public T getCurrent() {
         return current;
-    }
-
-    /**
-     * Gets the base object of the {@link StrategyWrapped} instances that is triggering the {@link GraphStrategy}
-     * method.  If a {@link GraphStrategy} implementation needs this instance.
-     */
-    public B getBaseCurrent() {
-        return currentBase;
     }
 
     /**

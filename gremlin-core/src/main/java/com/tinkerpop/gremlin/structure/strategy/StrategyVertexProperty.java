@@ -20,11 +20,11 @@ import java.util.Set;
  */
 public final class StrategyVertexProperty<V> extends StrategyElement implements VertexProperty<V>, StrategyWrapped, WrappedVertexProperty<VertexProperty<V>>, VertexProperty.Iterators {
 
-    private final StrategyContext<StrategyVertexProperty<V>, VertexProperty<V>> strategyContext;
+    private final StrategyContext<StrategyVertexProperty<V>> strategyContext;
 
     public StrategyVertexProperty(final VertexProperty<V> baseVertexProperty, final StrategyGraph strategyGraph) {
         super(baseVertexProperty, strategyGraph);
-        this.strategyContext = new StrategyContext<>(strategyGraph, this, baseVertexProperty);
+        this.strategyContext = new StrategyContext<>(strategyGraph, this);
     }
 
     @Override

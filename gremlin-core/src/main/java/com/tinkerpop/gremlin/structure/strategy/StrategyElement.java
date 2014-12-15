@@ -11,7 +11,7 @@ public abstract class StrategyElement implements Element, StrategyWrapped {
     protected final StrategyGraph strategyGraph;
     protected final GraphStrategy strategy;
     protected final Element baseElement;
-    protected final StrategyContext<StrategyElement, Element> elementStrategyContext;
+    protected final StrategyContext<StrategyElement> elementStrategyContext;
 
     protected StrategyElement(final Element baseElement, final StrategyGraph strategyGraph) {
         if (baseElement instanceof StrategyWrapped) throw new IllegalArgumentException(
@@ -19,7 +19,7 @@ public abstract class StrategyElement implements Element, StrategyWrapped {
         this.strategyGraph = strategyGraph;
         this.strategy = strategyGraph.getStrategy();
         this.baseElement = baseElement;
-        this.elementStrategyContext = new StrategyContext<>(strategyGraph, this, baseElement);
+        this.elementStrategyContext = new StrategyContext<>(strategyGraph, this);
     }
 
     public Element getBaseElement() {

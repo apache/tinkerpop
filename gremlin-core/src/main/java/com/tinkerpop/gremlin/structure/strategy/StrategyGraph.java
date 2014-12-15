@@ -32,7 +32,7 @@ import java.util.function.UnaryOperator;
 public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, WrappedGraph<Graph> {
     private final Graph baseGraph;
     private final GraphStrategy strategy;
-    private final StrategyContext<StrategyGraph, Graph> graphContext;
+    private final StrategyContext<StrategyGraph> graphContext;
 
     public StrategyGraph(final Graph baseGraph) {
         this(baseGraph, IdentityStrategy.instance());
@@ -45,7 +45,7 @@ public final class StrategyGraph implements Graph, Graph.Iterators, StrategyWrap
 
         this.strategy = strategy;
         this.baseGraph = baseGraph;
-        this.graphContext = new StrategyContext<>(this, this, baseGraph);
+        this.graphContext = new StrategyContext<>(this, this);
     }
 
     /**

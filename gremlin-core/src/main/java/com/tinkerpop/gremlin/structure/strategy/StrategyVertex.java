@@ -21,11 +21,11 @@ import java.util.Set;
  */
 public final class StrategyVertex extends StrategyElement implements Vertex, StrategyWrapped, WrappedVertex<Vertex>, Vertex.Iterators {
 
-    private final StrategyContext<StrategyVertex, Vertex> strategyContext;
+    private final StrategyContext<StrategyVertex> strategyContext;
 
     public StrategyVertex(final Vertex baseVertex, final StrategyGraph strategyGraph) {
         super(baseVertex, strategyGraph);
-        this.strategyContext = new StrategyContext<>(strategyGraph, this, baseVertex);
+        this.strategyContext = new StrategyContext<>(strategyGraph, this);
     }
 
     @Override
