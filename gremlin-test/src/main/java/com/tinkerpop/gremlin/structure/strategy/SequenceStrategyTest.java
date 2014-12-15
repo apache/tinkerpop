@@ -182,7 +182,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                             // sequence either
                             final StrategyContext<StrategyGraph> innerCtx = new StrategyContext<>(ctx.getStrategyGraph(), ctx.getStrategyGraph());
                             this.getAddVertexStrategy(innerCtx, composingStrategy)
-                                    .apply(ctx.getBaseGraph()::addVertex)
+                                    .apply(ctx.getStrategyGraph().getBaseGraph()::addVertex)
                                     .apply(Arrays.asList("strategy", "bypassed").toArray());
 
                             return f.apply(k, v);
@@ -229,7 +229,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                     // in this sequence
                     final StrategyContext<StrategyGraph> innerCtx = new StrategyContext<>(ctx.getStrategyGraph(), ctx.getStrategyGraph());
                     composingStrategy.getAddVertexStrategy(innerCtx, composingStrategy)
-                            .apply(ctx.getBaseGraph()::addVertex)
+                            .apply(ctx.getStrategyGraph().getBaseGraph()::addVertex)
                             .apply(Arrays.asList("strategy", "bypassed").toArray());
 
                     return f.apply(k, v);

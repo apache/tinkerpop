@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Graph;
  */
 public final class StrategyContext<T extends StrategyWrapped> {
     private final StrategyGraph g;
-    private final Graph baseGraph;
     private final T current;
 
     public StrategyContext(final StrategyGraph g, final T current) {
@@ -18,7 +17,6 @@ public final class StrategyContext<T extends StrategyWrapped> {
         if (null == current) throw Graph.Exceptions.argumentCanNotBeNull("current");
 
         this.g = g;
-        this.baseGraph = g.getBaseGraph();
         this.current = current;
     }
 
@@ -27,13 +25,6 @@ public final class StrategyContext<T extends StrategyWrapped> {
      */
     public T getCurrent() {
         return current;
-    }
-
-    /**
-     * Gets the base {@link Graph} of the {@link StrategyGraph} instance.
-     */
-    public Graph getBaseGraph() {
-        return baseGraph;
     }
 
     /**
