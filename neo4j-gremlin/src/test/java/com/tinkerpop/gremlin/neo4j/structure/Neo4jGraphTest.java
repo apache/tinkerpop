@@ -8,13 +8,17 @@ import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicLabel;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.AutoIndexer;
 import org.neo4j.graphdb.schema.ConstraintDefinition;
 import org.neo4j.graphdb.schema.Schema;
@@ -43,7 +47,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void shoulNotThrowConcurrentModificationException() {
+    public void shouldNotThrowConcurrentModificationException() {
         this.g.addVertex("name", "a");
         this.g.addVertex("name", "b");
         this.g.addVertex("name", "c");
@@ -51,6 +55,27 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         this.g.V().forEachRemaining(Vertex::remove);
         this.g.tx().commit();
         assertEquals(0, this.g.V().count().next(), 0);
+    }
+
+    /**
+     * Neo4j upgrades from 1.x don't come with labels.
+     */
+    @Test
+    @Ignore
+    public void shouldTraverseWithoutLabels() {
+        // todo: can this test be made to pass?   https://github.com/tinkerpop/tinkerpop3/issues/408
+
+        final GraphDatabaseService service = g.getBaseGraph();
+
+        final Transaction tx = service.beginTx();
+        final Node n = service.createNode();
+        tx.success();
+        tx.close();
+
+        final Transaction tx2 = service.beginTx();
+        assertEquals(0, IteratorUtils.count(n.getLabels().iterator()));
+        assertEquals(1, IteratorUtils.count(g.iterators().vertexIterator()));
+        tx2.close();
     }
 
     @Test
