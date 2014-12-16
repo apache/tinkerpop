@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `by()`-projection to modulate the meaning of post-processing steps like `aggregate()`, `groupCount()`, `path()`, `order()`, etc.
 * Removed the `Strategy` interface and gave `StrategyGraph` direct access to the `GraphStrategy`.
 * Added `Graph.strategy()` to help instantiate `StrategyGraph` instances.
 * Modified the signature of all `GraphStrategy` methods to include an parameter that contains a reference to the "composing strategy".
