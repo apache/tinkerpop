@@ -152,6 +152,16 @@ public final class PartitionStrategy implements GraphStrategy {
     }
 
     @Override
+    public <V> UnaryOperator<Function<String, VertexProperty<V>>> getVertexGetPropertyStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
+        return (f) -> k -> k.equals(partitionKey) ? VertexProperty.<V>empty() : f.apply(k);
+    }
+
+    @Override
+    public <V> UnaryOperator<Function<String, Property<V>>> getEdgeGetPropertyStrategy(StrategyContext<StrategyEdge> ctx, GraphStrategy composingStrategy) {
+        return (f) -> k -> k.equals(partitionKey) ? Property.<V>empty() : f.apply(k);
+    }
+
+    @Override
     public <V> UnaryOperator<Function<String[], Iterator<Property<V>>>> getEdgeIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (keys) -> IteratorUtils.filter(f.apply(keys), property -> !partitionKey.equals(property.key()));
     }

@@ -39,6 +39,7 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
+        assertFalse(v.property(partition).isPresent());
         assertFalse(v.iterators().propertyIterator(partition).hasNext());
         assertFalse(v.iterators().valueIterator(partition).hasNext());
         assertFalse(v.keys().contains(partition));
@@ -76,6 +77,7 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
         assertNotNull(e);
         assertEquals("thing", e.property("every").value());
         assertEquals("connectsTo", e.label());
+        assertFalse(e.property(partition).isPresent());
         assertFalse(e.iterators().propertyIterator(partition).hasNext());
         assertFalse(e.iterators().valueIterator(partition).hasNext());
         assertFalse(e.keys().contains(partition));
