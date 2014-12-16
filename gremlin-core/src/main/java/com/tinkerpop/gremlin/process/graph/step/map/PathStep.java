@@ -43,7 +43,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer,
     }
 
     @Override
-    public void setFunctionRing(FunctionRing<S, Object> functionRing) {
+    public void setFunctionRing(final FunctionRing<S, Object> functionRing) {
         this.functionRing = functionRing;
     }
 }
