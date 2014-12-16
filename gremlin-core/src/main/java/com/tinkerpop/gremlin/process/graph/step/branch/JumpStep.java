@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Compare;
 import org.javatuples.Pair;
@@ -63,7 +62,6 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
         }
         while (true) {
             final Traverser.Admin<S> traverser = this.starts.next();
-            if (PROFILING_ENABLED) TraversalMetrics.start(this);
             if (this.jumpBack) traverser.incrLoops();
             if (doJump(traverser)) {
                 traverser.setFuture(this.jumpLabel);
@@ -72,17 +70,13 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
                     final Traverser.Admin<S> emitTraverser = traverser.split();
                     if (this.jumpBack) emitTraverser.resetLoops();
                     emitTraverser.setFuture(this.getNextStep().getLabel());
-                    if (PROFILING_ENABLED) TraversalMetrics.finish(this, traverser);
                     return emitTraverser;
                 }
             } else {
                 if (this.jumpBack) traverser.resetLoops();
                 traverser.setFuture(this.getNextStep().getLabel());
-                if (PROFILING_ENABLED) TraversalMetrics.finish(this, traverser);
                 return traverser;
             }
-
-            if (PROFILING_ENABLED) TraversalMetrics.stop(this);
         }
     }
 
@@ -92,12 +86,9 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
             this.jumpBack = TraversalHelper.relativeLabelDirection(this, this.jumpLabel) == -1;
         while (true) {
             if (!this.graphComputerQueue.isEmpty()) {
-                Traverser.Admin<S> ret = this.graphComputerQueue.remove();
-                if (PROFILING_ENABLED) TraversalMetrics.finish(this, ret);
-                return ret;
+                return this.graphComputerQueue.remove();
             } else {
                 final Traverser.Admin<S> traverser = this.starts.next();
-                if (PROFILING_ENABLED) TraversalMetrics.start(this);
 
                 if (this.jumpBack) traverser.incrLoops();
                 if (doJump(traverser)) {
@@ -115,7 +106,6 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
                     this.graphComputerQueue.add(traverser);
                 }
 
-                if (PROFILING_ENABLED) TraversalMetrics.stop(this);
             }
         }
     }

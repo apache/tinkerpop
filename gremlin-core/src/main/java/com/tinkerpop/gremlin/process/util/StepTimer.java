@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
 
 import java.io.Serializable;
 
@@ -17,14 +17,14 @@ public class StepTimer implements StepMetrics, Serializable {
 
     private long count;
     private double percentDuration = -1;
+    private StepTimer previousStepTimer;
 
     private StepTimer() {
     }
 
-    public StepTimer(final Step step) {
+    public StepTimer(final ProfileStep step) {
         this.label = step.getLabel();
-        this.name = step.toString();
-
+        this.name = step.getEventName();
     }
 
     public StepTimer(String name, String label) {
@@ -47,6 +47,9 @@ public class StepTimer implements StepMetrics, Serializable {
     }
 
     public long getTimeNs() {
+        if (this.previousStepTimer != null) {
+            return this.timeNs - this.previousStepTimer.timeNs;
+        }
         return this.timeNs;
     }
 
@@ -55,7 +58,7 @@ public class StepTimer implements StepMetrics, Serializable {
     }
 
     public double getTimeMs() {
-        return this.timeNs / 1000000.0d;
+        return getTimeNs() / 1000000.0d;
     }
 
     public long getCount() {
@@ -94,9 +97,7 @@ public class StepTimer implements StepMetrics, Serializable {
         return label;
     }
 
-    public String getShortName(int maxLength) {
-        if (name.length() > maxLength)
-            return name.substring(0, maxLength - 3) + "...";
-        return name;
+    public void setPreviousStepTimer(final StepTimer previousStepTimer) {
+        this.previousStepTimer = previousStepTimer;
     }
 }

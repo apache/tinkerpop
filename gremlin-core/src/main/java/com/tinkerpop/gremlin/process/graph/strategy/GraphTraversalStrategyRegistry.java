@@ -32,6 +32,7 @@ public class GraphTraversalStrategyRegistry {
         TRAVERSAL_STRATEGIES.add(EngineDependentStrategy.instance());
         TRAVERSAL_STRATEGIES.add(ReducingStrategy.instance());
         //  TRAVERSAL_STRATEGIES.add(UnrollJumpStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(ProfileStrategy.instance());
         TraversalStrategies.sortStrategies(TRAVERSAL_STRATEGIES);
     }
 

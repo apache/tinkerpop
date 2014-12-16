@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 
 import java.util.function.Function;
 
@@ -22,11 +21,8 @@ public class MapStep<S, E> extends AbstractStep<S, E> {
     protected Traverser<E> processNextStart() {
         while (true) {
             final Traverser.Admin<S> traverser = this.starts.next();
-            if (PROFILING_ENABLED) TraversalMetrics.start(this);
             final E end = this.function.apply(traverser);
-            final Traverser.Admin<E> endTraverser = traverser.split(this.label, end);
-            if (PROFILING_ENABLED) TraversalMetrics.finish(this, endTraverser);
-            return endTraverser;
+            return traverser.split(this.label, end);
         }
     }
 

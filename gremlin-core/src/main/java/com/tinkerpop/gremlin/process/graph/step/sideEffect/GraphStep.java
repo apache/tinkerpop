@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -62,14 +61,8 @@ public class GraphStep<E extends Element> extends StartStep<E> implements Traver
 
     @Override
     public void generateTraversers(final TraverserGenerator traverserGenerator) {
-        if (PROFILING_ENABLED) TraversalMetrics.start(this);
-        try {
-            this.start = this.iteratorSupplier.get();
-            super.generateTraversers(traverserGenerator);
-        } catch (final Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        } finally {
-            if (PROFILING_ENABLED) TraversalMetrics.stop(this);
-        }
+        // TODO: rjbriod - ensure that the Exception wrapping I removed was only for profiling functionality.
+        this.start = this.iteratorSupplier.get();
+        super.generateTraversers(traverserGenerator);
     }
 }

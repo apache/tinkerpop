@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 
 import java.util.function.Consumer;
 
@@ -26,9 +25,7 @@ public class SideEffectStep<S> extends AbstractStep<S, S> implements Reversible 
     @Override
     protected Traverser<S> processNextStart() {
         final Traverser.Admin<S> traverser = this.starts.next();
-        if (PROFILING_ENABLED) TraversalMetrics.start(this);
         if (null != this.consumer) this.consumer.accept(traverser);
-        if (PROFILING_ENABLED) TraversalMetrics.finish(this, traverser);
         return traverser;
     }
 }

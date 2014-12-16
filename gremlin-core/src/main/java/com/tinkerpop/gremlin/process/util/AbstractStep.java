@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversers.PathTraverser;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -24,7 +23,6 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
-    protected final static boolean PROFILING_ENABLED = "true".equals(System.getProperty(TraversalMetrics.PROFILING_ENABLED));
 
     public AbstractStep(final Traversal traversal) {
         this.traversal = traversal;

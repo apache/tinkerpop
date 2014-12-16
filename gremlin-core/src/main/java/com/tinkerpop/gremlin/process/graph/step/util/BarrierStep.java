@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 
 import java.util.function.Consumer;
@@ -27,17 +26,11 @@ public abstract class BarrierStep<S> extends AbstractStep<S, S> implements Barri
     @Override
     public Traverser<S> processNextStart() {
         if (this.starts.hasNext()) {
-            if (PROFILING_ENABLED) TraversalMetrics.start(this);
             this.starts.forEachRemaining(this.traverserSet::add);
             this.barrierConsumer.accept(this.traverserSet);
-        } else {
-            if (PROFILING_ENABLED) TraversalMetrics.start(this);
         }
 
-        final Traverser.Admin<S> traverser = this.traverserSet.remove().split();
-        if (PROFILING_ENABLED) TraversalMetrics.finish(this, traverser);
-        return traverser;
-
+        return this.traverserSet.remove().split();
     }
 
     @Override

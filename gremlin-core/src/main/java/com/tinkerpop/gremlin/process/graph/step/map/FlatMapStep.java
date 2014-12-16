@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,15 +29,10 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
     protected Traverser<E> processNextStart() {
         while (true) {
             if (this.iterator.hasNext()) {
-                if (PROFILING_ENABLED) TraversalMetrics.start(FlatMapStep.this);
-                final Traverser<E> end = this.head.split(this.label, this.iterator.next());
-                if (PROFILING_ENABLED) TraversalMetrics.finish(FlatMapStep.this, this.head);
-                return end;
+                return this.head.split(this.label, this.iterator.next());
             } else {
                 this.head = this.starts.next();
-                if (PROFILING_ENABLED) TraversalMetrics.start(this);
                 this.iterator = this.function.apply(this.head);
-                if (PROFILING_ENABLED) TraversalMetrics.stop(this);
             }
         }
     }

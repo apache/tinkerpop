@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.process.traversers.SimpleTraverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.NoSuchElementException;
@@ -42,12 +41,9 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
             } catch (final NoSuchElementException ignored) {
             }
 
-            if (PROFILING_ENABLED) TraversalMetrics.start(this);
             this.done = true;
             traverser.setBulk(1l);
-            final Traverser.Admin<E> returnTraverser = traverser.split(this.getLabel(), traverser.sideEffects().<E>get(this.sideEffectKey));
-            if (PROFILING_ENABLED) TraversalMetrics.finish(this, traverser);
-            return returnTraverser;
+            return traverser.split(this.getLabel(), traverser.sideEffects().<E>get(this.sideEffectKey));
         } else {
             throw FastNoSuchElementException.instance();
         }
