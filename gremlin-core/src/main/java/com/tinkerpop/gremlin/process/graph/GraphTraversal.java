@@ -14,15 +14,16 @@ import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.UntilStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.CoinStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
-import com.tinkerpop.gremlin.process.graph.step.filter.RandomStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.SampleStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereStep;
@@ -51,8 +52,8 @@ import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
@@ -359,8 +360,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 new HasContainer(key, Compare.lt, endValue)));
     }
 
-    public default GraphTraversal<S, E> random(final double probability) {
-        return this.asAdmin().addStep(new RandomStep<>(this, probability));
+    public default GraphTraversal<S, E> coin(final double probability) {
+        return this.asAdmin().addStep(new CoinStep<>(this, probability));
     }
 
     public default GraphTraversal<S, E> range(final long low, final long high) {
@@ -388,7 +389,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> cyclicPath() {
-        return this.asAdmin().addStep(new CyclicPathStep<E>(this));
+        return this.asAdmin().addStep(new CyclicPathStep<>(this));
+    }
+
+    public default GraphTraversal<S, E> sample(final int amountToSample) {
+        return this.asAdmin().addStep(new SampleStep<>(this, amountToSample));
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////

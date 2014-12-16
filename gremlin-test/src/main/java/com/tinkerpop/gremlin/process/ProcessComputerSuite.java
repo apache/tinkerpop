@@ -8,14 +8,15 @@ import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.UntilTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.CoinTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.RandomTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.SampleTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
@@ -95,9 +96,10 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             HasNotTest.ComputerTest.class,
             HasTest.ComputerTest.class,
             IntervalTest.ComputerTest.class,
-            RandomTest.ComputerTest.class,
+            CoinTest.ComputerTest.class,
             // TODO: RangeTest.ComputerTest.class,
             RetainTest.ComputerTest.class,
+            SampleTest.ComputerTest.class,
             SimplePathTest.ComputerTest.class,
             WhereTest.ComputerTest.class,
 
@@ -163,9 +165,10 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             HasNotTest.class,
             HasTest.class,
             IntervalTest.class,
-            RandomTest.class,
+            CoinTest.class,
             // RangeTest.class,
             RetainTest.class,
+            SampleTest.class,
             SimplePathTest.class,
             WhereTest.class,
 

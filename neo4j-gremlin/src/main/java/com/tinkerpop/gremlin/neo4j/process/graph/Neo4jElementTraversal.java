@@ -249,8 +249,8 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().interval(key, startValue, endValue);
     }
 
-    public default Neo4jTraversal<A, A> random(final double probability) {
-        return this.start().random(probability);
+    public default Neo4jTraversal<A, A> coin(final double probability) {
+        return this.start().coin(probability);
     }
 
     public default Neo4jTraversal<A, A> range(final long low, final long high) {
@@ -279,6 +279,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 
     public default Neo4jTraversal<A, A> cyclicPath() {
         return this.start().cyclicPath();
+    }
+
+    public default Neo4jTraversal<A, A> sample(final int amountToSample) {
+        return this.start().sample(amountToSample);
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////

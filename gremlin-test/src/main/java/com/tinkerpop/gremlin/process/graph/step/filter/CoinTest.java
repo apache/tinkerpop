@@ -13,16 +13,16 @@ import static org.junit.Assert.assertFalse;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class RandomTest extends AbstractGremlinProcessTest {
+public abstract class CoinTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_randomX1X();
+    public abstract Traversal<Vertex, Vertex> get_g_V_coinX1X();
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_randomX0X();
+    public abstract Traversal<Vertex, Vertex> get_g_V_coinX0X();
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_randomX1X() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_randomX1X();
+    public void g_V_coinX1X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_coinX1X();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -35,8 +35,8 @@ public abstract class RandomTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_randomX0X() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_randomX0X();
+    public void g_V_coinX0X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_coinX0X();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -47,32 +47,36 @@ public abstract class RandomTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class StandardTest extends RandomTest {
+    public static class StandardTest extends CoinTest {
 
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_randomX1X() {
-            return g.V().random(1.0d);
+        public StandardTest() {
+            requiresGraphComputer = false;
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_randomX0X() {
-            return g.V().random(0.0d);
+        public Traversal<Vertex, Vertex> get_g_V_coinX1X() {
+            return g.V().coin(1.0d);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_coinX0X() {
+            return g.V().coin(0.0d);
         }
     }
 
-    public static class ComputerTest extends RandomTest {
+    public static class ComputerTest extends CoinTest {
         public ComputerTest() {
             requiresGraphComputer = true;
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_randomX1X() {
-            return g.V().random(1.0d).submit(g.compute());
+        public Traversal<Vertex, Vertex> get_g_V_coinX1X() {
+            return g.V().coin(1.0d).submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_randomX0X() {
-            return g.V().random(0.0d).submit(g.compute());
+        public Traversal<Vertex, Vertex> get_g_V_coinX0X() {
+            return g.V().coin(0.0d).submit(g.compute());
         }
     }
 }

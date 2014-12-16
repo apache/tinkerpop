@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `SampleStep` (`sample()`) to allow for sampling the set of previous objects. Useful for doing random walks with `local()`.
+* Renamed `random()` to `coin()` to better express that the filter is a random coin toss.
 * Added `by()`-projection to modulate the meaning of post-processing steps like `aggregate()`, `groupCount()`, `path()`, `order()`, etc.
 * Removed the `Strategy` interface and gave `StrategyGraph` direct access to the `GraphStrategy`.
 * Added `Graph.strategy()` to help instantiate `StrategyGraph` instances.

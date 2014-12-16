@@ -9,12 +9,12 @@ import java.util.Random;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RandomStep<S> extends FilterStep<S> implements Reversible {
+public final class CoinStep<S> extends FilterStep<S> implements Reversible {
 
     private static final Random RANDOM = new Random();
     private final double probability;
 
-    public RandomStep(final Traversal traversal, final double probability) {
+    public CoinStep(final Traversal traversal, final double probability) {
         super(traversal);
         this.probability = probability;
         this.setPredicate(traverser -> this.probability >= RANDOM.nextDouble());

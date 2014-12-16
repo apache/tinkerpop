@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.step.filter.SampleStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -248,8 +249,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().interval(key, startValue, endValue);
     }
 
-    public default GraphTraversal<A, A> random(final double probability) {
-        return this.start().random(probability);
+    public default GraphTraversal<A, A> coin(final double probability) {
+        return this.start().coin(probability);
     }
 
     public default GraphTraversal<A, A> range(final long low, final long high) {
@@ -278,6 +279,10 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default GraphTraversal<A, A> cyclicPath() {
         return this.start().cyclicPath();
+    }
+
+    public default GraphTraversal<A,A> sample(final int amountToSample) {
+        return this.start().sample(amountToSample);
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////

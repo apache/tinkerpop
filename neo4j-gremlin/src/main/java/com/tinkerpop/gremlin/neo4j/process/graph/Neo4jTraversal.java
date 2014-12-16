@@ -138,6 +138,10 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal.Admin<S, E>, GraphT
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.choose(arg0, arg1, arg2);
 	}
 
+	public default Neo4jTraversal<S, E> coin(double arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.coin(arg0);
+	}
+
 	public default Neo4jTraversal<S, java.lang.Long> count() {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.count();
 	}
@@ -334,10 +338,6 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal.Admin<S, E>, GraphT
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.propertyMap(arg0);
 	}
 
-	public default Neo4jTraversal<S, E> random(double arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.random(arg0);
-	}
-
 	public default Neo4jTraversal<S, E> range(long arg0, long arg1) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.range(arg0, arg1);
 	}
@@ -364,6 +364,10 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal.Admin<S, E>, GraphT
 
 	public default <E2 extends Element,V> Neo4jTraversal<S, E2> sack(java.util.function.BinaryOperator<V> arg0, java.lang.String arg1) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.sack(arg0, arg1);
+	}
+
+	public default Neo4jTraversal<S, E> sample(int arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.sample(arg0);
 	}
 
 	public default <E2> Neo4jTraversal<S, E2> select(java.lang.String arg0) {
