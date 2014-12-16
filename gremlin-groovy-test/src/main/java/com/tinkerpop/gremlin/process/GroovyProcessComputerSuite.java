@@ -32,7 +32,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.GroovyValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyVertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupByTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyInjectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyProfileTest;
@@ -96,7 +96,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             // TODO: GroovyAddEdgeTest.ComputerTest.class,
             GroovyAggregateTest.ComputerTest.class,
             GroovyCountTest.ComputerTest.class,
-            GroovyGroupByTest.ComputerTest.class,
+            GroovyGroupTest.ComputerTest.class,
             GroovyGroupCountTest.ComputerTest.class,
             GroovyInjectTest.ComputerTest.class,
             GroovyProfileTest.ComputerTest.class,

@@ -12,13 +12,13 @@ public abstract class GroovyStoreTest {
     public static class StandardTest extends StoreTest {
 
         @Override
-        public Traversal<Vertex, Collection> get_g_V_storeXa_nameX_out_capXaX() {
-            g.V().store('a') { it.name }.out().cap('a');
+        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX() {
+            g.V().store('a').by('name').out().cap('a');
         }
 
         @Override
-        public Traversal<Vertex, Collection> get_g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX(final Object v1Id) {
-            g.V(v1Id).store('a') { it.name }.out().store('a') { it.name }.name.cap('a');
+        public Traversal<Vertex, Collection> get_g_v1_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(final Object v1Id) {
+            g.V(v1Id).store('a').by('name').out().store('a').by('name').name.cap('a');
         }
 
         @Override
@@ -35,13 +35,13 @@ public abstract class GroovyStoreTest {
     public static class ComputerTest extends StoreTest {
 
         @Override
-        public Traversal<Vertex, Collection> get_g_V_storeXa_nameX_out_capXaX() {
-            ComputerTestHelper.compute("g.V().store('a') { it.name }.out().cap('a')", g)
+        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX() {
+            ComputerTestHelper.compute("g.V().store('a').by('name').out().cap('a')", g)
         }
 
         @Override
-        public Traversal<Vertex, Collection> get_g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).store('a') { it.name }.out().store('a') { it.name }.name.cap('a')", g)
+        public Traversal<Vertex, Collection> get_g_v1_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).store('a').by('name').out().store('a').by('name').name.cap('a')", g)
         }
 
         @Override

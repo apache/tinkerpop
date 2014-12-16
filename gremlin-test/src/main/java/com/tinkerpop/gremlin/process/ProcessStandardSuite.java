@@ -22,7 +22,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.FoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.LocalTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MatchTest;
-import com.tinkerpop.gremlin.process.graph.step.map.OrderByTest;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
@@ -33,7 +32,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileTest;
@@ -108,7 +107,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             MapTest.StandardTest.class,
             MatchTest.StandardTest.class,
             OrderTest.StandardTest.class,
-            OrderByTest.StandardTest.class,
             com.tinkerpop.gremlin.process.graph.step.map.PathTest.StandardTest.class,
             PropertiesTest.StandardTest.class,
             SelectTest.StandardTest.class,
@@ -121,7 +119,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             AddEdgeTest.StandardTest.class,
             AggregateTest.StandardTest.class,
             CountTest.StandardTest.class,
-            GroupByTest.StandardTest.class,
+            GroupTest.StandardTest.class,
             GroupCountTest.StandardTest.class,
             InjectTest.StandardTest.class,
             ProfileTest.StandardTest.class,
@@ -175,7 +173,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             MapTest.class,
             MatchTest.class,
             OrderTest.class,
-            OrderByTest.class,
             com.tinkerpop.gremlin.process.graph.step.map.PathTest.class,
             SelectTest.class,
             ShuffleTest.class,
@@ -187,7 +184,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             AddEdgeTest.class,
             AggregateTest.class,
             CountTest.class,
-            GroupByTest.class,
+            GroupTest.class,
             GroupCountTest.class,
             InjectTest.class,
             ProfileTest.class,

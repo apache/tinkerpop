@@ -6,10 +6,12 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,20 +20,20 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements PathConsumer, EngineDependent {
+public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements PathConsumer, FunctionAcceptor<Object, Object>, EngineDependent {
 
-    private FunctionRing functionRing;
+    private FunctionRing<Object, Object> functionRing;
     private final List<String> selectLabels;
     private final boolean wasEmpty;
     private boolean requiresPaths = false;
     private boolean onGraphComputer = false;
     protected Function<Traverser<S>, Map<String, E>> selectFunction;
 
-    public SelectStep(final Traversal traversal, final List<String> selectLabels, final Function... stepFunctions) {
+    public SelectStep(final Traversal traversal, final String... selectLabels) {
         super(traversal);
-        this.functionRing = new FunctionRing(stepFunctions);
-        this.wasEmpty = selectLabels.size() == 0;
-        this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal) : selectLabels;
+        this.functionRing = new FunctionRing<>();
+        this.wasEmpty = selectLabels.length == 0;
+        this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal) : Arrays.asList(selectLabels);
         SelectStep.generateFunction(this);
     }
 
@@ -76,6 +78,11 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
         return clone;
     }
 
+    @Override
+    public void addFunction(final Function<Object, Object> function) {
+        this.functionRing.addFunction(function);
+    }
+
     //////////////////////
 
     private static final <S, E> void generateFunction(final SelectStep<S, E> selectStep) {
@@ -112,5 +119,4 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
         };
         selectStep.setFunction(selectStep.selectFunction);
     }
-
 }

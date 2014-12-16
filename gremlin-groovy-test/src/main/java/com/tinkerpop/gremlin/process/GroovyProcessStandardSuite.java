@@ -25,7 +25,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.GroovyFoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyLocalTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTest;
-import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderByTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPropertiesTest;
@@ -37,7 +36,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.GroovyVertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAddEdgeTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupByTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyInjectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyProfileTest;
@@ -86,7 +85,6 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyLocalTest.StandardTest.class,
             GroovyMapTest.StandardTest.class,
             GroovyMatchTest.StandardTest.class,
-            GroovyOrderByTest.StandardTest.class,
             GroovyOrderTest.StandardTest.class,
             GroovyPathTest.StandardTest.class,
             GroovyPropertiesTest.StandardTest.class,
@@ -99,7 +97,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyAddEdgeTest.StandardTest.class,
             GroovyAggregateTest.StandardTest.class,
             GroovyCountTest.StandardTest.class,
-            GroovyGroupByTest.StandardTest.class,
+            GroovyGroupTest.StandardTest.class,
             GroovyGroupCountTest.StandardTest.class,
             GroovyInjectTest.StandardTest.class,
             GroovyProfileTest.StandardTest.class,

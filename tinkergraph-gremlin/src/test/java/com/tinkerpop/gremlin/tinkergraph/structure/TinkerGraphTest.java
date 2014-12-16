@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -90,6 +91,15 @@ public class TinkerGraphTest {
         g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().forEachRemaining(name -> assertTrue(name.equals("josh") || name.equals("vadas")));
         assertEquals(1, g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().toList().size());
         g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().forEachRemaining(name -> assertEquals("lop", name));
+    }
+
+    @Test
+    @Ignore
+    public void testPlay2() throws Exception {
+        Graph g = TinkerFactory.createClassic();
+        g.V().out("knows").groupCount().by("name").forEachRemaining(Map.class,System.out::println);
+        g.V().out("knows").groupCount().<Vertex>by(v -> v.value("name")).forEachRemaining(Map.class,System.out::println);
+        g.V().out("knows").groupCount().by(T.label).forEachRemaining(Map.class,System.out::println);
     }
 
     /**
