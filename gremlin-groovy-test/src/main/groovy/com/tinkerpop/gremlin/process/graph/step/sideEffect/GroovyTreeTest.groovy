@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect
 
+import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.process.graph.util.Tree
@@ -13,23 +14,23 @@ public abstract class GroovyTreeTest {
     public static class StandardTest extends TreeTest {
 
         @Override
-        public Traversal<Vertex, Tree> get_g_V_out_out_treeXidX() {
-            g.V.out.out.tree { it.id };
+        public Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX() {
+            g.V.out.out.tree.by(T.id);
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_V_out_out_treeXa_idX() {
-            g.V.out.out.tree('a') { it.id };
+        public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX() {
+            g.V.out.out.tree('a').by(T.id);
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXnameX(final Object v1Id) {
-            g.V(v1Id).out.out.tree { it.name };
+        public Traversal<Vertex, Tree> get_g_v1_out_out_tree_byXnameX(final Object v1Id) {
+            g.V(v1Id).out.out.tree.by('name');
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXa_nameX_both_both_capXaX(final Object v1Id) {
-            g.V(v1Id).out.out.tree('a') { it.name }.both.both.cap('a');
+        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
+            g.V(v1Id).out.out.tree('a').by('name').both.both.cap('a');
         }
 
         @Override
@@ -41,25 +42,25 @@ public abstract class GroovyTreeTest {
     public static class ComputerTest extends TreeTest {
 
         @Override
-        public Traversal<Vertex, Tree> get_g_V_out_out_treeXidX() {
-            ComputerTestHelper.compute("g.V.out.out.tree { it.id }", g)
+        public Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX() {
+            ComputerTestHelper.compute("g.V.out.out.tree.by(id)", g)
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_V_out_out_treeXa_idX() {
-            ComputerTestHelper.compute("g.V.out.out.tree('a') { it.id }", g)
+        public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX() {
+            ComputerTestHelper.compute("g.V.out.out.tree('a').by(id)", g)
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXnameX(final Object v1Id) {
-            g.V(v1Id).out.out.tree { it.name };
-            // TODO: ComputerTestHelper.compute("g.V(${v1Id}).out.out.tree { it.name }",g)
+        public Traversal<Vertex, Tree> get_g_v1_out_out_tree_byXnameX(final Object v1Id) {
+            g.V(v1Id).out.out.tree.by('name');
+            // TODO
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXa_nameX_both_both_capXaX(final Object v1Id) {
-            g.V(v1Id).out.out.tree('a') { it.name }.both.both.cap('a');
-            // TODO: ComputerTestHelper.compute("g.V(${v1Id}).out.out.tree('a') { it.name }.both.both.cap('a')", g)
+        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
+            g.V(v1Id).out.out.tree('a').by('name').both.both.cap('a');
+            // TODO
         }
 
         @Override

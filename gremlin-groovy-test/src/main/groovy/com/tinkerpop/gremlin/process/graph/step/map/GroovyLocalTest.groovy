@@ -13,7 +13,7 @@ public abstract class GroovyLocalTest {
     public static class StandardTest extends LocalTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_orderByXvalueX_limitX2XX_value() {
+        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
             g.V.local(g.of().properties('location').order.by(T.value, Order.incr).limit(2)).value
         }
 
@@ -31,7 +31,7 @@ public abstract class GroovyLocalTest {
     public static class ComputerTest extends LocalTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_orderByXvalueX_limitX2XX_value() {
+        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
             ComputerTestHelper.compute("g.V.local(g.of().properties('location').order.by(T.value,Order.incr).limit(2)).value", g);
         }
 

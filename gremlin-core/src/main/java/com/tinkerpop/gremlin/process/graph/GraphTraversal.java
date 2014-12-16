@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.marker.ByComparatorAcceptor;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionRingAcceptor;
+import com.tinkerpop.gremlin.process.graph.marker.ComparatorAcceptor;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpStep;
@@ -67,8 +67,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.process.util.ByComparator;
-import com.tinkerpop.gremlin.process.util.ByRing;
+import com.tinkerpop.gremlin.process.util.ElementValueFunction;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -440,28 +439,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.aggregate(null);
     }
 
-    public default GraphTraversal<S, E> groupBy(final String sideEffectKey, final Function<Traverser<E>, ?> keyFunction, final Function<Traverser<E>, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
-        return this.asAdmin().addStep(new GroupByStep(this, sideEffectKey, keyFunction, valueFunction, reduceFunction));
+    public default GraphTraversal<S, E> group(final String sideEffectKey) {
+        return this.asAdmin().addStep(new GroupByStep<>(this, sideEffectKey));
     }
 
-    public default GraphTraversal<S, E> groupBy(final Function<Traverser<E>, ?> keyFunction, final Function<Traverser<E>, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
-        return this.groupBy(null, keyFunction, valueFunction, reduceFunction);
-    }
-
-    public default GraphTraversal<S, E> groupBy(final Function<Traverser<E>, ?> keyFunction, final Function<Traverser<E>, ?> valueFunction) {
-        return this.groupBy(null, keyFunction, valueFunction, null);
-    }
-
-    public default GraphTraversal<S, E> groupBy(final Function<Traverser<E>, ?> keyFunction) {
-        return this.groupBy(null, keyFunction, null, null);
-    }
-
-    public default GraphTraversal<S, E> groupBy(final String sideEffectKey, final Function<Traverser<E>, ?> keyFunction) {
-        return this.groupBy(sideEffectKey, keyFunction, null, null);
-    }
-
-    public default GraphTraversal<S, E> groupBy(final String sideEffectKey, final Function<Traverser<E>, ?> keyFunction, final Function<Traverser<E>, ?> valueFunction) {
-        return this.groupBy(sideEffectKey, keyFunction, valueFunction, null);
+    public default GraphTraversal<S, E> group() {
+        return this.group(null);
     }
 
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey) {
@@ -492,12 +475,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new TimeLimitStep<E>(this, timeLimit));
     }
 
-    public default GraphTraversal<S, E> tree(final String sideEffectKey, final Function... branchFunctions) {
-        return this.asAdmin().addStep(new TreeStep<>(this, sideEffectKey, branchFunctions));
+    public default GraphTraversal<S, E> tree(final String sideEffectKey) {
+        return this.asAdmin().addStep(new TreeStep<>(this, sideEffectKey));
     }
 
-    public default GraphTraversal<S, E> tree(final Function... branchFunctions) {
-        return this.tree(null, branchFunctions);
+    public default GraphTraversal<S, E> tree() {
+        return this.tree(null);
     }
 
     public default <V> GraphTraversal<S, E> sack(final BiFunction<V, E, V> sackFunction) {
@@ -601,48 +584,38 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
-    public default GraphTraversal<S, E> by(final Function<E, ?> objectFunction) {
-        ((FunctionRingAcceptor<E, ?>) TraversalHelper.getEnd(this)).setFunctionRing(new ByRing<>(objectFunction));
+    public default <V> GraphTraversal<S, E> by(final Function<V, Object> objectFunction) {
+        ((FunctionAcceptor<V, Object>) TraversalHelper.getEnd(this)).addFunction(objectFunction);
         return this;
     }
 
-    public default GraphTraversal<S, E> by(final Function<E, ?>... objectFunctions) {
-        ((FunctionRingAcceptor<E, ?>) TraversalHelper.getEnd(this)).setFunctionRing(new ByRing<>(objectFunctions));
+    public default GraphTraversal<S, E> by(final T token) {
+        ((FunctionAcceptor<Element, Object>) TraversalHelper.getEnd(this)).addFunction(token);
         return this;
     }
 
-    public default GraphTraversal<S, E> by(final String... elementPropertyKeys) {
-        ((FunctionRingAcceptor<E, ?>) TraversalHelper.getEnd(this)).setFunctionRing(new ByRing<>(elementPropertyKeys));
+    public default GraphTraversal<S, E> by(final String elementPropertyKey) {
+        ((FunctionAcceptor<Element, ?>) TraversalHelper.getEnd(this)).addFunction(new ElementValueFunction<>(elementPropertyKey));
         return this;
     }
 
-    public default GraphTraversal<S, E> by(final Object... stringsAndFunctions) {
-        ((FunctionRingAcceptor<E, ?>) TraversalHelper.getEnd(this)).setFunctionRing(new ByRing<>(stringsAndFunctions));
+    public default GraphTraversal<S, E> by(final Comparator<E> comparator) {
+        ((ComparatorAcceptor<E>) TraversalHelper.getEnd(this)).addComparator(comparator);
         return this;
     }
 
-    public default <C> GraphTraversal<S, E> by(final Object keyA, final Comparator<C> valueComparatorA) {
-        ((ByComparatorAcceptor<E>) TraversalHelper.getEnd(this)).setByComparator(new ByComparator<>(keyA, valueComparatorA));
+    public default <V> GraphTraversal<S, E> by(final Function<Element, V> elementFunction, final Comparator<V> valueComparator) {
+        ((ComparatorAcceptor<V>) TraversalHelper.getEnd(this)).addComparator(elementFunction, valueComparator);
         return this;
     }
 
-    public default <C1, C2> GraphTraversal<S, E> by(final Object keyA, final Comparator<C1> valueComparatorA, final Object keyB, final Comparator<C2> valueComparatorB) {
-        ((ByComparatorAcceptor<E>) TraversalHelper.getEnd(this)).setByComparator(new ByComparator<>(keyA, valueComparatorA, keyB, valueComparatorB));
+    public default <V> GraphTraversal<S, E> by(final T token, final Comparator<V> valueComparator) {
+        ((ComparatorAcceptor<V>) TraversalHelper.getEnd(this)).addComparator((Function) token, valueComparator);
         return this;
     }
 
-    public default <C1, C2, C3> GraphTraversal<S, E> by(final Object keyA, final Comparator<C1> valueComparatorA, final Object keyB, final Comparator<C2> valueComparatorB, final Object keyC, final Comparator<C3> valueComparatorC) {
-        ((ByComparatorAcceptor<E>) TraversalHelper.getEnd(this)).setByComparator(new ByComparator<>(keyA, valueComparatorA, keyB, valueComparatorB, keyC, valueComparatorC));
-        return this;
-    }
-
-    public default GraphTraversal<S, E> by(final Comparator<E> comparatorA) {
-        ((ByComparatorAcceptor<E>) TraversalHelper.getEnd(this)).setByComparator(new ByComparator<>(comparatorA));
-        return this;
-    }
-
-    public default GraphTraversal<S, E> by(final Comparator<E> comparatorA, final Comparator<E> comparatorB) {
-        ((ByComparatorAcceptor<E>) TraversalHelper.getEnd(this)).setByComparator(new ByComparator<>(comparatorA, comparatorB));
+    public default <V> GraphTraversal<S, E> by(final String elementPropertyKey, final Comparator<V> valueComparator) {
+        ((ComparatorAcceptor<V>) TraversalHelper.getEnd(this)).addComparator(elementPropertyKey, valueComparator);
         return this;
     }
 

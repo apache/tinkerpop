@@ -79,7 +79,7 @@ public abstract class DedupTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_byXlangX_name() {
-            return g.V().both().dedup().by(v -> v.property("lang").orElse(null)).values("name");
+            return g.V().both().dedup().<Vertex>by(v -> v.property("lang").orElse(null)).values("name");
         }
 
         @Override

@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -20,22 +21,22 @@ import static org.junit.Assert.*;
  */
 public abstract class TreeTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXidX();
+    public abstract Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX();
 
-    public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXa_idX();
+    public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX();
 
     public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXaX();
 
-    public abstract Traversal<Vertex, Tree> get_g_v1_out_out_treeXnameX(final Object v1Id);
+    public abstract Traversal<Vertex, Tree> get_g_v1_out_out_tree_byXnameX(final Object v1Id);
 
-    public abstract Traversal<Vertex, Tree> get_g_v1_out_out_treeXa_nameX_both_both_capXaX(final Object v1Id);
+    public abstract Traversal<Vertex, Tree> get_g_v1_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_out_out_treeXnameX() {
+    public void g_v1_out_out_tree_byXnameX() {
         List<Traversal<Vertex, Tree>> traversals = Arrays.asList(
-                get_g_v1_out_out_treeXnameX(convertToVertexId("marko")),
-                get_g_v1_out_out_treeXa_nameX_both_both_capXaX(convertToVertexId("marko")));
+                get_g_v1_out_out_tree_byXnameX(convertToVertexId("marko")),
+                get_g_v1_out_out_treeXaX_byXnameX_both_both_capXaX(convertToVertexId("marko")));
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             final Tree tree = traversal.next();
@@ -51,8 +52,8 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_out_out_treeXidX() {
-        List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_treeXidX(), get_g_V_out_out_treeXa_idX());
+    public void g_V_out_out_tree_byXidX() {
+        List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_tree_byXidX(), get_g_V_out_out_treeXaX_byXidX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             final Tree tree = traversal.next();
@@ -89,23 +90,23 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXnameX(final Object v1Id) {
-            return (Traversal) g.V(v1Id).out().out().tree(v -> ((Vertex) v).value("name"));
+        public Traversal<Vertex, Tree> get_g_v1_out_out_tree_byXnameX(final Object v1Id) {
+            return (Traversal) g.V(v1Id).out().out().tree().by("name");
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXa_nameX_both_both_capXaX(final Object v1Id) {
-            return g.V(v1Id).out().out().tree("a", v -> ((Vertex) v).value("name")).both().both().cap("a");
+        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
+            return g.V(v1Id).out().out().tree("a").by("name").both().both().cap("a");
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_V_out_out_treeXidX() {
-            return (Traversal) g.V().out().out().tree(v -> ((Vertex) v).id());
+        public Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX() {
+            return (Traversal) g.V().out().out().tree().by(T.id);
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_V_out_out_treeXa_idX() {
-            return (Traversal) g.V().out().out().tree("a", v -> ((Vertex) v).id());
+        public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX() {
+            return (Traversal) g.V().out().out().tree("a").by(T.id);
         }
 
         @Override
@@ -120,25 +121,25 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXnameX(final Object v1Id) {
+        public Traversal<Vertex, Tree> get_g_v1_out_out_tree_byXnameX(final Object v1Id) {
             // TODO: micropaths don't have vertex properties
-            return (Traversal) g.V(v1Id).out().out().tree(v -> ((Vertex) v).value("name"));
+            return (Traversal) g.V(v1Id).out().out().tree().by("name");
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXa_nameX_both_both_capXaX(final Object v1Id) {
+        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
             // TODO: micropaths don't have vertex properties
-            return g.V(v1Id).out().out().tree("a", v -> ((Vertex) v).value("name")).both().both().<Tree>cap("a");
+            return g.V(v1Id).out().out().tree("a").by("name").both().both().<Tree>cap("a");
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_V_out_out_treeXidX() {
-            return (Traversal) g.V().out().out().tree(v -> ((Vertex) v).id()).submit(g.compute());
+        public Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX() {
+            return (Traversal) g.V().out().out().tree().by(T.id).submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_V_out_out_treeXa_idX() {
-            return (Traversal) g.V().out().out().tree("a", v -> ((Vertex) v).id()).submit(g.compute());
+        public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX() {
+            return (Traversal) g.V().out().out().tree("a").by(T.id).submit(g.compute());
         }
 
         @Override

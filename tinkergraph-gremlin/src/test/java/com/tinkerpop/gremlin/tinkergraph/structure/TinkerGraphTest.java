@@ -94,10 +94,11 @@ public class TinkerGraphTest {
     }
 
     @Test
+    @Ignore
     public void testPlay2() throws Exception {
         Graph g = TinkerFactory.createClassic();
         g.V().out("knows").groupCount().by("name").forEachRemaining(Map.class,System.out::println);
-        g.V().out("knows").groupCount().by(v -> v.value("name")).forEachRemaining(Map.class,System.out::println);
+        g.V().out("knows").groupCount().<Vertex>by(v -> v.value("name")).forEachRemaining(Map.class,System.out::println);
         g.V().out("knows").groupCount().by(T.label).forEachRemaining(Map.class,System.out::println);
     }
 

@@ -19,33 +19,33 @@ public abstract class GroovyOrderTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_name_orderXabX() {
-            g.V.name.order.by{ a, b -> b <=> a }
+        public Traversal<Vertex, String> get_g_V_name_order_byXabX() {
+            g.V.name.order.by { a, b -> b <=> a }
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_name_orderXa1_b1__b2_a2X() {
-            g.V.name.order.by { a, b -> a[1] <=> b[1] } { a, b -> b[2] <=> a[2] }
+        public Traversal<Vertex, String> get_g_V_name_order_byXa1_b1X_byXb2_a2X() {
+            g.V.name.order.by { a, b -> a[1] <=> b[1] }.by { a, b -> b[2] <=> a[2] }
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_orderByXname_incrX_name() {
+        public Traversal<Vertex, String> get_g_V_order_byXname_incrX_name() {
             g.V.order.by('name', Order.incr).name
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_orderByXnameX_name() {
-            g.V.order.by('name',Order.incr).name
+        public Traversal<Vertex, String> get_g_V_order_byXnameX_name() {
+            g.V.order.by('name', Order.incr).name
         }
 
         @Override
-        public Traversal<Vertex, Double> get_g_V_outE_orderByXweight_decrX_weight() {
+        public Traversal<Vertex, Double> get_g_V_outE_order_byXweight_decrX_weight() {
             g.V.outE.order.by('weight', Order.decr).weight
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_orderByXname_a1_b1__b2_a2X_name() {
-            return g.V.order.by('name', { a, b -> a[1].compareTo(b[1]) }, 'name', { a, b -> b[2].compareTo(a[2]) }).name;
+        public Traversal<Vertex, String> get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
+            return g.V.order.by('name', { a, b -> a[1].compareTo(b[1]) }).by('name', { a, b -> b[2].compareTo(a[2]) }).name;
         }
     }
 
@@ -57,33 +57,33 @@ public abstract class GroovyOrderTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_name_orderXabX() {
+        public Traversal<Vertex, String> get_g_V_name_order_byXabX() {
             ComputerTestHelper.compute("g.V.name.order.by { a, b -> b <=> a }", g)
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_name_orderXa1_b1__b2_a2X() {
-            ComputerTestHelper.compute("g.V.name.order.by { a, b -> a[1] <=> b[1] } { a, b -> b[2] <=> a[2] }", g)
+        public Traversal<Vertex, String> get_g_V_name_order_byXa1_b1X_byXb2_a2X() {
+            ComputerTestHelper.compute("g.V.name.order.by { a, b -> a[1] <=> b[1] }.by{ a, b -> b[2] <=> a[2] }", g)
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_orderByXname_incrX_name() {
+        public Traversal<Vertex, String> get_g_V_order_byXname_incrX_name() {
             g.V.order.by('name', Order.incr).name
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_orderByXnameX_name() {
-            g.V.order.by('name',Order.incr).name
+        public Traversal<Vertex, String> get_g_V_order_byXnameX_name() {
+            g.V.order.by('name', Order.incr).name
         }
 
         @Override
-        public Traversal<Vertex, Double> get_g_V_outE_orderByXweight_decrX_weight() {
+        public Traversal<Vertex, Double> get_g_V_outE_order_byXweight_decrX_weight() {
             g.V.outE.order.by('weight', Order.decr).weight
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_orderByXname_a1_b1__b2_a2X_name() {
-            return g.V.order.by('name', { a, b -> a[1].compareTo(b[1]) }, 'name', { a, b -> b[2].compareTo(a[2]) }).name;
+        public Traversal<Vertex, String> get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
+            return g.V.order.by('name') { a, b -> a[1].compareTo(b[1]) }.by('name') { a, b -> b[2].compareTo(a[2]) }.name;
         }
 
     }

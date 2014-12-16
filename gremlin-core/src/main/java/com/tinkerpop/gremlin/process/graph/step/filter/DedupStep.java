@@ -2,10 +2,9 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionRingAcceptor;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.util.FunctionRing;
 import org.javatuples.Pair;
 
 import java.util.HashSet;
@@ -17,7 +16,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupStep<S> extends FilterStep<S> implements Reversible, Reducing, FunctionRingAcceptor<S, Object> {
+public final class DedupStep<S> extends FilterStep<S> implements Reversible, Reducing, FunctionAcceptor<S, Object> {
 
     private Function<S, ?> uniqueFunction = null;
     private Set<Object> duplicateSet = new HashSet<>();
@@ -32,9 +31,8 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     }
 
     @Override
-    public void setFunctionRing(final FunctionRing<S, Object> functionRing) {
-        FunctionRingAcceptor.singleFunctionSupported(functionRing, this);
-        this.uniqueFunction = functionRing.next();
+    public void addFunction(final Function<S, Object> function) {
+        this.uniqueFunction = function;
         DedupStep.generatePredicate(this);
     }
 

@@ -32,7 +32,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileTest;
@@ -119,7 +119,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             AddEdgeTest.StandardTest.class,
             AggregateTest.StandardTest.class,
             CountTest.StandardTest.class,
-            GroupByTest.StandardTest.class,
+            GroupTest.StandardTest.class,
             GroupCountTest.StandardTest.class,
             InjectTest.StandardTest.class,
             ProfileTest.StandardTest.class,
@@ -184,7 +184,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             AddEdgeTest.class,
             AggregateTest.class,
             CountTest.class,
-            GroupByTest.class,
+            GroupTest.class,
             GroupCountTest.class,
             InjectTest.class,
             ProfileTest.class,

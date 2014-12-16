@@ -20,23 +20,23 @@ public abstract class GroovyPathTest {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
-            g.V(v1Id).out.path.by('age', 'name');
+        public Traversal<Vertex, Path> get_g_v1_out_path_byXageX_byXnameX(final Object v1Id) {
+            g.V(v1Id).out.path.by('age').by('name');
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
-            g.V().as('x').out.jump('x') { it.loops() < 2 }.path.by(Function.identity(), 'name', 'lang');
+        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_path_byXitX_byXnameX_byXlangX() {
+            g.V().as('x').out.jump('x') { it.loops() < 2 }.path.by{it}.by('name').by('lang');
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit_name_langX() {
-            g.V.as('x').out.jump('x', 2).path.by(Function.identity(), 'name', 'lang');
+        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_path_byXitX_byXnameX_byXlangX() {
+            g.V.as('x').out.jump('x', 2).path.by{it}.by('name').by('lang');
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_out_out_pathXname_ageX() {
-            g.V.out.out.path.by('name', 'age');
+        public Traversal<Vertex, Path> get_g_V_out_out_path_byXnameX_byXageX() {
+            g.V.out.out.path.by('name').by('age');
         }
     }
 
@@ -48,27 +48,27 @@ public abstract class GroovyPathTest {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
-            g.V(v1Id).out.path.by('age', 'name');
-            // TODO:ComputerTestHelper.compute("g.V(${v1Id}).out.path { it.age } { it.name }", g);
+        public Traversal<Vertex, Path> get_g_v1_out_path_byXageX_byXnameX(final Object v1Id) {
+            g.V(v1Id).out.path.by('age').by('name');
+            // TODO
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
-            g.V().as('x').out.jump('x') { it.loops() < 2 }.path.by(Function.identity(), 'name', 'lang');
-            // TODO: ComputerTestHelper.compute("g.V().as('x').out.jump('x') { it.loops < 2 }.path { it } { it.name } { it.lang }", g);
+        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_path_byXitX_byXnameX_byXlangX() {
+            g.V().as('x').out.jump('x') { it.loops() < 2 }.path.by{it}.by('name').by('lang');
+            // TODO
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit_name_langX() {
-            g.V.as('x').out.jump('x', 2).path.by(Function.identity(), 'name', 'lang');
-            //TODO: ComputerTestHelper.compute("g.V.as('x').out.jump('x', 2).path { it } { it.name } { it.lang }", g);
+        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_path_byXitX_byXnameX_byXlangX() {
+            g.V.as('x').out.jump('x', 2).path.by{it}.by('name').by('lang');
+            //TODO
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_out_out_pathXname_ageX() {
-            g.V.out.out.path.by('name', 'age');
-            // TODO: ComputerTestHelper.compute("g.V.out.out.path { it.name } { it.age }",g);
+        public Traversal<Vertex, Path> get_g_V_out_out_path_byXnameX_byXageX() {
+            g.V.out.out.path.by('name').by('age');
+            // TODO
         }
     }
 }

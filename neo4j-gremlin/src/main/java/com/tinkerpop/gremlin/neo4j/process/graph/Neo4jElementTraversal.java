@@ -319,29 +319,13 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().aggregate(sideEffectKey);
     }
 
-    public default Neo4jTraversal<A, A> groupBy(final String sideEffectKey, final Function<Traverser<A>, ?> keyFunction, final Function<Traverser<A>, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
-        return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, reduceFunction);
+    public default Neo4jTraversal<A, A> group(final String sideEffectKey) {
+        return this.start().group(sideEffectKey);
     }
 
 
-    public default Neo4jTraversal<A, A> groupBy(final Function<Traverser<A>, ?> keyFunction, final Function<Traverser<A>, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
-        return this.start().groupBy(null, keyFunction, valueFunction, reduceFunction);
-    }
-
-    public default Neo4jTraversal<A, A> groupBy(final Function<Traverser<A>, ?> keyFunction, final Function<Traverser<A>, ?> valueFunction) {
-        return this.start().groupBy(null, keyFunction, valueFunction, null);
-    }
-
-    public default Neo4jTraversal<A, A> groupBy(final Function<Traverser<A>, ?> keyFunction) {
-        return this.start().groupBy(null, keyFunction, null, null);
-    }
-
-    public default Neo4jTraversal<A, A> groupBy(final String sideEffectKey, final Function<Traverser<A>, ?> keyFunction) {
-        return this.start().groupBy(sideEffectKey, keyFunction, null, null);
-    }
-
-    public default Neo4jTraversal<A, A> groupBy(final String sideEffectKey, final Function<Traverser<A>, ?> keyFunction, final Function<Traverser<A>, ?> valueFunction) {
-        return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, null);
+    public default Neo4jTraversal<A, A> group() {
+        return this.start().group();
     }
 
     public default Neo4jTraversal<A, A> groupCount(final String sideEffectKey) {
@@ -372,12 +356,12 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().timeLimit(timeLimit);
     }
 
-    public default Neo4jTraversal<A, A> tree(final String sideEffectKey, final Function... branchFunctions) {
-        return this.start().tree(sideEffectKey, branchFunctions);
+    public default Neo4jTraversal<A, A> tree(final String sideEffectKey) {
+        return this.start().tree(sideEffectKey);
     }
 
-    public default Neo4jTraversal<A, A> tree(final Function... branchFunctions) {
-        return this.start().tree(null, branchFunctions);
+    public default Neo4jTraversal<A, A> tree() {
+        return this.start().tree();
     }
 
     public default <V> Neo4jTraversal<A, A> sack(final BiFunction<V, A, V> sackFunction) {

@@ -9,6 +9,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.function.Function;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -19,7 +21,7 @@ import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
  */
 public abstract class LocalTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_orderByXvalueX_limitX2XX_value();
+    public abstract Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value();
 
     public abstract Traversal<Vertex, Long> get_g_V_localXoutE_countX();
 
@@ -28,7 +30,7 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CREW)
     public void g_V_localXpropertiesXlocationX_orderByXvalueX_limitX2XX_value() {
-        final Traversal<Vertex, String> traversal = get_g_V_localXpropertiesXlocationX_orderByXvalueX_limitX2XX_value();
+        final Traversal<Vertex, String> traversal = get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("brussels", "san diego", "centreville", "dulles", "baltimore", "bremen", "aachen", "kaiserslautern"), traversal);
 
@@ -66,7 +68,7 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_orderByXvalueX_limitX2XX_value() {
+        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
             return g.V().local(g.<Vertex>of().properties("location").order().by(T.value, Order.incr).range(0, 2)).value();
         }
 
@@ -88,7 +90,7 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_orderByXvalueX_limitX2XX_value() {
+        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
             return g.V().local(g.<Vertex>of().properties("location").order().by(T.value, Order.incr).range(0, 2)).<String>value().submit(g.compute());
         }
 

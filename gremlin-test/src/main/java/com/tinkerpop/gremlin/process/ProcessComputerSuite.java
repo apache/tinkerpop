@@ -32,7 +32,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.ValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileTest;
@@ -121,7 +121,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // TODO: AddEdgeTest.ComputerTest.class,
             AggregateTest.ComputerTest.class,
             CountTest.ComputerTest.class,
-            GroupByTest.ComputerTest.class,
+            GroupTest.ComputerTest.class,
             GroupCountTest.ComputerTest.class,
             // TODO: InjectTest.ComputerTest.class,
             ProfileTest.ComputerTest.class,
@@ -191,7 +191,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // AddEdgeTest.class,
             AggregateTest.class,
             CountTest.class,
-            GroupByTest.class,
+            GroupTest.class,
             GroupCountTest.class,
             InjectTest.class,
             ProfileTest.class,

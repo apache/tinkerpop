@@ -2,21 +2,23 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionRingAcceptor;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.MutablePath;
 
+import java.util.function.Function;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer, FunctionRingAcceptor<S, Object> {
+public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer, FunctionAcceptor<Object, Object> {
 
-    private FunctionRing functionRing;
+    private FunctionRing<Object,Object> functionRing;
 
     public PathStep(final Traversal traversal) {
         super(traversal);
-        this.functionRing = new FunctionRing();
+        this.functionRing = new FunctionRing<>();
         this.setFunction(traverser -> {
             if (null == this.functionRing)
                 return traverser.path();
@@ -43,7 +45,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer,
     }
 
     @Override
-    public void setFunctionRing(final FunctionRing<S, Object> functionRing) {
-        this.functionRing = functionRing;
+    public void addFunction(final Function<Object, Object> function) {
+        this.functionRing.addFunction(function);
     }
 }

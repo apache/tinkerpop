@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
@@ -18,15 +19,15 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathConsumer, SideEffectCapable, MapReducer<Object, Tree, Object, Tree, Tree> {
+public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathConsumer, SideEffectCapable, FunctionAcceptor<Object, Object>, MapReducer<Object, Tree, Object, Tree, Tree> {
 
-    private FunctionRing functionRing;
+    private FunctionRing<Object, Object> functionRing;
     private final String sideEffectKey;
 
-    public TreeStep(final Traversal traversal, final String sideEffectKey, final Function... branchFunctions) {
+    public TreeStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
-        this.functionRing = new FunctionRing(branchFunctions);
+        this.functionRing = new FunctionRing<>();
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.traversal.sideEffects().registerSupplierIfAbsent(this.sideEffectKey, Tree::new);
         this.setConsumer(traverser -> {
@@ -68,5 +69,10 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
         final TreeStep<S> clone = (TreeStep<S>) super.clone();
         clone.functionRing = this.functionRing.clone();
         return clone;
+    }
+
+    @Override
+    public void addFunction(final Function<Object, Object> function) {
+        this.functionRing.addFunction(function);
     }
 }
