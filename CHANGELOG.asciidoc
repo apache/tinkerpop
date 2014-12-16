@@ -29,7 +29,7 @@ TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 * `Edge.iterators().vertexIterator(BOTH)` now guarantees `OUT` then `IN` vertex iterator order.
 * `Graph.v(Object)` and `Graph.e(Object)` no longer exist. Instead, use `Graph.V(Object... ids)` and `Graph.E(Object... ids)`.
 * Added `Graph.Iterators` to allow access to vertex and edge iterators based on element ids and bypassing `GraphTraversal`.
-* Renamed `GraphStrategy` implementations to be less verbose - removed the word "Graph" from their names (e.g. `IdGraphStrategy` simply changed to `IdStrategy`)
+* Renamed `GraphStrategy` implementations to be less verbose - removed the word "Graph" from their names (e.g. `IdGraphStrategy` simply changed to `IdStrategy`).
 * Removed `Step.NO_OBJECT` as the problem is solves can be solved with proper use of `flatMap`.
 * `Path` is now part of `GraphSerializer` and thus, not specific to a particular implementation of `Path`.
 * Added messaging to show files being downloaded when using the Gremlin Server "install" command.
