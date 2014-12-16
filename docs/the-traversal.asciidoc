@@ -346,11 +346,11 @@ gremlin> g.V().group().by{it.value('name')[1]}.by{it.value('name')}   // for eac
 gremlin> g.V().group().by{it.value('name')[1]}.by{it.value('name')}.by{it.size()}   // for each grouping, what is it's size?
 ==>[a:2, e:1, i:1, o:2]
 
-The three lambda parameters available to `group()` via `by()` are:
+The three projection parameters available to `group()` via `by()` are:
 
-. Key-lambda: What feature of the object to group on (a function that yields the map key)?
-. Value-lambda: What feature of the group to store in the key-list?
-. Reduce-lambda: What feature of the key-list to ultimately return?
+. Key-projection: What feature of the object to group on (a function that yields the map key)?
+. Value-projection: What feature of the group to store in the key-list?
+. Reduce-projection: What feature of the key-list to ultimately return?
 
 WARNING: The `group()`-step does not have a correlate in <<traversalvertexprogram,Gremlin OLAP>> when used mid-traversal. When in mid-traversal grouping only occurs at the the current processing vertex and thus, is not a global operation as it in Gremlin OLTP. However, `GroupMapReduce` provides unified groups at the end of the traversal computation.
 
