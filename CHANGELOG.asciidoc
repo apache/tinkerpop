@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed `OrderByStep` as it is now just `order()` with a `by()`-based comparator.
 * Added `SampleStep` (`sample()`) to allow for sampling the set of previous objects. Useful for doing random walks with `local()`.
 * Renamed `random()` to `coin()` to better express that the filter is a random coin toss.
 * Added `by()`-projection to modulate the meaning of post-processing steps like `aggregate()`, `groupCount()`, `path()`, `order()`, etc.
@@ -29,7 +30,6 @@ TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 * `Graph.v(Object)` and `Graph.e(Object)` no longer exist. Instead, use `Graph.V(Object... ids)` and `Graph.E(Object... ids)`.
 * Added `Graph.Iterators` to allow access to vertex and edge iterators based on element ids and bypassing `GraphTraversal`.
 * Renamed `GraphStrategy` implementations to be less verbose - removed the word "Graph" from their names (e.g. `IdGraphStrategy` simply changed to `IdStrategy`)
-* 'OrderByStep` allows up to 3 element value comparators (no var args possible, so it can't be arbitrary).
 * Removed `Step.NO_OBJECT` as the problem is solves can be solved with proper use of `flatMap`.
 * `Path` is now part of `GraphSerializer` and thus, not specific to a particular implementation of `Path`.
 * Added messaging to show files being downloaded when using the Gremlin Server "install" command.
