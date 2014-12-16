@@ -159,7 +159,7 @@ In link:http://en.wikipedia.org/wiki/Recommender_system[recommendation systems],
 	
 	"What has userA liked? Who else has liked those things? What have they liked that userA hasn't already liked?"
 
-Finally, `aggregate()`-step can be modulated via `by()`.
+Finally, `aggregate()`-step can be modulated via `by()`-projection.
 
 [source,groovy]
 gremlin> g.V().out('knows').aggregate()
@@ -365,7 +365,7 @@ When it is important to know how many times a particular object has been at a pa
 [source,groovy]
 gremlin> g.V().has('age').values('age').groupCount()
 ==>[32:1, 35:1, 27:1, 29:1]
-gremlin> g.V().has('age').groupCount().by('age') // you can also supply a pre-group modulator
+gremlin> g.V().has('age').groupCount().by('age') // you can also supply a pre-group projection
 ==>[32:1, 35:1, 27:1, 29:1]
 
 There is one person that is 32, one person that is 35, one person that is 27, and one person that is 29.
