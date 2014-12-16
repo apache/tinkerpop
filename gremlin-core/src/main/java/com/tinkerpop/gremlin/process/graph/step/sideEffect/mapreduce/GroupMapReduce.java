@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupStep;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -23,23 +23,23 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupByMapReduce implements MapReduce<Object, Collection, Object, Object, Map> {
+public final class GroupMapReduce implements MapReduce<Object, Collection, Object, Object, Map> {
 
-    public static final String GROUP_BY_STEP_SIDE_EFFECT_KEY = "gremlin.groupByStep.sideEffectKey";
-    public static final String GROUP_BY_STEP_STEP_LABEL = "gremlin.groupByStep.stepLabel";
+    public static final String GROUP_BY_STEP_SIDE_EFFECT_KEY = "gremlin.groupStep.sideEffectKey";
+    public static final String GROUP_BY_STEP_STEP_LABEL = "gremlin.groupStep.stepLabel";
 
     private String sideEffectKey;
     private Traversal<?, ?> traversal;
-    private String groupByStepKey;
+    private String groupStepKey;
     private Function reduceFunction;
     private Supplier<Map> mapSupplier;
 
-    private GroupByMapReduce() {
+    private GroupMapReduce() {
 
     }
 
-    public GroupByMapReduce(final GroupByStep step) {
-        this.groupByStepKey = step.getLabel();
+    public GroupMapReduce(final GroupStep step) {
+        this.groupStepKey = step.getLabel();
         this.sideEffectKey = step.getSideEffectKey();
         this.reduceFunction = step.getReduceFunction();
         this.traversal = step.getTraversal();
@@ -50,18 +50,18 @@ public final class GroupByMapReduce implements MapReduce<Object, Collection, Obj
     public void storeState(final Configuration configuration) {
         MapReduce.super.storeState(configuration);
         configuration.setProperty(GROUP_BY_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
-        configuration.setProperty(GROUP_BY_STEP_STEP_LABEL, this.groupByStepKey);
+        configuration.setProperty(GROUP_BY_STEP_STEP_LABEL, this.groupStepKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(GROUP_BY_STEP_SIDE_EFFECT_KEY);
-        this.groupByStepKey = configuration.getString(GROUP_BY_STEP_STEP_LABEL);
+        this.groupStepKey = configuration.getString(GROUP_BY_STEP_STEP_LABEL);
         this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
-        final GroupByStep groupByStep = (GroupByStep) traversal.asAdmin().getSteps().stream()
-                .filter(step -> step.getLabel().equals(this.groupByStepKey))
+        final GroupStep groupStep = (GroupStep) traversal.asAdmin().getSteps().stream()
+                .filter(step -> step.getLabel().equals(this.groupStepKey))
                 .findAny().get();
-        this.reduceFunction = groupByStep.getReduceFunction();
+        this.reduceFunction = groupStep.getReduceFunction();
         this.mapSupplier = traversal.sideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
     }
 
@@ -111,8 +111,8 @@ public final class GroupByMapReduce implements MapReduce<Object, Collection, Obj
     }
 
     @Override
-    public GroupByMapReduce clone() throws CloneNotSupportedException {
-        final GroupByMapReduce clone = (GroupByMapReduce) super.clone();
+    public GroupMapReduce clone() throws CloneNotSupportedException {
+        final GroupMapReduce clone = (GroupMapReduce) super.clone();
         clone.traversal = this.traversal.clone();
         return clone;
     }

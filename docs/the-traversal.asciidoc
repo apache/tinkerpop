@@ -159,6 +159,14 @@ In link:http://en.wikipedia.org/wiki/Recommender_system[recommendation systems],
 	
 	"What has userA liked? Who else has liked those things? What have they liked that userA hasn't already liked?"
 
+Finally, `aggregate()`-step can be modulated via `by()`.
+
+[source,groovy]
+gremlin> g.V().out('knows').aggregate()
+==>{v[2]=1, v[4]=1}
+gremlin> g.V().out('knows').aggregate().by('name')
+==>{vadas=1, josh=1}
+
 
 [[back-step]]
 Back Step
@@ -276,7 +284,7 @@ gremlin> g.V().values('name').map{[it.get(), it.get().length()]}
 ==>[josh, 4]
 ==>[ripple, 6]
 ==>[peter, 5]
-gremlin> g.V().values('name').dedup{it.get().length()}
+gremlin> g.V().values('name').dedup().by{it.length()}
 ==>marko
 ==>lop
 ==>josh
@@ -324,27 +332,27 @@ gremlin> g.V(1).out('knows').values('name').fold(0){a,b -> a + b.get().length()}
 <1> A parameterless `fold()` will aggregate all the objects into a list and then emit the list.
 <2> `fold()` can be provided two arguments --  a seed value and a reduce bi-function.
 
-[[groupby-step]]
-GroupBy Step
-~~~~~~~~~~~~
+[[group-step]]
+Group Step
+~~~~~~~~~~
 
-As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required. That is, the actually path taken or the current location of a traverser is not the ultimate output of the computation, but some other representation of the traversal. The `groupBy()`-step (*sideEffect*) is one such sideEffect that organizes the objects according to some function of the object. Then, if required, that organization (a list) is reduced. An example is provided below.
+As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required. That is, the actually path taken or the current location of a traverser is not the ultimate output of the computation, but some other representation of the traversal. The `group()`-step (*sideEffect*) is one such sideEffect that organizes the objects according to some function of the object. Then, if required, that organization (a list) is reduced. An example is provided below.
 
 [source,groovy]
-gremlin> g.V().groupBy{it.get().value('name')[1]}   // group the vertices by the second letter of their name
+gremlin> g.V().group().by{it.value('name')[1]}   // group the vertices by the second letter of their name
 ==>[a:[v[1], v[2]], e:[v[6]], i:[v[5]], o:[v[3], v[4]]]
-gremlin> g.V().groupBy{it.get().value('name')[1]}{it.get().value('name')}   // for each vertex in the group, get their name (now the name[1] is apparent)
+gremlin> g.V().group().by{it.value('name')[1]}.by{it.value('name')}   // for each vertex in the group, get their name (now the name[1] is apparent)
 ==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
-gremlin> g.V().groupBy{it.get().value('name')[1]}{it.get().value('name')}{it.size()}   // for each grouping, what is it's size?
+gremlin> g.V().group().by{it.value('name')[1]}.by{it.value('name')}.by{it.size()}   // for each grouping, what is it's size?
 ==>[a:2, e:1, i:1, o:2]
 
-The three lambda parameters of `groupBy` are discussed below.
+The three lambda parameters available to `group()` via `by()` are:
 
 . Key-lambda: What feature of the object to group on (a function that yields the map key)?
 . Value-lambda: What feature of the group to store in the key-list?
 . Reduce-lambda: What feature of the key-list to ultimately return?
 
-WARNING: The `groupBy()`-step does not have a correlate in <<traversalvertexprogram,Gremlin OLAP>> when used mid-traversal. When in mid-traversal grouping only occurs at the the current processing vertex and thus, is not a global operation as it in Gremlin OLTP. However, `GroupByMapReduce` provides unified groups at the end of the traversal computation.
+WARNING: The `group()`-step does not have a correlate in <<traversalvertexprogram,Gremlin OLAP>> when used mid-traversal. When in mid-traversal grouping only occurs at the the current processing vertex and thus, is not a global operation as it in Gremlin OLTP. However, `GroupMapReduce` provides unified groups at the end of the traversal computation.
 
 [[groupcount-step]]
 GroupCount Step
@@ -357,7 +365,7 @@ When it is important to know how many times a particular object has been at a pa
 [source,groovy]
 gremlin> g.V().has('age').values('age').groupCount()
 ==>[32:1, 35:1, 27:1, 29:1]
-gremlin> g.V().has('age').groupCount{it.get().value('age')} // you can also supply a pre-group lambda
+gremlin> g.V().has('age').groupCount().by('age') // you can also supply a pre-group modulator
 ==>[32:1, 35:1, 27:1, 29:1]
 
 There is one person that is 32, one person that is 35, one person that is 27, and one person that is 29.
@@ -367,10 +375,10 @@ There is one person that is 32, one person that is 35, one person that is 27, an
 image::groupcount-step.png[width=500]
 
 [source,groovy]
-gremlin> g.V().as('x').both().groupCount('m'){it.get().value('name')[1]}.jump('x',10).cap('m')
+gremlin> g.V().as('x').both().groupCount('m').by{it.value('name')[1]}.jump('x',10).cap('m')
 ==>[a:19598, e:5740, i:5740, o:27716]
 
-The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount` with a string variable. Given that `groupCount` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount`, the object's count is incremented. If `groupCount` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount`) can be accessed with `cap`-step by referencing the desired variable.
+The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount()` with a string variable. Given that `groupCount()` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount()`, the object's count is incremented. If `groupCount()` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount()` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount()`) can be accessed with `cap()`-step by referencing the desired variable.
 
 WARNING: The `groupCount()`-step does not have a correlate in <<traversalvertexprogram,Gremlin OLAP>> when used mid-traversal. When in mid-traversal grouping only occurs at the the current processing vertex and thus, is not a global operation as it in Gremlin OLTP. However, `GroupCountMapReduce` provides unified groups at the end of the traversal computation.
 
@@ -391,7 +399,7 @@ gremlin> g.V().has('age')
 gremlin> g.V().has('age').out().has('name',within,['vadas','josh'])
 ==>v[2]
 ==>v[4]
-gremlin> g.V().has('age').out().has('name',within,['vadas','josh']).outE().has(label,'created')
+gremlin> g.V().has('age').out().has('name',within,['vadas','josh']).outE().has(label,'created') // label is a "token" from T
 ==>e[10][4-created->5]
 ==>e[11][4-created->3]
 
@@ -492,6 +500,22 @@ The first time through the jump-sequence, the vertices lop, vadas, and josh are 
 
 The `jump()`-step highlights one of the major benefits of `Traverser<T>` in TinkerPop3: the ability to take a traverser and place it anywhere in the Traversal step-sequence. Because a traverser maintains all the metadata associated with its particular walk, and no step maintains state information about a traverser, traversers can be arbitrarily relocated without ill-effects.
 
+[[limit-step]]
+Limit Step
+~~~~~~~~~~
+
+The `limit()`-step is analogous to <<range-step,`range()`-step>> save that the lower end range is set to 0.
+
+[source,groovy]
+gremlin> g.V().limit(2)
+==>v[1]
+==>v[2]
+gremlin> g.V().range(0,2)
+==>v[1]
+==>v[2]
+gremlin> g.V().limit(2).toString()
+==>[TinkerGraphStep(vertex), RangeStep(0,2)]
+
 [[local-step]]
 Local Step
 ~~~~~~~~~~
@@ -504,13 +528,13 @@ A `GraphTraversal` operates on a continuous stream of objects. In many situation
 gremlin> g = TinkerFactory.createTheCrew()
 ==>tinkergraph[vertices:6 edges:14]
 gremlin> g.V().as('person').
-           properties('location').orderBy('startTime').limit(2).
-           value().as('location').select{it.value('name')}{it} <1>
+           properties('location').order().by('startTime',incr).limit(2).
+           value().as('location').select().by('name').by{it} <1>
 ==>[person:daniel, location:spremberg]
 ==>[person:stephen, location:centreville]
 gremlin> g.V().as('person').
-           local(g.of().properties('location').orderBy('startTime').limit(2)).
-           value().as('location').select{it.value('name')}{it} <2>
+           local(g.of().properties('location').order().by('startTime',incr).limit(2)).
+           value().as('location').select().by('name').by{it} <2>
 ==>[person:marko, location:san diego]
 ==>[person:marko, location:santa cruz]
 ==>[person:stephen, location:centreville]
@@ -541,7 +565,7 @@ gremlin> g.V().match('a',
             g.of().as('b').has('name', 'lop'),
             g.of().as('b').in('created').as('c'),
             g.of().as('c').has('age', 29)).
-          select(['a', 'c']){it.value('name')} 
+          select('a', 'c').by('name')
 ==>[a:marko, c:marko]
 ==>[a:josh, c:marko]
 ==>[a:peter, c:marko]
@@ -552,7 +576,7 @@ Note that the above can also be more concisely written as below which demonstrat
 gremlin> g.V().match('a',
             g.of().as('a').out('created').has('name', 'lop').as('b'),
             g.of().as('b').in('created').has('age', 29).as('c')).
-          select(['a', 'c']){it.value('name')} 
+          select('a','c').by('name')
 ==>[a:marko, c:marko]
 ==>[a:josh, c:marko]
 ==>[a:peter, c:marko]
@@ -611,7 +635,7 @@ gremlin> g.V().match('a',
             g.of().as('b').match('x',
                 g.of().as('x').out('created').as('y'),
                 g.of().as('y').has('name','ripple')).select('y').as('c')).
-            select(['a','c']){it.value('name')}
+            select('a','c').by('name')
 ==>[a:marko, c:ripple]
 
 WARNING: Currently, `match()` does not operate within a multi-JVM <<graphcomputer,GraphComputer>> OLAP environment. Future work includes a linearization <<traversalstrategy,TraversalStrategy>> for `match()`.
@@ -627,7 +651,7 @@ gremlin> g.V().match('a',
             g.of().as('a').out('created').as('b'),
             g.of().as('b').in('created').as('c')).
               where('a', neq, 'c').
-               select(['a','c']){it.value('name')}
+               select('a','c').by('name')
 ==>[a:marko, c:josh]
 ==>[a:marko, c:peter]
 ==>[a:josh, c:marko]
@@ -642,7 +666,7 @@ gremlin> traversal = g.V().match('a',
             g.of().as('a').out('created').as('b'),
             g.of().as('b').in('created').as('c')).
               where(g.of().as('a').out('knows').as('c')). <1>
-               select(['a','c']){it.value('name')}; null <2>
+               select('a','c').by('name'); null <2>
 ==>null
 gremlin> traversal.toString()
 ==>[TinkerGraphStep(vertex), MatchStep, WhereStep, SelectStep([a, c])] <3>
@@ -679,7 +703,7 @@ gremlin> g.V().values('name').order(decr)
 ==>marko
 ==>lop
 ==>josh
-gremlin> g.V().values('name').order{a,b -> a.get()[1] <=> b.get()[1]} // order by the second letter
+gremlin> g.V().values('name').order().by{a,b -> a[1] <=> b[1]}
 ==>marko
 ==>vadas
 ==>peter
@@ -692,14 +716,14 @@ Note that `order()` takes a `Comparator` var args and thus, its possible to do s
 [source,groovy]
 gremlin> import static java.util.Comparator.*
 ...
-gremlin> g.V().values('name').order(comparing{it.get()[1]}) // order by the second letter
+gremlin> g.V().values('name').order().by(comparing{it[1]}) // order by the second letter
 ==>marko
 ==>vadas
 ==>peter
 ==>ripple
 ==>lop
 ==>josh
-gremlin> g.V().values('name').order(comparing{it.get()[1]},comparing{it.get()[2]}) // order by second letter and if a tie, the third letter
+gremlin> g.V().values('name').order().by(comparing{it[1]}).by(comparing{it[2]}) // order by second letter and if a tie, the third letter
 ==>vadas
 ==>marko
 ==>peter
@@ -707,11 +731,7 @@ gremlin> g.V().values('name').order(comparing{it.get()[1]},comparing{it.get()[2]
 ==>lop
 ==>josh
 
-[[orderby-step]]
-OrderBy Step
-~~~~~~~~~~~~
-
-One of the most traversed objects in a traversal is an `Element`. An element can have properties associated with it (i.e. key/value pairs). In many situations, it is desirable to sort an element traversal stream according to a comparison of their properties. The `orderBy()`-step (*map*) exists to support this.
+One of the most traversed objects in a traversal is an `Element`. An element can have properties associated with it (i.e. key/value pairs). In many situations, it is desirable to sort an element traversal stream according to a comparison of their properties.
 
 [source,groovy]
 gremlin> g.V().values('name')
@@ -721,14 +741,14 @@ gremlin> g.V().values('name')
 ==>josh
 ==>ripple
 ==>peter
-gremlin> g.V().orderBy('name').values('name')
+gremlin> g.V().order().by('name',incr).values('name')
 ==>josh
 ==>lop
 ==>marko
 ==>peter
 ==>ripple
 ==>vadas
-gremlin> g.V().orderBy('name',decr).values('name')
+gremlin> g.V().order().by('name',decr).values('name')
 ==>vadas
 ==>ripple
 ==>peter
@@ -736,15 +756,15 @@ gremlin> g.V().orderBy('name',decr).values('name')
 ==>lop
 ==>josh
 
-The `orderBy()`-step allows the user to provide an arbitrary number of comparators for primary, secondary, etc. sorting. These comparators can be lambdas or they can be pre-defined enums (e.g. `Order.incr`). It is always best to use a pre-defined enum instead of a generic lambda as the underlying vendor may be able to optimize the execution when the comparator is inspectable.
+The `order()`-step allows the user to provide an arbitrary number of comparators for primary, secondary, etc. sorting. These comparators can be lambdas or they can be pre-defined enums (e.g. `Order.incr`). It is always best to use a pre-defined enum instead of a generic lambda as the underlying vendor may be able to optimize the execution when the comparator is inspectable.
 
 [source,groovy]
-gremlin> g.V().has('age').orderBy('name',{a,b->a[1] <=> b[1]},'age',incr).values('name')
+gremlin> g.V().has('age').order().by('name'){a,b->a[1] <=> b[1]}.by('age',incr).values('name')
 ==>vadas
 ==>marko
 ==>peter
 ==>josh
-gremlin> g.V().has('age').orderBy('name',{a,b->a[1] <=> b[1]},'age',decr).values('name')
+gremlin> g.V().has('age').order().by('name'){a,b->a[1] <=> b[1]}.by('age',decr).values('name')
 ==>marko
 ==>vadas
 ==>peter
@@ -754,7 +774,7 @@ gremlin> g.V().has('age').orderBy('name',{a,b->a[1] <=> b[1]},'age',decr).values
 Path Step
 ~~~~~~~~~
 
-A traverser is transformed as it moves through a series of steps within a `Traversal`. The history of the traverser is realized by examining its path with `path()`-step (*map*).
+A traverser is transformed as it moves through a series of steps within a traversal. The history of the traverser is realized by examining its path with `path()`-step (*map*).
 
 image::path-step.png[width=650]
 
@@ -773,17 +793,17 @@ gremlin> g.V().outE().inV().outE().inV().path()
 ==>[v[1], e[8][1-knows->4], v[4], e[10][4-created->5], v[5]]
 ==>[v[1], e[8][1-knows->4], v[4], e[11][4-created->3], v[3]]
 
-It is possible to provide a var args of lamdas to post-process the elements of the path in a round-robin fashion.
+It is possible to post-process the elements of the path in a round-robin fashion via `by()`.
 
 [source,groovy]
-gremlin> g.V().out().out().path{it.value('name')}{it.value('age')}
+gremlin> g.V().out().out().path().by('name').by('age')
 ==>[marko, 32, ripple]
 ==>[marko, 32, lop]
 
-Finally, because of lambda post-processing, nothing prevents the lambda from triggering yet another traversal. In the traversal below, for each element of the path traversed thus far, if its a person (as determined by having an `age`-property), then get all of their creations, else if its a creation, get all the people that created it.
+Finally, because `by()`-based post-processing, nothing prevents triggering yet another traversal. In the traversal below, for each element of the path traversed thus far, if its a person (as determined by having an `age`-property), then get all of their creations, else if its a creation, get all the people that created it.
 
 [source,groovy]
-gremlin> g.V().out().out().path{
+gremlin> g.V().out().out().path().by{
   it.choose({it.get().has('age').hasNext()}, 
     g.of().out('created').values('name'),
     g.of().in('created').values('name')).toList()}
@@ -1019,10 +1039,10 @@ gremlin> g.V().as('a').out().as('b').out().as('c') // no select
 gremlin> g.V().as('a').out().as('b').out().as('c').select()
 ==>[a:v[1], b:v[4], c:v[5]]
 ==>[a:v[1], b:v[4], c:v[3]]
-gremlin> g.V().as('a').out().as('b').out().as('c').select(['a','b'])
+gremlin> g.V().as('a').out().as('b').out().as('c').select('a','b')
 ==>[a:v[1], b:v[4]]
 ==>[a:v[1], b:v[4]]
-gremlin> g.V().as('a').out().as('b').out().as('c').select(['a','b']){it.value('name')}
+gremlin> g.V().as('a').out().as('b').out().as('c').select('a','b').by('name')
 ==>[a:marko, b:josh]
 ==>[a:marko, b:josh]
 gremlin> g.V().as('a').out().as('b').out().as('c').select('a') // if the selection is one step, no map is returned
@@ -1038,7 +1058,7 @@ gremlin> g.V().range(0, 2).as('a').map{[b:1,c:2]} <1>
 gremlin> g.V().range(0, 2).as('a').map{[b:1,c:2]}.select() <2>
 ==>[a:v[1], b:1, c:2]
 ==>[a:v[2], b:1, c:2]
-gremlin> g.V().range(0, 2).as('a').map{[b:1,c:2]}.select(['a','c']) <3>
+gremlin> g.V().range(0, 2).as('a').map{[b:1,c:2]}.select('a','c') <3>
 ==>[a:v[1], c:2]
 ==>[a:v[2], c:2]
 gremlin> g.V().range(0, 2).as('a').map{[b:1,c:2]}.select('c') <4>
@@ -1057,7 +1077,7 @@ Using Where with Select
 Finally, like <<match-step,`match()`>>-step, it is possible to use `where()`, as where is a filter that processes `Map<String,Object>` streams.
 
 [source,groovy]
-gremlin> g.V().as('a').out('created').in('created').as('b').select{it.value('name')} <1>
+gremlin> g.V().as('a').out('created').in('created').as('b').select().by('name') <1>
 ==>[a:marko, b:marko]
 ==>[a:marko, b:josh]
 ==>[a:marko, b:peter]
@@ -1069,7 +1089,7 @@ gremlin> g.V().as('a').out('created').in('created').as('b').select{it.value('nam
 ==>[a:peter, b:josh]
 ==>[a:peter, b:peter]
 gremlin> g.V().as('a').out('created').in('created').as('b').
-           select{it.value('name')}.
+           select().by('name').
              where('a',neq,'b') <2>
 ==>[a:marko, b:josh]
 ==>[a:marko, b:peter]
@@ -1080,11 +1100,11 @@ gremlin> g.V().as('a').out('created').in('created').as('b').
 gremlin> g.V().as('a').out('created').in('created').as('b').select(). <3>
               where('a',neq,'b').
               where(g.of().as('a').out('knows').as('b')).
-                select{it.value('name')}
+                select().by('name')
 ==>[a:marko, b:josh]
 
 <1> A standard `select()` that generates a `Map<String,Object>` of variables bindings in the path (i.e. `a` and `b`) for the sake of a running example.
-<2> The `select{it.value('name')}` projects each binding vertex to their name property value and `where()` operates to ensure respective `a` and `b` strings are not the same.
+<2> The `select().by('name')` projects each binding vertex to their name property value and `where()` operates to ensure respective `a` and `b` strings are not the same.
 <3> The first `select()` projects a vertex binding set. A binding is filtered if `a` vertex equals `b` vertex. A binding is filtered if `a` doesn't know `b`. The second and final `select()` projects the name of the vertices.
 
 [[shuffle-step]]
@@ -1142,14 +1162,16 @@ Store Step
 When link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy] aggregation is needed, `store()`-step (*sideEffect*) should be used over <<aggregate-step,`aggregate()`>>. The two steps differ in that `store()` does not block and only stores objects in its side-effect collection as they pass through.
 
 [source,groovy]
-----
 gremlin> g.V().aggregate('x').range(0, 1).cap('x')
 ==>{v[1]=1, v[2]=1, v[3]=1, v[4]=1, v[5]=1, v[6]=1}
 gremlin> g.V().store('x').range(0, 1).cap('x')
 ==>{v[1]=1, v[2]=1}
-----
 
 It is interesting to note that there are three results in the `store()` side-effect even though the interval selection is for 2 objects. Realize that when the third object is on its way to the `range()` filter (i.e. `[0..1]`), it passes through `store()` and thus, stored before filtered.
+
+[source,groovy]
+gremlin> g.E().store().by('weight')
+==>{0.5=1, 1.0=2, 0.4=2, 0.2=1}
 
 [[subgraph-step]]
 Subgraph Step
@@ -1243,7 +1265,7 @@ image::tree-step2.png[width=500]
 The resultant tree data structure can then be manipulated (see link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/process/graph/step/util/Tree.html[Tree JavaDoc]). For the sake of demonstration, a post-processing lambda is applied in the running example below.
 
 [source,groovy]
-gremlin> tree = g.V().out().out().tree{it.value('name')}.next()
+gremlin> tree = g.V().out().out().tree().by('name').next()
 ==>marko={josh={ripple={}, lop={}}}
 gremlin> tree['marko']
 ==>josh={ripple={}, lop={}}
@@ -1398,6 +1420,36 @@ gremlin> g.V().has('name','marko').properties('location').valueMap()
 ==>[startTime:2004, endTime:2005]
 ==>[startTime:2005]
 
+If the `id`, `label`, `key`, and `value` of the `Element` is desired, then a boolean triggers its insertion into the returned map.
+
+[source,groovy]
+gremlin> g.V().has(label,'person').valueMap(true)
+==>[id:1, name:[marko], location:[san diego, santa cruz, brussels, santa fe], label:person]
+==>[id:7, name:[stephen], location:[centreville, dulles, purcellville], label:person]
+==>[id:8, name:[matthias], location:[bremen, baltimore, oakland, seattle], label:person]
+==>[id:9, name:[daniel], location:[spremberg, kaiserslautern, aachen], label:person]
+gremlin> g.V().has(label,'person').valueMap(true,'name')
+==>[id:1, name:[marko], label:person]
+==>[id:7, name:[stephen], label:person]
+==>[id:8, name:[matthias], label:person]
+==>[id:9, name:[daniel], label:person]
+gremlin> g.V().has(label,'person').properties('location').valueMap(true)
+==>[value:san diego, id:6, key:location, startTime:1997, endTime:2001]
+==>[value:santa cruz, id:7, key:location, startTime:2001, endTime:2004]
+==>[value:brussels, id:8, key:location, startTime:2004, endTime:2005]
+==>[value:santa fe, id:9, key:location, startTime:2005]
+==>[value:centreville, id:10, key:location, startTime:1990, endTime:2000]
+==>[value:dulles, id:11, key:location, startTime:2000, endTime:2006]
+==>[value:purcellville, id:12, key:location, startTime:2006]
+==>[value:bremen, id:13, key:location, startTime:2004, endTime:2007]
+==>[value:baltimore, id:14, key:location, startTime:2007, endTime:2011]
+==>[value:oakland, id:15, key:location, startTime:2011, endTime:2014]
+==>[value:seattle, id:16, key:location, startTime:2014]
+==>[value:spremberg, id:17, key:location, startTime:1982, endTime:2005]
+==>[value:kaiserslautern, id:18, key:location, startTime:2005, endTime:2009]
+==>[value:aachen, id:19, key:location, startTime:2009]
+gremlin>
+
 [[vertex-steps]]
 Vertex Steps
 ~~~~~~~~~~~~
@@ -1406,12 +1458,12 @@ image::vertex-steps.png[width=350]
 
 The vertex steps (*flatMap*) are fundamental to the Gremlin language and are perhaps the only "graph oriented" steps. Via these steps, its possible to "move" on the graph -- i.e. traverse.
 
-* `out(integer, string...)`: Move to the outgoing adjacent vertices given the branch factor and edge labels.
-* `in(integer, string...)`: Move to the incoming adjacent vertices given the branch factor and edge labels.
-* `both(integer, string...)`: Move to both the incoming and outgoing adjacent vertices given the branch factor and edge labels.
-* `outE(integer, string...)`: Move to the outgoing incident edges given the branch factor and edge labels.
-* `inE(integer, string...)`: Move to the incoming incident edges given the branch factor and edge labels.
-* `bothE(integer, string...)`: Move to both the incoming and outgoing incident edges given the branch factor and edge labels.
+* `out(string...)`: Move to the outgoing adjacent vertices given the edge labels.
+* `in(string...)`: Move to the incoming adjacent vertices given the edge labels.
+* `both(string...)`: Move to both the incoming and outgoing adjacent vertices given the edge labels.
+* `outE(string...)`: Move to the outgoing incident edges given the edge labels.
+* `inE(string...)`: Move to the incoming incident edges given the edge labels.
+* `bothE(string...)`: Move to both the incoming and outgoing incident edges given the edge labels.
 * `outV()`: Move to the outgoing vertex.
 * `inV()`: Move to the incoming vertex.
 * `bothV()`: Move to both vertices.

@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupByMapReduce;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupMapReduce;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -22,7 +22,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, FunctionAcceptor<Object, Object>, Reversible, EngineDependent, MapReducer<Object, Collection, Object, Object, Map> {
+public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, FunctionAcceptor<Object, Object>, Reversible, EngineDependent, MapReducer<Object, Collection, Object, Object, Map> {
 
     private final Map<K, R> reduceMap;
     private char state = 'k';
@@ -32,7 +32,7 @@ public final class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements 
     private final String sideEffectKey;
     private boolean vertexCentric = false;
 
-    public GroupByStep(final Traversal traversal, final String sideEffectKey) {
+    public GroupStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
@@ -77,7 +77,7 @@ public final class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements 
 
     @Override
     public MapReduce<Object, Collection, Object, Object, Map> getMapReduce() {
-        return new GroupByMapReduce(this);
+        return new GroupMapReduce(this);
     }
 
     @Override
