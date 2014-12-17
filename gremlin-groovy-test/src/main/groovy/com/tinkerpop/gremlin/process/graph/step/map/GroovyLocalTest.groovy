@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.map
 import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
+import com.tinkerpop.gremlin.structure.Order
 import com.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -12,8 +13,8 @@ public abstract class GroovyLocalTest {
     public static class StandardTest extends LocalTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_orderByXvalueX_limitX2XX_value() {
-            g.V.local(g.of().properties('location').orderBy(T.value).limit(2)).value
+        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
+            g.V.local(g.of().properties('location').order.by(T.value, Order.incr).limit(2)).value
         }
 
         @Override
@@ -30,8 +31,8 @@ public abstract class GroovyLocalTest {
     public static class ComputerTest extends LocalTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_orderByXvalueX_limitX2XX_value() {
-            ComputerTestHelper.compute("g.V.local(g.of().properties('location').orderBy(T.value).limit(2)).value", g);
+        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
+            ComputerTestHelper.compute("g.V.local(g.of().properties('location').order.by(T.value,Order.incr).limit(2)).value", g);
         }
 
         @Override

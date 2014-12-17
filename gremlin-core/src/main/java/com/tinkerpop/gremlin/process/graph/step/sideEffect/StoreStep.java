@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
@@ -17,22 +17,17 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
+public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, FunctionAcceptor<S, Object>, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
 
-    private final Function<Traverser<S>, ?> preStoreFunction;
+    private Function<S, ?> preStoreFunction = Function.identity();
     private final String sideEffectKey;
 
-    public StoreStep(final Traversal traversal, final String sideEffectKey, final Function<Traverser<S>, ?> preStoreFunction) {
+    public StoreStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
-        this.preStoreFunction = preStoreFunction;
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.traversal.sideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSet::new);
-        this.setConsumer(traverser ->
-                TraversalHelper.addToCollection(
-                        traverser.sideEffects().get(this.sideEffectKey),
-                        null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser),
-                        traverser.bulk()));
+        this.setConsumer(traverser -> TraversalHelper.addToCollection(traverser.sideEffects().get(this.sideEffectKey), this.preStoreFunction.apply(traverser.get()), traverser.bulk()));
     }
 
     @Override
@@ -48,5 +43,10 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     @Override
     public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> getMapReduce() {
         return new StoreMapReduce(this);
+    }
+
+    @Override
+    public void addFunction(final Function<S, Object> function) {
+        this.preStoreFunction = function;
     }
 }

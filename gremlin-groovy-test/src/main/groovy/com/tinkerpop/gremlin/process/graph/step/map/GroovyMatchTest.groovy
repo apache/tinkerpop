@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.map
 
+import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Compare
 import com.tinkerpop.gremlin.structure.Vertex
@@ -18,7 +19,7 @@ public abstract class GroovyMatchTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_matchXa_out_bX_selectXb_idX() {
-            g.V().match('a', g.of().as('a').out().as('b')).select('b') { it.id() };
+            g.V().match('a', g.of().as('a').out().as('b')).select('b').by(T.id)
         }
 
         @Override
@@ -48,7 +49,7 @@ public abstract class GroovyMatchTest {
         public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX() {
             g.V().match('a',
                     g.of().as('a').out('created').as('b'),
-                    g.of().as('a').out().jump('a', 2).as('b')).select(['a', 'b']) { it.name }
+                    g.of().as('a').out().jump('a', 2).as('b')).select('a','b').by('name')
         }
 
         @Override
@@ -56,7 +57,7 @@ public abstract class GroovyMatchTest {
             g.V().match('a',
                     g.of().as('a').out('created').has('name', 'lop').as('b'),
                     g.of().as('b').in('created').has('age', 29).as('c'),
-                    g.of().as('c').out().jump('c') { it.loops() < 2 }).select { it.name }
+                    g.of().as('c').out().jump('c') { it.loops() < 2 }).select.by('name')
         }
 
         @Override
@@ -86,7 +87,7 @@ public abstract class GroovyMatchTest {
                     g.of().as('b').out('created').has('name', 'lop'),
                     g.of().as('b').match('a1',
                             g.of().as('a1').out('created').as('b1'),
-                            g.of().as('b1').in('created').as('c1')).select('c1').as('c')).select { it.name }
+                            g.of().as('b1').in('created').as('c1')).select('c1').as('c')).select.by('name')
         }
 
         @Override
@@ -134,7 +135,7 @@ public abstract class GroovyMatchTest {
                     g.of().as("a").out("created").has("name", "lop").as("b"),
                     g.of().as("b").in("created").has("age", 29).as("c"))
                     .where(g.of().as("c").out().jump("c") { it.loops() < 2 })
-                    .select { it.name };
+                    .select.by('name')
         }
 
         @Override
@@ -143,7 +144,7 @@ public abstract class GroovyMatchTest {
                     g.of().as('a').out('created').as('b'),
                     g.of().as('b').in('created').as('c'))
                     .where('a', Compare.neq, 'c')
-                    .select(['a', 'c']) { it.name }
+                    .select('a','c').by('name')
         }
 
         /*@Override

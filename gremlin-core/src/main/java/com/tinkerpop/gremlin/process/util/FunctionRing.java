@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.process.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -7,35 +9,45 @@ import java.util.function.Function;
  */
 public class FunctionRing<A, B> implements Cloneable {
 
-    public Function<A, B>[] functions;
+    private final List<Function<A, B>> functions = new ArrayList<>();
     private int currentFunction = -1;
 
     public FunctionRing(final Function... functions) {
-        this.functions = functions;
+        for (final Function function : functions) {
+            this.functions.add(function);
+        }
     }
 
     public Function<A, B> next() {
-        if (this.functions.length == 0) {
+        if (this.functions.size() == 0) {
             return (Function<A, B>) Function.identity();
         } else {
-            this.currentFunction = (this.currentFunction + 1) % this.functions.length;
-            return this.functions[this.currentFunction];
+            this.currentFunction = (this.currentFunction + 1) % this.functions.size();
+            return this.functions.get(this.currentFunction);
         }
     }
 
     public boolean hasFunctions() {
-        return this.functions.length > 0;
+        return this.functions.size() > 0;
     }
 
     public void reset() {
         this.currentFunction = -1;
     }
 
+    public int size() {
+        return this.functions.size();
+    }
+
     public boolean roundComplete() {
-        return this.currentFunction == this.functions.length - 1;
+        return this.currentFunction == this.functions.size() - 1;
+    }
+
+    public void addFunction(final Function<A, B> function) {
+        this.functions.add(function);
     }
 
     public FunctionRing<A, B> clone() throws CloneNotSupportedException {
-        return new FunctionRing<>(this.functions);
+        return new FunctionRing<>(this.functions.toArray(new Function[this.functions.size()]));
     }
 }

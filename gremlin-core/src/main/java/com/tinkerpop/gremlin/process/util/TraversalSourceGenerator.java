@@ -25,7 +25,7 @@ public class TraversalSourceGenerator {
         add("has");
         add("hasNot");
         add("interval");
-        add("orderBy");
+        add("order");
         add("localRange");
         add("localLimit");
     }};

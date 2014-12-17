@@ -1,13 +1,17 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.VertexProperty;
+
+import java.util.function.Function;
 
 /**
  * A collection of (T)okens which allows for more concise Traversal definitions.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum T {
+public enum T implements Function<Element,Object> {
     /**
      * Label (representing Element.label())
      */
@@ -15,6 +19,11 @@ public enum T {
         @Override
         public String getAccessor() {
             return LABEL;
+        }
+
+        @Override
+        public String apply(final Element element) {
+            return element.label();
         }
     },
     /**
@@ -25,6 +34,11 @@ public enum T {
         public String getAccessor() {
             return ID;
         }
+
+        @Override
+        public Object apply(final Element element) {
+            return element.id();
+        }
     },
     /**
      * Key (representing Property.key())
@@ -33,6 +47,11 @@ public enum T {
         @Override
         public String getAccessor() {
             return KEY;
+        }
+
+        @Override
+        public String apply(final Element element) {
+            return ((VertexProperty) element).key();
         }
     },
     /**
@@ -43,6 +62,11 @@ public enum T {
         public String getAccessor() {
             return VALUE;
         }
+
+        @Override
+        public Object apply(final Element element) {
+            return ((VertexProperty) element).value();
+        }
     };
 
     private static final String LABEL = Graph.System.system("label");
@@ -51,6 +75,8 @@ public enum T {
     private static final String VALUE = Graph.System.system("value");
 
     public abstract String getAccessor();
+
+    public abstract Object apply(final Element element);
 
     public static T fromString(final String accessor) {
         if (accessor.equals(LABEL))

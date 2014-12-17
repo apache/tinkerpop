@@ -10,12 +10,13 @@ import com.tinkerpop.gremlin.process.graph.step.branch.GroovyChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyJumpTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUnionTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUntilTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCoinTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyFilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyIntervalTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRandomTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovySampleTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovySimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyWhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyBackTest;
@@ -32,7 +33,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.GroovyValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyVertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupByTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyInjectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyProfileTest;
@@ -70,9 +71,10 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyHasNotTest.ComputerTest.class,
             GroovyHasTest.ComputerTest.class,
             GroovyIntervalTest.ComputerTest.class,
-            GroovyRandomTest.ComputerTest.class,
+            GroovyCoinTest.ComputerTest.class,
             // TODO: GroovyRangeTest.ComputerTest.class,
             // TODO: GroovyRetainTest.ComputerTest.class,
+            GroovySampleTest.ComputerTest.class,
             GroovySimplePathTest.ComputerTest.class,
             GroovyWhereTest.ComputerTest.class,
 
@@ -96,7 +98,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             // TODO: GroovyAddEdgeTest.ComputerTest.class,
             GroovyAggregateTest.ComputerTest.class,
             GroovyCountTest.ComputerTest.class,
-            GroovyGroupByTest.ComputerTest.class,
+            GroovyGroupTest.ComputerTest.class,
             GroovyGroupCountTest.ComputerTest.class,
             GroovyInjectTest.ComputerTest.class,
             GroovyProfileTest.ComputerTest.class,

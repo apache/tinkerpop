@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.step.filter.SampleStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -13,7 +14,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -123,26 +123,6 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().order();
     }
 
-    public default GraphTraversal<A, A> order(final Comparator<Traverser<A>>... comparators) {
-        return this.start().order(comparators);
-    }
-
-    public default GraphTraversal<A, A> orderBy(final Object key) {
-        return this.start().orderBy(key);
-    }
-
-    public default <C> GraphTraversal<A, A> orderBy(final Object key, final Comparator<C> valueComparatorA) {
-        return this.start().orderBy(key, valueComparatorA);
-    }
-
-    public default <C1, C2> GraphTraversal<A, A> orderBy(final Object keyA, final Comparator<C1> valueComparatorA, final Object keyB, final Comparator<C2> valueComparatorB) {
-        return this.start().orderBy(keyA, valueComparatorA, keyB, valueComparatorB);
-    }
-
-    public default <C1, C2, C3> GraphTraversal<A, A> orderBy(final Object keyA, final Comparator<C1> valueComparatorA, final Object keyB, final Comparator<C2> valueComparatorB, final Object keyC, final Comparator<C3> valueComparatorC) {
-        return this.start().orderBy(keyA, valueComparatorA, keyB, valueComparatorB, keyC, valueComparatorC);
-    }
-
     public default GraphTraversal<A, A> shuffle() {
         return this.start().shuffle();
     }
@@ -155,8 +135,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().values(propertyKeys);
     }
 
-    public default GraphTraversal<A, Path> path(final Function... pathFunctions) {
-        return this.start().path(pathFunctions);
+    public default GraphTraversal<A, Path> path() {
+        return this.start().path();
     }
 
     public default <E2> GraphTraversal<A, E2> back(final String stepLabel) {
@@ -171,20 +151,12 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().sack();
     }
 
-    public default <E2> GraphTraversal<A, Map<String, E2>> select(final List<String> labels, Function... stepFunctions) {
-        return this.start().select(labels, stepFunctions);
+    public default <E2> GraphTraversal<A, E2> select(final String stepLabel) {
+        return this.start().select(stepLabel);
     }
 
-    public default <E2> GraphTraversal<A, Map<String, E2>> select(final Function... stepFunctions) {
-        return this.start().select(stepFunctions);
-    }
-
-    public default <E2> GraphTraversal<A, E2> select(final String label, Function stepFunction) {
-        return this.start().select(label, stepFunction);
-    }
-
-    public default <E2> GraphTraversal<A, E2> select(final String label) {
-        return this.start().select(label, null);
+    public default <E2> GraphTraversal<A, Map<String, E2>> select(final String... stepLabels) {
+        return this.start().select(stepLabels);
     }
 
     public default GraphTraversal<A, A> unfold() {
@@ -215,10 +187,6 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default GraphTraversal<A, A> dedup() {
         return this.start().dedup();
-    }
-
-    public default GraphTraversal<A, A> dedup(final Function<Traverser<A>, ?> uniqueFunction) {
-        return this.start().dedup(uniqueFunction);
     }
 
     public default GraphTraversal<A, A> except(final String sideEffectKey) {
@@ -281,8 +249,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().interval(key, startValue, endValue);
     }
 
-    public default GraphTraversal<A, A> random(final double probability) {
-        return this.start().random(probability);
+    public default GraphTraversal<A, A> coin(final double probability) {
+        return this.start().coin(probability);
     }
 
     public default GraphTraversal<A, A> range(final long low, final long high) {
@@ -313,6 +281,10 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().cyclicPath();
     }
 
+    public default GraphTraversal<A,A> sample(final int amountToSample) {
+        return this.start().sample(amountToSample);
+    }
+
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
     public default GraphTraversal<A, A> sideEffect(final Consumer<Traverser<A>> consumer) {
@@ -332,72 +304,39 @@ public abstract interface ElementTraversal<A extends Element> {
     }
 
     public default GraphTraversal<A, A> subgraph(final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(null, edgeIdHolder, vertexMap, includeEdge);
+        return this.start().subgraph(edgeIdHolder, vertexMap, includeEdge);
     }
 
     public default GraphTraversal<A, A> subgraph(final String sideEffectKey, final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(sideEffectKey, null, null, includeEdge);
+        return this.start().subgraph(sideEffectKey, includeEdge);
     }
 
     public default GraphTraversal<A, A> subgraph(final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(null, null, null, includeEdge);
-    }
-
-    public default GraphTraversal<A, A> aggregate(final String sideEffectKey, final Function<Traverser<A>, ?> preAggregateFunction) {
-        return this.start().aggregate(sideEffectKey, preAggregateFunction);
-    }
-
-    public default GraphTraversal<A, A> aggregate(final Function<Traverser<A>, ?> preAggregateFunction) {
-        return this.start().aggregate(null, preAggregateFunction);
-    }
-
-    public default GraphTraversal<A, A> aggregate() {
-        return this.start().aggregate(null, null);
+        return this.start().subgraph(includeEdge);
     }
 
     public default GraphTraversal<A, A> aggregate(final String sideEffectKey) {
-        return this.start().aggregate(sideEffectKey, null);
+        return this.start().aggregate(sideEffectKey);
     }
 
-    public default GraphTraversal<A, A> groupBy(final String sideEffectKey, final Function<Traverser<A>, ?> keyFunction, final Function<Traverser<A>, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
-        return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, reduceFunction);
+    public default GraphTraversal<A, A> aggregate() {
+        return this.start().aggregate();
     }
 
-
-    public default GraphTraversal<A, A> groupBy(final Function<Traverser<A>, ?> keyFunction, final Function<Traverser<A>, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
-        return this.start().groupBy(null, keyFunction, valueFunction, reduceFunction);
+    public default GraphTraversal<A, A> group(final String sideEffectKey) {
+        return this.start().group(sideEffectKey);
     }
 
-    public default GraphTraversal<A, A> groupBy(final Function<Traverser<A>, ?> keyFunction, final Function<Traverser<A>, ?> valueFunction) {
-        return this.start().groupBy(null, keyFunction, valueFunction, null);
-    }
-
-    public default GraphTraversal<A, A> groupBy(final Function<Traverser<A>, ?> keyFunction) {
-        return this.start().groupBy(null, keyFunction, null, null);
-    }
-
-    public default GraphTraversal<A, A> groupBy(final String sideEffectKey, final Function<Traverser<A>, ?> keyFunction) {
-        return this.start().groupBy(sideEffectKey, keyFunction, null, null);
-    }
-
-    public default GraphTraversal<A, A> groupBy(final String sideEffectKey, final Function<Traverser<A>, ?> keyFunction, final Function<Traverser<A>, ?> valueFunction) {
-        return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, null);
-    }
-
-    public default GraphTraversal<A, A> groupCount(final String sideEffectKey, final Function<Traverser<A>, ?> preGroupFunction) {
-        return this.start().groupCount(sideEffectKey, preGroupFunction);
-    }
-
-    public default GraphTraversal<A, A> groupCount(final Function<Traverser<A>, ?> preGroupFunction) {
-        return this.start().groupCount(null, preGroupFunction);
+    public default GraphTraversal<A, A> group() {
+        return this.start().group();
     }
 
     public default GraphTraversal<A, A> groupCount(final String sideEffectKey) {
-        return this.start().groupCount(sideEffectKey, null);
+        return this.start().groupCount(sideEffectKey);
     }
 
     public default GraphTraversal<A, A> groupCount() {
-        return this.start().groupCount(null, null);
+        return this.start().groupCount();
     }
 
     public default GraphTraversal<A, Vertex> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
@@ -420,12 +359,12 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().timeLimit(timeLimit);
     }
 
-    public default GraphTraversal<A, A> tree(final String sideEffectKey, final Function... branchFunctions) {
-        return this.start().tree(sideEffectKey, branchFunctions);
+    public default GraphTraversal<A, A> tree(final String sideEffectKey) {
+        return this.start().tree(sideEffectKey);
     }
 
-    public default GraphTraversal<A, A> tree(final Function... branchFunctions) {
-        return this.start().tree(null, branchFunctions);
+    public default GraphTraversal<A, A> tree() {
+        return this.start().tree();
     }
 
     public default <V> GraphTraversal<A, A> sack(final BiFunction<V, A, V> sackFunction) {
@@ -436,20 +375,12 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().sack(sackOperator, elementPropertyKey);
     }
 
-    public default GraphTraversal<A, A> store(final String sideEffectKey, final Function<Traverser<A>, ?> preStoreFunction) {
-        return this.start().store(sideEffectKey, preStoreFunction);
-    }
-
     public default GraphTraversal<A, A> store(final String sideEffectKey) {
-        return this.start().store(sideEffectKey, null);
-    }
-
-    public default GraphTraversal<A, A> store(final Function<Traverser<A>, ?> preStoreFunction) {
-        return this.start().store(null, preStoreFunction);
+        return this.start().store(sideEffectKey);
     }
 
     public default GraphTraversal<A, A> store() {
-        return this.start().store(null, null);
+        return this.start().store();
     }
 
     ///////////////////// BRANCH STEPS /////////////////////

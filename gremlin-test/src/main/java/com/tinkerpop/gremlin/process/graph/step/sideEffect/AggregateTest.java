@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -25,7 +25,7 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, List<String>> get_g_V_name_aggregate();
 
-    public abstract Traversal<Vertex, List<String>> get_g_V_aggregateXnameX();
+    public abstract Traversal<Vertex, List<String>> get_g_V_aggregate_byXnameX();
 
     public abstract Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path();
 
@@ -43,8 +43,8 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_aggregateXnameX() {
-        Traversal<Vertex, List<String>> traversal = get_g_V_aggregateXnameX();
+    public void g_V_aggregate_byXnameX() {
+        Traversal<Vertex, List<String>> traversal = get_g_V_aggregate_byXnameX();
         printTraversalForm(traversal);
         final Collection<String> names = traversal.next();
         assertFalse(traversal.hasNext());
@@ -111,8 +111,8 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_aggregateXnameX() {
-            return (Traversal) g.V().aggregate(v -> v.get().value("name"));
+        public Traversal<Vertex, List<String>> get_g_V_aggregate_byXnameX() {
+            return (Traversal) g.V().aggregate().by("name");
         }
 
         @Override
@@ -137,8 +137,8 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_aggregateXnameX() {
-            return (Traversal) g.V().aggregate(v -> v.get().value("name")).submit(g.compute());
+        public Traversal<Vertex, List<String>> get_g_V_aggregate_byXnameX() {
+            return (Traversal) g.V().aggregate().by("name").submit(g.compute());
         }
 
         @Override

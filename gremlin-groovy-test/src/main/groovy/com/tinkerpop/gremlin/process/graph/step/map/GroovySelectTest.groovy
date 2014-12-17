@@ -17,34 +17,34 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
-            g.V(v1Id).as('a').out('knows').as('b').select { it.value('name') }
+        public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_select_byXnameX(final Object v1Id) {
+            g.V(v1Id).as('a').out('knows').as('b').select.by('name')
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
-            g.V(v1Id).as('a').out('knows').as('b').select(['a'])
+        public Traversal<Vertex, Vertex> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
+            g.V(v1Id).as('a').out('knows').as('b').select('a')
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(
+        public Traversal<Vertex, String> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX_byXnameX(
                 final Object v1Id) {
-            g.V(v1Id).as('a').out('knows').as('b').select(['a']) { it.name }
+            g.V(v1Id).as('a').out('knows').as('b').select('a').by('name')
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_selectXnameX() {
-            g.V.as('a').out.as('b').select { it.name }
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_select_byXnameX() {
+            g.V.as('a').out.as('b').select.by('name')
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_selectXnameX() {
-            g.V.as('a').out.aggregate.as('b').select { it.name }
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX() {
+            g.V.as('a').out.aggregate.as('b').select.by('name')
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_selectXname_itX() {
-            g.V().as('a').name.order().as('b').select { it.name } { it }
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX() {
+            g.V().as('a').name.order().as('b').select.by('name').by { it }
         }
     }
 
@@ -56,36 +56,36 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
-            g.V(v1Id).as('a').out('knows').as('b').select { it.value('name') }
-            // TODO: ComputerTestHelper.compute("g.V(${v1Id}).as('a').out('knows').as('b').select { it.value('name') }",g);
+        public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_select_byXnameX(final Object v1Id) {
+            g.V(v1Id).as('a').out('knows').as('b').select.by('name')
+            // TODO
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).as('a').out('knows').as('b').select(['a'])", g);
+        public Traversal<Vertex, Vertex> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).as('a').out('knows').as('b').select('a')", g);
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(
+        public Traversal<Vertex, String> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX_byXnameX(
                 final Object v1Id) {
-            g.V(v1Id).as('a').out('knows').as('b').select(['a']) { it.name }
-            //TODO: ComputerTestHelper.compute("g.V(${v1Id}).as('a').out('knows').as('b').select(['a']) { it.name }",g);
+            g.V(v1Id).as('a').out('knows').as('b').select('a').by('name')
+            //TODO
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_selectXnameX() {
-            g.V.as('a').out.as('b').select { it.name }  // TODO computer
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_select_byXnameX() {
+            g.V.as('a').out.as('b').select.by('name') // TODO computer
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_selectXnameX() {
-            g.V.as('a').out.aggregate.as('b').select { it.name } // TODO computer
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX() {
+            g.V.as('a').out.aggregate.as('b').select.by('name') // TODO computer
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_selectXname_itX() {
-            g.V().as('a').name.order().as('b').select { it.name } { it } // TODO: computer
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX() {
+            g.V().as('a').name.order().as('b').select.by('name').by { it } // TODO: computer
         }
     }
 }
