@@ -3,10 +3,13 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -14,6 +17,12 @@ import java.util.List;
 public class ProfileStrategy extends AbstractTraversalStrategy {
 
     private static final ProfileStrategy INSTANCE = new ProfileStrategy();
+    private static final Set<Class<? extends TraversalStrategy>> PRIORS = new HashSet<>();
+
+    static {
+        // Ensure that this strategy is applied last.
+        PRIORS.add(TraverserSourceStrategy.class);
+    }
 
     private ProfileStrategy() {
     }
@@ -35,6 +44,11 @@ public class ProfileStrategy extends AbstractTraversalStrategy {
             TraversalHelper.insertStep(new ProfileStep(traversal, steps.get(ii)), ii + 1, traversal);
             ii++;
         }
+    }
+
+    @Override
+    public Set<Class<? extends TraversalStrategy>> applyPrior() {
+        return PRIORS;
     }
 
     public static ProfileStrategy instance() {
