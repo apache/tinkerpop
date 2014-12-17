@@ -33,15 +33,12 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         StepMetrics step0 = metrics.getStepMetrics(0);
         assertEquals(6, step0.getCount());
-        assertEquals(6, step0.getTraversers());
 
         StepMetrics step1 = metrics.getStepMetrics(1);
         assertEquals(6, step1.getCount());
-        assertEquals(6, step1.getTraversers());
 
         StepMetrics step2 = metrics.getStepMetrics(2);
         assertEquals(2, step2.getCount());
-        assertEquals(2, step2.getTraversers());
     }
 
     @Test
