@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.MutablePath;
@@ -13,7 +13,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer, FunctionAcceptor<Object, Object> {
+public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer, FunctionConsumer<Object, Object> {
 
     private FunctionRing<Object, Object> functionRing;
 

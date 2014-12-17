@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
@@ -18,7 +18,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AggregateStep<S> extends BarrierStep<S> implements SideEffectCapable, Reversible, FunctionAcceptor<S, Object>, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
+public final class AggregateStep<S> extends BarrierStep<S> implements SideEffectCapable, Reversible, FunctionConsumer<S, Object>, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
 
     private Function<S, ?> preAggregateFunction = Function.identity();
     private final String sideEffectKey;

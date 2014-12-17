@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.marker.ComparatorAcceptor;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
+import com.tinkerpop.gremlin.process.graph.marker.ComparatorConsumer;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpStep;
@@ -592,39 +592,39 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <V> GraphTraversal<S, E> by(final Function<V, Object> functionProjection) {
-        ((FunctionAcceptor<V, Object>) TraversalHelper.getEnd(this)).addFunction(functionProjection);
+        ((FunctionConsumer<V, Object>) TraversalHelper.getEnd(this)).addFunction(functionProjection);
         return this;
     }
 
     public default GraphTraversal<S, E> by(final T tokenProjection) {
-        ((FunctionAcceptor<Element, Object>) TraversalHelper.getEnd(this)).addFunction(tokenProjection);
+        ((FunctionConsumer<Element, Object>) TraversalHelper.getEnd(this)).addFunction(tokenProjection);
         return this;
     }
 
     public default GraphTraversal<S, E> by(final String elementPropertyProjection) {
-        ((FunctionAcceptor<Element, ?>) TraversalHelper.getEnd(this)).addFunction(new ElementValueFunction<>(elementPropertyProjection));
+        ((FunctionConsumer<Element, ?>) TraversalHelper.getEnd(this)).addFunction(new ElementValueFunction<>(elementPropertyProjection));
         return this;
     }
 
     ////
 
     public default GraphTraversal<S, E> by(final Comparator<E> comparator) {
-        ((ComparatorAcceptor<E>) TraversalHelper.getEnd(this)).addComparator(comparator);
+        ((ComparatorConsumer<E>) TraversalHelper.getEnd(this)).addComparator(comparator);
         return this;
     }
 
     public default <V> GraphTraversal<S, E> by(final Function<Element, V> elementFunctionProjection, final Comparator<V> elementFunctionValueComparator) {
-        ((ComparatorAcceptor<Element>) TraversalHelper.getEnd(this)).addComparator(new ElementFunctionComparator<>(elementFunctionProjection, elementFunctionValueComparator));
+        ((ComparatorConsumer<Element>) TraversalHelper.getEnd(this)).addComparator(new ElementFunctionComparator<>(elementFunctionProjection, elementFunctionValueComparator));
         return this;
     }
 
     public default <V> GraphTraversal<S, E> by(final T tokenProjection, final Comparator<V> tokenValueComparator) {
-        ((ComparatorAcceptor<Element>) TraversalHelper.getEnd(this)).addComparator(new ElementFunctionComparator<>(tokenProjection, (Comparator) tokenValueComparator));
+        ((ComparatorConsumer<Element>) TraversalHelper.getEnd(this)).addComparator(new ElementFunctionComparator<>(tokenProjection, (Comparator) tokenValueComparator));
         return this;
     }
 
     public default <V> GraphTraversal<S, E> by(final String elementPropertyProjection, final Comparator<V> propertyValueComparator) {
-        ((ComparatorAcceptor<Element>) TraversalHelper.getEnd(this)).addComparator(new ElementValueComparator<>(elementPropertyProjection, propertyValueComparator));
+        ((ComparatorConsumer<Element>) TraversalHelper.getEnd(this)).addComparator(new ElementValueComparator<>(elementPropertyProjection, propertyValueComparator));
         return this;
     }
 

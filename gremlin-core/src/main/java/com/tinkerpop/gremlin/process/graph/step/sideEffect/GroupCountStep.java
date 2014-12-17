@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
@@ -18,7 +18,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, FunctionAcceptor<S, Object>, MapReducer<Object, Long, Object, Long, Map<Object, Long>> {
+public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, FunctionConsumer<S, Object>, MapReducer<Object, Long, Object, Long, Map<Object, Long>> {
 
     private Function<S, ?> preGroupFunction = Function.identity();
     private final String sideEffectKey;

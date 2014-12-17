@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
@@ -22,7 +22,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, FunctionAcceptor<Object, Object>, Reversible, EngineDependent, MapReducer<Object, Collection, Object, Object, Map> {
+public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, FunctionConsumer<Object, Object>, Reversible, EngineDependent, MapReducer<Object, Collection, Object, Object, Map> {
 
     private final Map<K, R> reduceMap;
     private char state = 'k';

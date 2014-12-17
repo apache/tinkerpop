@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.ComparatorAcceptor;
-import com.tinkerpop.gremlin.process.graph.marker.Comparing;
+import com.tinkerpop.gremlin.process.graph.marker.ComparatorConsumer;
+import com.tinkerpop.gremlin.process.graph.marker.ComparatorSupplier;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrderStep<S> extends BarrierStep<S> implements Reversible, Comparing<S>, ComparatorAcceptor<S> {
+public final class OrderStep<S> extends BarrierStep<S> implements Reversible, ComparatorSupplier<S>, ComparatorConsumer<S> {
 
     private final List<Comparator<S>> comparators = new ArrayList<>();
 

@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupStep<S> extends FilterStep<S> implements Reversible, Reducing, FunctionAcceptor<S, Object> {
+public final class DedupStep<S> extends FilterStep<S> implements Reversible, Reducing, FunctionConsumer<S, Object> {
 
     private Function<S, ?> uniqueFunction = null;
     private Set<Object> duplicateSet = new HashSet<>();

@@ -2,8 +2,7 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.marker.Comparing;
+import com.tinkerpop.gremlin.process.graph.marker.ComparatorSupplier;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
@@ -22,9 +21,9 @@ public class ComparingRemovalStrategy extends AbstractTraversalStrategy {
         if(engine.equals(TraversalEngine.STANDARD))
             return;
 
-        if (TraversalHelper.hasStepOfAssignableClass(Comparing.class, traversal)) {
+        if (TraversalHelper.hasStepOfAssignableClass(ComparatorSupplier.class, traversal)) {
             final Step endStep = TraversalHelper.getEnd(traversal);
-            TraversalHelper.getStepsOfAssignableClass(Comparing.class, traversal)
+            TraversalHelper.getStepsOfAssignableClass(ComparatorSupplier.class, traversal)
                     .stream()
                     .filter(step -> step != endStep)
                     .forEach(step -> TraversalHelper.removeStep(step, traversal));
