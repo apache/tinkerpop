@@ -98,9 +98,10 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
                     } else {
                         stepMetrics = new StepCounter(stepCounter);
                     }
-                    stepMetrics.aggregate(stepCounter);
                     traversalMetricsUtil.stepTimers.put(label, stepMetrics);
+                    traversalMetricsUtil.orderedStepCounters.add(stepMetrics);
                 }
+                stepMetrics.aggregate(stepCounter);
             });
         });
         return traversalMetricsUtil;

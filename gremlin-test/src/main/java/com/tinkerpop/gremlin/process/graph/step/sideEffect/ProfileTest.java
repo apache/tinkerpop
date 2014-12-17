@@ -51,19 +51,16 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
 
         traversal.iterate();
-        TraversalMetricsUtil metrics = traversal.sideEffects().get(TraversalMetrics.METRICS_KEY);
+        TraversalMetrics metrics = traversal.sideEffects().get(TraversalMetrics.METRICS_KEY);
 
         StepMetrics step0 = metrics.getStepMetrics(0);
         assertEquals(808, step0.getCount());
-        assertEquals(808, step0.getTraversers());
 
         StepMetrics step1 = metrics.getStepMetrics(1);
         assertEquals(8049, step1.getCount());
-        assertEquals(8049, step1.getTraversers());
 
         StepMetrics step2 = metrics.getStepMetrics(2);
         assertEquals(327370, step2.getCount());
-        assertEquals(327370, step2.getTraversers());
     }
 
     public static class StandardTest extends ProfileTest {
