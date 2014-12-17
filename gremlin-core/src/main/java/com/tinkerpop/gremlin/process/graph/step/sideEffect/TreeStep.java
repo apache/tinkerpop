@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionConsumer;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
@@ -14,12 +14,13 @@ import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 
+import java.util.List;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathConsumer, SideEffectCapable, FunctionConsumer<Object, Object>, MapReducer<Object, Tree, Object, Tree, Tree> {
+public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathConsumer, SideEffectCapable, FunctionHolder<Object, Object>, MapReducer<Object, Tree, Object, Tree, Tree> {
 
     private FunctionRing<Object, Object> functionRing;
     private final String sideEffectKey;
@@ -65,6 +66,11 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
     @Override
     public void addFunction(final Function<Object, Object> function) {
         this.functionRing.addFunction(function);
+    }
+
+    @Override
+    public List<Function<Object, Object>> getFunctions() {
+        return this.functionRing.getFunctions();
     }
 
     /////////////////////////

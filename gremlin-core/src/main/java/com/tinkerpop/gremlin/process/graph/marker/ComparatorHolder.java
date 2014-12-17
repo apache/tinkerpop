@@ -6,7 +6,10 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface ComparatorSupplier<S> {
+public interface ComparatorHolder<S> {
+
+    public void addComparator(final Comparator<S> comparator);
 
     public List<Comparator<S>> getComparators();
+
 }

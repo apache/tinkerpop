@@ -4,9 +4,9 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import com.tinkerpop.gremlin.process.graph.marker.ComparatorSupplier;
+import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
+import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.traversers.SimpleTraverser;
 import com.tinkerpop.gremlin.process.util.DefaultTraversalSideEffects;
@@ -39,14 +39,14 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
     }
 
     public TraverserMapReduce(final Step traversalEndStep) {
-        this.comparator = Optional.ofNullable(traversalEndStep instanceof ComparatorSupplier ? GraphComputerHelper.chainComparators(((ComparatorSupplier) traversalEndStep).getComparators()) : null);
+        this.comparator = Optional.ofNullable(traversalEndStep instanceof ComparatorHolder ? GraphComputerHelper.chainComparators(((ComparatorHolder) traversalEndStep).getComparators()) : null);
         this.reducer = Optional.ofNullable(traversalEndStep instanceof Reducing ? ((Reducing) traversalEndStep).getReducer() : null);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
         final Step step = TraversalHelper.getEnd(TraversalVertexProgram.getTraversalSupplier(configuration).get());
-        this.comparator = Optional.ofNullable(step instanceof ComparatorSupplier ? GraphComputerHelper.chainComparators(((ComparatorSupplier) step).getComparators()) : null);
+        this.comparator = Optional.ofNullable(step instanceof ComparatorHolder ? GraphComputerHelper.chainComparators(((ComparatorHolder) step).getComparators()) : null);
         this.reducer = Optional.ofNullable(step instanceof Reducing ? ((Reducing) step).getReducer() : null);
     }
 

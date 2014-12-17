@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionConsumer;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -20,7 +20,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements PathConsumer, FunctionConsumer<Object, Object>, EngineDependent {
+public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements PathConsumer, FunctionHolder<Object, Object>, EngineDependent {
 
     protected FunctionRing<Object, Object> functionRing;
     private final List<String> selectLabels;
@@ -79,6 +79,11 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
     @Override
     public void addFunction(final Function<Object, Object> function) {
         this.functionRing.addFunction(function);
+    }
+
+    @Override
+    public List<Function<Object, Object>> getFunctions() {
+        return this.functionRing.getFunctions();
     }
 
     //////////////////////

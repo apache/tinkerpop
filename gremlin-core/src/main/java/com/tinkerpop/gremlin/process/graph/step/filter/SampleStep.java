@@ -2,19 +2,21 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionConsumer;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SampleStep<S> extends BarrierStep<S> implements Reversible, FunctionConsumer<S, Number> {
+public class SampleStep<S> extends BarrierStep<S> implements Reversible, FunctionHolder<S, Number> {
 
     private Function<S, Number> probabilityFunction = s -> 1.0d;
     private final int amountToSample;
@@ -62,5 +64,10 @@ public class SampleStep<S> extends BarrierStep<S> implements Reversible, Functio
     @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.amountToSample);
+    }
+
+    @Override
+    public List<Function<S, Number>> getFunctions() {
+        return Arrays.asList(this.probabilityFunction);
     }
 }
