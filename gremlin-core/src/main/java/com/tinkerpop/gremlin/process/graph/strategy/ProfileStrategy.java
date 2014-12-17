@@ -23,6 +23,12 @@ public class ProfileStrategy extends AbstractTraversalStrategy {
         if (!TraversalHelper.hasStepOfClass(ProfileStep.class, traversal))
             return;
 
+        // Determine if this is a Standard or Computer traversal
+        boolean timingEnabled = true;
+        if (TraversalEngine.COMPUTER.equals(engine)) {
+            timingEnabled = false;
+        }
+
         // Remove user-specified .profile() steps
         List<ProfileStep> profileSteps = TraversalHelper.getStepsOfClass(ProfileStep.class, traversal);
         for (ProfileStep step : profileSteps) {
@@ -32,7 +38,7 @@ public class ProfileStrategy extends AbstractTraversalStrategy {
         // Add .profile() step after every pre-existing step.
         final List<Step> steps = traversal.asAdmin().getSteps();
         for (int ii = 0; ii < steps.size(); ii++) {
-            TraversalHelper.insertStep(new ProfileStep(traversal, steps.get(ii)), ii + 1, traversal);
+            TraversalHelper.insertStep(new ProfileStep(traversal, steps.get(ii), timingEnabled), ii + 1, traversal);
             ii++;
         }
     }

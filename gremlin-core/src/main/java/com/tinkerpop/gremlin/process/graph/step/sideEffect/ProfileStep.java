@@ -9,45 +9,48 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.ProfileMapReduce;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
-import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.process.util.TraversalMetricsUtil;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class ProfileStep<S> extends SideEffectStep<S> implements Reversible, MapReducer<MapReduce.NullObject, TraversalMetrics, MapReduce.NullObject, TraversalMetrics, TraversalMetrics> {
+public final class ProfileStep<S> extends SideEffectStep<S> implements Reversible, MapReducer<MapReduce.NullObject, TraversalMetricsUtil, MapReduce.NullObject, TraversalMetricsUtil, TraversalMetricsUtil> {
 
-    public static final String METRICS_KEY = Graph.System.system("metrics");
-    public final String name;
+    private final String name;
+    private final boolean timingEnabled;
+
 
     public ProfileStep(final Traversal traversal) {
         super(traversal);
-        TraversalHelper.verifySideEffectKeyIsNotAStepLabel(METRICS_KEY, this.traversal);
+        TraversalHelper.verifySideEffectKeyIsNotAStepLabel(TraversalMetrics.METRICS_KEY, this.traversal);
         this.name = null;
+        this.timingEnabled = true;
     }
 
-    public ProfileStep(final Traversal<?, ?> traversal, final Step step) {
+    public ProfileStep(final Traversal<?, ?> traversal, final Step step, final boolean timingEnabled) {
         super(traversal);
-        // TODO: rjbriody - profile is it wrong to store name here like this?
+        // TODO: rjbriody - is it ok to store these here or will they not propagate when using graph computer?
         this.name = step.toString();
+        this.timingEnabled = timingEnabled;
     }
-
-    @Override
-    public MapReduce<MapReduce.NullObject, TraversalMetrics, MapReduce.NullObject, TraversalMetrics, TraversalMetrics> getMapReduce() {
-        return new ProfileMapReduce(this);
-    }
-
 
     @Override
     public void reset() {
         super.reset();
-        this.getTraversal().sideEffects().remove(METRICS_KEY);
+        this.getTraversal().sideEffects().remove(TraversalMetrics.METRICS_KEY);
+    }
+
+
+    @Override
+    public MapReduce<MapReduce.NullObject, TraversalMetricsUtil, MapReduce.NullObject, TraversalMetricsUtil, TraversalMetricsUtil> getMapReduce() {
+        return new ProfileMapReduce(this);
     }
 
 
     @Override
     public Traverser next() {
         // Wrap SideEffectStep's next() with timer.
-        TraversalMetrics traversalMetrics = this.getTraversal().sideEffects().getOrCreate(METRICS_KEY, TraversalMetrics::new);
+        TraversalMetricsUtil traversalMetrics = this.getTraversal().sideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, TraversalMetricsUtil::new);
         Traverser<?> ret = null;
 
         traversalMetrics.start(this);
@@ -65,7 +68,7 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
     @Override
     public boolean hasNext() {
         // Wrap SideEffectStep's hasNext() with timer.
-        TraversalMetrics traversalMetrics = this.getTraversal().sideEffects().getOrCreate(METRICS_KEY, TraversalMetrics::new);
+        TraversalMetricsUtil traversalMetrics = this.getTraversal().sideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, TraversalMetricsUtil::new);
         traversalMetrics.start(this);
         boolean ret = super.hasNext();
         traversalMetrics.stop(this);
@@ -74,5 +77,9 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
 
     public String getEventName() {
         return name;
+    }
+
+    public boolean timingEnabled() {
+        return timingEnabled;
     }
 }

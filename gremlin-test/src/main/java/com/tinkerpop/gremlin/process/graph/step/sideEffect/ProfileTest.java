@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.StepMetrics;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
+import com.tinkerpop.gremlin.process.util.TraversalMetricsUtil;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -17,18 +18,18 @@ import static org.junit.Assert.assertEquals;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class ProfileTest extends AbstractGremlinProcessTest {
-    public abstract Traversal<Vertex, TraversalMetrics> get_g_V_out_out_profile();
+    public abstract Traversal<Vertex, TraversalMetricsUtil> get_g_V_out_out_profile();
 
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_out_out_modern_profile() {
-        final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_out_out_profile();
+        final Traversal<Vertex, TraversalMetricsUtil> traversal = get_g_V_out_out_profile();
         printTraversalForm(traversal);
 
         traversal.iterate();
 
-        TraversalMetrics metrics = traversal.sideEffects().get(ProfileStep.METRICS_KEY);
+        TraversalMetrics metrics = traversal.sideEffects().get(TraversalMetrics.METRICS_KEY);
 
         StepMetrics step0 = metrics.getStepMetrics(0);
         assertEquals(6, step0.getCount());
@@ -46,11 +47,11 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(GRATEFUL)
     public void g_V_out_out_grateful_profile() {
-        final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_out_out_profile();
+        final Traversal<Vertex, TraversalMetricsUtil> traversal = get_g_V_out_out_profile();
         printTraversalForm(traversal);
 
         traversal.iterate();
-        TraversalMetrics metrics = traversal.sideEffects().get(ProfileStep.METRICS_KEY);
+        TraversalMetricsUtil metrics = traversal.sideEffects().get(TraversalMetrics.METRICS_KEY);
 
         StepMetrics step0 = metrics.getStepMetrics(0);
         assertEquals(808, step0.getCount());
@@ -68,7 +69,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public static class StandardTest extends ProfileTest {
 
         @Override
-        public Traversal<Vertex, TraversalMetrics> get_g_V_out_out_profile() {
+        public Traversal<Vertex, TraversalMetricsUtil> get_g_V_out_out_profile() {
             return (Traversal) g.V().out().out().profile();
         }
 
@@ -80,7 +81,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, TraversalMetrics> get_g_V_out_out_profile() {
+        public Traversal<Vertex, TraversalMetricsUtil> get_g_V_out_out_profile() {
             return (Traversal) g.V().out().out().profile().submit(g.compute());
         }
 
