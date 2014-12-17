@@ -131,9 +131,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.17</version>
                 <configuration>
-                    <argLine>-Xmx1024M</argLine>
+                    <!-- <log4j.configuration>log4j-core.properties</log4j.configuration> -->
+                    <!--<argLine>-Xmx2048M</argLine>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -169,7 +169,8 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-core:1.2.1</Gremlin-Plugin-Dependencies>
+                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-core:1.2.1
+                            </Gremlin-Plugin-Dependencies>
                         </manifestEntries>
                     </archive>
                 </configuration>

@@ -30,17 +30,7 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
         this.functionRing = new FunctionRing<>();
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.traversal.sideEffects().registerSupplierIfAbsent(this.sideEffectKey, Tree::new);
-        this.setConsumer(traverser -> {
-            Tree depth = traverser.sideEffects().get(this.sideEffectKey);
-            final Path path = traverser.path();
-            for (int i = 0; i < path.size(); i++) {
-                final Object object = functionRing.next().apply(path.get(i));
-                if (!depth.containsKey(object))
-                    depth.put(object, new Tree<>());
-                depth = (Tree) depth.get(object);
-            }
-            this.functionRing.reset();
-        });
+        TreeStep.generateConsumer(this);
     }
 
     @Override
@@ -68,11 +58,28 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
     public TreeStep<S> clone() throws CloneNotSupportedException {
         final TreeStep<S> clone = (TreeStep<S>) super.clone();
         clone.functionRing = this.functionRing.clone();
+        TreeStep.generateConsumer(clone);
         return clone;
     }
 
     @Override
     public void addFunction(final Function<Object, Object> function) {
         this.functionRing.addFunction(function);
+    }
+
+    /////////////////////////
+
+    private static final <S> void generateConsumer(final TreeStep<S> treeStep) {
+        treeStep.setConsumer(traverser -> {
+            Tree depth = traverser.sideEffects().get(treeStep.sideEffectKey);
+            final Path path = traverser.path();
+            for (int i = 0; i < path.size(); i++) {
+                final Object object = treeStep.functionRing.next().apply(path.get(i));
+                if (!depth.containsKey(object))
+                    depth.put(object, new Tree<>());
+                depth = (Tree) depth.get(object);
+            }
+            treeStep.functionRing.reset();
+        });
     }
 }

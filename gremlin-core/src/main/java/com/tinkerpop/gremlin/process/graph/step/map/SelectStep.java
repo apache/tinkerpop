@@ -22,7 +22,7 @@ import java.util.function.Function;
  */
 public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements PathConsumer, FunctionAcceptor<Object, Object>, EngineDependent {
 
-    private FunctionRing<Object, Object> functionRing;
+    protected FunctionRing<Object, Object> functionRing;
     private final List<String> selectLabels;
     private final boolean wasEmpty;
     private boolean requiresPaths = false;
@@ -65,9 +65,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
 
     @Override
     public String toString() {
-        return this.selectLabels.size() > 0 ?
-                TraversalHelper.makeStepString(this, this.selectLabels) :
-                TraversalHelper.makeStepString(this);
+        return TraversalHelper.makeStepString(this, this.selectLabels, this.functionRing);
     }
 
     @Override

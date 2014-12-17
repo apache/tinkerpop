@@ -43,7 +43,7 @@ public class StartStep<S> extends SideEffectStep<S> implements TraverserSource, 
     }
 
     public String toString() {
-        return null == this.start ? TraversalHelper.makeStepString(this) : TraversalHelper.makeStepString(this, this.start);
+        return TraversalHelper.makeStepString(this, this.start);
     }
 
     @Override

@@ -41,8 +41,6 @@ public final class RetainStep<S> extends FilterStep<S> implements Reversible {
     }
 
     public String toString() {
-        return null == this.collectionSideEffectKey ?
-                super.toString() :
-                TraversalHelper.makeStepString(this, this.collectionSideEffectKey);
+        return TraversalHelper.makeStepString(this, this.collectionSideEffectKey);
     }
 }

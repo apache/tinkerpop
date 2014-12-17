@@ -10,10 +10,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -168,12 +170,26 @@ public class TraversalHelper {
 
     public static String makeStepString(final Step<?, ?> step, final Object... arguments) {
         final StringBuilder builder = new StringBuilder(step.getClass().getSimpleName());
-        if (arguments.length > 0) {
+        final List<String> strings = Stream.of(arguments)
+                .filter(o -> null != o)
+                .filter(o -> {
+                    if (o instanceof FunctionRing) {
+                        return ((FunctionRing) o).size() > 0;
+                    } else if (o instanceof Collection) {
+                        return ((Collection) o).size() > 0;
+                    } else if (o instanceof Map) {
+                        return ((Map) o).size() > 0;
+                    } else {
+                        return true;
+                    }
+                })
+                .map(o -> {
+                    final String string = o.toString();
+                    return string.contains("$Lambda$") ? "lambda" : string;
+                }).collect(Collectors.toList());
+        if (strings.size() > 0) {
             builder.append("(");
-            for (int i = 0; i < arguments.length; i++) {
-                if (i > 0) builder.append(",");
-                builder.append(arguments[i]);
-            }
+            builder.append(String.join(",", strings));
             builder.append(")");
         }
         if (TraversalHelper.isLabeled(step))

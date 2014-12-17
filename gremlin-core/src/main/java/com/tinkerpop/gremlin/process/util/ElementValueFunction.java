@@ -19,4 +19,13 @@ public class ElementValueFunction<V> implements Function<Element, V> {
     public V apply(final Element element) {
         return element.value(this.propertyKey);
     }
+
+    public String getPropertyKey() {
+        return this.propertyKey;
+    }
+
+    @Override
+    public String toString() {
+        return "value(" + this.propertyKey + ")";
+    }
 }

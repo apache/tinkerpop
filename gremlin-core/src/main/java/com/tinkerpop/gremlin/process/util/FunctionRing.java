@@ -50,4 +50,9 @@ public class FunctionRing<A, B> implements Cloneable {
     public FunctionRing<A, B> clone() throws CloneNotSupportedException {
         return new FunctionRing<>(this.functions.toArray(new Function[this.functions.size()]));
     }
+
+    @Override
+    public String toString() {
+        return this.functions.toString();
+    }
 }

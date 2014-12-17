@@ -35,9 +35,7 @@ public class GraphStep<E extends Element> extends StartStep<E> implements Traver
     }
 
     public String toString() {
-        return 0 == this.ids.length ?
-                TraversalHelper.makeStepString(this, returnClass.getSimpleName().toLowerCase()) :
-                TraversalHelper.makeStepString(this, returnClass.getSimpleName().toLowerCase(), Arrays.toString(this.ids));
+        return TraversalHelper.makeStepString(this, Arrays.asList(this.ids), this.returnClass.getSimpleName().toLowerCase());
     }
 
     public boolean returnsVertices() {

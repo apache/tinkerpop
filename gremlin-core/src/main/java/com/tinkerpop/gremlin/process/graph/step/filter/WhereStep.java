@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Map;
@@ -44,6 +43,11 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> {
 
     public Traversal getConstraint() {
         return this.constraint;
+    }
+
+    @Override
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.firstKey, this.biPredicate, this.secondKey, this.constraint);
     }
 
     @Override
