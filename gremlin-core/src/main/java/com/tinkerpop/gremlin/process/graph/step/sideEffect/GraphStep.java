@@ -61,8 +61,12 @@ public class GraphStep<E extends Element> extends StartStep<E> implements Traver
 
     @Override
     public void generateTraversers(final TraverserGenerator traverserGenerator) {
-        // TODO: rjbriod - ensure that the Exception wrapping I removed was only for profiling functionality.
-        this.start = this.iteratorSupplier.get();
-        super.generateTraversers(traverserGenerator);
+        try {
+            this.start = this.iteratorSupplier.get();
+            super.generateTraversers(traverserGenerator);
+            // TODO: rjbriod - is this catch necessary even with profiling removed?
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 }

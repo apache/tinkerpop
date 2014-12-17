@@ -21,17 +21,7 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
     }
 
     public void start(final ProfileStep<?> step) {
-        StepCounter stepMetrics = this.stepTimers.get(step.getLabel());
-        if (null == stepMetrics) {
-            if (step.timingEnabled()) {
-                stepMetrics = new StepTimer(step);
-            } else {
-                stepMetrics = new StepCounter(step);
-            }
-            this.stepTimers.put(step.getLabel(), stepMetrics);
-            this.orderedStepCounters.push(stepMetrics);
-        }
-        stepMetrics.start();
+        this.stepTimers.get(step.getLabel()).start();
     }
 
     public void stop(final ProfileStep<?> step) {
@@ -122,5 +112,20 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
 
     public StepMetrics getStepMetrics(final String stepLabel) {
         return stepTimers.get(stepLabel);
+    }
+
+    public void initialize(final ProfileStep step, final boolean timingEnabled) {
+        if (stepTimers.containsKey(step.getLabel())) {
+            return;
+        }
+
+        StepCounter stepMetrics = null;
+        if (timingEnabled) {
+            stepMetrics = new StepTimer(step);
+        } else {
+            stepMetrics = new StepCounter(step);
+        }
+        this.stepTimers.put(step.getLabel(), stepMetrics);
+        this.orderedStepCounters.push(stepMetrics);
     }
 }
