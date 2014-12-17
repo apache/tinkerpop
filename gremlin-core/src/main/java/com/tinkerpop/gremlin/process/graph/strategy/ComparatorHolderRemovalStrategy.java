@@ -9,11 +9,11 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ComparingRemovalStrategy extends AbstractTraversalStrategy {
+public class ComparatorHolderRemovalStrategy extends AbstractTraversalStrategy {
 
-    private static final ComparingRemovalStrategy INSTANCE = new ComparingRemovalStrategy();
+    private static final ComparatorHolderRemovalStrategy INSTANCE = new ComparatorHolderRemovalStrategy();
 
-    private ComparingRemovalStrategy() {
+    private ComparatorHolderRemovalStrategy() {
     }
 
     @Override
@@ -30,7 +30,7 @@ public class ComparingRemovalStrategy extends AbstractTraversalStrategy {
         }
     }
 
-    public static ComparingRemovalStrategy instance() {
+    public static ComparatorHolderRemovalStrategy instance() {
         return INSTANCE;
     }
 }

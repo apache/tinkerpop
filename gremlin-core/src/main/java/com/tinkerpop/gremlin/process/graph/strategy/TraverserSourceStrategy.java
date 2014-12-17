@@ -20,7 +20,7 @@ public class TraverserSourceStrategy extends AbstractTraversalStrategy {
 
     static {
         PRIORS.add(ChooseLinearStrategy.class);
-        PRIORS.add(ComparingRemovalStrategy.class);
+        PRIORS.add(ComparatorHolderRemovalStrategy.class);
         PRIORS.add(DedupOptimizerStrategy.class);
         PRIORS.add(EngineDependentStrategy.class);
         PRIORS.add(IdentityRemovalStrategy.class);

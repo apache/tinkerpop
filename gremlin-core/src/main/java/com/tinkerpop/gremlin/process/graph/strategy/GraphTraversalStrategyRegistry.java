@@ -28,7 +28,7 @@ public class GraphTraversalStrategyRegistry {
         TRAVERSAL_STRATEGIES.add(MatchWhereStrategy.instance());
         TRAVERSAL_STRATEGIES.add(ChooseLinearStrategy.instance());
         TRAVERSAL_STRATEGIES.add(UnionLinearStrategy.instance());
-        TRAVERSAL_STRATEGIES.add(ComparingRemovalStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(ComparatorHolderRemovalStrategy.instance());
         TRAVERSAL_STRATEGIES.add(EngineDependentStrategy.instance());
         TRAVERSAL_STRATEGIES.add(ReducingStrategy.instance());
         //  TRAVERSAL_STRATEGIES.add(UnrollJumpStrategy.instance());
