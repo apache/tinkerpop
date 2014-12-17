@@ -9,6 +9,11 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Much better `toString()` handling in `Step` and `Traversal`.
+* `Comparing<V>` interface returns a `List<Comparator<V>>` instead of a `Comparator<V>[]`.
+* `T` now implements `Function<Element,Object>`.
+* `Comparing` and `ComparatorAcceptor` interfaces now more elegant and vendor introspection support via `ElementValueComparator` and `ElementFunctionComparator`.
+* `FunctionAcceptor` interface provides vendor introspection via `ElementValueFunction`.
 * Removed `OrderByStep` as it is now just `order()` with a `by()`-based comparator.
 * Added `SampleStep` (`sample()`) to allow for sampling the set of previous objects. Useful for doing random walks with `local()`.
 * Renamed `random()` to `coin()` to better express that the filter is a random coin toss.

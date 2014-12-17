@@ -11,7 +11,7 @@ import java.util.function.Function;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum T implements Function<Element,Object> {
+public enum T implements Function<Element, Object> {
     /**
      * Label (representing Element.label())
      */
@@ -76,6 +76,7 @@ public enum T implements Function<Element,Object> {
 
     public abstract String getAccessor();
 
+    @Override
     public abstract Object apply(final Element element);
 
     public static T fromString(final String accessor) {
@@ -90,5 +91,6 @@ public enum T implements Function<Element,Object> {
         else
             throw new IllegalArgumentException("The following accessor string is unknown: " + accessor);
     }
+
 
 }

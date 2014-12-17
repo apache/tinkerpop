@@ -10,5 +10,5 @@ import java.util.List;
  */
 public interface Comparing<S> {
 
-    public Comparator<Traverser<S>>[] getComparators();
+    public List<Comparator<S>> getComparators();
 }
