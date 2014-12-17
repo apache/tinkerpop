@@ -22,15 +22,16 @@ public class StepTimer implements StepMetrics, Serializable {
     private StepTimer() {
     }
 
-    public StepTimer(final ProfileStep step) {
+    public StepTimer(final ProfileStep<?> step) {
         this.label = step.getLabel();
         this.name = step.getEventName();
     }
 
-    public StepTimer(String name, String label) {
-        this.label = label;
-        this.name = name;
+    public StepTimer(final StepTimer timer) {
+        this.label = timer.label;
+        this.name = timer.name;
     }
+
 
     public final void start() {
         if (-1 != this.tempTime) {

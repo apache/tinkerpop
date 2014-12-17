@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
 
@@ -11,17 +10,14 @@ import java.util.*;
  * @author Bob Briody (http://bobbriody.com)
  */
 public final class TraversalMetrics implements Serializable {
-    public static final String PROFILING_ENABLED = "tinkerpop.profiling";
     private static final String[] HEADERS = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
-    private static final WeakHashMap<Traversal, Boolean> PROFILING_CACHE = new WeakHashMap<Traversal, Boolean>();
 
     private long totalStepDuration;
 
-    private final Map<String, StepTimer> stepTimers = new LinkedHashMap<String, StepTimer>();
-    private final LinkedList<StepTimer> orderedStepTimers = new LinkedList<StepTimer>();
+    private final Map<String, StepTimer> stepTimers = new LinkedHashMap<>();
+    private final LinkedList<StepTimer> orderedStepTimers = new LinkedList<>();
 
     public TraversalMetrics() {
-
     }
 
     public void start(final ProfileStep<?> step) {
@@ -71,7 +67,6 @@ public final class TraversalMetrics implements Serializable {
     }
 
     private void computeTotals() {
-
         // Set upstream StepTimer so the upstream time can be deducted from the downstream total
         StepTimer prev = null;
         for (StepTimer stepTimer : orderedStepTimers) {
@@ -104,7 +99,7 @@ public final class TraversalMetrics implements Serializable {
             globalMetrics.stepTimers.forEach((label, timer) -> {
                 StepTimer stepMetrics = totalMetrics.stepTimers.get(label);
                 if (null == stepMetrics) {
-                    stepMetrics = new StepTimer(timer.getName(), timer.getLabel());
+                    stepMetrics = new StepTimer(timer);
                     totalMetrics.stepTimers.put(label, stepMetrics);
                 }
                 stepMetrics.aggregate(timer);

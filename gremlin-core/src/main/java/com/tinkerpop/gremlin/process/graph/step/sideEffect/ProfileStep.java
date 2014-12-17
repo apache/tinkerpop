@@ -43,23 +43,6 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
         this.getTraversal().sideEffects().remove(METRICS_KEY);
     }
 
-    //    @Override
-    //    protected Traverser<S> processNextStart() {
-    //        // Wrap SideEffectStep's processNextStart() with timer.
-    //        TraversalMetrics traversalMetrics = this.getTraversal().sideEffects().getOrCreate(METRICS_KEY, TraversalMetrics::new);
-    //        Traverser<S> ret = null;
-    //
-    //        traversalMetrics.start(this);
-    //        try {
-    //            ret = super.processNextStart();
-    //            return ret;
-    //        } finally {
-    //            if (ret != null)
-    //                traversalMetrics.finish(this, ret.asAdmin());
-    //            else
-    //                traversalMetrics.stop(this);
-    //        }
-    //    }
 
     @Override
     public Traverser next() {

@@ -32,12 +32,6 @@ public class ProfileStrategy extends AbstractTraversalStrategy {
         // Add .profile() step after every pre-existing step.
         final List<Step> steps = traversal.asAdmin().getSteps();
         for (int ii = 0; ii < steps.size(); ii++) {
-            if (ii + 1 < steps.size() && steps.get(ii + 1) instanceof ProfileStep) {
-                // next step is already a ProfileStep specified by the user.
-                ii++;
-                continue;
-            }
-
             TraversalHelper.insertStep(new ProfileStep(traversal, steps.get(ii)), ii + 1, traversal);
             ii++;
         }
