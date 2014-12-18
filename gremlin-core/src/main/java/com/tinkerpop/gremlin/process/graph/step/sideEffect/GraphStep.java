@@ -46,6 +46,10 @@ public class GraphStep<E extends Element> extends StartStep<E> implements Traver
         return Edge.class.isAssignableFrom(this.returnClass);
     }
 
+    public Class<E> getReturnClass() {
+        return this.returnClass;
+    }
+
     public void setIteratorSupplier(final Supplier<Iterator<E>> iteratorSupplier) {
         this.iteratorSupplier = iteratorSupplier;
     }

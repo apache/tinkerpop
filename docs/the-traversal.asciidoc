@@ -1586,7 +1586,6 @@ The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in <<
 public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
 
     private static final TinkerGraphStepStrategy INSTANCE = new TinkerGraphStepStrategy();
-    private final static Set<Class<? extends TraversalStrategy>> POSTS = Stream.of(TraverserSourceStrategy.class).collect(Collectors.toSet());
 
     private TinkerGraphStepStrategy() {
     }
@@ -1614,11 +1613,6 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
             }
             currentStep = currentStep.getNextStep();
         }
-    }
-
-    @Override
-    public Set<Class<? extends TraversalStrategy>> applyPost() {
-        return POSTS;
     }
 
     public static TinkerGraphStepStrategy instance() {

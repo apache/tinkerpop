@@ -1,27 +1,17 @@
 package com.tinkerpop.gremlin.tinkergraph.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.strategy.AbstractTraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.EmptyGraph;
-import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
-
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -29,8 +19,6 @@ import java.util.stream.Stream;
 public class TinkerElementStepStrategy extends AbstractTraversalStrategy {
 
     private static final TinkerElementStepStrategy INSTANCE = new TinkerElementStepStrategy();
-
-    private final static Set<Class<? extends TraversalStrategy>> POSTS = Stream.of(TraverserSourceStrategy.class).collect(Collectors.toSet());
 
     private TinkerElementStepStrategy() {
     }
@@ -52,10 +40,6 @@ public class TinkerElementStepStrategy extends AbstractTraversalStrategy {
             }
             TraversalHelper.insertStep(new TinkerGraphStep<>(traversal, EmptyGraph.instance(), element.getClass(), element.id()), 0, traversal);
         }
-    }
-
-    public Set<Class<? extends TraversalStrategy>> applyPost() {
-        return POSTS;
     }
 
     public static TinkerElementStepStrategy instance() {

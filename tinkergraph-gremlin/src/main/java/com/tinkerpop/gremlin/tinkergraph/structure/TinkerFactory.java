@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
-import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -151,9 +150,7 @@ public class TinkerFactory {
         public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {
 
             static {
-                final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
-                traversalStrategies.addStrategy(TraverserSourceStrategy.instance());
-                TraversalStrategies.GlobalCache.registerStrategies(DefaultSocialTraversal.class, traversalStrategies);
+                TraversalStrategies.GlobalCache.registerStrategies(DefaultSocialTraversal.class, new DefaultTraversalStrategies());
             }
 
             public DefaultSocialTraversal(final Graph graph) {

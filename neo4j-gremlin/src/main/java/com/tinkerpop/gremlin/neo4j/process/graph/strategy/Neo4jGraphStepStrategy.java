@@ -4,18 +4,10 @@ import com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect.Neo4jGraphStep;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.marker.HasContainerHolder;
-import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.AbstractTraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
-import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Pieter Martin
@@ -24,11 +16,6 @@ import java.util.Set;
 public class Neo4jGraphStepStrategy extends AbstractTraversalStrategy {
 
     private static final Neo4jGraphStepStrategy INSTANCE = new Neo4jGraphStepStrategy();
-    private static final Set<Class<? extends TraversalStrategy>> POSTS = new HashSet<>();
-
-    static {
-        POSTS.add(TraverserSourceStrategy.class);
-    }
 
     private Neo4jGraphStepStrategy() {
     }
@@ -55,11 +42,6 @@ public class Neo4jGraphStepStrategy extends AbstractTraversalStrategy {
                 currentStep = currentStep.getNextStep();
             }
         }
-    }
-
-    @Override
-    public Set<Class<? extends TraversalStrategy>> applyPost() {
-        return POSTS;
     }
 
     public static Neo4jGraphStepStrategy instance() {
