@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoOutputFormat;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoResourceAccess;
+import com.tinkerpop.gremlin.structure.io.script.ScriptResourceAccess;
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.conf.GiraphConstants;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
@@ -25,6 +26,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Daniel Kuppitz (daniel at thinkaurelius.com)
  */
 public class HadoopGraphProvider extends AbstractGraphProvider {
 
@@ -45,6 +47,14 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "grateful-dead-vertices.ldjson");
             for (final String fileName : graphsonResources) {
                 PATHS.put(fileName, generateTempFile(GraphSONResourceAccess.class, fileName));
+            }
+
+            final List<String> scriptResources = Arrays.asList(
+                    "tinkerpop-classic.txt",
+                    "script-input.groovy",
+                    "script-output.groovy");
+            for (final String fileName : scriptResources) {
+                PATHS.put(fileName, generateTempFile(ScriptResourceAccess.class, fileName));
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,11 +1,6 @@
 package com.tinkerpop.gremlin.hadoop.groovy.plugin;
 
-import com.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
-import com.tinkerpop.gremlin.groovy.plugin.Artifact;
-import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
-import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
-import com.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
-import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
+import com.tinkerpop.gremlin.groovy.plugin.*;
 import com.tinkerpop.gremlin.hadoop.Constants;
 import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
 import com.tinkerpop.gremlin.hadoop.process.computer.mapreduce.MapReduceGraphComputer;
@@ -15,6 +10,7 @@ import com.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
 import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import com.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
+import com.tinkerpop.gremlin.hadoop.structure.io.script.ScriptInputFormat;
 import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupCountMapReduce;
 import org.apache.hadoop.conf.Configuration;
@@ -22,7 +18,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapreduce.Job;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -48,6 +43,7 @@ public class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT_SPACE + VertexWritable.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + KryoInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + GraphSONInputFormat.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + ScriptInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + HDFSTools.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + GroupCountMapReduce.class.getPackage().getName() + DOT_STAR);
         ////
