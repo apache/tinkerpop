@@ -78,19 +78,19 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
         this.neo4jGraphVariables = new Neo4jGraphVariables(this);
 
         ///////////
-        final Optional<Boolean> metaProperties = this.neo4jGraphVariables.get(Graph.System.system(CONFIG_META_PROPERTIES));
+        final Optional<Boolean> metaProperties = this.neo4jGraphVariables.get(Hidden.hide(CONFIG_META_PROPERTIES));
         if (metaProperties.isPresent()) {
             this.supportsMetaProperties = metaProperties.get();
         } else {
             this.supportsMetaProperties = false;
-            this.neo4jGraphVariables.set(Graph.System.system(CONFIG_META_PROPERTIES), false);
+            this.neo4jGraphVariables.set(Hidden.hide(CONFIG_META_PROPERTIES), false);
         }
-        final Optional<Boolean> multiProperties = this.neo4jGraphVariables.get(Graph.System.system(CONFIG_MULTI_PROPERTIES));
+        final Optional<Boolean> multiProperties = this.neo4jGraphVariables.get(Hidden.hide(CONFIG_MULTI_PROPERTIES));
         if (multiProperties.isPresent()) {
             this.supportsMultiProperties = multiProperties.get();
         } else {
             this.supportsMultiProperties = false;
-            this.neo4jGraphVariables.set(Graph.System.system(CONFIG_MULTI_PROPERTIES), false);
+            this.neo4jGraphVariables.set(Hidden.hide(CONFIG_MULTI_PROPERTIES), false);
         }
         if ((this.supportsMetaProperties && !this.supportsMultiProperties) || (!this.supportsMetaProperties && this.supportsMultiProperties)) {
             tx().rollback();
@@ -116,14 +116,14 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
             this.cypher = new ExecutionEngine(this.baseGraph);
             this.neo4jGraphVariables = new Neo4jGraphVariables(this);
             ///////////
-            if (!this.neo4jGraphVariables.get(Graph.System.system(CONFIG_META_PROPERTIES)).isPresent())
-                this.neo4jGraphVariables.set(Graph.System.system(CONFIG_META_PROPERTIES), this.configuration.getBoolean(CONFIG_META_PROPERTIES, false));
+            if (!this.neo4jGraphVariables.get(Hidden.hide(CONFIG_META_PROPERTIES)).isPresent())
+                this.neo4jGraphVariables.set(Hidden.hide(CONFIG_META_PROPERTIES), this.configuration.getBoolean(CONFIG_META_PROPERTIES, false));
             // TODO: Logger saying the configuration properties are ignored if already in Graph.Variables
-            if (!this.neo4jGraphVariables.get(Graph.System.system(CONFIG_MULTI_PROPERTIES)).isPresent())
-                this.neo4jGraphVariables.set(Graph.System.system(CONFIG_MULTI_PROPERTIES), this.configuration.getBoolean(CONFIG_MULTI_PROPERTIES, false));
+            if (!this.neo4jGraphVariables.get(Hidden.hide(CONFIG_MULTI_PROPERTIES)).isPresent())
+                this.neo4jGraphVariables.set(Hidden.hide(CONFIG_MULTI_PROPERTIES), this.configuration.getBoolean(CONFIG_MULTI_PROPERTIES, false));
             // TODO: Logger saying the configuration properties are ignored if already in Graph.Variables
-            this.supportsMetaProperties = this.neo4jGraphVariables.<Boolean>get(Graph.System.system(CONFIG_META_PROPERTIES)).get();
-            this.supportsMultiProperties = this.neo4jGraphVariables.<Boolean>get(Graph.System.system(CONFIG_MULTI_PROPERTIES)).get();
+            this.supportsMetaProperties = this.neo4jGraphVariables.<Boolean>get(Hidden.hide(CONFIG_META_PROPERTIES)).get();
+            this.supportsMultiProperties = this.neo4jGraphVariables.<Boolean>get(Hidden.hide(CONFIG_MULTI_PROPERTIES)).get();
             if ((this.supportsMetaProperties && !this.supportsMultiProperties) || (!this.supportsMetaProperties && this.supportsMultiProperties)) {
                 tx().rollback();
                 throw new UnsupportedOperationException("Neo4jGraph currently requires either both meta- and multi-properties activated or neither activated");

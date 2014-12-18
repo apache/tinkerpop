@@ -44,7 +44,6 @@ public class HasContainer {
 
     public boolean test(final Element element) {
         if (null != this.value) {
-
             if (this.key.equals(T.id.getAccessor()))
                 return this.predicate.test(element.id(), this.value);
             else if (this.key.equals(T.label.getAccessor()))
@@ -89,8 +88,8 @@ public class HasContainer {
     public String toString() {
         return this.value == null ?
                 (this.predicate == Contains.within ?
-                        "[" + Graph.System.unSystem(this.key) + "]" :
-                        "[!" + Graph.System.unSystem(this.key) + "]") :
-                "[" + Graph.System.unSystem(this.key) + "," + this.predicate + "," + this.value + "]";
+                        "[" + Graph.Hidden.unHide(this.key) + "]" :
+                        "[!" + Graph.Hidden.unHide(this.key) + "]") :
+                "[" + Graph.Hidden.unHide(this.key) + "," + this.predicate + "," + this.value + "]";
     }
 }

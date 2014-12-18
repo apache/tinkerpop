@@ -281,7 +281,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     public interface SideEffects extends Cloneable {
 
         public static final String SIDE_EFFECTS = "gremlin.traversal.sideEffects";
-        public static final String GRAPH_KEY = Graph.System.system("g");
+        public static final String GRAPH_KEY = Graph.Hidden.hide("g");
 
         /**
          * Determines if the {@link Traversal.SideEffects} contains the respective key.

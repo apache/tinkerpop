@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Graph.System` is now `Graph.Hidden` with "hidden" being the vendor namespace and the key prefix being `~`.
 * Much better `toString()` handling in `Step` and `Traversal`.
 * `ComparatorHolder<V>` interface returns a `List<Comparator<V>>` instead of a `Comparator<V>[]`.
 * `T` now implements `Function<Element,Object>`.

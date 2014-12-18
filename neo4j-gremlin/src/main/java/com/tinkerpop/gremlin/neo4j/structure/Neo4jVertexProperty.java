@@ -35,8 +35,8 @@ import java.util.stream.Stream;
 public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty.Iterators, WrappedVertex<Node>, Neo4jVertexPropertyTraversal {
 
     public static final Label VERTEX_PROPERTY_LABEL = DynamicLabel.label("vertexProperty");
-    public static final String VERTEX_PROPERTY_PREFIX = Graph.System.system("");
-    public static final String VERTEX_PROPERTY_TOKEN = Graph.System.system("vertexProperty");
+    public static final String VERTEX_PROPERTY_PREFIX = Graph.Hidden.hide("");
+    public static final String VERTEX_PROPERTY_TOKEN = Graph.Hidden.hide("vertexProperty");
 
 
     private Node node;
@@ -147,7 +147,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
             this.vertex.graph.tx().readWrite();
             final Set<String> keys = new HashSet<>();
             for (final String key : this.node.getPropertyKeys()) {
-                if (!Graph.System.isSystem(key))
+                if (!Graph.Hidden.isHidden(key))
                     keys.add(key);
             }
             return keys;

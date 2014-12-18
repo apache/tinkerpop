@@ -49,43 +49,44 @@ public interface Graph extends AutoCloseable {
 
     /**
      * This should only be used by vendors to create keys in a namespace safe from users.
+     * Users are not allowed to generate property keys, step labels, etc. that are key'd "hidden".
      */
-    public class System {
+    public class Hidden {
 
         /**
-         * The prefix to denote that a key is a system key.
+         * The prefix to denote that a key is a hidden key.
          */
-        private static final String SYSTEM_PREFIX = "^";
-        private static final int SYSTEM_PREFIX_LENGTH = SYSTEM_PREFIX.length();
+        private static final String HIDDEN_PREFIX = "~";
+        private static final int HIDDEN_PREFIX_LENGTH = HIDDEN_PREFIX.length();
 
         /**
-         * Turn the provided key into a system key. If the key is already a system key, return key.
+         * Turn the provided key into a hidden key. If the key is already a hidden key, return key.
          *
-         * @param key The key to make a system key
-         * @return The system key
+         * @param key The key to make a hidden key
+         * @return The hidden key
          */
-        public static String system(final String key) {
-            return isSystem(key) ? key : SYSTEM_PREFIX.concat(key);
+        public static String hide(final String key) {
+            return isHidden(key) ? key : HIDDEN_PREFIX.concat(key);
         }
 
         /**
-         * Turn the provided system key into an non-system key. If the key is not a system key, return key.
+         * Turn the provided hidden key into an non-hidden key. If the key is not a hidden key, return key.
          *
-         * @param key The system key
-         * @return The non-system representation of the key
+         * @param key The hidden key
+         * @return The non-hidden representation of the key
          */
-        public static String unSystem(final String key) {
-            return isSystem(key) ? key.substring(SYSTEM_PREFIX_LENGTH) : key;
+        public static String unHide(final String key) {
+            return isHidden(key) ? key.substring(HIDDEN_PREFIX_LENGTH) : key;
         }
 
         /**
-         * Determines whether the provided key is a system key or not.
+         * Determines whether the provided key is a hidden key or not.
          *
-         * @param key The key to check for system status
-         * @return Whether the provided key is a system key or not
+         * @param key The key to check for hidden status
+         * @return Whether the provided key is a hidden key or not
          */
-        public static boolean isSystem(final String key) {
-            return key.startsWith(SYSTEM_PREFIX);
+        public static boolean isHidden(final String key) {
+            return key.startsWith(HIDDEN_PREFIX);
         }
     }
 
@@ -184,7 +185,8 @@ public interface Graph extends AutoCloseable {
      */
     @Graph.Helper
     public default StrategyGraph strategy(final GraphStrategy... strategies) {
-        if (strategies.length == 0) throw new IllegalArgumentException("Provide at least one GraphStrategy implementation.");
+        if (strategies.length == 0)
+            throw new IllegalArgumentException("Provide at least one GraphStrategy implementation.");
         final GraphStrategy graphStrategy = strategies.length == 1 ? strategies[0] : SequenceStrategy.build().sequence(strategies).create();
         return new StrategyGraph(this, graphStrategy);
     }

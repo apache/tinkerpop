@@ -730,10 +730,11 @@ gremlin> g.E()
 
 The above console session uses the TinkerPop3 Gremlin Console.  It creates a new `TinkerGraph` which the TinkerPop2 GraphSON will be loaded into and uses the `LegacyGraphSONReader` to import the `tp2.json` file.
 
-Graph Strategy
---------------
+[[graphstrategy]]
+GraphStrategy
+-------------
 
-A Graph Strategy provides a way to expand, inspect or otherwise alter the behavior of a `Graph` implementation.  A Graph Strategy injects arbitrary functions into the `Graph` API, so that when a method call is made, the strategy functions can manipulate the default behavior of the underlying `Graph`.  TinkerPop3 is packaged with the following strategies:
+A `GraphStrategy` provides a way to expand, inspect or otherwise alter the behavior of a `Graph` implementation.  A graph strategy injects arbitrary functions into the `Graph` API, so that when a method call is made, the strategy functions can manipulate the default behavior of the underlying `Graph`.  TinkerPop3 is packaged with the following strategies:
 
 * `IdentityStrategy` - a "do nothing" `GraphStrategy` that executes the function as it is passed into the strategy
 * `IdStrategy` - enables support for custom element identifiers for those graphs which don't otherwise support them
@@ -742,7 +743,7 @@ A Graph Strategy provides a way to expand, inspect or otherwise alter the behavi
 * `SequenceStrategy` - apply multiple `GraphStrategy` implementations in sequenced ordered to a single `Graph` instance
 * `SubgraphStrategy` - create a logical subgraph which selectively includes vertices and edges of a `Graph` according to provided criteria
 
-NOTE: TinkerPop2 had the notion of "Graph Wrappers" which decorated standard `Graph` implementations with additional features.  A Graph strategy is generally analogous to that capability.
+NOTE: TinkerPop2 had the notion of "Graph Wrappers" which decorated standard `Graph` implementations with additional features.  A `GraphStrategy` is generally analogous to that capability.
 
 To use a `GraphStrategy` instance, use the `Graph.strategy()` method to instantiate the `StrategyGraph` as follows:
 
@@ -879,7 +880,7 @@ A general-purpose `SubgraphStrategy` is created by defining a "vertex criterion"
 
 NOTE: edges are either entirely visible, or entirely invisible to a subgraph.  You will never find an edge which cannot be traversed due to a missing in- or out-vertex.
 
-For example:
+For example, in Gremlin-Java:
 
 [source,java]
 ----
@@ -898,6 +899,8 @@ System.out.println("" + sg.V().count().next() + " of " + g.V().count().next() + 
 System.out.println("" + sg.E().count().next() + " of " + g.E().count().next() + " edges");
 ----
 
+The same example is presented below but using Gremlin-Groovy.
+
 [source,groovy]
 ----
 g = TinkerFactory.createClassic()
@@ -914,3 +917,18 @@ sg.V().count().next() + " of " + g.V().count().next() + " vertices"
 // only the given edges are included
 sg.E().count().next() + " of " + g.E().count().next() + " edges"
 ----
+
+Namespace Conventions
+---------------------
+
+End users, <<implementations,vendors>>, <<graphstrategy,strategy>> developers, <<graphcomputer,`GraphComputer`>> algorithm designers, <<gremlin-plugins,GremlinPlugin>> creators, etc. all leverages properties on elements to store information. There are a few conventions that should be respected when naming property keys to ensure that conflicts between these stakeholders do not conflict.
+
+* End users are granted the _flat namespace_ (e.g. `name`, `age`, `location`) to key their properties and label their elements.
+* Vendors are granted the _hidden namespace_ (e.g. `~metadata`) to to key their properties and labels. Data key'd as such is only accessible via the vendor implementation code and no other stakeholders are granted read nor write access to data prefixed with "~" (see `Graph.Hidden`). Test coverage and exceptions exist to ensure that vendors respect this hard boundary.
+* `GraphStrategy` developers should leverage _qualified namespaces_ particular to their domain (e.g. `mydomain.mystrategy.metadata`). Furthermore, if hiding these properties from users is important, then the strategy methods for property iterators should be smart about specified namespaces.
+* <<vertexprogram,`VertexProgram`>> and <<mapreduce,`MapReduce`>> developers should, like `GraphStrategy` developers, leverage _qualified namespaces_ particular to their domain (e.g. `mydomain.myvertexprogram.computedata`).
+* `GremlinPlugin` creators should prefix their plugin name with their domain (e.g. `mydomain.myplugin`).
+
+IMPORTANT: TinkerPop uses `tinkerpop.` and `gremlin.` as the prefixes for provided strategies, vertex programs, map reduce implementations, and plugins.
+
+The only truly protected namespace is the _hidden namespace_ provided to vendors. From there, its up to engineers to respect the namespacing conventions presented.

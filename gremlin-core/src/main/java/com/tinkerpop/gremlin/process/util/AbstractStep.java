@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversers.PathTraverser;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -29,7 +28,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     public AbstractStep(final Traversal traversal) {
         this.traversal = traversal;
         this.starts = new ExpandableStepIterator<S>((Step) this);
-        this.label = Graph.System.system(Integer.toString(this.traversal.asAdmin().getSteps().size()));
+        this.label = Graph.Hidden.hide(Integer.toString(this.traversal.asAdmin().getSteps().size()));
     }
 
     @Override

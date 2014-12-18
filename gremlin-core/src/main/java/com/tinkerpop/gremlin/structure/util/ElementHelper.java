@@ -41,8 +41,8 @@ public class ElementHelper {
             throw Element.Exceptions.labelCanNotBeNull();
         if (label.isEmpty())
             throw Element.Exceptions.labelCanNotBeEmpty();
-        if (Graph.System.isSystem(label))
-            throw Element.Exceptions.labelCanNotBeASystemKey(label);
+        if (Graph.Hidden.isHidden(label))
+            throw Element.Exceptions.labelCanNotBeAHiddenKey(label);
     }
 
     /**
@@ -74,8 +74,8 @@ public class ElementHelper {
             throw Property.Exceptions.propertyKeyCanNotBeNull();
         if (key.isEmpty())
             throw Property.Exceptions.propertyKeyCanNotBeEmpty();
-        if (Graph.System.isSystem(key))
-            throw Property.Exceptions.propertyKeyCanNotBeASystemKey(key);
+        if (Graph.Hidden.isHidden(key))
+            throw Property.Exceptions.propertyKeyCanNotBeAHiddenKey(key);
     }
 
     /**

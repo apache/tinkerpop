@@ -85,7 +85,7 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
 
     @Override
     public String toString() {
-        return Graph.System.isSystem(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+        return TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
 
     public Function<Collection<V>, R> getReduceFunction() {

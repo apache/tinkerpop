@@ -12,7 +12,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.TreeMapRedu
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.List;
 import java.util.function.Function;
@@ -52,7 +51,7 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
 
     @Override
     public String toString() {
-        return Graph.System.isSystem(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+        return TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
 
     @Override

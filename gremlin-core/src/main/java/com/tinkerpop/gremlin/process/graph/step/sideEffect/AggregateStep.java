@@ -45,7 +45,7 @@ public final class AggregateStep<S> extends BarrierStep<S> implements SideEffect
 
     @Override
     public String toString() {
-        return Graph.System.isSystem(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+        return TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
 
     @Override

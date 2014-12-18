@@ -31,7 +31,7 @@ public class EdgeTest {
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
             "labelCanNotBeNull",
             "labelCanNotBeEmpty",
-            "labelCanNotBeASystemKey"
+            "labelCanNotBeAHiddenKey"
     })
     public static class BasicEdgeTest extends AbstractGremlinTest {
         @Test
@@ -88,13 +88,13 @@ public class EdgeTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldHaveExceptionConsistencyWhenUsingSystemVertexLabel() {
-            final String label = Graph.System.system("systemLabel");
+            final String label = Graph.Hidden.hide("systemLabel");
             final Vertex v = g.addVertex();
             try {
                 v.addEdge(label, v);
                 fail("Call to Vertex.addEdge() should throw an exception when label is a system key");
             } catch (Exception ex) {
-                validateException(Element.Exceptions.labelCanNotBeASystemKey(label), ex);
+                validateException(Element.Exceptions.labelCanNotBeAHiddenKey(label), ex);
             }
         }
 

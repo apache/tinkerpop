@@ -69,10 +69,10 @@ public enum T implements Function<Element, Object> {
         }
     };
 
-    private static final String LABEL = Graph.System.system("label");
-    private static final String ID = Graph.System.system("id");
-    private static final String KEY = Graph.System.system("key");
-    private static final String VALUE = Graph.System.system("value");
+    private static final String LABEL = Graph.Hidden.hide("label");
+    private static final String ID = Graph.Hidden.hide("id");
+    private static final String KEY = Graph.Hidden.hide("key");
+    private static final String VALUE = Graph.Hidden.hide("value");
 
     public abstract String getAccessor();
 

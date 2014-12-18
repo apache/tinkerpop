@@ -23,11 +23,11 @@ import java.util.stream.Stream;
 public class TraversalHelper {
 
     public static boolean isLabeled(final Step<?, ?> step) {
-        return !Graph.System.isSystem(step.getLabel());
+        return !Graph.Hidden.isHidden(step.getLabel());
     }
 
     public static boolean isLabeled(final String label) {
-        return !Graph.System.isSystem(label);
+        return !Graph.Hidden.isHidden(label);
     }
 
     public static boolean isReversible(final Traversal<?, ?> traversal) {
@@ -153,7 +153,7 @@ public class TraversalHelper {
         final List<Step> steps = traversal.asAdmin().getSteps();
         for (int i = 0; i < steps.size(); i++) {
             if (!TraversalHelper.isLabeled(steps.get(i)))
-                steps.get(i).setLabel(Graph.System.system(Integer.toString(i)));
+                steps.get(i).setLabel(Graph.Hidden.hide(Integer.toString(i)));
         }
     }
 
@@ -186,7 +186,8 @@ public class TraversalHelper {
                 .map(o -> {
                     final String string = o.toString();
                     return string.contains("$Lambda$") ? "lambda" : string;
-                }).collect(Collectors.toList());
+                }).filter(o -> !Graph.Hidden.isHidden(o))
+                .collect(Collectors.toList());
         if (strings.size() > 0) {
             builder.append("(");
             builder.append(String.join(",", strings));

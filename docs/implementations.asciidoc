@@ -536,7 +536,7 @@ gremlin> clock(1000){g.V().has('name','Garcia').next()} <6>
 Using Automatic Indices
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The Gremlin-Console session below demonstates automatic indices. For more information, please refer to the Neo4j documentation:
+The Gremlin-Console session below demonstrates automatic indices. For more information, please refer to the Neo4j documentation:
 
 * Manipulating automatic indices with the Neo4j link:http://docs.neo4j.org/chunked/stable/auto-indexing.html[Java API].
 
@@ -711,11 +711,12 @@ IMPORTANT: As of TinkerPop3 x.y.z, when using Hadoop-Gremlin OLAP from the Greml
 
 A `Graph` in TinkerPop3 can support any number of `GraphComputer` implementations. HadoopGraph supports two GraphComputer implementations.
 
-* `GiraphGraphComputer`: Leverages Giraph to execute TinkerPop3 OLAP computations.
+* <<giraphgraphcomputer,`GiraphGraphComputer`>>: Leverages Giraph to execute TinkerPop3 OLAP computations.
 ** The graph must fit within the total RAM of the Hadoop cluster (graph size restriction). Messages passing is coordinated via ZooKeeper for the in-memory graph (speedy traversals).
-* `MapReduceGraphComputer`: Leverages Hadoop's MapReduce to execute TinkerPop3 OLAP computations. (*coming soon*)
-** The graph must fit within the total disk space of the Hadoop cluster (supports massive graphs). Message passing is coordinates via MapReduce jobs on the on-dks graph (slow traversals).
+* <<mapreducegraphcomputer,`MapReduceGraphComputer`>>: Leverages Hadoop's MapReduce to execute TinkerPop3 OLAP computations. (*coming soon*)
+** The graph must fit within the total disk space of the Hadoop cluster (supports massive graphs). Message passing is coordinated via MapReduce jobs over the on-disk graph (slow traversals).
 
+[[giraphgraphcomputer]]
 GiraphGraphComputer
 ^^^^^^^^^^^^^^^^^^^
 
@@ -773,7 +774,7 @@ gremlin> result.memory.a
 ==>i={ripple=1}
 ==>o={lop=1, josh=1}
 
-NOTE: Distributed graph computations on cluster-sized graphs can yield an enormous number of results. To be safe, Hadoop-Gremlin only returns up to 20 results to the console (with, of course, all the results being available in HDFS). If more traversal results are desired, access `result.memory().get(Graph.System.system('traversers'))`.
+NOTE: Distributed graph computations on cluster-sized graphs can yield an enormous number of results. To be safe, Hadoop-Gremlin only returns up to 20 results to the console (with, of course, all the results being available in HDFS). If more traversal results are desired, access `result.memory().get('~traversers')`.
 
 TIP: image:gremlin-sugar.png[width=50,float=left] For those wanting to use the <<sugar-plugin,SugarPlugin>> with their submitted traversal, do `:remote config useSugar true` as well as `:plugin use tinkerpop.sugar` at the start of the Gremlin Console session if it is not already activated.
 
@@ -791,6 +792,7 @@ public class TraversalSupplier1 implements SSupplier<Traversal> {
 }
 ----
 
+[[mapreducegraphcomputer]]
 MapReduceGraphComputer
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -807,7 +809,7 @@ gremlin> hdfs.ls()
 ==>rw-r--r-- marko supergroup 891 tinkerpop-classic-vertices.gio
 gremlin> hdfs.ls('output')
 ==>rwxr-xr-x marko supergroup 0 (D) a
-==>rwxr-xr-x marko supergroup 0 (D) ^g
+==>rwxr-xr-x marko supergroup 0 (D) ~g
 gremlin> hdfs.ls('output/a')
 ==>rw-r--r-- marko supergroup 0 _SUCCESS
 ==>rwxr-xr-x marko supergroup 0 (D) _logs
@@ -922,7 +924,7 @@ $ hadoop jar target/hadoop-gremlin-x.y.z-job.jar com.tinkerpop.gremlin.hadoop.pr
 14/07/29 12:08:54 INFO mapred.JobClient:     Total time spent by all maps waiting after reserving slots (ms)=0
 14/07/29 12:08:54 INFO mapred.JobClient:   File Output Format Counters
 14/07/29 12:08:54 INFO mapred.JobClient:     Bytes Written=0
-$ hadoop fs -cat output/^g/*
+$ hadoop fs -cat output/~g/*
 {"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":3.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.15000000000000002,"properties":{}}],"name":[{"id":0,"label":"name","value":"marko","properties":{}}],"age":[{"id":1,"label":"age","value":29,"properties":{}}]}}
 {"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.23181250000000003,"properties":{}}],"name":[{"id":8,"label":"name","value":"ripple","properties":{}}],"lang":[{"id":9,"label":"lang","value":"java","properties":{}}]}}
 {"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.4018125,"properties":{}}],"name":[{"id":4,"label":"name","value":"lop","properties":{}}],"lang":[{"id":5,"label":"lang","value":"java","properties":{}}]}}

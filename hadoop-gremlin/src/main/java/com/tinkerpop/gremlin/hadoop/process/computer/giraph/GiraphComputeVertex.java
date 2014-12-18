@@ -35,7 +35,7 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
     //TODO: Dangerous that the underlying TinkerGraph Vertex can have edges written to it.
     //TODO: LongWritable as the key is not general enough -- ObjectWritable causes problems though :|
 
-    private static final String VERTEX_ID = Graph.System.system("giraph.gremlin.vertexId");
+    private static final String VERTEX_ID = Graph.Hidden.hide("giraph.gremlin.vertexId");
     private TinkerVertex tinkerVertex;
     private StrategyVertex wrappedVertex;
     private static KryoWriter KRYO_WRITER = KryoWriter.build().create();

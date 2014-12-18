@@ -15,7 +15,7 @@ import com.tinkerpop.gremlin.structure.Graph;
  */
 public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, MapReducer<MapReduce.NullObject, TraversalMetrics, MapReduce.NullObject, TraversalMetrics, TraversalMetrics> {
 
-    public static final String METRICS_KEY = Graph.System.system("metrics");
+    public static final String METRICS_KEY = Graph.Hidden.hide("metrics");
 
     public ProfileStep(final Traversal traversal) {
         super(traversal);

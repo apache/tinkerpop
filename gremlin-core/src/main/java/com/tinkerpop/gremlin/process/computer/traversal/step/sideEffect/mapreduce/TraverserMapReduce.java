@@ -29,7 +29,7 @@ import java.util.function.Supplier;
  */
 public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object, Comparable, Object, Iterator<Object>> {
 
-    public static final String TRAVERSERS = Graph.System.system("traversers");
+    public static final String TRAVERSERS = Graph.Hidden.hide("traversers");
 
     private static final Traversal.SideEffects EMPTY_SIDE_EFFECTS = new DefaultTraversalSideEffects();
     private Optional<Comparator<Comparable>> comparator = Optional.empty();
