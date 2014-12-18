@@ -1,22 +1,16 @@
 package com.tinkerpop.gremlin.tinkergraph.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
+import com.tinkerpop.gremlin.process.graph.marker.HasContainerHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.AbstractTraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
-import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Contains;
-import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,12 +34,13 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
         final TinkerGraphStep<?> tinkerGraphStep = (TinkerGraphStep) TraversalHelper.getStart(traversal);
         Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
         while (true) {
-            if (currentStep == EmptyStep.instance() || TraversalHelper.isLabeled(currentStep)) break;
-            if (currentStep instanceof HasStep) {
-                tinkerGraphStep.hasContainers.addAll(((HasStep) currentStep).getHasContainers());
-                TraversalHelper.removeStep(currentStep, traversal);
-            } else if (currentStep instanceof IntervalStep) {
-                tinkerGraphStep.hasContainers.addAll(((IntervalStep) currentStep).getHasContainers());
+            if (currentStep instanceof HasContainerHolder) {
+                tinkerGraphStep.hasContainers.addAll(((HasContainerHolder) currentStep).getHasContainers());
+                if (TraversalHelper.isLabeled(currentStep)) {
+                    final IdentityStep identityStep = new IdentityStep<>(traversal);
+                    identityStep.setLabel(currentStep.getLabel());
+                    TraversalHelper.insertAfterStep(identityStep, currentStep, traversal);
+                }
                 TraversalHelper.removeStep(currentStep, traversal);
             } else if (currentStep instanceof IdentityStep) {
                 // do nothing

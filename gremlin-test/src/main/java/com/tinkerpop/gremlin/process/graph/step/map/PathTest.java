@@ -30,6 +30,8 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_V_out_out_path_byXnameX_byXageX();
 
+    public abstract Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_v1_name_path() {
@@ -112,6 +114,21 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         assertEquals(2, counter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path() {
+        final Traversal<Vertex, Path> traversal = get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path();
+        printTraversalForm(traversal);
+        final Path path = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(1, path.size());
+        assertTrue(path.hasLabel("a"));
+        assertTrue(path.hasLabel("b"));
+        assertTrue(path.hasLabel("c"));
+        assertEquals(1, path.labels().size());
+        assertEquals(3, path.labels().get(0).size());
+    }
+
     public static class StandardTest extends PathTest {
         public StandardTest() {
             requiresGraphComputer = false;
@@ -140,6 +157,11 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_out_out_path_byXnameX_byXageX() {
             return g.V().out().out().path().by("name").by("age");
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path() {
+            return g.V().as("a").has("name", "marko").as("b").has("age", 29).as("c").path();
         }
     }
 
@@ -175,6 +197,11 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Path> get_g_V_out_out_path_byXnameX_byXageX() {
             // TODO: Detached elements do not store properties (attach)
             return g.V().out().out().path().by("name").by("age");
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path() {
+            return g.V().as("a").has("name", "marko").as("b").has("age", 29).as("c").path().submit(g.compute());
         }
     }
 }
