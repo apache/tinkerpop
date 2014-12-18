@@ -480,8 +480,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         }
     }
 
-    /*@Test
-    public void shouldNotGenerateNodesAndRelationshipsForNoMultiProperties() {
+    @Test
+    public void shouldNotGenerateNodesAndRelationshipsForMultiPropertiesWithSingle() {
         g.tx().readWrite();
         tryCommit(g, g -> validateCounts(g, 0, 0, 0, 0));
         Vertex vertex = g.addVertex(T.label, "person");
@@ -489,7 +489,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         vertex.property("name", "marko");
         assertEquals("marko", vertex.value("name"));
         tryCommit(g, g -> validateCounts(g, 1, 0, 1, 0));
-        vertex.property("name", "okram");
+        vertex.singleProperty("name", "okram");
         tryCommit(g, g -> {
             validateCounts(g, 1, 0, 1, 0);
             assertEquals("okram", vertex.value("name"));
@@ -502,13 +502,14 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             validateCounts(g, 1, 0, 1, 0);
         });
 
-        if (g.features().vertex().supportsMetaProperties()) {
-            vertexProperty.property("acl", "private");
+        // now make it a meta property (and thus, force node/relationship creation)
+        vertexProperty.property("acl", "private");
+        tryCommit(g, g -> {
             assertEquals("private", vertexProperty.value("acl"));
-        }
+            validateCounts(g, 1, 0, 2, 1);
+        });
 
-        //validateCounts(g, 1, 0, 1, 0); //TODO: Make use of Graph.System keys to hide meta-properties on the baseVertex
-    }*/
+    }
 
 
     @Test
