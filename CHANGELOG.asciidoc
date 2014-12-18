@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `ScriptInputFormat` and `ScriptOutputFormat` to Hadoop-Gremlin for reading and writing a file according to an arbitrary parsing script.
+* Added `TimeLimitStep.getTimedOut()` to determine if the step timed out or there were no more objects to process.
 * `Graph.System` is now `Graph.Hidden` with "hidden" being the vendor namespace and the key prefix being `~`.
 * Much better `toString()` handling in `Step` and `Traversal`.
 * `ComparatorHolder<V>` interface returns a `List<Comparator<V>>` instead of a `Comparator<V>[]`.

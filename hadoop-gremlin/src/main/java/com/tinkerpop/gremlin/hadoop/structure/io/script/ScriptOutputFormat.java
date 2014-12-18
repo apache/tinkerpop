@@ -15,13 +15,11 @@ import java.io.IOException;
 public class ScriptOutputFormat extends CommonFileOutputFormat {
 
     @Override
-    public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job) throws IOException,
-            InterruptedException {
+    public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
         return getRecordWriter(job, getDataOuputStream(job));
     }
 
-    public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job, final DataOutputStream outputStream)
-            throws IOException, InterruptedException {
+    public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job, final DataOutputStream outputStream) throws IOException, InterruptedException {
         return new ScriptRecordWriter(outputStream, job);
     }
 }
