@@ -61,10 +61,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
      * Neo4j upgrades from 1.x don't come with labels.
      */
     @Test
-    @Ignore
     public void shouldTraverseWithoutLabels() {
-        // todo: can this test be made to pass?   https://github.com/tinkerpop/tinkerpop3/issues/408
-
         final GraphDatabaseService service = g.getBaseGraph();
 
         final Transaction tx = service.beginTx();
@@ -75,6 +72,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         final Transaction tx2 = service.beginTx();
         assertEquals(0, IteratorUtils.count(n.getLabels().iterator()));
         assertEquals(1, IteratorUtils.count(g.iterators().vertexIterator()));
+        g.tx().close();
         tx2.close();
     }
 

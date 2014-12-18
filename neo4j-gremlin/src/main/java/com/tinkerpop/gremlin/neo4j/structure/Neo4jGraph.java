@@ -230,35 +230,43 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     @Override
     public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
         this.tx().readWrite();
-        return 0 == vertexIds.length ? StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllNodes())
-                .filter(node -> !Neo4jHelper.isDeleted(node))
-                .filter(node -> !node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
-                .map(node -> (Vertex) new Neo4jVertex(node, this)).iterator() :
-                Stream.of(vertexIds).filter(id -> id instanceof Number).filter(id -> {
-                    try {
-                        this.getBaseGraph().getNodeById(((Number) id).longValue());
-                        return true;
-                    } catch (final NotFoundException e) {
-                        return false;
-                    }
-                }).map(id -> (Vertex) new Neo4jVertex(this.getBaseGraph().getNodeById(((Number) id).longValue()), this)).iterator();
+        if (0 == vertexIds.length) {
+            return StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllNodes())
+                    .filter(node -> !Neo4jHelper.isDeleted(node))
+                    .filter(node -> !node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
+                    .map(node -> (Vertex) new Neo4jVertex(node, this)).iterator();
+        } else {
+            return Stream.of(vertexIds)
+                    .filter(id -> id instanceof Number)
+                    .flatMap(id -> {
+                        try {
+                            return Stream.of((Vertex) new Neo4jVertex(this.getBaseGraph().getNodeById(((Number) id).longValue()), this));
+                        } catch (final NotFoundException e) {
+                            return Stream.empty();
+                        }
+                    }).iterator();
+        }
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Object... edgeIds) {
         this.tx().readWrite();
-        return 0 == edgeIds.length ? StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllRelationships())
-                .filter(relationship -> !Neo4jHelper.isDeleted(relationship))
-                .filter(relationship -> !relationship.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
-                .map(relationship -> (Edge) new Neo4jEdge(relationship, this)).iterator() :
-                Stream.of(edgeIds).filter(id -> id instanceof Number).filter(id -> {
-                    try {
-                        this.getBaseGraph().getRelationshipById(((Number) id).longValue());
-                        return true;
-                    } catch (final NotFoundException e) {
-                        return false;
-                    }
-                }).map(id -> (Edge) new Neo4jEdge(this.getBaseGraph().getRelationshipById(((Number) id).longValue()), this)).iterator();
+        if (0 == edgeIds.length) {
+            return StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllRelationships())
+                    .filter(relationship -> !Neo4jHelper.isDeleted(relationship))
+                    .filter(relationship -> !relationship.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
+                    .map(relationship -> (Edge) new Neo4jEdge(relationship, this)).iterator();
+        } else {
+            return Stream.of(edgeIds)
+                    .filter(id -> id instanceof Number)
+                    .flatMap(id -> {
+                        try {
+                            return Stream.of((Edge) new Neo4jEdge(this.getBaseGraph().getRelationshipById(((Number) id).longValue()), this));
+                        } catch (final NotFoundException e) {
+                            return Stream.empty();
+                        }
+                    }).iterator();
+        }
 
     }
 

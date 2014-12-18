@@ -30,7 +30,7 @@ public class Neo4jHelper {
 
     public static boolean isDeleted(final Node node) {
         try {
-            node.getLabels().iterator().next();
+            node.getPropertyKeys();
             return false;
         } catch (final IllegalStateException e) {
             return true;

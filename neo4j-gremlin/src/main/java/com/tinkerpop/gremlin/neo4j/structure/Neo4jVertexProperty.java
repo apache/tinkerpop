@@ -202,7 +202,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
     }
 
     @Override
-    public <U> Iterator<Property<U>> propertyIterator(String... propertyKeys) {
+    public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
         if (!isNode()) return Collections.emptyIterator();
         else {
             vertex.graph.tx().readWrite();
