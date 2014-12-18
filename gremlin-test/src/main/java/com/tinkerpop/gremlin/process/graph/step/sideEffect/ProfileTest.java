@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.util.StepMetrics;
+import com.tinkerpop.gremlin.process.util.Metrics;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.process.util.TraversalMetricsUtil;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -12,6 +12,7 @@ import org.junit.Test;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -29,16 +30,24 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         traversal.iterate();
 
-        TraversalMetrics metrics = traversal.sideEffects().get(TraversalMetrics.METRICS_KEY);
+        TraversalMetrics traversalMetrics = traversal.sideEffects().get(TraversalMetrics.METRICS_KEY);
+        traversalMetrics.toString(); // ensure no exceptions are thrown
 
-        StepMetrics step0 = metrics.getStepMetrics(0);
-        assertEquals(6, step0.getCount());
 
-        StepMetrics step1 = metrics.getStepMetrics(1);
-        assertEquals(6, step1.getCount());
+        Metrics metrics = traversalMetrics.getMetrics(0);
+        assertEquals(6, metrics.getChild(ProfileStep.ITEM_COUNT_ID).getCount());
+        assertNotEquals(0, metrics.getCount());
+        assertNotEquals(0, metrics.getPercentDuration());
 
-        StepMetrics step2 = metrics.getStepMetrics(2);
-        assertEquals(2, step2.getCount());
+        metrics = traversalMetrics.getMetrics(1);
+        assertEquals(6, metrics.getChild(ProfileStep.ITEM_COUNT_ID).getCount());
+        assertNotEquals(0, metrics.getCount());
+        assertNotEquals(0, metrics.getPercentDuration());
+
+        metrics = traversalMetrics.getMetrics(2);
+        assertEquals(2, metrics.getChild(ProfileStep.ITEM_COUNT_ID).getCount());
+        assertNotEquals(0, metrics.getCount());
+        assertNotEquals(0, metrics.getPercentDuration());
     }
 
     @Test
@@ -48,16 +57,23 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
 
         traversal.iterate();
-        TraversalMetrics metrics = traversal.sideEffects().get(TraversalMetrics.METRICS_KEY);
+        TraversalMetrics traversalMetrics = traversal.sideEffects().get(TraversalMetrics.METRICS_KEY);
+        traversalMetrics.toString(); // ensure no exceptions are thrown
 
-        StepMetrics step0 = metrics.getStepMetrics(0);
-        assertEquals(808, step0.getCount());
+        Metrics metrics = traversalMetrics.getMetrics(0);
+        assertEquals(808, metrics.getChild(ProfileStep.ITEM_COUNT_ID).getCount());
+        assertNotEquals(0, metrics.getCount());
+        assertNotEquals(0, metrics.getPercentDuration());
 
-        StepMetrics step1 = metrics.getStepMetrics(1);
-        assertEquals(8049, step1.getCount());
+        metrics = traversalMetrics.getMetrics(1);
+        assertEquals(8049, metrics.getChild(ProfileStep.ITEM_COUNT_ID).getCount());
+        assertNotEquals(0, metrics.getCount());
+        assertNotEquals(0, metrics.getPercentDuration());
 
-        StepMetrics step2 = metrics.getStepMetrics(2);
-        assertEquals(327370, step2.getCount());
+        metrics = traversalMetrics.getMetrics(2);
+        assertEquals(327370, metrics.getChild(ProfileStep.ITEM_COUNT_ID).getCount());
+        assertNotEquals(0, metrics.getCount());
+        assertNotEquals(0, metrics.getPercentDuration());
     }
 
     public static class StandardTest extends ProfileTest {

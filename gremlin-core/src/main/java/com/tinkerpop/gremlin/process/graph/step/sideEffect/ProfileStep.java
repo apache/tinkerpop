@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
@@ -17,6 +16,8 @@ import com.tinkerpop.gremlin.process.util.TraversalMetricsUtil;
  */
 public final class ProfileStep<S> extends SideEffectStep<S> implements Reversible, MapReducer<MapReduce.NullObject, TraversalMetricsUtil, MapReduce.NullObject, TraversalMetricsUtil, TraversalMetricsUtil> {
 
+    public static final String ITEM_COUNT_ID = "itemCount";
+    public static final String ITEM_COUNT_DISPLAY = "item count";
     private final String name;
 
 
@@ -50,18 +51,18 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
         // Wrap SideEffectStep's next() with timer.
         TraversalMetricsUtil traversalMetrics = this.getTraversal().sideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, TraversalMetricsUtil::new);
         // TODO: rjbriod - profile - is it always true that hasNext() is called before next(). If so, remove this:
-        traversalMetrics.initialize(this, this.getTraversal().asAdmin().getTraversalEngine().equals(TraversalEngine.STANDARD));
+        traversalMetrics.initializeIfNecessary(this.getLabel(), name);
 
         Traverser<?> ret = null;
-        traversalMetrics.start(this);
+        traversalMetrics.start(this.getLabel());
         try {
             ret = super.next();
             return ret;
         } finally {
             if (ret != null)
-                traversalMetrics.finish(this, ret.asAdmin());
+                traversalMetrics.finish(this.getLabel(), ret.asAdmin().bulk());
             else
-                traversalMetrics.stop(this);
+                traversalMetrics.stop(this.getLabel());
         }
     }
 
@@ -69,11 +70,11 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
     public boolean hasNext() {
         // Wrap SideEffectStep's hasNext() with timer.
         TraversalMetricsUtil traversalMetrics = this.getTraversal().sideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, TraversalMetricsUtil::new);
-        traversalMetrics.initialize(this, this.getTraversal().asAdmin().getTraversalEngine().equals(TraversalEngine.STANDARD));
+        traversalMetrics.initializeIfNecessary(this.getLabel(), name);
 
-        traversalMetrics.start(this);
+        traversalMetrics.start(this.getLabel());
         boolean ret = super.hasNext();
-        traversalMetrics.stop(this);
+        traversalMetrics.stop(this.getLabel());
         return ret;
     }
 

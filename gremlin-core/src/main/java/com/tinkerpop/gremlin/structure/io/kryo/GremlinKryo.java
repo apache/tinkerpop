@@ -15,7 +15,7 @@ import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.traversers.PathTraverser;
 import com.tinkerpop.gremlin.process.traversers.SimpleTraverser;
 import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.process.util.StepCounter;
+import com.tinkerpop.gremlin.process.util.MetricsUtil;
 import com.tinkerpop.gremlin.process.util.TraversalMetricsUtil;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.*;
@@ -248,7 +248,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Tree.class, null, 61));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashSet.class, null, 62));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(BulkSet.class, null, 64));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StepCounter.class, null, 69));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MetricsUtil.class, null, 69));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraversalMetricsUtil.class, null, 70));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapMemory.class, null, 73));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapReduce.NullObject.class, null, 74)); // ***LAST ID***

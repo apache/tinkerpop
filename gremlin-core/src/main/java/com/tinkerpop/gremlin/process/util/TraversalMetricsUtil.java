@@ -1,40 +1,43 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
 public final class TraversalMetricsUtil implements TraversalMetrics, Serializable {
     private static final String[] HEADERS = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
+    private static final TimeUnit SOURCE_UNIT = TimeUnit.NANOSECONDS;
 
     private long totalStepDuration;
 
-    private final Map<String, StepCounter> stepTimers = new LinkedHashMap<>();
-    private final LinkedList<StepCounter> orderedStepCounters = new LinkedList<>();
+    private final Map<String, MetricsUtil> metrics = new LinkedHashMap<>();
+    private final LinkedList<MetricsUtil> orderedMetrics = new LinkedList<>();
 
     public TraversalMetricsUtil() {
     }
 
-    public void start(final ProfileStep<?> step) {
-        this.stepTimers.get(step.getLabel()).start();
+    public void start(final String metricsId) {
+        this.metrics.get(metricsId).start();
     }
 
-    public void stop(final ProfileStep<?> step) {
-        this.stepTimers.get(step.getLabel()).stop();
+    public void stop(final String metricsId) {
+        this.metrics.get(metricsId).stop();
     }
 
-    public void finish(final ProfileStep<?> step, final Traverser.Admin<?> traverser) {
-        this.stepTimers.get(step.getLabel()).finish(traverser);
+    public void finish(final String metricsId, final long bulk) {
+        final MetricsUtil metricsUtil = this.metrics.get(metricsId);
+        metricsUtil.finish(1);
+        metricsUtil.getChild(ProfileStep.ITEM_COUNT_ID).incrementCount(bulk);
     }
 
     @Override
     public String toString() {
-        computeTotals();
+        List<MetricsUtil> snapshot = computeTotals();
 
         // Build a pretty table of metrics data.
 
@@ -43,90 +46,90 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
         sb.append("Traversal Metrics\n").append(String.format("%28s %13s %11s %15s %8s", HEADERS));
 
         // Append each StepMetric's row. These are in reverse order.
-        for (StepCounter s : this.orderedStepCounters) {
+        for (MetricsUtil s : snapshot) {
             String rowName = s.getName();
 
             if (rowName.length() > 28)
                 rowName = rowName.substring(0, 28 - 3) + "...";
 
+            long itemCount = s.getChild(ProfileStep.ITEM_COUNT_ID).getCount();
+
             sb.append(String.format("%n%28s %13d %11d %15.3f %8.2f",
-                    rowName, s.getCount(), s.getTraversers(), s.getTimeMs(), s.getPercentageDuration()));
+                    rowName, itemCount, s.getCount(), s.getDuration(TimeUnit.MICROSECONDS) / 1000.0, s.getPercentDuration()));
         }
 
         // Append total duration
         sb.append(String.format("%n%28s %13s %11s %15.3f %8s",
-                "TOTAL", "-", "-", getDurationMs(), "-"));
+                "TOTAL", "-", "-", getDuration(TimeUnit.MICROSECONDS) / 1000.0, "-"));
 
         return sb.toString();
     }
 
-    private void computeTotals() {
-        // Set upstream StepCounter so the upstream time can be deducted from the downstream total
-        StepCounter prev = null;
-        for (StepCounter stepTimer : orderedStepCounters) {
-            if (prev != null) {
-                stepTimer.setPreviousStepCounter(prev);
-            }
-            prev = stepTimer;
+    private List<MetricsUtil> computeTotals() {
+        // Create a temporary copy of all the Metrics
+        List<MetricsUtil> copy = new ArrayList<>(orderedMetrics.size());
+        orderedMetrics.forEach(metrics -> copy.add(metrics.clone()));
+
+        // Subtract upstream traversal time from each step
+        for (int ii = copy.size() - 1; ii > 0; ii--) {
+            MetricsUtil cur = copy.get(ii);
+            MetricsUtil upStream = copy.get(ii - 1);
+            cur.setDuration(cur.getDuration(MetricsUtil.SOURCE_UNIT) - upStream.getDuration(MetricsUtil.SOURCE_UNIT));
         }
 
-        // Calculate total duration of all steps
+        // Calculate total duration
         this.totalStepDuration = 0;
-        final Collection<StepCounter> timers = this.stepTimers.values();
-        timers.forEach(step ->
-                        this.totalStepDuration += step.getTimeNs()
+        copy.forEach(metrics -> this.totalStepDuration += metrics.getDuration(MetricsUtil.SOURCE_UNIT));
+
+        // Assign %'s
+        copy.forEach(metrics ->
+                        metrics.setPercentDuration(metrics.getDuration(TimeUnit.NANOSECONDS) * 100.d / this.totalStepDuration)
         );
 
-        // Assign step %'s
-        timers.forEach(step ->
-                        step.setPercentageDuration(step.getTimeNs() * 100.d / this.totalStepDuration)
-        );
-    }
-
-    public double getDurationMs() {
-        return this.totalStepDuration / 1000000.0d;
+        return copy;
     }
 
     public static TraversalMetricsUtil merge(final Iterator<TraversalMetricsUtil> metrics) {
         final TraversalMetricsUtil traversalMetricsUtil = new TraversalMetricsUtil();
         metrics.forEachRemaining(globalMetrics -> {
-            globalMetrics.stepTimers.forEach((label, stepCounter) -> {
-                StepCounter stepMetrics = traversalMetricsUtil.stepTimers.get(label);
-                if (null == stepMetrics) {
-                    if (stepCounter instanceof StepTimer) {
-                        stepMetrics = new StepTimer((StepTimer) stepCounter);
-                    } else {
-                        stepMetrics = new StepCounter(stepCounter);
-                    }
-                    traversalMetricsUtil.stepTimers.put(label, stepMetrics);
-                    traversalMetricsUtil.orderedStepCounters.add(stepMetrics);
+            globalMetrics.orderedMetrics.forEach((toAggregate) -> {
+                MetricsUtil aggregateMetrics = traversalMetricsUtil.metrics.get(toAggregate.getId());
+                if (null == aggregateMetrics) {
+                    aggregateMetrics = new MetricsUtil(toAggregate.getId(), toAggregate.getName());
+                    traversalMetricsUtil.metrics.put(aggregateMetrics.getId(), aggregateMetrics);
+                    traversalMetricsUtil.orderedMetrics.add(aggregateMetrics);
                 }
-                stepMetrics.aggregate(stepCounter);
+                aggregateMetrics.aggregate(toAggregate);
             });
         });
         return traversalMetricsUtil;
     }
 
-    public StepMetrics getStepMetrics(final int index) {
-        return orderedStepCounters.get(index);
+    @Override
+    public long getDuration(final TimeUnit unit) {
+        return unit.convert(totalStepDuration, SOURCE_UNIT);
     }
 
-    public StepMetrics getStepMetrics(final String stepLabel) {
-        return stepTimers.get(stepLabel);
+    @Override
+    public Metrics getMetrics(final int index) {
+        return orderedMetrics.get(index);
     }
 
-    public void initialize(final ProfileStep step, final boolean timingEnabled) {
-        if (stepTimers.containsKey(step.getLabel())) {
+    @Override
+    public Metrics getMetrics(final String stepLabel) {
+        return metrics.get(stepLabel);
+    }
+
+    public void initializeIfNecessary(final String metricsId, final String displayName) {
+        if (metrics.containsKey(metricsId)) {
             return;
         }
 
-        StepCounter stepMetrics = null;
-        if (timingEnabled) {
-            stepMetrics = new StepTimer(step);
-        } else {
-            stepMetrics = new StepCounter(step);
-        }
-        this.stepTimers.put(step.getLabel(), stepMetrics);
-        this.orderedStepCounters.push(stepMetrics);
+        MetricsUtil metrics = new MetricsUtil(metricsId, displayName);
+        // Add a child metric for item count
+        metrics.addChild(new MetricsUtil(ProfileStep.ITEM_COUNT_ID, ProfileStep.ITEM_COUNT_DISPLAY));
+
+        this.metrics.put(metricsId, metrics);
+        this.orderedMetrics.push(metrics);
     }
 }
