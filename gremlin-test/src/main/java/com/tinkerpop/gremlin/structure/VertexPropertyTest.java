@@ -5,24 +5,18 @@ import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
-import com.tinkerpop.gremlin.util.function.TriFunction;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.javatuples.Pair;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.*;
 
@@ -89,13 +83,13 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             assertTrue(v.valueMap().next().get("name").contains("marko a. rodriguez"));
             assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator()));
             assertEquals(2, IteratorUtils.count(v.iterators().propertyIterator("name")));
-            assertVertexEdgeCounts(1,0);
+            assertVertexEdgeCounts(1, 0);
 
             assertEquals(v, v.property("name", "mrodriguez").element());
             tryCommit(g, g -> {
                 assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator("name")));
                 assertEquals(4, IteratorUtils.count(v.iterators().propertyIterator()));
-                assertVertexEdgeCounts(1,0);
+                assertVertexEdgeCounts(1, 0);
             });
 
             v.<String>properties("name").sideEffect(meta -> {
@@ -180,6 +174,43 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertEquals(2014, u.property("name").valueMap().next().get("date"));
             });
 
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_BOOLEAN_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        public void shouldRespectWhatAreEdgesAndWhatArePropertiesInMultiProperties() {
+
+            final Vertex marko = g.addVertex("name", "marko");
+            final Vertex stephen = g.addVertex("name", "stephen");
+            marko.addEdge("knows", stephen);
+            final VertexProperty santaFe = marko.property("location", "santa fe", "visible", false);
+            final VertexProperty newMexico = marko.property("location", "new mexico", "visible", true);
+
+            assertEquals(1, IteratorUtils.count(marko.iterators().edgeIterator(Direction.OUT)));
+            assertEquals(1, IteratorUtils.count(marko.iterators().edgeIterator(Direction.OUT, "knows")));
+            assertEquals(3, IteratorUtils.count(marko.iterators().propertyIterator()));
+            assertEquals(2, IteratorUtils.count(marko.iterators().propertyIterator("location")));
+            assertEquals(1, IteratorUtils.count(marko.iterators().propertyIterator("name")));
+
+            assertEquals(1, IteratorUtils.count(stephen.iterators().edgeIterator(Direction.IN)));
+            assertEquals(1, IteratorUtils.count(stephen.iterators().edgeIterator(Direction.IN, "knows")));
+            assertEquals(1, IteratorUtils.count(stephen.iterators().propertyIterator()));
+            assertEquals(1, IteratorUtils.count(stephen.iterators().propertyIterator("name")));
+
+            assertEquals(1, IteratorUtils.count(santaFe.iterators().propertyIterator()));
+            assertEquals(1, IteratorUtils.count(santaFe.iterators().propertyIterator("visible")));
+            assertEquals(0, IteratorUtils.count(santaFe.iterators().propertyIterator(T.key.getAccessor())));
+            assertEquals(0, IteratorUtils.count(santaFe.iterators().propertyIterator(T.value.getAccessor())));
+
+            assertEquals(1, IteratorUtils.count(newMexico.iterators().propertyIterator()));
+            assertEquals(1, IteratorUtils.count(newMexico.iterators().propertyIterator("visible")));
+            assertEquals(0, IteratorUtils.count(newMexico.iterators().propertyIterator(T.key.getAccessor())));
+            assertEquals(0, IteratorUtils.count(newMexico.iterators().propertyIterator(T.value.getAccessor())));
         }
     }
 

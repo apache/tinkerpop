@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.ConstraintViolationException;
@@ -413,7 +412,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void shouldDoLabelsNameSpaceBehavior() {
+    public void shouldDoLabelsNamespaceBehavior() {
         g.tx().readWrite();
 
         final Schema schema = g.getBaseGraph().schema();
