@@ -132,15 +132,15 @@ image::the-crew-graph.png[width=685]
 gremlin> g = TinkerFactory.createTheCrew()
 ==>tinkergraph[vertices:6 edges:14]
 gremlin> g.V().as('a').properties('location').hasNot('endTime').as('b').
-           select{it.value('name')}{it.value() + ':' + it.value('startTime')} // determine the current location of each person
-==>[a:marko, b:santa fe:2005]
-==>[a:stephen, b:purcellville:2006]
-==>[a:matthias, b:seattle:2014]
-==>[a:daniel, b:aachen:2009]
+           select().by('name').by{it.value() + '(' + it.value('startTime') + ')'} // determine the current location of each person
+==>[a:marko, b:santa fe(2005)]
+==>[a:stephen, b:purcellville(2006)]
+==>[a:matthias, b:seattle(2014)]
+==>[a:daniel, b:aachen(2009)]
 gremlin> g.V().has('name','gremlin').inE('uses').
-           orderBy('skill').as('a').
+           order().by('skill',incr).as('a').
            outV().as('b').
-             select{it.value('skill')}{it.value('name')} // rank the users of gremlin by their skill level
+             select().by('skill').by('name') // rank the users of gremlin by their skill level
 ==>[a:3, b:matthias]
 ==>[a:4, b:marko]
 ==>[a:5, b:stephen]
@@ -154,7 +154,7 @@ gremlin> g.variables().get('creator').get()
 gremlin> g.V().has('name',g.variables().get('creator').get()).
            properties('location').as('a').
            valueMap().as('b').
-             select(['a','b']){it.value()}{it} // get the creator's vertex and for each location, get the associated properties
+             select('a','b').by(value).by{it} // get the creator's vertex and for each location, get the associated properties
 ==>[a:san diego, b:[startTime:1997, endTime:2001]]
 ==>[a:santa cruz, b:[startTime:2001, endTime:2004]]
 ==>[a:brussels, b:[startTime:2004, endTime:2005]]

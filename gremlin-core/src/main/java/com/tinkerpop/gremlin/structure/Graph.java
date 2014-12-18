@@ -48,10 +48,10 @@ public interface Graph extends AutoCloseable {
     public static final String GRAPH = "gremlin.graph";
 
     /**
-     * This should only be used by vendors to create keys in a namespace safe from users.
+     * This should only be used by vendors to create keys, labels, etc. in a namespace safe from users.
      * Users are not allowed to generate property keys, step labels, etc. that are key'd "hidden".
      */
-    public class Hidden {
+    public static class Hidden {
 
         /**
          * The prefix to denote that a key is a hidden key.

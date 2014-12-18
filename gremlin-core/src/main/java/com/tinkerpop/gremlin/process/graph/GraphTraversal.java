@@ -584,6 +584,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> as(final String label) {
+        TraversalHelper.verifyStepLabelIsNotHidden(label);
         TraversalHelper.verifyStepLabelIsNotAlreadyAStepLabel(label, this);
         TraversalHelper.verifyStepLabelIsNotASideEffectKey(label, this);
         if (this.asAdmin().getSteps().size() == 0) this.asAdmin().addStep(new StartStep<>(this));

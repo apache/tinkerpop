@@ -253,14 +253,6 @@ public class TraversalHelper {
         return false;
     }
 
-    /*public static void printTraversalChain(final Traversal<?,?> traversal) {
-        Step step = TraversalHelper.getStart(traversal);
-        while (!step.equals(EmptyStep.instance())) {
-            System.out.println(step);
-            step = step.getNextStep();
-        }
-    }*/
-
     public static int relativeLabelDirection(Step<?, ?> step, final String label) {
         if (label.equals(step.getLabel()))
             return 0;
@@ -285,6 +277,11 @@ public class TraversalHelper {
     public static void verifyStepLabelIsNotAlreadyAStepLabel(final String label, final Traversal<?, ?> traversal) {
         if (TraversalHelper.hasLabel(label, traversal))
             throw new IllegalArgumentException("The provided step label is already being used as a step label: " + label);
+    }
+
+    public static void verifyStepLabelIsNotHidden(final String label) {
+        if (Graph.Hidden.isHidden(label))
+            throw new IllegalArgumentException("The provided step label can not be hidden: " + label);
     }
 
     public static <S> void addToCollection(final Collection<S> collection, final S s, final long bulk) {

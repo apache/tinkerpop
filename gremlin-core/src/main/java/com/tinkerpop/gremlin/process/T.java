@@ -8,6 +8,8 @@ import java.util.function.Function;
 
 /**
  * A collection of (T)okens which allows for more concise Traversal definitions.
+ * T implements {@link Function} can be used to map an element to its token value.
+ * For example, <code>T.id.apply(element)</code>.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -89,7 +91,7 @@ public enum T implements Function<Element, Object> {
         else if (accessor.equals(VALUE))
             return value;
         else
-            throw new IllegalArgumentException("The following accessor string is unknown: " + accessor);
+            throw new IllegalArgumentException("The following token string is unknown: " + accessor);
     }
 
 
