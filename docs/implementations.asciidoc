@@ -586,7 +586,7 @@ IMPORTANT: For those developers using <<gremlin-server,Gremlin Server>> against 
 Multi-Label
 ~~~~~~~~~~~
 
-TinkerPop3 allows for every `Element` to have a single string label (i.e. a `Vertex`, `Edge`, and `VertexProperty`). In Neo4j, a `Node` (vertex) can have an link:http://neo4j.com/docs/stable/graphdb-neo4j-labels.html[arbitrary number of labels] while a `Relationship` (edge) can have one and only one. Furthermore, in Neo4j, `Node` labels are mutable while `Relationship` labels are not. In order to handle this mismatch, three `Neo4jVertex` specific methods exist in Neo4j-Gremlin.
+TinkerPop3 requires every `Element` to have a single string label (i.e. a `Vertex`, `Edge`, and `VertexProperty`). In Neo4j, a `Node` (vertex) can have an link:http://neo4j.com/docs/stable/graphdb-neo4j-labels.html[arbitrary number of labels] while a `Relationship` (edge) can have one and only one. Furthermore, in Neo4j, `Node` labels are mutable while `Relationship` labels are not. In order to handle this mismatch, three `Neo4jVertex` specific methods exist in Neo4j-Gremlin.
 
 [source,java]
 public Set<String> labels() // get all the labels of the vertex
