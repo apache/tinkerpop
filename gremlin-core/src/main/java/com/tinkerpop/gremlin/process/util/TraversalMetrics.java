@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
  * @author Bob Briody (http://bobbriody.com)
  */
 public interface TraversalMetrics {
-    public static final String METRICS_KEY = Graph.System.system("metrics");
+    public static final String METRICS_KEY = Graph.Hidden.hide("metrics");
     String ITEM_COUNT_ID = "itemCount";
     String ITEM_COUNT_DISPLAY = "item count";
 

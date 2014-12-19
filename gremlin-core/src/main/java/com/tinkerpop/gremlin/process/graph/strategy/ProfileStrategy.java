@@ -21,7 +21,17 @@ public class ProfileStrategy extends AbstractTraversalStrategy {
 
     static {
         // Ensure that this strategy is applied last.
-        PRIORS.add(TraverserSourceStrategy.class);
+        PRIORS.add(ChooseLinearStrategy.class);
+        PRIORS.add(DedupOptimizerStrategy.class);
+        PRIORS.add(EngineDependentStrategy.class);
+        PRIORS.add(IdentityRemovalStrategy.class);
+        PRIORS.add(LabeledEndStepStrategy.class);
+        PRIORS.add(MatchWhereStrategy.class);
+        PRIORS.add(ReducingStrategy.class);
+        PRIORS.add(SideEffectCapStrategy.class);
+        PRIORS.add(UnionLinearStrategy.class);
+        PRIORS.add(UnrollJumpStrategy.class);
+        PRIORS.add(UntilStrategy.class);
     }
 
     private ProfileStrategy() {
