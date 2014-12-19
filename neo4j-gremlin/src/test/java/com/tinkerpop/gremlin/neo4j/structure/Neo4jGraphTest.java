@@ -713,6 +713,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         });
 
         vertex.addLabel("organism"); // repeat add
+        vertex.removeLabel("person"); // repeat remove
         tryCommit(g, g -> {
             assertTrue(vertex.label().equals("animal::organism") || vertex.label().equals("organism::animal"));
             assertEquals(2, vertex.labels().size());
