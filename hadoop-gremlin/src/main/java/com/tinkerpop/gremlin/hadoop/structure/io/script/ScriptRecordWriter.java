@@ -10,6 +10,7 @@ import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -20,13 +21,16 @@ import java.io.UnsupportedEncodingException;
  */
 public class ScriptRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
 
-    protected final static String SCRIPT_FILE = "gremlin.hadoop.outputScript";
+    protected final static String SCRIPT_FILE = "gremlin.hadoop.scriptOutputFormat.script";
+    protected final static String SCRIPT_ENGINE = "gremlin.hadoop.scriptOutputFormat.scriptEngine";
+    private final static ScriptEngineManager SCRIPT_ENGINE_MANAGER = new ScriptEngineManager();
+    private final static String DEFAULT_SCRIPT_ENGINE = "gremlin-groovy";
     private final static String VERTEX = "vertex";
     private final static String WRITE_CALL = "stringify(" + VERTEX + ")";
     private final static String UTF8 = "UTF-8";
     private final static byte[] NEWLINE;
     private final DataOutputStream out;
-    private final ScriptEngine engine = new GremlinGroovyScriptEngine();
+    private ScriptEngine engine;
 
     static {
         try {
@@ -39,6 +43,7 @@ public class ScriptRecordWriter extends RecordWriter<NullWritable, VertexWritabl
     public ScriptRecordWriter(final DataOutputStream out, final TaskAttemptContext context) throws IOException {
         this.out = out;
         final Configuration configuration = context.getConfiguration();
+        this.engine = SCRIPT_ENGINE_MANAGER.getEngineByName(configuration.get(SCRIPT_ENGINE, DEFAULT_SCRIPT_ENGINE));
         final FileSystem fs = FileSystem.get(configuration);
         try {
             this.engine.eval(new InputStreamReader(fs.open(new Path(configuration.get(SCRIPT_FILE)))));
