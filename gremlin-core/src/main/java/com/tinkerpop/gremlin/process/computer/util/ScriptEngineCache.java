@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.hadoop.structure.io.script;
+package com.tinkerpop.gremlin.process.computer.util;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author Daniel Kuppitz (daniel at thinkaurelius.com)
  */
-class ScriptEngineCache {
+public final class ScriptEngineCache {
 
     public final static String DEFAULT_SCRIPT_ENGINE = "gremlin-groovy";
 
