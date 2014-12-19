@@ -18,7 +18,6 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
-import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
@@ -177,7 +176,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
         final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
 
         this.tx().readWrite();
-        final Neo4jVertex vertex = new Neo4jVertex(this.baseGraph.createNode(DynamicLabel.label(label)), this);
+        final Neo4jVertex vertex = new Neo4jVertex(this.baseGraph.createNode(Neo4jHelper.makeLabels(label)), this);
         ElementHelper.attachProperties(vertex, keyValues);
         return vertex;
     }
