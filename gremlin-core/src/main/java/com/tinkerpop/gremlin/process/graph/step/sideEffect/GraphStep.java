@@ -1,8 +1,9 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
-import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
+import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -11,13 +12,14 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphStep<E extends Element> extends StartStep<E> implements TraverserSource {
+public class GraphStep<E extends Element> extends StartStep<E> implements EngineDependent {
 
     protected final Class<E> returnClass;
     protected final Object[] ids;
@@ -72,6 +74,13 @@ public class GraphStep<E extends Element> extends StartStep<E> implements Traver
             throw new IllegalStateException(e.getMessage(), e);
         } finally {
             if (PROFILING_ENABLED) TraversalMetrics.stop(this);
+        }
+    }
+
+    @Override
+    public void onEngine(final TraversalEngine traversalEngine) {
+        if (traversalEngine.equals(TraversalEngine.COMPUTER)) {
+            this.setIteratorSupplier(Collections::emptyIterator);
         }
     }
 }

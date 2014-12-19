@@ -9,6 +9,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed `TraverserSourceStrategy` as it is no longer required.
+* `TraverserSource` is now only a marker interface with "on first" within the `TraverserSource` step are traversers generated.
+* Bumped to Groovy 2.3.9.
 * Added `Neo4jGraph.checkElementsInTransaction(boolean)` which will (or not) verify whether elements retrieved via Neo4j global graph operations are transactionally consistent.
 * Added `ScriptInputFormat` and `ScriptOutputFormat` to Hadoop-Gremlin for reading and writing a file according to an arbitrary parsing script.
 * Added `TimeLimitStep.getTimedOut()` to determine if the step timed out or there were no more objects to process.
