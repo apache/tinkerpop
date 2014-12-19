@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author Daniel Kuppitz (daniel at thinkaurelius.com)
  */
-class ScriptInputEngineManager {
+class ScriptEngineCache {
 
     public final static String DEFAULT_SCRIPT_ENGINE = "gremlin-groovy";
 

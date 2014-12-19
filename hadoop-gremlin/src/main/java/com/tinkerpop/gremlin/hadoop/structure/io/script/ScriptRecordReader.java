@@ -42,7 +42,7 @@ public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritabl
     public void initialize(final InputSplit genericSplit, final TaskAttemptContext context) throws IOException {
         this.lineRecordReader.initialize(genericSplit, context);
         final Configuration configuration = context.getConfiguration();
-        this.engine = ScriptInputEngineManager.get(configuration.get(SCRIPT_ENGINE, ScriptInputEngineManager.DEFAULT_SCRIPT_ENGINE));
+        this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
         final FileSystem fs = FileSystem.get(configuration);
         try {
             this.engine.eval(new InputStreamReader(fs.open(new Path(configuration.get(SCRIPT_FILE)))));

@@ -39,7 +39,7 @@ public class ScriptRecordWriter extends RecordWriter<NullWritable, VertexWritabl
     public ScriptRecordWriter(final DataOutputStream out, final TaskAttemptContext context) throws IOException {
         this.out = out;
         final Configuration configuration = context.getConfiguration();
-        this.engine = ScriptInputEngineManager.get(configuration.get(SCRIPT_ENGINE, ScriptInputEngineManager.DEFAULT_SCRIPT_ENGINE));
+        this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
         final FileSystem fs = FileSystem.get(configuration);
         try {
             this.engine.eval(new InputStreamReader(fs.open(new Path(configuration.get(SCRIPT_FILE)))));
