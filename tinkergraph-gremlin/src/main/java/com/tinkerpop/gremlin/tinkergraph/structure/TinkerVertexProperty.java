@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -77,7 +77,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     @Override
     public <U> Property<U> property(final String key, final U value) {
         final Property<U> property = new TinkerProperty<U>(this, key, value);
-        this.properties.put(key, Arrays.asList(property));
+        this.properties.put(key, Collections.singletonList(property));
         return property;
     }
 
