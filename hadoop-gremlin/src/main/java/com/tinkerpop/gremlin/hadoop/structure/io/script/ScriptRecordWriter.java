@@ -26,7 +26,7 @@ public class ScriptRecordWriter extends RecordWriter<NullWritable, VertexWritabl
     private final static String UTF8 = "UTF-8";
     private final static byte[] NEWLINE;
     private final DataOutputStream out;
-    private ScriptEngine engine;
+    private final ScriptEngine engine;
 
     static {
         try {
