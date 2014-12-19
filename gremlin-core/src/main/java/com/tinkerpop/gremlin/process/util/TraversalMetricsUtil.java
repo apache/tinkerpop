@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
-
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -11,12 +9,11 @@ import java.util.concurrent.TimeUnit;
  */
 public final class TraversalMetricsUtil implements TraversalMetrics, Serializable {
     private static final String[] HEADERS = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
-    private static final TimeUnit SOURCE_UNIT = TimeUnit.NANOSECONDS;
 
     private long totalStepDuration;
 
     private final Map<String, MetricsUtil> metrics = new LinkedHashMap<>();
-    private final LinkedList<MetricsUtil> orderedMetrics = new LinkedList<>();
+    private final Map<Integer, MetricsUtil> orderedMetrics = new TreeMap<>();
 
     public TraversalMetricsUtil() {
     }
@@ -32,7 +29,7 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
     public void finish(final String metricsId, final long bulk) {
         final MetricsUtil metricsUtil = this.metrics.get(metricsId);
         metricsUtil.finish(1);
-        metricsUtil.getChild(ProfileStep.ITEM_COUNT_ID).incrementCount(bulk);
+        metricsUtil.getChild(ITEM_COUNT_ID).incrementCount(bulk);
     }
 
     @Override
@@ -52,7 +49,7 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
             if (rowName.length() > 28)
                 rowName = rowName.substring(0, 28 - 3) + "...";
 
-            long itemCount = s.getChild(ProfileStep.ITEM_COUNT_ID).getCount();
+            long itemCount = s.getChild(ITEM_COUNT_ID).getCount();
 
             sb.append(String.format("%n%28s %13d %11d %15.3f %8.2f",
                     rowName, itemCount, s.getCount(), s.getDuration(TimeUnit.MICROSECONDS) / 1000.0, s.getPercentDuration()));
@@ -68,7 +65,7 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
     private List<MetricsUtil> computeTotals() {
         // Create a temporary copy of all the Metrics
         List<MetricsUtil> copy = new ArrayList<>(orderedMetrics.size());
-        orderedMetrics.forEach(metrics -> copy.add(metrics.clone()));
+        orderedMetrics.values().forEach(metrics -> copy.add(metrics.clone()));
 
         // Subtract upstream traversal time from each step
         for (int ii = copy.size() - 1; ii > 0; ii--) {
@@ -89,15 +86,15 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
         return copy;
     }
 
-    public static TraversalMetricsUtil merge(final Iterator<TraversalMetricsUtil> metrics) {
+    public static TraversalMetricsUtil merge(final Iterator<TraversalMetricsUtil> toMerge) {
         final TraversalMetricsUtil traversalMetricsUtil = new TraversalMetricsUtil();
-        metrics.forEachRemaining(globalMetrics -> {
-            globalMetrics.orderedMetrics.forEach((toAggregate) -> {
+        toMerge.forEachRemaining(incomingMetrics -> {
+            incomingMetrics.orderedMetrics.forEach((index, toAggregate) -> {
                 MetricsUtil aggregateMetrics = traversalMetricsUtil.metrics.get(toAggregate.getId());
                 if (null == aggregateMetrics) {
                     aggregateMetrics = new MetricsUtil(toAggregate.getId(), toAggregate.getName());
                     traversalMetricsUtil.metrics.put(aggregateMetrics.getId(), aggregateMetrics);
-                    traversalMetricsUtil.orderedMetrics.add(aggregateMetrics);
+                    traversalMetricsUtil.orderedMetrics.put(index, aggregateMetrics);
                 }
                 aggregateMetrics.aggregate(toAggregate);
             });
@@ -107,12 +104,12 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
 
     @Override
     public long getDuration(final TimeUnit unit) {
-        return unit.convert(totalStepDuration, SOURCE_UNIT);
+        return unit.convert(totalStepDuration, MetricsUtil.SOURCE_UNIT);
     }
 
     @Override
     public Metrics getMetrics(final int index) {
-        return orderedMetrics.get(index);
+        return (Metrics) orderedMetrics.values().toArray()[index];
     }
 
     @Override
@@ -120,16 +117,16 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
         return metrics.get(stepLabel);
     }
 
-    public void initializeIfNecessary(final String metricsId, final String displayName) {
+    public void initializeIfNecessary(final String metricsId, final int index, final String displayName) {
         if (metrics.containsKey(metricsId)) {
             return;
         }
 
         MetricsUtil metrics = new MetricsUtil(metricsId, displayName);
         // Add a child metric for item count
-        metrics.addChild(new MetricsUtil(ProfileStep.ITEM_COUNT_ID, ProfileStep.ITEM_COUNT_DISPLAY));
+        metrics.addChild(new MetricsUtil(ITEM_COUNT_ID, ITEM_COUNT_DISPLAY));
 
         this.metrics.put(metricsId, metrics);
-        this.orderedMetrics.push(metrics);
+        this.orderedMetrics.put(index, metrics);
     }
 }

@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.util;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +11,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Bob Briody (http://bobbriody.com)
  */
-public class MetricsUtil implements Metrics, Cloneable {
+public class MetricsUtil implements Metrics, Serializable, Cloneable {
     static final TimeUnit SOURCE_UNIT = TimeUnit.NANOSECONDS;
 
     // Note: if you add new members then you probably need to add them to the copy constructor;

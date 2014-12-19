@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
  */
 public interface TraversalMetrics {
     public static final String METRICS_KEY = Graph.System.system("metrics");
+    String ITEM_COUNT_ID = "itemCount";
+    String ITEM_COUNT_DISPLAY = "item count";
 
     public long getDuration(TimeUnit unit);
     public Metrics getMetrics(final int stepIndex);

@@ -16,8 +16,6 @@ import com.tinkerpop.gremlin.process.util.TraversalMetricsUtil;
  */
 public final class ProfileStep<S> extends SideEffectStep<S> implements Reversible, MapReducer<MapReduce.NullObject, TraversalMetricsUtil, MapReduce.NullObject, TraversalMetricsUtil, TraversalMetricsUtil> {
 
-    public static final String ITEM_COUNT_ID = "itemCount";
-    public static final String ITEM_COUNT_DISPLAY = "item count";
     private final String name;
 
 
@@ -49,9 +47,7 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
     @Override
     public Traverser next() {
         // Wrap SideEffectStep's next() with timer.
-        TraversalMetricsUtil traversalMetrics = this.getTraversal().sideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, TraversalMetricsUtil::new);
-        // TODO: rjbriod - profile - is it always true that hasNext() is called before next(). If so, remove this:
-        traversalMetrics.initializeIfNecessary(this.getLabel(), name);
+        TraversalMetricsUtil traversalMetrics = getTraversalMetricsUtil();
 
         Traverser<?> ret = null;
         traversalMetrics.start(this.getLabel());
@@ -69,13 +65,18 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
     @Override
     public boolean hasNext() {
         // Wrap SideEffectStep's hasNext() with timer.
-        TraversalMetricsUtil traversalMetrics = this.getTraversal().sideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, TraversalMetricsUtil::new);
-        traversalMetrics.initializeIfNecessary(this.getLabel(), name);
+        TraversalMetricsUtil traversalMetrics = getTraversalMetricsUtil();
 
         traversalMetrics.start(this.getLabel());
         boolean ret = super.hasNext();
         traversalMetrics.stop(this.getLabel());
         return ret;
+    }
+
+    private TraversalMetricsUtil getTraversalMetricsUtil() {
+        TraversalMetricsUtil traversalMetrics = this.getTraversal().sideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, TraversalMetricsUtil::new);
+        traversalMetrics.initializeIfNecessary(this.getLabel(), this.traversal.asAdmin().getSteps().indexOf(this), name);
+        return traversalMetrics;
     }
 
     public String getEventName() {
