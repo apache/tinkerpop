@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
-import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.process.graph.strategy.GraphTraversalStrategyRegistry;
 import com.tinkerpop.gremlin.structure.Graph;
 
@@ -53,16 +52,6 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
             TraversalStrategies.GlobalCache.getStrategies(this.getClass()).apply(this, engine);
             this.traversalEngine = Optional.of(engine);
             this.locked = true;
-
-            // generate the traverser iterators for all the traverser source steps in the traversal
-            // do not do this if on a graph computer as the traversal vertex program is responsible for creating traversers
-            if (engine.equals(TraversalEngine.COMPUTER))
-                return;
-            final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(this.getClass()).getTraverserGenerator(this);
-            this.asAdmin().getSteps()
-                    .stream()
-                    .filter(step -> step instanceof TraverserSource)
-                    .forEach(step -> ((TraverserSource) step).generateTraversers(traverserGenerator));
         }
     }
 

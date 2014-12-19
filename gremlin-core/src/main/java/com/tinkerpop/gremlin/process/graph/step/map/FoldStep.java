@@ -29,18 +29,31 @@ public final class FoldStep<S, E> extends MapStep<S, E> implements Reducing<E, T
         super(traversal);
         this.seed = seed;
         this.foldFunction = foldFunction;
-        this.setFunction(traverser -> {
-            E mutatingSeed = this.foldFunction.apply(this.seed.get(), traverser);
-            while (this.starts.hasNext()) {
-                mutatingSeed = this.foldFunction.apply(mutatingSeed, this.starts.next());
-            }
-            return mutatingSeed;
-        });
+        FoldStep.generateFunction(this);
     }
 
     @Override
     public Pair<Supplier<E>, BiFunction<E, Traverser<S>, E>> getReducer() {
         return Pair.with(this.seed, this.foldFunction);
+    }
+
+    @Override
+    public FoldStep<S, E> clone() throws CloneNotSupportedException {
+        final FoldStep<S, E> clone = (FoldStep<S, E>) super.clone();
+        FoldStep.generateFunction(clone);
+        return clone;
+    }
+
+    /////////
+
+    public static <S, E> void generateFunction(final FoldStep<S, E> foldStep) {
+        foldStep.setFunction(traverser -> {
+            E mutatingSeed = foldStep.foldFunction.apply(foldStep.seed.get(), traverser);
+            while (foldStep.starts.hasNext()) {
+                mutatingSeed = foldStep.foldFunction.apply(mutatingSeed, foldStep.starts.next());
+            }
+            return mutatingSeed;
+        });
     }
 
 }

@@ -58,7 +58,7 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
     public static class StandardTest extends SackTest {
         public StandardTest() {
-            requiresGraphComputer = true;
+            requiresGraphComputer = false;
         }
 
         @Override
