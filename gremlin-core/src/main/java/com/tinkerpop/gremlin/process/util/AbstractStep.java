@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traversers.PathTraverser;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Iterator;
@@ -145,11 +144,8 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     private void prepareTraversalForNextStep(final Traverser<E> traverser) {
-        if (!this.futureSetByChild)
-            ((Traverser.Admin<E>) traverser).setFuture(this.nextStep.getLabel());
-        if (traverser instanceof PathTraverser) traverser.path().addLabel(this.getLabel());
-        if (TraversalHelper.isLabeled(this.label))
-            this.traversal.sideEffects().set(this.label, traverser.get());
+        if (!this.futureSetByChild) ((Traverser.Admin<E>) traverser).setFuture(this.nextStep.getLabel());
+        traverser.path().addLabel(this.getLabel());
     }
 
 }

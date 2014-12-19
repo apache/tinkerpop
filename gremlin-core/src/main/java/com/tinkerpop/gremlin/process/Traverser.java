@@ -8,6 +8,8 @@ import java.io.Serializable;
 
 /**
  * A {@link Traverser} represents the current state of an object flowing through a {@link Traversal}.
+ * A traverser maintains a reference to the current object, a traverser-local "sack", a traversal-global sideEffect, a bulk count, and a path history.
+ *
  * Different types of traverser can exist depending on the semantics of the traversal and the desire for
  * space/time optimizations of the developer.
  *
@@ -21,13 +23,6 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      * @return The current object of the traverser
      */
     public T get();
-
-    /**
-     * Determine whether the traverser has a sack.
-     *
-     * @return whether the traverser has a sack
-     */
-    public boolean hasSack();
 
     /**
      * Get the sack local sack object of this traverser.
@@ -53,11 +48,15 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
     public Path path();
 
     /**
-     * Determine whether the traverser has path information.
+     * Get the object associated with the specified step-label in the traverser's path history.
      *
-     * @return whether the traverser has path information
+     * @param stepLabel the step-label in the path to access
+     * @param <A>       the type of the object
+     * @return the object associated with that path label (if more than one object occurs at that step, a list is returned)
      */
-    public boolean hasPath();
+    public default <A> A path(final String stepLabel) {
+        return this.path().get(stepLabel);
+    }
 
     /**
      * Return the number of times the traverser has gone through a looping section of a traversal.
@@ -87,7 +86,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      * @param <A>           the type of the returned object
      * @return the object in the sideEffects of the respective key
      */
-    public default <A> A get(final String sideEffectKey) {
+    public default <A> A sideEffects(final String sideEffectKey) {
         return this.sideEffects().get(sideEffectKey);
     }
 
@@ -160,14 +159,6 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          * @param t The current object of the traverser
          */
         public void set(final T t);
-
-        /**
-         * Set the path of the traverser.
-         * Typically used for serialization reasons when propagating traversers across machine boundaries.
-         *
-         * @param path The new path of the traverser
-         */
-        public void setPath(final Path path);
 
         /**
          * Increment the number of times the traverser has gone through a looping section of traversal.

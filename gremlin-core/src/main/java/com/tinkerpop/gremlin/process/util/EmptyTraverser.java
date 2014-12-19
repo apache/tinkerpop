@@ -21,12 +21,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public void set(T t) {
-
-    }
-
-    @Override
-    public void setPath(Path path) {
+    public void set(final T t) {
 
     }
 
@@ -46,7 +41,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public void setFuture(String label) {
+    public void setFuture(final String label) {
 
     }
 
@@ -91,7 +86,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public <S> void sack(S object) {
+    public <S> void sack(final S object) {
 
     }
 
@@ -101,18 +96,8 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public boolean hasSack() {
-        return false;
-    }
-
-    @Override
     public Path path() {
         return EmptyPath.instance();
-    }
-
-    @Override
-    public boolean hasPath() {
-        return true;
     }
 
     @Override

@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.process.traversers;
 
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.ImmutablePath;
-import com.tinkerpop.gremlin.process.util.PathAwareSideEffects;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
 import java.util.function.UnaryOperator;
@@ -19,31 +19,21 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         super();
     }
 
-    public PathTraverser(final String label, final T t, final Traversal.SideEffects sideEffects) {
-        super(t, sideEffects);
-        this.path = new ImmutablePath(label, t);
+    public PathTraverser(final T t, final Step<T, ?> step) {
+        this.t = t;
+        this.sideEffects = step.getTraversal().sideEffects();
+        this.sideEffects.getSackInitialValue().ifPresent(supplier -> this.sack = supplier.get());
+        this.path = new ImmutablePath(step.getLabel(), t);
     }
 
     @Override
     public Traversal.SideEffects sideEffects() {
-        if (null != this.sideEffects && !(this.sideEffects instanceof PathAwareSideEffects))
-            this.sideEffects = new PathAwareSideEffects(this.path, this.sideEffects);
         return this.sideEffects;
-    }
-
-    @Override
-    public boolean hasPath() {
-        return true;
     }
 
     @Override
     public Path path() {
         return this.path;
-    }
-
-    @Override
-    public void setPath(final Path path) {
-        this.path = path;
     }
 
     @Override

@@ -52,7 +52,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         super(traversal);
         this.startLabel = startLabel;
         this.traversalsByStartAs = new HashMap<>();
-        this.currentStart = new SimpleTraverser<>(null, this.traversal.sideEffects());
+        this.currentStart = new SimpleTraverser<>(null, this);
         for (final Traversal tl : traversals) {
             addTraversalPrivate(tl);
         }

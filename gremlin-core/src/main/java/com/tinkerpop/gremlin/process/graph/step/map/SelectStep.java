@@ -93,20 +93,15 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
             final S start = traverser.get();
             final Map<String, E> bindings = new LinkedHashMap<>();
 
-            if (selectStep.requiresPaths && selectStep.onGraphComputer) {   ////// PROCESS STEP BINDINGS
-                final Path path = traverser.path();
-                selectStep.selectLabels.forEach(label -> {
-                    if (path.hasLabel(label))
-                        bindings.put(label, (E) selectStep.functionRing.next().apply(path.get(label)));
-                });
-            } else {
-                selectStep.selectLabels.forEach(label -> { ////// PROCESS SIDE-EFFECTS
-                    if (traverser.sideEffects().exists(label))
-                        bindings.put(label, (E) selectStep.functionRing.next().apply(traverser.get(label)));
-                });
-            }
+            ////// PROCESS STEP BINDINGS
+            final Path path = traverser.path();
+            selectStep.selectLabels.forEach(label -> {
+                if (path.hasLabel(label))
+                    bindings.put(label, (E) selectStep.functionRing.next().apply(path.get(label)));
+            });
 
-            if (start instanceof Map) {  ////// PROCESS MAP BINDINGS
+            ////// PROCESS MAP BINDINGS
+            if (start instanceof Map) {
                 if (selectStep.wasEmpty)
                     ((Map) start).forEach((k, v) -> bindings.put((String) k, (E) selectStep.functionRing.next().apply(v)));
                 else
