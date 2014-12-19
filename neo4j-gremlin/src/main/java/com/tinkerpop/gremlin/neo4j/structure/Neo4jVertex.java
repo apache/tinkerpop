@@ -16,13 +16,16 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -30,9 +33,10 @@ import java.util.stream.Stream;
  */
 public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterators, WrappedVertex<Node>, Neo4jVertexTraversal {
 
+    protected static final String LABEL_DELIMINATOR = "::";
+
     public Neo4jVertex(final Node node, final Neo4jGraph graph) {
-        super(graph);
-        this.baseElement = node;
+        super(node, graph);
     }
 
     @Override
@@ -171,7 +175,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     @Override
     public Neo4jTraversal<Vertex, Vertex> start() {
         final Neo4jTraversal<Vertex, Vertex> traversal = new Neo4jGraphTraversal<>(this.graph);
-        return (Neo4jTraversal) traversal.addStep(new StartStep<>(traversal, this));
+        return traversal.addStep(new StartStep<>(traversal, this));
     }
 
     @Override
@@ -182,8 +186,28 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     @Override
     public String label() {
         this.graph.tx().readWrite();
-        return this.getBaseVertex().getLabels().iterator().next().name();
+        final Set<String> labels = this.labels();
+        return String.join(LABEL_DELIMINATOR, this.labels().toArray(new String[labels.size()]));
     }
+
+    /////////////// Neo4jVertex Specific Methods for Multi-Label Support ///////////////
+    public Set<String> labels() {
+        this.graph.tx().readWrite();
+        final Set<String> labels = new HashSet<>();
+        this.getBaseVertex().getLabels().forEach(label -> labels.add(label.name()));
+        return labels;
+    }
+
+    public void addLabel(final String label) {
+        this.graph.tx().readWrite();
+        this.getBaseVertex().addLabel(DynamicLabel.label(label));
+    }
+
+    public void removeLabel(final String label) {
+        this.graph.tx().readWrite();
+        this.getBaseVertex().removeLabel(DynamicLabel.label(label));
+    }
+    //////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public String toString() {
@@ -196,28 +220,56 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     }
 
     @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
+    public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels) {
         this.graph.tx().readWrite();
-        return (Iterator) Neo4jHelper.getVertices(this, direction, labels).iterator();
+        return new Iterator<Vertex>() {
+            final Iterator<Relationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
+                    getBaseVertex().getRelationships(Neo4jHelper.mapDirection(direction)).iterator() :
+                    getBaseVertex().getRelationships(Neo4jHelper.mapDirection(direction), Neo4jHelper.mapEdgeLabels(edgeLabels)).iterator(), r -> !r.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX));
+
+            @Override
+            public boolean hasNext() {
+                return this.relationshipIterator.hasNext();
+            }
+
+            @Override
+            public Neo4jVertex next() {
+                return new Neo4jVertex(this.relationshipIterator.next().getOtherNode(getBaseVertex()), graph);
+            }
+        };
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
         this.graph.tx().readWrite();
-        return (Iterator) Neo4jHelper.getEdges(this, direction, edgeLabels).iterator();
+        return new Iterator<Edge>() {
+            final Iterator<Relationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
+                    getBaseVertex().getRelationships(Neo4jHelper.mapDirection(direction)).iterator() :
+                    getBaseVertex().getRelationships(Neo4jHelper.mapDirection(direction), Neo4jHelper.mapEdgeLabels(edgeLabels)).iterator(), r -> !r.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX));
+
+            @Override
+            public boolean hasNext() {
+                return this.relationshipIterator.hasNext();
+            }
+
+            @Override
+            public Neo4jEdge next() {
+                return new Neo4jEdge(this.relationshipIterator.next(), graph);
+            }
+        };
     }
 
     @Override
     public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
         this.graph.tx().readWrite();
-        return (Iterator) StreamFactory.stream(getBaseVertex().getPropertyKeys())
-                .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
+        return StreamFactory.stream(getBaseVertex().getPropertyKeys())
+                .filter(key -> ElementHelper.keyExists(key, propertyKeys))
                 .flatMap(key -> {
                     if (getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN))
                         return StreamFactory.stream(getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key))))
-                                .map(relationship -> new Neo4jVertexProperty(Neo4jVertex.this, relationship.getEndNode()));
+                                .map(relationship -> (VertexProperty<V>) new Neo4jVertexProperty(Neo4jVertex.this, relationship.getEndNode()));
                     else
-                        return Stream.of(new Neo4jVertexProperty<>(Neo4jVertex.this, key, (V) getBaseVertex().getProperty(key)));
+                        return Stream.of(new Neo4jVertexProperty<>(Neo4jVertex.this, key, (V) this.getBaseVertex().getProperty(key)));
                 }).iterator();
     }
 

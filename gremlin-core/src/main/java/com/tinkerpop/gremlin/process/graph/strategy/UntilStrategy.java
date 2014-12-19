@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.UntilStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
@@ -47,7 +46,7 @@ public class UntilStrategy extends AbstractTraversalStrategy {
             final JumpStep rightEndJumpStep = untilStep.createRightJumpStep(traversal, leftEndStep.getLabel());
             //new JumpStep(traversal, leftEndStep.getLabel());
             rightEndJumpStep.setLabel(rightEndLabel);
-            rightEndStep.setLabel(Graph.System.system(UUID.randomUUID().toString()));
+            rightEndStep.setLabel(Graph.Hidden.hide(UUID.randomUUID().toString()));
             TraversalHelper.insertAfterStep(rightEndJumpStep, rightEndStep, traversal);
         }
     }

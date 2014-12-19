@@ -41,9 +41,15 @@ public class ElementHelper {
             throw Element.Exceptions.labelCanNotBeNull();
         if (label.isEmpty())
             throw Element.Exceptions.labelCanNotBeEmpty();
-        if (Graph.System.isSystem(label))
-            throw Element.Exceptions.labelCanNotBeASystemKey(label);
+        if (Graph.Hidden.isHidden(label))
+            throw Element.Exceptions.labelCanNotBeAHiddenKey(label);
     }
+
+    /*public static void validateLabels(final String... labels) throws IllegalArgumentException {
+        for (final String label : labels) {
+            validateLabel(label);
+        }
+    }*/
 
     /**
      * Check if the vertex, by ID, exists. If it does return it, else create it and return it.
@@ -74,8 +80,8 @@ public class ElementHelper {
             throw Property.Exceptions.propertyKeyCanNotBeNull();
         if (key.isEmpty())
             throw Property.Exceptions.propertyKeyCanNotBeEmpty();
-        if (Graph.System.isSystem(key))
-            throw Property.Exceptions.propertyKeyCanNotBeASystemKey(key);
+        if (Graph.Hidden.isHidden(key))
+            throw Property.Exceptions.propertyKeyCanNotBeAHiddenKey(key);
     }
 
     /**
@@ -248,10 +254,10 @@ public class ElementHelper {
      * Retrieve the properties associated with a particular element.
      * The result is a Object[] where odd indices are String keys and even indices are the values.
      *
-     * @param element                the element to retrieve properties from
-     * @param includeId              include Element.ID in the key/value list
-     * @param includeLabel           include Element.LABEL in the key/value list
-     * @param propertiesToCopy       the properties to include with an empty list meaning copy all properties
+     * @param element          the element to retrieve properties from
+     * @param includeId        include Element.ID in the key/value list
+     * @param includeLabel     include Element.LABEL in the key/value list
+     * @param propertiesToCopy the properties to include with an empty list meaning copy all properties
      * @return a key/value array of properties where odd indices are String keys and even indices are the values.
      */
     public static Object[] getProperties(final Element element, final boolean includeId, final boolean includeLabel, final Set<String> propertiesToCopy) {
@@ -369,13 +375,13 @@ public class ElementHelper {
 
     public static Map<String, Object> propertyValueMap(final Element element, final String... propertyKeys) {
         final Map<String, Object> values = new HashMap<>();
-        element.iterators().propertyIterator(propertyKeys).forEachRemaining(property -> values.put(property.key(),property.value()));
+        element.iterators().propertyIterator(propertyKeys).forEachRemaining(property -> values.put(property.key(), property.value()));
         return values;
     }
 
     public static Map<String, Property> propertyMap(final Element element, final String... propertyKeys) {
         final Map<String, Property> propertyMap = new HashMap<>();
-        element.iterators().propertyIterator(propertyKeys).forEachRemaining(property -> propertyMap.put(property.key(),property));
+        element.iterators().propertyIterator(propertyKeys).forEachRemaining(property -> propertyMap.put(property.key(), property));
         return propertyMap;
     }
 
@@ -408,6 +414,7 @@ public class ElementHelper {
     }
 
     public static boolean keyExists(final String key, final String... providedKeys) {
+        if (Graph.Hidden.isHidden(key)) return false;
         if (0 == providedKeys.length) return true;
         if (1 == providedKeys.length) return key.equals(providedKeys[0]);
         else {

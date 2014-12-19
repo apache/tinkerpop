@@ -9,21 +9,16 @@ import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.util.StreamFactory;
-import org.javatuples.Pair;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static org.hamcrest.CoreMatchers.is;
@@ -213,7 +208,7 @@ public class PropertyTest {
             "propertyValueCanNotBeNull",
             "propertyKeyCanNotBeNull",
             "propertyKeyCanNotBeEmpty",
-            "propertyKeyCanNotBeASystemKey"
+            "propertyKeyCanNotBeAHiddenKey"
     })
     public static class PropertyValidationOnSetExceptionConsistencyTest extends AbstractGremlinTest {
 
@@ -223,7 +218,7 @@ public class PropertyTest {
                     {"propertyValueCanNotBeNull", "k", null, Property.Exceptions.propertyValueCanNotBeNull()},
                     {"propertyKeyCanNotBeNull", null, "v", Property.Exceptions.propertyKeyCanNotBeNull()},
                     {"propertyKeyCanNotBeEmpty", "", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()},
-                    {"propertyKeyCanNotBeASystemKey", Graph.System.system("systemKey"), "value", Property.Exceptions.propertyKeyCanNotBeASystemKey(Graph.System.system("systemKey"))}});
+                    {"propertyKeyCanNotBeAHiddenKey", Graph.Hidden.hide("systemKey"), "value", Property.Exceptions.propertyKeyCanNotBeAHiddenKey(Graph.Hidden.hide("systemKey"))}});
         }
 
         @Parameterized.Parameter(value = 0)

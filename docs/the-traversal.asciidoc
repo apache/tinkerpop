@@ -1582,21 +1582,29 @@ g.V().has('name','marko')
 The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in <<tinkergraph-gremlin,TinkerGraph>> depending on whether there is or is not an index defined for "name."
 
 [source,java]
-TinkerGraphStepStrategy implements TraversalStrategy {
-    public void apply(final Traversal traversal, final TraversalEngine traversalEngine) {
-        if (engine.equals(TraversalEngine.COMPUTER))  // TinkerGraphComputer does not use indices but linear scans of the graph
+----
+public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
+
+    private static final TinkerGraphStepStrategy INSTANCE = new TinkerGraphStepStrategy();
+
+    private TinkerGraphStepStrategy() {
+    }
+
+    @Override
+    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+        if (engine.equals(TraversalEngine.COMPUTER))
             return;
-        final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
-        Step currentStep = tinkerGraphStep.getNextStep();
+
+        final TinkerGraphStep<?> tinkerGraphStep = (TinkerGraphStep) TraversalHelper.getStart(traversal);
+        Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
         while (true) {
-            if (currentStep == EmptyStep.instance() || TraversalHelper.isLabeled(currentStep))
-                break;
-            if (currentStep instanceof HasStep) {
-                tinkerGraphStep.hasContainers.add(((HasStep) currentStep).hasContainer);
-                TraversalHelper.removeStep(currentStep, traversal);
-            } else if (currentStep instanceof IntervalStep) {
-                tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).startContainer);
-                tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).endContainer);
+            if (currentStep instanceof HasContainerHolder) {
+                tinkerGraphStep.hasContainers.addAll(((HasContainerHolder) currentStep).getHasContainers());
+                if (TraversalHelper.isLabeled(currentStep)) {
+                    final IdentityStep identityStep = new IdentityStep<>(traversal);
+                    identityStep.setLabel(currentStep.getLabel());
+                    TraversalHelper.insertAfterStep(identityStep, currentStep, traversal);
+                }
                 TraversalHelper.removeStep(currentStep, traversal);
             } else if (currentStep instanceof IdentityStep) {
                 // do nothing
@@ -1605,9 +1613,14 @@ TinkerGraphStepStrategy implements TraversalStrategy {
             }
             currentStep = currentStep.getNextStep();
         }
-        tinkerGraphStep.generateHolderIterator(false);
+    }
+
+    public static TinkerGraphStepStrategy instance() {
+        return INSTANCE;
     }
 }
+----
+
 
 The traversal is redefined by simply taking a chain of `has()`-steps and `interval()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
 

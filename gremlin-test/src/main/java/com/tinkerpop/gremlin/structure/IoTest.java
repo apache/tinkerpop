@@ -117,6 +117,31 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals("junk", v.<String>value("n"));
     }
 
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldReadWriteClassicToGraphMLToFileWithHelpers() throws Exception {
+        final File f = File.createTempFile(name.getMethodName(), ".xml");
+        try {
+            g.io().writeGraphML(f.getAbsolutePath());
+
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            final Graph g1 = graphProvider.openTestGraph(configuration);
+            g1.io().readGraphML(f.getAbsolutePath());
+
+            assertClassicGraph(g, false, true);
+
+            // need to manually close the "g1" instance
+            graphProvider.clear(g1, configuration);
+        } catch (Exception ex) {
+            f.delete();
+            throw ex;
+        }
+    }
+
     /**
      * Only need to execute this test with TinkerGraph or other graphs that support user supplied identifiers.
      */
@@ -353,6 +378,32 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldReadWriteModernToKryoToFileWithHelpers() throws Exception {
+        final File f = File.createTempFile(name.getMethodName(), ".gio");
+        try {
+            g.io().writeKryo(f.getAbsolutePath());
+
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            final Graph g1 = graphProvider.openTestGraph(configuration);
+            g1.io().readKryo(f.getAbsolutePath());
+
+            // by making this lossy for float it will assert floats for doubles
+            assertModernGraph(g1, true, false);
+
+            // need to manually close the "g1" instance
+            graphProvider.clear(g1, configuration);
+        } catch (Exception ex) {
+            f.delete();
+            throw ex;
+        }
+    }
+
+    @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
@@ -454,6 +505,32 @@ public class IoTest extends AbstractGremlinTest {
 
             // need to manually close the "g1" instance
             graphProvider.clear(g1, configuration);
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldReadWriteModernToGraphSONWithHelpers() throws Exception {
+        final File f = File.createTempFile(name.getMethodName(), ".gio");
+        try {
+            g.io().writeGraphSON(f.getAbsolutePath());
+
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            graphProvider.clear(configuration);
+            final Graph g1 = graphProvider.openTestGraph(configuration);
+            final GraphSONReader reader = g.io().graphSONReader().create();
+
+            g1.io().readGraphSON(f.getAbsolutePath());
+
+            assertModernGraph(g1, true, false);
+
+            // need to manually close the "g1" instance
+            graphProvider.clear(g1, configuration);
+        } catch (Exception ex) {
+            f.delete();
+            throw ex;
         }
     }
 

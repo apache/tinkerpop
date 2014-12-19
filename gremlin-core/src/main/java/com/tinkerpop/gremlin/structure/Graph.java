@@ -21,6 +21,10 @@ import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Repeatable;
@@ -48,44 +52,45 @@ public interface Graph extends AutoCloseable {
     public static final String GRAPH = "gremlin.graph";
 
     /**
-     * This should only be used by vendors to create keys in a namespace safe from users.
+     * This should only be used by vendors to create keys, labels, etc. in a namespace safe from users.
+     * Users are not allowed to generate property keys, step labels, etc. that are key'd "hidden".
      */
-    public class System {
+    public static class Hidden {
 
         /**
-         * The prefix to denote that a key is a system key.
+         * The prefix to denote that a key is a hidden key.
          */
-        private static final String SYSTEM_PREFIX = "^";
-        private static final int SYSTEM_PREFIX_LENGTH = SYSTEM_PREFIX.length();
+        private static final String HIDDEN_PREFIX = "~";
+        private static final int HIDDEN_PREFIX_LENGTH = HIDDEN_PREFIX.length();
 
         /**
-         * Turn the provided key into a system key. If the key is already a system key, return key.
+         * Turn the provided key into a hidden key. If the key is already a hidden key, return key.
          *
-         * @param key The key to make a system key
-         * @return The system key
+         * @param key The key to make a hidden key
+         * @return The hidden key
          */
-        public static String system(final String key) {
-            return isSystem(key) ? key : SYSTEM_PREFIX.concat(key);
+        public static String hide(final String key) {
+            return isHidden(key) ? key : HIDDEN_PREFIX.concat(key);
         }
 
         /**
-         * Turn the provided system key into an non-system key. If the key is not a system key, return key.
+         * Turn the provided hidden key into an non-hidden key. If the key is not a hidden key, return key.
          *
-         * @param key The system key
-         * @return The non-system representation of the key
+         * @param key The hidden key
+         * @return The non-hidden representation of the key
          */
-        public static String unSystem(final String key) {
-            return isSystem(key) ? key.substring(SYSTEM_PREFIX_LENGTH) : key;
+        public static String unHide(final String key) {
+            return isHidden(key) ? key.substring(HIDDEN_PREFIX_LENGTH) : key;
         }
 
         /**
-         * Determines whether the provided key is a system key or not.
+         * Determines whether the provided key is a hidden key or not.
          *
-         * @param key The key to check for system status
-         * @return Whether the provided key is a system key or not
+         * @param key The key to check for hidden status
+         * @return Whether the provided key is a hidden key or not
          */
-        public static boolean isSystem(final String key) {
-            return key.startsWith(SYSTEM_PREFIX);
+        public static boolean isHidden(final String key) {
+            return key.startsWith(HIDDEN_PREFIX);
         }
     }
 
@@ -175,7 +180,7 @@ public interface Graph extends AutoCloseable {
      * Provide input/output methods for serializing graph data.
      */
     public default Io io() {
-        return DefaultIo.instance();
+        return new DefaultIo(this);
     }
 
     /**
@@ -184,7 +189,8 @@ public interface Graph extends AutoCloseable {
      */
     @Graph.Helper
     public default StrategyGraph strategy(final GraphStrategy... strategies) {
-        if (strategies.length == 0) throw new IllegalArgumentException("Provide at least one GraphStrategy implementation.");
+        if (strategies.length == 0)
+            throw new IllegalArgumentException("Provide at least one GraphStrategy implementation.");
         final GraphStrategy graphStrategy = strategies.length == 1 ? strategies[0] : SequenceStrategy.build().sequence(strategies).create();
         return new StrategyGraph(this, graphStrategy);
     }
@@ -263,6 +269,16 @@ public interface Graph extends AutoCloseable {
         }
 
         /**
+         * Write a kryo file using the default configuration of the {@link KryoWriter}.
+         */
+        public void writeKryo(final String file) throws IOException;
+
+        /**
+         * Read a kryo file using the default configuration of the {@link KryoReader}.
+         */
+        public void readKryo(final String file) throws IOException;
+
+        /**
          * By default, this method creates an instance of the most current version of {@link GremlinKryo} which is
          * used to serialize data to and from the graph.   Implementers with custom classes (e.g. a non-primitive
          * class returned from {@link Element#id}) should override this method with those classes automatically
@@ -303,6 +319,16 @@ public interface Graph extends AutoCloseable {
         }
 
         /**
+         * Write a GraphML file using the default configuration of the {@link GraphMLWriter}.
+         */
+        public void writeGraphML(final String file) throws IOException;
+
+        /**
+         * Read a GraphML file using the default configuration of the {@link GraphMLReader}.
+         */
+        public void readGraphML(final String file) throws IOException;
+
+        /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for GraphSON serializations.
          * GraphSON is forgiving for implementers and will typically do a "reasonable" job in serializing most
          * custom classes.  However, for a nicer representation is desired then this method should be overridden
@@ -321,6 +347,16 @@ public interface Graph extends AutoCloseable {
         public default GraphSONWriter.Builder graphSONWriter() {
             return GraphSONWriter.build();
         }
+
+        /**
+         * Write a GraphSON file using the default configuration of the {@link GraphSONWriter}.
+         */
+        public void writeGraphSON(final String file) throws IOException;
+
+        /**
+         * Read a GraphSON file using the default configuration of the {@link GraphSONReader}.
+         */
+        public void readGraphSON(final String file) throws IOException;
     }
 
     /**

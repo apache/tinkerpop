@@ -30,6 +30,7 @@ A collection of implementation notes:
 * Use the numerous static method helper classes such as `ElementHelper`, `GraphComputerHelper`, `VertexProgramHelper`, etc.
 * There are a number of default methods on the provided interfaces that are semantically correct. However, if they are not efficient for the implementation, override them.
 * Implement the `structure/` package interfaces first and then, if desired, interfaces in the `process/` package interfaces.
+* Implement the `Graph.Io` interface if there are custom classes used in the implementation that will need to be serialized.  In this way, `Graph` implementations can pre-configure custom serializers for IO interactions and users will not need to know about those details.  For example, if the identifier system for the `Graph` uses a non-primitive, such as OrientDB's `Rid` class, register the methods for serialization of that class in the various `GraphReader` and `GraphWriter` builders returned from the `Io` interface.  Following this pattern will ensure proper execution for the test suite as well as simplified usage for end-users.
 
 [[oltp-implementations]]
 OLTP Implementations
@@ -536,7 +537,7 @@ gremlin> clock(1000){g.V().has('name','Garcia').next()} <6>
 Using Automatic Indices
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The Gremlin-Console session below demonstates automatic indices. For more information, please refer to the Neo4j documentation:
+The Gremlin-Console session below demonstrates automatic indices. For more information, please refer to the Neo4j documentation:
 
 * Manipulating automatic indices with the Neo4j link:http://docs.neo4j.org/chunked/stable/auto-indexing.html[Java API].
 
@@ -581,6 +582,41 @@ gremlin> g.cypher("MATCH (n{name:'marko'})-[:knows]->(m) RETURN m").select('m').
 Thus, like <<match-step,`match()`>> in Gremlin, it is possible to do a declarative pattern match and then move back into imperative Gremlin.  The last query presented above shows that the `cypher` step can be used at the start of a traversal or in the middle.  When used in the middle of a traversal, the result from the previous step becomes bound to an argument named `start`, which can then be used in the Cypher query as an argument.  In the example above, the vertex identifiers from the Cypher query that starts the traversal are collected with `fold` and which in turn produces a single Cypher query using those identifiers.  Without `fold`, the second Cypher query would have executed once for each identifier in the traversal and the Cypher would have had to have changed to something like: `MATCH (m)-[:created]->(n) WHERE id(m) = {start} RETURN n` (where the `IN` is replaced by `=`).
 
 IMPORTANT: For those developers using <<gremlin-server,Gremlin Server>> against Neo4j, it is possible to do Cypher queries by simply placing the Cypher string in `g.cypher(...)` before submission to the server.
+
+Multi-Label
+~~~~~~~~~~~
+
+TinkerPop3 requires every `Element` to have a single string label (i.e. a `Vertex`, `Edge`, and `VertexProperty`). In Neo4j, a `Node` (vertex) can have an link:http://neo4j.com/docs/stable/graphdb-neo4j-labels.html[arbitrary number of labels] while a `Relationship` (edge) can have one and only one. Furthermore, in Neo4j, `Node` labels are mutable while `Relationship` labels are not. In order to handle this mismatch, three `Neo4jVertex` specific methods exist in Neo4j-Gremlin.
+
+[source,java]
+public Set<String> labels() // get all the labels of the vertex
+public void addLabel(final String label) // add a label to the vertex
+public void removeLabel(final String label) // remove a label from the vertex
+
+An example use case is presented below.
+
+[source,java]
+----
+Neo4jVertex v = (Neo4jVertex) g.addVertex("human::animal");
+assertEquals("human::animal",v.label()) // standard Vertex.label() method
+assertEquals(2, v.labels().size()) // specific Neo4jVertex.labels() method
+assertTrue(v.labels().contains("human"))
+assertTrue(v.labels().contains("animal"))
+
+v.addLabel("organism") // specific Neo4jVertex.addLabel() method
+v.removeLabel("human") // specific Neo4jVertex.removeLabel() method
+assertEquals(2, v.labels().size()) // specific Neo4jVertex.labels() method
+assertTrue(v.labels().contains("animal"))
+assertTrue(v.labels().contains("organism"))
+
+v.addLabel("organism") // add a repeat
+v.addLabel("human") // remove a label that doesn't exist
+assertEquals(2, v.labels().size()) // specific Neo4jVertex.labels() method
+assertTrue(v.labels().contains("animal"))
+assertTrue(v.labels().contains("organism"))
+----
+
+CAUTION: While the example above demonstrates `assertEquals("human::animal",v.label())` (2nd line), it is important to note that the order of the labels is not guaranteed and the result could be `"animal::human"`.
 
 [[hadoop-gremlin]]
 Hadoop-Gremlin
@@ -711,11 +747,12 @@ IMPORTANT: As of TinkerPop3 x.y.z, when using Hadoop-Gremlin OLAP from the Greml
 
 A `Graph` in TinkerPop3 can support any number of `GraphComputer` implementations. HadoopGraph supports two GraphComputer implementations.
 
-* `GiraphGraphComputer`: Leverages Giraph to execute TinkerPop3 OLAP computations.
+* <<giraphgraphcomputer,`GiraphGraphComputer`>>: Leverages Giraph to execute TinkerPop3 OLAP computations.
 ** The graph must fit within the total RAM of the Hadoop cluster (graph size restriction). Messages passing is coordinated via ZooKeeper for the in-memory graph (speedy traversals).
-* `MapReduceGraphComputer`: Leverages Hadoop's MapReduce to execute TinkerPop3 OLAP computations. (*coming soon*)
-** The graph must fit within the total disk space of the Hadoop cluster (supports massive graphs). Message passing is coordinates via MapReduce jobs on the on-dks graph (slow traversals).
+* <<mapreducegraphcomputer,`MapReduceGraphComputer`>>: Leverages Hadoop's MapReduce to execute TinkerPop3 OLAP computations. (*coming soon*)
+** The graph must fit within the total disk space of the Hadoop cluster (supports massive graphs). Message passing is coordinated via MapReduce jobs over the on-disk graph (slow traversals).
 
+[[giraphgraphcomputer]]
 GiraphGraphComputer
 ^^^^^^^^^^^^^^^^^^^
 
@@ -773,7 +810,7 @@ gremlin> result.memory.a
 ==>i={ripple=1}
 ==>o={lop=1, josh=1}
 
-NOTE: Distributed graph computations on cluster-sized graphs can yield an enormous number of results. To be safe, Hadoop-Gremlin only returns up to 20 results to the console (with, of course, all the results being available in HDFS). If more traversal results are desired, access `result.memory().get(Graph.System.system('traversers'))`.
+NOTE: Distributed graph computations on cluster-sized graphs can yield an enormous number of results. To be safe, Hadoop-Gremlin only returns up to 20 results to the console (with, of course, all the results being available in HDFS). If more traversal results are desired, access `result.memory().get('~traversers')`.
 
 TIP: image:gremlin-sugar.png[width=50,float=left] For those wanting to use the <<sugar-plugin,SugarPlugin>> with their submitted traversal, do `:remote config useSugar true` as well as `:plugin use tinkerpop.sugar` at the start of the Gremlin Console session if it is not already activated.
 
@@ -791,6 +828,7 @@ public class TraversalSupplier1 implements SSupplier<Traversal> {
 }
 ----
 
+[[mapreducegraphcomputer]]
 MapReduceGraphComputer
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -807,7 +845,7 @@ gremlin> hdfs.ls()
 ==>rw-r--r-- marko supergroup 891 tinkerpop-classic-vertices.gio
 gremlin> hdfs.ls('output')
 ==>rwxr-xr-x marko supergroup 0 (D) a
-==>rwxr-xr-x marko supergroup 0 (D) ^g
+==>rwxr-xr-x marko supergroup 0 (D) ~g
 gremlin> hdfs.ls('output/a')
 ==>rw-r--r-- marko supergroup 0 _SUCCESS
 ==>rwxr-xr-x marko supergroup 0 (D) _logs
@@ -922,7 +960,7 @@ $ hadoop jar target/hadoop-gremlin-x.y.z-job.jar com.tinkerpop.gremlin.hadoop.pr
 14/07/29 12:08:54 INFO mapred.JobClient:     Total time spent by all maps waiting after reserving slots (ms)=0
 14/07/29 12:08:54 INFO mapred.JobClient:   File Output Format Counters
 14/07/29 12:08:54 INFO mapred.JobClient:     Bytes Written=0
-$ hadoop fs -cat output/^g/*
+$ hadoop fs -cat output/~g/*
 {"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":3.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.15000000000000002,"properties":{}}],"name":[{"id":0,"label":"name","value":"marko","properties":{}}],"age":[{"id":1,"label":"age","value":29,"properties":{}}]}}
 {"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.23181250000000003,"properties":{}}],"name":[{"id":8,"label":"name","value":"ripple","properties":{}}],"lang":[{"id":9,"label":"lang","value":"java","properties":{}}]}}
 {"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.4018125,"properties":{}}],"name":[{"id":4,"label":"name","value":"lop","properties":{}}],"lang":[{"id":5,"label":"lang","value":"java","properties":{}}]}}

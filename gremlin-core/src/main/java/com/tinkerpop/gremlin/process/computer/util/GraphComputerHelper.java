@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.computer.util;
 
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
@@ -8,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 
 import java.lang.reflect.Method;
 import java.util.Comparator;
-import java.util.stream.Stream;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -55,8 +56,17 @@ public class GraphComputerHelper {
         return a.getClass().equals(b.getClass()) && a.getMemoryKey().equals(((MapReduce) b).getMemoryKey());
     }
 
-    public static <T> Comparator<T> chainComparators(final Comparator<T>[] comparators) {
-        return Stream.of(comparators).reduce((a, b) -> a.thenComparing(b)).get();
+    public static <T> Comparator<Traverser<T>> chainComparators(final List<Comparator<T>> comparators) {
+        if (comparators.size() == 0) {
+            return (a, b) -> a.compareTo(b);
+        } else {
+            return comparators.stream().map(c -> (Comparator<Traverser<T>>) new Comparator<Traverser<T>>() {
+                @Override
+                public int compare(final Traverser<T> o1, final Traverser<T> o2) {
+                    return c.compare(o1.get(), o2.get());
+                }
+            }).reduce((a, b) -> a.thenComparing(b)).get();
+        }
     }
 
 }

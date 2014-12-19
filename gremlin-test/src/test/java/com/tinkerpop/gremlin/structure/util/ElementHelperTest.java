@@ -130,7 +130,7 @@ public class ElementHelperTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailCauseSystemLabelsAreNotAllowed() {
-        ElementHelper.getLabelValue("test", 321, T.label, Graph.System.system("systemLabel"), "testagain", "that");
+        ElementHelper.getLabelValue("test", 321, T.label, Graph.Hidden.hide("systemLabel"), "testagain", "that");
     }
 
     @Test(expected = IllegalArgumentException.class)

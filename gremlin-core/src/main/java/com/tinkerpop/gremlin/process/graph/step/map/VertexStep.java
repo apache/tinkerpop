@@ -49,8 +49,6 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
 
     @Override
     public String toString() {
-        return this.edgeLabels.length > 0 ?
-                TraversalHelper.makeStepString(this, this.direction, Arrays.toString(this.edgeLabels), this.returnClass.getSimpleName().toLowerCase()) :
-                TraversalHelper.makeStepString(this, this.direction, this.returnClass.getSimpleName().toLowerCase());
+        return TraversalHelper.makeStepString(this, this.direction, Arrays.asList(this.edgeLabels), this.returnClass.getSimpleName().toLowerCase());
     }
 }

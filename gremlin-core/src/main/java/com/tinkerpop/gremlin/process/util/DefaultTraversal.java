@@ -21,6 +21,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
 
     private E lastEnd = null;
     private long lastEndCount = 0l;
+    private boolean locked = false; // an optimization so getTraversalEngine().isEmpty() isn't required on each next()/hasNext()
 
     protected List<Step> steps = new ArrayList<>();
     protected DefaultTraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
@@ -50,6 +51,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
         if (!this.traversalEngine.isPresent()) {
             TraversalStrategies.GlobalCache.getStrategies(this.getClass()).apply(this, engine);
             this.traversalEngine = Optional.of(engine);
+            this.locked = true;
         }
     }
 
@@ -80,13 +82,13 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
 
     @Override
     public boolean hasNext() {
-        this.applyStrategies(TraversalEngine.STANDARD);
+        if (!this.locked) this.applyStrategies(TraversalEngine.STANDARD);
         return this.lastEndCount > 0l || TraversalHelper.getEnd(this).hasNext();
     }
 
     @Override
     public E next() {
-        this.applyStrategies(TraversalEngine.STANDARD);
+        if (!this.locked) this.applyStrategies(TraversalEngine.STANDARD);
         if (this.lastEndCount > 0l) {
             this.lastEndCount--;
             return this.lastEnd;

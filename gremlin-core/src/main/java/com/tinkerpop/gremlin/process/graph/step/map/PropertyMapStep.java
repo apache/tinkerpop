@@ -58,8 +58,6 @@ public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
     }
 
     public String toString() {
-        return this.propertyKeys.length == 0 ?
-                TraversalHelper.makeStepString(this, this.returnType.name().toLowerCase()) :
-                TraversalHelper.makeStepString(this, this.returnType.name().toLowerCase(), Arrays.toString(this.propertyKeys));
+        return TraversalHelper.makeStepString(this, Arrays.asList(this.propertyKeys),this.returnType.name().toLowerCase());
     }
 }

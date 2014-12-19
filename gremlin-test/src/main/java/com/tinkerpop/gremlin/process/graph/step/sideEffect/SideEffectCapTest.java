@@ -34,7 +34,7 @@ public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
 
     public static class StandardTest extends SideEffectCapTest {
         public StandardTest() {
-            requiresGraphComputer = true;
+            this.requiresGraphComputer = false;
         }
 
         @Override
@@ -44,6 +44,11 @@ public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
     }
 
     public static class ComputerTest extends SideEffectCapTest {
+
+        public ComputerTest() {
+            this.requiresGraphComputer = true;
+        }
+
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX() {

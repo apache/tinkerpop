@@ -18,7 +18,6 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
-import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
@@ -66,6 +65,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
 
     protected final boolean supportsMetaProperties;
     protected final boolean supportsMultiProperties;
+    protected boolean checkElementsInTransaction = true;
 
     protected final TransactionManager transactionManager;
     protected final ExecutionEngine cypher;
@@ -78,19 +78,19 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
         this.neo4jGraphVariables = new Neo4jGraphVariables(this);
 
         ///////////
-        final Optional<Boolean> metaProperties = this.neo4jGraphVariables.get(Graph.System.system(CONFIG_META_PROPERTIES));
+        final Optional<Boolean> metaProperties = this.neo4jGraphVariables.get(Hidden.hide(CONFIG_META_PROPERTIES));
         if (metaProperties.isPresent()) {
             this.supportsMetaProperties = metaProperties.get();
         } else {
             this.supportsMetaProperties = false;
-            this.neo4jGraphVariables.set(Graph.System.system(CONFIG_META_PROPERTIES), false);
+            this.neo4jGraphVariables.set(Hidden.hide(CONFIG_META_PROPERTIES), false);
         }
-        final Optional<Boolean> multiProperties = this.neo4jGraphVariables.get(Graph.System.system(CONFIG_MULTI_PROPERTIES));
+        final Optional<Boolean> multiProperties = this.neo4jGraphVariables.get(Hidden.hide(CONFIG_MULTI_PROPERTIES));
         if (multiProperties.isPresent()) {
             this.supportsMultiProperties = multiProperties.get();
         } else {
             this.supportsMultiProperties = false;
-            this.neo4jGraphVariables.set(Graph.System.system(CONFIG_MULTI_PROPERTIES), false);
+            this.neo4jGraphVariables.set(Hidden.hide(CONFIG_MULTI_PROPERTIES), false);
         }
         if ((this.supportsMetaProperties && !this.supportsMultiProperties) || (!this.supportsMetaProperties && this.supportsMultiProperties)) {
             tx().rollback();
@@ -116,14 +116,14 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
             this.cypher = new ExecutionEngine(this.baseGraph);
             this.neo4jGraphVariables = new Neo4jGraphVariables(this);
             ///////////
-            if (!this.neo4jGraphVariables.get(Graph.System.system(CONFIG_META_PROPERTIES)).isPresent())
-                this.neo4jGraphVariables.set(Graph.System.system(CONFIG_META_PROPERTIES), this.configuration.getBoolean(CONFIG_META_PROPERTIES, false));
+            if (!this.neo4jGraphVariables.get(Hidden.hide(CONFIG_META_PROPERTIES)).isPresent())
+                this.neo4jGraphVariables.set(Hidden.hide(CONFIG_META_PROPERTIES), this.configuration.getBoolean(CONFIG_META_PROPERTIES, false));
             // TODO: Logger saying the configuration properties are ignored if already in Graph.Variables
-            if (!this.neo4jGraphVariables.get(Graph.System.system(CONFIG_MULTI_PROPERTIES)).isPresent())
-                this.neo4jGraphVariables.set(Graph.System.system(CONFIG_MULTI_PROPERTIES), this.configuration.getBoolean(CONFIG_MULTI_PROPERTIES, false));
+            if (!this.neo4jGraphVariables.get(Hidden.hide(CONFIG_MULTI_PROPERTIES)).isPresent())
+                this.neo4jGraphVariables.set(Hidden.hide(CONFIG_MULTI_PROPERTIES), this.configuration.getBoolean(CONFIG_MULTI_PROPERTIES, false));
             // TODO: Logger saying the configuration properties are ignored if already in Graph.Variables
-            this.supportsMetaProperties = this.neo4jGraphVariables.<Boolean>get(Graph.System.system(CONFIG_META_PROPERTIES)).get();
-            this.supportsMultiProperties = this.neo4jGraphVariables.<Boolean>get(Graph.System.system(CONFIG_MULTI_PROPERTIES)).get();
+            this.supportsMetaProperties = this.neo4jGraphVariables.<Boolean>get(Hidden.hide(CONFIG_META_PROPERTIES)).get();
+            this.supportsMultiProperties = this.neo4jGraphVariables.<Boolean>get(Hidden.hide(CONFIG_MULTI_PROPERTIES)).get();
             if ((this.supportsMetaProperties && !this.supportsMultiProperties) || (!this.supportsMetaProperties && this.supportsMultiProperties)) {
                 tx().rollback();
                 throw new UnsupportedOperationException("Neo4jGraph currently requires either both meta- and multi-properties activated or neither activated");
@@ -176,7 +176,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
         final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
 
         this.tx().readWrite();
-        final Neo4jVertex vertex = new Neo4jVertex(this.baseGraph.createNode(DynamicLabel.label(label)), this);
+        final Neo4jVertex vertex = new Neo4jVertex(this.baseGraph.createNode(Neo4jHelper.makeLabels(label)), this);
         ElementHelper.attachProperties(vertex, keyValues);
         return vertex;
     }
@@ -230,35 +230,43 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     @Override
     public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
         this.tx().readWrite();
-        return 0 == vertexIds.length ? StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllNodes())
-                .filter(node -> !Neo4jHelper.isDeleted(node))
-                .filter(node -> !node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
-                .map(node -> (Vertex) new Neo4jVertex(node, this)).iterator() :
-                Stream.of(vertexIds).filter(id -> id instanceof Number).filter(id -> {
-                    try {
-                        this.getBaseGraph().getNodeById(((Number) id).longValue());
-                        return true;
-                    } catch (final NotFoundException e) {
-                        return false;
-                    }
-                }).map(id -> (Vertex) new Neo4jVertex(this.getBaseGraph().getNodeById(((Number) id).longValue()), this)).iterator();
+        if (0 == vertexIds.length) {
+            return StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllNodes())
+                    .filter(node -> !this.checkElementsInTransaction || !Neo4jHelper.isDeleted(node))
+                    .filter(node -> !node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
+                    .map(node -> (Vertex) new Neo4jVertex(node, this)).iterator();
+        } else {
+            return Stream.of(vertexIds)
+                    .filter(id -> id instanceof Number)
+                    .flatMap(id -> {
+                        try {
+                            return Stream.of((Vertex) new Neo4jVertex(this.getBaseGraph().getNodeById(((Number) id).longValue()), this));
+                        } catch (final NotFoundException e) {
+                            return Stream.empty();
+                        }
+                    }).iterator();
+        }
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Object... edgeIds) {
         this.tx().readWrite();
-        return 0 == edgeIds.length ? StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllRelationships())
-                .filter(relationship -> !Neo4jHelper.isDeleted(relationship))
-                .filter(relationship -> !relationship.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
-                .map(relationship -> (Edge) new Neo4jEdge(relationship, this)).iterator() :
-                Stream.of(edgeIds).filter(id -> id instanceof Number).filter(id -> {
-                    try {
-                        this.getBaseGraph().getRelationshipById(((Number) id).longValue());
-                        return true;
-                    } catch (final NotFoundException e) {
-                        return false;
-                    }
-                }).map(id -> (Edge) new Neo4jEdge(this.getBaseGraph().getRelationshipById(((Number) id).longValue()), this)).iterator();
+        if (0 == edgeIds.length) {
+            return StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllRelationships())
+                    .filter(relationship -> !this.checkElementsInTransaction || !Neo4jHelper.isDeleted(relationship))
+                    .filter(relationship -> !relationship.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
+                    .map(relationship -> (Edge) new Neo4jEdge(relationship, this)).iterator();
+        } else {
+            return Stream.of(edgeIds)
+                    .filter(id -> id instanceof Number)
+                    .flatMap(id -> {
+                        try {
+                            return Stream.of((Edge) new Neo4jEdge(this.getBaseGraph().getRelationshipById(((Number) id).longValue()), this));
+                        } catch (final NotFoundException e) {
+                            return Stream.empty();
+                        }
+                    }).iterator();
+        }
 
     }
 
@@ -293,6 +301,21 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
      */
     public Schema getSchema() {
         return this.baseGraph.schema();
+    }
+
+    /**
+     * Neo4j's transactions are not consistent between the graph and the graph
+     * indices. Moreover, global graph operations are not consistent. For
+     * example, if a vertex is removed and then an index is queried in the same
+     * transaction, the removed vertex can be returned. This method allows the
+     * developer to turn on/off a Neo4jGraph 'hack' that ensures transactional
+     * consistency. The default behavior for Neo4jGraph is {@code true}.
+     *
+     * @param checkElementsInTransaction check whether an element is in the transaction between
+     *                                   returning it
+     */
+    public void checkElementsInTransaction(final boolean checkElementsInTransaction) {
+        this.checkElementsInTransaction = checkElementsInTransaction;
     }
 
     /**

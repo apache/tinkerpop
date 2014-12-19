@@ -5,24 +5,24 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 
 import java.util.Iterator;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class Neo4jElement implements Element, Element.Iterators, WrappedElement<PropertyContainer> {
     protected final Neo4jGraph graph;
-    protected PropertyContainer baseElement;
+    protected final PropertyContainer baseElement;
     protected boolean removed = false;
 
-    public Neo4jElement(final Neo4jGraph graph) {
+    public Neo4jElement(final PropertyContainer baseElement, final Neo4jGraph graph) {
+        this.baseElement = baseElement;
         this.graph = graph;
     }
 
@@ -34,10 +34,7 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
     @Override
     public Object id() {
         this.graph.tx().readWrite();
-        if (this.baseElement instanceof Node)
-            return ((Node) this.baseElement).getId();
-        else
-            return ((Relationship) this.baseElement).getId();
+        return this.baseElement instanceof Node ? ((Node) this.baseElement).getId() : ((Relationship) this.baseElement).getId();
     }
 
     @Override
@@ -54,7 +51,7 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
                 return new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key));
             else
                 return Property.empty();
-        } catch (IllegalStateException ise) {
+        } catch (final IllegalStateException e) {
             throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id());
         }
     }
@@ -67,7 +64,7 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
         try {
             this.baseElement.setProperty(key, value);
             return new Neo4jProperty<>(this, key, value);
-        } catch (IllegalArgumentException iae) {
+        } catch (final IllegalArgumentException e) {
             throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value);
         }
     }
@@ -79,7 +76,7 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
 
     @Override
     public int hashCode() {
-       return ElementHelper.hashCode(this);
+        return ElementHelper.hashCode(this);
     }
 
     @Override
@@ -90,9 +87,7 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
     @Override
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
         this.graph.tx().readWrite();
-        return StreamFactory.stream(this.baseElement.getPropertyKeys())
-                .filter(key -> ElementHelper.keyExists(key, propertyKeys))
-                .map(key -> new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key))).iterator();
+        return IteratorUtils.map(IteratorUtils.filter(this.baseElement.getPropertyKeys().iterator(), key -> ElementHelper.keyExists(key, propertyKeys)), key -> new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key)));
     }
 
 }

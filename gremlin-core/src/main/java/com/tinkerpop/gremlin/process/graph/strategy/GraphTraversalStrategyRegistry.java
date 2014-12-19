@@ -19,7 +19,6 @@ public class GraphTraversalStrategyRegistry {
     private static TraverserGeneratorFactory TRAVERSER_GENERATOR_FACTORY = DefaultTraverserGeneratorFactory.instance();
 
     static {
-        TRAVERSAL_STRATEGIES.add(TraverserSourceStrategy.instance());
         TRAVERSAL_STRATEGIES.add(LabeledEndStepStrategy.instance());
         TRAVERSAL_STRATEGIES.add(UntilStrategy.instance());
         TRAVERSAL_STRATEGIES.add(DedupOptimizerStrategy.instance());
@@ -28,7 +27,7 @@ public class GraphTraversalStrategyRegistry {
         TRAVERSAL_STRATEGIES.add(MatchWhereStrategy.instance());
         TRAVERSAL_STRATEGIES.add(ChooseLinearStrategy.instance());
         TRAVERSAL_STRATEGIES.add(UnionLinearStrategy.instance());
-        TRAVERSAL_STRATEGIES.add(ComparingRemovalStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(ComparatorHolderRemovalStrategy.instance());
         TRAVERSAL_STRATEGIES.add(EngineDependentStrategy.instance());
         TRAVERSAL_STRATEGIES.add(ReducingStrategy.instance());
         //  TRAVERSAL_STRATEGIES.add(UnrollJumpStrategy.instance());

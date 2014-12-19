@@ -1,8 +1,9 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
-import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
+import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -10,13 +11,14 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphStep<E extends Element> extends StartStep<E> implements TraverserSource {
+public class GraphStep<E extends Element> extends StartStep<E> implements EngineDependent {
 
     protected final Class<E> returnClass;
     protected final Object[] ids;
@@ -34,9 +36,7 @@ public class GraphStep<E extends Element> extends StartStep<E> implements Traver
     }
 
     public String toString() {
-        return 0 == this.ids.length ?
-                TraversalHelper.makeStepString(this, returnClass.getSimpleName().toLowerCase()) :
-                TraversalHelper.makeStepString(this, returnClass.getSimpleName().toLowerCase(), Arrays.toString(this.ids));
+        return TraversalHelper.makeStepString(this, Arrays.asList(this.ids), this.returnClass.getSimpleName().toLowerCase());
     }
 
     public boolean returnsVertices() {
@@ -45,6 +45,10 @@ public class GraphStep<E extends Element> extends StartStep<E> implements Traver
 
     public boolean returnsEdges() {
         return Edge.class.isAssignableFrom(this.returnClass);
+    }
+
+    public Class<E> getReturnClass() {
+        return this.returnClass;
     }
 
     public void setIteratorSupplier(final Supplier<Iterator<E>> iteratorSupplier) {
@@ -67,6 +71,13 @@ public class GraphStep<E extends Element> extends StartStep<E> implements Traver
             // TODO: rjbriod - is this catch necessary even with profiling removed?
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void onEngine(final TraversalEngine traversalEngine) {
+        if (traversalEngine.equals(TraversalEngine.COMPUTER)) {
+            this.setIteratorSupplier(Collections::emptyIterator);
         }
     }
 }

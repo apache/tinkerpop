@@ -17,7 +17,7 @@ import java.util.NoSuchElementException;
  */
 public final class SumStep extends AbstractStep<Number, Double> implements SideEffectCapable, MapReducer<MapReduce.NullObject, Double, MapReduce.NullObject, Double, Double> {
 
-    public static final String SUM_KEY = Graph.System.system("sum");
+    public static final String SUM_KEY = Graph.Hidden.hide("sum");
 
     public SumStep(final Traversal traversal) {
         super(traversal);

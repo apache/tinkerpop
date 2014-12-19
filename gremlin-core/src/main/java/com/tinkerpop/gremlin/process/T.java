@@ -4,14 +4,17 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
  * A collection of (T)okens which allows for more concise Traversal definitions.
+ * T implements {@link Function} can be used to map an element to its token value.
+ * For example, <code>T.id.apply(element)</code>.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum T implements Function<Element,Object> {
+public enum T implements Function<Element, Object> {
     /**
      * Label (representing Element.label())
      */
@@ -69,13 +72,14 @@ public enum T implements Function<Element,Object> {
         }
     };
 
-    private static final String LABEL = Graph.System.system("label");
-    private static final String ID = Graph.System.system("id");
-    private static final String KEY = Graph.System.system("key");
-    private static final String VALUE = Graph.System.system("value");
+    private static final String LABEL = Graph.Hidden.hide("label");
+    private static final String ID = Graph.Hidden.hide("id");
+    private static final String KEY = Graph.Hidden.hide("key");
+    private static final String VALUE = Graph.Hidden.hide("value");
 
     public abstract String getAccessor();
 
+    @Override
     public abstract Object apply(final Element element);
 
     public static T fromString(final String accessor) {
@@ -88,7 +92,22 @@ public enum T implements Function<Element,Object> {
         else if (accessor.equals(VALUE))
             return value;
         else
-            throw new IllegalArgumentException("The following accessor string is unknown: " + accessor);
+            throw new IllegalArgumentException("The following token string is unknown: " + accessor);
     }
+
+    public static Optional<T> asToken(final Function<Element, Object> function) {
+        if (function.equals(T.id)) {
+            return Optional.of(T.id);
+        } else if (function.equals(T.label)) {
+            return Optional.of(T.label);
+        } else if (function.equals(T.key)) {
+            return Optional.of(T.key);
+        } else if (function.equals(T.value)) {
+            return Optional.of(T.value);
+        } else {
+            return Optional.empty();
+        }
+    }
+
 
 }

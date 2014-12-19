@@ -38,6 +38,11 @@ public abstract class GroovyPathTest {
         public Traversal<Vertex, Path> get_g_V_out_out_path_byXnameX_byXageX() {
             g.V.out.out.path.by('name').by('age');
         }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path() {
+            g.V.as('a').has('name', 'marko').as('b').has('age', 29).as('c').path;
+        }
     }
 
     public static class ComputerTest extends PathTest {
@@ -69,6 +74,11 @@ public abstract class GroovyPathTest {
         public Traversal<Vertex, Path> get_g_V_out_out_path_byXnameX_byXageX() {
             g.V.out.out.path.by('name').by('age');
             // TODO
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path() {
+            ComputerTestHelper.compute("g.V.as('a').has('name', 'marko').as('b').has('age', 29).as('c').path",g);
         }
     }
 }

@@ -45,7 +45,7 @@ public class VertexTest {
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
             "labelCanNotBeNull",
             "labelCanNotBeEmpty",
-            "labelCanNotBeASystemKey"
+            "labelCanNotBeAHiddenKey"
     })
     public static class BasicVertexTest extends AbstractGremlinTest {
         @Test
@@ -95,24 +95,24 @@ public class VertexTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldHaveExceptionConsistencyWhenUsingSystemVertexLabel() {
-            final String label = Graph.System.system("systemLabel");
+            final String label = Graph.Hidden.hide("systemLabel");
             try {
                 g.addVertex(T.label, label);
                 fail("Call to Graph.addVertex() should throw an exception when label is a system key");
             } catch (Exception ex) {
-                validateException(Element.Exceptions.labelCanNotBeASystemKey(label), ex);
+                validateException(Element.Exceptions.labelCanNotBeAHiddenKey(label), ex);
             }
         }
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldHaveExceptionConsistencyWhenUsingSystemVertexLabelOnOverload() {
-            final String label = Graph.System.system("systemLabel");
+            final String label = Graph.Hidden.hide("systemLabel");
             try {
                 g.addVertex(label);
                 fail("Call to Graph.addVertex() should throw an exception when label is a system key");
             } catch (Exception ex) {
-                validateException(Element.Exceptions.labelCanNotBeASystemKey(label), ex);
+                validateException(Element.Exceptions.labelCanNotBeAHiddenKey(label), ex);
             }
         }
 

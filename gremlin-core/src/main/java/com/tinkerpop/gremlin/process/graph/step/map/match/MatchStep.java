@@ -59,6 +59,11 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         checkSolvability();
     }
 
+    @Override
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.traversalsByStartAs);
+    }
+
     /**
      * Adds an individual traversal to an already-constructed MatchStep.
      * The query must be solvable after addition (i.e. should not require the addition of
@@ -407,7 +412,8 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
         @Override
         public String toString() {
-            return "[" + this.startLabel + "->" + this.endLabel + "," + findBranchFactor() + "," + this.totalInputs + "," + this.totalOutputs + "," + this.traversal + "]";
+            return this.traversal.toString();
+            //return "[" + this.startLabel + "->" + this.endLabel + "," + findBranchFactor() + "," + this.totalInputs + "," + this.totalOutputs + "," + this.traversal + "]";
         }
     }
 

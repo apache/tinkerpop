@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.ConstraintViolationException;
@@ -61,10 +60,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
      * Neo4j upgrades from 1.x don't come with labels.
      */
     @Test
-    @Ignore
     public void shouldTraverseWithoutLabels() {
-        // todo: can this test be made to pass?   https://github.com/tinkerpop/tinkerpop3/issues/408
-
         final GraphDatabaseService service = g.getBaseGraph();
 
         final Transaction tx = service.beginTx();
@@ -75,6 +71,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         final Transaction tx2 = service.beginTx();
         assertEquals(0, IteratorUtils.count(n.getLabels().iterator()));
         assertEquals(1, IteratorUtils.count(g.iterators().vertexIterator()));
+        g.tx().close();
         tx2.close();
     }
 
@@ -415,7 +412,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void shouldDoLabelsNameSpaceBehavior() {
+    public void shouldDoLabelsNamespaceBehavior() {
         g.tx().readWrite();
 
         final Schema schema = g.getBaseGraph().schema();
@@ -483,8 +480,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         }
     }
 
-    /*@Test
-    public void shouldNotGenerateNodesAndRelationshipsForNoMultiProperties() {
+    @Test
+    public void shouldNotGenerateNodesAndRelationshipsForMultiPropertiesWithSingle() {
         g.tx().readWrite();
         tryCommit(g, g -> validateCounts(g, 0, 0, 0, 0));
         Vertex vertex = g.addVertex(T.label, "person");
@@ -492,7 +489,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         vertex.property("name", "marko");
         assertEquals("marko", vertex.value("name"));
         tryCommit(g, g -> validateCounts(g, 1, 0, 1, 0));
-        vertex.property("name", "okram");
+        vertex.singleProperty("name", "okram");
         tryCommit(g, g -> {
             validateCounts(g, 1, 0, 1, 0);
             assertEquals("okram", vertex.value("name"));
@@ -505,13 +502,14 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             validateCounts(g, 1, 0, 1, 0);
         });
 
-        if (g.features().vertex().supportsMetaProperties()) {
-            vertexProperty.property("acl", "private");
+        // now make it a meta property (and thus, force node/relationship creation)
+        vertexProperty.property("acl", "private");
+        tryCommit(g, g -> {
             assertEquals("private", vertexProperty.value("acl"));
-        }
+            validateCounts(g, 1, 0, 2, 1);
+        });
 
-        //validateCounts(g, 1, 0, 1, 0); //TODO: Make use of Graph.System keys to hide meta-properties on the baseVertex
-    }*/
+    }
 
 
     @Test
@@ -678,5 +676,51 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 assertEquals("virginia", b.getBaseVertex().getProperty("location"));
             });
         }
+    }
+
+    @Test
+    public void shouldSupportNeo4jMultiLabels() {
+        final Neo4jVertex vertex = (Neo4jVertex) g.addVertex(T.label, "person::animal", "name", "marko");
+        tryCommit(g, g -> {
+            assertTrue(vertex.label().equals("person::animal") || vertex.label().equals("animal::person"));
+            assertEquals(2, vertex.labels().size());
+            assertTrue(vertex.labels().contains("person"));
+            assertTrue(vertex.labels().contains("animal"));
+            assertEquals(2, IteratorUtils.count(vertex.getBaseVertex().getLabels().iterator()));
+        });
+
+        vertex.addLabel("organism");
+        tryCommit(g, g -> {
+            assertTrue(vertex.label().equals("person::animal::organism") ||
+                    vertex.label().equals("person::organism::animal") ||
+                    vertex.label().equals("animal::person::organism") ||
+                    vertex.label().equals("animal::organism::person") ||
+                    vertex.label().equals("organism::person::animal") ||
+                    vertex.label().equals("organism::animal::person"));
+            assertEquals(3, vertex.labels().size());
+            assertTrue(vertex.labels().contains("person"));
+            assertTrue(vertex.labels().contains("animal"));
+            assertTrue(vertex.labels().contains("organism"));
+            assertEquals(3, IteratorUtils.count(vertex.getBaseVertex().getLabels().iterator()));
+        });
+
+        vertex.removeLabel("person");
+        tryCommit(g, g -> {
+            assertTrue(vertex.label().equals("animal::organism") || vertex.label().equals("organism::animal"));
+            assertEquals(2, vertex.labels().size());
+            assertTrue(vertex.labels().contains("animal"));
+            assertTrue(vertex.labels().contains("organism"));
+        });
+
+        vertex.addLabel("organism"); // repeat add
+        vertex.removeLabel("person"); // repeat remove
+        tryCommit(g, g -> {
+            assertTrue(vertex.label().equals("animal::organism") || vertex.label().equals("organism::animal"));
+            assertEquals(2, vertex.labels().size());
+            assertTrue(vertex.labels().contains("animal"));
+            assertTrue(vertex.labels().contains("organism"));
+            assertEquals(2, IteratorUtils.count(vertex.getBaseVertex().getLabels().iterator()));
+        });
+
     }
 }

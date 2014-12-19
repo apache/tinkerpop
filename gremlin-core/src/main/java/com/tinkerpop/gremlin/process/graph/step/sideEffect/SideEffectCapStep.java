@@ -67,7 +67,7 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
 
     @Override
     public String toString() {
-        return Graph.System.isSystem(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+        return TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
 
     public String getSideEffectKey() {

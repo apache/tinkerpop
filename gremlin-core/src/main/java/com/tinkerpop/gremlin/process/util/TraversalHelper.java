@@ -10,10 +10,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -21,11 +23,11 @@ import java.util.stream.Collectors;
 public class TraversalHelper {
 
     public static boolean isLabeled(final Step<?, ?> step) {
-        return !Graph.System.isSystem(step.getLabel());
+        return !Graph.Hidden.isHidden(step.getLabel());
     }
 
     public static boolean isLabeled(final String label) {
-        return !Graph.System.isSystem(label);
+        return !Graph.Hidden.isHidden(label);
     }
 
     public static boolean isReversible(final Traversal<?, ?> traversal) {
@@ -151,7 +153,7 @@ public class TraversalHelper {
         final List<Step> steps = traversal.asAdmin().getSteps();
         for (int i = 0; i < steps.size(); i++) {
             if (!TraversalHelper.isLabeled(steps.get(i)))
-                steps.get(i).setLabel(Graph.System.system(Integer.toString(i)));
+                steps.get(i).setLabel(Graph.Hidden.hide(Integer.toString(i)));
         }
     }
 
@@ -168,12 +170,27 @@ public class TraversalHelper {
 
     public static String makeStepString(final Step<?, ?> step, final Object... arguments) {
         final StringBuilder builder = new StringBuilder(step.getClass().getSimpleName());
-        if (arguments.length > 0) {
+        final List<String> strings = Stream.of(arguments)
+                .filter(o -> null != o)
+                .filter(o -> {
+                    if (o instanceof FunctionRing) {
+                        return ((FunctionRing) o).size() > 0;
+                    } else if (o instanceof Collection) {
+                        return ((Collection) o).size() > 0;
+                    } else if (o instanceof Map) {
+                        return ((Map) o).size() > 0;
+                    } else {
+                        return true;
+                    }
+                })
+                .map(o -> {
+                    final String string = o.toString();
+                    return string.contains("$Lambda$") ? "lambda" : string;
+                }).filter(o -> !Graph.Hidden.isHidden(o))
+                .collect(Collectors.toList());
+        if (strings.size() > 0) {
             builder.append("(");
-            for (int i = 0; i < arguments.length; i++) {
-                if (i > 0) builder.append(",");
-                builder.append(arguments[i]);
-            }
+            builder.append(String.join(",", strings));
             builder.append(")");
         }
         if (TraversalHelper.isLabeled(step))
@@ -236,14 +253,6 @@ public class TraversalHelper {
         return false;
     }
 
-    /*public static void printTraversalChain(final Traversal<?,?> traversal) {
-        Step step = TraversalHelper.getStart(traversal);
-        while (!step.equals(EmptyStep.instance())) {
-            System.out.println(step);
-            step = step.getNextStep();
-        }
-    }*/
-
     public static int relativeLabelDirection(Step<?, ?> step, final String label) {
         if (label.equals(step.getLabel()))
             return 0;
@@ -268,6 +277,11 @@ public class TraversalHelper {
     public static void verifyStepLabelIsNotAlreadyAStepLabel(final String label, final Traversal<?, ?> traversal) {
         if (TraversalHelper.hasLabel(label, traversal))
             throw new IllegalArgumentException("The provided step label is already being used as a step label: " + label);
+    }
+
+    public static void verifyStepLabelIsNotHidden(final String label) {
+        if (Graph.Hidden.isHidden(label))
+            throw new IllegalArgumentException("The provided step label can not be hidden: " + label);
     }
 
     public static <S> void addToCollection(final Collection<S> collection, final S s, final long bulk) {

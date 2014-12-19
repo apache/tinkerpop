@@ -20,9 +20,9 @@ import java.util.function.Predicate;
  */
 public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent {
 
-    public static final String EMPTY_LABEL = Graph.System.system("emptyLabel");
-    public static final String THIS_LABEL = Graph.System.system("thisLabel");
-    public static final String THIS_BREAK_LABEL = Graph.System.system("thisBreakLabel");
+    public static final String EMPTY_LABEL = Graph.Hidden.hide("emptyLabel");
+    public static final String THIS_LABEL = Graph.Hidden.hide("thisLabel");
+    public static final String THIS_BREAK_LABEL = Graph.Hidden.hide("thisBreakLabel");
 
     private FunctionRing<Traverser<S>, String> functionRing;
     private boolean onGraphComputer = false;

@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.util.ImmutablePath;
 import com.tinkerpop.gremlin.process.util.MutablePath;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -85,9 +84,9 @@ public class PathTest extends AbstractGremlinProcessTest {
     @Test
     public void shouldExcludeUnlabeledLabelsFromPath() {
         Arrays.asList(MutablePath.make(), ImmutablePath.make()).forEach(path -> {
-            path = path.extend(Graph.System.system("a"), "marko");
+            path = path.extend(Graph.Hidden.hide("a"), "marko");
             path = path.extend("b", "stephen");
-            path = path.extend(new HashSet<>(Arrays.asList(Graph.System.system("c"), "d")), "matthias");
+            path = path.extend(new HashSet<>(Arrays.asList(Graph.Hidden.hide("c"), "d")), "matthias");
             assertEquals(3, path.size());
             assertEquals(3, path.objects().size());
             assertEquals(3, path.labels().size());

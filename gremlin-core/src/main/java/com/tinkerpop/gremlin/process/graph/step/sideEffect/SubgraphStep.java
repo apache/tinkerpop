@@ -94,6 +94,6 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
 
     @Override
     public String toString() {
-        return Graph.System.isSystem(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+        return TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
 }

@@ -9,6 +9,22 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Provided Neo4j multi-label support in Neo4j-Gremlin. Added three `Neo4jVertex`-specific methods: `addLabel()`, `removeLabel()`, `labels()`.
+* Removed `TraverserSourceStrategy` as it is no longer required.
+* `TraverserSource` is now only a marker interface with "on first" within the `TraverserSource` step are traversers generated.
+* Bumped to Groovy 2.3.9.
+* Added `Graph.Io` interface which allows for simplified helper methods for end users and a way for vendors to override `GraphReader` and `GraphWriter` initial construction when custom serializers are needed.
+* Removed methods from `GraphProvider` related to customizing serializers in `IoTest` from the test suite as the new `Graph.Io` interface now serves that purpose.
+* Added `Neo4jGraph.checkElementsInTransaction(boolean)` which will (or not) verify whether elements retrieved via Neo4j global graph operations are transactionally consistent.
+* Added `ScriptInputFormat` and `ScriptOutputFormat` to Hadoop-Gremlin for reading and writing a file according to an arbitrary parsing script.
+* Added `TimeLimitStep.getTimedOut()` to determine if the step timed out or there were no more objects to process.
+* `Graph.System` is now `Graph.Hidden` with "hidden" being the vendor namespace and the key prefix being `~`.
+* Much better `toString()` handling in `Step` and `Traversal`.
+* `ComparatorHolder<V>` interface returns a `List<Comparator<V>>` instead of a `Comparator<V>[]`.
+* `T` now implements `Function<Element,Object>`.
+* Added `ElementValueComparator` and `ElementFunctionComparator` in support of vendor introspection on `ComparatorHolder`-steps.
+* Renamed `Comparing` marker interface to `ComparatorHolder`.
+* `FunctionHolder` interface provides vendor introspection via `ElementValueFunction`.
 * Removed `OrderByStep` as it is now just `order()` with a `by()`-based comparator.
 * Added `SampleStep` (`sample()`) to allow for sampling the set of previous objects. Useful for doing random walks with `local()`.
 * Renamed `random()` to `coin()` to better express that the filter is a random coin toss.

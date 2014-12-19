@@ -13,7 +13,7 @@ import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -35,8 +34,8 @@ import java.util.stream.Stream;
 public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty.Iterators, WrappedVertex<Node>, Neo4jVertexPropertyTraversal {
 
     public static final Label VERTEX_PROPERTY_LABEL = DynamicLabel.label("vertexProperty");
-    public static final String VERTEX_PROPERTY_PREFIX = Graph.System.system("");
-    public static final String VERTEX_PROPERTY_TOKEN = Graph.System.system("vertexProperty");
+    public static final String VERTEX_PROPERTY_PREFIX = Graph.Hidden.hide("");
+    public static final String VERTEX_PROPERTY_TOKEN = Graph.Hidden.hide("vertexProperty");
 
 
     private Node node;
@@ -147,7 +146,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
             this.vertex.graph.tx().readWrite();
             final Set<String> keys = new HashSet<>();
             for (final String key : this.node.getPropertyKeys()) {
-                if (!Graph.System.isSystem(key))
+                if (!Graph.Hidden.isHidden(key))
                     keys.add(key);
             }
             return keys;
@@ -202,14 +201,11 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
     }
 
     @Override
-    public <U> Iterator<Property<U>> propertyIterator(String... propertyKeys) {
+    public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
         if (!isNode()) return Collections.emptyIterator();
         else {
-            vertex.graph.tx().readWrite();
-            return (Iterator) StreamFactory.stream(this.node.getPropertyKeys())
-                    .filter(key -> !key.equals(T.key.getAccessor()) && !key.equals(T.value.getAccessor()))
-                    .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
-                    .map(key -> new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) this.node.getProperty(key))).iterator();
+            this.vertex.graph().tx().readWrite();
+            return IteratorUtils.map(IteratorUtils.filter(this.node.getPropertyKeys().iterator(), key -> !key.equals(T.key.getAccessor()) && !key.equals(T.value.getAccessor()) && ElementHelper.keyExists(key, propertyKeys)), key -> (Property<U>) new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) this.node.getProperty(key)));
         }
     }
 }

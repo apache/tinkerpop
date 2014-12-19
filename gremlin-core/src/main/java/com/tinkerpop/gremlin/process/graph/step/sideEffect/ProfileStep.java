@@ -18,7 +18,6 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
 
     private final String name;
 
-
     public ProfileStep(final Traversal traversal) {
         super(traversal);
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(TraversalMetrics.METRICS_KEY, this.traversal);

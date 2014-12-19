@@ -2,12 +2,16 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionAcceptor;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import org.javatuples.Pair;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -16,9 +20,9 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupStep<S> extends FilterStep<S> implements Reversible, Reducing, FunctionAcceptor<S, Object> {
+public final class DedupStep<S> extends FilterStep<S> implements Reversible, Reducing, FunctionHolder<S, Object> {
 
-    private Function<S, ?> uniqueFunction = null;
+    private Function<S, Object> uniqueFunction = null;
     private Set<Object> duplicateSet = new HashSet<>();
 
     public DedupStep(final Traversal traversal) {
@@ -34,6 +38,11 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     public void addFunction(final Function<S, Object> function) {
         this.uniqueFunction = function;
         DedupStep.generatePredicate(this);
+    }
+
+    @Override
+    public List<Function<S, Object>> getFunctions() {
+        return null == this.uniqueFunction ? Collections.emptyList() : Arrays.asList(this.uniqueFunction);
     }
 
     @Override
@@ -56,6 +65,11 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     public void reset() {
         super.reset();
         this.duplicateSet.clear();
+    }
+
+    @Override
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.uniqueFunction);
     }
 
     /////////////////////////

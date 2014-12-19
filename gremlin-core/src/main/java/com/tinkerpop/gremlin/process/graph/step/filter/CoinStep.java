@@ -17,7 +17,16 @@ public final class CoinStep<S> extends FilterStep<S> implements Reversible {
     public CoinStep(final Traversal traversal, final double probability) {
         super(traversal);
         this.probability = probability;
-        this.setPredicate(traverser -> this.probability >= RANDOM.nextDouble());
+        this.setPredicate(traverser -> {
+            long newBulk = 0l;
+            for (int i = 0; i < traverser.bulk(); i++) {
+                if (this.probability >= RANDOM.nextDouble())
+                    newBulk++;
+            }
+            if (0 == newBulk) return false;
+            traverser.asAdmin().setBulk(newBulk);
+            return true;
+        });
     }
 
     public String toString() {
