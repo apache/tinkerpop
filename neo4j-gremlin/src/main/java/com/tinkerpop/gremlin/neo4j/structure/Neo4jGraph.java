@@ -66,6 +66,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
 
     protected final boolean supportsMetaProperties;
     protected final boolean supportsMultiProperties;
+    protected boolean checkConsistency = true;
 
     protected final TransactionManager transactionManager;
     protected final ExecutionEngine cypher;
@@ -232,7 +233,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
         this.tx().readWrite();
         if (0 == vertexIds.length) {
             return StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllNodes())
-                    .filter(node -> !Neo4jHelper.isDeleted(node))
+                    .filter(node -> !this.checkConsistency || !Neo4jHelper.isDeleted(node))
                     .filter(node -> !node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
                     .map(node -> (Vertex) new Neo4jVertex(node, this)).iterator();
         } else {
@@ -253,7 +254,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
         this.tx().readWrite();
         if (0 == edgeIds.length) {
             return StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllRelationships())
-                    .filter(relationship -> !Neo4jHelper.isDeleted(relationship))
+                    .filter(relationship -> !this.checkConsistency || !Neo4jHelper.isDeleted(relationship))
                     .filter(relationship -> !relationship.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
                     .map(relationship -> (Edge) new Neo4jEdge(relationship, this)).iterator();
         } else {
@@ -301,6 +302,18 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
      */
     public Schema getSchema() {
         return this.baseGraph.schema();
+    }
+
+    /**
+     * Global graph operations such as this spawned by {@link Graph.Iterators#vertexIterator} or {@link Graph.Iterators#edgeIterator} are not transactionally consistent in Neo4j.
+     * The default behavior is to verify that the element is still present within a transaction when its been deleted in the transaction.
+     * This is costly as a method call on the element with a try/catch is required. However, it ensures proper semantics and adherence to TinkerPop's test suite.
+     * If the user does not care about checking for consistency and whats a speed increase on global graph operations, they can call this method with {@code false}.
+     *
+     * @param checkConsistency whether to check if the element retrieved via a global operation is still alive in the transaction.
+     */
+    public void checkConsistency(final boolean checkConsistency) {
+        this.checkConsistency = checkConsistency;
     }
 
     /**
