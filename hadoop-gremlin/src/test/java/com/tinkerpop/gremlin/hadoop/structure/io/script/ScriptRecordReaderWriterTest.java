@@ -68,6 +68,7 @@ public class ScriptRecordReaderWriterTest {
 
                 Vertex vertex = v.get();
                 assertEquals(String.class, vertex.id().getClass());
+                assertTrue(vertex.label().equals("person") || vertex.label().equals("project"));
 
                 Property<String> name = vertex.property("name");
                 if (name.isPresent()) names.remove(name.value());
@@ -83,7 +84,7 @@ public class ScriptRecordReaderWriterTest {
         assertEquals(6, lines.length);
         String line4 = lines[3];
         assertTrue(line4.startsWith("4:person:josh:32"));
-        assertTrue(line4.contains("created:project:5:1.0"));
+        assertTrue(line4.contains("created:5:1.0"));
         //assertTrue(line4.contains("knows:person:1:1.0")); // TODO: requires edge-copy
     }
 
