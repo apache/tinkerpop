@@ -30,6 +30,7 @@ A collection of implementation notes:
 * Use the numerous static method helper classes such as `ElementHelper`, `GraphComputerHelper`, `VertexProgramHelper`, etc.
 * There are a number of default methods on the provided interfaces that are semantically correct. However, if they are not efficient for the implementation, override them.
 * Implement the `structure/` package interfaces first and then, if desired, interfaces in the `process/` package interfaces.
+* Implement the `Graph.Io` interface if there are custom classes used in the implementation that will need to be serialized.  In this way, `Graph` implementations can pre-configure custom serializers for IO interactions and users will not need to know about those details.  For example, if the identifier system for the `Graph` uses a non-primitive, such as OrientDB's `Rid` class, register the methods for serialization of that class in the various `GraphReader` and `GraphWriter` builders returned from the `Io` interface.  Following this pattern will ensure proper execution for the test suite as well as simplified usage for end-users.
 
 [[oltp-implementations]]
 OLTP Implementations
