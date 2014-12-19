@@ -2,7 +2,9 @@ package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.structure.Direction;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
+import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
@@ -49,5 +51,14 @@ public class Neo4jHelper {
         } catch (final IllegalStateException e) {
             return true;
         }
+    }
+
+    public static Label[] makeLabels(final String potentialMultiLabel) {
+        final String[] splitLabels = potentialMultiLabel.split(Neo4jVertex.LABEL_DELIMINATOR);
+        final Label[] labels = new Label[splitLabels.length];
+        for (int i = 0; i < splitLabels.length; i++) {
+            labels[i] = DynamicLabel.label(splitLabels[i]);
+        }
+        return labels;
     }
 }

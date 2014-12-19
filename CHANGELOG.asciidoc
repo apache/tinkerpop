@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Provided Neo4j multi-label support in Neo4j-Gremlin. Added three `Neo4jVertex`-specific methods: `addLabel()`, `removeLabel()`, `labels()`.
 * Removed `TraverserSourceStrategy` as it is no longer required.
 * `TraverserSource` is now only a marker interface with "on first" within the `TraverserSource` step are traversers generated.
 * Bumped to Groovy 2.3.9.

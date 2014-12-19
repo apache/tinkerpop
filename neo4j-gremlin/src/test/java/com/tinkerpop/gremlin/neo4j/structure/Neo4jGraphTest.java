@@ -677,4 +677,49 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             });
         }
     }
+
+    @Test
+    public void shouldSupportNeo4jMultiLabels() {
+        final Neo4jVertex vertex = (Neo4jVertex) g.addVertex(T.label, "person::animal", "name", "marko");
+        tryCommit(g, g -> {
+            assertTrue(vertex.label().equals("person::animal") || vertex.label().equals("animal::person"));
+            assertEquals(2, vertex.labels().size());
+            assertTrue(vertex.labels().contains("person"));
+            assertTrue(vertex.labels().contains("animal"));
+            assertEquals(2, IteratorUtils.count(vertex.getBaseVertex().getLabels().iterator()));
+        });
+
+        vertex.addLabel("organism");
+        tryCommit(g, g -> {
+            assertTrue(vertex.label().equals("person::animal::organism") ||
+                    vertex.label().equals("person::organism::animal") ||
+                    vertex.label().equals("animal::person::organism") ||
+                    vertex.label().equals("animal::organism::person") ||
+                    vertex.label().equals("organism::person::animal") ||
+                    vertex.label().equals("organism::animal::person"));
+            assertEquals(3, vertex.labels().size());
+            assertTrue(vertex.labels().contains("person"));
+            assertTrue(vertex.labels().contains("animal"));
+            assertTrue(vertex.labels().contains("organism"));
+            assertEquals(3, IteratorUtils.count(vertex.getBaseVertex().getLabels().iterator()));
+        });
+
+        vertex.removeLabel("person");
+        tryCommit(g, g -> {
+            assertTrue(vertex.label().equals("animal::organism") || vertex.label().equals("organism::animal"));
+            assertEquals(2, vertex.labels().size());
+            assertTrue(vertex.labels().contains("animal"));
+            assertTrue(vertex.labels().contains("organism"));
+        });
+
+        vertex.addLabel("organism"); // repeat add
+        tryCommit(g, g -> {
+            assertTrue(vertex.label().equals("animal::organism") || vertex.label().equals("organism::animal"));
+            assertEquals(2, vertex.labels().size());
+            assertTrue(vertex.labels().contains("animal"));
+            assertTrue(vertex.labels().contains("organism"));
+            assertEquals(2, IteratorUtils.count(vertex.getBaseVertex().getLabels().iterator()));
+        });
+
+    }
 }

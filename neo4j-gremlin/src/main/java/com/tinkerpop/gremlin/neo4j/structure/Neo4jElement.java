@@ -18,10 +18,11 @@ import java.util.Set;
  */
 public abstract class Neo4jElement implements Element, Element.Iterators, WrappedElement<PropertyContainer> {
     protected final Neo4jGraph graph;
-    protected PropertyContainer baseElement;
+    protected final PropertyContainer baseElement;
     protected boolean removed = false;
 
-    public Neo4jElement(final Neo4jGraph graph) {
+    public Neo4jElement(final PropertyContainer baseElement, final Neo4jGraph graph) {
+        this.baseElement = baseElement;
         this.graph = graph;
     }
 
