@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.hadoop.structure.io.script;
 
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -26,12 +25,13 @@ import java.io.InputStreamReader;
  */
 public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
-    protected final static String SCRIPT_FILE = "gremlin.hadoop.inputScript";
+    protected final static String SCRIPT_FILE = "gremlin.hadoop.scriptInputFormat.script";
+    protected final static String SCRIPT_ENGINE = "gremlin.hadoop.scriptInputFormat.scriptEngine";
     private final static String LINE = "line";
     private final static String FACTORY = "factory";
     private final static String READ_CALL = "parse(" + LINE + "," + FACTORY + ")";
-    private final ScriptEngine engine = new GremlinGroovyScriptEngine();
     private final LineRecordReader lineRecordReader;
+    private ScriptEngine engine;
     private VertexWritable vertex;
 
     public ScriptRecordReader() {
@@ -42,6 +42,7 @@ public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritabl
     public void initialize(final InputSplit genericSplit, final TaskAttemptContext context) throws IOException {
         this.lineRecordReader.initialize(genericSplit, context);
         final Configuration configuration = context.getConfiguration();
+        this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
         final FileSystem fs = FileSystem.get(configuration);
         try {
             this.engine.eval(new InputStreamReader(fs.open(new Path(configuration.get(SCRIPT_FILE)))));

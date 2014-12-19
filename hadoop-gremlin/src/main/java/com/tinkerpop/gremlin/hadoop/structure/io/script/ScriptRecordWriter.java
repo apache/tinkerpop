@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.hadoop.structure.io.script;
 
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -20,13 +19,14 @@ import java.io.UnsupportedEncodingException;
  */
 public class ScriptRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
 
-    protected final static String SCRIPT_FILE = "gremlin.hadoop.outputScript";
+    protected final static String SCRIPT_FILE = "gremlin.hadoop.scriptOutputFormat.script";
+    protected final static String SCRIPT_ENGINE = "gremlin.hadoop.scriptOutputFormat.scriptEngine";
     private final static String VERTEX = "vertex";
     private final static String WRITE_CALL = "stringify(" + VERTEX + ")";
     private final static String UTF8 = "UTF-8";
     private final static byte[] NEWLINE;
     private final DataOutputStream out;
-    private final ScriptEngine engine = new GremlinGroovyScriptEngine();
+    private final ScriptEngine engine;
 
     static {
         try {
@@ -39,6 +39,7 @@ public class ScriptRecordWriter extends RecordWriter<NullWritable, VertexWritabl
     public ScriptRecordWriter(final DataOutputStream out, final TaskAttemptContext context) throws IOException {
         this.out = out;
         final Configuration configuration = context.getConfiguration();
+        this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
         final FileSystem fs = FileSystem.get(configuration);
         try {
             this.engine.eval(new InputStreamReader(fs.open(new Path(configuration.get(SCRIPT_FILE)))));
