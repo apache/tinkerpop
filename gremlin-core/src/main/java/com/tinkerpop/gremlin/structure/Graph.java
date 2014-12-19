@@ -21,6 +21,10 @@ import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Repeatable;
@@ -176,7 +180,7 @@ public interface Graph extends AutoCloseable {
      * Provide input/output methods for serializing graph data.
      */
     public default Io io() {
-        return DefaultIo.instance();
+        return new DefaultIo(this);
     }
 
     /**
@@ -265,6 +269,16 @@ public interface Graph extends AutoCloseable {
         }
 
         /**
+         * Write a kryo file using the default configuration of the {@link KryoWriter}.
+         */
+        public void writeKryo(final String file) throws IOException;
+
+        /**
+         * Read a kryo file using the default configuration of the {@link KryoReader}.
+         */
+        public void readKryo(final String file) throws IOException;
+
+        /**
          * By default, this method creates an instance of the most current version of {@link GremlinKryo} which is
          * used to serialize data to and from the graph.   Implementers with custom classes (e.g. a non-primitive
          * class returned from {@link Element#id}) should override this method with those classes automatically
@@ -305,6 +319,16 @@ public interface Graph extends AutoCloseable {
         }
 
         /**
+         * Write a GraphML file using the default configuration of the {@link GraphMLWriter}.
+         */
+        public void writeGraphML(final String file) throws IOException;
+
+        /**
+         * Read a GraphML file using the default configuration of the {@link GraphMLReader}.
+         */
+        public void readGraphML(final String file) throws IOException;
+
+        /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for GraphSON serializations.
          * GraphSON is forgiving for implementers and will typically do a "reasonable" job in serializing most
          * custom classes.  However, for a nicer representation is desired then this method should be overridden
@@ -323,6 +347,16 @@ public interface Graph extends AutoCloseable {
         public default GraphSONWriter.Builder graphSONWriter() {
             return GraphSONWriter.build();
         }
+
+        /**
+         * Write a GraphSON file using the default configuration of the {@link GraphSONWriter}.
+         */
+        public void writeGraphSON(final String file) throws IOException;
+
+        /**
+         * Read a GraphSON file using the default configuration of the {@link GraphSONReader}.
+         */
+        public void readGraphSON(final String file) throws IOException;
     }
 
     /**
