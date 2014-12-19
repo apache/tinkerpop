@@ -2,8 +2,7 @@ def stringify(vertex) {
     def edgeMap = { vdir ->
         return {
             def e = it.get()
-            def v = e."${vdir}V"().next()
-            e.values("weight").inject(e.label(), v.label(), v.id()).join(":")
+            e.values("weight").inject(e.label(), e."${vdir}V"().next().id()).join(":")
         }
     }
     def v = vertex.values("name", "age", "lang").inject(vertex.id(), vertex.label()).join(":")

@@ -96,9 +96,17 @@ public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritabl
             this.graph = TinkerGraph.open();
         }
 
+        public Vertex vertex(final Object id) {
+            return vertex(id, Vertex.DEFAULT_LABEL);
+        }
+
         public Vertex vertex(final Object id, final String label) {
             final Traversal<Vertex, Vertex> t = graph.V(id);
             return t.hasNext() ? t.next() : graph.addVertex(T.id, id, T.label, label);
+        }
+
+        public Edge edge(final Vertex out, final Vertex in) {
+            return edge(out, in, Edge.DEFAULT_LABEL);
         }
 
         public Edge edge(final Vertex out, final Vertex in, final String label) {

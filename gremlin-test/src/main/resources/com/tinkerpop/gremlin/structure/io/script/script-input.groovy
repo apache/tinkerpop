@@ -10,8 +10,8 @@ def parse(line, factory) {
     // process out-edges
     if (parts.length >= 2) {
         parts[1].split(/,/).grep { !it.isEmpty() }.each {
-            def (eLabel, vLabel, refId, weight) = it.split(/:/).toList()
-            def v2 = factory.vertex(refId, vLabel)
+            def (eLabel, refId, weight) = it.split(/:/).toList()
+            def v2 = factory.vertex(refId)
             def edge = factory.edge(v1, v2, eLabel)
             edge.property("weight", Double.valueOf(weight))
         }
@@ -19,8 +19,8 @@ def parse(line, factory) {
     // process in-edges
     if (parts.length == 3) {
         parts[2].split(/,/).grep { !it.isEmpty() }.each {
-            def (eLabel, vLabel, refId, weight) = it.split(/:/).toList()
-            def v2 = factory.vertex(refId, vLabel)
+            def (eLabel, refId, weight) = it.split(/:/).toList()
+            def v2 = factory.vertex(refId)
             def edge = factory.edge(v2, v1, eLabel)
             edge.property("weight", Double.valueOf(weight))
         }
