@@ -112,13 +112,13 @@ public class GremlinExecutorTest {
         final AtomicBoolean successCalled = new AtomicBoolean(false);
         final AtomicBoolean failureCalled = new AtomicBoolean(false);
 
-        final CountDownLatch wait = new CountDownLatch(1);
+        final CountDownLatch timeOutCount = new CountDownLatch(1);
 
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .scriptEvaluationTimeout(250)
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
-                .afterTimeout((b) -> wait.countDown()).create();
+                .afterTimeout((b) -> timeOutCount.countDown()).create();
         try {
             gremlinExecutor.eval("Thread.sleep(1000);10").get();
             fail("This script should have timed out with an exception");
@@ -126,10 +126,11 @@ public class GremlinExecutorTest {
             assertEquals(TimeoutException.class, ex.getCause().getClass());
         }
 
-        wait.await(2000, TimeUnit.MILLISECONDS);
+        timeOutCount.await(2000, TimeUnit.MILLISECONDS);
 
         assertFalse(successCalled.get());
         assertFalse(failureCalled.get());
+        assertEquals(0, timeOutCount.getCount());
     }
 
     @Test
