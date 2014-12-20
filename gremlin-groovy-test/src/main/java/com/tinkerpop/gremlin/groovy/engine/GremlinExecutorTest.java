@@ -21,9 +21,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
@@ -106,25 +109,25 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldTimeoutScript() throws Exception {
-        final AtomicBoolean timeoutCalled = new AtomicBoolean(false);
         final AtomicBoolean successCalled = new AtomicBoolean(false);
         final AtomicBoolean failureCalled = new AtomicBoolean(false);
+
+        final CountDownLatch wait = new CountDownLatch(1);
+
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .scriptEvaluationTimeout(500)
+                .scriptEvaluationTimeout(250)
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
-                .afterTimeout((b) -> timeoutCalled.set(true)).create();
+                .afterTimeout((b) -> wait.countDown()).create();
         try {
             gremlinExecutor.eval("Thread.sleep(1000);10").get();
-            fail();
+            fail("This script should have timed out with an exception");
         } catch (Exception ex) {
-
+            assertEquals(TimeoutException.class, ex.getCause().getClass());
         }
 
-        // need to wait long enough for the script to complete
-        Thread.sleep(750);
+        wait.await(2000, TimeUnit.MILLISECONDS);
 
-        assertTrue(timeoutCalled.get());
         assertFalse(successCalled.get());
         assertFalse(failureCalled.get());
     }
