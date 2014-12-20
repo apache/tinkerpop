@@ -524,7 +524,7 @@ In this case the `ResponseMessage` returned to the client would look something l
 
 [source,js]
 ----
-{"result":{"data":[{"id":2,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"vadas","age":27}}],
+{"result":{"data":[{"id":2,"label":"vertex","type":"vertex","properties":{"name":"vadas","age":27}}],
            "meta":{}},
  "requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1",
  "status":{"code":200,"attributes":{},"message":""}}
