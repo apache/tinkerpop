@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.util;
+package com.tinkerpop.gremlin.process.graph.util;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -15,7 +15,7 @@ import java.util.function.BiPredicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HasContainer {
+public final class HasContainer {
 
     public String key;
     public BiPredicate predicate;

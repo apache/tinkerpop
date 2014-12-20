@@ -1,9 +1,10 @@
-package com.tinkerpop.gremlin.structure.util;
+package com.tinkerpop.gremlin.structure.util.empty;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -12,7 +13,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyVertexProperty<V> implements VertexProperty<V> {
+public final class EmptyVertexProperty<V> implements VertexProperty<V> {
 
     private static final EmptyVertexProperty INSTANCE = new EmptyVertexProperty();
 

@@ -5,7 +5,7 @@ import com.jcabi.manifests.Manifests;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Gremlin {
+public final class Gremlin {
     private static String version;
     static {
         version = Manifests.read("version");

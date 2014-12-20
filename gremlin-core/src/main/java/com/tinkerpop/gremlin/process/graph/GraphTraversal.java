@@ -81,7 +81,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.HasContainer;
+import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 
 import java.util.Collection;
 import java.util.Comparator;
