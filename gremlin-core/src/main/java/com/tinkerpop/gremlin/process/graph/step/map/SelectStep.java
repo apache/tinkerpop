@@ -26,7 +26,6 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
     private final List<String> selectLabels;
     private final boolean wasEmpty;
     private boolean requiresPaths = false;
-    private boolean onGraphComputer = false;
     protected Function<Traverser<S>, Map<String, E>> selectFunction;
 
     public SelectStep(final Traversal traversal, final String... selectLabels) {
@@ -54,7 +53,6 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
 
     @Override
     public void onEngine(final TraversalEngine traversalEngine) {
-        this.onGraphComputer = traversalEngine.equals(TraversalEngine.COMPUTER);
         this.requiresPaths = traversalEngine.equals(TraversalEngine.COMPUTER) ?
                 TraversalHelper.getLabelsUpTo(this, this.traversal).stream().filter(this.selectLabels::contains).findAny().isPresent() :
                 TraversalHelper.getStepsUpTo(this, this.traversal).stream()
