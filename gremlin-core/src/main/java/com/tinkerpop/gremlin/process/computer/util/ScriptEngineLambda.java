@@ -4,24 +4,14 @@ import com.tinkerpop.gremlin.util.function.TriConsumer;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class ScriptEngineLambda implements Function, Supplier, Consumer, Predicate, BiConsumer, TriConsumer {
-
-    private static final ScriptEngineManager SCRIPT_ENGINE_MANAGER = new ScriptEngineManager();
-    private static final Map<String, ScriptEngine> CACHED_ENGINES = new ConcurrentHashMap<>();
 
     private static final String A = "a";
     private static final String B = "b";
@@ -31,14 +21,7 @@ public class ScriptEngineLambda implements Function, Supplier, Consumer, Predica
     protected final String script;
 
     public ScriptEngineLambda(final String engineName, final String script) {
-        this.engine = CACHED_ENGINES.compute(engineName, (key, engine) -> {
-            if (null == engine) {
-                engine = SCRIPT_ENGINE_MANAGER.getEngineByName(engineName);
-                if (null == engine)
-                    throw new IllegalArgumentException("There is no script engine with provided name: " + engineName);
-            }
-            return engine;
-        });
+        this.engine = ScriptEngineCache.get(engineName);
         this.script = script;
     }
 
