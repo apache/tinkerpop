@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.hadoop.structure.io.script;
 
 import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import com.tinkerpop.gremlin.process.computer.util.ScriptEngineCache;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
