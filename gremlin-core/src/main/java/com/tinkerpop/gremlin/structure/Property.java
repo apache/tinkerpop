@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.structure.util.EmptyProperty;
+import com.tinkerpop.gremlin.structure.util.empty.EmptyProperty;
 
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;

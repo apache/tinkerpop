@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.gremlin.process.traversers.PathTraverser
-import com.tinkerpop.gremlin.process.traversers.SimpleTraverser
+import com.tinkerpop.gremlin.process.traverser.PathTraverser
+import com.tinkerpop.gremlin.process.traverser.SimpleTraverser
 import com.tinkerpop.gremlin.process.Traverser
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
 import com.tinkerpop.gremlin.process.util.TraversalHelper

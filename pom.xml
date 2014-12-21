@@ -179,10 +179,6 @@
                 <version>2.5</version>
                 <configuration>
                     <archive>
-                        <index>true</index>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                        </manifest>
                         <manifestEntries>
                             <version>${project.version}</version>
                             <hash>${buildNumber}</hash>

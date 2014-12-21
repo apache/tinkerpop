@@ -378,7 +378,7 @@ image:gremlin-io.png[width=250,float=right] The task of getting data in and out 
 * Reading and writing a single `Vertex` (with and without associated `Edge` objects)
 * Reading and writing a single `Edge`
 
-In all cases, these methods operate in the currency of `InputStream` and `OutputStream` objects, allowing graphs and their related elements to be written to and read from files, byte arrays, etc.
+In all cases, these methods operate in the currency of `InputStream` and `OutputStream` objects, allowing graphs and their related elements to be written to and read from files, byte arrays, etc.  The `Graph` interface offers the `io` method, which provides access to helper methods for the various I/O capabilities.  This method also potentially provides vendor specific implementations of some of these methods, which may be important for serialization of vendor graphs.  Unless there are very advanced requirements for the serialization process, it is always best to utilize the methods on the `Io` interface to construct `GraphReader` and `GraphWriter` instances, as the implementation may provide some custom settings that would otherwise have to be configured manually by the user to do the serialization.
 
 GraphML Reader/Writer
 ~~~~~~~~~~~~~~~~~~~~~
@@ -398,13 +398,24 @@ The following code shows how to write a `Graph` instance to file called `tinkerp
 [source,java]
 ----
 final Graph g = TinkerFactory.createClassic();
+g.io().writeGraphML("tinkerpop-classic.xml");
+
+final Graph newGraph = TinkerGraph.open();
+newGraph.io().readGraphML("tinkerpop-classic.xml")'
+----
+
+If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:
+
+[source,java]
+----
+final Graph g = TinkerFactory.createClassic();
 try (final OutputStream os = new FileOutputStream("tinkerpop-classic.xml")) {
-    GraphMLWriter.build().create().writeGraph(os, g);
+    g.io().graphMLWriter().normalize(true).create().writeGraph(os);
 }
 
-final GraphReader reader = GraphMLReader.build().create();
+final Graph newGraph = TinkerGraph.open();
 try (final InputStream stream = new FileInputStream("tinkerpop-classic.xml")) {
-    reader.readGraph(stream, g);
+    newGraph.io().graphMLReader().vertexIdKey("name").create().readGraph(stream);
 }
 ----
 
@@ -421,29 +432,37 @@ GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods a
 [source,java]
 ----
 final Graph g = TinkerFactory.createClassic();
+g.io().writeGraphSON("tinkerpop-classic.json");
+
+final Graph newGraph = TinkerGraph.open();
+newGraph.io().readGraphSON("tinkerpop-classic.json")'
+----
+
+If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:
+
+[source,java]
+----
+final Graph g = TinkerFactory.createClassic();
 try (final OutputStream os = new FileOutputStream("tinkerpop-classic.json")) {
-    GraphSONWriter.build().create().writeGraph(os, g);
+    g.io().graphSONWriter().normalize(true).create().writeGraph(os);
 }
 
-final GraphReader reader = GraphSONReader.build().create();
+final Graph newGraph = TinkerGraph.open();
 try (final InputStream stream = new FileInputStream("tinkerpop-classic.json")) {
-    reader.readGraph(stream, g);
+    newGraph.io().graphSONReader().vertexIdKey("name").create().readGraph(stream);
 }
 ----
 
-The `GraphSONReader` and `GraphSONWriter` have a number of options that they can be configured with.  One of the important options is the ability to embed type information into the output.  By embedding the types, it becomes possible to serialize a graph without losing type information that might be important when being consumed by another source.  The importance of this concept is demonstrated in the following example where a single `Vertex` is written to GraphSON using the Gremlin Console:
+One of the important configuration options of the `GraphSONReader` and `GraphSONWriter` is the ability to embed type information into the output.  By embedding the types, it becomes possible to serialize a graph without losing type information that might be important when being consumed by another source.  The importance of this concept is demonstrated in the following example where a single `Vertex` is written to GraphSON using the Gremlin Console:
 
 [source,groovy]
 ----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> w = GraphSONWriter.build().create()
-==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter@1af146
-gremlin> f = new FileOutputStream('test.txt')
-==>java.io.FileOutputStream@5c8eee0f
-gremlin> w.writeVertex(f, g.V(1).next(), Direction.BOTH)
+gremlin> g.io().graphSONWriter().create().writeVertex(f, g.V(1).next(), BOTH)
 ==>null
 gremlin> f.close()
+==>null
 ----
 
 The following GraphSON example shows the output of `GraphSonWriter.writeVertex()` with associated edges:
@@ -461,7 +480,6 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
             "label": "created",
             "type": "edge",
             "outV": 1,
-            "hiddens": {},
             "properties": {
                 "weight": 0.4
             }
@@ -474,7 +492,6 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
             "label": "knows",
             "type": "edge",
             "outV": 1,
-            "hiddens": {},
             "properties": {
                 "weight": 0.5
             }
@@ -487,7 +504,6 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
             "label": "knows",
             "type": "edge",
             "outV": 1,
-            "hiddens": {},
             "properties": {
                 "weight": 1
             }
@@ -496,13 +512,11 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
     "id": 1,
     "label": "vertex",
     "type": "vertex",
-    "hiddens": {},
     "properties": {
         "name": [
             {
                 "id": 0,
                 "label": "name",
-                "hiddens": {},
                 "value": "marko",
                 "properties": {}
             }
@@ -511,7 +525,6 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
             {
                 "id": 1,
                 "label": "age",
-                "hiddens": {},
                 "value": 29,
                 "properties": {}
             }
@@ -526,8 +539,11 @@ With a minor change to the construction of the `GraphSONWriter` the lossy nature
 
 [source,groovy]
 ----
-gremlin> w = GraphSONWriter.build().embedTypes(true).create()
-==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter@350ec41e
+gremlin> f = new FileOutputStream("test.txt")
+==>java.io.FileOutputStream@43034809
+gremlin> g.io().graphSONWriter().embedTypes(true).create().writeVertex(f, g.V(1).next(), BOTH)
+==>null
+gremlin> f.close()
 ----
 
 In the above code, the `embedTypes` option is set to `true` and the output below shows the difference in the output:
@@ -552,9 +568,6 @@ In the above code, the `embedTypes` option is set to `true` and the output below
                 "label": "created",
                 "type": "edge",
                 "outV": 1,
-                "hiddens": {
-                    "@class": "java.util.HashMap"
-                },
                 "properties": {
                     "@class": "java.util.HashMap",
                     "weight": [
@@ -572,9 +585,6 @@ In the above code, the `embedTypes` option is set to `true` and the output below
                 "label": "knows",
                 "type": "edge",
                 "outV": 1,
-                "hiddens": {
-                    "@class": "java.util.HashMap"
-                },
                 "properties": {
                     "@class": "java.util.HashMap",
                     "weight": [
@@ -592,9 +602,6 @@ In the above code, the `embedTypes` option is set to `true` and the output below
                 "label": "knows",
                 "type": "edge",
                 "outV": 1,
-                "hiddens": {
-                    "@class": "java.util.HashMap"
-                },
                 "properties": {
                     "@class": "java.util.HashMap",
                     "weight": [
@@ -608,9 +615,6 @@ In the above code, the `embedTypes` option is set to `true` and the output below
     "id": 1,
     "label": "vertex",
     "type": "vertex",
-    "hiddens": {
-        "@class": "java.util.HashMap"
-    },
     "properties": {
         "@class": "java.util.HashMap",
         "name": [
@@ -623,9 +627,6 @@ In the above code, the `embedTypes` option is set to `true` and the output below
                         0
                     ],
                     "label": "name",
-                    "hiddens": {
-                        "@class": "java.util.HashMap"
-                    },
                     "value": "marko",
                     "properties": {
                         "@class": "java.util.HashMap"
@@ -643,9 +644,6 @@ In the above code, the `embedTypes` option is set to `true` and the output below
                         1
                     ],
                     "label": "age",
-                    "hiddens": {
-                        "@class": "java.util.HashMap"
-                    },
                     "value": 29,
                     "properties": {
                         "@class": "java.util.HashMap"
@@ -673,16 +671,28 @@ CAUTION: When migrating between Gremlin Structure implementations, Kryo may not 
 
 Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.gio` and then how to read that file back into a different instance:
 
+
+[source,java]
+----
+final Graph g = TinkerFactory.createClassic();
+g.io().writeKryo("tinkerpop-classic.gio");
+
+final Graph newGraph = TinkerGraph.open();
+newGraph.io().readKryo("tinkerpop-classic.gio")'
+----
+
+If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:
+
 [source,java]
 ----
 final Graph g = TinkerFactory.createClassic();
 try (final OutputStream os = new FileOutputStream("tinkerpop-classic.gio")) {
-    KryoWriter.build().create().writeGraph(os, g);
+    g.io().kryoWriter().normalize(true).create().writeGraph(os);
 }
 
-final GraphReader reader = KryoReader.build().create();
+final Graph newGraph = TinkerGraph.open();
 try (final InputStream stream = new FileInputStream("tinkerpop-classic.gio")) {
-    reader.readGraph(stream, g);
+    newGraph.io().kryoReader().vertexIdKey("name").create().readGraph(stream);
 }
 ----
 

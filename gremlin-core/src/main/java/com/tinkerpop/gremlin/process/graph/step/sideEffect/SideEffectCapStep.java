@@ -1,15 +1,15 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
-import com.tinkerpop.gremlin.process.traversers.SimpleTraverser;
+import com.tinkerpop.gremlin.process.traverser.SimpleTraverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
-import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.NoSuchElementException;
 
@@ -34,7 +34,7 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
 
     private Traverser<E> standardAlgorithm() {
         if (!this.done) {
-            Traverser.Admin<E> traverser = new SimpleTraverser<>(null, this.getTraversal().sideEffects());
+            Traverser.Admin<E> traverser = new SimpleTraverser<>(null, (Step<E, ?>) this);
             try {
                 while (true) {
                     traverser = (Traverser.Admin<E>) this.starts.next();

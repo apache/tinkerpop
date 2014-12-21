@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.process.graph.VertexPropertyTraversal;
-import com.tinkerpop.gremlin.structure.util.EmptyVertexProperty;
+import com.tinkerpop.gremlin.structure.util.empty.EmptyVertexProperty;
 
 import java.util.Iterator;
 

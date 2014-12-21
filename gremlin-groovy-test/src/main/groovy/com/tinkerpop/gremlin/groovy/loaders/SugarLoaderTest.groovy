@@ -133,11 +133,11 @@ class SugarLoaderTest extends AbstractGremlinTest {
 
         println("\ng.V.as('a').map{[it.a.name, it.name]}")
         println "  Java8-style:  " + clock(5000) {
-            g.V().as('a').map { [it.get('a').value('name'), it.get().value('name')] }
+            g.V().as('a').map { [it.path('a').value('name'), it.get().value('name')] }
         }
         println "  Groovy-style: " + clock(5000) { g.V.as('a').map { [it.a.name, it.name] } }
-        assertEquals(g.V().as('a').map { [it.get('a').value('name'), it.get().value('name')] }, g.V.as('a').map {
-            [it.a.name, it.name]
+        assertEquals(g.V().as('a').map { [it.path('a').value('name'), it.get().value('name')] }, g.V.as('a').map {
+            [it.path('a').name, it.name]
         })
 
     }

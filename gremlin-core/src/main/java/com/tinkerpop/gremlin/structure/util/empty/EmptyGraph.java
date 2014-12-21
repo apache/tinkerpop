@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.util;
+package com.tinkerpop.gremlin.structure.util.empty;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -17,7 +17,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyGraph implements Graph, Graph.Iterators {
+public final class EmptyGraph implements Graph, Graph.Iterators {
 
     private static final String MESSAGE = "The graph is immutable and empty";
     private static final EmptyGraph INSTANCE = new EmptyGraph();

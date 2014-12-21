@@ -23,8 +23,7 @@ import java.util.Iterator;
 public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, WrappedEdge<Relationship>, Neo4jEdgeTraversal {
 
     public Neo4jEdge(final Relationship relationship, final Neo4jGraph graph) {
-        super(graph);
-        this.baseElement = relationship;
+        super(relationship,graph);
     }
 
     @Override

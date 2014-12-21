@@ -23,7 +23,9 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -31,9 +33,10 @@ import java.util.stream.Stream;
  */
 public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterators, WrappedVertex<Node>, Neo4jVertexTraversal {
 
+    protected static final String LABEL_DELIMINATOR = "::";
+
     public Neo4jVertex(final Node node, final Neo4jGraph graph) {
-        super(graph);
-        this.baseElement = node;
+        super(node, graph);
     }
 
     @Override
@@ -183,8 +186,28 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     @Override
     public String label() {
         this.graph.tx().readWrite();
-        return this.getBaseVertex().getLabels().iterator().next().name();
+        final Set<String> labels = this.labels();
+        return String.join(LABEL_DELIMINATOR, this.labels().toArray(new String[labels.size()]));
     }
+
+    /////////////// Neo4jVertex Specific Methods for Multi-Label Support ///////////////
+    public Set<String> labels() {
+        this.graph.tx().readWrite();
+        final Set<String> labels = new HashSet<>();
+        this.getBaseVertex().getLabels().forEach(label -> labels.add(label.name()));
+        return labels;
+    }
+
+    public void addLabel(final String label) {
+        this.graph.tx().readWrite();
+        this.getBaseVertex().addLabel(DynamicLabel.label(label));
+    }
+
+    public void removeLabel(final String label) {
+        this.graph.tx().readWrite();
+        this.getBaseVertex().removeLabel(DynamicLabel.label(label));
+    }
+    //////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public String toString() {

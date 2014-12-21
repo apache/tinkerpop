@@ -1,14 +1,15 @@
-package com.tinkerpop.gremlin.structure.util;
+package com.tinkerpop.gremlin.structure.util.empty;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyProperty<V> implements Property<V> {
+public final class EmptyProperty<V> implements Property<V> {
 
     private static final EmptyProperty INSTANCE = new EmptyProperty();
 

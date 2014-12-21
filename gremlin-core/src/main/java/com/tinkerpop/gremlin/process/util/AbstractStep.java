@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traversers.PathTraverser;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Iterator;
@@ -16,9 +15,8 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     protected String label;
     protected Traversal traversal;
-    public ExpandableStepIterator<S> starts;
+    protected ExpandableStepIterator<S> starts;
     protected Traverser<E> nextEnd = null;
-    protected boolean available = false;
     protected boolean futureSetByChild = false;
 
     protected Step<?, S> previousStep = EmptyStep.instance();
@@ -34,7 +32,6 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     @Override
     public void reset() {
         this.starts.clear();
-        this.available = false;
         this.nextEnd = null;
     }
 
@@ -80,16 +77,17 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     @Override
     public Traverser<E> next() {
-        if (this.available) {
-            this.available = false;
-            prepareTraversalForNextStep(this.nextEnd);
-            return this.nextEnd;
+        if (null != this.nextEnd) {
+            try {
+                return this.prepareTraversalForNextStep(this.nextEnd);
+            } finally {
+                this.nextEnd = null;
+            }
         } else {
             while (true) {
                 final Traverser<E> traverser = this.processNextStart();
-                if (traverser.bulk() != 0) {
-                    prepareTraversalForNextStep(traverser);
-                    return traverser;
+                if (0 != traverser.bulk()) {
+                    return this.prepareTraversalForNextStep(traverser);
                 }
             }
         }
@@ -97,19 +95,15 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     @Override
     public boolean hasNext() {
-        if (this.available)
+        if (null != this.nextEnd)
             return true;
         else {
             try {
                 while (true) {
                     this.nextEnd = this.processNextStart();
-                    if (this.nextEnd.bulk() != 0) {
-                        this.available = true;
-                        return true;
-                    }
+                    if (0 != this.nextEnd.bulk()) return true;
                 }
             } catch (final NoSuchElementException e) {
-                this.available = false;
                 return false;
             }
         }
@@ -137,19 +131,14 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         clone.starts = new ExpandableStepIterator<S>(clone);
         clone.previousStep = EmptyStep.instance();
         clone.nextStep = EmptyStep.instance();
-        clone.available = false;
         clone.nextEnd = null;
-        clone.label = this.label;
-        clone.futureSetByChild = this.futureSetByChild;
         return clone;
     }
 
-    private void prepareTraversalForNextStep(final Traverser<E> traverser) {
-        if (!this.futureSetByChild)
-            ((Traverser.Admin<E>) traverser).setFuture(this.nextStep.getLabel());
-        if (traverser instanceof PathTraverser) traverser.path().addLabel(this.getLabel());
-        if (TraversalHelper.isLabeled(this.label))
-            this.traversal.sideEffects().set(this.label, traverser.get());
+    private final Traverser<E> prepareTraversalForNextStep(final Traverser<E> traverser) {
+        if (!this.futureSetByChild) ((Traverser.Admin<E>) traverser).setFuture(this.nextStep.getLabel());
+        traverser.path().addLabel(this.getLabel());
+        return traverser;
     }
 
 }
