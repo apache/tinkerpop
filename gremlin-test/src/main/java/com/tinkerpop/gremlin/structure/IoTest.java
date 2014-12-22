@@ -247,7 +247,7 @@ public class IoTest extends AbstractGremlinTest {
         module.addDeserializer(CustomId.class, new CustomId.CustomIdJacksonDeserializer());
         final GraphWriter writer = GraphSONWriter.build()
                 .embedTypes(true)
-                .customModule(module).create();
+                .addCustomModule(module).create();
 
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             writer.writeGraph(baos, g);
@@ -269,7 +269,7 @@ public class IoTest extends AbstractGremlinTest {
             try (final InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
                 final GraphReader reader = GraphSONReader.build()
                         .embedTypes(true)
-                        .customModule(module).create();
+                        .addCustomModule(module).create();
                 reader.readGraph(is, g2);
             }
 

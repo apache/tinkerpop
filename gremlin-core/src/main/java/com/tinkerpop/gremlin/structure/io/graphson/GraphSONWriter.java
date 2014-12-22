@@ -14,6 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A @{link GraphWriter} that writes a graph and its elements to a JSON-based representation. This implementation
@@ -87,7 +89,7 @@ public class GraphSONWriter implements GraphWriter {
     public static class Builder {
         private boolean loadCustomModules = false;
         private boolean normalize = false;
-        private SimpleModule custom = null;
+        private List<SimpleModule> customModules = new ArrayList<>();
         private boolean embedTypes = false;
 
         private Builder() {
@@ -96,14 +98,14 @@ public class GraphSONWriter implements GraphWriter {
         /**
          * Supply a custom module for serialization/deserialization.
          */
-        public Builder customModule(final SimpleModule custom) {
-            this.custom = custom;
+        public Builder addCustomModule(final SimpleModule custom) {
+            this.customModules.add(custom);
             return this;
         }
 
         /**
          * Try to load {@code SimpleModule} instances from the current classpath.  These are loaded in addition to
-         * the one supplied to the {@link #customModule(com.fasterxml.jackson.databind.module.SimpleModule)};
+         * the one supplied to the {@link #addCustomModule(com.fasterxml.jackson.databind.module.SimpleModule)};
          */
         public Builder loadCustomModules(final boolean loadCustomModules) {
             this.loadCustomModules = loadCustomModules;
@@ -131,9 +133,9 @@ public class GraphSONWriter implements GraphWriter {
         }
 
         public GraphSONWriter create() {
-            final GraphSONObjectMapper mapper = GraphSONObjectMapper.build()
-                    .customModule(custom)
-                    .loadCustomModules(loadCustomModules)
+            final GraphSONObjectMapper.Builder builder = GraphSONObjectMapper.build();
+            customModules.forEach(builder::addCustomModule);
+            final GraphSONObjectMapper mapper = builder.loadCustomModules(loadCustomModules)
                     .normalize(normalize)
                     .embedTypes(embedTypes).create();
             return new GraphSONWriter(mapper);

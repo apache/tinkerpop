@@ -27,7 +27,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
      * out {@link com.tinkerpop.gremlin.structure.Graph} objects and {@code toString} for unknown objects.
      */
     protected static final ObjectMapper mapper = GraphSONObjectMapper.build()
-            .customModule(new GremlinServerModule())
+            .addCustomModule(new GremlinServerModule())
             .embedTypes(false)
             .create();
 
