@@ -12,9 +12,9 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -66,13 +66,13 @@ public class GraphSONModule extends SimpleModule {
         private Map<String,Object> props(final VertexProperty property) {
             if (property instanceof DetachedVertexProperty) {
                 try {
-                    return StreamFactory.stream(property.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
+                    return IteratorUtils.collectMap(property.iterators().propertyIterator(), Property::key, Property::value);
                 } catch (UnsupportedOperationException uoe) {
                     return new HashMap<>();
                 }
             } else {
                 return (property.graph().features().vertex().supportsMetaProperties()) ?
-                        StreamFactory.stream(property.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value)) :
+                        IteratorUtils.collectMap(property.iterators().propertyIterator(), Property::key, Property::value) :
                         new HashMap<>();
             }
         }
@@ -126,7 +126,7 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.LABEL, edge.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
 
-            final Map<String,Object> properties = StreamFactory.stream(edge.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
+            final Map<String,Object> properties = IteratorUtils.collectMap(edge.iterators().propertyIterator(), Property::key, Property::value);
             m.put(GraphSONTokens.PROPERTIES, properties);
 
             final Vertex inV = edge.iterators().vertexIterator(Direction.IN).next();
