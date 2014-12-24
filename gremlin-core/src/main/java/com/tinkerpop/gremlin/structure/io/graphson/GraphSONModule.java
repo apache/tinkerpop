@@ -13,13 +13,11 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
-import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -167,8 +165,7 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
 
-            final Object properties = StreamFactory.stream(vertex.iterators().propertyIterator())
-                    .collect(Collectors.groupingBy(vp -> vp.key()));
+            final Object properties = IteratorUtils.groupBy(vertex.iterators().propertyIterator(), Property::key);
             m.put(GraphSONTokens.PROPERTIES, properties);
 
             jsonGenerator.writeObject(m);

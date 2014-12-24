@@ -81,6 +81,15 @@ public class IteratorUtils {
         return map;
     }
 
+    public static <K,S> Map<K,List<S>> groupBy(final Iterator<S> iterator, final Function<S,K> groupBy) {
+        final Map<K,List<S>> map = new HashMap<>();
+        while (iterator.hasNext()) {
+            final S obj = iterator.next();
+            map.computeIfAbsent(groupBy.apply(obj), k -> new ArrayList<>()).add(obj);
+        }
+        return map;
+    }
+
     ///////////////
 
     public static final <S, E> Iterator<E> map(final Iterator<S> iterator, final Function<S, E> function) {
