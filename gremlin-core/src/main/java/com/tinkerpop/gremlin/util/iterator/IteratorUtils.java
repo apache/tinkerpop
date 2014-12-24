@@ -64,11 +64,7 @@ public class IteratorUtils {
     }
 
     public static <S> List<S> list(final Iterator<S> iterator) {
-        final List<S> list = new ArrayList<>();
-        while (iterator.hasNext()) {
-            list.add(iterator.next());
-        }
-        return list;
+        return fill(iterator, new ArrayList<S>());
     }
 
     ///////////////
