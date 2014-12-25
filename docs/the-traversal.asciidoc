@@ -607,7 +607,7 @@ MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPAR
 [source,groovy]
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> g.loadGraphML('data/grateful-dead.xml')
+gremlin> g.io().readGraphML('data/grateful-dead.xml')
 ==>null
 gremlin> g.V().match('a',
             g.of().as('a').has('name', 'Garcia'),
