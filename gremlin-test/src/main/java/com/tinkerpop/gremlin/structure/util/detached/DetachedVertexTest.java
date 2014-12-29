@@ -113,21 +113,21 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         final Map<String, Object> propX1 = new HashMap<>();
         propX1.put("value", "a");
         propX1.put("id", 123);
-        propX1.put("label", VertexProperty.DEFAULT_LABEL);
+        propX1.put("label", "x");
         final Map<String, Object> propX2 = new HashMap<>();
         propX2.put("value", "c");
         propX2.put("id", 124);
-        propX2.put("label", VertexProperty.DEFAULT_LABEL);
+        propX2.put("label", "x");
         properties.put("x", Arrays.asList(propX1, propX2));
 
         final Map<String, Object> propY1 = new HashMap<>();
         propY1.put("value", "b");
         propY1.put("id", 125);
-        propY1.put("label", VertexProperty.DEFAULT_LABEL);
+        propY1.put("label", "y");
         final Map<String, Object> propY2 = new HashMap<>();
         propY2.put("value", "d");
         propY2.put("id", 126);
-        propY2.put("label", VertexProperty.DEFAULT_LABEL);
+        propY2.put("label", "y");
         properties.put("y", Arrays.asList(propY1, propY2));
 
         final DetachedVertex dv = new DetachedVertex(1, "test", properties);
@@ -138,7 +138,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         final List<VertexProperty> propertyX = StreamFactory.stream(dv.iterators().propertyIterator("x")).collect(Collectors.toList());
         assertEquals(2, propertyX.size());
         assertTrue(propertyX.stream().allMatch(p ->
-                p.label().equals(VertexProperty.DEFAULT_LABEL)
+                p.label().equals(p.key())
                         && (p.id().equals(123) || p.id().equals(124))
                         && (p.value().equals("a") || p.value().equals("c"))
                         && !p.iterators().propertyIterator().hasNext()));
@@ -151,24 +151,23 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         final Map<String, Object> propX1 = new HashMap<>();
         propX1.put("value", "a");
         propX1.put("id", 123);
-        propX1.put("label", VertexProperty.DEFAULT_LABEL);
+        propX1.put("label", "x");
         propX1.put("properties", ElementHelper.asMap("propX1a", "a", "propX11", 1, "same", 123.01d, "extra", "something"));
-        //propX1.put("hidden", ElementHelper.asMap("propX1ha", "ha", "propX1h1", 11,"same", 321.01d));
         final Map<String, Object> propX2 = new HashMap<>();
         propX2.put("value", "c");
         propX2.put("id", 124);
-        propX2.put("label", VertexProperty.DEFAULT_LABEL);
+        propX2.put("label", "x");
         properties.put("x", Arrays.asList(propX1, propX2));
 
         final Map<String, Object> propY1 = new HashMap<>();
         propY1.put("value", "b");
         propY1.put("id", 125);
-        propY1.put("label", VertexProperty.DEFAULT_LABEL);
+        propY1.put("label", "");
         final Map<String, Object> propY2 = new HashMap<>();
         propY2.put("value", "d");
         propY2.put("id", 126);
-        propY2.put("label", VertexProperty.DEFAULT_LABEL);
-        //properties.put(Graph.Key.hide("y"), Arrays.asList(propY1, propY2));
+        propY2.put("label", "y");
+        properties.put("y", Arrays.asList(propY1, propY2));
 
         final DetachedVertex dv = new DetachedVertex(1, "test", properties);
 
@@ -178,7 +177,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         final List<VertexProperty> propertyX = StreamFactory.stream(dv.iterators().propertyIterator("x")).collect(Collectors.toList());
         assertEquals(2, propertyX.size());
         assertTrue(propertyX.stream().allMatch(p ->
-                p.label().equals(VertexProperty.DEFAULT_LABEL)
+                p.label().equals(p.key())
                         && (p.id().equals(123) || p.id().equals(124))
                         && (p.value().equals("a") || p.value().equals("c"))));
 

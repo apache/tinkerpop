@@ -17,6 +17,7 @@ import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -30,6 +31,7 @@ public class GraphSONModule extends SimpleModule {
         addSerializer(Vertex.class, new VertexJacksonSerializer());
         addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer());
         addSerializer(GraphSONGraph.class, new GraphSONGraph.GraphJacksonSerializer(normalize));
+        addSerializer(GraphSONVertexProperty.class, new GraphSONVertexProperty.GraphSONVertexPropertySerializer());
         addSerializer(VertexProperty.class, new VertexPropertyJacksonSerializer());
         addSerializer(Property.class, new PropertyJacksonSerializer());
     }
@@ -54,8 +56,8 @@ public class GraphSONModule extends SimpleModule {
         private void ser(final VertexProperty property, final JsonGenerator jsonGenerator) throws IOException {
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, property.id());
-            m.put(GraphSONTokens.LABEL, property.label());
             m.put(GraphSONTokens.VALUE, property.value());
+            m.put(GraphSONTokens.LABEL, property.label());
             m.put(GraphSONTokens.PROPERTIES, props(property));
 
             jsonGenerator.writeObject(m);
@@ -165,7 +167,10 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
 
-            final Object properties = IteratorUtils.groupBy(vertex.iterators().propertyIterator(), Property::key);
+            // convert to GraphSONVertexProperty so that the label does not get serialized in the output - it is
+            // redundant because the key in the map is the same as the label.
+            final Iterator<GraphSONVertexProperty> vertexPropertyList = IteratorUtils.map(vertex.iterators().propertyIterator(), GraphSONVertexProperty::new);
+            final Object properties = IteratorUtils.groupBy(vertexPropertyList, vp -> vp.getToSerialize().key());
             m.put(GraphSONTokens.PROPERTIES, properties);
 
             jsonGenerator.writeObject(m);

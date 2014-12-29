@@ -516,7 +516,6 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
         "name": [
             {
                 "id": 0,
-                "label": "name",
                 "value": "marko",
                 "properties": {}
             }
@@ -524,7 +523,6 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
         "age": [
             {
                 "id": 1,
-                "label": "age",
                 "value": 29,
                 "properties": {}
             }
@@ -626,7 +624,6 @@ In the above code, the `embedTypes` option is set to `true` and the output below
                         "java.lang.Long",
                         0
                     ],
-                    "label": "name",
                     "value": "marko",
                     "properties": {
                         "@class": "java.util.HashMap"
@@ -643,7 +640,6 @@ In the above code, the `embedTypes` option is set to `true` and the output below
                         "java.lang.Long",
                         1
                     ],
-                    "label": "age",
                     "value": 29,
                     "properties": {
                         "@class": "java.util.HashMap"

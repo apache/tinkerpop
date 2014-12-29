@@ -38,11 +38,11 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
         }
     }
 
-    public DetachedVertexProperty(final Object id, final String label, final String key, final V value,
+    public DetachedVertexProperty(final Object id, final String label, final V value,
                                   final Map<String, Object> properties,
                                   final Vertex vertex) {
         super(id, label);
-        this.key = key;
+        this.key = label;
         this.value = value;
         this.vertex = DetachedFactory.detach(vertex, true);
 
