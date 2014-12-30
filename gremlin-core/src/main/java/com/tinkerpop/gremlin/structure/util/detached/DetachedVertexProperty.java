@@ -19,7 +19,6 @@ import java.util.Map;
  */
 public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> implements VertexProperty<V>, VertexProperty.Iterators {
 
-    protected String key;
     protected V value;
     protected transient DetachedVertex vertex;
 
@@ -28,7 +27,6 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
     protected DetachedVertexProperty(final VertexProperty<V> vertexProperty, final boolean withProperties) {
         super(vertexProperty);
-        this.key = vertexProperty.key();
         this.value = vertexProperty.value();
         this.vertex = DetachedFactory.detach(vertexProperty.element(), false);
 
@@ -42,7 +40,6 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
                                   final Map<String, Object> properties,
                                   final Vertex vertex) {
         super(id, label);
-        this.key = label;
         this.value = value;
         this.vertex = DetachedFactory.detach(vertex, true);
 
@@ -59,7 +56,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
     @Override
     public String key() {
-        return this.key;
+        return this.label;
     }
 
     @Override
@@ -90,7 +87,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
     @Override
     public VertexProperty<V> attach(final Vertex hostVertex) {
-        return StreamFactory.<VertexProperty<V>>stream(hostVertex.iterators().propertyIterator(this.key))
+        return StreamFactory.<VertexProperty<V>>stream(hostVertex.iterators().propertyIterator(this.label))
                 .filter(vertexProperty -> ElementHelper.areEqual(this, vertexProperty))
                 .findAny()
                 .orElseThrow(() -> new IllegalStateException("The detached vertex property could not be be found at the provided vertex: " + this));
