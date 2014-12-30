@@ -19,4 +19,6 @@ public interface Metrics {
     public Collection<MetricsUtil> getChildren();
 
     MetricsUtil getChild(String metricsId);
+
+    public String getAnnotation(String key);
 }

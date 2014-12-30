@@ -24,6 +24,7 @@ public class MetricsUtil implements Metrics, Serializable, Cloneable {
     private double percentDuration = -1;
     private long tempTime = -1l;
 
+    private Map<String, String> annotations = new HashMap<>();
     private Map<String, MetricsUtil> children = new HashMap<>();
 
     public MetricsUtil(final String id, final String name) {
@@ -89,6 +90,20 @@ public class MetricsUtil implements Metrics, Serializable, Cloneable {
     public void aggregate(MetricsUtil other) {
         this.durationNs += other.durationNs;
         this.count += other.count;
+
+        // Merge annotations. If a duplicate is found then append it to a comma-separated list.
+        for (Map.Entry<String, String> p : other.annotations.entrySet()) {
+            if (this.annotations.containsKey(p.getKey())) {
+                String existing = this.annotations.get(p.getKey());
+                if (!existing.equals(p.getValue())) {
+                    this.annotations.put(p.getKey(), existing + "," + p.getValue());
+                }
+            } else {
+                this.annotations.put(p.getKey(), p.getValue());
+            }
+        }
+
+        this.annotations.putAll(other.annotations);
         other.children.values().forEach(child -> {
             MetricsUtil thisChild = this.children.get(child.getId());
             if (thisChild == null) {
@@ -112,6 +127,20 @@ public class MetricsUtil implements Metrics, Serializable, Cloneable {
     @Override
     public MetricsUtil getChild(String metricsId) {
         return children.get(metricsId);
+    }
+
+    @Override
+    public String getAnnotation(final String key) {
+        return annotations.get(key);
+    }
+
+    /**
+     * Set an annotation value. Duplicates will be overwritten.
+     * @param key
+     * @param value
+     */
+    public void setAnnotation(String key, String value) {
+        annotations.put(key, value);
     }
 
     public void setPercentDuration(final double percentDuration) {
