@@ -130,8 +130,8 @@ public class MetricsUtil implements Metrics, Serializable, Cloneable {
     }
 
     @Override
-    public String getAnnotation(final String key) {
-        return annotations.get(key);
+    public Map<String, String> getAnnotations() {
+        return annotations;
     }
 
     /**

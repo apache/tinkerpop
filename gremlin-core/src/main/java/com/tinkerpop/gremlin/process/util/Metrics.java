@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.util;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -20,5 +21,10 @@ public interface Metrics {
 
     MetricsUtil getChild(String metricsId);
 
-    public String getAnnotation(String key);
+    /**
+     * Obtain the annotations for this Metrics.
+     *
+     * @return the annotations for this Metrics. Modifications to the returned object are persisted in the original.
+     */
+    public Map<String, String> getAnnotations();
 }
