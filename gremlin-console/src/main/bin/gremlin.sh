@@ -66,7 +66,7 @@ while getopts "elpv" opt; do
        ;;
     p) PROFILING_ENABLED=true
        ;;
-    v) MAIN_CLASS=com.tinkerpop.gremlin.Version
+    v) MAIN_CLASS=com.tinkerpop.gremlin.util.Gremlin
     esac
 done
 
