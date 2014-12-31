@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
@@ -95,6 +97,28 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldHaveSameHashCode() {
         assertEquals(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true).hashCode(), DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true).hashCode());
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldAttachToGraph() {
+        final Vertex toDetach = g.V(convertToVertexId("josh")).next();
+        final DetachedVertex detachedVertex = DetachedFactory.detach(toDetach, true);
+        final Vertex attached = detachedVertex.attach(g);
+
+        assertEquals(toDetach, attached);
+        assertEquals(toDetach.getClass(), attached.getClass());
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldAttachToVertex() {
+        final Vertex toDetach = g.V(convertToVertexId("josh")).next();
+        final DetachedVertex detachedVertex = DetachedFactory.detach(toDetach, true);
+        final Vertex attached = detachedVertex.attach(toDetach);
+
+        assertEquals(toDetach, attached);
+        assertEquals(toDetach.getClass(), attached.getClass());
     }
 
     @Test
