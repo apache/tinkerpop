@@ -108,4 +108,27 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
         });
     }
 
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldAttachToGraph() {
+        final Vertex v = g.addVertex();
+        final VertexProperty toDetach = v.property("test", "this");
+        final DetachedVertexProperty detached = DetachedFactory.detach(toDetach, true);
+        final VertexProperty attached = detached.attach(g);
+
+        assertEquals(toDetach, attached);
+        assertEquals(toDetach.getClass(), attached.getClass());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldAttachToVertex() {
+        final Vertex v = g.addVertex();
+        final VertexProperty toDetach = v.property("test", "this");
+        final DetachedVertexProperty detached = DetachedFactory.detach(toDetach, true);
+        final VertexProperty attached = detached.attach(v);
+
+        assertEquals(toDetach, attached);
+        assertEquals(toDetach.getClass(), attached.getClass());
+    }
 }

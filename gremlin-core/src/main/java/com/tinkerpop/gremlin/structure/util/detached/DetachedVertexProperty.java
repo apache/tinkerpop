@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -87,10 +88,9 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
     @Override
     public VertexProperty<V> attach(final Vertex hostVertex) {
-        return StreamFactory.<VertexProperty<V>>stream(hostVertex.iterators().propertyIterator(this.label))
-                .filter(vertexProperty -> ElementHelper.areEqual(this, vertexProperty))
-                .findAny()
-                .orElseThrow(() -> new IllegalStateException("The detached vertex property could not be be found at the provided vertex: " + this));
+        final Iterator<VertexProperty<V>> vertexPropertyIterator = IteratorUtils.filter(hostVertex.iterators().propertyIterator(this.label), vp -> ElementHelper.areEqual(this, vp));
+        if (!vertexPropertyIterator.hasNext()) throw new IllegalStateException("The detached vertex property could not be be found at the provided vertex: " + this);
+        return vertexPropertyIterator.next();
     }
 
     @Override
