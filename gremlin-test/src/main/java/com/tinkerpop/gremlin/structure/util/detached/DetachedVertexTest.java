@@ -109,7 +109,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         final Vertex attached = detachedVertex.attach(g);
 
         assertEquals(toDetach, attached);
-        assertEquals(toDetach.getClass(), attached.getClass());
+        assertFalse(attached instanceof DetachedVertex);
     }
 
     @Test
@@ -120,7 +120,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         final Vertex attached = detachedVertex.attach(toDetach);
 
         assertEquals(toDetach, attached);
-        assertEquals(toDetach.getClass(), attached.getClass());
+        assertFalse(attached instanceof DetachedVertex);
     }
 
     @Test

@@ -95,7 +95,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         final Edge attached = detachedEdge.attach(g);
 
         assertEquals(toDetach, attached);
-        assertEquals(toDetach.getClass(), attached.getClass());
+        assertFalse(attached instanceof DetachedEdge);
     }
 
     @Test
@@ -107,7 +107,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         final Edge attached = detachedEdge.attach(outV);
 
         assertEquals(toDetach, attached);
-        assertEquals(toDetach.getClass(), attached.getClass());
+        assertFalse(attached instanceof DetachedEdge);
     }
 
     @Test

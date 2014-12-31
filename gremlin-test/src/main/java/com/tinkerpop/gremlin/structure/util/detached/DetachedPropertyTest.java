@@ -60,7 +60,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
         final Property attached = detachedProperty.attach(g);
 
         assertEquals(toDetach, attached);
-        assertEquals(toDetach.getClass(), attached.getClass());
+        assertFalse(attached instanceof DetachedProperty);
     }
 
     @Test
@@ -72,7 +72,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
         final Property attached = detachedProperty.attach(e.iterators().vertexIterator(Direction.OUT).next());
 
         assertEquals(toDetach, attached);
-        assertEquals(toDetach.getClass(), attached.getClass());
+        assertFalse(attached instanceof DetachedProperty);
     }
 
     @Test
