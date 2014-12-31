@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -60,8 +61,7 @@ class GraphSONVertex {
             m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
 
-            final Object properties = StreamFactory.stream(vertex.iterators().propertyIterator())
-                    .collect(Collectors.groupingBy(vp -> vp.key()));
+            final Object properties = IteratorUtils.groupBy(vertex.iterators().propertyIterator(), Property::key);
             m.put(GraphSONTokens.PROPERTIES, properties);
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
