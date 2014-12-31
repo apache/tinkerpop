@@ -39,6 +39,7 @@ public class GraphReadPerformanceTest {
         public TestRule benchmarkRun = new BenchmarkRule();
 
         private Set<Object> ids = new HashSet<>();
+        private int edgeCount = 0;
 
         @Override
         protected void afterLoadGraphWith(final Graph g) throws Exception {
@@ -57,23 +58,41 @@ public class GraphReadPerformanceTest {
                     .seedGenerator(r::nextLong)
                     .outDistribution(outDist)
                     .inDistribution(inDist)
+                    .edgeProcessor(e -> e.property("weight", r.nextDouble()))
                     .expectedNumEdges(numVertices * 3).create();
-            generator.generate();
+            edgeCount = generator.generate();
         }
 
         @Test
         @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 0, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
-        public void readAllProperties() throws Exception {
+        public void readAllVerticesAndProperties() throws Exception {
             final AtomicInteger counter = new AtomicInteger(0);
 
             // read the vertices 10 times over
             for (int ix = 0; ix < 10; ix++) {
-                g.iterators().vertexIterator(ids).forEachRemaining(vertex -> {
+                g.iterators().vertexIterator().forEachRemaining(vertex -> {
                     assertNotNull(vertex.value("name"));
                     counter.incrementAndGet();
                 });
 
                 assertEquals(10000, counter.get());
+                counter.set(0);
+            }
+        }
+
+        @Test
+        @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 0, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
+        public void readAllEdgesAndProperties() throws Exception {
+            final AtomicInteger counter = new AtomicInteger(0);
+
+            // read the vertices 10 times over
+            for (int ix = 0; ix < 10; ix++) {
+                g.iterators().edgeIterator().forEachRemaining(edge -> {
+                    assertNotNull(edge.value("weight"));
+                    counter.incrementAndGet();
+                });
+
+                assertEquals(edgeCount, counter.get());
                 counter.set(0);
             }
         }
