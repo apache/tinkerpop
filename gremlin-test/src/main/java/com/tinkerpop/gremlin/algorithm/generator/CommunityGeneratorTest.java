@@ -156,7 +156,7 @@ public class CommunityGeneratorTest {
                     localCrossPcent = localCrossPcent - 0.005d;
                     generated = localCrossPcent < 0d;
 
-                    graph.V().remove();
+                    graph.iterators().vertexIterator().forEachRemaining(Vertex::remove);
                     tryCommit(graph);
                     afterLoadGraphWith(graph);
 

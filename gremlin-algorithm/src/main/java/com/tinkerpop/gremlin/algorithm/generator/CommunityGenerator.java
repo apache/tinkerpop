@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.algorithm.generator;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -154,7 +155,7 @@ public class CommunityGenerator extends AbstractGenerator {
         private Builder(final Graph g) {
             super(Builder.class);
             this.g = g;
-            final List<Vertex> allVertices = g.V().toList();
+            final List<Vertex> allVertices = IteratorUtils.list(g.iterators().vertexIterator());
             this.vertices = allVertices;
             this.expectedNumEdges = allVertices.size() * 2;
         }
