@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
@@ -14,7 +15,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -49,6 +49,30 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldBeEqualProperties() {
        assertTrue(DetachedFactory.detach(g.E(convertToEdgeId("josh", "created", "lop")).next().property("weight")).equals(DetachedFactory.detach(g.E(convertToEdgeId("josh", "created", "lop")).next().property("weight"))));
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldAttachToGraph() {
+        final Edge e = g.E(convertToEdgeId("josh", "created", "lop")).next();
+        final Property toDetach = e.iterators().propertyIterator("weight").next();
+        final DetachedProperty detachedProperty = DetachedFactory.detach(toDetach);
+        final Property attached = detachedProperty.attach(g);
+
+        assertEquals(toDetach, attached);
+        assertEquals(toDetach.getClass(), attached.getClass());
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldAttachToVertex() {
+        final Edge e = g.E(convertToEdgeId("josh", "created", "lop")).next();
+        final Property toDetach = e.iterators().propertyIterator("weight").next();
+        final DetachedProperty detachedProperty = DetachedFactory.detach(toDetach);
+        final Property attached = detachedProperty.attach(e.iterators().vertexIterator(Direction.OUT).next());
+
+        assertEquals(toDetach, attached);
+        assertEquals(toDetach.getClass(), attached.getClass());
     }
 
     @Test

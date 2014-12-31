@@ -78,9 +78,9 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
     @Override
     public Property<V> attach(final Vertex hostVertex) {
-        final Element hostElement = (Element) this.element.attach(hostVertex);
-        final Property<V> property = hostElement.property(this.key);
-        if (property.isPresent()) // && property.value().equals(this.value))
+        final Element element = (Element) this.element.attach(hostVertex);
+        final Property<V> property = element.property(this.key);
+        if (property.isPresent())
             return property;
         else
             throw new IllegalStateException("The detached property could not be be found at the provided vertex: " + this);
@@ -90,7 +90,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     public Property<V> attach(final Graph hostGraph) {
         final Element hostElement = (Element) this.element.attach(hostGraph);
         final Property<V> property = hostElement.property(this.key);
-        if (property.isPresent()) // && property.value().equals(this.value))
+        if (property.isPresent())
             return property;
         else
             throw new IllegalStateException("The detached property could not be be found at the provided vertex: " + this);
