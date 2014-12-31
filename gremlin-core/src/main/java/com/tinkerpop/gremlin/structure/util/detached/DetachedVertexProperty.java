@@ -30,7 +30,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
         this.value = vertexProperty.value();
         this.vertex = DetachedFactory.detach(vertexProperty.element(), false);
 
-        if (withProperties) { // & vertexProperty.graph().features().vertex().supportsMetaProperties()) {
+        if (withProperties && vertexProperty.graph().features().vertex().supportsMetaProperties()) {
             this.properties = new HashMap<>();
             vertexProperty.iterators().propertyIterator().forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
         }
