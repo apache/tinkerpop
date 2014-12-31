@@ -86,6 +86,29 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(GraphData.MODERN)
+    public void shouldAttachToGraph() {
+        final Edge toDetach = g.E(convertToEdgeId("josh", "created", "lop")).next();
+        final DetachedEdge detachedEdge = DetachedFactory.detach(toDetach, true);
+        final Edge attached = detachedEdge.attach(g);
+
+        assertEquals(toDetach, attached);
+        assertEquals(toDetach.getClass(), attached.getClass());
+    }
+
+    @Test
+    @LoadGraphWith(GraphData.MODERN)
+    public void shouldAttachToVertex() {
+        final Edge toDetach = g.E(convertToEdgeId("josh", "created", "lop")).next();
+        final Vertex outV = toDetach.iterators().vertexIterator(Direction.OUT).next();
+        final DetachedEdge detachedEdge = DetachedFactory.detach(toDetach, true);
+        final Edge attached = detachedEdge.attach(outV);
+
+        assertEquals(toDetach, attached);
+        assertEquals(toDetach.getClass(), attached.getClass());
+    }
+
+    @Test
+    @LoadGraphWith(GraphData.MODERN)
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldNotEvaluateToEqualDifferentId() {
