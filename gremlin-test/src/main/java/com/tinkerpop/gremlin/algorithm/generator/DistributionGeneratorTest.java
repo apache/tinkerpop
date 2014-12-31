@@ -50,7 +50,7 @@ public class DistributionGeneratorTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldGenerateRandomGraph() throws Exception {
+        public void shouldGenerateDifferentGraph() throws Exception {
             int executions = 0;
             boolean same = true;
 
@@ -65,11 +65,11 @@ public class DistributionGeneratorTest {
 
                 try {
                     afterLoadGraphWith(g1);
-                    final DistributionGenerator generator = makeGenerator(g1).create();
+                    final DistributionGenerator generator = makeGenerator(g1).seedGenerator(() -> 123456789l).create();
                     distributionGeneratorTest(g1, generator);
 
                     afterLoadGraphWith(g2);
-                    final DistributionGenerator generator1 = makeGenerator(g2).create();
+                    final DistributionGenerator generator1 = makeGenerator(g2).seedGenerator(() -> 987654321l).create();
                     distributionGeneratorTest(g2, generator1);
 
                     same = same(g1, g2);

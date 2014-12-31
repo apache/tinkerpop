@@ -63,15 +63,15 @@ public class CommunityGeneratorTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldGenerateRandomGraph() throws Exception {
+        public void shouldGenerateDifferentGraph() throws Exception {
             final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName());
             final Graph g1 = graphProvider.openTestGraph(configuration);
 
             try {
-                communityGeneratorTest(g, null);
+                communityGeneratorTest(g, () -> 123456789l);
 
                 afterLoadGraphWith(g1);
-                communityGeneratorTest(g1, null);
+                communityGeneratorTest(g1, () -> 987654321l);
 
                 assertTrue(g.E().count().next() > 0);
                 assertTrue(g.V().count().next() > 0);
