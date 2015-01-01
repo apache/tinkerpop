@@ -31,6 +31,14 @@ public interface TraversalStrategies {
      */
     public TraverserGenerator getTraverserGenerator(final Traversal traversal);
 
+    /**
+     * Sorts the list of provided strategies such that the {@link com.tinkerpop.gremlin.process.TraversalStrategy#applyPost()}
+     * and {@link TraversalStrategy#applyPrior()} dependencies are respected.
+     *
+     * Note, that the order may not be unique.
+     *
+     * @param strategies
+     */
     public static void sortStrategies(final List<? extends TraversalStrategy> strategies) {
         final Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> dependencyMap = new HashMap<>();
         final Set<Class<? extends TraversalStrategy>> strategyClass = new HashSet<>(strategies.size());
@@ -52,8 +60,8 @@ public interface TraversalStrategies {
             updated = false;
             for (final Class<? extends TraversalStrategy> sc : strategyClass) {
                 List<Class<? extends TraversalStrategy>> toAdd = null;
-                for (Class<? extends TraversalStrategy> before : dependencyMap.get(sc)) {
-                    final Set<Class<? extends TraversalStrategy>> beforeDep = dependencyMap.get(before);
+                for (Class<? extends TraversalStrategy> before : MultiMap.get(dependencyMap,sc)) {
+                    final Set<Class<? extends TraversalStrategy>> beforeDep = MultiMap.get(dependencyMap,before);
                     if (!beforeDep.isEmpty()) {
                         if (toAdd == null) toAdd = new ArrayList<>(beforeDep.size());
                         toAdd.addAll(beforeDep);

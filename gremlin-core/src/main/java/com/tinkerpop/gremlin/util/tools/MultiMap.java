@@ -1,11 +1,10 @@
 package com.tinkerpop.gremlin.util.tools;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
+ * A number of static methods to interact with a multi map, i.e. a map that maps keys to sets of values.
+ *
  * @author Matthias Broecheler (me@matthiasb.com)
  */
 public class MultiMap {
@@ -23,6 +22,12 @@ public class MultiMap {
         Set<V> set = map.get(key);
         if (set==null) return false;
         return set.contains(value);
+    }
+
+    public static<K,V> Set<V> get(Map<K,Set<V>> map, K key) {
+        Set<V> set = getMapSet(map,key);
+        if (set==null) set = Collections.EMPTY_SET;
+        return set;
     }
 
     private static<K,V> Set<V> getMapSet(Map<K,Set<V>> map, K key) {
