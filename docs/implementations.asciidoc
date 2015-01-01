@@ -412,7 +412,7 @@ The runtimes for a vertex lookup by property is provided below for both no-index
 [source,groovy]
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> g.loadGraphML('data/grateful-dead.xml')
+gremlin> g.io().readGraphML('data/grateful-dead.xml')
 ==>null
 gremlin> clock(1000){g.V().has('name','Garcia').next()}
 ==>0.11787599999999974  <1>
@@ -420,7 +420,7 @@ gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
 gremlin> g.createIndex('name',Vertex.class)
 ==>null
-gremlin> g.loadGraphML('data/grateful-dead.xml')
+gremlin> g.io().readGraphML('data/grateful-dead.xml')
 ==>null
 gremlin> clock(1000){g.V().has('name','Garcia').next()}
 ==>0.03508100000000018 <2>
@@ -511,7 +511,7 @@ gremlin> g.getBaseGraph().schema().indexFor(DynamicLabel.label('artist')).on('na
 ==>IndexDefinition[label:artist, on:name]
 gremlin> g.tx().commit()
 ==>null
-gremlin> g.loadGraphML('data/grateful-dead.xml')
+gremlin> g.io().readGraphML('data/grateful-dead.xml')
 ==>null
 gremlin> clock(1000){g.V().has(label,'artist').has('name','Garcia').next()}  <2>
 ==>0.0585639999999997

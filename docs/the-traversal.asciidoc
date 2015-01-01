@@ -44,7 +44,8 @@ The `Traverser<S>` object provides access to:
 . The number of objects represented by this traverser -- `Traverser.bulk()`.
 . The local sideEffect data structure associated with this traverser -- `Traverser.sack()`.
 . The side-effects associated with the traversal -- `Traverser.sideEffects()`.
-. A helper shorthand to get a particular side-effect -- `Traverser.get(String) == Traverser.sideEffects().get(String)`.
+. A helper shorthand to get a particular side-effect -- `Traverser.sideEffect(String) == Traverser.sideEffects().get(String)`.
+. A helper shorthand to get a particular path-history object -- `Traverser.path(String) == Traverser.path().get(String)`.
 
 IMPORTANT: If a specific traversal step can do the necessary step-computation, use it. Lambda steps can not be optimized by the Gremlin <<traversalstrategy,traversal strategies>> and should only be used when the requisite computation does not have a corresponding standard Gremlin step. For example, instead of `filter{it.get().property('name').isPresent()}` use `has('name')`.
 
@@ -54,7 +55,7 @@ gremlin> g.V(1).as('a').out() <1>
 ==>v[3]
 ==>v[2]
 ==>v[4]
-gremlin> g.V(1).as('a').out().map{it.get('a')} <2>
+gremlin> g.V(1).as('a').out().map{it.path('a')} <2>
 ==>v[1]
 ==>v[1]
 ==>v[1]
@@ -606,7 +607,7 @@ MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPAR
 [source,groovy]
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> g.loadGraphML('data/grateful-dead.xml')
+gremlin> g.io().readGraphML('data/grateful-dead.xml')
 ==>null
 gremlin> g.V().match('a',
             g.of().as('a').has('name', 'Garcia'),
@@ -947,7 +948,7 @@ gremlin> g.V().as('a').both().jump('a',1000000).range(6,10)
 Retain Step
 ~~~~~~~~~~~
 
-The `retain()`-step (*filter*) can be used to filter objects from the traversal stream that don't match the provided criteria. If `retain()` is provided a string, the retaining object is retrieved via `traverser.sideEffects().get(label)`. If `retain()` is provided a collection, then any object not contained in that collection is filtered out. Please see the related <<except-step,`except()`>>-step.
+The `retain()`-step (*filter*) can be used to filter objects from the traversal stream that don't match the provided criteria. If `retain()` is provided a string, the retaining object is retrieved via `traverser.path().get(label)`. If `retain()` is provided a collection, then any object not contained in that collection is filtered out. Please see the related <<except-step,`except()`>>-step.
 
 [source,groovy]
 gremlin> g.V(1).as('x').out('created').in('created')

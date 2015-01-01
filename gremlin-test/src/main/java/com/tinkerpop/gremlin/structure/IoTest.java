@@ -240,14 +240,12 @@ public class IoTest extends AbstractGremlinTest {
         final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
         g.addVertex(T.id, new CustomId("vertex", id));
 
-        // todo: already registered a SimpleModule here......what do vendors do who already define one?
-
         final SimpleModule module = new SimpleModule();
         module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
         module.addDeserializer(CustomId.class, new CustomId.CustomIdJacksonDeserializer());
-        final GraphWriter writer = GraphSONWriter.build()
-                .embedTypes(true)
-                .customModule(module).create();
+        final GraphWriter writer = g.io().graphSONWriter()
+                .addCustomModule(module)
+                .embedTypes(true).create();
 
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             writer.writeGraph(baos, g);
@@ -267,9 +265,9 @@ public class IoTest extends AbstractGremlinTest {
             final Graph g2 = graphProvider.openTestGraph(configuration);
 
             try (final InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
-                final GraphReader reader = GraphSONReader.build()
+                final GraphReader reader = g.io().graphSONReader()
                         .embedTypes(true)
-                        .customModule(module).create();
+                        .addCustomModule(module).create();
                 reader.readGraph(is, g2);
             }
 

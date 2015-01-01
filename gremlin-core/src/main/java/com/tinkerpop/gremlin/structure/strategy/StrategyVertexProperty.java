@@ -18,7 +18,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StrategyVertexProperty<V> extends StrategyElement implements VertexProperty<V>, StrategyWrapped, WrappedVertexProperty<VertexProperty<V>>, VertexProperty.Iterators {
+public class StrategyVertexProperty<V> extends StrategyElement implements VertexProperty<V>, StrategyWrapped, WrappedVertexProperty<VertexProperty<V>>, VertexProperty.Iterators {
 
     private final StrategyContext<StrategyVertexProperty<V>> strategyContext;
 

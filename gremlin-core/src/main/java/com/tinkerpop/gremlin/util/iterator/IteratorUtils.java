@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -64,11 +65,29 @@ public class IteratorUtils {
     }
 
     public static <S> List<S> list(final Iterator<S> iterator) {
-        final List<S> list = new ArrayList<>();
+        return fill(iterator, new ArrayList<>());
+    }
+
+    public static <K,S> Map<K,S> collectMap(final Iterator<S> iterator, final Function<S, K> key) {
+        return collectMap(iterator, key, Function.identity());
+    }
+
+    public static <K,S,V> Map<K,V> collectMap(final Iterator<S> iterator, final Function<S, K> key, final Function<S, V> value) {
+        final Map<K,V> map = new HashMap<>();
         while (iterator.hasNext()) {
-            list.add(iterator.next());
+            final S obj = iterator.next();
+            map.put(key.apply(obj), value.apply(obj));
         }
-        return list;
+        return map;
+    }
+
+    public static <K,S> Map<K,List<S>> groupBy(final Iterator<S> iterator, final Function<S,K> groupBy) {
+        final Map<K,List<S>> map = new HashMap<>();
+        while (iterator.hasNext()) {
+            final S obj = iterator.next();
+            map.computeIfAbsent(groupBy.apply(obj), k -> new ArrayList<>()).add(obj);
+        }
+        return map;
     }
 
     ///////////////

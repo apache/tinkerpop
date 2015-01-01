@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * An extension to the standard Jackson {@code ObjectMapper} which automatically registers the standard
  * {@link GraphSONModule} for serializing {@link com.tinkerpop.gremlin.structure.Graph} elements.  This class
@@ -15,7 +18,7 @@ import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
  */
 public class GraphSONObjectMapper extends ObjectMapper {
 
-    private GraphSONObjectMapper(final SimpleModule custom, final boolean loadCustomSerializers,
+    private GraphSONObjectMapper(final List<SimpleModule> customModules, final boolean loadCustomSerializers,
                                  final boolean normalize, final boolean embedTypes) {
         disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
@@ -31,7 +34,7 @@ public class GraphSONObjectMapper extends ObjectMapper {
         setSerializerProvider(provider);
 
         registerModule(new GraphSONModule(normalize));
-        if (custom != null) this.registerModule(custom);
+        customModules.forEach(this::registerModule);
 
         // plugin external serialization modules
         if (loadCustomSerializers)
@@ -46,7 +49,7 @@ public class GraphSONObjectMapper extends ObjectMapper {
     }
 
     public static class Builder {
-        private SimpleModule custom = null;
+        private List<SimpleModule> customModules = new ArrayList<>();
         private boolean loadCustomModules = false;
         private boolean normalize = false;
         private boolean embedTypes = false;
@@ -57,14 +60,14 @@ public class GraphSONObjectMapper extends ObjectMapper {
         /**
          * Supply a custom module for serialization/deserialization.
          */
-        public Builder customModule(final SimpleModule custom) {
-            this.custom = custom;
+        public Builder addCustomModule(final SimpleModule custom) {
+            this.customModules.add(custom);
             return this;
         }
 
         /**
          * Try to load {@code SimpleModule} instances from the current classpath.  These are loaded in addition to
-         * the one supplied to the {@link #customModule(com.fasterxml.jackson.databind.module.SimpleModule)};
+         * the one supplied to the {@link #addCustomModule(com.fasterxml.jackson.databind.module.SimpleModule)};
          */
         public Builder loadCustomModules(final boolean loadCustomModules) {
             this.loadCustomModules = loadCustomModules;
@@ -88,7 +91,7 @@ public class GraphSONObjectMapper extends ObjectMapper {
         }
 
         public GraphSONObjectMapper create() {
-            return new GraphSONObjectMapper(custom, loadCustomModules, normalize, embedTypes);
+            return new GraphSONObjectMapper(customModules, loadCustomModules, normalize, embedTypes);
         }
     }
 }

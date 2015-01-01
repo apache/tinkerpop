@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;

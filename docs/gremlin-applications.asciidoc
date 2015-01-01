@@ -2,6 +2,44 @@
 Gremlin Applications
 ====================
 
+Gremlin applications represent tools that are built on top of the core APIs to help expose common functionality to users when working with graphs.  There are two key applications:
+
+. Gremlin Console - A link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL] environment for interactive development and analysis
+. Gremlin Server - A server that hosts script engines thus enabling remote Gremlin execution
+
+Gremlin is designed to be extensible, making it possible for users and vendors to customize it to their needs.  Such extensibility is also found in the Gremlin Console and Server, where a universal plugin system makes it possible to extend their capabilities.  One of the important aspects of the plugin system is the ability to help the user install the plugins through the command line thus automating the process of gathering dependencies and other error prone activities.
+
+The process of plugin installation is handled by link:http://groovy.codehaus.org/Grape[Grape], which helps resolve dependencies into the classpath.  It is therefore important to ensure that Grape is properly configured in order to use the automated capabilities of plugin installation.  Grape is configured by `~/.groovy/grapeConfig.xml` and generally speaking, if that file is not present, the default settings will suffice.  However, they will not suffice if a required dependency is not in one of the default configured repositories. Please see the link:http://groovy.codehaus.org/Grape[Custom Ivy Settings] section of the Grape documentation for more details on the defaults.  TinkerPop recommends the following configuration in that file:
+
+[source,xml]
+<ivysettings>
+  <settings defaultResolver="downloadGrapes"/>
+  <resolvers>
+    <chain name="downloadGrapes">
+      <filesystem name="cachedGrapes">
+        <ivy pattern="${user.home}/.groovy/grapes/[organisation]/[module]/ivy-[revision].xml"/>
+        <artifact pattern="${user.home}/.groovy/grapes/[organisation]/[module]/[type]s/[artifact]-[revision].[ext]"/>
+      </filesystem>
+      <ibiblio name="codehaus" root="http://repository.codehaus.org/" m2compatible="true"/>
+      <ibiblio name="central" root="http://central.maven.org/maven2/" m2compatible="true"/>
+      <ibiblio name="java.net2" root="http://download.java.net/maven/2/" m2compatible="true"/>
+      <ibiblio name="hyracs-releases" root="http://obelix.ics.uci.edu/nexus/content/groups/hyracks-public-releases/" m2compatible="true"/>
+    </chain>
+  </resolvers>
+</ivysettings>
+
+Note that if the intention is to work with TinkerPop snapshots then the file should also include:
+
+[source,xml]
+<ibiblio name="sonatype-snapshots" root="https://oss.sonatype.org/content/repositories/snapshots/" m2compatible="true"/>
+
+Additionally, the Graph configuration can also be modified to include the local system's Maven `.m2` directory by including:
+
+[source,xml]
+<ibiblio name="local" root="file:${user.home}/.m2/repository/" m2compatible="true"/>
+
+CAUTION: If building TinkerPop from source, be sure to clear TinkerPop-related jars from the `~/.groovy/grapes` directory as they can become stale on some systems and not re-import properly from the local `.m2` after fresh rebuilds.
+
 [[gremlin-console]]
 Gremlin Console
 ---------------
@@ -524,7 +562,7 @@ In this case the `ResponseMessage` returned to the client would look something l
 
 [source,js]
 ----
-{"result":{"data":[{"id":2,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"vadas","age":27}}],
+{"result":{"data":[{"id":2,"label":"vertex","type":"vertex","properties":{"name":"vadas","age":27}}],
            "meta":{}},
  "requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1",
  "status":{"code":200,"attributes":{},"message":""}}

@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
@@ -514,6 +515,13 @@ public class TinkerGraphTest {
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/io/kryo/grateful-dead.gio")) {
             reader.readGraph(stream, g);
         }
+
+        /* keep this hanging around because changes to kryo format will need grateful dead generated from json so you can generate the gio
+        final GraphReader reader = GraphSONReader.build().embedTypes(true).create();
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/io/graphson/grateful-dead.json")) {
+            reader.readGraph(stream, g);
+        }
+        */
 
         final Graph ng = TinkerGraph.open();
         g.V().sideEffect(ov -> {

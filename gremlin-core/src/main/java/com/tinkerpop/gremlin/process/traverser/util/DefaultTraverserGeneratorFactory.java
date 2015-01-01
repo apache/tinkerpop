@@ -1,10 +1,10 @@
-package com.tinkerpop.gremlin.process.traversers.util;
+package com.tinkerpop.gremlin.process.traverser.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
-import com.tinkerpop.gremlin.process.traversers.PathTraverserGenerator;
-import com.tinkerpop.gremlin.process.traversers.SimpleTraverserGenerator;
-import com.tinkerpop.gremlin.process.traversers.TraverserGeneratorFactory;
+import com.tinkerpop.gremlin.process.traverser.PathTraverserGenerator;
+import com.tinkerpop.gremlin.process.traverser.SimpleTraverserGenerator;
+import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**

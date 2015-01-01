@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -108,7 +109,13 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     }
 
     public static String generateTempFile(final Class resourceClass, final String fileName) throws IOException {
-        final File temp = File.createTempFile(fileName, ".tmp");
+        // todo: clean up - can this be merged with the AbstractGraphProvider.computeTestDataRoot
+        final String clsUri = HadoopGraphProvider.class.getName().replace('.', '/') + ".class";
+        final URL url = HadoopGraphProvider.class.getClassLoader().getResource(clsUri);
+        final String clsPath = url.getPath();
+        final File root = new File(clsPath.substring(0, clsPath.length() - clsUri.length()));
+
+        final File temp = new File(root.getParentFile(), fileName + ".tmp");
         final FileOutputStream outputStream = new FileOutputStream(temp);
         int data;
         final InputStream inputStream = resourceClass.getResourceAsStream(fileName);

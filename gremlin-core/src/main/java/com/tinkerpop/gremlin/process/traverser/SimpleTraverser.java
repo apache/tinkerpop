@@ -1,9 +1,11 @@
-package com.tinkerpop.gremlin.process.traversers;
+package com.tinkerpop.gremlin.process.traverser;
 
 
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.util.SparsePath;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -11,14 +13,14 @@ import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
-
-    private static final String PATH_ERROR_MESSAGE = "Path tracking is not supported by this Traverser: " + SimpleTraverser.class;
 
     protected T t;
     protected Object sack = null;
@@ -30,10 +32,11 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     protected SimpleTraverser() {
     }
 
-    public SimpleTraverser(final T t, final Traversal.SideEffects sideEffects) {
+    public SimpleTraverser(final T t, final Step<T, ?> step) {
         this.t = t;
-        this.sideEffects = sideEffects;
+        this.sideEffects = step.getTraversal().sideEffects();
         this.sideEffects.getSackInitialValue().ifPresent(supplier -> this.sack = supplier.get());
+        getOrCreateFromCache(this.sideEffects).extend(step.getLabel(), t);
     }
 
     @Override
@@ -49,26 +52,11 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     ////////
 
     @Override
-    public boolean hasPath() {
-        return false;
-    }
-
-    @Override
     public Path path() {
-        throw new IllegalStateException(PATH_ERROR_MESSAGE);
-    }
-
-    @Override
-    public void setPath(final Path path) {
-        throw new IllegalStateException(PATH_ERROR_MESSAGE);
+        return getOrCreateFromCache(this.sideEffects);
     }
 
     ////////
-
-    @Override
-    public boolean hasSack() {
-        return null != this.sack;
-    }
 
     @Override
     public <S> S sack() {
@@ -139,6 +127,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         traverser.loops = this.loops;
         traverser.bulk = this.bulk;
         traverser.sack = null == this.sack ? null : this.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(this.sack);
+        traverser.path().extend(label, r);
         return traverser;
     }
 
@@ -200,4 +189,18 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         // you do not want to attach a path because it will reference graph objects not at the current vertex
         return this;
     }
+
+    //////////////////////
+
+    private static final Map<Traversal.SideEffects, Path> PATH_CACHE = new WeakHashMap<>();
+
+    private static Path getOrCreateFromCache(final Traversal.SideEffects sideEffects) {
+        Path path = PATH_CACHE.get(sideEffects);
+        if (null == path) {
+            path = SparsePath.make();
+            PATH_CACHE.put(sideEffects, path);
+        }
+        return path;
+    }
+
 }

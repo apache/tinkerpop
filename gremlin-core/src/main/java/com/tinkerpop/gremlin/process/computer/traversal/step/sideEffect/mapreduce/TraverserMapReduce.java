@@ -1,15 +1,14 @@
 package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
-import com.tinkerpop.gremlin.process.traversers.SimpleTraverser;
-import com.tinkerpop.gremlin.process.util.DefaultTraversalSideEffects;
+import com.tinkerpop.gremlin.process.traverser.SimpleTraverser;
+import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -31,7 +30,6 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
 
     public static final String TRAVERSERS = Graph.Hidden.hide("traversers");
 
-    private static final Traversal.SideEffects EMPTY_SIDE_EFFECTS = new DefaultTraversalSideEffects();
     private Optional<Comparator<Comparable>> comparator = Optional.empty();
     private Optional<Pair<Supplier, BiFunction>> reducer = Optional.empty();
 
@@ -70,7 +68,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
         while (values.hasNext()) {
             mutatingSeed = function.apply(mutatingSeed, values.next());
         }
-        emitter.emit(key, new SimpleTraverser(mutatingSeed, EMPTY_SIDE_EFFECTS));
+        emitter.emit(key, new SimpleTraverser(mutatingSeed, EmptyStep.instance()));
     }
 
     @Override

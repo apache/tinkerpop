@@ -19,7 +19,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StrategyVertex extends StrategyElement implements Vertex, StrategyWrapped, WrappedVertex<Vertex>, Vertex.Iterators {
+public class StrategyVertex extends StrategyElement implements Vertex, StrategyWrapped, WrappedVertex<Vertex>, Vertex.Iterators {
 
     private final StrategyContext<StrategyVertex> strategyContext;
 

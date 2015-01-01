@@ -47,7 +47,7 @@ goto :eof
 :version
 
 set CLASSPATH=%CP%;%OLD_CLASSPATH%
-java %JAVA_OPTIONS% %JAVA_ARGS% com.tinkerpop.gremlin.Version
+java %JAVA_OPTIONS% %JAVA_ARGS% com.tinkerpop.gremlin.util.Gremlin
 
 set CLASSPATH=%OLD_CLASSPATH%
 goto :eof

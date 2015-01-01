@@ -15,7 +15,7 @@ public class JsonMessageSerializerGremlinV1d0 extends AbstractJsonMessageSeriali
     private static final String MIME_TYPE = SerTokens.MIME_JSON_V1D0;
 
     private static final ObjectMapper mapper = GraphSONObjectMapper.build()
-            .customModule(new JsonMessageSerializerV1d0.GremlinServerModule())
+            .addCustomModule(new JsonMessageSerializerV1d0.GremlinServerModule())
             .embedTypes(true)
             .create();
 

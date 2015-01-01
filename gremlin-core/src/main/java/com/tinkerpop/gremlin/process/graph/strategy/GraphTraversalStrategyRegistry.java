@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.traversers.TraverserGeneratorFactory;
-import com.tinkerpop.gremlin.process.traversers.util.DefaultTraverserGeneratorFactory;
+import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
+import com.tinkerpop.gremlin.process.traverser.util.DefaultTraverserGeneratorFactory;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.hadoop.structure.io.script;
 import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.util.ScriptEngineCache;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;

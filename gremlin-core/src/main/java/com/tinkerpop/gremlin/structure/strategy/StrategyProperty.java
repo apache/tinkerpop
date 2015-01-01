@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class StrategyProperty<V> implements Property<V>, StrategyWrapped, WrappedProperty<Property<V>> {
+public class StrategyProperty<V> implements Property<V>, StrategyWrapped, WrappedProperty<Property<V>> {
 
     private final Property<V> baseProperty;
     private final StrategyContext<StrategyProperty<V>> strategyContext;
