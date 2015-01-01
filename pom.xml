@@ -82,7 +82,6 @@
         <log4j.properties.dir>${project.basedir}/../gremlin-server/config/</log4j.properties.dir>
         <log4j.properties>log4j-server.properties</log4j.properties>
         <metrics.version>3.0.2</metrics.version>
-        <guava.version>15.0</guava.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipIntegrationTests>true</skipIntegrationTests>

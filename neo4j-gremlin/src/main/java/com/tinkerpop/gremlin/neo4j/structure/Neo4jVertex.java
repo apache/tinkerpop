@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
-import com.google.common.collect.ImmutableSet;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jVertexTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.util.Neo4jGraphTraversal;
@@ -25,6 +24,8 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -193,7 +194,13 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     /////////////// Neo4jVertex Specific Methods for Multi-Label Support ///////////////
     public Set<String> labels() {
         this.graph.tx().readWrite();
-        return ImmutableSet.<String>builder().addAll(IteratorUtils.map(this.getBaseVertex().getLabels().iterator(), Label::name)).build();
+        // TODO: make an immutable set
+        final Set<String> set = new HashSet<>();
+        final Iterator<String> itty = IteratorUtils.map(this.getBaseVertex().getLabels().iterator(), Label::name);
+        while (itty.hasNext()) {
+            set.add(itty.next());
+        }
+        return Collections.unmodifiableSet(set);
     }
 
     public void addLabel(final String label) {

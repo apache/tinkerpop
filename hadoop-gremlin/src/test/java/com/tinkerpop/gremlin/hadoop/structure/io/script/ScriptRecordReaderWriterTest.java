@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.hadoop.structure.io.script;
 
-import com.google.common.collect.Sets;
 import com.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import com.tinkerpop.gremlin.structure.Property;
@@ -20,6 +19,8 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -56,7 +57,7 @@ public class ScriptRecordReaderWriterTest {
 
             float lastProgress = -1f;
             int count = 0;
-            final Set<String> names = Sets.newHashSet("marko", "vadas", "lop", "josh", "ripple", "peter");
+            final Set<String> names = new HashSet<>(Arrays.asList("marko", "vadas", "lop", "josh", "ripple", "peter"));
             while (reader.nextKeyValue()) {
                 //System.out.println("" + reader.getProgress() + "> " + reader.getCurrentKey() + ": " + reader.getCurrentValue());
                 count++;
