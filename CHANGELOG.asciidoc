@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed all TinkerPop specific dependencies to Guava to avoid user version conflicts.
 * Added support for `-e` (script file execution) and `-v` (version display) options on `gremlin.sh`.
 * GraphSON supports the assignment of multiple custom serialization modules.
 * `Traverser.get()` no longer exists. There now exists: `Traverser.path(stepLabel)` and `Traverser.sideEffects(sideEffectKey)`.
