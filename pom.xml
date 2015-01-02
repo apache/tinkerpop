@@ -79,7 +79,7 @@
              context of child modules, so path this relative to one of
              the modules under the root directory, not the root
              directory itself. -->
-        <log4j.properties.dir>${project.basedir}/../gremlin-server/config/</log4j.properties.dir>
+        <log4j.properties.dir>${project.basedir}/../gremlin-server/conf/</log4j.properties.dir>
         <log4j.properties>log4j-server.properties</log4j.properties>
         <metrics.version>3.0.2</metrics.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
