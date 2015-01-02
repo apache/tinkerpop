@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Renamed vendor `XXXTraversal` to `XXXGraphTraversal` (interface) and `XXXGraphTraversal` to `DefaultXXXGraphTraversal` (implementation class).
 * Modified packaging for console plugins to be more consistent by moving them to the `com.tinkerpop.gremlin.console.groovy.plugin` namespace.
 * Removed all TinkerPop specific dependencies to Guava to avoid user version conflicts.
 * Added support for `-e` (script file execution) and `-v` (version display) options on `gremlin.sh`.

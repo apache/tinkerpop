@@ -12,8 +12,8 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerTraversal;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerGraphTraversal;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerTraversal;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -96,17 +96,17 @@ public class TinkerGraph implements Graph, Graph.Iterators {
 
     @Override
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        return new TinkerGraphTraversal<>(this, Vertex.class, vertexIds);
+        return new DefaultTinkerGraphTraversal<>(this, Vertex.class, vertexIds);
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        return new TinkerGraphTraversal<>(this, Edge.class, edgeIds);
+        return new DefaultTinkerGraphTraversal<>(this, Edge.class, edgeIds);
     }
 
     @Override
     public <S> GraphTraversal<S, S> of() {
-        return new TinkerTraversal<>(this);
+        return new DefaultTinkerTraversal<>(this);
     }
 
     @Override

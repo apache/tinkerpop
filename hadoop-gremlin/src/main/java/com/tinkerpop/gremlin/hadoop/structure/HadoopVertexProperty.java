@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.hadoop.structure;
 
-import com.tinkerpop.gremlin.hadoop.process.graph.HadoopElementTraversal;
+import com.tinkerpop.gremlin.hadoop.process.graph.util.DefaultHadoopElementTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
@@ -27,7 +27,7 @@ public class HadoopVertexProperty<V> implements VertexProperty<V>, VertexPropert
 
     @Override
     public GraphTraversal<VertexProperty, VertexProperty> start() {
-        return new HadoopElementTraversal<>(this, this.hadoopVertex.graph);
+        return new DefaultHadoopElementTraversal<>(this, this.hadoopVertex.graph);
     }
 
     @Override

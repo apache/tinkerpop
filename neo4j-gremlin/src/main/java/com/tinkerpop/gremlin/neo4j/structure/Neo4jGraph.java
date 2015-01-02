@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
+import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jGraphTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect.Neo4jGraphStep;
 import com.tinkerpop.gremlin.neo4j.process.graph.step.util.Neo4jCypherIterator;
-import com.tinkerpop.gremlin.neo4j.process.graph.util.Neo4jGraphTraversal;
+import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jGraphTraversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -182,24 +182,24 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     }
 
     @Override
-    public Neo4jTraversal<Vertex, Vertex> V(final Object... vertexIds) {
+    public Neo4jGraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         this.tx().readWrite();
-        final Neo4jTraversal<Vertex, Vertex> traversal = new Neo4jGraphTraversal<>(this);
+        final Neo4jGraphTraversal<Vertex, Vertex> traversal = new DefaultNeo4jGraphTraversal<>(this);
         traversal.addStep(new Neo4jGraphStep<>(traversal, this, Vertex.class, vertexIds));
         return traversal;
     }
 
     @Override
-    public Neo4jTraversal<Edge, Edge> E(final Object... edgeIds) {
+    public Neo4jGraphTraversal<Edge, Edge> E(final Object... edgeIds) {
         this.tx().readWrite();
-        final Neo4jTraversal<Edge, Edge> traversal = new Neo4jGraphTraversal<>(this);
+        final Neo4jGraphTraversal<Edge, Edge> traversal = new DefaultNeo4jGraphTraversal<>(this);
         traversal.addStep(new Neo4jGraphStep<>(traversal, this, Edge.class, edgeIds));
         return traversal;
     }
 
     @Override
-    public <S> Neo4jTraversal<S, S> of() {
-        return Neo4jTraversal.of(this);
+    public <S> Neo4jGraphTraversal<S, S> of() {
+        return Neo4jGraphTraversal.of(this);
     }
 
     @Override
@@ -319,25 +319,25 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     }
 
     /**
-     * Execute the Cypher query and get the result set as a {@link Neo4jTraversal}.
+     * Execute the Cypher query and get the result set as a {@link com.tinkerpop.gremlin.neo4j.process.graph.Neo4jGraphTraversal}.
      *
      * @param query the Cypher query to execute
      * @return a fluent Gremlin traversal
      */
-    public Neo4jTraversal cypher(final String query) {
+    public Neo4jGraphTraversal cypher(final String query) {
         return cypher(query, Collections.emptyMap());
     }
 
     /**
-     * Execute the Cypher query with provided parameters and get the result set as a {@link Neo4jTraversal}.
+     * Execute the Cypher query with provided parameters and get the result set as a {@link com.tinkerpop.gremlin.neo4j.process.graph.Neo4jGraphTraversal}.
      *
      * @param query      the Cypher query to execute
      * @param parameters the parameters of the Cypher query
      * @return a fluent Gremlin traversal
      */
-    public Neo4jTraversal cypher(final String query, final Map<String, Object> parameters) {
+    public Neo4jGraphTraversal cypher(final String query, final Map<String, Object> parameters) {
         this.tx().readWrite();
-        final Neo4jTraversal traversal = Neo4jTraversal.of(this);
+        final Neo4jGraphTraversal traversal = Neo4jGraphTraversal.of(this);
         traversal.addStep(new StartStep(traversal, new Neo4jCypherIterator(this.cypher.execute(query, parameters).iterator(), this)));
         return traversal;
     }

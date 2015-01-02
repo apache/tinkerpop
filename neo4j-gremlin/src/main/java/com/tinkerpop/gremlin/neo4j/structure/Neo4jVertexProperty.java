@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
+import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jGraphTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jVertexPropertyTraversal;
-import com.tinkerpop.gremlin.neo4j.process.graph.util.Neo4jGraphTraversal;
+import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jGraphTraversal;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Element;
@@ -59,9 +59,9 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
     }
 
     @Override
-    public Neo4jTraversal<VertexProperty, VertexProperty> start() {
-        final Neo4jTraversal<VertexProperty, VertexProperty> traversal = new Neo4jGraphTraversal<>(this.vertex.graph);
-        return (Neo4jTraversal) traversal.addStep(new StartStep<>(traversal, this));
+    public Neo4jGraphTraversal<VertexProperty, VertexProperty> start() {
+        final Neo4jGraphTraversal<VertexProperty, VertexProperty> traversal = new DefaultNeo4jGraphTraversal<>(this.vertex.graph);
+        return (Neo4jGraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
     @Override
