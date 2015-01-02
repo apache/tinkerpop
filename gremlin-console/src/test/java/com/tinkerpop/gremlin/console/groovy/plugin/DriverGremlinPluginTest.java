@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.console.plugin;
+package com.tinkerpop.gremlin.console.groovy.plugin;
 
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;

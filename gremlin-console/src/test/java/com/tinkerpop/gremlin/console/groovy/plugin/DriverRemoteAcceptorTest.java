@@ -1,5 +1,6 @@
-package com.tinkerpop.gremlin.console.plugin;
+package com.tinkerpop.gremlin.console.groovy.plugin;
 
+import com.tinkerpop.gremlin.console.groovy.plugin.DriverRemoteAcceptor;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.junit.After;

@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.console.plugin;
+package com.tinkerpop.gremlin.console.groovy.plugin;
 
 import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.Settings;
@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;

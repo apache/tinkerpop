@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.console.plugin;
+package com.tinkerpop.gremlin.console.groovy.plugin;
 
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.codehaus.groovy.tools.shell.Groovysh;
@@ -11,8 +11,6 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.isA;
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;

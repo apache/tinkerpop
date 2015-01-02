@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.console.plugin;
+package com.tinkerpop.gremlin.console.groovy.plugin;
 
 import com.tinkerpop.gremlin.driver.Result;
 import com.tinkerpop.gremlin.server.Settings;
