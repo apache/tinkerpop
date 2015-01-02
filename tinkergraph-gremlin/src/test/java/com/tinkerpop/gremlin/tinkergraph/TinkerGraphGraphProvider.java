@@ -1,18 +1,8 @@
 package com.tinkerpop.gremlin.tinkergraph;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
-import com.tinkerpop.gremlin.process.graph.ElementTraversal;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
-import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.HashMap;

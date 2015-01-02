@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.hadoop.structure;
 
-import com.tinkerpop.gremlin.hadoop.process.graph.HadoopElementTraversal;
+import com.tinkerpop.gremlin.hadoop.process.graph.util.DefaultHadoopElementTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -44,7 +44,7 @@ public class HadoopVertex extends HadoopElement implements Vertex, Vertex.Iterat
 
     @Override
     public GraphTraversal<Vertex, Vertex> start() {
-        return new HadoopElementTraversal<>(this, this.graph);
+        return new DefaultHadoopElementTraversal<>(this, this.graph);
     }
 
     @Override

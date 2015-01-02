@@ -173,8 +173,8 @@
                     <arguments>
                         <argument>com.tinkerpop.gremlin.process.graph.GraphTraversal</argument>
                         <argument>${basedir}/src/main/java/com/tinkerpop/gremlin/neo4j/process/graph</argument>
-                        <argument>Neo4jTraversalStub</argument>
-                        <argument>Neo4jTraversal</argument>
+                        <argument>Neo4jGraphTraversalStub</argument>
+                        <argument>Neo4jGraphTraversal</argument>
                     </arguments>
                 </configuration>
             </plugin>

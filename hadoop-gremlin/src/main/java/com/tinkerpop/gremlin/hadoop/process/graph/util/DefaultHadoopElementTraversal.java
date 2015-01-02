@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.hadoop.process.graph;
+package com.tinkerpop.gremlin.hadoop.process.graph.util;
 
 import com.tinkerpop.gremlin.hadoop.process.graph.strategy.HadoopElementStepStrategy;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -12,16 +12,16 @@ import com.tinkerpop.gremlin.structure.Element;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopElementTraversal<A> extends DefaultGraphTraversal<A, A> {
+public class DefaultHadoopElementTraversal<A> extends DefaultGraphTraversal<A, A> {
 
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
         GraphTraversalStrategyRegistry.instance().getTraversalStrategies().forEach(traversalStrategies::addStrategy);
         traversalStrategies.addStrategy(HadoopElementStepStrategy.instance());
-        TraversalStrategies.GlobalCache.registerStrategies(HadoopElementTraversal.class, traversalStrategies);
+        TraversalStrategies.GlobalCache.registerStrategies(DefaultHadoopElementTraversal.class, traversalStrategies);
     }
 
-    public HadoopElementTraversal(final Element element, final HadoopGraph graph) {
+    public DefaultHadoopElementTraversal(final Element element, final HadoopGraph graph) {
         super(graph);
         this.addStep(new StartStep<>(this, element));
     }

@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerElementTraversal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -106,7 +106,7 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
 
     @Override
     public GraphTraversal<Vertex, Vertex> start() {
-        return new TinkerElementTraversal<>(this, this.graph);
+        return new DefaultTinkerElementTraversal<>(this, this.graph);
     }
 
     @Override

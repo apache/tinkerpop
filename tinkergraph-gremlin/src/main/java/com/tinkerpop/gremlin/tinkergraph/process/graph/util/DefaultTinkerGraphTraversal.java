@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.tinkergraph.process.graph;
+package com.tinkerpop.gremlin.tinkergraph.process.graph.util;
 
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.graph.strategy.GraphTraversalStrategyRegistry;
@@ -12,16 +12,16 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
+public class DefaultTinkerGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
         GraphTraversalStrategyRegistry.instance().getTraversalStrategies().forEach(traversalStrategies::addStrategy);
         traversalStrategies.addStrategy(TinkerGraphStepStrategy.instance());
-        TraversalStrategies.GlobalCache.registerStrategies(TinkerGraphTraversal.class, traversalStrategies);
+        TraversalStrategies.GlobalCache.registerStrategies(DefaultTinkerGraphTraversal.class, traversalStrategies);
     }
 
-    public TinkerGraphTraversal(final TinkerGraph graph, final Class<? extends Element> returnClass, final Object... ids) {
+    public DefaultTinkerGraphTraversal(final TinkerGraph graph, final Class<? extends Element> returnClass, final Object... ids) {
         super(graph);
         this.addStep(new TinkerGraphStep<>(this, graph, returnClass, ids));
     }
