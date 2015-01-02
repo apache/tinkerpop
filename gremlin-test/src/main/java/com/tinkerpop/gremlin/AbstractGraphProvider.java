@@ -90,15 +90,15 @@ public abstract class AbstractGraphProvider implements GraphProvider {
     }
 
     protected String getWorkingDirectory() {
-        return this.computeTestDataRoot().getAbsolutePath();
+        return computeTestDataRoot(this.getClass(), "test-data").getAbsolutePath();
     }
 
-    protected File computeTestDataRoot() {
-        final String clsUri = this.getClass().getName().replace('.', '/') + ".class";
-        final URL url = this.getClass().getClassLoader().getResource(clsUri);
+    protected static File computeTestDataRoot(final Class clazz, final String childPath) {
+        final String clsUri = clazz.getName().replace('.', '/') + ".class";
+        final URL url = clazz.getClassLoader().getResource(clsUri);
         final String clsPath = url.getPath();
         final File root = new File(clsPath.substring(0, clsPath.length() - clsUri.length()));
-        return new File(root.getParentFile(), "test-data");
+        return new File(root.getParentFile(), childPath);
     }
 
     protected void readIntoGraph(final Graph g, final String path) throws IOException {

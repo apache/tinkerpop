@@ -109,13 +109,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     }
 
     public static String generateTempFile(final Class resourceClass, final String fileName) throws IOException {
-        // todo: clean up - can this be merged with the AbstractGraphProvider.computeTestDataRoot
-        final String clsUri = HadoopGraphProvider.class.getName().replace('.', '/') + ".class";
-        final URL url = HadoopGraphProvider.class.getClassLoader().getResource(clsUri);
-        final String clsPath = url.getPath();
-        final File root = new File(clsPath.substring(0, clsPath.length() - clsUri.length()));
-
-        final File temp = new File(root.getParentFile(), fileName + ".tmp");
+        final File temp = computeTestDataRoot(HadoopGraphProvider.class, fileName + ".tmp");
         final FileOutputStream outputStream = new FileOutputStream(temp);
         int data;
         final InputStream inputStream = resourceClass.getResourceAsStream(fileName);
