@@ -4,7 +4,9 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
+import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Arrays;
@@ -38,18 +40,41 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
 
             Step currentStep = repeatStep.getPreviousStep();
             final Step firstStep = currentStep;
-            // TODO: ?? currentStep.setLabel("AAA");
             TraversalHelper.removeStep(repeatStep, traversal);
             for (final Step<?, ?> step : repeatStep.getRepeatTraversal().asAdmin().getSteps()) {
                 TraversalHelper.insertAfterStep(step, currentStep, traversal);
                 currentStep = step;
             }
-            //////
+            final SideEffectStep<?> incrLoopStep = new SideEffectStep<>(traversal);
+            incrLoopStep.setConsumer(traverser -> traverser.asAdmin().incrLoops());
+            TraversalHelper.insertAfterStep(incrLoopStep, currentStep, traversal);
+            /////////
+            final BranchStep leftBranchStep = new BranchStep(traversal);
+            final BranchStep rightBranchStep = new BranchStep(traversal);
+            TraversalHelper.insertAfterStep(leftBranchStep, firstStep, traversal);
+            TraversalHelper.insertAfterStep(rightBranchStep, incrLoopStep, traversal);
+            /////////
+            final SideEffectStep<?> resetLoopStep = new SideEffectStep<>(traversal);
+            resetLoopStep.setConsumer(traverser -> traverser.asAdmin().resetLoops());
+            TraversalHelper.insertAfterStep(resetLoopStep, rightBranchStep, traversal);
+
+            // HANDLE UNTIL
             if (repeatStep.isUntilFirst()) {
-                TraversalHelper.insertAfterStep(repeatStep.createUntilStep(currentStep.getLabel()), firstStep, traversal);
+                leftBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(resetLoopStep.getLabel(), repeatStep.getUntilPredicate().negate(), BranchStep.THIS_BREAK_LABEL));
             } else {
-                TraversalHelper.insertAfterStep(repeatStep.createJumpStep(firstStep.getLabel()), currentStep, traversal);
+                rightBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(leftBranchStep.getLabel(), repeatStep.getUntilPredicate().negate(), BranchStep.THIS_BREAK_LABEL));
+                leftBranchStep.addFunction(t -> BranchStep.THIS_LABEL);
             }
+            // HANDLE EMIT
+            if (null != repeatStep.getEmitPredicate()) {
+                if (repeatStep.isEmitFirst()) {
+                    leftBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(resetLoopStep.getLabel(), repeatStep.getEmitPredicate(), BranchStep.EMPTY_LABEL));
+                } else {
+                    rightBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(resetLoopStep.getLabel(), repeatStep.getEmitPredicate(), BranchStep.EMPTY_LABEL));
+                }
+            }
+
+
         }
     }
 

@@ -38,7 +38,7 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy {
             final int currentStepCounter = chooseStepCounter;
             final String endLabel = CHOOSE_PREFIX_END + chooseStepCounter;
             final BranchStep<?> branchStep = new BranchStep<>(traversal);
-            branchStep.setFunctions(traverser -> {
+            branchStep.addFunction(traverser -> {
                 final String goTo = objectToString(currentStepCounter, chooseStep.getMapFunction().apply(traverser));
                 return TraversalHelper.hasLabel(goTo, traversal) ? goTo : BranchStep.EMPTY_LABEL;
             });
@@ -53,7 +53,7 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy {
                     if (c++ == 0) currentStep.setLabel(objectToString(currentStepCounter, entry.getKey()));
                 }
                 final BranchStep breakStep = new BranchStep(traversal);
-                breakStep.setFunctions(new BranchStep.GoToLabel(endLabel));
+                breakStep.addFunction(new BranchStep.GoToLabel(endLabel));
                 TraversalHelper.insertAfterStep(breakStep, currentStep, traversal);
                 currentStep = breakStep;
             }

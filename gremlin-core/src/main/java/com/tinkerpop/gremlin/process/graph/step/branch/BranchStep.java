@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.EmptyTraverser;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
@@ -12,29 +13,26 @@ import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Graph;
 
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent {
+public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent, FunctionHolder<Traverser<S>, String> {
 
     public static final String EMPTY_LABEL = Graph.Hidden.hide("emptyLabel");
     public static final String THIS_LABEL = Graph.Hidden.hide("thisLabel");
     public static final String THIS_BREAK_LABEL = Graph.Hidden.hide("thisBreakLabel");
 
-    private FunctionRing<Traverser<S>, String> functionRing;
+    private FunctionRing<Traverser<S>, String> functionRing = new FunctionRing<>();
     private boolean onGraphComputer = false;
     private TraverserSet<S> graphComputerQueue;
 
     public BranchStep(final Traversal traversal) {
         super(traversal);
         this.futureSetByChild = true;
-    }
-
-    public void setFunctions(final Function<Traverser<S>, String>... labelFunctions) {
-        this.functionRing = new FunctionRing<>(labelFunctions);
     }
 
     @Override
@@ -52,18 +50,14 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
                 if (THIS_BREAK_LABEL.equals(goTo)) {
                     final Traverser.Admin<S> sibling = traverser.asAdmin().split();
                     sibling.setFuture(this.getNextStep().getLabel());
-                    sibling.resetLoops();
                     this.graphComputerQueue.add(sibling);
                     break;
                 } else if (THIS_LABEL.equals(goTo)) {
                     final Traverser.Admin<S> sibling = traverser.asAdmin().split();
                     sibling.setFuture(this.getNextStep().getLabel());
-                    sibling.resetLoops();
                     this.graphComputerQueue.add(sibling);
                 } else if (!EMPTY_LABEL.equals(goTo)) {
                     final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                    if (TraversalHelper.relativeLabelDirection(this, goTo) == -1)
-                        sibling.incrLoops();
                     sibling.setFuture(goTo);
                     this.graphComputerQueue.add(sibling);
                 }
@@ -75,24 +69,18 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
     private final Traverser<S> standardAlgorithm() {
         final Traverser<S> traverser = this.starts.next();
         while (!this.functionRing.roundComplete()) {
-            // TODO: if its a jumpBack, you have to incr the loop prior to the function execution.
-            // TODO: but you don't know if the label is jump back until you execute the function.
             final String goTo = this.functionRing.next().apply(traverser);
             if (THIS_BREAK_LABEL.equals(goTo)) {
                 final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                sibling.resetLoops();
                 sibling.setFuture(this.getNextStep().getLabel());
                 this.getNextStep().addStart(sibling);
                 break;
             } else if (THIS_LABEL.equals(goTo)) {
                 final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                sibling.resetLoops();
                 sibling.setFuture(this.getNextStep().getLabel());
                 this.getNextStep().addStart(sibling);
             } else if (!EMPTY_LABEL.equals(goTo)) {
                 final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                if (TraversalHelper.relativeLabelDirection(this, goTo) == -1)
-                    sibling.incrLoops();
                 sibling.setFuture(goTo);
                 TraversalHelper.<S, Object>getStep(goTo, this.getTraversal())
                         .getNextStep()
@@ -120,6 +108,16 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
         if (this.onGraphComputer) clone.graphComputerQueue = new TraverserSet<S>();
         clone.functionRing = this.functionRing.clone();
         return clone;
+    }
+
+    @Override
+    public void addFunction(final Function<Traverser<S>, String> function) {
+        this.functionRing.addFunction(function);
+    }
+
+    @Override
+    public List<Function<Traverser<S>, String>> getFunctions() {
+        return this.functionRing.getFunctions();
     }
 
     /*@Override

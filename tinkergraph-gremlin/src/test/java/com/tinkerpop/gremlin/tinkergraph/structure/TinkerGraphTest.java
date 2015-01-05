@@ -7,11 +7,9 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Operator;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
@@ -26,7 +24,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -98,7 +95,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay2() throws Exception {
         Graph g = TinkerFactory.createClassic();
-        Traversal t = g.V().repeat(g.<Vertex>of().out()).until(2).path().by("name");
+        Traversal t = g.V().repeat(g.<Vertex>of().out()).until(2).path().by("name").submit(g.compute());
         System.out.println(t);
         t.forEachRemaining(System.out::println);
         System.out.println(t);

@@ -42,8 +42,8 @@ public class UnionLinearStrategy extends AbstractTraversalStrategy {
                 branchFunctions.add(traverser -> unionBranchStart);
             }
 
-            final BranchStep<?> branchStep = new BranchStep<>(traversal);
-            branchStep.setFunctions(branchFunctions.toArray(new Function[branchFunctions.size()]));
+            final BranchStep branchStep = new BranchStep<>(traversal);
+            branchFunctions.forEach(f -> branchStep.addFunction(f));
             TraversalHelper.replaceStep(unionStep, branchStep, traversal);
 
             Step currentStep = branchStep;
@@ -56,7 +56,7 @@ public class UnionLinearStrategy extends AbstractTraversalStrategy {
                     if (c++ == 0) currentStep.setLabel(unionBranchStart);
                 }
                 final BranchStep breakStep = new BranchStep(traversal);
-                breakStep.setFunctions(new BranchStep.GoToLabel(endLabel));
+                breakStep.addFunction(new BranchStep.GoToLabel(endLabel));
                 TraversalHelper.insertAfterStep(breakStep, currentStep, traversal);
                 currentStep = breakStep;
             }
