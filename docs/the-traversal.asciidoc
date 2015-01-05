@@ -951,10 +951,11 @@ Repeat Step
 The `repeat()`-step (*branch*) is used for looping over a traversal given some break predicate. Below are some examples of `repeat()`-step in action.
 
 [source,groovy]
-gremlin> g.V(1).repeat(g.of().out()).until{it.loops()>=2}.values('name') <1>
-==>ripple
-==>lop
-gremlin> g.V().until{it.get().value('name').equals('ripple')}.repeat(g.of().out()).path().by('name') <2>
+gremlin> g.V(1).repeat(g.of().out()).until(2).path().by('name') <1>
+==>[marko, josh, ripple]
+==>[marko, josh, lop]
+gremlin> g.V().until{it.get().value('name') == 'ripple'}.
+                 repeat(g.of().out()).path().by('name') <2>
 ==>[marko, josh, ripple]
 ==>[josh, ripple]
 ==>[ripple]
@@ -962,16 +963,9 @@ gremlin> g.V().until{it.get().value('name').equals('ripple')}.repeat(g.of().out(
 <1> do-while semantics stating to do `out()` 2 times.
 <2> while-do semantics stating to break if the traverser is at a vertex named "ripple".
 
-If a predetermined number of loops is known, it is possible to simply provide the `until()` an integer (e.g. repeat twice).
-
-[source,groovy]
-gremlin> g.V(1).repeat(g.of().out()).until(2).values('name')
-==>ripple
-==>lop
-
 IMPORTANT: There are two modulators for `repeat()`: `until()` and `emit()`. If `until()` comes after `repeat()` it is do/while looping. If `until()` comes before `repeat()` it is while/do looping. If `emit()` is placed after `repeat()`, it is evaluated on the traversers leaving the repeat-traversal. If `emit()` is placed before `repeat()`, it is evaluated on the traversers prior to entering the repeat-traversal.
 
-The `repeat()`-step also supports an "emit predicate", where the predicate for an empty argument `emit()` is `true`. Whereby the traverser is split in two -- the traverser exits the code block as well as continues back within the code block.
+The `repeat()`-step also supports an "emit predicate", where the predicate for an empty argument `emit()` is true (i.e. `emit() == emit{true}`). With `emit()`, the traverser is split in two -- the traverser exits the code block as well as continues back within the code block (assuming `until()` holds true).
 
 [source,groovy]
 gremlin> g.V(1).repeat(g.of().out()).until(2).emit().path().by('name')
