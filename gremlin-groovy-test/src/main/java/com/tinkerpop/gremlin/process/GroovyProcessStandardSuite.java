@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyJumpTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.GroovyRepeatTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUnionTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUntilTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCoinTest;
@@ -37,8 +38,8 @@ import com.tinkerpop.gremlin.process.graph.step.map.GroovyVertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAddEdgeTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupCountTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyInjectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyProfileTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovySackTest;
@@ -65,6 +66,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             // branch
             GroovyChooseTest.StandardTest.class,
             GroovyJumpTest.StandardTest.class,
+            GroovyRepeatTest.StandardTest.class,
             GroovyUnionTest.StandardTest.class,
             GroovyUntilTest.StandardTest.class,
             // filter

@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategyTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.RepeatTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.UntilTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CoinTest;
@@ -85,6 +86,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // branch
             ChooseTest.ComputerTest.class,
             JumpTest.ComputerTest.class,
+            RepeatTest.ComputerTest.class,
             UnionTest.ComputerTest.class,
             UntilTest.ComputerTest.class,
 
@@ -154,6 +156,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // branch
             ChooseTest.class,
             JumpTest.class,
+            RepeatTest.class,
             UnionTest.class,
             UntilTest.class,
 

@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatStep;
@@ -509,11 +510,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    /*public default GraphTraversal<S, E> branch(final Function<Traverser<E>, String>... labelFunctions) {
-        final BranchStep<E> branchStep = new BranchStep<>(this);
-        branchStep.setFunctions(labelFunctions);
-        return this.asAdmin().addStep(branchStep);
-    }*/
+    public default GraphTraversal<S, E> branch() {
+        return this.asAdmin().addStep(new BranchStep<>(this));
+    }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final Predicate<Traverser<E>> jumpPredicate, final Predicate<Traverser<E>> emitPredicate) {
         return this.asAdmin().addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpPredicate(jumpPredicate).emitPredicate(emitPredicate).create());

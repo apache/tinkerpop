@@ -384,6 +384,10 @@ public abstract interface ElementTraversal<A extends Element> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
+    public default GraphTraversal<A, A> branch() {
+        return this.start().branch();
+    }
+
     public default GraphTraversal<A, A> jump(final String jumpLabel, final Predicate<Traverser<A>> ifPredicate, final Predicate<Traverser<A>> emitPredicate) {
         return this.start().jump(jumpLabel, ifPredicate, emitPredicate);
     }
@@ -448,7 +452,7 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().until(maxLoops);
     }
 
-    public default GraphTraversal<A,A> emit() {
+    public default GraphTraversal<A, A> emit() {
         return this.start().emit();
     }
 

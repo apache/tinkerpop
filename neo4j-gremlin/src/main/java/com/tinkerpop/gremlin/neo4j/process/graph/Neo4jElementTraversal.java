@@ -386,6 +386,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 
     ///////////////////// BRANCH STEPS /////////////////////
 
+    public default Neo4jGraphTraversal<A, A> branch() {
+        return this.start().branch();
+    }
+
     public default Neo4jGraphTraversal<A, A> jump(final String jumpLabel, final Predicate<Traverser<A>> ifPredicate, final Predicate<Traverser<A>> emitPredicate) {
         return this.start().jump(jumpLabel, ifPredicate, emitPredicate);
     }
