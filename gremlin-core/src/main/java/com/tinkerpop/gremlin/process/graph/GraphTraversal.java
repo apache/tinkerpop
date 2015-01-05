@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpStep;
+import com.tinkerpop.gremlin.process.graph.step.branch.RepeatStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.UntilStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.CoinStep;
@@ -68,6 +69,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.util.ElementFunctionComparator;
 import com.tinkerpop.gremlin.process.util.ElementValueComparator;
 import com.tinkerpop.gremlin.process.util.ElementValueFunction;
@@ -81,7 +83,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -560,6 +561,46 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <E2> GraphTraversal<S, E2> union(final Traversal<E, E2>... traversals) {
         return this.asAdmin().addStep(new UnionStep<>(this, traversals));
+    }
+
+    public default GraphTraversal<S, E> repeat(final Traversal<E, E> traversal) {
+        final Step<?, E> step = TraversalHelper.getEnd(this);
+        if (step instanceof RepeatStep) {
+            ((RepeatStep<E>) step).setRepeatTraversal(traversal);
+        } else {
+            final RepeatStep<E> repeatStep = new RepeatStep<>(this);
+            repeatStep.setRepeatTraversal(traversal);
+            this.asAdmin().addStep(repeatStep);
+        }
+        return this;
+    }
+
+    public default GraphTraversal<S, E> emit(final Predicate<Traverser<E>> emitPredicate) {
+        final Step<?, E> step = TraversalHelper.getEnd(this);
+        if (step instanceof RepeatStep) {
+            ((RepeatStep<E>) step).setEmitPredicate(emitPredicate);
+        } else {
+            final RepeatStep<E> repeatStep = new RepeatStep<>(this);
+            repeatStep.setEmitPredicate(emitPredicate);
+            this.asAdmin().addStep(repeatStep);
+        }
+        return this;
+    }
+
+    public default GraphTraversal<S, E> until(final Predicate<Traverser<E>> untilPredicate) {
+        final Step<?, E> step = TraversalHelper.getEnd(this);
+        if (step instanceof RepeatStep) {
+            ((RepeatStep<E>) step).setUntilPredicate(untilPredicate);
+        } else {
+            final RepeatStep<E> repeatStep = new RepeatStep<>(this);
+            repeatStep.setUntilPredicate(untilPredicate);
+            this.asAdmin().addStep(repeatStep);
+        }
+        return this;
+    }
+
+    public default GraphTraversal<S, E> until(final int maxLoops) {
+        return this.until(new RepeatStep.LoopPredicate<E>(maxLoops));
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

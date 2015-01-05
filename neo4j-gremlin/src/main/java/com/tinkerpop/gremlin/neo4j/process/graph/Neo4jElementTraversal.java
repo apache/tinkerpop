@@ -434,6 +434,22 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().union(traversals);
     }
 
+    public default Neo4jGraphTraversal<A, A> repeat(final Traversal<A, A> traversal) {
+        return this.start().repeat(traversal);
+    }
+
+    public default Neo4jGraphTraversal<A, A> emit(final Predicate<Traverser<A>> emitPredicate) {
+        return this.start().emit(emitPredicate);
+    }
+
+    public default Neo4jGraphTraversal<A, A> until(final Predicate<Traverser<A>> untilPredicate) {
+        return this.start().until(untilPredicate);
+    }
+
+    public default Neo4jGraphTraversal<A, A> until(final int maxLoops) {
+        return this.start().until(maxLoops);
+    }
+
     ///////////////////// UTILITY STEPS /////////////////////
 
     public default Neo4jGraphTraversal<A, A> as(final String label) {

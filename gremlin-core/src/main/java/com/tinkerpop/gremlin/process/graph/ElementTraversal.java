@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.step.filter.SampleStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -281,7 +280,7 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().cyclicPath();
     }
 
-    public default GraphTraversal<A,A> sample(final int amountToSample) {
+    public default GraphTraversal<A, A> sample(final int amountToSample) {
         return this.start().sample(amountToSample);
     }
 
@@ -431,6 +430,22 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default <E2> GraphTraversal<A, E2> union(final Traversal<A, E2>... traversals) {
         return this.start().union(traversals);
+    }
+
+    public default GraphTraversal<A, A> repeat(final Traversal<A, A> traversal) {
+        return this.start().repeat(traversal);
+    }
+
+    public default GraphTraversal<A, A> emit(final Predicate<Traverser<A>> emitPredicate) {
+        return this.start().emit(emitPredicate);
+    }
+
+    public default GraphTraversal<A, A> until(final Predicate<Traverser<A>> untilPredicate) {
+        return this.start().until(untilPredicate);
+    }
+
+    public default GraphTraversal<A, A> until(final int maxLoops) {
+        return this.start().until(maxLoops);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////
