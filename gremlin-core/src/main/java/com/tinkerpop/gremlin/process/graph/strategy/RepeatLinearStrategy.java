@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -60,21 +61,21 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
 
             // HANDLE UNTIL
             if (repeatStep.isUntilFirst()) {
-                leftBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(resetLoopStep.getLabel(), repeatStep.getUntilPredicate().negate(), BranchStep.THIS_BREAK_LABEL));
+                leftBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(resetLoopStep.getLabel(), repeatStep.getUntilPredicate(), BranchStep.THIS_LABEL));
+                rightBranchStep.addFunction(t -> leftBranchStep.getLabel());
             } else {
-                rightBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(leftBranchStep.getLabel(), repeatStep.getUntilPredicate().negate(), BranchStep.THIS_BREAK_LABEL));
+                rightBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(BranchStep.THIS_BREAK_LABEL, repeatStep.getUntilPredicate(), leftBranchStep.getLabel()));
                 leftBranchStep.addFunction(t -> BranchStep.THIS_LABEL);
             }
+
             // HANDLE EMIT
             if (null != repeatStep.getEmitPredicate()) {
                 if (repeatStep.isEmitFirst()) {
-                    leftBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(resetLoopStep.getLabel(), repeatStep.getEmitPredicate(), BranchStep.EMPTY_LABEL));
+                    leftBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(resetLoopStep.getLabel(), repeatStep.getEmitPredicate().and((Predicate) repeatStep.getUntilPredicate().negate()), BranchStep.EMPTY_LABEL));
                 } else {
                     rightBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(resetLoopStep.getLabel(), repeatStep.getEmitPredicate(), BranchStep.EMPTY_LABEL));
                 }
             }
-
-
         }
     }
 

@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -95,7 +96,17 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay2() throws Exception {
         Graph g = TinkerFactory.createClassic();
-        Traversal t = g.V().repeat(g.<Vertex>of().out()).until(2).path().by("name").submit(g.compute());
+        Traversal t = g.V().emit().repeat(g.<Vertex>of().out()).until(2).path().by("name").submit(g.compute());
+        System.out.println(t);
+        t.forEachRemaining(System.out::println);
+        System.out.println(t);
+    }
+
+    @Test
+    @Ignore
+    public void testPlay3() throws Exception {
+        Graph g = TinkerFactory.createClassic();
+        Traversal t = g.V().branch().<Traverser<Vertex>>by(x -> x.get().value("name").equals("marko") ? "a" : "b").as("a").values("name").as("b");
         System.out.println(t);
         t.forEachRemaining(System.out::println);
         System.out.println(t);

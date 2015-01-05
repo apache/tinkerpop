@@ -59,6 +59,26 @@ public abstract class GroovyRepeatTest {
         public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilX2X_emit() {
             g.V.repeat(g.of().out).until(2).emit;
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_untilXloops_gte_2X_repeatXoutX_name(Object v1Id) {
+            g.V(v1Id).until { it.loops() >= 2 }.repeat(g.of().out).name
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_untilX2X_repeatXoutX_name(Object v1Id) {
+            g.V(v1Id).until(2).repeat(g.of().out).name
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_emit_repeatXoutX_untilX2X_path() {
+            g.V.emit.repeat(g.of().out).until(2).path
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_emit_untilX2X_repeatXoutX_path() {
+            g.V.emit.until(2).repeat(g.of().out).path
+        }
     }
 
     public static class ComputerTest extends RepeatTest {
@@ -109,6 +129,26 @@ public abstract class GroovyRepeatTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilX2X_emit() {
             ComputerTestHelper.compute("g.V.repeat(g.of().out).until(2).emit", g)
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_untilXloops_gte_2X_repeatXoutX_name(Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).until{it.loops() >= 2}.repeat(g.of().out).name", g)
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_untilX2X_repeatXoutX_name(Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).until(2).repeat(g.of().out).name", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_emit_repeatXoutX_untilX2X_path() {
+            ComputerTestHelper.compute("g.V.emit.repeat(g.of().out).until(2).path", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_emit_untilX2X_repeatXoutX_path() {
+            ComputerTestHelper.compute("g.V.emit.until(2).repeat(g.of().out).path", g)
         }
     }
 }
