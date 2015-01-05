@@ -29,7 +29,7 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
 
 
     public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
-        if (!TraversalHelper.hasStepOfClass(RepeatStep.class, traversal))
+        if (engine.equals(TraversalEngine.STANDARD) || !TraversalHelper.hasStepOfClass(RepeatStep.class, traversal))
             return;
 
         for (final RepeatStep<?> repeatStep : TraversalHelper.getStepsOfClass(RepeatStep.class, traversal)) {

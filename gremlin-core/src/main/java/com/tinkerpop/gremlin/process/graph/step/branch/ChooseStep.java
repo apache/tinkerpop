@@ -19,7 +19,7 @@ import java.util.function.Predicate;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements TraversalHolder<S,E> {
+public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements TraversalHolder<S, E> {
 
     private final Function<Traverser<S>, M> mapFunction;
     private Map<M, Traversal<S, E>> choices;
@@ -49,8 +49,8 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements Trav
     }
 
     @Override
-    public Collection<Traversal<S,E>> getTraversals() {
-       return this.choices.values();
+    public Collection<Traversal<S, E>> getTraversals() {
+        return this.choices.values();
     }
 
     @Override

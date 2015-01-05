@@ -1,8 +1,11 @@
 package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 
 import java.util.NoSuchElementException;
@@ -11,12 +14,14 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RepeatStep<S> extends AbstractStep<S, S> {
+public final class RepeatStep<S> extends AbstractStep<S, S> implements EngineDependent {
 
     private Traversal<S, S> repeatTraversal;
     private Predicate<Traverser<S>> until = null;
     private Predicate<Traverser<S>> emit = null;
     boolean untilFirst = false;
+    boolean emitFirst = false;
+    boolean onGraphComputer = false;
 
     public RepeatStep(final Traversal traversal) {
         super(traversal);
@@ -32,6 +37,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
     }
 
     public void setEmitPredicate(final Predicate<Traverser<S>> emitPredicate) {
+        if (null == this.emit) this.emitFirst = true;
         this.emit = emitPredicate;
     }
 
@@ -52,7 +58,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
     }
 
     protected Traverser<S> processNextStart() throws NoSuchElementException {
-        throw new IllegalStateException("RepeatStep is a marker step and should be translated into a JumpStep via a RepeatLinearStrategy");
+        return this.onGraphComputer ? computerAlgorithm() : standardAlgorithm();
     }
 
     public JumpStep<S> createJumpStep(final String headLabel) {
@@ -75,6 +81,11 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
         return new UntilStep<>(this.getTraversal(), tailLabel, this.until, this.emit);
     }
 
+    @Override
+    public void onEngine(final TraversalEngine traversalEngine) {
+        this.onGraphComputer = traversalEngine.equals(TraversalEngine.COMPUTER);
+    }
+
     ///
 
     public static class LoopPredicate<S> implements Predicate<Traverser<S>> {
@@ -90,8 +101,11 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
         }
     }
 
-    /*@Override
-    protected Traverser<S> processNextStart() throws NoSuchElementException {
+    private Traverser<S> computerAlgorithm() throws NoSuchElementException {
+        throw new IllegalStateException("RepeatStep should be compiled down to JumpSteps when used with GraphComputer");
+    }
+
+    private Traverser<S> standardAlgorithm() throws NoSuchElementException {
         while (true) {
             if (this.repeatTraversal.hasNext()) {
                 final Traverser.Admin<S> s = TraversalHelper.getEnd(this.repeatTraversal).next().asAdmin();
@@ -101,33 +115,32 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
                     return s;
                 } else {
                     this.repeatTraversal.asAdmin().addStart(s);
-                    if (this.emit.test(s)) {
+                    if (null != this.emit && this.emit.test(s)) {
                         final Traverser.Admin<S> emitSplit = s.split();
                         emitSplit.resetLoops();
                         return emitSplit;
                     }
-
                 }
             } else {
                 final Traverser.Admin<S> s = this.starts.next();
                 s.resetLoops();
-                /*if (this.untilFirst) {
-                    if (this.until.test(s)) {
-                        s.resetLoops();
-                        return s;
-                    } else {
-                        this.repeatTraversal.asAdmin().addStart(s);
-                        if (this.emitFirst && this.emit.test(s)) {
-                            final Traverser.Admin<S> emitSplit = s.split();
-                            emitSplit.resetLoops();
-                            return emitSplit;
-                        }
-                    }
-                } else {
+                if (this.untilFirst && this.until.test(s)) {
+                    s.resetLoops();
+                    return s;
+                }
                 this.repeatTraversal.asAdmin().addStart(s);
-                // }
+                if (this.emitFirst && null != this.emit && this.emit.test(s)) {
+                    final Traverser.Admin<S> emitSplit = s.split();
+                    emitSplit.resetLoops();
+                    return emitSplit;
+                }
             }
-        }
-    }*/
 
+        }
+    }
+
+    @Override
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.repeatTraversal);
+    }
 }

@@ -450,6 +450,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().until(maxLoops);
     }
 
+    public default Neo4jGraphTraversal<A, A> emit() {
+        return this.start().emit();
+    }
+
     ///////////////////// UTILITY STEPS /////////////////////
 
     public default Neo4jGraphTraversal<A, A> as(final String label) {

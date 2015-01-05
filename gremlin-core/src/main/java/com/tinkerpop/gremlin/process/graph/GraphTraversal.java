@@ -565,7 +565,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> repeat(final Traversal<E, E> traversal) {
         final Step<?, E> step = TraversalHelper.getEnd(this);
-        if (step instanceof RepeatStep) {
+        if (step instanceof RepeatStep && null == ((RepeatStep) step).getRepeatTraversal()) {
             ((RepeatStep<E>) step).setRepeatTraversal(traversal);
         } else {
             final RepeatStep<E> repeatStep = new RepeatStep<>(this);
@@ -577,7 +577,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> emit(final Predicate<Traverser<E>> emitPredicate) {
         final Step<?, E> step = TraversalHelper.getEnd(this);
-        if (step instanceof RepeatStep) {
+        if (step instanceof RepeatStep && null == ((RepeatStep) step).getEmitPredicate()) {
             ((RepeatStep<E>) step).setEmitPredicate(emitPredicate);
         } else {
             final RepeatStep<E> repeatStep = new RepeatStep<>(this);
@@ -589,7 +589,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> until(final Predicate<Traverser<E>> untilPredicate) {
         final Step<?, E> step = TraversalHelper.getEnd(this);
-        if (step instanceof RepeatStep) {
+        if (step instanceof RepeatStep && null == ((RepeatStep) step).getUntilPredicate()) {
             ((RepeatStep<E>) step).setUntilPredicate(untilPredicate);
         } else {
             final RepeatStep<E> repeatStep = new RepeatStep<>(this);
@@ -600,7 +600,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> until(final int maxLoops) {
-        return this.until(new RepeatStep.LoopPredicate<E>(maxLoops));
+        return this.until(new RepeatStep.LoopPredicate<>(maxLoops));
+    }
+
+    public default GraphTraversal<S, E> emit() {
+        return this.emit(t -> true);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

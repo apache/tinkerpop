@@ -448,6 +448,10 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().until(maxLoops);
     }
 
+    public default GraphTraversal<A,A> emit() {
+        return this.start().emit();
+    }
+
     ///////////////////// UTILITY STEPS /////////////////////
 
     public default GraphTraversal<A, A> as(final String label) {
