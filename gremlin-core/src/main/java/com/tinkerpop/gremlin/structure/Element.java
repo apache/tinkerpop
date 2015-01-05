@@ -72,6 +72,7 @@ public abstract interface Element {
      *
      * @throws NoSuchElementException if the property does not exist on the {@code Element}.
      */
+    @Graph.Helper
     public default <V> V value(final String key) throws NoSuchElementException {
         final Property<V> property = this.property(key);
         return property.orElseThrow(() -> Property.Exceptions.propertyDoesNotExist(key));
@@ -98,6 +99,7 @@ public abstract interface Element {
         /**
          * Get the values of properties as an {@link Iterator}.
          */
+        @Graph.Helper
         public default <V> Iterator<V> valueIterator(final String... propertyKeys) {
             return IteratorUtils.map(this.<V>propertyIterator(propertyKeys), property -> property.value());
         }

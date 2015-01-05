@@ -21,10 +21,7 @@ import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Repeatable;
@@ -110,6 +107,7 @@ public interface Graph extends AutoCloseable {
      * @param label the label of the vertex
      * @return The newly created labeled vertex
      */
+    @Graph.Helper
     public default Vertex addVertex(final String label) {
         return this.addVertex(T.label, label);
     }
@@ -373,6 +371,7 @@ public interface Graph extends AutoCloseable {
 
         public void remove(final String key);
 
+        @Graph.Helper
         public default Map<String, Object> asMap() {
             final Map<String, Object> map = keys().stream()
                     .map(key -> Pair.with(key, get(key).get()))

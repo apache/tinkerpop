@@ -5,9 +5,12 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONModule;
 import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
@@ -185,13 +188,21 @@ public interface GraphProvider {
      * <br/>
      * This class wants any implementations or extensions of the following interfaces or classes:
      * <ul>
-     *     <li>{@link Graph}</li>
-     *     <li>{@link Property}</li>
+     *     <li>{@link Edge}</li>
+     *     <li>{@link Edge.Iterators}</li>
      *     <li>{@link Element}</li>
+     *     <li>{@link Element.Iterators}</li>
+     *     <li>{@link DefaultGraphTraversal}</li>
+     *     <li>{@link Graph}</li>
+     *     <li>{@link Graph.Variables}</li>
+     *     <li>{@link GraphTraversal}</li>
+     *     <li>{@link Property}</li>
      *     <li>{@link Traversal}</li>
      *     <li>{@link Traverser}</li>
-     *     <li>{@link GraphTraversal}</li>
-     *     <li>{@link DefaultGraphTraversal}</li>
+     *     <li>{@link Vertex}</li>
+     *     <li>{@link Vertex.Iterators}</li>
+     *     <li>{@link VertexProperty}</li>
+     *     <li>{@link VertexProperty.Iterators}</li>
      * </ul>
      * <br/>
      * If so desired, implementers can override this method and simply supply the specific classes that implement
@@ -205,12 +216,20 @@ public interface GraphProvider {
 
         final Set<Class> implementations = new HashSet<>();
         reflections.getSubTypesOf(Graph.class).forEach(implementations::add);
+        reflections.getSubTypesOf(Graph.Variables.class).forEach(implementations::add);
         reflections.getSubTypesOf(Property.class).forEach(implementations::add);
+        reflections.getSubTypesOf(Edge.class).forEach(implementations::add);
+        reflections.getSubTypesOf(Edge.Iterators.class).forEach(implementations::add);
         reflections.getSubTypesOf(Element.class).forEach(implementations::add);
+        reflections.getSubTypesOf(Element.Iterators.class).forEach(implementations::add);
         reflections.getSubTypesOf(Traversal.class).forEach(implementations::add);
         reflections.getSubTypesOf(Traverser.class).forEach(implementations::add);
         reflections.getSubTypesOf(GraphTraversal.class).forEach(implementations::add);
         reflections.getSubTypesOf(DefaultGraphTraversal.class).forEach(implementations::add);
+        reflections.getSubTypesOf(Vertex.class).forEach(implementations::add);
+        reflections.getSubTypesOf(Vertex.Iterators.class).forEach(implementations::add);
+        reflections.getSubTypesOf(VertexProperty.class).forEach(implementations::add);
+        reflections.getSubTypesOf(VertexProperty.Iterators.class).forEach(implementations::add);
 
         return implementations.stream()
                 .filter(c -> !c.isInterface())

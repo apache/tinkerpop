@@ -44,6 +44,7 @@ public interface Property<V> {
      *
      * @param consumer The consumer to process the existing value.
      */
+    @Graph.Helper
     public default void ifPresent(final Consumer<? super V> consumer) {
         if (this.isPresent())
             consumer.accept(this.value());
@@ -55,6 +56,7 @@ public interface Property<V> {
      * @param otherValue The value to return if the property is not present
      * @return A value
      */
+    @Graph.Helper
     public default V orElse(final V otherValue) {
         return this.isPresent() ? this.value() : otherValue;
     }
@@ -65,6 +67,7 @@ public interface Property<V> {
      * @param valueSupplier The supplier to use to generate a value if the property is not present
      * @return A value
      */
+    @Graph.Helper
     public default V orElseGet(final Supplier<? extends V> valueSupplier) {
         return this.isPresent() ? this.value() : valueSupplier.get();
     }
@@ -77,6 +80,7 @@ public interface Property<V> {
      * @return A value
      * @throws E if the property is not present, the exception is thrown
      */
+    @Graph.Helper
     public default <E extends Throwable> V orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
         if (this.isPresent()) return this.value();
         else
