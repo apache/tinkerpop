@@ -944,6 +944,73 @@ gremlin> g.V().as('a').both().jump('a',1000000).range(6,10)
 ==>v[1]
 ==>v[1]
 
+[[repeat-step]]
+Repeat Step
+~~~~~~~~~~~
+
+The `repeat()`-step (*branch*) is used for looping over a traversal given some break predicate. Below are some examples of `repeat()`-step in action.
+
+[source,groovy]
+gremlin> g.V(1).repeat(g.of().out()).until{it.loops()>=2}.values('name') <1>
+==>ripple
+==>lop
+gremlin> g.V().until{it.get().value('name').equals('ripple')}.repeat(g.of().out()).path().by('name') <2>
+==>[marko, josh, ripple]
+==>[josh, ripple]
+==>[ripple]
+
+<1> do-while semantics stating to do `out()` 2 times.
+<2> while-do semantics stating to break if the traverser is at a vertex named "ripple".
+
+If a predetermined number of loops is known, it is possible to simply provide the `until()` an integer (e.g. repeat twice).
+
+[source,groovy]
+gremlin> g.V(1).repeat(g.of().out()).until(2).values('name')
+==>ripple
+==>lop
+
+IMPORTANT: There are two modulators for `repeat()`: `until()` and `emit()`. If `until()` comes after `repeat()` it is do/while looping. If `until()` comes before `repeat()` it is while/do looping. If `emit()` is placed after `repeat()`, it is evaluated on the traversers leaving the repeat-traversal. If `emit()` is placed before `repeat()`, it is evaluated on the traversers prior to entering the repeat-traversal.
+
+The `repeat()`-step also supports an "emit predicate", where the predicate for an empty argument `emit()` is `true`. Whereby the traverser is split in two -- the traverser exits the code block as well as continues back within the code block.
+
+[source,groovy]
+gremlin> g.V(1).repeat(g.of().out()).until(2).emit().path().by('name')
+==>[marko, lop]
+==>[marko, vadas]
+==>[marko, josh]
+==>[marko, josh, ripple]
+==>[marko, josh, lop]
+gremlin> g.V(1).emit().repeat(g.of().out()).until(2).path().by('name')
+==>[marko]
+==>[marko, lop]
+==>[marko, vadas]
+==>[marko, josh]
+==>[marko, josh, ripple]
+==>[marko, josh, lop]
+
+The `emit()`-modulator can take an arbitrary predicate.
+
+[source,groovy]
+gremlin> g.V(1).repeat(g.of().out()).
+                  until(2).
+                  emit{it.get().property('lang').isPresent()}.path().by('name')
+==>[marko, lop]
+==>[marko, josh, ripple]
+==>[marko, josh, lop]
+
+image::repeat-step.png[width=500]
+
+[source,groovy]
+gremlin> g.V(1).repeat(g.of().out()).until(2).emit().path().by('name')
+==>[marko, lop]
+==>[marko, vadas]
+==>[marko, josh]
+==>[marko, josh, ripple]
+==>[marko, josh, lop]
+
+The first time through the `repeat()`, the vertices lop, vadas, and josh are seen. Given that `loops==0`, the traverser repeats. However, because the emit-predicate is declared true, those vertices are emitted. At step 2 (`loops==1`), the vertices traversed are ripple and lop (Josh's created projects, as lop and vadas have no out edges) and are also emitted. Now `loops==1` so the traverser repeats. As ripple and lop have no out edges there are no vertices to traverse. Given that `loops==2`, the until-predicate fails. Therefore, the traverser has seen the vertices: lop, vadas, josh, ripple, and lop.
+
+
 [[retain-step]]
 Retain Step
 ~~~~~~~~~~~
