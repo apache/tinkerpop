@@ -70,21 +70,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
         return null != this.emitPredicate && this.emitPredicate.test(traverser);
     }
 
-    ///
-
-    public static class LoopPredicate<S> implements Predicate<Traverser<S>> {
-        private final int maxLoops;
-
-        public LoopPredicate(final int maxLoops) {
-            this.maxLoops = maxLoops;
-        }
-
-        @Override
-        public boolean test(final Traverser<S> traverser) {
-            return traverser.loops() >= this.maxLoops;
-        }
-    }
-
+    @Override
     protected Traverser<S> processNextStart() throws NoSuchElementException {
         if (null == this.endStep) this.endStep = TraversalHelper.getEnd(this.repeatTraversal);
         ////
@@ -121,6 +107,35 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.repeatTraversal);
+        if (this.emitFirst && this.untilFirst) {
+            return TraversalHelper.makeStepString(this, "until(" + this.untilPredicate + ")", "emit(" + this.emitPredicate + ")", this.repeatTraversal);
+        } else if (this.emitFirst && !this.untilFirst) {
+            return TraversalHelper.makeStepString(this, "emit(" + this.emitPredicate + ")", this.repeatTraversal, "until(" + this.untilPredicate + ")");
+        } else if (!this.emitFirst && this.untilFirst) {
+            return TraversalHelper.makeStepString(this, "until(" + this.untilPredicate + ")", this.repeatTraversal, "emit(" + this.emitPredicate + ")");
+        } else {
+            return TraversalHelper.makeStepString(this, this.repeatTraversal, "until(" + this.untilPredicate + ")", "emit(" + this.emitPredicate + ")");
+        }
+
+    }
+
+    ///
+
+    public static class LoopPredicate<S> implements Predicate<Traverser<S>> {
+        private final int maxLoops;
+
+        public LoopPredicate(final int maxLoops) {
+            this.maxLoops = maxLoops;
+        }
+
+        @Override
+        public boolean test(final Traverser<S> traverser) {
+            return traverser.loops() >= this.maxLoops;
+        }
+
+        @Override
+        public String toString() {
+            return "loops(" + this.maxLoops + ")";
+        }
     }
 }
