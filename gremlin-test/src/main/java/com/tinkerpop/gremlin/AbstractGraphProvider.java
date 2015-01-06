@@ -102,8 +102,10 @@ public abstract class AbstractGraphProvider implements GraphProvider {
     }
 
     protected void readIntoGraph(final Graph g, final String path) throws IOException {
+        final File workingDirectory = computeTestDataRoot(this.getClass(), "kryo-working-directory");
+        if (!workingDirectory.exists()) workingDirectory.mkdirs();
         final GraphReader reader = KryoReader.build()
-                .workingDirectory(File.separator + "tmp")
+                .workingDirectory(workingDirectory.getAbsolutePath())
                 .custom(g.io().gremlinKryoSerializer())
                 .create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
