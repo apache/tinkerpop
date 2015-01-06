@@ -125,7 +125,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReadWriteClassicToGraphMLToFileWithHelpers() throws Exception {
-        final File f = TestHelper.makeTestDataPath(this.getClass(), name.getMethodName() + ".xml");
+        final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".xml");
         try {
             g.io().writeGraphML(f.getAbsolutePath());
 
@@ -205,7 +205,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final GraphMLWriter w = GraphMLWriter.build().create();
 
-        final File f = TestHelper.makeTestDataPath(this.getClass(), "test.txt");
+        final File f = TestHelper.generateTempFile(this.getClass(), "test", ".txt");
         try (final OutputStream out = new FileOutputStream(f)) {
             w.writeGraph(out, g);
         }
@@ -512,7 +512,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReadWriteModernToGraphSONWithHelpers() throws Exception {
-        final File f = TestHelper.makeTestDataPath(this.getClass(), name.getMethodName() + ".gio");
+        final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".json");
         try {
             g.io().writeGraphSON(f.getAbsolutePath());
 

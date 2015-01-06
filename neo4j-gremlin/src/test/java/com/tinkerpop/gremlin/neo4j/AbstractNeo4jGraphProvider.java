@@ -36,15 +36,6 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
         super.loadGraphData(g, loadGraphWith, testClass, testName);
     }
 
-    /**
-     * Removes characters that aren't acceptable in a file path (mostly for windows).
-     */
-    protected static String cleanPathSegment(final String toClean) {
-        final String cleaned = toClean.replaceAll("[.\\\\/:*?\"<>|\\[\\]\\(\\)]", "");
-        if(cleaned.length() == 0) throw new IllegalStateException("Path segment " + toClean + " has not valid characters and is thus empty");
-        return cleaned;
-    }
-
     private void createIndices(final Neo4jGraph g, final LoadGraphWith.GraphData graphData) {
         final Random random = new Random();
         final int pick = random.nextInt(3);

@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.hadoop;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.TestHelper;
 import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
@@ -41,13 +42,13 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-classic-vertices.gio",
                     "tinkerpop-crew-vertices.gio");
             for (final String fileName : kryoResources) {
-                PATHS.put(fileName, generateTempFile(KryoResourceAccess.class, fileName));
+                PATHS.put(fileName, TestHelper.generateTempFileFromResource(KryoResourceAccess.class, fileName, "").getAbsolutePath());
             }
 
             final List<String> graphsonResources = Arrays.asList(
                     "grateful-dead-vertices.ldjson");
             for (final String fileName : graphsonResources) {
-                PATHS.put(fileName, generateTempFile(GraphSONResourceAccess.class, fileName));
+                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath());
             }
 
             final List<String> scriptResources = Arrays.asList(
@@ -55,7 +56,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "script-input.groovy",
                     "script-output.groovy");
             for (final String fileName : scriptResources) {
-                PATHS.put(fileName, generateTempFile(ScriptResourceAccess.class, fileName));
+                PATHS.put(fileName, TestHelper.generateTempFileFromResource(ScriptResourceAccess.class, fileName, "").getAbsolutePath());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -106,18 +107,5 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }
-    }
-
-    public static String generateTempFile(final Class resourceClass, final String fileName) throws IOException {
-        final File temp = computeTestDataRoot(HadoopGraphProvider.class, fileName + ".tmp");
-        final FileOutputStream outputStream = new FileOutputStream(temp);
-        int data;
-        final InputStream inputStream = resourceClass.getResourceAsStream(fileName);
-        while ((data = inputStream.read()) != -1) {
-            outputStream.write(data);
-        }
-        outputStream.close();
-        inputStream.close();
-        return temp.getPath();
     }
 }

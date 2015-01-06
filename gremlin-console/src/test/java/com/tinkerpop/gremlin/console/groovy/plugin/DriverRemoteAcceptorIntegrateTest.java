@@ -11,10 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -42,7 +38,7 @@ public class DriverRemoteAcceptorIntegrateTest extends AbstractGremlinServerInte
     @Override
     public Settings overrideSettings(final Settings settings) {
         try {
-            final String tinkerGraphConfig = generateTempFile(this.getClass(), "tinkergraph-empty.properties");
+            final String tinkerGraphConfig = TestHelper.generateTempFileFromResource(this.getClass(), "tinkergraph-empty.properties", ".tmp").getAbsolutePath();
             settings.graphs.put("g", tinkerGraphConfig);
             return settings;
         } catch (Exception ex) {
@@ -66,47 +62,34 @@ public class DriverRemoteAcceptorIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldConnect() throws Exception {
-        assertThat(acceptor.connect(Arrays.asList(generateTempFile(this.getClass(), "remote.yaml"))).toString(), startsWith("Connected - "));
+        assertThat(acceptor.connect(Arrays.asList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath())).toString(), startsWith("Connected - "));
     }
 
     @Test
     public void shouldConnectAndSubmitSimple() throws Exception {
-        assertThat(acceptor.connect(Arrays.asList(generateTempFile(this.getClass(), "remote.yaml"))).toString(), startsWith("Connected - "));
+        assertThat(acceptor.connect(Arrays.asList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath())).toString(), startsWith("Connected - "));
         assertEquals("2", ((Iterator) acceptor.submit(Arrays.asList("1+1"))).next());
         assertEquals("2", ((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).iterator().next().getString());
     }
 
     @Test
     public void shouldConnectAndSubmitSimpleList() throws Exception {
-        assertThat(acceptor.connect(Arrays.asList(generateTempFile(this.getClass(), "remote.yaml"))).toString(), startsWith("Connected - "));
+        assertThat(acceptor.connect(Arrays.asList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath())).toString(), startsWith("Connected - "));
         assertThat(StreamFactory.stream(((Iterator<String>) acceptor.submit(Arrays.asList("[1,2,3,4,5]")))).collect(Collectors.toList()), contains("1", "2", "3", "4", "5"));
         assertThat(((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).stream().map(Result::getString).collect(Collectors.toList()), contains("1", "2", "3", "4", "5"));
     }
 
     @Test
     public void shouldConnectAndReturnVertices() throws Exception {
-        assertThat(acceptor.connect(Arrays.asList(generateTempFile(this.getClass(), "remote.yaml"))).toString(), startsWith("Connected - "));
+        assertThat(acceptor.connect(Arrays.asList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath())).toString(), startsWith("Connected - "));
         assertThat(StreamFactory.stream(((Iterator<String>) acceptor.submit(Arrays.asList("g.addVertex('name','stephen');g.addVertex('name','marko');g.V()")))).collect(Collectors.toList()), hasSize(2));
         assertThat(((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).stream().map(Result::getString).collect(Collectors.toList()), hasSize(2));
     }
 
     @Test
     public void shouldConnectAndSubmitForNull() throws Exception {
-        assertThat(acceptor.connect(Arrays.asList(generateTempFile(this.getClass(), "remote.yaml"))).toString(), startsWith("Connected - "));
+        assertThat(acceptor.connect(Arrays.asList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath())).toString(), startsWith("Connected - "));
         assertThat(StreamFactory.stream(((Iterator<String>) acceptor.submit(Arrays.asList("g.V().remove()")))).collect(Collectors.toList()), contains("null"));
         assertThat(((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).stream().map(Result::getObject).collect(Collectors.toList()), contains("null"));
-    }
-
-    public static String generateTempFile(final Class resourceClass, final String fileName) throws IOException {
-        final File temp = TestHelper.makeTestDataPath(resourceClass, fileName + ".tmp");
-        final FileOutputStream outputStream = new FileOutputStream(temp);
-        int data;
-        final InputStream inputStream = resourceClass.getResourceAsStream(fileName);
-        while ((data = inputStream.read()) != -1) {
-            outputStream.write(data);
-        }
-        outputStream.close();
-        inputStream.close();
-        return temp.getPath();
     }
 }

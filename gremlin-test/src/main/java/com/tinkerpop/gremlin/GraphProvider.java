@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -11,8 +10,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONModule;
-import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.commons.configuration.Configuration;

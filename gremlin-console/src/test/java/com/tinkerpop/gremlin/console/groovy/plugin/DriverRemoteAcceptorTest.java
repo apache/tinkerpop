@@ -1,17 +1,12 @@
 package com.tinkerpop.gremlin.console.groovy.plugin;
 
 import com.tinkerpop.gremlin.TestHelper;
-import com.tinkerpop.gremlin.console.groovy.plugin.DriverRemoteAcceptor;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -59,19 +54,6 @@ public class DriverRemoteAcceptorTest {
     public void shouldConnect() throws Exception {
         // there is no gremlin server running for this test, but gremlin-driver lazily connects so this should
         // be ok to just validate that a connection is created
-        assertThat(acceptor.connect(Arrays.asList(generateTempFile(this.getClass(), "remote.yaml"))).toString(), startsWith("Connected - "));
-    }
-
-    public static String generateTempFile(final Class resourceClass, final String fileName) throws IOException {
-        final File temp = TestHelper.makeTestDataPath(resourceClass, fileName + ".tmp");
-        final FileOutputStream outputStream = new FileOutputStream(temp);
-        int data;
-        final InputStream inputStream = resourceClass.getResourceAsStream(fileName);
-        while ((data = inputStream.read()) != -1) {
-            outputStream.write(data);
-        }
-        outputStream.close();
-        inputStream.close();
-        return temp.getPath();
+        assertThat(acceptor.connect(Arrays.asList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath())).toString(), startsWith("Connected - "));
     }
 }
