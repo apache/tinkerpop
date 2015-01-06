@@ -381,7 +381,7 @@ public class KryoReader implements GraphReader {
         public Builder workingDirectory(final String workingDirectory) {
             final File f = new File(workingDirectory);
             if (!f.exists() || !f.isDirectory())
-                throw new IllegalArgumentException("The workingDirectory is not a directory or does not exist");
+                throw new IllegalArgumentException(String.format("%s is not a directory or does not exist", workingDirectory));
 
             tempFile = new File(workingDirectory + File.separator + UUID.randomUUID() + ".tmp");
             return this;
