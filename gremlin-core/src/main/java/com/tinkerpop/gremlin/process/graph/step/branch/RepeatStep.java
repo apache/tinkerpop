@@ -62,11 +62,11 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
         return this.emitFirst;
     }
 
-    private final boolean doUntil(final Traverser<S> traverser) {
+    public final boolean doRepeat(final Traverser<S> traverser) {
         return null == this.untilPredicate || this.untilPredicate.test(traverser);
     }
 
-    private final boolean doEmit(final Traverser<S> traverser) {
+    public final boolean doEmit(final Traverser<S> traverser) {
         return null != this.emitPredicate && this.emitPredicate.test(traverser);
     }
 
@@ -92,7 +92,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
             if (this.repeatTraversal.hasNext()) {
                 final Traverser.Admin<S> s = this.endStep.next().asAdmin();
                 s.incrLoops();
-                if (doUntil(s)) {
+                if (doRepeat(s)) {
                     s.resetLoops();
                     return s;
                 } else {
@@ -105,7 +105,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
                 }
             } else {
                 final Traverser.Admin<S> s = this.starts.next();
-                if (this.untilFirst && doUntil(s)) {
+                if (this.untilFirst && doRepeat(s)) {
                     s.resetLoops();
                     return s;
                 }

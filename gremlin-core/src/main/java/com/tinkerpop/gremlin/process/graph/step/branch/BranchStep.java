@@ -10,9 +10,9 @@ import com.tinkerpop.gremlin.process.util.EmptyTraverser;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
-import com.tinkerpop.gremlin.structure.Compare;
-import com.tinkerpop.gremlin.structure.Graph;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -20,13 +20,13 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent, FunctionHolder<Traverser<S>, String> {
+public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent, FunctionHolder<Traverser<S>, Collection<String>> {
 
-    public static final String EMPTY_LABEL = Graph.Hidden.hide("emptyLabel");
+    /*public static final String EMPTY_LABEL = Graph.Hidden.hide("emptyLabel");
     public static final String THIS_LABEL = Graph.Hidden.hide("thisLabel");
-    public static final String THIS_BREAK_LABEL = Graph.Hidden.hide("thisBreakLabel");
+    public static final String THIS_BREAK_LABEL = Graph.Hidden.hide("thisBreakLabel");*/
 
-    private FunctionRing<Traverser<S>, String> functionRing = new FunctionRing<>();
+    private FunctionRing<Traverser<S>, Collection<String>> functionRing = new FunctionRing<>();
     private boolean onGraphComputer = false;
     private TraverserSet<S> graphComputerQueue;
 
@@ -46,21 +46,27 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
                 return this.graphComputerQueue.remove();
             final Traverser<S> traverser = this.starts.next();
             while (!this.functionRing.roundComplete()) {
-                final String goTo = this.functionRing.next().apply(traverser);
-                if (THIS_BREAK_LABEL.equals(goTo)) {
+                final Collection<String> stepLabels = this.functionRing.next().apply(traverser);
+                for (final String stepLabel : stepLabels) {
+                    final Traverser.Admin<S> sibling = traverser.asAdmin().split();
+                    sibling.setFuture(stepLabel.isEmpty() ? this.getNextStep().getLabel() : TraversalHelper.getStep(stepLabel, this.getTraversal()).getNextStep().getLabel());
+                    this.graphComputerQueue.add(sibling);
+                }
+
+                /*if (THIS_BREAK_LABEL.equals(stepLabels)) {
                     final Traverser.Admin<S> sibling = traverser.asAdmin().split();
                     sibling.setFuture(this.getNextStep().getLabel());
                     this.graphComputerQueue.add(sibling);
                     break;
-                } else if (THIS_LABEL.equals(goTo)) {
+                } else if (THIS_LABEL.equals(stepLabels)) {
                     final Traverser.Admin<S> sibling = traverser.asAdmin().split();
                     sibling.setFuture(this.getNextStep().getLabel());
                     this.graphComputerQueue.add(sibling);
-                } else if (!EMPTY_LABEL.equals(goTo)) {
+                } else if (!EMPTY_LABEL.equals(stepLabels)) {
                     final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                    sibling.setFuture(goTo);
+                    sibling.setFuture(stepLabels);
                     this.graphComputerQueue.add(sibling);
-                }
+                }*/
             }
             this.functionRing.reset();
         }
@@ -69,8 +75,21 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
     private final Traverser<S> standardAlgorithm() {
         final Traverser<S> traverser = this.starts.next();
         while (!this.functionRing.roundComplete()) {
-            final String goTo = this.functionRing.next().apply(traverser);
-            if (THIS_BREAK_LABEL.equals(goTo)) {
+            final Collection<String> stepLabels = this.functionRing.next().apply(traverser);
+            for (final String stepLabel : stepLabels) {
+                final Traverser.Admin<S> sibling = traverser.asAdmin().split();
+                if (stepLabel.isEmpty()) {
+                    sibling.setFuture(this.getNextStep().getLabel());
+                    this.getNextStep().addStart(sibling);
+                } else {
+                    sibling.setFuture(stepLabel);
+                    TraversalHelper.<S, Object>getStep(stepLabel, this.getTraversal())
+                            .getNextStep()
+                            .addStart((Traverser) sibling);
+                }
+            }
+
+            /*if (THIS_BREAK_LABEL.equals(goTo)) {
                 final Traverser.Admin<S> sibling = traverser.asAdmin().split();
                 sibling.setFuture(this.getNextStep().getLabel());
                 this.getNextStep().addStart(sibling);
@@ -85,7 +104,7 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
                 TraversalHelper.<S, Object>getStep(goTo, this.getTraversal())
                         .getNextStep()
                         .addStart((Traverser) sibling);
-            }
+            }*/
         }
         this.functionRing.reset();
         return EmptyTraverser.instance();
@@ -111,12 +130,12 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
     }
 
     @Override
-    public void addFunction(final Function<Traverser<S>, String> function) {
+    public void addFunction(final Function<Traverser<S>, Collection<String>> function) {
         this.functionRing.addFunction(function);
     }
 
     @Override
-    public List<Function<Traverser<S>, String>> getFunctions() {
+    public List<Function<Traverser<S>, Collection<String>>> getFunctions() {
         return this.functionRing.getFunctions();
     }
 
@@ -125,52 +144,31 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
       // TODO
     }*/
 
-    public static class GoToLabel<S> implements Function<Traverser<S>, String> {
+    public static class GoToLabels<S> implements Function<Traverser<S>, Collection<String>> {
 
-        private final String goToLabel;
+        private final Collection<String> stepLabels;
 
-        public GoToLabel(final String goToLabel) {
-            this.goToLabel = goToLabel;
+        public GoToLabels(final Collection<String> stepLabels) {
+            this.stepLabels = stepLabels;
         }
 
-        public String apply(final Traverser<S> traverser) {
-            return this.goToLabel;
-        }
-    }
-
-    public static class GoToLabelWithLoops<S> implements Function<Traverser<S>, String> {
-
-        private final String goToLabel;
-        private final String breakLabel;
-        private final Compare loopCompare;
-        private final short loops;
-
-        public GoToLabelWithLoops(final String goToLabel, final Compare loopCompare, final short loops, final String breakLabel) {
-            this.goToLabel = goToLabel;
-            this.breakLabel = breakLabel;
-            this.loops = loops;
-            this.loopCompare = loopCompare;
-        }
-
-        public String apply(final Traverser<S> traverser) {
-            return this.loopCompare.test(traverser.loops(), this.loops) ? this.goToLabel : this.breakLabel;
+        public Collection<String> apply(final Traverser<S> traverser) {
+            return this.stepLabels;
         }
     }
 
-    public static class GoToLabelWithPredicate<S> implements Function<Traverser<S>, String> {
+    public static class GoToLabelsWithPredicate<S> implements Function<Traverser<S>, Collection<String>> {
 
-        private final String goToLabel;
-        private final String breakLabel;
+        private final Collection<String> stepLabels;
         private final Predicate<Traverser<S>> goToPredicate;
 
-        public GoToLabelWithPredicate(final String goToLabel, final Predicate<Traverser<S>> goToPredicate, final String breakLabel) {
-            this.goToLabel = goToLabel;
-            this.breakLabel = breakLabel;
+        public GoToLabelsWithPredicate(final Collection<String> stepLabels, final Predicate<Traverser<S>> goToPredicate) {
+            this.stepLabels = stepLabels;
             this.goToPredicate = goToPredicate;
         }
 
-        public String apply(final Traverser<S> traverser) {
-            return this.goToPredicate.test(traverser) ? this.goToLabel : this.breakLabel;
+        public Collection<String> apply(final Traverser<S> traverser) {
+            return this.goToPredicate.test(traverser) ? this.stepLabels : Collections.emptyList();
 
         }
     }
