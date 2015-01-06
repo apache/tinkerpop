@@ -271,6 +271,7 @@ g.V().out('knows').values('name') <1>
 g.V().out('knows').map{it.get().value('name') + ' is the friend name'} <2>
 g.V().out('knows').sideEffect(System.out.&println) <3>
 g.V().as('person').out('knows').as('friend').select{it.get().value('name')} <4>
+g.V().repeat(g.of().out()).until(2) <5>
 
 [source,java]
 // Gremlin-Java
@@ -278,8 +279,10 @@ g.V().out("knows").values("name") <1>
 g.V().out("knows").map(t -> t.get().value("name") + " is the friend name") <2>
 g.V().out("knows").sideEffect(System.out::println) <3>
 g.V().as("person").out("knows").as("friend").select((Function<Vertex, String>) v -> v.value("name")) <4>
+g.V().repeat(g.<Vertex>of().out()).until(2) <5>
 
 <1> All the non-lambda step chaining is identical in Gremlin-Groovy and Gremlin-Java. However, note that Groovy supports `'` strings as well as `"` strings.
 <2> In Groovy, lambdas are called closures and have a different syntax, where Groovy supports the `it` keyword and Java doesn't with all parameters requiring naming.
 <3> The syntax for method references differs slightly between link:https://docs.oracle.com/javase/tutorial/java/javaOO/methodreferences.html[Java] and link:http://mrhaki.blogspot.de/2009/08/groovy-goodness-turn-methods-into.html[Gremlin-Groovy].
 <4> Groovy is lenient on object typing and Java is not. When the parameter type of the lambda is not known, typecasting is required.
+<5> Start-less traversals generated via `Graph.of()` require a start typing in Java, but not in Groovy.
