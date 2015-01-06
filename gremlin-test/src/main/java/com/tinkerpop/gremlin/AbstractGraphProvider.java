@@ -9,7 +9,6 @@ import org.apache.commons.configuration.Configuration;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Map;
 
 /**
@@ -88,11 +87,11 @@ public abstract class AbstractGraphProvider implements GraphProvider {
     }
 
     protected String getWorkingDirectory() {
-        return TestHelper.computeTestDataRoot(this.getClass(), "graph-provider-data").getAbsolutePath();
+        return TestHelper.makeTestDataPath(this.getClass(), "graph-provider-data").getAbsolutePath();
     }
 
     protected void readIntoGraph(final Graph g, final String path) throws IOException {
-        final File workingDirectory = TestHelper.computeTestDataRoot(this.getClass(), "kryo-working-directory");
+        final File workingDirectory = TestHelper.makeTestDataPath(this.getClass(), "kryo-working-directory");
         if (!workingDirectory.exists()) workingDirectory.mkdirs();
         final GraphReader reader = KryoReader.build()
                 .workingDirectory(workingDirectory.getAbsolutePath())

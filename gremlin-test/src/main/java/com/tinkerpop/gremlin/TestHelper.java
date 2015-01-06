@@ -7,7 +7,7 @@ import java.net.URL;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class TestHelper {
-    public static File computeTestDataRoot(final Class clazz, final String childPath) {
+    public static File makeTestDataPath(final Class clazz, final String childPath) {
         final String clsUri = clazz.getName().replace('.', '/') + ".class";
         final URL url = clazz.getClassLoader().getResource(clsUri);
         final String clsPath = url.getPath();

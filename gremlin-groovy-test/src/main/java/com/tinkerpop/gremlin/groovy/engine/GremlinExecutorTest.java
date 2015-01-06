@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.groovy.engine;
 
+import com.tinkerpop.gremlin.TestHelper;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
@@ -360,7 +361,7 @@ public class GremlinExecutorTest {
     }
 
     public static String generateTempFile(final Class resourceClass, final String fileName) throws IOException {
-        final File temp = File.createTempFile(fileName, ".groovy");
+        final File temp = TestHelper.makeTestDataPath(resourceClass, fileName + ".groovy");
         final FileOutputStream outputStream = new FileOutputStream(temp);
         int data;
         final InputStream inputStream = resourceClass.getResourceAsStream(fileName);

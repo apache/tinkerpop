@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.console.groovy.plugin;
 
+import com.tinkerpop.gremlin.TestHelper;
 import com.tinkerpop.gremlin.driver.Result;
 import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -97,7 +98,7 @@ public class DriverRemoteAcceptorIntegrateTest extends AbstractGremlinServerInte
     }
 
     public static String generateTempFile(final Class resourceClass, final String fileName) throws IOException {
-        final File temp = File.createTempFile(fileName, ".tmp");
+        final File temp = TestHelper.makeTestDataPath(resourceClass, fileName + ".tmp");
         final FileOutputStream outputStream = new FileOutputStream(temp);
         int data;
         final InputStream inputStream = resourceClass.getResourceAsStream(fileName);
