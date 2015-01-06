@@ -54,7 +54,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX() {
+    public void g_VX1X_repeatXoutX_untilXloops_gte_2X_name() {
         final List<Traversal<Vertex, String>> traversals = new ArrayList<>();
         traversals.add(get_g_VX1X_repeatXoutX_untilXloops_gte_2X_name(convertToVertexId("marko")));
         traversals.forEach(traversal -> {
@@ -71,7 +71,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXxX_out_jumpXx_loops_lt_2_trueX_path() {
+    public void g_V_repeatXoutX_untilX2X_emit_path() {
         final List<Traversal<Vertex, Path>> traversals = new ArrayList<>();
         traversals.add(get_g_V_repeatXoutX_untilXloops_gte_2X_emit_path());
         traversals.add(get_g_V_repeatXoutX_untilX2X_emit_path());
@@ -92,7 +92,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXxX_out_jumpXx_2X_asXyX_in_jumpXy_2X_name() {
+    public void g_V_repeatXoutX_untilX2X_repeatXinX_untilX2X_name() {
         final List<Traversal<Vertex, String>> traversals = new ArrayList<>();
         traversals.add(get_g_V_repeatXoutX_untilXloops_gte_2X_repeatXinX_untilXloops_gte_2X_name());
         traversals.add(get_g_V_repeatXoutX_untilX2X_repeatXinX_untilX2X_name());
@@ -110,7 +110,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXxX_out_jumpXx_2() {
+    public void g_V_repeatXoutX_untilXloops_gte_2X() {
         final List<Traversal<Vertex, Vertex>> traversals = new ArrayList<>();
         traversals.add(get_g_V_repeatXoutX_untilX2X());
         traversals.add(get_g_V_repeatXoutX_untilXloops_gte_2X());
@@ -129,7 +129,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXxX_out_jumpXx_2_trueX() {
+    public void g_V_repeatXoutX_untilX2X_emit() {
         final List<Traversal<Vertex, Vertex>> traversals = new ArrayList<>();
         traversals.add(get_g_V_repeatXoutX_untilX2X_emit());
         traversals.add(get_g_V_repeatXoutX_untilXloops_gte_2X_emit());
@@ -154,7 +154,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_untilXa_loops_gt_1X_out_asXaX_valueXnameX() {
+    public void g_VX1X_untilX2X_repeatXoutX_name() {
         final List<Traversal<Vertex, String>> traversals = Arrays.asList(
                 get_g_VX1X_untilXloops_gte_2X_repeatXoutX_name(convertToVertexId("marko")),
                 get_g_VX1X_untilX2X_repeatXoutX_name(convertToVertexId("marko")));
