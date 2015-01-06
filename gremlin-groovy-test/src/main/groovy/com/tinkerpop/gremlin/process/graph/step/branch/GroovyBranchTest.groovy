@@ -12,16 +12,16 @@ public abstract class GroovyBranchTest {
     public static class StandardTest extends BranchTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_branch_byXsoftware__a__X_byXbX_asXaX_lang_branch_byXcX_asXbX_name_asXcX() {
-            g.V.branch.by { it.label() == 'software' ? ['a'] : [] }.by {['b']}.as('a').lang.branch.by { ['c'] }.as('b').name.as('c')
+        public Traversal<Vertex, String> get_g_V_branch_byXsoftware__a_bX_asXaX_lang_branchXcX_asXbX_name_asXcX() {
+            g.V.branch{ it.label() == 'software' ? ['a','b'] : ['b'] }.as('a').lang.branch{ ['c'] }.as('b').name.as('c')
         }
     }
 
     public static class ComputerTest extends BranchTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_branch_byXsoftware__a__X_byXbX_asXaX_lang_branch_byXcX_asXbX_name_asXcX() {
-            ComputerTestHelper.compute("g.V.branch.by{it.label() == 'software' ? ['a'] : []}.by{['b']}.as('a').lang.branch.by{['c']}.as('b').name.as('c')", g);
+        public Traversal<Vertex, String> get_g_V_branch_byXsoftware__a_bX_asXaX_lang_branchXcX_asXbX_name_asXcX() {
+            ComputerTestHelper.compute("g.V.branch{it.label() == 'software' ? ['a','b'] : ['b']}.as('a').lang.branch{['c']}.as('b').name.as('c')", g);
         }
     }
 }

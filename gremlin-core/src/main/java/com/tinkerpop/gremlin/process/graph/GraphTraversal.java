@@ -510,8 +510,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default GraphTraversal<S, E> branch() {
-        return this.asAdmin().addStep(new BranchStep<>(this));
+    public default GraphTraversal<S, E> branch(final Function<Traverser<E>, Collection<String>> function) {
+        final BranchStep<E> branchStep = new BranchStep<>(this);
+        branchStep.setFunction(function);
+        return this.asAdmin().addStep(branchStep);
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final Predicate<Traverser<E>> jumpPredicate, final Predicate<Traverser<E>> emitPredicate) {

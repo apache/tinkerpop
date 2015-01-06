@@ -102,16 +102,6 @@ public class TinkerGraphTest {
         System.out.println(t);
     }
 
-    @Test
-    @Ignore
-    public void testPlay3() throws Exception {
-        Graph g = TinkerFactory.createClassic();
-        Traversal t = g.V().branch().<Traverser<Vertex>>by(x -> x.get().value("name").equals("marko") ? "a" : "b").as("a").out().values("name").as("b");
-        System.out.println(t);
-        t.forEachRemaining(System.out::println);
-        System.out.println(t);
-    }
-
     /**
      * No assertions.  Just write out the graph for convenience.
      */

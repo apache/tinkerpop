@@ -4,10 +4,8 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.EmptyTraverser;
-import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 
@@ -20,9 +18,9 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent, FunctionHolder<Traverser<S>, Collection<String>> {
+public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent {
 
-    private FunctionRing<Traverser<S>, Collection<String>> functionRing = new FunctionRing<>();
+    private Function<Traverser<S>, Collection<String>> branchFunction;
     private boolean onGraphComputer = false;
     private TraverserSet<S> graphComputerQueue;
 
@@ -41,34 +39,28 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
             if (!this.graphComputerQueue.isEmpty())
                 return this.graphComputerQueue.remove();
             final Traverser<S> traverser = this.starts.next();
-            while (!this.functionRing.roundComplete()) {
-                final Collection<String> stepLabels = this.functionRing.next().apply(traverser);
-                for (final String stepLabel : stepLabels) {
-                    final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                    sibling.setFuture(stepLabel.isEmpty() ? this.getNextStep().getLabel() : TraversalHelper.getStep(stepLabel, this.getTraversal()).getNextStep().getLabel());
-                    this.graphComputerQueue.add(sibling);
-                }
+            final Collection<String> stepLabels = this.branchFunction.apply(traverser);
+            for (final String stepLabel : stepLabels) {
+                final Traverser.Admin<S> sibling = traverser.asAdmin().split();
+                sibling.setFuture(stepLabel.isEmpty() ? this.getNextStep().getLabel() : TraversalHelper.getStep(stepLabel, this.getTraversal()).getNextStep().getLabel());
+                this.graphComputerQueue.add(sibling);
             }
-            this.functionRing.reset();
         }
     }
 
     private final Traverser<S> standardAlgorithm() {
         final Traverser<S> traverser = this.starts.next();
-        while (!this.functionRing.roundComplete()) {
-            final Collection<String> stepLabels = this.functionRing.next().apply(traverser);
-            for (final String stepLabel : stepLabels) {
-                final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                if (stepLabel.isEmpty()) {
-                    sibling.setFuture(this.getNextStep().getLabel());
-                    this.getNextStep().addStart(sibling);
-                } else {
-                    sibling.setFuture(stepLabel);
-                    TraversalHelper.<S, Object>getStep(stepLabel, this.getTraversal()).getNextStep().addStart((Traverser) sibling);
-                }
+        final Collection<String> stepLabels = this.branchFunction.apply(traverser);
+        for (final String stepLabel : stepLabels) {
+            final Traverser.Admin<S> sibling = traverser.asAdmin().split();
+            if (stepLabel.isEmpty()) {
+                sibling.setFuture(this.getNextStep().getLabel());
+                this.getNextStep().addStart(sibling);
+            } else {
+                sibling.setFuture(stepLabel);
+                TraversalHelper.<S, Object>getStep(stepLabel, this.getTraversal()).getNextStep().addStart((Traverser) sibling);
             }
         }
-        this.functionRing.reset();
         return EmptyTraverser.instance();
     }
 
@@ -87,23 +79,16 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
     public BranchStep<S> clone() throws CloneNotSupportedException {
         final BranchStep<S> clone = (BranchStep<S>) super.clone();
         if (this.onGraphComputer) clone.graphComputerQueue = new TraverserSet<S>();
-        clone.functionRing = this.functionRing.clone();
         return clone;
     }
 
-    @Override
-    public void addFunction(final Function<Traverser<S>, Collection<String>> function) {
-        this.functionRing.addFunction(function);
-    }
-
-    @Override
-    public List<Function<Traverser<S>, Collection<String>>> getFunctions() {
-        return this.functionRing.getFunctions();
+    public void setFunction(final Function<Traverser<S>, Collection<String>> function) {
+        this.branchFunction = function;
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.functionRing);
+        return TraversalHelper.makeStepString(this, this.branchFunction);
     }
 
     public static class GoToLabels<S> implements Function<Traverser<S>, Collection<String>> {
@@ -119,7 +104,7 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
         }
 
         public String toString() {
-            return "goTo(" + this.stepLabels.toString().replace("[","").replace("]","") + ")";
+            return "goTo(" + this.stepLabels.toString().replace("[", "").replace("]", "") + ")";
         }
     }
 

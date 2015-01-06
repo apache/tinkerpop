@@ -384,8 +384,8 @@ public abstract interface ElementTraversal<A extends Element> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default GraphTraversal<A, A> branch() {
-        return this.start().branch();
+    public default GraphTraversal<A, A> branch(final Function<Traverser<A>, Collection<String>> function) {
+        return this.start().branch(function);
     }
 
     public default GraphTraversal<A, A> jump(final String jumpLabel, final Predicate<Traverser<A>> ifPredicate, final Predicate<Traverser<A>> emitPredicate) {

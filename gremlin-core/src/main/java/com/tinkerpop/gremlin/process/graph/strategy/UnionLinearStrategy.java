@@ -40,7 +40,7 @@ public class UnionLinearStrategy extends AbstractTraversalStrategy {
             }
 
             BranchStep branchStep = new BranchStep<>(traversal);
-            branchStep.addFunction(new BranchStep.GoToLabels<>(branchLabels));
+            branchStep.setFunction(new BranchStep.GoToLabels<>(branchLabels));
             TraversalHelper.replaceStep(unionStep, branchStep, traversal);
 
             Step currentStep = branchStep;
@@ -55,7 +55,7 @@ public class UnionLinearStrategy extends AbstractTraversalStrategy {
                     break;
                 } else {
                     branchStep = new BranchStep(traversal);
-                    branchStep.addFunction(new BranchStep.GoToLabels(Collections.singletonList(endLabel)));
+                    branchStep.setFunction(new BranchStep.GoToLabels(Collections.singletonList(endLabel)));
                     TraversalHelper.insertAfterStep(branchStep, currentStep, traversal);
                     currentStep = branchStep;
                 }

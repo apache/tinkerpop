@@ -58,7 +58,7 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
             resetLoopStep.setConsumer(traverser -> traverser.asAdmin().resetLoops());
             TraversalHelper.insertAfterStep(resetLoopStep, rightBranchStep, traversal);
 
-            leftBranchStep.addFunction(traverser -> {
+            leftBranchStep.setFunction(traverser -> {
                 final List<String> stepLabels = new ArrayList<>(2);
                 if (repeatStep.isUntilFirst()) {    // left until
                     if (repeatStep.doRepeat((Traverser) traverser)) {
@@ -78,7 +78,7 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
                 }
             });
 
-            rightBranchStep.addFunction(traverser -> {
+            rightBranchStep.setFunction(traverser -> {
                 final List<String> stepLabels = new ArrayList<>(2);
                 if (!repeatStep.isUntilFirst()) {      // right until
                     if (repeatStep.doRepeat((Traverser) traverser)) {

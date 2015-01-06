@@ -34,7 +34,7 @@ There are four generic steps by which all other specific steps described later e
 | `flatMap(Function<Traverser<S>, Iterator<E>>)` | map the traverser to an iterator of `E` objects that are streamed to the next step.
 | `filter(Predicate<Traverser<S>>)` | map the traverser to either true or false, where false will not pass the traverser to the next step.
 | `sideEffect(Consumer<Traverser<S>>)` | perform some operation on the traverser and pass it to the next step.
-| `branch().by(Function<Traverser<S>,Collection<String>>)` | split the traverser to all steps labeled by returned string collection.
+| `branch(Function<Traverser<S>,Collection<String>>)` | split the traverser to all steps labeled in returned string collection.
 |=========================================================
 
 The `Traverser<S>` object provides access to:
@@ -102,7 +102,7 @@ v[6]
 
 image:branch-lambda.png[width=180,float=right]
 [source,groovy]
-gremlin> g.V().branch().by{it.get().value('name') == 'marko' ? ['a'] : ['b'] }.as('a').
+gremlin> g.V().branch{it.get().value('name') == 'marko' ? ['a'] : ['b'] }.as('a').
                  values('age').branch().by{['c']}.as('b').
                  values('name').as('c') <1>
 ==>vadas
