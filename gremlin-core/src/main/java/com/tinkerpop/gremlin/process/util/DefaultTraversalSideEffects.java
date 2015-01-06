@@ -156,6 +156,13 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
     }
 
     @Override
+    public void mergeSideEffects(final Traversal.SideEffects sideEffects) {
+        this.objectMap.forEach(sideEffects::set);
+        this.supplierMap.forEach(sideEffects::registerSupplierIfAbsent);
+        // TODO: add sack information?
+    }
+
+    @Override
     public String toString() {
         return StringFactory.traversalSideEffectsString(this);
     }

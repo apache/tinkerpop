@@ -26,6 +26,14 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
+ * A {@link Traversal} represents a directed walk over a {@link Graph}.
+ * This is the base interface for all traversal's, where each extending interface is seen as a domain specific language.
+ * For example, {@link GraphTraversal} is a domain specific language for traversing a graph using "graph concepts" (e.g. vertices, edges).
+ * Another example may represent the graph using "social concepts" (e.g. people, cities, artifacts).
+ * A {@link Traversal} is evaluated in one of two ways: {@link TraversalEngine#STANDARD} (OLTP) and {@link TraversalEngine#COMPUTER} (OLAP).
+ * OLTP traversals leverage an iterator and are executed within a single JVM (with data access allowed to be remote).
+ * OLAP traversals leverage {@link GraphComputer} and are executed between multiple JVMs (or cores).
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Traversal<S, E> extends Iterator<E>, Cloneable {
@@ -41,13 +49,6 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      * @return the admin of this traversal
      */
     public Admin<S, E> asAdmin();
-
-    /**
-     * Get the {@link SideEffects} associated with the traversal.
-     *
-     * @return The traversal sideEffects
-     */
-    public SideEffects sideEffects();
 
     /**
      * Submit the traversal to a {@link GraphComputer} for OLAP execution.
@@ -276,6 +277,25 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
             this.getSteps().stream().forEach(step -> ((Reversible) step).reverse());
             return this;
         }
+
+        /**
+         * Add the current traversal's {@link SideEffects} data and suppliers to the provided {@link SideEffects}.
+         * This is typically done by simply calling {@link SideEffects#mergeSideEffects}.
+         * Then set the current traversal's sideEffects to the provided sideEffects.
+         * This that this traversals sideEffects are equivalent (the same variable frame) as the provided sideEffects.
+         * This method is typically used by steps that maintain internal traversals but do not want sideEffect isolation.
+         *
+         * @param sideEffects the sideEffects to add this traversal's sideEffect data to.
+         */
+        public void mergeSideEffects(final SideEffects sideEffects);
+
+        /**
+         * Get the {@link SideEffects} associated with the traversal.
+         *
+         * @return The traversal sideEffects
+         */
+        public SideEffects getSideEffects();
+
     }
 
     public interface SideEffects extends Cloneable {
@@ -460,6 +480,13 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @return The cloned sideEffects
          */
         public SideEffects clone() throws CloneNotSupportedException;
+
+        /**
+         * Add the current {@link SideEffects} data and suppliers to the provided {@link SideEffects}.
+         *
+         * @param sideEffects the sideEffects to add this traversal's sideEffect data to.
+         */
+        public void mergeSideEffects(final SideEffects sideEffects);
 
         public static class Exceptions {
 

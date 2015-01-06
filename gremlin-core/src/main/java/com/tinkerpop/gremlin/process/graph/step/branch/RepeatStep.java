@@ -1,7 +1,9 @@
 package com.tinkerpop.gremlin.process.graph.step.branch;
 
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.step.util.MarkerIdentityStep;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
@@ -13,11 +15,12 @@ import java.util.function.Predicate;
  */
 public final class RepeatStep<S> extends AbstractStep<S, S> {
 
-    private Traversal<S, S> repeatTraversal;
-    private Predicate<Traverser<S>> until = null;
-    private Predicate<Traverser<S>> emit = null;
-    boolean untilFirst = false;
-    boolean emitFirst = false;
+    private Traversal<S, S> repeatTraversal = null;
+    private Predicate<Traverser<S>> untilPredicate = null;
+    private Predicate<Traverser<S>> emitPredicate = null;
+    private boolean untilFirst = false;
+    private boolean emitFirst = false;
+    private Step<?, S> endStep = null;
 
     public RepeatStep(final Traversal traversal) {
         super(traversal);
@@ -25,16 +28,18 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
 
     public void setRepeatTraversal(final Traversal<S, S> repeatTraversal) {
         this.repeatTraversal = repeatTraversal;
+        this.repeatTraversal.asAdmin().addStep(new MarkerIdentityStep<>(this.repeatTraversal)); // TODO: this is really bad
+        this.repeatTraversal.asAdmin().mergeSideEffects(this.getTraversal().asAdmin().getSideEffects());
     }
 
     public void setUntilPredicate(final Predicate<Traverser<S>> untilPredicate) {
         if (null == this.repeatTraversal) this.untilFirst = true;
-        this.until = untilPredicate;
+        this.untilPredicate = untilPredicate;
     }
 
     public void setEmitPredicate(final Predicate<Traverser<S>> emitPredicate) {
         if (null == this.repeatTraversal) this.emitFirst = true;
-        this.emit = emitPredicate;
+        this.emitPredicate = emitPredicate;
     }
 
     public Traversal<S, S> getRepeatTraversal() {
@@ -42,11 +47,11 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
     }
 
     public Predicate<Traverser<S>> getUntilPredicate() {
-        return this.until;
+        return this.untilPredicate;
     }
 
     public Predicate<Traverser<S>> getEmitPredicate() {
-        return this.emit;
+        return this.emitPredicate;
     }
 
     public boolean isUntilFirst() {
@@ -55,6 +60,14 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
 
     public boolean isEmitFirst() {
         return this.emitFirst;
+    }
+
+    public final boolean doRepeat(final Traverser<S> traverser) {
+        return null == this.untilPredicate || this.untilPredicate.test(traverser);
+    }
+
+    public final boolean doEmit(final Traverser<S> traverser) {
+        return null != this.emitPredicate && this.emitPredicate.test(traverser);
     }
 
     ///
@@ -73,16 +86,18 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
     }
 
     protected Traverser<S> processNextStart() throws NoSuchElementException {
+        if (null == this.endStep) this.endStep = TraversalHelper.getEnd(this.repeatTraversal);
+        ////
         while (true) {
             if (this.repeatTraversal.hasNext()) {
-                final Traverser.Admin<S> s = TraversalHelper.getEnd(this.repeatTraversal).next().asAdmin();
+                final Traverser.Admin<S> s = this.endStep.next().asAdmin();
                 s.incrLoops();
-                if (this.until.test(s)) {
+                if (doRepeat(s)) {
                     s.resetLoops();
                     return s;
                 } else {
                     this.repeatTraversal.asAdmin().addStart(s);
-                    if (null != this.emit && this.emit.test(s)) {
+                    if (doEmit(s)) {
                         final Traverser.Admin<S> emitSplit = s.split();
                         emitSplit.resetLoops();
                         return emitSplit;
@@ -90,19 +105,17 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
                 }
             } else {
                 final Traverser.Admin<S> s = this.starts.next();
-                s.resetLoops();
-                if (this.untilFirst && this.until.test(s)) {
+                if (this.untilFirst && doRepeat(s)) {
                     s.resetLoops();
                     return s;
                 }
                 this.repeatTraversal.asAdmin().addStart(s);
-                if (this.emitFirst && null != this.emit && this.emit.test(s)) {
+                if (this.emitFirst && doEmit(s)) {
                     final Traverser.Admin<S> emitSplit = s.split();
                     emitSplit.resetLoops();
                     return emitSplit;
                 }
             }
-
         }
     }
 

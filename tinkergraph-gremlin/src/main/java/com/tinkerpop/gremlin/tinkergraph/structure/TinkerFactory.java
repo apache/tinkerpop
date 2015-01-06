@@ -117,11 +117,11 @@ public class TinkerFactory {
     public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
         public default SocialTraversal<S, Vertex> people() {
-            return (SocialTraversal) this.asAdmin().addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("age")));
+            return (SocialTraversal) this.asAdmin().addStep(new StartStep<>(this, this.asAdmin().getSideEffects().getGraph().V().has("age")));
         }
 
         public default SocialTraversal<S, Vertex> people(String name) {
-            return (SocialTraversal) this.asAdmin().addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("name", name)));
+            return (SocialTraversal) this.asAdmin().addStep(new StartStep<>(this, this.asAdmin().getSideEffects().getGraph().V().has("name", name)));
         }
 
         public default SocialTraversal<S, Vertex> knows() {

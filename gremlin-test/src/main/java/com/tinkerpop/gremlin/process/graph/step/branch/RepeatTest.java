@@ -52,6 +52,10 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_V_emit_repeatXoutX_untilX2X_path();
 
+    // SIDE-EFFECTS
+
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_untilX2X_capXmX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_repeatXoutX_untilXloops_gte_2X_name() {
@@ -193,6 +197,25 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_repeatXgroupCountXmX_byXnameX_outX_untilX2X_capXmX() {
+        final List<Traversal<Vertex, Map<String, Long>>> traversals = Arrays.asList(get_g_V_repeatXgroupCountXmX_byXnameX_outX_untilX2X_capXmX());
+        traversals.forEach(traversal -> {
+            printTraversalForm(traversal);
+            final Map<String,Long> map = traversal.next();
+            assertFalse(traversal.hasNext());
+            //[ripple:2, peter:1, vadas:2, josh:2, lop:4, marko:1]
+            assertEquals(6, map.size());
+            assertEquals(1l, map.get("marko").longValue());
+            assertEquals(2l, map.get("vadas").longValue());
+            assertEquals(2l, map.get("josh").longValue());
+            assertEquals(4l, map.get("lop").longValue());
+            assertEquals(2l, map.get("ripple").longValue());
+            assertEquals(1l, map.get("peter").longValue());
+        });
+    }
+
     public static class StandardTest extends RepeatTest {
         public StandardTest() {
             requiresGraphComputer = false;
@@ -261,6 +284,11 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_emit_untilX2X_repeatXoutX_path() {
             return g.V().emit().until(2).repeat(g.<Vertex>of().out()).path();
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_untilX2X_capXmX() {
+            return g.V().repeat(g.<Vertex>of().groupCount("m").by("name").out()).until(2).cap("m");
         }
     }
 
@@ -332,6 +360,11 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_emit_untilX2X_repeatXoutX_path() {
             return g.V().emit().until(2).repeat(g.<Vertex>of().out()).path().submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_untilX2X_capXmX() {
+            return g.V().repeat(g.<Vertex>of().groupCount("m").by("name").out()).until(2).<Map<String, Long>>cap("m").submit(g.compute());
         }
     }
 }

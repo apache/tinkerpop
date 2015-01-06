@@ -44,7 +44,7 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public SideEffects sideEffects() {
+    public SideEffects getSideEffects() {
         return SIDE_EFFECTS;
     }
 
@@ -91,5 +91,9 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public TraverserGenerator getTraverserGenerator() {
         return null;
+    }
+
+    @Override
+    public void mergeSideEffects(final SideEffects sideEffects) {
     }
 }

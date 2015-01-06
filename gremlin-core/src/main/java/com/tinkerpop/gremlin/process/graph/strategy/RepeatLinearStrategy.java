@@ -4,15 +4,17 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -42,16 +44,13 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
             Step currentStep = repeatStep.getPreviousStep();
             final Step firstStep = currentStep;
             TraversalHelper.removeStep(repeatStep, traversal);
-            for (final Step<?, ?> step : repeatStep.getRepeatTraversal().asAdmin().getSteps()) {
-                TraversalHelper.insertAfterStep(step, currentStep, traversal);
-                currentStep = step;
-            }
+            currentStep = TraversalHelper.insertTraversal(repeatStep.getRepeatTraversal(), currentStep, traversal);
             final SideEffectStep<?> incrLoopStep = new SideEffectStep<>(traversal);
             incrLoopStep.setConsumer(traverser -> traverser.asAdmin().incrLoops());
             TraversalHelper.insertAfterStep(incrLoopStep, currentStep, traversal);
             /////////
-            final BranchStep leftBranchStep = new BranchStep(traversal);
-            final BranchStep rightBranchStep = new BranchStep(traversal);
+            final BranchStep<?> leftBranchStep = new BranchStep<>(traversal);
+            final BranchStep<?> rightBranchStep = new BranchStep<>(traversal);
             TraversalHelper.insertAfterStep(leftBranchStep, firstStep, traversal);
             TraversalHelper.insertAfterStep(rightBranchStep, incrLoopStep, traversal);
             /////////
@@ -59,23 +58,47 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
             resetLoopStep.setConsumer(traverser -> traverser.asAdmin().resetLoops());
             TraversalHelper.insertAfterStep(resetLoopStep, rightBranchStep, traversal);
 
-            // HANDLE UNTIL
-            if (repeatStep.isUntilFirst()) {
-                leftBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(resetLoopStep.getLabel(), repeatStep.getUntilPredicate(), BranchStep.THIS_LABEL));
-                rightBranchStep.addFunction(t -> leftBranchStep.getLabel());
-            } else {
-                rightBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(BranchStep.THIS_BREAK_LABEL, repeatStep.getUntilPredicate(), leftBranchStep.getLabel()));
-                leftBranchStep.addFunction(t -> BranchStep.THIS_LABEL);
-            }
-
-            // HANDLE EMIT
-            if (null != repeatStep.getEmitPredicate()) {
-                if (repeatStep.isEmitFirst()) {
-                    leftBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(resetLoopStep.getLabel(), repeatStep.getEmitPredicate().and((Predicate) repeatStep.getUntilPredicate().negate()), BranchStep.EMPTY_LABEL));
-                } else {
-                    rightBranchStep.addFunction(new BranchStep.GoToLabelWithPredicate<>(resetLoopStep.getLabel(), repeatStep.getEmitPredicate(), BranchStep.EMPTY_LABEL));
+            leftBranchStep.addFunction(traverser -> {
+                final List<String> stepLabels = new ArrayList<>(2);
+                if (repeatStep.isUntilFirst()) {    // left until
+                    if (repeatStep.doRepeat((Traverser) traverser)) {
+                        stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
+                        return stepLabels;
+                    } else {
+                        stepLabels.add("");
+                        if (repeatStep.isEmitFirst() && repeatStep.doEmit((Traverser) traverser))
+                            stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
+                        return stepLabels;
+                    }
+                } else {  // right until
+                    stepLabels.add("");
+                    if (repeatStep.isEmitFirst() && repeatStep.doEmit((Traverser) traverser))
+                        stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
+                    return stepLabels;
                 }
-            }
+            });
+
+            rightBranchStep.addFunction(traverser -> {
+                final List<String> stepLabels = new ArrayList<>(2);
+                if (!repeatStep.isUntilFirst()) {      // right until
+                    if (repeatStep.doRepeat((Traverser) traverser)) {
+                        stepLabels.add("");
+                        return stepLabels;
+                    } else {
+                        stepLabels.add(leftBranchStep.getPreviousStep().getLabel());
+                        if (!repeatStep.isEmitFirst() && repeatStep.doEmit((Traverser) traverser))
+                            stepLabels.add("");
+                        return stepLabels;
+                    }
+
+                } else { // left until
+                    stepLabels.add(leftBranchStep.getPreviousStep().getLabel());
+                    if (!repeatStep.isEmitFirst() && repeatStep.doEmit((Traverser) traverser)) {
+                        stepLabels.add("");
+                    }
+                    return stepLabels;
+                }
+            });
         }
     }
 

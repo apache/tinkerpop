@@ -21,7 +21,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
 
     public PathTraverser(final T t, final Step<T, ?> step) {
         this.t = t;
-        this.sideEffects = step.getTraversal().sideEffects();
+        this.sideEffects = step.getTraversal().asAdmin().getSideEffects();
         this.sideEffects.getSackInitialValue().ifPresent(supplier -> this.sack = supplier.get());
         this.path = new ImmutablePath(step.getLabel(), t);
     }

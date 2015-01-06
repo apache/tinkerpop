@@ -24,7 +24,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     private boolean locked = false; // an optimization so getTraversalEngine().isEmpty() isn't required on each next()/hasNext()
 
     protected List<Step> steps = new ArrayList<>();
-    protected DefaultTraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
+    protected SideEffects sideEffects = new DefaultTraversalSideEffects();
     protected Optional<TraversalEngine> traversalEngine = Optional.empty();
 
     static {
@@ -38,7 +38,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
 
     public DefaultTraversal(final Graph graph) {
         this();
-        this.sideEffects().setGraph(graph);
+        this.getSideEffects().setGraph(graph);
     }
 
     @Override
@@ -66,7 +66,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     }
 
     @Override
-    public SideEffects sideEffects() {
+    public SideEffects getSideEffects() {
         return this.sideEffects;
     }
 
@@ -132,5 +132,11 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     @Override
     public TraverserGenerator getTraverserGenerator() {
         return TraversalStrategies.GlobalCache.getStrategies(this.getClass()).getTraverserGenerator(this);
+    }
+
+    @Override
+    public void mergeSideEffects(final SideEffects sideEffects) {
+        this.sideEffects.mergeSideEffects(sideEffects);
+        this.sideEffects = sideEffects;
     }
 }

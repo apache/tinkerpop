@@ -114,7 +114,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public static <S> GraphTraversal<S, S> of(final Graph graph) {
         final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
-        traversal.sideEffects().setGraph(graph);
+        traversal.asAdmin().getSideEffects().setGraph(graph);
         return traversal;
     }
 
@@ -609,17 +609,17 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// UTILITY STEPS /////////////////////
 
     public default GraphTraversal<S, E> withSideEffect(final String key, final Supplier supplier) {
-        this.sideEffects().registerSupplier(key, supplier);
+        this.asAdmin().getSideEffects().registerSupplier(key, supplier);
         return this;
     }
 
     public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
-        this.sideEffects().setSack(initialValue, Optional.of(splitOperator));
+        this.asAdmin().getSideEffects().setSack(initialValue, Optional.of(splitOperator));
         return this;
     }
 
     public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue) {
-        this.sideEffects().setSack(initialValue, Optional.empty());
+        this.asAdmin().getSideEffects().setSack(initialValue, Optional.empty());
         return this;
     }
 

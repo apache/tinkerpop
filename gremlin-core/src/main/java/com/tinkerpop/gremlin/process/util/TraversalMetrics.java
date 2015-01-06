@@ -33,7 +33,7 @@ public final class TraversalMetrics implements Serializable {
             return;
         }
 
-        step.getTraversal().sideEffects().getOrCreate(ProfileStep.METRICS_KEY, TraversalMetrics::new).startInternal(step);
+        step.getTraversal().asAdmin().getSideEffects().getOrCreate(ProfileStep.METRICS_KEY, TraversalMetrics::new).startInternal(step);
     }
 
     public static final void stop(final Step<?, ?> step) {
@@ -41,7 +41,7 @@ public final class TraversalMetrics implements Serializable {
             return;
         }
 
-        step.getTraversal().sideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).stopInternal(step);
+        step.getTraversal().asAdmin().getSideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).stopInternal(step);
     }
 
     public static final void finish(final Step<?, ?> step, final Traverser.Admin<?> traverser) {
@@ -49,7 +49,7 @@ public final class TraversalMetrics implements Serializable {
             return;
         }
 
-        step.getTraversal().sideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).finishInternal(step, traverser);
+        step.getTraversal().asAdmin().getSideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).finishInternal(step, traverser);
     }
 
      private static boolean profiling(final Traversal<?, ?> traversal) {

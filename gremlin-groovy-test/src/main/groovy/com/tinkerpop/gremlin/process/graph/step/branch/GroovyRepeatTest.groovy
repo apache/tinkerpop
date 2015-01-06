@@ -79,6 +79,11 @@ public abstract class GroovyRepeatTest {
         public Traversal<Vertex, Path> get_g_V_emit_untilX2X_repeatXoutX_path() {
             g.V.emit.until(2).repeat(g.of().out).path
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_untilX2X_capXmX() {
+            g.V.repeat(g.of().groupCount('m').by('name').out).until(2).cap('m')
+        }
     }
 
     public static class ComputerTest extends RepeatTest {
@@ -149,6 +154,11 @@ public abstract class GroovyRepeatTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_emit_untilX2X_repeatXoutX_path() {
             ComputerTestHelper.compute("g.V.emit.until(2).repeat(g.of().out).path", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_untilX2X_capXmX() {
+            ComputerTestHelper.compute("g.V.repeat(g.of().groupCount('m').by('name').out).until(2).cap('m')", g)
         }
     }
 }

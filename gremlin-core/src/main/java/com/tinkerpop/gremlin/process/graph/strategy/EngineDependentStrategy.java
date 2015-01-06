@@ -5,10 +5,6 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -22,7 +18,7 @@ public class EngineDependentStrategy extends AbstractTraversalStrategy implement
     @Override
     public void apply(final Traversal<?, ?> traversal, final TraversalEngine traversalEngine) {
         if (traversalEngine.equals(TraversalEngine.COMPUTER))
-            traversal.sideEffects().removeGraph();
+            traversal.asAdmin().getSideEffects().removeGraph();
         traversal.asAdmin().getSteps().stream()
                 .filter(step -> step instanceof EngineDependent)
                 .forEach(step -> ((EngineDependent) step).onEngine(traversalEngine));

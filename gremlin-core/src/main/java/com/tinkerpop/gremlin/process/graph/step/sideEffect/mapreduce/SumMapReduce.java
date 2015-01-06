@@ -39,8 +39,8 @@ public final class SumMapReduce implements MapReduce<MapReduce.NullObject, Doubl
 
     @Override
     public void map(Vertex vertex, MapEmitter<MapReduce.NullObject, Double> emitter) {
-        this.traversal.sideEffects().setLocalVertex(vertex);
-        emitter.emit(this.traversal.sideEffects().orElse(SumStep.SUM_KEY, 0.0d));
+        this.traversal.asAdmin().getSideEffects().setLocalVertex(vertex);
+        emitter.emit(this.traversal.asAdmin().getSideEffects().orElse(SumStep.SUM_KEY, 0.0d));
     }
 
     @Override
