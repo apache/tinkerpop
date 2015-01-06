@@ -79,30 +79,20 @@ public abstract class AbstractGraphProvider implements GraphProvider {
             directory.delete();
         }
 
-        // todo: is system.err.println ok compared to an exception. exception can fail the build on windows.
-
         // overkill code, simply allowing us to detect when data dir is in use.  useful though because without it
         // tests may fail if a database is re-used in between tests somehow.  this directory really needs to be
-        // cleared between tests runs and this exception will make it clear if it is not.
-        if (directory.exists()) {
-            System.err.println("unable to delete directory " + directory.getAbsolutePath());
-        }
+        // cleared between tests runs and this exception will make it clear if it is not. this code used to
+        // throw an exception but that fails windows builds in some cases unecessarily - hopefully the print
+        // to screen is enough to hint failures due to the old directory still being in place.
+        if (directory.exists()) System.err.println("unable to delete directory " + directory.getAbsolutePath());
     }
 
     protected String getWorkingDirectory() {
-        return computeTestDataRoot(this.getClass(), "test-data").getAbsolutePath();
-    }
-
-    protected static File computeTestDataRoot(final Class clazz, final String childPath) {
-        final String clsUri = clazz.getName().replace('.', '/') + ".class";
-        final URL url = clazz.getClassLoader().getResource(clsUri);
-        final String clsPath = url.getPath();
-        final File root = new File(clsPath.substring(0, clsPath.length() - clsUri.length()));
-        return new File(root.getParentFile(), childPath);
+        return TestHelper.computeTestDataRoot(this.getClass(), "graph-provider-data").getAbsolutePath();
     }
 
     protected void readIntoGraph(final Graph g, final String path) throws IOException {
-        final File workingDirectory = computeTestDataRoot(this.getClass(), "kryo-working-directory");
+        final File workingDirectory = TestHelper.computeTestDataRoot(this.getClass(), "kryo-working-directory");
         if (!workingDirectory.exists()) workingDirectory.mkdirs();
         final GraphReader reader = KryoReader.build()
                 .workingDirectory(workingDirectory.getAbsolutePath())
