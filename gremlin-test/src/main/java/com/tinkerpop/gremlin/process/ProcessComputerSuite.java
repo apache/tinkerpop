@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategyTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.BranchTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatTest;
@@ -84,6 +85,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             GraphComputerTest.ComputerTest.class,   // todo: not sure this should be here as it forces retest of GraphComputer without an "implementation"
 
             // branch
+            BranchTest.ComputerTest.class,
             ChooseTest.ComputerTest.class,
             JumpTest.ComputerTest.class,
             RepeatTest.ComputerTest.class,
@@ -154,6 +156,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             GraphComputerTest.class,
 
             // branch
+            BranchTest.class,
             ChooseTest.class,
             JumpTest.class,
             RepeatTest.class,

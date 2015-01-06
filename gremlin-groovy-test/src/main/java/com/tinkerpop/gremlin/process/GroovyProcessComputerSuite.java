@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.GroovyBranchTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyJumpTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyRepeatTest;
@@ -59,6 +60,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyGraphComputerTest.ComputerTest.class,
 
             //branch
+            GroovyBranchTest.ComputerTest.class,
             GroovyChooseTest.ComputerTest.class,
             GroovyJumpTest.ComputerTest.class,
             GroovyRepeatTest.ComputerTest.class,

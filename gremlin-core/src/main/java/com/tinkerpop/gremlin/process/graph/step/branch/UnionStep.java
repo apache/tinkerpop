@@ -2,16 +2,19 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalRing;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class UnionStep<S, E> extends AbstractStep<S, E> {
+public final class UnionStep<S, E> extends AbstractStep<S, E> implements TraversalHolder<S,E> {
 
     private TraversalRing<S, E> traversalRing;
 
@@ -34,7 +37,7 @@ public final class UnionStep<S, E> extends AbstractStep<S, E> {
         }
     }
 
-    public Traversal<S, E>[] getTraversals() {
+    public Collection<Traversal<S, E>> getTraversals() {
         return this.traversalRing.getTraversals();
     }
 

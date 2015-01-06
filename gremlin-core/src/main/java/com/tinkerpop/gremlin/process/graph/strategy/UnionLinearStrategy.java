@@ -35,7 +35,7 @@ public class UnionLinearStrategy extends AbstractTraversalStrategy {
         for (final UnionStep<?, ?> unionStep : TraversalHelper.getStepsOfClass(UnionStep.class, traversal)) {
             final String endLabel = UNION_END + unionStepCounter;
             final Collection<String> branchLabels = new ArrayList<>();
-            for (int i = 0; i < unionStep.getTraversals().length; i++) {
+            for (int i = 0; i < unionStep.getTraversals().size(); i++) {
                 branchLabels.add(UNION + unionStepCounter + "." + i);
             }
 
@@ -44,10 +44,11 @@ public class UnionLinearStrategy extends AbstractTraversalStrategy {
             TraversalHelper.replaceStep(unionStep, branchStep, traversal);
 
             Step currentStep = branchStep;
-            for (int i = 0; i < unionStep.getTraversals().length; i++) {
-                currentStep.setLabel(UNION + unionStepCounter + "." + i);
-                currentStep = TraversalHelper.insertTraversal(unionStep.getTraversals()[i], currentStep, traversal);
-                if (i == unionStep.getTraversals().length - 1) {
+            int c = 0;
+            for (final Traversal unionTraversal : unionStep.getTraversals()) {
+                currentStep.setLabel(UNION + unionStepCounter + "." + c++);
+                currentStep = TraversalHelper.insertTraversal(unionTraversal, currentStep, traversal);
+                if (c == unionStep.getTraversals().size()) {
                     final IdentityStep finalStep = new IdentityStep(traversal);
                     finalStep.setLabel(endLabel);
                     TraversalHelper.insertAfterStep(finalStep, currentStep, traversal);

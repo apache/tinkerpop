@@ -22,10 +22,6 @@ import java.util.function.Predicate;
  */
 public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent, FunctionHolder<Traverser<S>, Collection<String>> {
 
-    /*public static final String EMPTY_LABEL = Graph.Hidden.hide("emptyLabel");
-    public static final String THIS_LABEL = Graph.Hidden.hide("thisLabel");
-    public static final String THIS_BREAK_LABEL = Graph.Hidden.hide("thisBreakLabel");*/
-
     private FunctionRing<Traverser<S>, Collection<String>> functionRing = new FunctionRing<>();
     private boolean onGraphComputer = false;
     private TraverserSet<S> graphComputerQueue;
@@ -52,21 +48,6 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
                     sibling.setFuture(stepLabel.isEmpty() ? this.getNextStep().getLabel() : TraversalHelper.getStep(stepLabel, this.getTraversal()).getNextStep().getLabel());
                     this.graphComputerQueue.add(sibling);
                 }
-
-                /*if (THIS_BREAK_LABEL.equals(stepLabels)) {
-                    final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                    sibling.setFuture(this.getNextStep().getLabel());
-                    this.graphComputerQueue.add(sibling);
-                    break;
-                } else if (THIS_LABEL.equals(stepLabels)) {
-                    final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                    sibling.setFuture(this.getNextStep().getLabel());
-                    this.graphComputerQueue.add(sibling);
-                } else if (!EMPTY_LABEL.equals(stepLabels)) {
-                    final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                    sibling.setFuture(stepLabels);
-                    this.graphComputerQueue.add(sibling);
-                }*/
             }
             this.functionRing.reset();
         }
@@ -83,28 +64,9 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
                     this.getNextStep().addStart(sibling);
                 } else {
                     sibling.setFuture(stepLabel);
-                    TraversalHelper.<S, Object>getStep(stepLabel, this.getTraversal())
-                            .getNextStep()
-                            .addStart((Traverser) sibling);
+                    TraversalHelper.<S, Object>getStep(stepLabel, this.getTraversal()).getNextStep().addStart((Traverser) sibling);
                 }
             }
-
-            /*if (THIS_BREAK_LABEL.equals(goTo)) {
-                final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                sibling.setFuture(this.getNextStep().getLabel());
-                this.getNextStep().addStart(sibling);
-                break;
-            } else if (THIS_LABEL.equals(goTo)) {
-                final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                sibling.setFuture(this.getNextStep().getLabel());
-                this.getNextStep().addStart(sibling);
-            } else if (!EMPTY_LABEL.equals(goTo)) {
-                final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                sibling.setFuture(goTo);
-                TraversalHelper.<S, Object>getStep(goTo, this.getTraversal())
-                        .getNextStep()
-                        .addStart((Traverser) sibling);
-            }*/
         }
         this.functionRing.reset();
         return EmptyTraverser.instance();
@@ -139,10 +101,10 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
         return this.functionRing.getFunctions();
     }
 
-    /*@Override
+    @Override
     public String toString() {
-      // TODO
-    }*/
+        return TraversalHelper.makeStepString(this, this.functionRing);
+    }
 
     public static class GoToLabels<S> implements Function<Traverser<S>, Collection<String>> {
 
@@ -154,6 +116,10 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
 
         public Collection<String> apply(final Traverser<S> traverser) {
             return this.stepLabels;
+        }
+
+        public String toString() {
+            return "goTo(" + this.stepLabels.toString().replace("[","").replace("]","") + ")";
         }
     }
 
@@ -169,7 +135,6 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
 
         public Collection<String> apply(final Traverser<S> traverser) {
             return this.goToPredicate.test(traverser) ? this.stepLabels : Collections.emptyList();
-
         }
     }
 }

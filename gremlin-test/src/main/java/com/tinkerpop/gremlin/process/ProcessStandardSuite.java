@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
+import com.tinkerpop.gremlin.process.graph.step.branch.BranchTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatTest;
@@ -83,6 +84,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] allTests = new Class<?>[]{
             // branch
+            BranchTest.StandardTest.class,
             ChooseTest.StandardTest.class,
             JumpTest.StandardTest.class,
             RepeatTest.StandardTest.class,
@@ -151,6 +153,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      */
     protected static Class<?>[] testsToEnforce = new Class<?>[]{
             // branch
+            BranchTest.class,
             ChooseTest.class,
             JumpTest.class,
             RepeatTest.class,

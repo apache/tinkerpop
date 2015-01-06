@@ -37,7 +37,7 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy {
         for (final ChooseStep chooseStep : TraversalHelper.getStepsOfClass(ChooseStep.class, traversal)) {
             final int currentStepCounter = chooseStepCounter;
             final String endLabel = CHOOSE_PREFIX_END + chooseStepCounter;
-            final BranchStep<?> branchStep = new BranchStep<>(traversal);
+            BranchStep<?> branchStep = new BranchStep<>(traversal);
             branchStep.addFunction(traverser -> {
                 final String goTo = objectToString(currentStepCounter, chooseStep.getMapFunction().apply(traverser));
                 return TraversalHelper.hasLabel(goTo, traversal) ? Collections.singletonList(goTo) : Collections.emptyList();
@@ -51,10 +51,10 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy {
                 currentStep.setLabel(objectToString(currentStepCounter, entry.getKey()));
                 currentStep = TraversalHelper.insertTraversal(entry.getValue(), currentStep, traversal);
                 if (traversalIterator.hasNext()) {
-                    final BranchStep breakStep = new BranchStep(traversal);
-                    breakStep.addFunction(new BranchStep.GoToLabels(Collections.singletonList(endLabel)));
-                    TraversalHelper.insertAfterStep(breakStep, currentStep, traversal);
-                    currentStep = breakStep;
+                    branchStep = new BranchStep(traversal);
+                    branchStep.addFunction(new BranchStep.GoToLabels(Collections.singletonList(endLabel)));
+                    TraversalHelper.insertAfterStep(branchStep, currentStep, traversal);
+                    currentStep = branchStep;
                 } else {
                     final IdentityStep finalStep = new IdentityStep(traversal);
                     finalStep.setLabel(endLabel);
