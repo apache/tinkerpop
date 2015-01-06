@@ -383,7 +383,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReadWriteModernToKryoToFileWithHelpers() throws Exception {
-        final File f = TestHelper.makeTestDataPath(this.getClass(), name.getMethodName() + ".gio");
+        final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".gio");
         try {
             g.io().writeKryo(f.getAbsolutePath());
 

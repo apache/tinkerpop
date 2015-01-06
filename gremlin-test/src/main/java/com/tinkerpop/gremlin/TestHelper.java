@@ -16,11 +16,21 @@ public final class TestHelper {
      * {@code /target} directory.
      */
     public static File makeTestDataPath(final Class clazz, final String childPath) {
+        // build.dir gets sets during runs of tests with maven via the surefire configuration in the pom.xml
+        // if that is not set as an environment variable, then the path is computed based on the location of the
+        // requested class.  the computed version at least as far as intellij is concerned comes drops it into
+        // /target/test-classes.  the build.dir had to be added because maven doesn't seem to like a computed path
+        // as it likes to find that path in the .m2 directory and other weird places......
+        final String buildDirectory = System.getProperty("build.dir");
+        final File root = null == buildDirectory ? new File(computePath(clazz)).getParentFile() : new File(buildDirectory);
+        return new File(root, cleanPathSegment(childPath));
+    }
+
+    private static String computePath(final Class clazz) {
         final String clsUri = clazz.getName().replace('.', '/') + ".class";
         final URL url = clazz.getClassLoader().getResource(clsUri);
         final String clsPath = url.getPath();
-        final File root = new File(clsPath.substring(0, clsPath.length() - clsUri.length()));
-        return new File(root.getParentFile(), cleanPathSegment(childPath));
+        return clsPath.substring(0, clsPath.length() - clsUri.length());
     }
 
     /**
@@ -38,7 +48,7 @@ public final class TestHelper {
      * {@link TestHelper#makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
     public static File generateTempFileFromResource(final Class resourceClass, final String resourceName, final String extension) throws IOException {
-        final File temp = makeTestDataPath(resourceClass, "temp/resources");
+        final File temp = makeTestDataPath(resourceClass, "resources");
         if (!temp.exists()) temp.mkdirs();
         final File tempFile = new File(temp, resourceName + extension);
         final FileOutputStream outputStream = new FileOutputStream(tempFile);
