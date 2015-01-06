@@ -25,13 +25,13 @@ public final class CountStep<S> extends AbstractStep<S, Long> implements SideEff
 
     @Override
     public Traverser<Long> processNextStart() {
-        long counter = this.getTraversal().sideEffects().getOrCreate(COUNT_KEY, () -> 0l);
+        long counter = this.getTraversal().asAdmin().getSideEffects().getOrCreate(COUNT_KEY, () -> 0l);
         try {
             while (true) {
                 counter = counter + this.starts.next().bulk();
             }
         } catch (final NoSuchElementException e) {
-            this.getTraversal().sideEffects().set(COUNT_KEY, counter);
+            this.getTraversal().asAdmin().getSideEffects().set(COUNT_KEY, counter);
         }
         throw FastNoSuchElementException.instance();
     }
@@ -39,7 +39,7 @@ public final class CountStep<S> extends AbstractStep<S, Long> implements SideEff
     @Override
     public void reset() {
         super.reset();
-        this.getTraversal().sideEffects().remove(COUNT_KEY);
+        this.getTraversal().asAdmin().getSideEffects().remove(COUNT_KEY);
     }
 
     @Override

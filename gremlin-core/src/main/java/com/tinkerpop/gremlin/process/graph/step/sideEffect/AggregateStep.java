@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.AggregateMa
 import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,7 +29,7 @@ public final class AggregateStep<S> extends BarrierStep<S> implements SideEffect
         super(traversal);
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
-        this.traversal.sideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSet::new);
+        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSet::new);
         this.setConsumer(traverserSet ->
                 traverserSet.forEach(traverser ->
                         TraversalHelper.addToCollection(traverser.sideEffects().get(this.sideEffectKey),

@@ -270,7 +270,7 @@ public class TraversalHelper {
     }
 
     public static void verifyStepLabelIsNotASideEffectKey(final String label, final Traversal<?, ?> traversal) {
-        if (traversal.sideEffects().exists(label))
+        if (traversal.asAdmin().getSideEffects().exists(label))
             throw new IllegalArgumentException("The provided step label is already used as a side effect key: " + label);
     }
 

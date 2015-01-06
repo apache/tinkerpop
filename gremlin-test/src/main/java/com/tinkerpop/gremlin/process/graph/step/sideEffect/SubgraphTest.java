@@ -63,7 +63,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
         printTraversalForm(traversal);
         traversal.iterate();
 
-        assertVertexEdgeCounts(5, 4).accept(traversal.sideEffects().get("sg"));
+        assertVertexEdgeCounts(5, 4).accept(traversal.asAdmin().getSideEffects().get("sg"));
 
         graphProvider.clear(subgraph, config);
     }

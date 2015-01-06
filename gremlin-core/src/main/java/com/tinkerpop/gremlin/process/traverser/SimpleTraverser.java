@@ -34,7 +34,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
 
     public SimpleTraverser(final T t, final Step<T, ?> step) {
         this.t = t;
-        this.sideEffects = step.getTraversal().sideEffects();
+        this.sideEffects = step.getTraversal().asAdmin().getSideEffects();
         this.sideEffects.getSackInitialValue().ifPresent(supplier -> this.sack = supplier.get());
         getOrCreateFromCache(this.sideEffects).extend(step.getLabel(), t);
     }

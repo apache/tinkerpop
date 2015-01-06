@@ -12,7 +12,6 @@ import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupMapReduce;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,7 +39,7 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.reduceMap = new HashMap<>();
-        this.traversal.sideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMap<K, Collection<V>>::new);
+        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMap<K, Collection<V>>::new);
         this.setConsumer(traverser -> {
             final Map<K, Collection<V>> groupByMap = traverser.sideEffects().get(this.sideEffectKey);
             doGroup(traverser, groupByMap, this.keyFunction, this.valueFunction);

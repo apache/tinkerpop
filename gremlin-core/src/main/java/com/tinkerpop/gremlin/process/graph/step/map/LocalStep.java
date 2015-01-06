@@ -45,7 +45,7 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements Traversa
 
     private static final <S, E> void generateFunction(final LocalStep<S, E> localStep) {
         localStep.setFunction(traverser -> {
-            // TODO: traverser.asAdmin().setSideEffects(localStep.localTraversal.sideEffects());
+            // TODO: traverser.asAdmin().mergeSideEffects(localStep.localTraversal.sideEffects());
             localStep.localTraversal.asAdmin().reset();
             TraversalHelper.getStart(localStep.localTraversal).addStart(traverser);
             return localStep.localTraversal;

@@ -23,7 +23,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
 
     public PageRankStep(final Traversal traversal, final double alpha) {
         super(traversal);
-        this.graph = traversal.sideEffects().getGraph();
+        this.graph = traversal.asAdmin().getSideEffects().getGraph();
         this.incidentTraversal = () -> this.graph.<Vertex>of().outE();
         this.alpha = alpha;
     }

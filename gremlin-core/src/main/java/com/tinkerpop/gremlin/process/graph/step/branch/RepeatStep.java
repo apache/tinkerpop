@@ -25,6 +25,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
 
     public void setRepeatTraversal(final Traversal<S, S> repeatTraversal) {
         this.repeatTraversal = repeatTraversal;
+        this.repeatTraversal.asAdmin().mergeSideEffects(this.getTraversal().asAdmin().getSideEffects());
     }
 
     public void setUntilPredicate(final Predicate<Traverser<S>> untilPredicate) {
@@ -102,7 +103,6 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
                     return emitSplit;
                 }
             }
-
         }
     }
 

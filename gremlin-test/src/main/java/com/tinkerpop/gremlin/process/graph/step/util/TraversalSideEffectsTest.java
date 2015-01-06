@@ -37,7 +37,7 @@ public abstract class TraversalSideEffectsTest extends AbstractGremlinProcessTes
 
         @Override
         public Traversal.SideEffects get_g_V_sideEffects() {
-            return g.V().sideEffects();
+            return g.V().asAdmin().getSideEffects();
         }
     }
 }

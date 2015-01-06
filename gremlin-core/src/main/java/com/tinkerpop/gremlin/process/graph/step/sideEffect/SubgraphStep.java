@@ -46,7 +46,7 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.edgeIdsAdded = null == edgeIdHolder ? new HashSet<>() : edgeIdHolder;
         this.idVertexMap = null == idVertexMap ? new HashMap<>() : idVertexMap;
-        this.traversal.sideEffects().registerSupplierIfAbsent(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
+        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
         this.setConsumer(traverser -> {
             if (null == this.subgraph) {
                 this.subgraph = traverser.sideEffects().get(this.sideEffectKey);
