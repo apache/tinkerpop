@@ -76,7 +76,7 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
-            return g.V().<Integer>values("age").fold(0, (seed, age) -> seed + age.get());
+            return g.V().<Integer>values("age").fold(0, (seed, age) -> seed + age);
         }
     }
 
@@ -98,7 +98,7 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
-            return g.V().<Integer>values("age").fold(0, (seed, age) -> seed + age.get()).submit(g.compute());
+            return g.V().<Integer>values("age").fold(0, (seed, age) -> seed + age).submit(g.compute());
         }
     }
 }

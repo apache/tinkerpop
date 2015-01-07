@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.graph.step.branch.GroovyBranchTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyRepeatTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUnionTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyBetweenTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCoinTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyDedupTest;
@@ -15,7 +16,6 @@ import com.tinkerpop.gremlin.process.graph.step.filter.GroovyExceptTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyFilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyIntervalTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRangeTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRetainTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovySampleTest;
@@ -68,13 +68,13 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyRepeatTest.StandardTest.class,
             GroovyUnionTest.StandardTest.class,
             // filter
+            GroovyBetweenTest.StandardTest.class,
             GroovyCyclicPathTest.StandardTest.class,
             GroovyDedupTest.StandardTest.class,
             GroovyExceptTest.StandardTest.class,
             GroovyFilterTest.StandardTest.class,
             GroovyHasNotTest.StandardTest.class,
             GroovyHasTest.StandardTest.class,
-            GroovyIntervalTest.StandardTest.class,
             GroovyCoinTest.StandardTest.class,
             GroovyRangeTest.StandardTest.class,
             GroovyRetainTest.StandardTest.class,

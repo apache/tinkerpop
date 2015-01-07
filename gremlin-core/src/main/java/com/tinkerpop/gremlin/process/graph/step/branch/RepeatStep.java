@@ -125,7 +125,43 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements PathConsu
         return TraversalHelper.trackPaths(this.repeatTraversal);
     }
 
-    ///
+    //////
+    public static <A, B, C extends Traversal<A, B>> C addRepeatToTraversal(final C traversal, final Traversal<B, B> repeatTraversal) {
+        final Step<?, B> step = TraversalHelper.getEnd(traversal);
+        if (step instanceof RepeatStep && null == ((RepeatStep) step).getRepeatTraversal()) {
+            ((RepeatStep<B>) step).setRepeatTraversal(repeatTraversal);
+        } else {
+            final RepeatStep<B> repeatStep = new RepeatStep<>(traversal);
+            repeatStep.setRepeatTraversal(repeatTraversal);
+            traversal.asAdmin().addStep(repeatStep);
+        }
+        return traversal;
+    }
+
+    public static <A, B, C extends Traversal<A, B>> C addUntilToTraversal(final C traversal, final Predicate<Traverser<B>> untilPredicate) {
+        final Step<?, B> step = TraversalHelper.getEnd(traversal);
+        if (step instanceof RepeatStep && null == ((RepeatStep) step).getUntilPredicate()) {
+            ((RepeatStep<B>) step).setUntilPredicate(untilPredicate);
+        } else {
+            final RepeatStep<B> repeatStep = new RepeatStep<>(traversal);
+            repeatStep.setUntilPredicate(untilPredicate);
+            traversal.asAdmin().addStep(repeatStep);
+        }
+        return traversal;
+    }
+
+    public static <A, B, C extends Traversal<A, B>> C addEmitToTraversal(final C traversal, final Predicate<Traverser<B>> emitPredicate) {
+        final Step<?, B> step = TraversalHelper.getEnd(traversal);
+        if (step instanceof RepeatStep && null == ((RepeatStep) step).getEmitPredicate()) {
+            ((RepeatStep<B>) step).setEmitPredicate(emitPredicate);
+        } else {
+            final RepeatStep<B> repeatStep = new RepeatStep<>(traversal);
+            repeatStep.setEmitPredicate(emitPredicate);
+            traversal.asAdmin().addStep(repeatStep);
+        }
+        return traversal;
+    }
+    //////
 
     public static class LoopPredicate<S> implements Predicate<Traverser<S>> {
         private final int maxLoops;

@@ -167,7 +167,7 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().fold();
     }
 
-    public default <E2> Neo4jGraphTraversal<A, E2> fold(final E2 seed, final BiFunction<E2, Traverser<A>, E2> foldFunction) {
+    public default <E2> Neo4jGraphTraversal<A, E2> fold(final E2 seed, final BiFunction<E2, A, E2> foldFunction) {
         return this.start().fold(seed, foldFunction);
     }
 
@@ -245,8 +245,8 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().where(constraint);
     }
 
-    public default Neo4jGraphTraversal<A, A> interval(final String key, final Comparable startValue, final Comparable endValue) {
-        return this.start().interval(key, startValue, endValue);
+    public default Neo4jGraphTraversal<A, A> between(final String key, final Comparable startValue, final Comparable endValue) {
+        return this.start().between(key, startValue, endValue);
     }
 
     public default Neo4jGraphTraversal<A, A> coin(final double probability) {
@@ -390,11 +390,11 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().branch(function);
     }
 
-    public default <E2> Neo4jGraphTraversal<A, E2> choose(final Predicate<Traverser<A>> choosePredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
+    public default <E2> Neo4jGraphTraversal<A, E2> choose(final Predicate<A> choosePredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
         return this.start().choose(choosePredicate, trueChoice, falseChoice);
     }
 
-    public default <E2, M> Neo4jGraphTraversal<A, E2> choose(final Function<Traverser<A>, M> mapFunction, final Map<M, Traversal<?, E2>> choices) {
+    public default <E2, M> Neo4jGraphTraversal<A, E2> choose(final Function<A, M> mapFunction, final Map<M, Traversal<?, E2>> choices) {
         return this.start().choose(mapFunction, choices);
     }
 

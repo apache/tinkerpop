@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import org.javatuples.Pair;
 
@@ -13,19 +12,19 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class FoldStep<S, E> extends MapStep<S, E> implements Reducing<E, Traverser<S>> {
+public final class FoldStep<S, E> extends MapStep<S, E> implements Reducing<E, S> {
 
     private final Supplier<E> seed;
-    private final BiFunction<E, Traverser<S>, E> foldFunction;
+    private final BiFunction<E, S, E> foldFunction;
 
     public FoldStep(final Traversal traversal) {
-        this(traversal, () -> (E) new ArrayList<S>(), (seed, traverser) -> {
-            ((List) seed).add(traverser.get());
+        this(traversal, () -> (E) new ArrayList<S>(), (seed, start) -> {
+            ((List) seed).add(start);
             return seed;
         });
     }
 
-    public FoldStep(final Traversal traversal, final Supplier<E> seed, final BiFunction<E, Traverser<S>, E> foldFunction) {
+    public FoldStep(final Traversal traversal, final Supplier<E> seed, final BiFunction<E, S, E> foldFunction) {
         super(traversal);
         this.seed = seed;
         this.foldFunction = foldFunction;
@@ -33,7 +32,7 @@ public final class FoldStep<S, E> extends MapStep<S, E> implements Reducing<E, T
     }
 
     @Override
-    public Pair<Supplier<E>, BiFunction<E, Traverser<S>, E>> getReducer() {
+    public Pair<Supplier<E>, BiFunction<E, S, E>> getReducer() {
         return Pair.with(this.seed, this.foldFunction);
     }
 
@@ -48,9 +47,9 @@ public final class FoldStep<S, E> extends MapStep<S, E> implements Reducing<E, T
 
     public static <S, E> void generateFunction(final FoldStep<S, E> foldStep) {
         foldStep.setFunction(traverser -> {
-            E mutatingSeed = foldStep.foldFunction.apply(foldStep.seed.get(), traverser);
+            E mutatingSeed = foldStep.foldFunction.apply(foldStep.seed.get(), traverser.get());
             while (foldStep.starts.hasNext()) {
-                mutatingSeed = foldStep.foldFunction.apply(mutatingSeed, foldStep.starts.next());
+                mutatingSeed = foldStep.foldFunction.apply(mutatingSeed, foldStep.starts.next().get());
             }
             return mutatingSeed;
         });

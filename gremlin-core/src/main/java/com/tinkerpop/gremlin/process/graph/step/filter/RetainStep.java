@@ -20,7 +20,7 @@ public final class RetainStep<S> extends FilterStep<S> implements Reversible {
             if (!traverser.sideEffects().exists(this.collectionSideEffectKey))
                 return false;
             else {
-                final Object retain = traverser.sideEffects().get(this.collectionSideEffectKey);
+                final Object retain = traverser.sideEffects().exists(this.collectionSideEffectKey) ? traverser.sideEffects(this.collectionSideEffectKey) : traverser.path(this.collectionSideEffectKey);
                 return retain instanceof Collection ?
                         ((Collection) retain).contains(traverser.get()) :
                         retain.equals(traverser.get());

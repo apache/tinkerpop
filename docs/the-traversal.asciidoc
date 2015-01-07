@@ -220,7 +220,7 @@ gremlin> g.V().out().out().as('x').back('x') // pointless
 Choose Step
 ~~~~~~~~~~~
 
-The `choose()`-step (*branch*) allows for the current `Traverser<T>` to select which traversal branch to take. With `choose()`, it is possible to implement if/else-based semantics.
+The `choose()`-step (*branch*) allows for the current traverser to select which traversal branch to take. With `choose()`, it is possible to implement if/else-based semantics. The first set of examples below provide information about the vertices of the graph so its easier to understand the `choose()` examples to follow.
 
 [source,groovy]
 gremlin> g.V().has('age').values('name').map{[it.get(), it.get().length()]}
@@ -239,13 +239,13 @@ Given the facts above, the following examples show how to use `choose()` to sele
 image::choose-step.png[width=700]
 
 [source,groovy]
-gremlin> g.V().has('age').choose({it.get().value('name').length() == 5},   // If the predicate is true, then do `in`, else do `out`.
+gremlin> g.V().has('age').choose({it.value('name').length() == 5},   // If the predicate is true, then do `in`, else do `out`.
   g.of().in(),
   g.of().out()).values('name')
 ==>marko
 ==>ripple
 ==>lop
-gremlin> g.V().has('age').choose({it.get().value('name').length()},   // Use the result of the function as a key to the map of traversal choices.
+gremlin> g.V().has('age').choose({it.value('name').length()},   // Use the result of the function as a key to the map of traversal choices.
   [5:g.of().in(),
    4:g.of().out()]).values('name')
 ==>marko
@@ -255,7 +255,7 @@ gremlin> g.V().has('age').choose({it.get().value('name').length()},   // Use the
 In Java8, there is no elegant syntax to create a `Map`. Thus, the last traversal above would look as follows:
 
 [source,java]
-g.V().has("age").choose(v -> v.get().value("name").length(), new HashMap() {{
+g.V().has("age").choose(v -> v.value("name").length(), new HashMap() {{
   put(5,g.of().in());
   put(4,g.of().out());
 }}).values("name")
@@ -370,11 +370,17 @@ gremlin> g.V(1).out('knows').values('name')
 ==>josh
 gremlin> g.V(1).out('knows').values('name').fold() <1>
 ==>[vadas, josh]
-gremlin> g.V(1).out('knows').values('name').fold(0){a,b -> a + b.get().length()} <2>
+gremlin> g.V(1).out('knows').values('name').fold().next().getClass() <2>
+==>class java.util.ArrayList
+gremlin> g.V(1).out('knows').values('name').fold(0){a,b -> a + b.length()} <3>
 ==>9
+gremlin> g.V().values('age').fold(0){a,b -> a + b} <4>
+==>123
 
 <1> A parameterless `fold()` will aggregate all the objects into a list and then emit the list.
-<2> `fold()` can be provided two arguments --  a seed value and a reduce bi-function.
+<2> A verification of the type of list returned.
+<3> `fold()` can be provided two arguments --  a seed value and a reduce bi-function ("vadas" is 5 characters + "josh" with 4 characters).
+<4> What is the total age of the people in the graph?
 
 [[group-step]]
 Group Step

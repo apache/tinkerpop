@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.Step;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
@@ -66,7 +67,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
         Object mutatingSeed = this.reducer.get().getValue0().get();
         final BiFunction function = this.reducer.get().getValue1();
         while (values.hasNext()) {
-            mutatingSeed = function.apply(mutatingSeed, values.next());
+            mutatingSeed = function.apply(mutatingSeed, ((Traverser)values.next()).get());
         }
         emitter.emit(key, new SimpleTraverser(mutatingSeed, EmptyStep.instance()));
     }

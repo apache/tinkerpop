@@ -39,7 +39,7 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy {
             final String endLabel = CHOOSE_PREFIX_END + chooseStepCounter;
             BranchStep<?> branchStep = new BranchStep<>(traversal);
             branchStep.setFunction(traverser -> {
-                final String goTo = objectToString(currentStepCounter, chooseStep.getMapFunction().apply(traverser));
+                final String goTo = objectToString(currentStepCounter, chooseStep.getMapFunction().apply(traverser.get()));
                 return TraversalHelper.hasLabel(goTo, traversal) ? Collections.singletonList(goTo) : Collections.emptyList();
             });
             TraversalHelper.replaceStep(chooseStep, branchStep, traversal);

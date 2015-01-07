@@ -8,13 +8,13 @@ import com.tinkerpop.gremlin.process.graph.step.branch.BranchTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.BetweenTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CoinTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.IntervalTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SampleTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
@@ -89,13 +89,13 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             UnionTest.ComputerTest.class,
 
             // filter
+            BetweenTest.ComputerTest.class,
             CyclicPathTest.ComputerTest.class,
             // TODO: DedupTest.ComputerTest.class
             ExceptTest.ComputerTest.class,
             FilterTest.ComputerTest.class,
             HasNotTest.ComputerTest.class,
             HasTest.ComputerTest.class,
-            IntervalTest.ComputerTest.class,
             CoinTest.ComputerTest.class,
             // TODO: RangeTest.ComputerTest.class,
             RetainTest.ComputerTest.class,
@@ -158,13 +158,13 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             UnionTest.class,
 
             // filter
+            BetweenTest.class,
             CyclicPathTest.class,
             // DedupTest.class,
             ExceptTest.class,
             FilterTest.class,
             HasNotTest.class,
             HasTest.class,
-            IntervalTest.class,
             CoinTest.class,
             // RangeTest.class,
             RetainTest.class,
