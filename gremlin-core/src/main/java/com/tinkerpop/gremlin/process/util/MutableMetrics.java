@@ -119,7 +119,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
     }
 
     @Override
-    public MutableMetrics clone(){
+    public MutableMetrics clone() {
         MutableMetrics clone = new MutableMetrics();
         copyMembers(clone);
         this.nested.values().forEach(nested -> clone.nested.put(nested.id, ((MutableMetrics) nested).clone()));

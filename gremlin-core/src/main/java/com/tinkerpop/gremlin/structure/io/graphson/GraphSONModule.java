@@ -191,16 +191,16 @@ public class GraphSONModule extends SimpleModule {
         @Override
         public void serialize(final TraversalMetrics property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
-            ser(property, jsonGenerator);
+            serializeInternal(property, jsonGenerator);
         }
 
         @Override
         public void serializeWithType(final TraversalMetrics property, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
-            ser(property, jsonGenerator);
+            serializeInternal(property, jsonGenerator);
         }
 
-        private void ser(final TraversalMetrics traversalMetrics, final JsonGenerator jsonGenerator) throws IOException {
+        private void serializeInternal(final TraversalMetrics traversalMetrics, final JsonGenerator jsonGenerator) throws IOException {
             final Map<String, Object> m = new HashMap<>();
 
             m.put(DURATION, traversalMetrics.getDuration(TimeUnit.MILLISECONDS));

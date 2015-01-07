@@ -13,11 +13,14 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
 
     private static final String ITEM_COUNT_DISPLAY = "item count";
 
-    private long totalStepDuration;
     private boolean dirty = true;
-
     private final Map<String, MutableMetrics> metrics = new LinkedHashMap<>();
     private final Map<Integer, MutableMetrics> orderedMetrics = new TreeMap<>();
+
+    /*
+    The following are computed values upon the completion of profiling in order to report the results back to the user
+     */
+    private long totalStepDuration;
     private List<ImmutableMetrics> computedMetrics;
 
     public StandardTraversalMetrics() {

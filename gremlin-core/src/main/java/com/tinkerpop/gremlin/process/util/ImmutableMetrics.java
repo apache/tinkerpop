@@ -10,7 +10,9 @@ import java.util.concurrent.TimeUnit;
  * @author Bob Briody (http://bobbriody.com)
  */
 public class ImmutableMetrics implements Metrics, Serializable {
+
     static final TimeUnit SOURCE_UNIT = TimeUnit.NANOSECONDS;
+
     protected String id;
     protected String name;
     protected long count;
