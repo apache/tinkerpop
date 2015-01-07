@@ -13,14 +13,11 @@ import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.commons.configuration.Configuration;
-import org.reflections.Reflections;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Those developing Gremlin implementations must provide a GraphProvider implementation so that the
@@ -179,11 +176,8 @@ public interface GraphProvider {
     }
 
     /**
-     * Get the set of concrete implementations of certain classes and interfaces utilized by the test suite. The
-     * default implementation utilizes reflection given the package name of the {@code GraphProvider} interface
-     * as the root for its search, to find implementations of the classes the test suite requires.
-     * <br/>
-     * This class wants any implementations or extensions of the following interfaces or classes:
+     * Get the set of concrete implementations of certain classes and interfaces utilized by the test suite. This
+     * method should return any implementations or extensions of the following interfaces or classes:
      * <ul>
      *     <li>{@link Edge}</li>
      *     <li>{@link Edge.Iterators}</li>
@@ -202,34 +196,24 @@ public interface GraphProvider {
      *     <li>{@link VertexProperty.Iterators}</li>
      * </ul>
      * <br/>
-     * If so desired, implementers can override this method and simply supply the specific classes that implement
-     * and extend the above.  This may be necessary if the implementers package structure doesn't align with the
-     * default implementation or for some reason the reflection approach is unable to properly get all of the
-     * classes required.  It should be clear that a custom implementation of this method is required if there are
-     * failures in the GroovyEnvironmentSuite.
+     * The test suite only enforces registration of the following core structure interfaces (i.e. these classes must
+     * be registered or the tests will fail to execute):
+     * <ul>
+     *     <li>{@link Edge}</li>
+     *     <li>{@link Edge.Iterators}</li>
+     *     <li>{@link Element}</li>
+     *     <li>{@link Element.Iterators}</li>
+     *     <li>{@link Graph}</li>
+     *     <li>{@link Graph.Variables}</li>
+     *     <li>{@link Property}</li>
+     *     <li>{@link Vertex}</li>
+     *     <li>{@link Vertex.Iterators}</li>
+     *     <li>{@link VertexProperty}</li>
+     *     <li>{@link VertexProperty.Iterators}</li>
+     * </ul>
+     * <br/>
+     * The remaining interfaces and classes should be registered however as failure to do so, might cause failures
+     * in the Groovy environment testing suite.
      */
-    public default Set<Class> getImplementations() {
-        final Reflections reflections = new Reflections(this.getClass().getPackage().getName());
-
-        final Set<Class> implementations = new HashSet<>();
-        reflections.getSubTypesOf(Graph.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Graph.Variables.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Property.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Edge.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Edge.Iterators.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Element.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Element.Iterators.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Traversal.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Traverser.class).forEach(implementations::add);
-        reflections.getSubTypesOf(GraphTraversal.class).forEach(implementations::add);
-        reflections.getSubTypesOf(DefaultGraphTraversal.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Vertex.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Vertex.Iterators.class).forEach(implementations::add);
-        reflections.getSubTypesOf(VertexProperty.class).forEach(implementations::add);
-        reflections.getSubTypesOf(VertexProperty.Iterators.class).forEach(implementations::add);
-
-        return implementations.stream()
-                .filter(c -> !c.isInterface())
-                .collect(Collectors.toSet());
-    }
+    public Set<Class> getImplementations();
 }

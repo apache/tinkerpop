@@ -4,7 +4,14 @@ import com.tinkerpop.gremlin.AbstractGraphProvider;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.TestHelper;
 import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
+import com.tinkerpop.gremlin.hadoop.process.graph.util.DefaultHadoopElementTraversal;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopElement;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopGraphVariables;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoOutputFormat;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -22,8 +29,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -33,6 +42,16 @@ import java.util.Map;
 public class HadoopGraphProvider extends AbstractGraphProvider {
 
     public static Map<String, String> PATHS = new HashMap<>();
+    private static final Set<Class> TP_IMPLEMENTATIONS = new HashSet<Class>() {{
+        add(HadoopEdge.class);
+        add(HadoopElement.class);
+        add(DefaultHadoopElementTraversal.class);
+        add(HadoopGraph.class);
+        add(HadoopGraphVariables.class);
+        add(HadoopProperty.class);
+        add(HadoopVertex.class);
+        add(HadoopVertexProperty.class);
+    }};
 
     static {
         try {
@@ -92,6 +111,11 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     @Override
     public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith, final Class testClass, final String testName) {
         if (loadGraphWith != null) this.loadGraphDataViaHadoopConfig(g, loadGraphWith.value());
+    }
+
+    @Override
+    public Set<Class> getImplementations() {
+        return TP_IMPLEMENTATIONS;
     }
 
     public void loadGraphDataViaHadoopConfig(final Graph g, final LoadGraphWith.GraphData graphData) {

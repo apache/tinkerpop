@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class AbstractGremlinSuite extends Suite {
 
-    private static final Set<Class> structureInterfaces = new HashSet<Class>() {{
+    private static final Set<Class> STRUCTURE_INTERFACES = new HashSet<Class>() {{
         add(Edge.class);
         add(Edge.Iterators.class);
         add(Element.class);
@@ -120,7 +120,7 @@ public abstract class AbstractGremlinSuite extends Suite {
     private void validateStructureInterfacesRegistered(final GraphProvider graphProvider) {
         final Set<Class> implementations = graphProvider.getImplementations();
         final Set<Class> noImplementationRegistered = new HashSet<>();
-        final boolean missingImplementations = structureInterfaces.stream().anyMatch(iface -> {
+        final boolean missingImplementations = STRUCTURE_INTERFACES.stream().anyMatch(iface -> {
             final boolean noneMatch = implementations.stream().noneMatch(c -> iface.isAssignableFrom(c));
             if (noneMatch) noImplementationRegistered.add(iface);
             return noneMatch;
