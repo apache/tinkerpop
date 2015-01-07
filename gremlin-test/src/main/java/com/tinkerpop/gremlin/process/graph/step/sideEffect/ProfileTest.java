@@ -35,17 +35,17 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
 
         Metrics metrics = traversalMetrics.getMetrics(0);
-        assertEquals(6, metrics.getChild(TraversalMetrics.ITEM_COUNT_ID).getCount());
+        assertEquals(6, metrics.getChild(TraversalMetrics.ELEMENT_COUNT_ID).getCount());
         assertNotEquals(0, metrics.getCount());
         assertNotEquals(0, metrics.getPercentDuration());
 
         metrics = traversalMetrics.getMetrics(1);
-        assertEquals(6, metrics.getChild(TraversalMetrics.ITEM_COUNT_ID).getCount());
+        assertEquals(6, metrics.getChild(TraversalMetrics.ELEMENT_COUNT_ID).getCount());
         assertNotEquals(0, metrics.getCount());
         assertNotEquals(0, metrics.getPercentDuration());
 
         metrics = traversalMetrics.getMetrics(2);
-        assertEquals(2, metrics.getChild(TraversalMetrics.ITEM_COUNT_ID).getCount());
+        assertEquals(2, metrics.getChild(TraversalMetrics.ELEMENT_COUNT_ID).getCount());
         assertNotEquals(0, metrics.getCount());
         assertNotEquals(0, metrics.getPercentDuration());
     }
@@ -61,17 +61,17 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         Metrics metrics = traversalMetrics.getMetrics(0);
-        assertEquals(808, metrics.getChild(TraversalMetrics.ITEM_COUNT_ID).getCount());
+        assertEquals(808, metrics.getChild(TraversalMetrics.ELEMENT_COUNT_ID).getCount());
         assertNotEquals(0, metrics.getCount());
         assertNotEquals(0, metrics.getPercentDuration());
 
         metrics = traversalMetrics.getMetrics(1);
-        assertEquals(8049, metrics.getChild(TraversalMetrics.ITEM_COUNT_ID).getCount());
+        assertEquals(8049, metrics.getChild(TraversalMetrics.ELEMENT_COUNT_ID).getCount());
         assertNotEquals(0, metrics.getCount());
         assertNotEquals(0, metrics.getPercentDuration());
 
         metrics = traversalMetrics.getMetrics(2);
-        assertEquals(327370, metrics.getChild(TraversalMetrics.ITEM_COUNT_ID).getCount());
+        assertEquals(327370, metrics.getChild(TraversalMetrics.ELEMENT_COUNT_ID).getCount());
         assertNotEquals(0, metrics.getCount());
         assertNotEquals(0, metrics.getPercentDuration());
     }

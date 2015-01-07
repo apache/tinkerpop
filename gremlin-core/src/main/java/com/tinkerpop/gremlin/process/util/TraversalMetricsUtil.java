@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 public final class TraversalMetricsUtil implements TraversalMetrics, Serializable {
     private static final String[] HEADERS = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
 
+    private static final String ITEM_COUNT_DISPLAY = "item count";
+
     private long totalStepDuration;
 
     private final Map<String, MetricsUtil> metrics = new LinkedHashMap<>();
@@ -29,7 +31,7 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
     public void finish(final String metricsId, final long bulk) {
         final MetricsUtil metricsUtil = this.metrics.get(metricsId);
         metricsUtil.finish(1);
-        metricsUtil.getChild(ITEM_COUNT_ID).incrementCount(bulk);
+        metricsUtil.getChild(ELEMENT_COUNT_ID).incrementCount(bulk);
     }
 
     @Override
@@ -49,7 +51,7 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
             if (rowName.length() > 28)
                 rowName = rowName.substring(0, 28 - 3) + "...";
 
-            long itemCount = s.getChild(ITEM_COUNT_ID).getCount();
+            long itemCount = s.getChild(ELEMENT_COUNT_ID).getCount();
 
             sb.append(String.format("%n%28s %13d %11d %15.3f %8.2f",
                     rowName, itemCount, s.getCount(), s.getDuration(TimeUnit.MICROSECONDS) / 1000.0, s.getPercentDuration()));
@@ -124,7 +126,7 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
 
         MetricsUtil metrics = new MetricsUtil(metricsId, displayName);
         // Add a child metric for item count
-        metrics.addChild(new MetricsUtil(ITEM_COUNT_ID, ITEM_COUNT_DISPLAY));
+        metrics.addChild(new MetricsUtil(ELEMENT_COUNT_ID, ITEM_COUNT_DISPLAY));
 
         this.metrics.put(metricsId, metrics);
         this.orderedMetrics.put(index, metrics);
