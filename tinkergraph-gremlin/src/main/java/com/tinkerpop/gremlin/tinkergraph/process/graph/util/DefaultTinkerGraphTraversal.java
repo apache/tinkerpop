@@ -21,6 +21,10 @@ public class DefaultTinkerGraphTraversal<S, E> extends DefaultGraphTraversal<S, 
         TraversalStrategies.GlobalCache.registerStrategies(DefaultTinkerGraphTraversal.class, traversalStrategies);
     }
 
+    public DefaultTinkerGraphTraversal() {
+        super();
+    }
+
     public DefaultTinkerGraphTraversal(final TinkerGraph graph, final Class<? extends Element> returnClass, final Object... ids) {
         super(graph);
         this.addStep(new TinkerGraphStep<>(this, graph, returnClass, ids));

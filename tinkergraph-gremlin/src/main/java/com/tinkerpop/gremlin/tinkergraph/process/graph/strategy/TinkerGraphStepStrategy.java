@@ -24,23 +24,26 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
         if (engine.equals(TraversalEngine.COMPUTER))
             return;
 
-        final TinkerGraphStep<?> tinkerGraphStep = (TinkerGraphStep) TraversalHelper.getStart(traversal);
-        Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
-        while (true) {
-            if (currentStep instanceof HasContainerHolder) {
-                tinkerGraphStep.hasContainers.addAll(((HasContainerHolder) currentStep).getHasContainers());
-                if (TraversalHelper.isLabeled(currentStep)) {
-                    final IdentityStep identityStep = new IdentityStep<>(traversal);
-                    identityStep.setLabel(currentStep.getLabel());
-                    TraversalHelper.insertAfterStep(identityStep, currentStep, traversal);
+        final Step<?, ?> startStep = TraversalHelper.getStart(traversal);
+        if (startStep instanceof TinkerGraphStep) {
+            final TinkerGraphStep<?> tinkerGraphStep = (TinkerGraphStep) startStep;
+            Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
+            while (true) {
+                if (currentStep instanceof HasContainerHolder) {
+                    tinkerGraphStep.hasContainers.addAll(((HasContainerHolder) currentStep).getHasContainers());
+                    if (TraversalHelper.isLabeled(currentStep)) {
+                        final IdentityStep identityStep = new IdentityStep<>(traversal);
+                        identityStep.setLabel(currentStep.getLabel());
+                        TraversalHelper.insertAfterStep(identityStep, currentStep, traversal);
+                    }
+                    TraversalHelper.removeStep(currentStep, traversal);
+                } else if (currentStep instanceof IdentityStep) {
+                    // do nothing
+                } else {
+                    break;
                 }
-                TraversalHelper.removeStep(currentStep, traversal);
-            } else if (currentStep instanceof IdentityStep) {
-                // do nothing
-            } else {
-                break;
+                currentStep = currentStep.getNextStep();
             }
-            currentStep = currentStep.getNextStep();
         }
     }
 

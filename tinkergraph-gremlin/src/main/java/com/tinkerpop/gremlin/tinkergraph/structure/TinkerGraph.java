@@ -13,7 +13,7 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerGraphTraversal;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerTraversal;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerGraphTraversalTokens;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -106,7 +106,7 @@ public class TinkerGraph implements Graph, Graph.Iterators {
 
     @Override
     public <S> GraphTraversal<S, S> of() {
-        return new DefaultTinkerTraversal<>(this);
+        return DefaultTinkerGraphTraversalTokens.__.start();
     }
 
     @Override

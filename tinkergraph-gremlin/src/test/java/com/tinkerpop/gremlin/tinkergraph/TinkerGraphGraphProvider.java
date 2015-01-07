@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.AbstractGraphProvider;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerElementTraversal;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerGraphTraversal;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerTraversal;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -27,7 +26,6 @@ public class TinkerGraphGraphProvider extends AbstractGraphProvider {
     private static final Set<Class> TP_IMPLEMENTATIONS = new HashSet<Class>() {{
         add(TinkerEdge.class);
         add(TinkerElement.class);
-        add(DefaultTinkerTraversal.class);
         add(DefaultTinkerGraphTraversal.class);
         add(DefaultTinkerElementTraversal.class);
         add(TinkerGraph.class);
