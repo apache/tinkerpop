@@ -27,6 +27,10 @@ public class MetricsUtil implements Metrics, Serializable, Cloneable {
     private Map<String, String> annotations = new HashMap<>();
     private Map<String, MetricsUtil> children = new HashMap<>();
 
+    private MetricsUtil(){
+       // necessary for kryo serialization
+    }
+
     public MetricsUtil(final String id, final String name) {
         this.id = id;
         this.name = name;
