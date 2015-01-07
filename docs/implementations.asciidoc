@@ -250,35 +250,7 @@ public class XXXProcessComputerTest {}
 public class XXXProcessStandardTest {}
 ----
 
-The only test-class that requires any code investment is the `XXXGraphProvider.class`. Neo4j's implementation is provided below for reference.
-
-[source,java]
-----
-public class Neo4jGraphProvider extends AbstractGraphProvider {
-    @Override
-    public Map<String, Object> getBaseConfiguration(final String graphName) {
-	// this is what is passed into XXX.open()
-        return new HashMap<String, Object>() {{
-            put("gremlin.graph", Neo4jGraph.class.getName());
-            put("gremlin.neo4j.directory", getWorkingDirectory() + File.separator + graphName);
-        }};
-    }
-
-    @Override
-    public void clear(final Graph g, final Configuration configuration) throws Exception {
-        if (null != g) {
-            if (g.features().graph().supportsTransactions())
-                g.tx().rollback();
-            g.close();
-        }
-        if (configuration.containsKey("gremlin.neo4j.directory")) {
-            // this is a non-in-memory configuration so blow away the directory
-            final File graphDirectory = new File(configuration.getString("gremlin.neo4j.directory"));
-            deleteDirectory(graphDirectory);
-        }
-    }
-}
----- 
+The only test-class that requires any code investment is the `GraphProvider` implementation class. This class is a used by the test suite to construct `Graph` configurations and instances and provides information about the vendor's implementation itself.  In most cases, it is best to simply extend `AbstractGraphProvider` as it provides many default implementations of the `GraphProvider` interface.
 
 Finally, specify the test suites that will be supported by the `Graph` implementation using the `@Graph.OptIn` annotation.  See the `TinkerGraph` implementation below as an example:
 
