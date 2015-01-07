@@ -13,12 +13,12 @@ public abstract class GroovyCyclicPathTest {
     public static class StandardTest extends CyclicPathTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
             g.V(v1Id).out('created').in('created').cyclicPath
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1Id) {
             g.V(v1Id).out('created').in('created').cyclicPath.path
         }
     }
@@ -26,12 +26,12 @@ public abstract class GroovyCyclicPathTest {
     public static class ComputerTest extends CyclicPathTest {
 
         @Override
-        Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1) {
+        Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath(final Object v1) {
             ComputerTestHelper.compute("g.V(${v1}).out('created').in('created').cyclicPath", g);
         }
 
         @Override
-        Traversal<Vertex, Path> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1) {
+        Traversal<Vertex, Path> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1) {
             ComputerTestHelper.compute("g.V(${v1}).out('created').in('created').cyclicPath().path()", g);
         }
     }

@@ -42,8 +42,8 @@ public class HadoopVertexIterator extends HadoopElementIterator<Vertex> {
                 }
             }
             throw FastNoSuchElementException.instance();
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
@@ -60,8 +60,8 @@ public class HadoopVertexIterator extends HadoopElementIterator<Vertex> {
                         this.readers.remove();
                 }
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
         return false;
     }

@@ -35,9 +35,17 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
         return this.map.keySet().iterator();
     }
 
+    public Traverser.Admin<S> get(final Traverser.Admin<S> traverser) {
+        return this.map.get(traverser);
+    }
+
     @Override
     public int size() {
         return this.map.size();
+    }
+
+    public long bulkSize() {
+        return this.map.values().stream().map(Traverser::bulk).reduce(0l, (a, b) -> a + b);
     }
 
     @Override

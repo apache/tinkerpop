@@ -24,7 +24,7 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
 
     public DefaultGraphTraversal(final Graph graph) {
         this();
-        this.sideEffects().setGraph(graph);
+        this.getSideEffects().setGraph(graph);
     }
 
     @Override

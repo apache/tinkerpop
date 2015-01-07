@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 public abstract class StoreTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX();
 
-    public abstract Traversal<Vertex, Collection> get_g_v1_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(final Object v1Id);
+    public abstract Traversal<Vertex, Collection> get_g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_out_storeXaX();
 
@@ -44,8 +44,8 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX() {
-        final Traversal<Vertex, Collection> traversal = get_g_v1_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(convertToVertexId("marko"));
+    public void g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX() {
+        final Traversal<Vertex, Collection> traversal = get_g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         Collection names = traversal.next();
         assertEquals(4, names.size());
@@ -100,7 +100,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Collection> get_g_v1_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(final Object v1Id) {
+        public Traversal<Vertex, Collection> get_g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(final Object v1Id) {
             return g.V(v1Id).store("a").by("name").out().store("a").by("name").values("name").cap("a");
         }
 
@@ -126,7 +126,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Collection> get_g_v1_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(final Object v1Id) {
+        public Traversal<Vertex, Collection> get_g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(final Object v1Id) {
             return g.V(v1Id).store("a").by("name").out().store("a").by("name").values("name").<Collection>cap("a").submit(g.compute());
         }
 

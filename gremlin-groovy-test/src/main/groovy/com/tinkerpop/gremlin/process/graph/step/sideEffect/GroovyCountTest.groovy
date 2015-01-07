@@ -26,8 +26,13 @@ public abstract class GroovyCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_asXaX_out_jumpXa_loops_lt_3X_count() {
-            g.V().as('a').out().jump('a') { it.loops() < 3 }.count()
+        public Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX3X_count() {
+            g.V().repeat(g.of().out).until(3).count()
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX8X_count() {
+            g.V.repeat(g.of().out).until(8).count()
         }
 
         @Override
@@ -53,8 +58,13 @@ public abstract class GroovyCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_asXaX_out_jumpXa_loops_lt_3X_count() {
-            ComputerTestHelper.compute("g.V().as('a').out().jump('a'){it.loops() < 3}.count()", g);
+        public Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX3X_count() {
+            ComputerTestHelper.compute("g.V().repeat(g.of().out).until(3).count()", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX8X_count() {
+            ComputerTestHelper.compute("g.V.repeat(g.of().out).until(8).count()", g);
         }
 
         @Override

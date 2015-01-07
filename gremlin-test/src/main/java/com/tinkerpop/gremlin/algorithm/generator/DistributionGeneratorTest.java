@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -48,7 +50,7 @@ public class DistributionGeneratorTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldGenerateRandomGraph() throws Exception {
+        public void shouldGenerateDifferentGraph() throws Exception {
             int executions = 0;
             boolean same = true;
 
@@ -63,11 +65,11 @@ public class DistributionGeneratorTest {
 
                 try {
                     afterLoadGraphWith(g1);
-                    final DistributionGenerator generator = makeGenerator(g1).create();
+                    final DistributionGenerator generator = makeGenerator(g1).seedGenerator(() -> 123456789l).create();
                     distributionGeneratorTest(g1, generator);
 
                     afterLoadGraphWith(g2);
-                    final DistributionGenerator generator1 = makeGenerator(g2).create();
+                    final DistributionGenerator generator1 = makeGenerator(g2).seedGenerator(() -> 987654321l).create();
                     distributionGeneratorTest(g2, generator1);
 
                     same = same(g1, g2);
@@ -150,9 +152,9 @@ public class DistributionGeneratorTest {
             final int edgesGenerated = generator.generate();
             assertTrue(edgesGenerated > 0);
             tryCommit(g, g -> {
-                assertEquals(new Long(edgesGenerated), g.E().count().next());
-                assertTrue(g.V().count().next() > 0);
-                assertTrue(g.E().toList().stream().allMatch(e -> e.value("data").equals("test")));
+                assertEquals(new Long(edgesGenerated), new Long(IteratorUtils.count(g.iterators().edgeIterator())));
+                assertTrue(IteratorUtils.count(g.iterators().vertexIterator()) > 0);
+                assertTrue(StreamFactory.stream(g.iterators().edgeIterator()).allMatch(e -> e.value("data").equals("test")));
             });
         }
 

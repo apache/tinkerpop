@@ -19,18 +19,18 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class SubgraphTest extends AbstractGremlinTest {
-    public abstract Traversal<Vertex, Graph> get_g_v1_outE_subgraphXknowsX_name_capXsgX(final Object v1Id, final Graph subgraph);
+    public abstract Traversal<Vertex, Graph> get_g_VX1X_outE_subgraphXknowsX_name_capXsgX(final Object v1Id, final Graph subgraph);
 
     public abstract Traversal<Vertex, String> get_g_V_inE_subgraphXcreatedX_name(final Graph subgraph);
 
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
-    public void g_v1_outE_subgraphXknowsX() throws Exception {
+    public void g_VX1X_outE_subgraphXknowsX_name_capXsgX() throws Exception {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph", this.getClass(), name.getMethodName());
         graphProvider.clear(config);
         Graph subgraph = graphProvider.openTestGraph(config);
-        Traversal<Vertex, Graph> traversal = get_g_v1_outE_subgraphXknowsX_name_capXsgX(convertToVertexId("marko"), subgraph);
+        Traversal<Vertex, Graph> traversal = get_g_VX1X_outE_subgraphXknowsX_name_capXsgX(convertToVertexId("marko"), subgraph);
         printTraversalForm(traversal);
         subgraph = traversal.next();
         assertVertexEdgeCounts(3, 2).accept(subgraph);
@@ -63,7 +63,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
         printTraversalForm(traversal);
         traversal.iterate();
 
-        assertVertexEdgeCounts(5, 4).accept(traversal.sideEffects().get("sg"));
+        assertVertexEdgeCounts(5, 4).accept(traversal.asAdmin().getSideEffects().get("sg"));
 
         graphProvider.clear(subgraph, config);
     }
@@ -71,7 +71,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
     public static class StandardTest extends SubgraphTest {
 
         @Override
-        public Traversal<Vertex, Graph> get_g_v1_outE_subgraphXknowsX_name_capXsgX(final Object v1Id, final Graph subgraph) {
+        public Traversal<Vertex, Graph> get_g_VX1X_outE_subgraphXknowsX_name_capXsgX(final Object v1Id, final Graph subgraph) {
             return g.V(v1Id).withSideEffect("sg", () -> subgraph).outE().subgraph("sg", e -> e.label().equals("knows")).values("name").cap("sg");
         }
 

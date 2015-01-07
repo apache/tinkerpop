@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.traversers.TraverserGeneratorFactory;
-import com.tinkerpop.gremlin.process.traversers.util.DefaultTraverserGeneratorFactory;
+import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
+import com.tinkerpop.gremlin.process.traverser.util.DefaultTraverserGeneratorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +19,7 @@ public class GraphTraversalStrategyRegistry {
     private static TraverserGeneratorFactory TRAVERSER_GENERATOR_FACTORY = DefaultTraverserGeneratorFactory.instance();
 
     static {
-        TRAVERSAL_STRATEGIES.add(LabeledEndStepStrategy.instance());
-        TRAVERSAL_STRATEGIES.add(UntilStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(RepeatLinearStrategy.instance());
         TRAVERSAL_STRATEGIES.add(DedupOptimizerStrategy.instance());
         TRAVERSAL_STRATEGIES.add(IdentityRemovalStrategy.instance());
         TRAVERSAL_STRATEGIES.add(SideEffectCapStrategy.instance());
@@ -28,9 +27,10 @@ public class GraphTraversalStrategyRegistry {
         TRAVERSAL_STRATEGIES.add(ChooseLinearStrategy.instance());
         TRAVERSAL_STRATEGIES.add(UnionLinearStrategy.instance());
         TRAVERSAL_STRATEGIES.add(ComparatorHolderRemovalStrategy.instance());
-        TRAVERSAL_STRATEGIES.add(EngineDependentStrategy.instance());
         TRAVERSAL_STRATEGIES.add(ReducingStrategy.instance());
         //  TRAVERSAL_STRATEGIES.add(UnrollJumpStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(LabeledEndStepStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(EngineDependentStrategy.instance());
         TRAVERSAL_STRATEGIES.add(ProfileStrategy.instance());
         TraversalStrategies.sortStrategies(TRAVERSAL_STRATEGIES);
     }

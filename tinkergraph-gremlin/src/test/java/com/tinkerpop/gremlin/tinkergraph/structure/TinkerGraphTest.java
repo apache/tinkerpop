@@ -3,11 +3,11 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Operator;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -81,7 +80,7 @@ public class TinkerGraphTest {
         v7.addEdge("link", v9, "weight", 1f);
         v8.addEdge("link", v9, "weight", 7f);
 
-        v1.withSack(() -> Float.MIN_VALUE).as("x").outE().sack(Operator.max, "weight").inV().jump("x", 5).sack().submit(g.compute()).forEachRemaining(System.out::println);
+        v1.withSack(() -> Float.MIN_VALUE).repeat(g.of().outE().sack(Operator.max, "weight").inV()).until(5).sack().submit(g.compute()).forEachRemaining(System.out::println);
     }
 
     @Test
@@ -97,7 +96,10 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay2() throws Exception {
         Graph g = TinkerFactory.createClassic();
-        g.E().sample(1).forEachRemaining(System.out::println);
+        Traversal t = g.V(1).repeat(g.<Vertex>of().bothE("created").except("e").aggregate("e").otherV()).emit().path();
+        System.out.println(t);
+        t.forEachRemaining(System.out::println);
+        System.out.println(t);
     }
 
     /**
@@ -514,6 +516,13 @@ public class TinkerGraphTest {
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/io/kryo/grateful-dead.gio")) {
             reader.readGraph(stream, g);
         }
+
+        /* keep this hanging around because changes to kryo format will need grateful dead generated from json so you can generate the gio
+        final GraphReader reader = GraphSONReader.build().embedTypes(true).create();
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/io/graphson/grateful-dead.json")) {
+            reader.readGraph(stream, g);
+        }
+        */
 
         final Graph ng = TinkerGraph.open();
         g.V().sideEffect(ov -> {

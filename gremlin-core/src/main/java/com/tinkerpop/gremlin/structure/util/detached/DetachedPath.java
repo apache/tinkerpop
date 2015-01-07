@@ -37,6 +37,7 @@ public class DetachedPath extends MutablePath implements Attachable<Path> {
         });
     }
 
+    @Override
     public Path attach(final Graph hostGraph) {
         /*Path path = EmptyPath.instance();
         for (int i = 0; i < this.objects.size(); i++) {
@@ -61,6 +62,7 @@ public class DetachedPath extends MutablePath implements Attachable<Path> {
         return path;
     }
 
+    @Override
     public Path attach(final Vertex hostVertex) {
         /*Path path = EmptyPath.instance();
         for (int i = 0; i < this.objects.size(); i++) {

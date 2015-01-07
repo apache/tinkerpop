@@ -15,9 +15,9 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public final class TimeLimitStep<S> extends FilterStep<S> implements Reversible {
 
-    private final AtomicLong startTime = new AtomicLong(-1);
+    private AtomicLong startTime = new AtomicLong(-1);
     private final long timeLimit;
-    private final AtomicBoolean timedOut = new AtomicBoolean(false);
+    private AtomicBoolean timedOut = new AtomicBoolean(false);
 
 
     public TimeLimitStep(final Traversal traversal, final long timeLimit) {
@@ -44,8 +44,8 @@ public final class TimeLimitStep<S> extends FilterStep<S> implements Reversible 
     @Override
     public TimeLimitStep<S> clone() throws CloneNotSupportedException {
         final TimeLimitStep<S> clone = (TimeLimitStep<S>) super.clone();
-        clone.timedOut.set(this.timedOut.get());
-        clone.startTime.set(this.startTime.get());
+        clone.timedOut = new AtomicBoolean(this.timedOut.get());
+        clone.startTime = new AtomicLong(this.startTime.get());
         TimeLimitStep.generatePredicate(clone);
         return clone;
     }

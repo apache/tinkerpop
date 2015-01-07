@@ -9,6 +9,21 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* The only `GraphTraversal` steps that operate on `Traverser` are the base lambdas and `repeat()` (i.e. `emit()` and `until()`).
+* Removed dependency on the `reflections` library in `gremlin-test` which removed the default implementation of `GraphProvider.getImplementations()` - vendors now need to implement this method themselves.
+* Relaxed the typing requirements for `g.of()` when applied to `choose()`, `repeat()`, `union()`, etc.
+* Removed `LoopStep` and `UntilStep` in favor of the new `RepeatStep` model of looping in Gremlin3.
+* `BranchStep` is now exposed in `GraphTraversal` via `branch(function)`.
+* `UnionStep` now implements `TraversalHolder`.
+* Added `RepeatStep` as the new looping construct supporting do/while, while/do, and emit semantics.
+* Moved `Traversal.sideEffects()` to `Traversal.Admin.getSideEffects()` as `cap()` should be used to access the sideEffect data of a traversal.
+* Renamed vendor `XXXTraversal` to `XXXGraphTraversal` (interface) and `XXXGraphTraversal` to `DefaultXXXGraphTraversal` (implementation class).
+* Modified packaging for console plugins to be more consistent by moving them to the `com.tinkerpop.gremlin.console.groovy.plugin` namespace.
+* Removed all TinkerPop specific dependencies to Guava to avoid user version conflicts.
+* Added support for `-e` (script file execution) and `-v` (version display) options on `gremlin.sh`.
+* GraphSON supports the assignment of multiple custom serialization modules.
+* `Traverser.get(stepLabel/sideEffectKey)` no longer exists. There now exists: `Traverser.path(stepLabel)` and `Traverser.sideEffects(sideEffectKey)`.
+* `SimpleTraverser` now supports "path" but in a very loose, global cache way. Added `SparsePath` as a `Map`-backed `Path` implementation.
 * Provided Neo4j multi-label support in Neo4j-Gremlin. Added three `Neo4jVertex`-specific methods: `addLabel()`, `removeLabel()`, `labels()`.
 * Removed `TraverserSourceStrategy` as it is no longer required.
 * `TraverserSource` is now only a marker interface with "on first" within the `TraverserSource` step are traversers generated.
@@ -46,7 +61,7 @@ TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 * `Graph.v(Object)` and `Graph.e(Object)` no longer exist. Instead, use `Graph.V(Object... ids)` and `Graph.E(Object... ids)`.
 * Added `Graph.Iterators` to allow access to vertex and edge iterators based on element ids and bypassing `GraphTraversal`.
 * Renamed `GraphStrategy` implementations to be less verbose - removed the word "Graph" from their names (e.g. `IdGraphStrategy` simply changed to `IdStrategy`).
-* Removed `Step.NO_OBJECT` as the problem is solves can be solved with proper use of `flatMap`.
+* Removed `Step.NO_OBJECT` as the problem is solves can be solved with proper use of `flatMap` and `EmptyTraverser`.
 * `Path` is now part of `GraphSerializer` and thus, not specific to a particular implementation of `Path`.
 * Added messaging to show files being downloaded when using the Gremlin Server "install" command.
 * Added test name and class arguments to the `GraphProvider.loadGraphWith` method.

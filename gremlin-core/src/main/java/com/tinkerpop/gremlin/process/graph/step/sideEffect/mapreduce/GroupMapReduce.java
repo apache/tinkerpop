@@ -43,7 +43,7 @@ public final class GroupMapReduce implements MapReduce<Object, Collection, Objec
         this.sideEffectKey = step.getSideEffectKey();
         this.reduceFunction = step.getReduceFunction();
         this.traversal = step.getTraversal();
-        this.mapSupplier = this.traversal.sideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
+        this.mapSupplier = this.traversal.asAdmin().getSideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
     }
 
     @Override
@@ -62,7 +62,7 @@ public final class GroupMapReduce implements MapReduce<Object, Collection, Objec
                 .filter(step -> step.getLabel().equals(this.groupStepKey))
                 .findAny().get();
         this.reduceFunction = groupStep.getReduceFunction();
-        this.mapSupplier = traversal.sideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
+        this.mapSupplier = traversal.asAdmin().getSideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
     }
 
     @Override
@@ -72,8 +72,8 @@ public final class GroupMapReduce implements MapReduce<Object, Collection, Objec
 
     @Override
     public void map(Vertex vertex, MapEmitter<Object, Collection> emitter) {
-        this.traversal.sideEffects().setLocalVertex(vertex);
-        this.traversal.sideEffects().<Map<Object, Collection>>orElse(this.sideEffectKey, Collections.emptyMap()).forEach(emitter::emit);
+        this.traversal.asAdmin().getSideEffects().setLocalVertex(vertex);
+        this.traversal.asAdmin().getSideEffects().<Map<Object, Collection>>orElse(this.sideEffectKey, Collections.emptyMap()).forEach(emitter::emit);
     }
 
     @Override

@@ -38,8 +38,8 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, T
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, TraversalMetricsUtil> emitter) {
-        this.traversal.sideEffects().setLocalVertex(vertex);
-        this.traversal.sideEffects().<TraversalMetricsUtil>ifPresent(TraversalMetrics.METRICS_KEY, emitter::emit);
+        this.traversal.asAdmin().getSideEffects().setLocalVertex(vertex);
+        this.traversal.asAdmin().getSideEffects().<TraversalMetricsUtil>ifPresent(TraversalMetrics.METRICS_KEY, emitter::emit);
     }
 
     @Override

@@ -1,16 +1,8 @@
 package com.tinkerpop.gremlin.process;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.tinkerpop.gremlin.util.tools.MultiMap;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -39,8 +31,16 @@ public interface TraversalStrategies {
      */
     public TraverserGenerator getTraverserGenerator(final Traversal traversal);
 
+    /**
+     * Sorts the list of provided strategies such that the {@link com.tinkerpop.gremlin.process.TraversalStrategy#applyPost()}
+     * and {@link TraversalStrategy#applyPrior()} dependencies are respected.
+     *
+     * Note, that the order may not be unique.
+     *
+     * @param strategies
+     */
     public static void sortStrategies(final List<? extends TraversalStrategy> strategies) {
-        final SetMultimap<Class<? extends TraversalStrategy>, Class<? extends TraversalStrategy>> dependencyMap = HashMultimap.create();
+        final Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> dependencyMap = new HashMap<>();
         final Set<Class<? extends TraversalStrategy>> strategyClass = new HashSet<>(strategies.size());
         //Initialize data structure
         strategies.forEach(s -> strategyClass.add(s.getClass()));
@@ -48,10 +48,10 @@ public interface TraversalStrategies {
         //Initialize all the dependencies
         strategies.forEach(strategy -> {
             strategy.applyPrior().forEach(s -> {
-                if (strategyClass.contains(s)) dependencyMap.put(s, strategy.getClass());
+                if (strategyClass.contains(s)) MultiMap.put(dependencyMap, s, strategy.getClass());
             });
             strategy.applyPost().forEach(s -> {
-                if (strategyClass.contains(s)) dependencyMap.put(strategy.getClass(), s);
+                if (strategyClass.contains(s)) MultiMap.put(dependencyMap, strategy.getClass(), s);
             });
         });
         //Now, compute transitive closure until convergence
@@ -60,21 +60,21 @@ public interface TraversalStrategies {
             updated = false;
             for (final Class<? extends TraversalStrategy> sc : strategyClass) {
                 List<Class<? extends TraversalStrategy>> toAdd = null;
-                for (Class<? extends TraversalStrategy> before : dependencyMap.get(sc)) {
-                    final Set<Class<? extends TraversalStrategy>> beforeDep = dependencyMap.get(before);
+                for (Class<? extends TraversalStrategy> before : MultiMap.get(dependencyMap,sc)) {
+                    final Set<Class<? extends TraversalStrategy>> beforeDep = MultiMap.get(dependencyMap,before);
                     if (!beforeDep.isEmpty()) {
                         if (toAdd == null) toAdd = new ArrayList<>(beforeDep.size());
                         toAdd.addAll(beforeDep);
                     }
                 }
-                if (toAdd != null && dependencyMap.putAll(sc, toAdd)) updated = true;
+                if (toAdd != null && MultiMap.putAll(dependencyMap, sc, toAdd)) updated = true;
             }
         } while (updated);
         Collections.sort(strategies, new Comparator<TraversalStrategy>() {
             @Override
             public int compare(final TraversalStrategy s1, final TraversalStrategy s2) {
-                boolean s1Before = dependencyMap.containsEntry(s1.getClass(), s2.getClass());
-                boolean s2Before = dependencyMap.containsEntry(s2.getClass(), s1.getClass());
+                boolean s1Before = MultiMap.containsEntry(dependencyMap,s1.getClass(), s2.getClass());
+                boolean s2Before = MultiMap.containsEntry(dependencyMap,s2.getClass(), s1.getClass());
                 if (s1Before && s2Before)
                     throw new IllegalStateException("Cyclic dependency between traversal strategies: ["
                             + s1.getClass().getName() + ", " + s2.getClass().getName() + "]");
@@ -100,5 +100,6 @@ public interface TraversalStrategies {
             return traversalStrategies;
         }
     }
+
 
 }

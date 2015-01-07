@@ -26,14 +26,13 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
 
     public ProfileStep(final Traversal<?, ?> traversal, final Step step) {
         super(traversal);
-        // TODO: rjbriody - profile - is it ok to store the name here. Will it be set when using graph computer?
         this.name = step.toString();
     }
 
     @Override
     public void reset() {
         super.reset();
-        this.getTraversal().sideEffects().remove(TraversalMetrics.METRICS_KEY);
+        this.getTraversal().asAdmin().getSideEffects().remove(TraversalMetrics.METRICS_KEY);
     }
 
 
@@ -73,7 +72,7 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
     }
 
     private TraversalMetricsUtil getTraversalMetricsUtil() {
-        TraversalMetricsUtil traversalMetrics = this.getTraversal().sideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, TraversalMetricsUtil::new);
+        TraversalMetricsUtil traversalMetrics = this.getTraversal().asAdmin().getSideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, TraversalMetricsUtil::new);
         traversalMetrics.initializeIfNecessary(this.getLabel(), this.traversal.asAdmin().getSteps().indexOf(this), name);
         return traversalMetrics;
     }

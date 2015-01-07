@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.step.filter.SampleStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -167,11 +166,11 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().fold();
     }
 
-    public default <E2> GraphTraversal<A, E2> fold(final E2 seed, final BiFunction<E2, Traverser<A>, E2> foldFunction) {
+    public default <E2> GraphTraversal<A, E2> fold(final E2 seed, final BiFunction<E2, A, E2> foldFunction) {
         return this.start().fold(seed, foldFunction);
     }
 
-    public default <E2> GraphTraversal<A, E2> local(final Traversal<A, E2> localTraversal) {
+    public default <E2> GraphTraversal<A, E2> local(final Traversal<?, E2> localTraversal) {
         return this.start().local(localTraversal);
     }
 
@@ -245,8 +244,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().where(constraint);
     }
 
-    public default GraphTraversal<A, A> interval(final String key, final Comparable startValue, final Comparable endValue) {
-        return this.start().interval(key, startValue, endValue);
+    public default GraphTraversal<A, A> between(final String key, final Comparable startValue, final Comparable endValue) {
+        return this.start().between(key, startValue, endValue);
     }
 
     public default GraphTraversal<A, A> coin(final double probability) {
@@ -281,7 +280,7 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().cyclicPath();
     }
 
-    public default GraphTraversal<A,A> sample(final int amountToSample) {
+    public default GraphTraversal<A, A> sample(final int amountToSample) {
         return this.start().sample(amountToSample);
     }
 
@@ -385,52 +384,40 @@ public abstract interface ElementTraversal<A extends Element> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default GraphTraversal<A, A> jump(final String jumpLabel, final Predicate<Traverser<A>> ifPredicate, final Predicate<Traverser<A>> emitPredicate) {
-        return this.start().jump(jumpLabel, ifPredicate, emitPredicate);
+    public default GraphTraversal<A, A> branch(final Function<Traverser<A>, Collection<String>> function) {
+        return this.start().branch(function);
     }
 
-    public default GraphTraversal<A, A> jump(final String jumpLabel, final Predicate<Traverser<A>> ifPredicate) {
-        return this.start().jump(jumpLabel, ifPredicate);
-    }
-
-    public default GraphTraversal<A, A> jump(final String jumpLabel, final int loops, final Predicate<Traverser<A>> emitPredicate) {
-        return this.start().jump(jumpLabel, loops, emitPredicate);
-    }
-
-    public default GraphTraversal<A, A> jump(final String jumpLabel, final int loops) {
-        return this.start().jump(jumpLabel, loops);
-    }
-
-    public default GraphTraversal<A, A> jump(final String jumpLabel) {
-        return this.start().jump(jumpLabel);
-    }
-
-    public default GraphTraversal<A, A> until(final String breakLabel, final Predicate<Traverser<A>> breakPredicate, final Predicate<Traverser<A>> emitPredicate) {
-        return this.start().until(breakLabel, breakPredicate, emitPredicate);
-    }
-
-    public default GraphTraversal<A, A> until(final String breakLabel, final Predicate<Traverser<A>> breakPredicate) {
-        return this.start().until(breakLabel, breakPredicate);
-    }
-
-    public default GraphTraversal<A, A> until(final String breakLabel, final int loops, final Predicate<Traverser<A>> emitPredicate) {
-        return this.start().until(breakLabel, loops, emitPredicate);
-    }
-
-    public default GraphTraversal<A, A> until(final String breakLabel, final int loops) {
-        return this.start().until(breakLabel, loops);
-    }
-
-    public default <E2> GraphTraversal<A, E2> choose(final Predicate<Traverser<A>> choosePredicate, final Traversal<A, E2> trueChoice, final Traversal<A, E2> falseChoice) {
+    public default <E2> GraphTraversal<A, E2> choose(final Predicate<A> choosePredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
         return this.start().choose(choosePredicate, trueChoice, falseChoice);
     }
 
-    public default <E2, M> GraphTraversal<A, E2> choose(final Function<Traverser<A>, M> mapFunction, final Map<M, Traversal<A, E2>> choices) {
+    public default <E2, M> GraphTraversal<A, E2> choose(final Function<A, M> mapFunction, final Map<M, Traversal<?, E2>> choices) {
         return this.start().choose(mapFunction, choices);
     }
 
-    public default <E2> GraphTraversal<A, E2> union(final Traversal<A, E2>... traversals) {
+    public default <E2> GraphTraversal<A, E2> union(final Traversal<?, E2>... traversals) {
         return this.start().union(traversals);
+    }
+
+    public default GraphTraversal<A, A> repeat(final Traversal<?, A> traversal) {
+        return this.start().repeat(traversal);
+    }
+
+    public default GraphTraversal<A, A> emit(final Predicate<Traverser<A>> emitPredicate) {
+        return this.start().emit(emitPredicate);
+    }
+
+    public default GraphTraversal<A, A> until(final Predicate<Traverser<A>> untilPredicate) {
+        return this.start().until(untilPredicate);
+    }
+
+    public default GraphTraversal<A, A> until(final int maxLoops) {
+        return this.start().until(maxLoops);
+    }
+
+    public default GraphTraversal<A, A> emit() {
+        return this.start().emit();
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

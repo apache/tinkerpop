@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
+import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jGraphTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jVertexTraversal;
-import com.tinkerpop.gremlin.neo4j.process.graph.util.Neo4jGraphTraversal;
+import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jGraphTraversal;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -19,10 +19,12 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
+import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -173,8 +175,8 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     }
 
     @Override
-    public Neo4jTraversal<Vertex, Vertex> start() {
-        final Neo4jTraversal<Vertex, Vertex> traversal = new Neo4jGraphTraversal<>(this.graph);
+    public Neo4jGraphTraversal<Vertex, Vertex> start() {
+        final Neo4jGraphTraversal<Vertex, Vertex> traversal = new DefaultNeo4jGraphTraversal<>(this.graph);
         return traversal.addStep(new StartStep<>(traversal, this));
     }
 
@@ -186,16 +188,19 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     @Override
     public String label() {
         this.graph.tx().readWrite();
-        final Set<String> labels = this.labels();
-        return String.join(LABEL_DELIMINATOR, this.labels().toArray(new String[labels.size()]));
+        return String.join(LABEL_DELIMINATOR, this.labels());
     }
 
     /////////////// Neo4jVertex Specific Methods for Multi-Label Support ///////////////
     public Set<String> labels() {
         this.graph.tx().readWrite();
-        final Set<String> labels = new HashSet<>();
-        this.getBaseVertex().getLabels().forEach(label -> labels.add(label.name()));
-        return labels;
+        // TODO: make an immutable set
+        final Set<String> set = new HashSet<>();
+        final Iterator<String> itty = IteratorUtils.map(this.getBaseVertex().getLabels().iterator(), Label::name);
+        while (itty.hasNext()) {
+            set.add(itty.next());
+        }
+        return Collections.unmodifiableSet(set);
     }
 
     public void addLabel(final String label) {

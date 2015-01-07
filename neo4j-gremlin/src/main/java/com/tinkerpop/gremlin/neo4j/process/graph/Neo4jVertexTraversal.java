@@ -12,24 +12,24 @@ import java.util.Map;
  */
 public interface Neo4jVertexTraversal extends Neo4jElementTraversal<Vertex>, VertexTraversal {
 
-    public default <E2> Neo4jTraversal<Vertex, VertexProperty<E2>> properties(final String... propertyKeys) {
-        return (Neo4jTraversal) this.start().properties(propertyKeys);
+    public default <E2> Neo4jGraphTraversal<Vertex, VertexProperty<E2>> properties(final String... propertyKeys) {
+        return (Neo4jGraphTraversal) this.start().properties(propertyKeys);
     }
 
-    public default <E2> Neo4jTraversal<Vertex, Map<String, List<VertexProperty<E2>>>> propertyMap(final String... propertyKeys) {
-        return (Neo4jTraversal) this.start().propertyMap(propertyKeys);
+    public default <E2> Neo4jGraphTraversal<Vertex, Map<String, List<VertexProperty<E2>>>> propertyMap(final String... propertyKeys) {
+        return (Neo4jGraphTraversal) this.start().propertyMap(propertyKeys);
     }
 
-    public default <E2> Neo4jTraversal<Vertex, Map<String, List<E2>>> valueMap(final String... propertyKeys) {
+    public default <E2> Neo4jGraphTraversal<Vertex, Map<String, List<E2>>> valueMap(final String... propertyKeys) {
         return this.start().valueMap(propertyKeys);
     }
 
 
-    public default <E2> Neo4jTraversal<Vertex, Map<String, List<E2>>> valueMap(final boolean includeTokens, final String... propertyKeys) {
+    public default <E2> Neo4jGraphTraversal<Vertex, Map<String, List<E2>>> valueMap(final boolean includeTokens, final String... propertyKeys) {
         return this.start().valueMap(includeTokens,propertyKeys);
     }
 
-    public default <E2> Neo4jTraversal<Vertex, E2> value() {
+    public default <E2> Neo4jGraphTraversal<Vertex, E2> value() {
         return this.start().value();
     }
 }

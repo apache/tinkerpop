@@ -31,7 +31,6 @@ public class ProfileStrategy extends AbstractTraversalStrategy {
         PRIORS.add(SideEffectCapStrategy.class);
         PRIORS.add(UnionLinearStrategy.class);
         PRIORS.add(UnrollJumpStrategy.class);
-        PRIORS.add(UntilStrategy.class);
     }
 
     private ProfileStrategy() {

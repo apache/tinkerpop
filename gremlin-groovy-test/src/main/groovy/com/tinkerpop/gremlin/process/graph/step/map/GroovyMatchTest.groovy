@@ -46,18 +46,18 @@ public abstract class GroovyMatchTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_repeatXoutX_untilX2XX_selectXab_nameX() {
             g.V().match('a',
                     g.of().as('a').out('created').as('b'),
-                    g.of().as('a').out().jump('a', 2).as('b')).select('a','b').by('name')
+                    g.of().as('a').repeat(g.of().out).until(2).as('b')).select('a','b').by('name')
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_c__c_out_jump2_cX_selectXnameX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_c__c_repeatXoutX_untilX2XX_selectXnameX() {
             g.V().match('a',
                     g.of().as('a').out('created').has('name', 'lop').as('b'),
                     g.of().as('b').in('created').has('age', 29).as('c'),
-                    g.of().as('c').out().jump('c') { it.loops() < 2 }).select.by('name')
+                    g.of().as('c').repeat(g.of().out).until(2)).select.by('name')
         }
 
         @Override
@@ -130,11 +130,11 @@ public abstract class GroovyMatchTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_out_jump2_cX_selectXnameX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_untilX2XX_selectXnameX() {
             g.V().match("a",
                     g.of().as("a").out("created").has("name", "lop").as("b"),
                     g.of().as("b").in("created").has("age", 29).as("c"))
-                    .where(g.of().as("c").out().jump("c") { it.loops() < 2 })
+                    .where(g.of().as("c").repeat(g.of().out()).until(2))
                     .select.by('name')
         }
 

@@ -79,10 +79,9 @@
              context of child modules, so path this relative to one of
              the modules under the root directory, not the root
              directory itself. -->
-        <log4j.properties.dir>${project.basedir}/../gremlin-server/config/</log4j.properties.dir>
+        <log4j.properties.dir>${project.basedir}/../gremlin-server/conf/</log4j.properties.dir>
         <log4j.properties>log4j-server.properties</log4j.properties>
         <metrics.version>3.0.2</metrics.version>
-        <guava.version>15.0</guava.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipIntegrationTests>true</skipIntegrationTests>
@@ -179,10 +178,6 @@
                 <version>2.5</version>
                 <configuration>
                     <archive>
-                        <index>true</index>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                        </manifest>
                         <manifestEntries>
                             <version>${project.version}</version>
                             <hash>${buildNumber}</hash>
@@ -212,7 +207,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.17</version>
                     <configuration>
-                        <argLine>-Dlog4j.configuration=${log4j.properties}
+                        <argLine>-Dlog4j.configuration=${log4j.properties} -Dbuild.dir=${project.build.directory}
                         </argLine>
                         <additionalClasspathElements>
                             <!-- So that Log4j can find the Log4j properties file -->
@@ -242,6 +237,7 @@
                                 <argLine>-Dlog4j.configuration=${log4j.properties} -Dhost=localhost -Dport=8182
                                     -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
                                     -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                                    -Dbuild.dir=${project.build.directory}
                                 </argLine>
                                 <additionalClasspathElements>
                                     <!-- So that Log4j can find the Log4j properties file -->
@@ -263,6 +259,7 @@
                                 <argLine>-Dlog4j.configuration=${log4j.properties} -Dhost=localhost -Dport=8182
                                     -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
                                     -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                                    -Dbuild.dir=${project.build.directory}
                                 </argLine>
                                 <additionalClasspathElements>
                                     <!-- So that Log4j can find the Log4j properties file -->

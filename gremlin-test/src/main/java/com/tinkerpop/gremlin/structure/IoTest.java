@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.TestHelper;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
@@ -124,7 +125,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReadWriteClassicToGraphMLToFileWithHelpers() throws Exception {
-        final File f = File.createTempFile(name.getMethodName(), ".xml");
+        final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".xml");
         try {
             g.io().writeGraphML(f.getAbsolutePath());
 
@@ -204,7 +205,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final GraphMLWriter w = GraphMLWriter.build().create();
 
-        final File f = File.createTempFile("test", "txt");
+        final File f = TestHelper.generateTempFile(this.getClass(), "test", ".txt");
         try (final OutputStream out = new FileOutputStream(f)) {
             w.writeGraph(out, g);
         }
@@ -240,14 +241,12 @@ public class IoTest extends AbstractGremlinTest {
         final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
         g.addVertex(T.id, new CustomId("vertex", id));
 
-        // todo: already registered a SimpleModule here......what do vendors do who already define one?
-
         final SimpleModule module = new SimpleModule();
         module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
         module.addDeserializer(CustomId.class, new CustomId.CustomIdJacksonDeserializer());
-        final GraphWriter writer = GraphSONWriter.build()
-                .embedTypes(true)
-                .customModule(module).create();
+        final GraphWriter writer = g.io().graphSONWriter()
+                .addCustomModule(module)
+                .embedTypes(true).create();
 
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             writer.writeGraph(baos, g);
@@ -267,9 +266,9 @@ public class IoTest extends AbstractGremlinTest {
             final Graph g2 = graphProvider.openTestGraph(configuration);
 
             try (final InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
-                final GraphReader reader = GraphSONReader.build()
+                final GraphReader reader = g.io().graphSONReader()
                         .embedTypes(true)
-                        .customModule(module).create();
+                        .addCustomModule(module).create();
                 reader.readGraph(is, g2);
             }
 
@@ -384,7 +383,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReadWriteModernToKryoToFileWithHelpers() throws Exception {
-        final File f = File.createTempFile(name.getMethodName(), ".gio");
+        final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".gio");
         try {
             g.io().writeKryo(f.getAbsolutePath());
 
@@ -513,15 +512,13 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReadWriteModernToGraphSONWithHelpers() throws Exception {
-        final File f = File.createTempFile(name.getMethodName(), ".gio");
+        final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".json");
         try {
             g.io().writeGraphSON(f.getAbsolutePath());
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            final GraphSONReader reader = g.io().graphSONReader().create();
-
             g1.io().readGraphSON(f.getAbsolutePath());
 
             assertModernGraph(g1, true, false);

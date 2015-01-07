@@ -72,7 +72,7 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX() {
-            return g.V().local(g.<Vertex>of().outE().sample(1).by("weight"));
+            return g.V().local(g.of().outE().sample(1).by("weight"));
         }
     }
 
@@ -93,7 +93,7 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX() {
-            return g.V().local(g.<Vertex>of().outE().sample(1).by("weight")).submit(g.compute());
+            return g.V().local(g.of().outE().sample(1).by("weight")).submit(g.compute());
         }
     }
 }

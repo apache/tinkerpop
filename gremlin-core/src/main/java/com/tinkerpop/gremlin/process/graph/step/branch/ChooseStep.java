@@ -19,28 +19,28 @@ import java.util.function.Predicate;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements TraversalHolder<S,E> {
+public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements TraversalHolder<S, E> {
 
-    private final Function<Traverser<S>, M> mapFunction;
+    private final Function<S, M> mapFunction;
     private Map<M, Traversal<S, E>> choices;
 
-    public ChooseStep(final Traversal traversal, final Predicate<Traverser<S>> predicate, final Traversal<S, E> trueChoice, final Traversal<S, E> falseChoice) {
+    public ChooseStep(final Traversal traversal, final Predicate<S> predicate, final Traversal<S, E> trueChoice, final Traversal<S, E> falseChoice) {
         this(traversal,
-                (Function) traverser -> predicate.test((Traverser) traverser),
+                (Function) s -> predicate.test((S)s),
                 new HashMap() {{
                     put(Boolean.TRUE, trueChoice);
                     put(Boolean.FALSE, falseChoice);
                 }});
     }
 
-    public ChooseStep(final Traversal traversal, final Function<Traverser<S>, M> mapFunction, final Map<M, Traversal<S, E>> choices) {
+    public ChooseStep(final Traversal traversal, final Function<S, M> mapFunction, final Map<M, Traversal<S, E>> choices) {
         super(traversal);
         this.mapFunction = mapFunction;
         this.choices = choices;
         ChooseStep.generateFunction(this);
     }
 
-    public Function<Traverser<S>, M> getMapFunction() {
+    public Function<S, M> getMapFunction() {
         return this.mapFunction;
     }
 
@@ -49,8 +49,8 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements Trav
     }
 
     @Override
-    public Collection<Traversal<S,E>> getTraversals() {
-       return this.choices.values();
+    public Collection<Traversal<S, E>> getTraversals() {
+        return this.choices.values();
     }
 
     @Override
@@ -73,7 +73,7 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements Trav
 
     private static final <S, E, M> void generateFunction(final ChooseStep<S, E, M> chooseStep) {
         chooseStep.setFunction(traverser -> {
-            final Traversal<S, E> branch = chooseStep.choices.get(chooseStep.mapFunction.apply(traverser));
+            final Traversal<S, E> branch = chooseStep.choices.get(chooseStep.mapFunction.apply(traverser.get()));
             if (null == branch) {
                 return Collections.emptyIterator();
             } else {

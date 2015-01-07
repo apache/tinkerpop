@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.graph.marker.HasContainerHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.util.HasContainer;
+import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 
 import java.util.Arrays;
 import java.util.List;

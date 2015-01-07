@@ -34,7 +34,7 @@ public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Obj
     public StoreMapReduce(final StoreStep step) {
         this.sideEffectKey = step.getSideEffectKey();
         this.traversal = step.getTraversal();
-        this.collectionSupplier = this.traversal.sideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
+        this.collectionSupplier = this.traversal.asAdmin().getSideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
     }
 
     @Override
@@ -47,7 +47,7 @@ public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Obj
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(STORE_STEP_SIDE_EFFECT_KEY);
         this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
-        this.collectionSupplier = this.traversal.sideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
+        this.collectionSupplier = this.traversal.asAdmin().getSideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
     }
 
     @Override
@@ -57,8 +57,8 @@ public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Obj
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-        this.traversal.sideEffects().setLocalVertex(vertex);
-        this.traversal.sideEffects().<Collection<?>>orElse(this.sideEffectKey, Collections.emptyList()).forEach(emitter::emit);
+        this.traversal.asAdmin().getSideEffects().setLocalVertex(vertex);
+        this.traversal.asAdmin().getSideEffects().<Collection<?>>orElse(this.sideEffectKey, Collections.emptyList()).forEach(emitter::emit);
     }
 
     @Override

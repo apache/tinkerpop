@@ -2,8 +2,16 @@ package com.tinkerpop.gremlin.hadoop;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.TestHelper;
 import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
+import com.tinkerpop.gremlin.hadoop.process.graph.util.DefaultHadoopElementTraversal;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopElement;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopGraphVariables;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoOutputFormat;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -18,10 +26,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -31,6 +42,16 @@ import java.util.Map;
 public class HadoopGraphProvider extends AbstractGraphProvider {
 
     public static Map<String, String> PATHS = new HashMap<>();
+    private static final Set<Class> TP_IMPLEMENTATIONS = new HashSet<Class>() {{
+        add(HadoopEdge.class);
+        add(HadoopElement.class);
+        add(DefaultHadoopElementTraversal.class);
+        add(HadoopGraph.class);
+        add(HadoopGraphVariables.class);
+        add(HadoopProperty.class);
+        add(HadoopVertex.class);
+        add(HadoopVertexProperty.class);
+    }};
 
     static {
         try {
@@ -40,13 +61,13 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-classic-vertices.gio",
                     "tinkerpop-crew-vertices.gio");
             for (final String fileName : kryoResources) {
-                PATHS.put(fileName, generateTempFile(KryoResourceAccess.class, fileName));
+                PATHS.put(fileName, TestHelper.generateTempFileFromResource(KryoResourceAccess.class, fileName, "").getAbsolutePath());
             }
 
             final List<String> graphsonResources = Arrays.asList(
                     "grateful-dead-vertices.ldjson");
             for (final String fileName : graphsonResources) {
-                PATHS.put(fileName, generateTempFile(GraphSONResourceAccess.class, fileName));
+                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath());
             }
 
             final List<String> scriptResources = Arrays.asList(
@@ -54,7 +75,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "script-input.groovy",
                     "script-output.groovy");
             for (final String fileName : scriptResources) {
-                PATHS.put(fileName, generateTempFile(ScriptResourceAccess.class, fileName));
+                PATHS.put(fileName, TestHelper.generateTempFileFromResource(ScriptResourceAccess.class, fileName, "").getAbsolutePath());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -92,6 +113,11 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
         if (loadGraphWith != null) this.loadGraphDataViaHadoopConfig(g, loadGraphWith.value());
     }
 
+    @Override
+    public Set<Class> getImplementations() {
+        return TP_IMPLEMENTATIONS;
+    }
+
     public void loadGraphDataViaHadoopConfig(final Graph g, final LoadGraphWith.GraphData graphData) {
 
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
@@ -105,18 +131,5 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }
-    }
-
-    public static String generateTempFile(final Class resourceClass, final String fileName) throws IOException {
-        final File temp = File.createTempFile(fileName, ".tmp");
-        final FileOutputStream outputStream = new FileOutputStream(temp);
-        int data;
-        final InputStream inputStream = resourceClass.getResourceAsStream(fileName);
-        while ((data = inputStream.read()) != -1) {
-            outputStream.write(data);
-        }
-        outputStream.close();
-        inputStream.close();
-        return temp.getPath();
     }
 }

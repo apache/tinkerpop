@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,7 +19,6 @@ import java.util.Map;
  */
 public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> implements VertexProperty<V>, VertexProperty.Iterators {
 
-    protected String key;
     protected V value;
     protected transient DetachedVertex vertex;
 
@@ -28,21 +27,19 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
     protected DetachedVertexProperty(final VertexProperty<V> vertexProperty, final boolean withProperties) {
         super(vertexProperty);
-        this.key = vertexProperty.key();
         this.value = vertexProperty.value();
         this.vertex = DetachedFactory.detach(vertexProperty.element(), false);
 
-        if (withProperties) { // & vertexProperty.graph().features().vertex().supportsMetaProperties()) {
+        if (withProperties && vertexProperty.graph().features().vertex().supportsMetaProperties()) {
             this.properties = new HashMap<>();
             vertexProperty.iterators().propertyIterator().forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
         }
     }
 
-    public DetachedVertexProperty(final Object id, final String label, final String key, final V value,
+    public DetachedVertexProperty(final Object id, final String label, final V value,
                                   final Map<String, Object> properties,
                                   final Vertex vertex) {
         super(id, label);
-        this.key = key;
         this.value = value;
         this.vertex = DetachedFactory.detach(vertex, true);
 
@@ -59,7 +56,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
     @Override
     public String key() {
-        return this.key;
+        return this.label;
     }
 
     @Override
@@ -90,10 +87,9 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
     @Override
     public VertexProperty<V> attach(final Vertex hostVertex) {
-        return StreamFactory.<VertexProperty<V>>stream(hostVertex.iterators().propertyIterator(this.key))
-                .filter(vertexProperty -> ElementHelper.areEqual(this, vertexProperty))
-                .findAny()
-                .orElseThrow(() -> new IllegalStateException("The detached vertex property could not be be found at the provided vertex: " + this));
+        final Iterator<VertexProperty<V>> vertexPropertyIterator = IteratorUtils.filter(hostVertex.iterators().propertyIterator(this.label), vp -> ElementHelper.areEqual(this, vp));
+        if (!vertexPropertyIterator.hasNext()) throw new IllegalStateException("The detached vertex property could not be be found at the provided vertex: " + this);
+        return vertexPropertyIterator.next();
     }
 
     @Override

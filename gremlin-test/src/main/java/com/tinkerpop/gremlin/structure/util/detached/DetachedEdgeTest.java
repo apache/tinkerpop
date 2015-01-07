@@ -16,7 +16,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -82,6 +85,29 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @LoadGraphWith(GraphData.MODERN)
     public void shouldHaveSameHashCode() {
         assertEquals(DetachedFactory.detach(g.E(convertToEdgeId("josh", "created", "lop")).next(), true).hashCode(), DetachedFactory.detach(g.E(convertToEdgeId("josh", "created", "lop")).next(), true).hashCode());
+    }
+
+    @Test
+    @LoadGraphWith(GraphData.MODERN)
+    public void shouldAttachToGraph() {
+        final Edge toDetach = g.E(convertToEdgeId("josh", "created", "lop")).next();
+        final DetachedEdge detachedEdge = DetachedFactory.detach(toDetach, true);
+        final Edge attached = detachedEdge.attach(g);
+
+        assertEquals(toDetach, attached);
+        assertFalse(attached instanceof DetachedEdge);
+    }
+
+    @Test
+    @LoadGraphWith(GraphData.MODERN)
+    public void shouldAttachToVertex() {
+        final Edge toDetach = g.E(convertToEdgeId("josh", "created", "lop")).next();
+        final Vertex outV = toDetach.iterators().vertexIterator(Direction.OUT).next();
+        final DetachedEdge detachedEdge = DetachedFactory.detach(toDetach, true);
+        final Edge attached = detachedEdge.attach(outV);
+
+        assertEquals(toDetach, attached);
+        assertFalse(attached instanceof DetachedEdge);
     }
 
     @Test

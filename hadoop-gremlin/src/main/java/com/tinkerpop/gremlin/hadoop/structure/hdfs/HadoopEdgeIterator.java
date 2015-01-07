@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.hadoop.structure.hdfs;
 
-import com.google.common.collect.Iterators;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -12,6 +11,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -19,7 +19,7 @@ import java.util.Iterator;
  */
 public class HadoopEdgeIterator extends HadoopElementIterator<Edge> {
 
-    private Iterator<Edge> edgeIterator = Iterators.emptyIterator();
+    private Iterator<Edge> edgeIterator = Collections.emptyIterator();
 
     public HadoopEdgeIterator(final HadoopGraph graph, final InputFormat<NullWritable, VertexWritable> inputFormat, final Path path) throws IOException, InterruptedException {
         super(graph, inputFormat, path);

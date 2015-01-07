@@ -27,13 +27,8 @@ public abstract class GroovyGroupTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupXaX_byXnameX_byXitX_byXsizeX_jumpXx_2X_capXaX() {
-            g.V.as("x").out.group('a').by('name').by { it }.by { it.size() }.jump("x", 2).cap("a");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupXaX_byXnameX_byXitX_byXsizeX_jumpXx_loops_lt_2X_capXaX() {
-            g.V.as("x").out().group('a').by('name').by { it }.by { it.size() }.jump("x") { it.loops() < 2 }.cap("a");
+        public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_byXitX_byXsizeXX_untilX2X_capXaX() {
+            g.V.repeat(g.of().out.group('a').by('name').by { it }.by { it.size() }).until(2).cap('a')
         }
     }
 
@@ -55,13 +50,8 @@ public abstract class GroovyGroupTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupXaX_byXnameX_byXitX_byXsizeX_jumpXx_2X_capXaX() {
-            ComputerTestHelper.compute("g.V.as('x').out.group('a').by('name').by{it}.by{it.size()}.jump('x', 2).cap('a')", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupXaX_byXnameX_byXitX_byXsizeX_jumpXx_loops_lt_2X_capXaX() {
-            ComputerTestHelper.compute("g.V.as('x').out().group('a').by('name').by{it}.by{it.size()}.jump('x') { it.loops() < 2 }.cap('a')", g)
+        public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_byXitX_byXsizeXX_untilX2X_capXaX() {
+            ComputerTestHelper.compute("g.V.repeat(g.of().out.group('a').by('name').by { it }.by { it.size() }).until(2).cap('a')", g)
         }
     }
 }

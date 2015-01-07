@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -48,7 +49,7 @@ public abstract interface Element {
     public default Set<String> keys() {
         final Set<String> keys = new HashSet<>();
         this.iterators().propertyIterator().forEachRemaining(property -> keys.add(property.key()));
-        return keys;
+        return Collections.unmodifiableSet(keys);
     }
 
     /**
@@ -71,6 +72,7 @@ public abstract interface Element {
      *
      * @throws NoSuchElementException if the property does not exist on the {@code Element}.
      */
+    @Graph.Helper
     public default <V> V value(final String key) throws NoSuchElementException {
         final Property<V> property = this.property(key);
         return property.orElseThrow(() -> Property.Exceptions.propertyDoesNotExist(key));
@@ -97,6 +99,7 @@ public abstract interface Element {
         /**
          * Get the values of properties as an {@link Iterator}.
          */
+        @Graph.Helper
         public default <V> Iterator<V> valueIterator(final String... propertyKeys) {
             return IteratorUtils.map(this.<V>propertyIterator(propertyKeys), property -> property.value());
         }

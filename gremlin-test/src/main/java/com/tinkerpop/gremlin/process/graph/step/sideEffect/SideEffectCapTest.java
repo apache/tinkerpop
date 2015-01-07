@@ -16,12 +16,12 @@ import static org.junit.Assert.assertFalse;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
-    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX();
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX() {
-        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_hasXageX_groupCountXa_nameX_out_capXaX();
+    public void g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX();
         printTraversalForm(traversal);
         Map<String, Long> map = traversal.next();
         assertFalse(traversal.hasNext());
@@ -38,7 +38,7 @@ public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX() {
+        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX() {
             return g.V().<Vertex>has("age").groupCount("a").by("name").out().cap("a");
         }
     }
@@ -51,7 +51,7 @@ public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
 
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX() {
+        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX() {
             return g.V().<Vertex>has("age").groupCount("a").by("name").out().<Map<String, Long>>cap("a").submit(g.compute());
         }
     }

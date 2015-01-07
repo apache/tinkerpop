@@ -12,8 +12,8 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerTraversal;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerGraphTraversal;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerTraversal;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -96,17 +96,17 @@ public class TinkerGraph implements Graph, Graph.Iterators {
 
     @Override
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        return new TinkerGraphTraversal<>(this, Vertex.class, vertexIds);
+        return new DefaultTinkerGraphTraversal<>(this, Vertex.class, vertexIds);
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        return new TinkerGraphTraversal<>(this, Edge.class, edgeIds);
+        return new DefaultTinkerGraphTraversal<>(this, Edge.class, edgeIds);
     }
 
     @Override
     public <S> GraphTraversal<S, S> of() {
-        return new TinkerTraversal<>(this);
+        return new DefaultTinkerTraversal<>(this);
     }
 
     @Override
@@ -178,23 +178,23 @@ public class TinkerGraph implements Graph, Graph.Iterators {
 
     @Override
     public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
-        if (1 == vertexIds.length) {
+        if (0 == vertexIds.length) {
+            return this.vertices.values().iterator();
+        } else if (1 == vertexIds.length) {
             final Vertex vertex = this.vertices.get(vertexIds[0]);
             return null == vertex ? Collections.emptyIterator() : IteratorUtils.of(vertex);
-        } else if (0 == vertexIds.length) {
-            return this.vertices.values().iterator();
         } else
             return Stream.of(vertexIds).filter(this.vertices::containsKey).map(this.vertices::get).iterator();
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Object... edgeIds) {
-        if (1 == edgeIds.length) {
+        if (0 == edgeIds.length) {
+            return this.edges.values().iterator();
+        } else if (1 == edgeIds.length) {
             final Edge edge = this.edges.get(edgeIds[0]);
             return null == edge ? Collections.emptyIterator() : IteratorUtils.of(edge);
-        } else if (0 == edgeIds.length)
-            return this.edges.values().iterator();
-        else
+        } else
             return Stream.of(edgeIds).filter(this.edges::containsKey).map(this.edges::get).iterator();
     }
 

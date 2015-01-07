@@ -12,14 +12,13 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -32,6 +31,7 @@ public class GraphSONModule extends SimpleModule {
         addSerializer(Vertex.class, new VertexJacksonSerializer());
         addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer());
         addSerializer(GraphSONGraph.class, new GraphSONGraph.GraphJacksonSerializer(normalize));
+        addSerializer(GraphSONVertexProperty.class, new GraphSONVertexProperty.GraphSONVertexPropertySerializer());
         addSerializer(VertexProperty.class, new VertexPropertyJacksonSerializer());
         addSerializer(Property.class, new PropertyJacksonSerializer());
     }
@@ -56,8 +56,8 @@ public class GraphSONModule extends SimpleModule {
         private void ser(final VertexProperty property, final JsonGenerator jsonGenerator) throws IOException {
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, property.id());
-            m.put(GraphSONTokens.LABEL, property.label());
             m.put(GraphSONTokens.VALUE, property.value());
+            m.put(GraphSONTokens.LABEL, property.label());
             m.put(GraphSONTokens.PROPERTIES, props(property));
 
             jsonGenerator.writeObject(m);
@@ -66,13 +66,13 @@ public class GraphSONModule extends SimpleModule {
         private Map<String,Object> props(final VertexProperty property) {
             if (property instanceof DetachedVertexProperty) {
                 try {
-                    return StreamFactory.stream(property.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
+                    return IteratorUtils.collectMap(property.iterators().propertyIterator(), Property::key, Property::value);
                 } catch (UnsupportedOperationException uoe) {
                     return new HashMap<>();
                 }
             } else {
                 return (property.graph().features().vertex().supportsMetaProperties()) ?
-                        StreamFactory.stream(property.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value)) :
+                        IteratorUtils.collectMap(property.iterators().propertyIterator(), Property::key, Property::value) :
                         new HashMap<>();
             }
         }
@@ -126,7 +126,7 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.LABEL, edge.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
 
-            final Map<String,Object> properties = StreamFactory.stream(edge.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
+            final Map<String,Object> properties = IteratorUtils.collectMap(edge.iterators().propertyIterator(), Property::key, Property::value);
             m.put(GraphSONTokens.PROPERTIES, properties);
 
             final Vertex inV = edge.iterators().vertexIterator(Direction.IN).next();
@@ -167,8 +167,10 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
 
-            final Object properties = StreamFactory.stream(vertex.iterators().propertyIterator())
-                    .collect(Collectors.groupingBy(vp -> vp.key()));
+            // convert to GraphSONVertexProperty so that the label does not get serialized in the output - it is
+            // redundant because the key in the map is the same as the label.
+            final Iterator<GraphSONVertexProperty> vertexPropertyList = IteratorUtils.map(vertex.iterators().propertyIterator(), GraphSONVertexProperty::new);
+            final Object properties = IteratorUtils.groupBy(vertexPropertyList, vp -> vp.getToSerialize().key());
             m.put(GraphSONTokens.PROPERTIES, properties);
 
             jsonGenerator.writeObject(m);

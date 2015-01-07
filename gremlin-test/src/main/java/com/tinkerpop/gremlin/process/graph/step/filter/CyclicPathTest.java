@@ -16,14 +16,14 @@ import static org.junit.Assert.assertFalse;
  */
 public abstract class CyclicPathTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1);
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath(final Object v1);
 
-    public abstract Traversal<Vertex, Path> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1);
+    public abstract Traversal<Vertex, Path> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1);
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_outXcreatedX_inXcreatedX_cyclicPath() {
-        final Traversal<Vertex, Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(convertToVertexId("marko"));
+    public void g_VX1X_outXcreatedX_inXcreatedX_cyclicPath() {
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -37,8 +37,8 @@ public abstract class CyclicPathTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_outXcreatedX_inXcreatedX_cyclicPath_path() {
-        final Traversal<Vertex, Path> traversal = get_g_v1_outXcreatedX_inXcreatedX_cyclicPath_path(convertToVertexId("marko"));
+    public void g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path() {
+        final Traversal<Vertex, Path> traversal = get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -52,12 +52,12 @@ public abstract class CyclicPathTest extends AbstractGremlinProcessTest {
 
     public static class StandardTest extends CyclicPathTest {
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
             return g.V(v1Id).out("created").in("created").cyclicPath();
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1Id) {
             return g.V(v1Id).out("created").in("created").cyclicPath().path();
         }
     }
@@ -69,12 +69,12 @@ public abstract class CyclicPathTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
             return g.V(v1Id).out("created").in("created").cyclicPath().submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1Id) {
             return g.V(v1Id).out("created").in("created").cyclicPath().path().submit(g.compute());
         }
     }

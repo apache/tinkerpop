@@ -1,0 +1,18 @@
+TinkerPop: A Graph Computing Framework
+    http://tinkerpop.com
+
+TinkerPop3 directly depends on the following open source projects:
+
+ * Apache Commons [http://commons.apache.org/]
+ * HPPC [http://labs.carrotsearch.com/hppc.html]
+ * Kryo [http://code.google.com/p/kryo/]
+ * SLF4J [http://www.slf4j.org/]
+ * Metrics [http://metrics.codahale.com/]
+ * Apache log4j [http://logging.apache.org/log4j/]
+ * Apache Hadoop [http://hadoop.apache.org/]
+ * Apache Giraph [http://giraph.apache.org/]
+ * Codehaus Groovy [http://groovy.codehaus.org/]
+ * JUnit [http://www.junit.org/]
+ * Mockito [http://code.google.com/p/mockito/]
+ * ...
+ * ...

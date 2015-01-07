@@ -50,7 +50,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldExecutePageRankSpecifiedTraversal() throws Exception {
-        final ComputerResult result = g.compute().program(PageRankVertexProgram.build().incident(() -> g.<Vertex>of().outE()).create()).submit().get();
+        final ComputerResult result = g.compute().program(PageRankVertexProgram.build().incident(() -> g.of().outE()).create()).submit().get();
         result.graph().V().forEachRemaining(v -> {
             assertTrue(v.keys().contains("name"));
             assertTrue(v.hiddenKeys().contains(PageRankVertexProgram.PAGE_RANK));

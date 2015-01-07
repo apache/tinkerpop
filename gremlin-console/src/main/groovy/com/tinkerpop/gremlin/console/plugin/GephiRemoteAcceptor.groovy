@@ -170,7 +170,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         } else if (o instanceof Traversal) {
             fadingVertexColors = [:]
             def traversal = (Traversal) o
-            def memKeys = traversal.sideEffects().keys()
+            def memKeys = traversal.asAdmin().getSideEffects().keys()
             def memSize = memKeys.size()
             // assumes user called store("1")...store("n") in ascension
             for (int i = 1; i <= memSize; i++) {
@@ -180,8 +180,8 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
                     updateVisitedVertices()
                     int visitedCount = 0
 
-                    if (traversal.sideEffects().exists(stepKey)) {
-                        traversal.sideEffects().get(stepKey).each { element ->
+                    if (traversal.asAdmin().getSideEffects().exists(stepKey)) {
+                        traversal.asAdmin().getSideEffects().get(stepKey).each { element ->
                             visitVertexToGephi((Vertex) element)
                             visitedCount++
                         }

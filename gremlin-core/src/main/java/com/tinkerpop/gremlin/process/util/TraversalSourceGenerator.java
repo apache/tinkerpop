@@ -24,10 +24,7 @@ public class TraversalSourceGenerator {
     private static final Set<String> methodsWithE2AsElementSingle = new HashSet<String>() {{
         add("has");
         add("hasNot");
-        add("interval");
-        add("order");
-        add("localRange");
-        add("localLimit");
+        add("between");
     }};
 
     private static final Set<String> methodsWithE2AsElementMulti = new HashSet<String>() {{

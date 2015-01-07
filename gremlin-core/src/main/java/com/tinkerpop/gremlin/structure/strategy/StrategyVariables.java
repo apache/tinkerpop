@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class StrategyVariables implements StrategyWrapped, Graph.Variables, WrappedVariables<Graph.Variables> {
+public class StrategyVariables implements StrategyWrapped, Graph.Variables, WrappedVariables<Graph.Variables> {
 
     protected final StrategyGraph strategyGraph;
     private final Graph.Variables baseVariables;

@@ -20,18 +20,18 @@ import static org.junit.Assert.assertFalse;
  */
 public abstract class HasNotTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String propertyKey);
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_hasNotXprop(final Object v1Id, final String propertyKey);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey);
 
     @Test
     @LoadGraphWith(MODERN)
-    public void get_g_v1_hasNotXprop() {
-        Traversal<Vertex, Vertex> traversal = get_g_v1_hasNotXprop(convertToVertexId("marko"), "circumference");
+    public void g_VX1X_hasNotXprop() {
+        Traversal<Vertex, Vertex> traversal = get_g_VX1X_hasNotXprop(convertToVertexId("marko"), "circumference");
         printTraversalForm(traversal);
         assertEquals("marko", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
-        traversal = get_g_v1_hasNotXprop(convertToVertexId("marko"), "name");
+        traversal = get_g_VX1X_hasNotXprop(convertToVertexId("marko"), "name");
         printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
     }
@@ -51,7 +51,7 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String propertyKey) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_hasNotXprop(final Object v1Id, final String propertyKey) {
             return g.V(v1Id).hasNot(propertyKey);
         }
 
@@ -67,7 +67,7 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String propertyKey) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_hasNotXprop(final Object v1Id, final String propertyKey) {
             return g.V(v1Id).<Vertex>hasNot(propertyKey).submit(g.compute());
         }
 

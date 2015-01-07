@@ -212,7 +212,7 @@ Again, all steps extend either map, flatMap, or filter. Thus, the traversal abov
 IMPORTANT: The steps map, flatMap, and filter take a link:http://en.wikipedia.org/wiki/Anonymous_function[lambda function] (i.e. an anonymous function or closure). For map, the function must return an object. For flatMap, the function must return an iterator of objects. For filter, the function is a predicate that returns either true or false. The lambdas introduced by Java8 are supported in TinkerPop3.
 
 [source,groovy]
-marko.
+gremlin> marko.
   filter{it.get().value('name') == 'marko'}.
   flatMap{it.get().out('knows')}.
   map{it.get().value('name')}
@@ -222,7 +222,7 @@ marko.
 Finally, as a strictly academic exercise, the traversal can be written completely using flatMap.
 
 [source,groovy]
-marko.
+gremlin> marko.
   flatMap{it.get().value('name') == 'marko' ? [it.get()].iterator() : [].iterator()}.
   flatMap{it.get().out('knows')}.
   flatMap{[it.get().value('name')].iterator()}
@@ -241,20 +241,20 @@ image::traversal-mechanics.png[width=500]
 In TinkerPop3, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept is new to TinkerPop3 and provides the means by which steps remain stateless. A traverser maintains all the metadata about the traversal -- e.g., how many times the traverser has gone through a loop, the path history of the traverser, the current object being traversed, etc. Traverser metadata may be accessed by a step. A classic example is the `path()`-step.
 
 [source,groovy]
-marko.out('knows').values('name').path()
+gremlin> marko.out('knows').values('name').path()
 ==>[v[1], v[2], vadas]
 ==>[v[1], v[4], josh]
 
 CAUTION: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path of the respective traverser. Thus, traversal optimizers analyze the traversal to determine if path metadata is accessed. If not, then path calculations are turned off.
 
-Another example is the `jump()`-step which takes into account the number of times the traverser has gone through a particular section of the traversal expression.
+Another example is the `repeat()`-step which takes into account the number of times the traverser has gone through a particular section of the traversal expression.
 
 [source,groovy]
-marko.as('a').out().jump('a',2).values('name')
+gremlin> marko.repeat(g.of().out()).until(2).values('name')
 ==>ripple
 ==>lop
 
-IMPORTANT: In TinkerPop2, the `jump()`-step was called `loop()`. Jump has been generalized to support both do-while and while-do semantics which is explained in <<jump-step,Jump Step>>.
+IMPORTANT: In TinkerPop2, the `repeat()`-step was called `loop()`. Repeat has been generalized to support both do-while and while-do semantics which is explained in <<repeat-step,Repeat Step>>.
 
 CAUTION: A Traversal's result are never ordered unless explicitly by means of <<order-step,`order()`>> or <<orderby-step,`orderBy()`>>. Thus, never rely on the iteration sequence between TinkerPop3 releases and even within a release (as compiler optimizations may alter the flow).
 

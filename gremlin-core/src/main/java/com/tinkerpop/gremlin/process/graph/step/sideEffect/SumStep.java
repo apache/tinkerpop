@@ -25,14 +25,14 @@ public final class SumStep extends AbstractStep<Number, Double> implements SideE
 
     @Override
     public Traverser<Double> processNextStart() {
-        double sum = this.getTraversal().sideEffects().getOrCreate(SUM_KEY, () -> 0.0d);
+        double sum = this.getTraversal().asAdmin().getSideEffects().getOrCreate(SUM_KEY, () -> 0.0d);
         try {
             while (true) {
                 final Traverser<Number> start = this.starts.next();
                 sum = sum + (start.get().doubleValue() * start.bulk());
             }
         } catch (final NoSuchElementException e) {
-            this.getTraversal().sideEffects().set(SUM_KEY, sum);
+            this.getTraversal().asAdmin().getSideEffects().set(SUM_KEY, sum);
         }
         throw FastNoSuchElementException.instance();
     }
@@ -40,7 +40,7 @@ public final class SumStep extends AbstractStep<Number, Double> implements SideE
     @Override
     public void reset() {
         super.reset();
-        this.getTraversal().sideEffects().remove(SUM_KEY);
+        this.getTraversal().asAdmin().getSideEffects().remove(SUM_KEY);
     }
 
     @Override

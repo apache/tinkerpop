@@ -195,7 +195,7 @@ public class GraphSONReader implements GraphReader {
 
     public static class Builder {
         private boolean loadCustomModules = false;
-        private SimpleModule custom = null;
+        private List<SimpleModule> customModules = new ArrayList<>();
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
         private boolean embedTypes = false;
         private String vertexIdKey = T.id.getAccessor();
@@ -227,14 +227,14 @@ public class GraphSONReader implements GraphReader {
         /**
          * Supply a custom module for serialization/deserialization.
          */
-        public Builder customModule(final SimpleModule custom) {
-            this.custom = custom;
+        public Builder addCustomModule(final SimpleModule custom) {
+            this.customModules.add(custom);
             return this;
         }
 
         /**
          * Try to load {@code SimpleModule} instances from the current classpath.  These are loaded in addition to
-         * the one supplied to the {@link #customModule(com.fasterxml.jackson.databind.module.SimpleModule)};
+         * the one supplied to the {@link #addCustomModule(com.fasterxml.jackson.databind.module.SimpleModule)};
          */
         public Builder loadCustomModules(final boolean loadCustomModules) {
             this.loadCustomModules = loadCustomModules;
@@ -259,9 +259,9 @@ public class GraphSONReader implements GraphReader {
         }
 
         public GraphSONReader create() {
-            final ObjectMapper mapper = GraphSONObjectMapper.build()
-                    .customModule(custom)
-                    .embedTypes(embedTypes)
+            final GraphSONObjectMapper.Builder builder = GraphSONObjectMapper.build();
+            customModules.forEach(builder::addCustomModule);
+            final ObjectMapper mapper = builder.embedTypes(embedTypes)
                     .loadCustomModules(loadCustomModules).create();
             return new GraphSONReader(mapper, batchSize, vertexIdKey, edgeIdKey);
         }

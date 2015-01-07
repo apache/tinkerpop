@@ -34,7 +34,7 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
     public GroupCountMapReduce(final GroupCountStep step) {
         this.sideEffectKey = step.getSideEffectKey();
         this.traversal = step.getTraversal();
-        this.mapSupplier = this.traversal.sideEffects().<Map<Object, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
+        this.mapSupplier = this.traversal.asAdmin().getSideEffects().<Map<Object, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
     }
 
     @Override
@@ -47,7 +47,7 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(GROUP_COUNT_STEP_SIDE_EFFECT_KEY);
         this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
-        this.mapSupplier = this.traversal.sideEffects().<Map<Object, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
+        this.mapSupplier = this.traversal.asAdmin().getSideEffects().<Map<Object, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
 
     }
 
@@ -58,8 +58,8 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<Object, Long> emitter) {
-        this.traversal.sideEffects().setLocalVertex(vertex);
-        this.traversal.sideEffects().<Map<Object, Number>>orElse(this.sideEffectKey, Collections.emptyMap()).forEach((k, v) -> emitter.emit(k, v.longValue()));
+        this.traversal.asAdmin().getSideEffects().setLocalVertex(vertex);
+        this.traversal.asAdmin().getSideEffects().<Map<Object, Number>>orElse(this.sideEffectKey, Collections.emptyMap()).forEach((k, v) -> emitter.emit(k, v.longValue()));
     }
 
     @Override

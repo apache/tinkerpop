@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.traversers.SimpleTraverser;
+import com.tinkerpop.gremlin.process.traverser.SimpleTraverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -33,12 +33,12 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
         this.graph = result.graph();
         this.memory = result.memory();
         this.attachElements = attachElements;
-        this.memory.keys().forEach(key -> traversal.sideEffects().set(key, this.memory.get(key)));
+        this.memory.keys().forEach(key -> traversal.asAdmin().getSideEffects().set(key, this.memory.get(key)));
         this.computerTraversal = traversalVertexProgram.getTraversal();
 
         final Step endStep = TraversalHelper.getEnd(this.computerTraversal);
         this.traversers = endStep instanceof SideEffectCapStep ?
-                IteratorUtils.of(new SimpleTraverser<>((S) this.memory.get(((SideEffectCapStep) endStep).getSideEffectKey()), this.traversal.sideEffects())) :
+                IteratorUtils.of(new SimpleTraverser<>((S) this.memory.get(((SideEffectCapStep) endStep).getSideEffectKey()), this)) :
                 (Iterator<Traverser.Admin<S>>) this.memory.get(TraverserMapReduce.TRAVERSERS);
 
     }

@@ -2,15 +2,15 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -37,30 +37,32 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy {
         for (final ChooseStep chooseStep : TraversalHelper.getStepsOfClass(ChooseStep.class, traversal)) {
             final int currentStepCounter = chooseStepCounter;
             final String endLabel = CHOOSE_PREFIX_END + chooseStepCounter;
-            final BranchStep<?> branchStep = new BranchStep<>(traversal);
-            branchStep.setFunctions(traverser -> {
-                final String goTo = objectToString(currentStepCounter, chooseStep.getMapFunction().apply(traverser));
-                return TraversalHelper.hasLabel(goTo, traversal) ? goTo : BranchStep.EMPTY_LABEL;
+            BranchStep<?> branchStep = new BranchStep<>(traversal);
+            branchStep.setFunction(traverser -> {
+                final String goTo = objectToString(currentStepCounter, chooseStep.getMapFunction().apply(traverser.get()));
+                return TraversalHelper.hasLabel(goTo, traversal) ? Collections.singletonList(goTo) : Collections.emptyList();
             });
             TraversalHelper.replaceStep(chooseStep, branchStep, traversal);
 
             Step currentStep = branchStep;
-            for (final Map.Entry<?, Traversal<?, ?>> entry : (Set<Map.Entry>) chooseStep.getChoices().entrySet()) {
-                int c = 0;
-                for (final Step mapStep : entry.getValue().asAdmin().getSteps()) {
-                    TraversalHelper.insertAfterStep(mapStep, currentStep, traversal);
-                    currentStep = mapStep;
-                    if (c++ == 0) currentStep.setLabel(objectToString(currentStepCounter, entry.getKey()));
+            final Iterator<Map.Entry<?, Traversal<?, ?>>> traversalIterator = chooseStep.getChoices().entrySet().iterator();
+            while (traversalIterator.hasNext()) {
+                final Map.Entry<?, Traversal<?, ?>> entry = traversalIterator.next();
+                currentStep.setLabel(objectToString(currentStepCounter, entry.getKey()));
+                currentStep = TraversalHelper.insertTraversal(entry.getValue(), currentStep, traversal);
+                if (traversalIterator.hasNext()) {
+                    branchStep = new BranchStep(traversal);
+                    branchStep.setFunction(new BranchStep.GoToLabels(Collections.singletonList(endLabel)));
+                    TraversalHelper.insertAfterStep(branchStep, currentStep, traversal);
+                    currentStep = branchStep;
+                } else {
+                    final IdentityStep finalStep = new IdentityStep(traversal);
+                    finalStep.setLabel(endLabel);
+                    TraversalHelper.insertAfterStep(finalStep, currentStep, traversal);
+                    break;
                 }
-                final BranchStep breakStep = new BranchStep(traversal);
-                breakStep.setFunctions(new BranchStep.GoToLabel(endLabel));
-                TraversalHelper.insertAfterStep(breakStep, currentStep, traversal);
-                currentStep = breakStep;
             }
 
-            final IdentityStep finalStep = new IdentityStep(traversal);
-            finalStep.setLabel(endLabel);
-            TraversalHelper.insertAfterStep(finalStep, currentStep, traversal);
             chooseStepCounter++;
         }
     }

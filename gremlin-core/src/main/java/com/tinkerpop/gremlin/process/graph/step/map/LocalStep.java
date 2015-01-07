@@ -2,18 +2,18 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LocalStep<S, E> extends FlatMapStep<S, E> implements TraversalHolder<S, E> {
+public final class LocalStep<S, E> extends FlatMapStep<S, E> implements PathConsumer, TraversalHolder<S, E> {
 
     private Traversal<S, E> localTraversal;
 
@@ -41,11 +41,16 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements Traversa
         return Collections.singletonList(this.localTraversal);
     }
 
+    @Override
+    public boolean requiresPaths() {
+        return TraversalHelper.trackPaths(this.localTraversal);
+    }
+
     ////////////////
 
     private static final <S, E> void generateFunction(final LocalStep<S, E> localStep) {
         localStep.setFunction(traverser -> {
-            // TODO: traverser.asAdmin().setSideEffects(localStep.localTraversal.sideEffects());
+            // TODO: traverser.asAdmin().mergeSideEffects(localStep.localTraversal.sideEffects());
             localStep.localTraversal.asAdmin().reset();
             TraversalHelper.getStart(localStep.localTraversal).addStart(traverser);
             return localStep.localTraversal;

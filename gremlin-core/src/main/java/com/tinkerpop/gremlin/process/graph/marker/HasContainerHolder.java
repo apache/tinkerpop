@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.marker;
 
-import com.tinkerpop.gremlin.structure.util.HasContainer;
+import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 
 import java.util.List;
 

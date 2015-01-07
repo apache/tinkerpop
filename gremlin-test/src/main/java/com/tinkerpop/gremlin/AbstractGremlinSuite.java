@@ -1,6 +1,11 @@
 package com.tinkerpop.gremlin;
 
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import org.javatuples.Pair;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -19,7 +24,9 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,6 +39,20 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinSuite extends Suite {
+
+    private static final Set<Class> STRUCTURE_INTERFACES = new HashSet<Class>() {{
+        add(Edge.class);
+        add(Edge.Iterators.class);
+        add(Element.class);
+        add(Element.Iterators.class);
+        add(Graph.class);
+        add(Graph.Variables.class);
+        add(Property.class);
+        add(Vertex.class);
+        add(Vertex.Iterators.class);
+        add(VertexProperty.class);
+        add(VertexProperty.Iterators.class);
+    }};
 
     /**
      * The GraphProvider instance that will be used to generate a Graph instance.
@@ -83,12 +104,32 @@ public abstract class AbstractGremlinSuite extends Suite {
 
         try {
             final GraphProvider graphProvider = pair.getValue0().newInstance();
+            validateStructureInterfacesRegistered(graphProvider);
             validateHelpersNotImplemented(graphProvider);
 
             GraphManager.set(graphProvider);
         } catch (Exception ex) {
             throw new InitializationError(ex);
         }
+    }
+
+    /**
+     * Need to validate that structure interfaces are implemented so that checks to {@link Graph.Helper} can be
+     * properly enforced.
+     */
+    private void validateStructureInterfacesRegistered(final GraphProvider graphProvider) {
+        final Set<Class> implementations = graphProvider.getImplementations();
+        final Set<Class> noImplementationRegistered = new HashSet<>();
+        final boolean missingImplementations = STRUCTURE_INTERFACES.stream().anyMatch(iface -> {
+            final boolean noneMatch = implementations.stream().noneMatch(c -> iface.isAssignableFrom(c));
+            if (noneMatch) noImplementationRegistered.add(iface);
+            return noneMatch;
+        });
+
+        if (missingImplementations)
+            throw new RuntimeException(String.format(
+                    "Implementations must register their implementations for the following interfaces %s",
+                    String.join(",", noImplementationRegistered.stream().map(Class::getName).collect(Collectors.toList()))));
     }
 
     private void validateHelpersNotImplemented(final GraphProvider graphProvider) {

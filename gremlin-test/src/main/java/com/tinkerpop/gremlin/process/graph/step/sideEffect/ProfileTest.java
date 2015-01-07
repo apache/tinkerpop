@@ -30,7 +30,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         traversal.iterate();
 
-        TraversalMetrics traversalMetrics = traversal.sideEffects().get(TraversalMetrics.METRICS_KEY);
+        TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(TraversalMetrics.METRICS_KEY);
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
 
@@ -57,7 +57,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
 
         traversal.iterate();
-        TraversalMetrics traversalMetrics = traversal.sideEffects().get(TraversalMetrics.METRICS_KEY);
+        TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(TraversalMetrics.METRICS_KEY);
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         Metrics metrics = traversalMetrics.getMetrics(0);

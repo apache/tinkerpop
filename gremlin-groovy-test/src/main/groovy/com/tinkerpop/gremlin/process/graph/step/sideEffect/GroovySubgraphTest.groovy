@@ -12,7 +12,7 @@ public abstract class GroovySubgraphTest {
     public static class StandardTest extends SubgraphTest {
 
         @Override
-        public Traversal<Vertex, Graph> get_g_v1_outE_subgraphXknowsX_name_capXsgX(
+        public Traversal<Vertex, Graph> get_g_VX1X_outE_subgraphXknowsX_name_capXsgX(
                 final Object v1Id, final Graph subgraph) {
             g.V(v1Id).withSideEffect('sg') { subgraph }.outE.subgraph('sg') { it.label() == 'knows' }.name.cap('sg')
         }

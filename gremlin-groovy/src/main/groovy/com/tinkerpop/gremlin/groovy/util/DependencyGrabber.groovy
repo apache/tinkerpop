@@ -10,6 +10,7 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.util.jar.JarFile
 import java.util.jar.Manifest
+import org.apache.commons.lang3.SystemUtils
 
 /**
  * This class is a rough copy of the {@code InstallCommand} in Gremlin Console.  There are far more detailed
@@ -55,7 +56,13 @@ class DependencyGrabber {
 
         final def dependencyLocations = [] as Set<URI>
         dependencyLocations.addAll(Grape.resolve([classLoader: this.classLoaderToUse], null, dep))
-        dependencyLocations.collect{fs.getPath(it.path)}
+
+        // if windows then the path contains a starting forward slash that prevents it from being
+        // recognized by FileSystem - strip it off
+        dependencyLocations.collect{
+          def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
+          return fs.getPath(p)
+        }
                 .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
                 .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}.each {
             def copying = target.resolve(it.fileName)

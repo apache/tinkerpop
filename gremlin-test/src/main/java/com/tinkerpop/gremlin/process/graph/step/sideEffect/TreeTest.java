@@ -27,16 +27,16 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXaX();
 
-    public abstract Traversal<Vertex, Tree> get_g_v1_out_out_tree_byXnameX(final Object v1Id);
+    public abstract Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id);
 
-    public abstract Traversal<Vertex, Tree> get_g_v1_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id);
+    public abstract Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_out_out_tree_byXnameX() {
+    public void g_VX1X_out_out_tree_byXnameX() {
         List<Traversal<Vertex, Tree>> traversals = Arrays.asList(
-                get_g_v1_out_out_tree_byXnameX(convertToVertexId("marko")),
-                get_g_v1_out_out_treeXaX_byXnameX_both_both_capXaX(convertToVertexId("marko")));
+                get_g_VX1X_out_out_tree_byXnameX(convertToVertexId("marko")),
+                get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(convertToVertexId("marko")));
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             final Tree tree = traversal.next();
@@ -90,12 +90,12 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_tree_byXnameX(final Object v1Id) {
+        public Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id) {
             return (Traversal) g.V(v1Id).out().out().tree().by("name");
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
+        public Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
             return g.V(v1Id).out().out().tree("a").by("name").both().both().cap("a");
         }
 
@@ -121,13 +121,13 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_tree_byXnameX(final Object v1Id) {
+        public Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id) {
             // TODO: micropaths don't have vertex properties
             return (Traversal) g.V(v1Id).out().out().tree().by("name");
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
+        public Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
             // TODO: micropaths don't have vertex properties
             return g.V(v1Id).out().out().tree("a").by("name").both().both().<Tree>cap("a");
         }

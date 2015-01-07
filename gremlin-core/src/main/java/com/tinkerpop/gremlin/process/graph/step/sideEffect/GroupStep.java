@@ -12,7 +12,6 @@ import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupMapReduce;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,28 +26,28 @@ import java.util.function.Function;
  */
 public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, FunctionHolder<Object, Object>, Reversible, EngineDependent, MapReducer<Object, Collection, Object, Object, Map> {
 
-    private final Map<K, R> reduceMap;
+
     private char state = 'k';
     private Function<S, K> keyFunction = s -> (K) s;
     private Function<S, V> valueFunction = s -> (V) s;
     private Function<Collection<V>, R> reduceFunction = null;
     private final String sideEffectKey;
-    private boolean vertexCentric = false;
+    private boolean onGraphComputer = false;
+    private Map<K, Collection<V>> tempGroupByMap;
 
     public GroupStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
-        this.reduceMap = new HashMap<>();
-        this.traversal.sideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMap<K, Collection<V>>::new);
+        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMap<K, Collection<V>>::new);
         this.setConsumer(traverser -> {
-            final Map<K, Collection<V>> groupByMap = traverser.sideEffects().get(this.sideEffectKey);
+            final Map<K, Collection<V>> groupByMap = null == this.tempGroupByMap ? traverser.sideEffects().get(this.sideEffectKey) : this.tempGroupByMap; // for nested traversals and not !starts.hasNext()
             doGroup(traverser, groupByMap, this.keyFunction, this.valueFunction);
-            if (!this.vertexCentric) {
-                if (null != reduceFunction && !this.starts.hasNext()) {
-                    doReduce(groupByMap, this.reduceMap, this.reduceFunction);
-                    traverser.sideEffects().set(this.sideEffectKey, this.reduceMap);
-                }
+            if (!this.onGraphComputer && null != reduceFunction && !this.starts.hasNext()) {
+                this.tempGroupByMap = groupByMap;
+                final Map<K, R> reduceMap = new HashMap<>();
+                doReduce(groupByMap, reduceMap, this.reduceFunction);
+                traverser.sideEffects().set(this.sideEffectKey, reduceMap);
             }
         });
     }
@@ -75,7 +74,7 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
 
     @Override
     public void onEngine(final TraversalEngine traversalEngine) {
-        this.vertexCentric = traversalEngine.equals(TraversalEngine.COMPUTER);
+        this.onGraphComputer = traversalEngine.equals(TraversalEngine.COMPUTER);
     }
 
     @Override

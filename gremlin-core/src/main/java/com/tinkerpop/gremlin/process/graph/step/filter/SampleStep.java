@@ -26,6 +26,10 @@ public class SampleStep<S> extends BarrierStep<S> implements Reversible, Functio
         super(traversal);
         this.amountToSample = amountToSample;
         super.setConsumer(traverserSet -> {
+            // return the entire traverser set if the set is smaller than the amount to sample
+            if (traverserSet.bulkSize() <= this.amountToSample)
+                return;
+            //////////////// else sample the set
             double totalWeight = 0.0d;
             for (final Traverser<S> s : traverserSet) {
                 totalWeight = totalWeight + (this.probabilityFunction.apply(s.get()).doubleValue() * s.bulk());
@@ -33,22 +37,29 @@ public class SampleStep<S> extends BarrierStep<S> implements Reversible, Functio
             ///////
             final TraverserSet<S> sampledSet = new TraverserSet<>();
             int runningAmountToSample = 0;
-            double runningWeight = 0.0d;
-            for (final Traverser<S> s : traverserSet) {
-                final double currentWeight = this.probabilityFunction.apply(s.get()).doubleValue();
-                for (int i = 0; i < s.bulk(); i++) {
-                    runningWeight = runningWeight + currentWeight;
-                    if (RANDOM.nextDouble() <= (runningWeight / totalWeight)) {
-                        final Traverser.Admin<S> split = s.asAdmin().split();
-                        split.asAdmin().setBulk(1l);
-                        sampledSet.add(split);
-                        runningAmountToSample++;
+            while (runningAmountToSample < this.amountToSample) {
+                boolean reSample = false;
+                double runningWeight = 0.0d;
+                for (final Traverser.Admin<S> s : traverserSet) {
+                    long sampleBulk = sampledSet.contains(s) ? sampledSet.get(s).bulk() : 0;
+                    if (sampleBulk < s.bulk()) {
+                        final double currentWeight = this.probabilityFunction.apply(s.get()).doubleValue();
+                        for (int i = 0; i < (s.bulk() - sampleBulk); i++) {
+                            runningWeight = runningWeight + currentWeight;
+                            if (RANDOM.nextDouble() <= (runningWeight / totalWeight)) {
+                                final Traverser.Admin<S> split = s.asAdmin().split();
+                                split.asAdmin().setBulk(1l);
+                                sampledSet.add(split);
+                                runningAmountToSample++;
+                                totalWeight = totalWeight - currentWeight;
+                                reSample = true;
+                                break;
+                            }
+                        }
+                        if (reSample || (runningAmountToSample >= this.amountToSample))
+                            break;
                     }
-                    if (runningAmountToSample >= this.amountToSample)
-                        break;
                 }
-                if (runningAmountToSample >= this.amountToSample)
-                    break;
             }
             traverserSet.clear();
             traverserSet.addAll(sampledSet);

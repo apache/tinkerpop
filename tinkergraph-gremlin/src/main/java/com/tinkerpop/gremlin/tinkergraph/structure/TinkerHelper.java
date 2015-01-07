@@ -1,17 +1,14 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.google.common.collect.Iterators;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -107,7 +104,7 @@ public class TinkerHelper {
         if (direction != Direction.BOTH) {
             return IteratorUtils.map(TinkerHelper.getEdges(vertex, direction, edgeLabels), edge -> (TinkerVertex) (direction.equals(Direction.IN) ? edge.outVertex : edge.inVertex));
         } else {
-            return Iterators.concat(
+            return IteratorUtils.<TinkerVertex>concat(
                     IteratorUtils.map(TinkerHelper.getEdges(vertex, Direction.OUT, edgeLabels), edge -> (TinkerVertex) edge.inVertex),
                     IteratorUtils.map(TinkerHelper.getEdges(vertex, Direction.IN, edgeLabels), edge -> (TinkerVertex) edge.outVertex));
         }

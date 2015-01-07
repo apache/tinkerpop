@@ -11,7 +11,7 @@ public abstract class GroovyHasNotTest {
 
     public static class StandardTest extends HasNotTest {
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String propertyKey) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_hasNotXprop(final Object v1Id, final String propertyKey) {
             g.V(v1Id).hasNot(propertyKey)
         }
 
@@ -23,7 +23,7 @@ public abstract class GroovyHasNotTest {
 
     public static class ComputerTest extends HasNotTest {
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String propertyKey) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_hasNotXprop(final Object v1Id, final String propertyKey) {
            ComputerTestHelper.compute("g.V(${v1Id}).hasNot('${propertyKey}')",g);
         }
 
