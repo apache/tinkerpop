@@ -1065,7 +1065,7 @@ gremlin> g.V().withSack { [:] } { m -> m.clone() }.
 ==>[ripple:java]
 ==>[lop:java]
 
-NOTE: For primitives (i.e. integers, longs, floats, etc.), a split operator is not required as a primitives are encoded in the memory address and of the sack, not as a reference to an object.
+NOTE: For primitives (i.e. integers, longs, floats, etc.), a split operator is not required as a primitives are encoded in the memory address of the sack, not as a reference to an object.
 
 [[sample-step]]
 Sample Step
