@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
  * @author Bob Briody (http://bobbriody.com)
  */
 public final class TraversalMetricsUtil implements TraversalMetrics, Serializable {
+    // toString() specific headers
     private static final String[] HEADERS = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
 
     private static final String ITEM_COUNT_DISPLAY = "item count";
@@ -31,7 +32,7 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
     public void finish(final String metricsId, final long bulk) {
         final MetricsUtil metricsUtil = this.metrics.get(metricsId);
         metricsUtil.finish(1);
-        metricsUtil.getChild(ELEMENT_COUNT_ID).incrementCount(bulk);
+        metricsUtil.getNested(ELEMENT_COUNT_ID).incrementCount(bulk);
     }
 
     @Override
@@ -44,14 +45,14 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
         StringBuilder sb = new StringBuilder();
         sb.append("Traversal Metrics\n").append(String.format("%28s %13s %11s %15s %8s", HEADERS));
 
-        // Append each StepMetric's row. These are in reverse order.
+        // Append each StepMetric's row.
         for (MetricsUtil s : snapshot) {
             String rowName = s.getName();
 
             if (rowName.length() > 28)
                 rowName = rowName.substring(0, 28 - 3) + "...";
 
-            long itemCount = s.getChild(ELEMENT_COUNT_ID).getCount();
+            long itemCount = s.getNested(ELEMENT_COUNT_ID).getCount();
 
             sb.append(String.format("%n%28s %13d %11d %15.3f %8.2f",
                     rowName, itemCount, s.getCount(), s.getDuration(TimeUnit.MICROSECONDS) / 1000.0, s.getPercentDuration()));
@@ -119,14 +120,15 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
         return metrics.get(stepLabel);
     }
 
+    // The index is necessary to ensure that step order is preserved after a merge.
     public void initializeIfNecessary(final String metricsId, final int index, final String displayName) {
         if (metrics.containsKey(metricsId)) {
             return;
         }
 
         MetricsUtil metrics = new MetricsUtil(metricsId, displayName);
-        // Add a child metric for item count
-        metrics.addChild(new MetricsUtil(ELEMENT_COUNT_ID, ITEM_COUNT_DISPLAY));
+        // Add a nested metric for item count
+        metrics.addNested(new MetricsUtil(ELEMENT_COUNT_ID, ITEM_COUNT_DISPLAY));
 
         this.metrics.put(metricsId, metrics);
         this.orderedMetrics.put(index, metrics);

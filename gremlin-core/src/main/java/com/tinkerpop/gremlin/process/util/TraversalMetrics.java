@@ -17,7 +17,7 @@ public interface TraversalMetrics {
 
 
     /**
-     * The MetricsId used to obtain the element count via Metrics.getChildren(String metricsId)
+     * The MetricsId used to obtain the element count via Metrics.getNested(String metricsId)
      */
     public static final String ELEMENT_COUNT_ID = "elementCount";
 

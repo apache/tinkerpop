@@ -49,7 +49,7 @@ public interface Metrics {
      *
      * @return the nested Metrics objects.
      */
-    public Collection<MetricsUtil> getChildren();
+    public Collection<MetricsUtil> getNested();
 
     /**
      * Get a nested Metrics object by Id.
@@ -57,7 +57,7 @@ public interface Metrics {
      * @param metricsId
      * @return a nested Metrics object.
      */
-    MetricsUtil getChild(String metricsId);
+    MetricsUtil getNested(String metricsId);
 
     /**
      * Obtain the annotations for this Metrics.

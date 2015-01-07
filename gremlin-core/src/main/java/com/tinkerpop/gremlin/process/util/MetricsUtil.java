@@ -1,14 +1,10 @@
 package com.tinkerpop.gremlin.process.util;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
- *
  * @author Bob Briody (http://bobbriody.com)
  */
 public class MetricsUtil implements Metrics, Serializable, Cloneable {
@@ -18,17 +14,15 @@ public class MetricsUtil implements Metrics, Serializable, Cloneable {
 
     private String id;
     private String name;
-
     private long count;
     private long durationNs = 0l;
     private double percentDuration = -1;
     private long tempTime = -1l;
-
     private Map<String, String> annotations = new HashMap<>();
-    private Map<String, MetricsUtil> children = new HashMap<>();
+    private Map<String, MetricsUtil> nested = new HashMap<>();
 
-    private MetricsUtil(){
-       // necessary for kryo serialization
+    private MetricsUtil() {
+        // necessary for kryo serialization
     }
 
     public MetricsUtil(final String id, final String name) {
@@ -42,23 +36,23 @@ public class MetricsUtil implements Metrics, Serializable, Cloneable {
         this.count = metrics.count;
         this.durationNs = metrics.durationNs;
         this.percentDuration = metrics.percentDuration;
-        metrics.children.values().forEach(child -> children.put(child.id, child.clone()));
+        metrics.nested.values().forEach(nested -> this.nested.put(nested.id, nested.clone()));
     }
 
-    public void addChild(MetricsUtil metricsUtil) {
-        this.children.put(metricsUtil.getId(), metricsUtil);
+    public void addNested(MetricsUtil metricsUtil) {
+        this.nested.put(metricsUtil.getId(), metricsUtil);
     }
 
     public void start() {
         if (-1 != this.tempTime) {
-            throw new IllegalStateException("Concurrent MetricsUtil start. Stop timer before starting timer.");
+            throw new IllegalStateException("Internal Error: Concurrent MetricsUtil start. Stop timer before starting timer.");
         }
         this.tempTime = System.nanoTime();
     }
 
     public void stop() {
         if (-1 == this.tempTime)
-            throw new IllegalStateException("MetricsUtil has not been started. Start timer before starting timer");
+            throw new IllegalStateException("Internal Error: MetricsUtil has not been started. Start timer before stopping timer");
         this.durationNs = this.durationNs + (System.nanoTime() - this.tempTime);
         this.tempTime = -1;
     }
@@ -95,26 +89,29 @@ public class MetricsUtil implements Metrics, Serializable, Cloneable {
         this.durationNs += other.durationNs;
         this.count += other.count;
 
-        // Merge annotations. If a duplicate is found then append it to a comma-separated list.
+        // Merge annotations. If multiple values for a given key are found then append it to a comma-separated list.
         for (Map.Entry<String, String> p : other.annotations.entrySet()) {
             if (this.annotations.containsKey(p.getKey())) {
                 String existing = this.annotations.get(p.getKey());
-                if (!existing.equals(p.getValue())) {
+                List<String> existingValues = Arrays.asList(existing.split(","));
+                if (!existingValues.contains(p.getValue())) {
+                    // New value. Append to comma-separated list.
                     this.annotations.put(p.getKey(), existing + "," + p.getValue());
                 }
             } else {
                 this.annotations.put(p.getKey(), p.getValue());
             }
         }
-
         this.annotations.putAll(other.annotations);
-        other.children.values().forEach(child -> {
-            MetricsUtil thisChild = this.children.get(child.getId());
-            if (thisChild == null) {
-                thisChild = new MetricsUtil(child.getId(), child.getName());
-                this.children.put(thisChild.getId(), thisChild);
+
+        // Merge nested Metrics
+        other.nested.values().forEach(nested -> {
+            MetricsUtil thisNested = this.nested.get(nested.getId());
+            if (thisNested == null) {
+                thisNested = new MetricsUtil(nested.getId(), nested.getName());
+                this.nested.put(thisNested.getId(), thisNested);
             }
-            thisChild.aggregate(child);
+            thisNested.aggregate(nested);
         });
     }
 
@@ -124,13 +121,13 @@ public class MetricsUtil implements Metrics, Serializable, Cloneable {
     }
 
     @Override
-    public Collection<MetricsUtil> getChildren() {
-        return children.values();
+    public Collection<MetricsUtil> getNested() {
+        return nested.values();
     }
 
     @Override
-    public MetricsUtil getChild(String metricsId) {
-        return children.get(metricsId);
+    public MetricsUtil getNested(String metricsId) {
+        return nested.get(metricsId);
     }
 
     @Override
@@ -140,6 +137,7 @@ public class MetricsUtil implements Metrics, Serializable, Cloneable {
 
     /**
      * Set an annotation value. Duplicates will be overwritten.
+     *
      * @param key
      * @param value
      */
@@ -167,7 +165,7 @@ public class MetricsUtil implements Metrics, Serializable, Cloneable {
                 '}';
     }
 
-    /*package*/ void setDuration(final long duration) {
+    public void setDuration(final long duration) {
         this.durationNs = duration;
     }
 }
