@@ -949,19 +949,22 @@ IMPORTANT: There are two modulators for `repeat()`: `until()` and `emit()`. If `
 The `repeat()`-step also supports an "emit predicate", where the predicate for an empty argument `emit()` is true (i.e. `emit() == emit{true}`). With `emit()`, the traverser is split in two -- the traverser exits the code block as well as continues back within the code block (assuming `until()` holds true).
 
 [source,groovy]
-gremlin> g.V(1).repeat(g.of().out()).until(2).emit().path().by('name')
+gremlin> g.V(1).repeat(g.of().out()).until(2).emit().path().by('name') <1>
 ==>[marko, lop]
 ==>[marko, vadas]
 ==>[marko, josh]
 ==>[marko, josh, ripple]
 ==>[marko, josh, lop]
-gremlin> g.V(1).emit().repeat(g.of().out()).until(2).path().by('name')
+gremlin> g.V(1).emit().repeat(g.of().out()).until(2).path().by('name') <2>
 ==>[marko]
 ==>[marko, lop]
 ==>[marko, vadas]
 ==>[marko, josh]
 ==>[marko, josh, ripple]
 ==>[marko, josh, lop]
+
+<1> The `emit()` comes after `repeat()` and thus, emission happens after the `repeat()` traversal is executed. Thus, no one vertex paths exist.
+<2> The `emit()` comes before `repeat()` and thus, emission happens prior to the `repeat()` traversal being executed. Thus, one vertex paths exist.
 
 The `emit()`-modulator can take an arbitrary predicate.
 
