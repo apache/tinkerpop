@@ -6,19 +6,15 @@ import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.process.util.Metrics;
+import com.tinkerpop.gremlin.process.util.TraversalMetrics;
+import com.tinkerpop.gremlin.structure.*;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -34,6 +30,7 @@ public class GraphSONModule extends SimpleModule {
         addSerializer(GraphSONVertexProperty.class, new GraphSONVertexProperty.GraphSONVertexPropertySerializer());
         addSerializer(VertexProperty.class, new VertexPropertyJacksonSerializer());
         addSerializer(Property.class, new PropertyJacksonSerializer());
+        addSerializer(TraversalMetrics.class, new TraversalMetricsJacksonSerializer());
     }
 
     static class VertexPropertyJacksonSerializer extends StdSerializer<VertexProperty> {
@@ -63,7 +60,7 @@ public class GraphSONModule extends SimpleModule {
             jsonGenerator.writeObject(m);
         }
 
-        private Map<String,Object> props(final VertexProperty property) {
+        private Map<String, Object> props(final VertexProperty property) {
             if (property instanceof DetachedVertexProperty) {
                 try {
                     return IteratorUtils.collectMap(property.iterators().propertyIterator(), Property::key, Property::value);
@@ -126,7 +123,7 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.LABEL, edge.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
 
-            final Map<String,Object> properties = IteratorUtils.collectMap(edge.iterators().propertyIterator(), Property::key, Property::value);
+            final Map<String, Object> properties = IteratorUtils.collectMap(edge.iterators().propertyIterator(), Property::key, Property::value);
             m.put(GraphSONTokens.PROPERTIES, properties);
 
             final Vertex inV = edge.iterators().vertexIterator(Direction.IN).next();
@@ -176,6 +173,62 @@ public class GraphSONModule extends SimpleModule {
             jsonGenerator.writeObject(m);
         }
 
+    }
+
+    static class TraversalMetricsJacksonSerializer extends StdSerializer<TraversalMetrics> {
+        private static final String METRICS = "metrics";
+        private static final String DURATION = "dur";
+        private static final String NAME = "name";
+        private static final String PERCENT_DURATION = "percentDur";
+        private static final String COUNT = "count";
+        private static final String ANNOTATIONS = "annotations";
+
+
+        public TraversalMetricsJacksonSerializer() {
+            super(TraversalMetrics.class);
+        }
+
+        @Override
+        public void serialize(final TraversalMetrics property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            ser(property, jsonGenerator);
+        }
+
+        @Override
+        public void serializeWithType(final TraversalMetrics property, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            ser(property, jsonGenerator);
+        }
+
+        private void ser(final TraversalMetrics traversalMetrics, final JsonGenerator jsonGenerator) throws IOException {
+            final Map<String, Object> m = new HashMap<>();
+
+            m.put(DURATION, traversalMetrics.getDuration(TimeUnit.MILLISECONDS));
+            List<Map<String, Object>> metrics = new ArrayList<>();
+            traversalMetrics.getMetrics().forEach(it -> metrics.add(metricsToMap(it)));
+            m.put(METRICS, metrics);
+
+            jsonGenerator.writeObject(m);
+        }
+
+        private Map<String, Object> metricsToMap(final Metrics metrics) {
+            Map<String, Object> m = new HashMap<>();
+            m.put(NAME, metrics.getName());
+            m.put(COUNT, metrics.getCount());
+            m.put(DURATION, metrics.getDuration(TimeUnit.MILLISECONDS));
+            m.put(PERCENT_DURATION, metrics.getPercentDuration());
+
+            if (!metrics.getAnnotations().isEmpty()) {
+                m.put(ANNOTATIONS, metrics.getAnnotations());
+            }
+
+            if (!metrics.getNested().isEmpty()) {
+                List<Map<String, Object>> nested = new ArrayList<>();
+                metrics.getNested().forEach(it -> nested.add(metricsToMap(it)));
+                m.put(METRICS, nested);
+            }
+            return m;
+        }
     }
 
     /**

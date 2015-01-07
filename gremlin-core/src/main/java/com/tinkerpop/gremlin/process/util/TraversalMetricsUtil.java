@@ -66,7 +66,7 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
     }
 
     private List<MetricsUtil> computeTotals() {
-        // Create a temporary copy of all the Metrics
+        // Create a temporary copy of all the Metrics since we will be modifying their durations.
         List<MetricsUtil> copy = new ArrayList<>(orderedMetrics.size());
         orderedMetrics.values().forEach(metrics -> copy.add(metrics.clone()));
 
@@ -120,6 +120,11 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
         return metrics.get(stepLabel);
     }
 
+    @Override
+    public Collection<MetricsUtil> getMetrics() {
+        return orderedMetrics.values();
+    }
+
     // The index is necessary to ensure that step order is preserved after a merge.
     public void initializeIfNecessary(final String metricsId, final int index, final String displayName) {
         if (metrics.containsKey(metricsId)) {
@@ -133,4 +138,5 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
         this.metrics.put(metricsId, metrics);
         this.orderedMetrics.put(index, metrics);
     }
+   
 }

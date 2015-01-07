@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.structure.Graph;
 
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,4 +45,6 @@ public interface TraversalMetrics {
      * @return an individual Metrics object.
      */
     public Metrics getMetrics(final String stepLabel);
+
+    public Collection<? extends Metrics> getMetrics();
 }
