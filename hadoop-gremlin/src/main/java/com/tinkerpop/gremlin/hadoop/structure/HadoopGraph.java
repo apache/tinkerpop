@@ -86,6 +86,14 @@ import java.util.Optional;
         test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldHaveConsistentMemoryVertexPropertiesAndExceptions",
         reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileTest$StandardTest",
+        method = "g_V_out_out_grateful_profile",
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyProfileTest$StandardTest",
+        method = "g_V_out_out_grateful_profile",
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 public class HadoopGraph implements Graph, Graph.Iterators {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(HadoopGraph.class);
