@@ -20,7 +20,6 @@ public class GraphTraversalStrategyRegistry {
 
     static {
         TRAVERSAL_STRATEGIES.add(RepeatLinearStrategy.instance());
-        TRAVERSAL_STRATEGIES.add(UntilStrategy.instance());
         TRAVERSAL_STRATEGIES.add(DedupOptimizerStrategy.instance());
         TRAVERSAL_STRATEGIES.add(IdentityRemovalStrategy.instance());
         TRAVERSAL_STRATEGIES.add(SideEffectCapStrategy.instance());

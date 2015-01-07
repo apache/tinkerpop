@@ -28,12 +28,12 @@ public abstract class GroovyFilterTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_filterXage_gt_30X(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_filterXage_gt_30X(final Object v1Id) {
             g.V(v1Id).filter { it.age > 30 }
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_filterXage_gt_30X(final Object v1Id) {
             g.V(v1Id).out.filter { it.property('age').orElse(0) > 30 }
         }
 
@@ -71,12 +71,12 @@ public abstract class GroovyFilterTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_filterXage_gt_30X(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_filterXage_gt_30X(final Object v1Id) {
             ComputerTestHelper.compute("g.V(${v1Id}).filter { it.age > 30 }",g);
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_filterXage_gt_30X(final Object v1Id) {
             ComputerTestHelper.compute("g.V(${v1Id}).out.filter { it.property('age').orElse(0) > 30 }",g);
         }
 

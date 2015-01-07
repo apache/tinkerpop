@@ -19,8 +19,8 @@ public abstract class GroovySackTest {
         }
 
         @Override
-        public Traversal<Vertex, Float> get_g_V_withSackX0X_asXaX_outE_sackXsum_weightX_inV_jumpXa_2X_sack() {
-            g.V.withSack{ 0.0f }.as('a').outE.sack(sum, 'weight').inV.jump('a', 2).sack
+        public Traversal<Vertex, Float> get_g_V_withSackX0X_repeatXoutE_sackXsum_weightX_inVX_untilX2X_sack() {
+            g.V.withSack{ 0.0f }.repeat(g.of().outE.sack(sum, 'weight').inV).until(2).sack
         }
 
         @Override
@@ -37,8 +37,8 @@ public abstract class GroovySackTest {
         }
 
         @Override
-        public Traversal<Vertex, Float> get_g_V_withSackX0X_asXaX_outE_sackXsum_weightX_inV_jumpXa_2X_sack() {
-            ComputerTestHelper.compute("g.V.withSack{0.0f}.as('a').outE.sack(sum, 'weight').inV.jump('a', 2).sack", g)
+        public Traversal<Vertex, Float> get_g_V_withSackX0X_repeatXoutE_sackXsum_weightX_inVX_untilX2X_sack() {
+            ComputerTestHelper.compute("g.V.withSack{ 0.0f }.repeat(g.of().outE.sack(sum, 'weight').inV).until(2).sack", g)
         }
 
         @Override

@@ -15,11 +15,11 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class MapTest extends AbstractGremlinProcessTest {
-    public abstract Traversal<Vertex, String> get_g_v1_mapXnameX(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_VX1X_mapXnameX(final Object v1Id);
 
-    public abstract Traversal<Vertex, Integer> get_g_v1_outE_label_mapXlengthX(final Object v1Id);
+    public abstract Traversal<Vertex, Integer> get_g_VX1X_outE_label_mapXlengthX(final Object v1Id);
 
-    public abstract Traversal<Vertex, Integer> get_g_v1_out_mapXnameX_mapXlengthX(final Object v1Id);
+    public abstract Traversal<Vertex, Integer> get_g_VX1X_out_mapXnameX_mapXlengthX(final Object v1Id);
 
     public abstract Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX();
 
@@ -27,8 +27,8 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_mapXnameX() {
-        final Traversal<Vertex, String> traversal = get_g_v1_mapXnameX(convertToVertexId("marko"));
+    public void g_VX1X_mapXnameX() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_mapXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertEquals(traversal.next(), "marko");
         assertFalse(traversal.hasNext());
@@ -36,8 +36,8 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_outE_label_mapXlengthX() {
-        final Traversal<Vertex, Integer> traversal = get_g_v1_outE_label_mapXlengthX(convertToVertexId("marko"));
+    public void g_VX1X_outE_label_mapXlengthX() {
+        final Traversal<Vertex, Integer> traversal = get_g_VX1X_outE_label_mapXlengthX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         List<Integer> lengths = traversal.toList();
         assertTrue(lengths.contains("created".length()));
@@ -48,8 +48,8 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_out_mapXnameX_mapXlengthX() {
-        final Traversal<Vertex, Integer> traversal = get_g_v1_out_mapXnameX_mapXlengthX(convertToVertexId("marko"));
+    public void g_VX1X_out_mapXnameX_mapXlengthX() {
+        final Traversal<Vertex, Integer> traversal = get_g_VX1X_out_mapXnameX_mapXlengthX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         final List<Integer> lengths = traversal.toList();
         assertTrue(lengths.contains("josh".length()));
@@ -102,17 +102,17 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_mapXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_VX1X_mapXnameX(final Object v1Id) {
             return g.V(v1Id).<String>map(v -> v.get().value("name"));
         }
 
         @Override
-        public Traversal<Vertex, Integer> get_g_v1_outE_label_mapXlengthX(final Object v1Id) {
+        public Traversal<Vertex, Integer> get_g_VX1X_outE_label_mapXlengthX(final Object v1Id) {
             return g.V(v1Id).outE().label().map(l -> l.get().length());
         }
 
         @Override
-        public Traversal<Vertex, Integer> get_g_v1_out_mapXnameX_mapXlengthX(final Object v1Id) {
+        public Traversal<Vertex, Integer> get_g_VX1X_out_mapXnameX_mapXlengthX(final Object v1Id) {
             return g.V(v1Id).out().map(v -> v.get().value("name")).map(n -> n.get().toString().length());
         }
 
@@ -133,17 +133,17 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_mapXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_VX1X_mapXnameX(final Object v1Id) {
             return g.V(v1Id).<String>map(v -> v.get().value("name")).submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Integer> get_g_v1_outE_label_mapXlengthX(final Object v1Id) {
+        public Traversal<Vertex, Integer> get_g_VX1X_outE_label_mapXlengthX(final Object v1Id) {
             return g.V(v1Id).<String>outE().label().map(l -> l.get().length()).submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Integer> get_g_v1_out_mapXnameX_mapXlengthX(final Object v1Id) {
+        public Traversal<Vertex, Integer> get_g_VX1X_out_mapXnameX_mapXlengthX(final Object v1Id) {
             return g.V(v1Id).<String>out().map(v -> v.get().value("name")).map(n -> n.get().toString().length()).submit(g.compute());
         }
 

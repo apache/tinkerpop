@@ -80,7 +80,7 @@ public class TinkerGraphTest {
         v7.addEdge("link", v9, "weight", 1f);
         v8.addEdge("link", v9, "weight", 7f);
 
-        v1.withSack(() -> Float.MIN_VALUE).as("x").outE().sack(Operator.max, "weight").inV().jump("x", 5).sack().submit(g.compute()).forEachRemaining(System.out::println);
+        v1.withSack(() -> Float.MIN_VALUE).repeat(g.of().outE().sack(Operator.max, "weight").inV()).until(5).sack().submit(g.compute()).forEachRemaining(System.out::println);
     }
 
     @Test
@@ -96,7 +96,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay2() throws Exception {
         Graph g = TinkerFactory.createClassic();
-        Traversal t = g.V().repeat(g.<Vertex>of().out()).until(2).path().by("name").submit(g.compute());
+        Traversal t = g.V(1).repeat(g.<Vertex>of().bothE("created").except("e").aggregate("e").otherV()).emit().path();
         System.out.println(t);
         t.forEachRemaining(System.out::println);
         System.out.println(t);

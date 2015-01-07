@@ -8,10 +8,8 @@ import com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyBranchTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyChooseTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.GroovyJumpTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyRepeatTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUnionTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUntilTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCoinTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyFilterTest;
@@ -35,8 +33,8 @@ import com.tinkerpop.gremlin.process.graph.step.map.GroovyValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyVertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupCountTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyInjectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyProfileTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovySackTest;
@@ -62,10 +60,8 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             //branch
             GroovyBranchTest.ComputerTest.class,
             GroovyChooseTest.ComputerTest.class,
-            GroovyJumpTest.ComputerTest.class,
             GroovyRepeatTest.ComputerTest.class,
             GroovyUnionTest.ComputerTest.class,
-            GroovyUntilTest.ComputerTest.class,
 
             // filter
             GroovyCyclicPathTest.ComputerTest.class,

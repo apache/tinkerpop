@@ -24,12 +24,12 @@ public abstract class GroovyTreeTest {
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_tree_byXnameX(final Object v1Id) {
+        public Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id) {
             g.V(v1Id).out.out.tree.by('name');
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
+        public Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
             g.V(v1Id).out.out.tree('a').by('name').both.both.cap('a');
         }
 
@@ -52,13 +52,13 @@ public abstract class GroovyTreeTest {
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_tree_byXnameX(final Object v1Id) {
+        public Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id) {
             g.V(v1Id).out.out.tree.by('name');
             // TODO
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_v1_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
+        public Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
             g.V(v1Id).out.out.tree('a').by('name').both.both.cap('a');
             // TODO
         }

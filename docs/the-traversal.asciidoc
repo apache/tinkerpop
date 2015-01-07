@@ -197,7 +197,7 @@ gremlin> g.V().out('knows').aggregate().by('name')
 Back Step
 ~~~~~~~~~
 
-link:http://en.wikipedia.org/wiki/Functional_programming[Functional languages] make use of function composition and lazy evaluation to create complex computations from primitive operations. This is exactly what Gremlin `GraphTraversal` does. One of the differentiating aspects of Gremlin's data flow approach to graph processing is that the flow need not always go "forward," but in fact, can go back to a previously seen area of computation. Examples include <<jump-step,`jump()`>> as well as the `back()`-step (*map*).
+link:http://en.wikipedia.org/wiki/Functional_programming[Functional languages] make use of function composition and lazy evaluation to create complex computations from primitive operations. This is exactly what Gremlin `GraphTraversal` does. One of the differentiating aspects of Gremlin's data flow approach to graph processing is that the flow need not always go "forward," but in fact, can go back to a previously seen area of computation. Examples include <<repeat-step,`repeat()`>> as well as the `back()`-step (*map*).
 
 [source,groovy]
 gremlin> g.V().out().out()
@@ -419,7 +419,7 @@ There is one person that is 32, one person that is 35, one person that is 27, an
 image::groupcount-step.png[width=500]
 
 [source,groovy]
-gremlin> g.V().as('x').both().groupCount('m').by{it.value('name')[1]}.jump('x',10).cap('m')
+gremlin> g.V().repeat(g.of().both().groupCount('m').by{it.value('name')[1]}).until(10).cap('m')
 ==>[a:19598, e:5740, i:5740, o:27716]
 
 The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount()` with a string variable. Given that `groupCount()` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount()`, the object's count is incremented. If `groupCount()` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount()` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount()`) can be accessed with `cap()`-step by referencing the desired variable.
@@ -455,7 +455,7 @@ Inject Step
 
 image::inject-step.png[width=800]
 
-One of the major features of TinkerPop3 is "injectable steps." This makes it possible to insert objects arbitrarily into a traversal stream. This is how <<jump-step,jump()>> is implemented. In general, `inject()`-step (*sideEffect*) exists and a few examples are provided below.
+One of the major features of TinkerPop3 is "injectable steps." This makes it possible to insert objects arbitrarily into a traversal stream. In general, `inject()`-step (*sideEffect*) exists and a few examples are provided below.
 
 [source,groovy]
 gremlin> g.V(4).out().values('name').inject('daniel')
@@ -500,49 +500,6 @@ gremlin> g.V().interval('age',20,30).values('age')
 gremlin> g.V().has('age',gte,20).has('age',lt,30).values('age') // the equivalent expression using only has()
 ==>29
 ==>27
-
-[[jump-step]]
-Jump Step
-~~~~~~~~~
-
-TinkerPop3 introduces the `jump()`-step (*branch*). This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with `jump`, the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of `jump()` in action.
-
-[source,groovy]
-gremlin> g.V(1).as('a').out().jump('a'){it.loops()<2}.values('name') <1>
-==>ripple
-==>lop
-gremlin> g.V(1).as('a').jump('b'){it.loops()>1}.out().jump('a').as('b').values('name') <2>
-==>ripple
-==>lop
-gremlin> g.V(1).jump('a').out().out().out().as('a').values('name') <3>
-==>marko
-
-<1> do-while semantics as found in the classic `loop()`-step in TinkerPop2.
-<2> while-do semantics as introduced in TinkerPop3. Jump to step `b` if loops greater than 1 else, `out` and jump back to `a` (see  <<until-step,`until()`>>).
-<3> a non-predicate based jump where `out.out.out` is seen as inert code.
-
-If a predetermined number of loops is known, it is possible to avoid the use of the jump-predicate.
-
-[source,groovy]
-gremlin> g.V(1).as('a').out().jump('a',2).values('name')
-==>ripple
-==>lop
-
-The `jump()`-step also supports an "emit predicate." Whereby the traverser is split in two -- the traverser exits the code block as well as continues back within the code block.
-
-[source,groovy]
-gremlin> g.V(1).as('a').out().jump('a'){it.loops()<2}{true}.values('name')
-==>lop
-==>vadas
-==>josh
-==>ripple
-==>lop
-
-image::jump-step.png[width=500]
-
-The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices traversed are ripple and lop (Josh's created projects, as lop and vadas have no out edges) and are also emitted. loops==1 now so the traverser jumps back to step `a`. As ripple and lop have no out edges there are no vertices to traverse. Given that the loops==2 now it wil fail the predicate. Therefore, the traverser has seen the vertices: lop, vadas, josh, ripple, and lop.
-
-The `jump()`-step highlights one of the major benefits of `Traverser<T>` in TinkerPop3: the ability to take a traverser and place it anywhere in the Traversal step-sequence. Because a traverser maintains all the metadata associated with its particular walk, and no step maintains state information about a traverser, traversers can be arbitrarily relocated without ill-effects.
 
 [[limit-step]]
 Limit Step
@@ -646,13 +603,13 @@ Among the features which differentiate `match()` from SPARQL are:
 gremlin> g.V().match('a',
             g.of().as('a').out('created').has('name','lop').as('b'), <1>
             g.of().as('b').in('created').has('age', 29).as('c'),
-            g.of().as('c').out().jump('c',2)). <2>
+            g.of().as('c').repeat(g.of().out()).until(2)). <2>
            select('c').out('knows').dedup().values('name') <3>
 ==>vadas
 ==>josh
 
 <1> *Patterns of arbitrary complexity*: `match()` is not restricted to triple patterns or property paths.
-<2> *Recursion support*: `match()` supports the branch-based steps within a pattern, including `jump()`.
+<2> *Recursion support*: `match()` supports the branch-based steps within a pattern, including `repeat()`.
 <3> *Imperative/declarative hybrid*: Pre and prior to a `match()`, it is possible to leverage classic Gremlin imperative.
 
 To extend point #3, it is possible to support going from imperative, to declarative, to imperative, ad infinitum.
@@ -962,10 +919,10 @@ gremlin> g.V().range(0,3)
 gremlin> g.V().range(1,3)
 ==>v[2]
 ==>v[3]
-gremlin> g.V().as('a').both().jump('a',1000000).range(6,10)
+gremlin> g.V().repeat(g.of().both()).until(1000000).emit().range(6,10)
 ==>v[1]
-==>v[1]
-==>v[1]
+==>v[5]
+==>v[3]
 ==>v[1]
 
 [[repeat-step]]
@@ -1081,13 +1038,13 @@ gremlin> g.V().withSack{rand.nextFloat()}.sack()
 A more complicated initial value supplier example is presented below where the sack values are used in a running computation and then emitted at the end of the traversal. When an edge is traversed, the edge weight is multiplied by the sack value (`sack(mult,'weight')`).
 
 [source,groovy]
-gremlin> g.V().withSack{1.0f}.as('x').outE().sack(mult,'weight').inV().jump('x',2)
+gremlin> g.V().withSack{1.0f}.repeat(g.of().outE().sack(mult,'weight').inV()).until(2)
 ==>v[5]
 ==>v[3]
-gremlin> g.V().withSack{1.0f}.as('x').outE().sack(mult,'weight').inV().jump('x',2).sack()
+gremlin> g.V().withSack{1.0f}.repeat(g.of().outE().sack(mult,'weight').inV()).until(2).sack()
 ==>1.0
 ==>0.4
-gremlin> g.V().withSack{1.0f}.as('x').outE().sack(mult,'weight').inV().jump('x',2).path{it}{it.value('weight')}
+gremlin> g.V().withSack{1.0f}.repeat(g.of().outE().sack(mult,'weight').inV()).until(2).path().by{it}.by('weight')
 ==>[v[1], 1.0, v[4], 1.0, v[5]]   // 1.0 * 1.0 * 1.0 = 1.0
 ==>[v[1], 1.0, v[4], 0.4, v[3]]   // 1.0 * 1.0 * 0.4 = 0.4
 
@@ -1125,17 +1082,17 @@ gremlin> g.V().outE().sample(2).by('weight').values('weight')
 One of the more interesting use cases for `sample()` is when it is used in conjunction with <<local-step,`local()`>>. The combination of the two steps supports the execution of link:http://en.wikipedia.org/wiki/Random_walk[random walks]. In the example below, the traversal starts are vertex 1 and selects one edge to traverse based on a probability distribution generated by the weights of the edges. The output is always a single path as by selecting a single edge, the traverser never splits and continues down a single path in the graph.
 
 [source,groovy]
-gremlin> g.V(1).as('x').local(
+gremlin> g.V(1).repeat(g.of().local(
            g.of().bothE().sample(1).by('weight').otherV()
-         ).jump('x',5)
+         )).until(5)
 ==>v[4]
-gremlin> g.V(1).as('x').local(
+gremlin> g.V(1).repeat(g.of().local(
            g.of().bothE().sample(1).by('weight').otherV()
-         ).jump('x',5).path()
+         )).until(5).path()
 ==>[v[1], v[2], v[1], v[2], v[1], v[2]]
-gremlin> g.V(1).as('x').local(
+gremlin> g.V(1).repeat(g.of().local(
            g.of().bothE().sample(1).by('weight').otherV()
-         ).jump('x',10).path()
+         )).until(10).path()
 ==>[v[1], v[4], v[1], v[3], v[4], v[5], v[4], v[5], v[4], v[3], v[4]]
 
 [[select-step]]
@@ -1316,7 +1273,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 ----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> sg = g.V(3).as('a').inE().outV().jump('a'){it.loops()<3}{true}.subgraph({true}).next()   <1>
+gremlin> sg = g.V(3).repeat(g.of().inE().outV()).until(3).emit().subgraph({true}).next()   <1>
 ==>tinkergraph[vertices:4 edges:4]
 gremlin> sg.E()
 ==>e[8][1-knows->4]
@@ -1342,24 +1299,24 @@ gremlin> :pin use tinkerpop.utilities
 ==>tinkerpop.utilities activated
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V().as('x').both().groupCount('m').jump('x',16).cap('m').next().sort{-it.value}
+gremlin> g.V().repeat(g.of().both().groupCount('m')).until(16).cap('m').next().sort{-it.value}
 ==>v[1]=2744208
 ==>v[3]=2744208
 ==>v[4]=2744208
 ==>v[2]=1136688
 ==>v[5]=1136688
 ==>v[6]=1136688
-gremlin> clock(1){g.V().as('x').both().groupCount('m').jump('x',16).cap('m').next().sort{-it.value}}
-==>2735.111
-gremlin> g.V().as('x').timeLimit(750).both().groupCount('m').jump('x',16).cap('m').next().sort{-it.value}
+gremlin> clock(1){g.V().repeat(g.of().both().groupCount('m')).until(16).cap('m').next().sort{-it.value}}
+==>11.996000
+gremlin> g.V().repeat(g.of().timeLimit(2).both().groupCount('m')).until(16).cap('m').next().sort{-it.value}
 ==>v[1]=648473
 ==>v[3]=647510
 ==>v[4]=647499
 ==>v[5]=268540
 ==>v[6]=268533
 ==>v[2]=267941
-gremlin> clock(1){g.V().as('x').timeLimit(750).both().groupCount('m').jump('x',16).cap('m').next().sort{-it.value}}
-==>750.03
+gremlin> clock(1){g.V().repeat(g.of().timeLimit(2).both().groupCount('m')).until(16).cap('m').next().sort{-it.value}}
+==>2.214000
 
 In essence, the relative order is respected, even through the number traversers at each vertex is not. The primary benefit being that the calculation is guaranteed to complete at the specified time limit (in milliseconds). Finally, note that the internal clock of `timeLimit()`-step starts when the first traverser enters it. When the time limit is reached, any `next()` evaluation of the step will yield a `NoSuchElementException` and any `hasNext()` evaluation will yield `false`.
 
@@ -1412,7 +1369,7 @@ gremlin> g.V(1).out().fold().inject('gremlin',[1.23,2.34]).unfold()
 ==>v[2]
 ==>v[4]
 
-Note that `unfold()` does not recursively unroll iterators. Instead, `jump()` can be used to for recursive unrolling.
+Note that `unfold()` does not recursively unroll iterators. Instead, `repeat()` can be used to for recursive unrolling.
 
 [source,groovy]
 gremlin> g.of().inject(1,[2,3,[4,5,[6]]])
@@ -1423,7 +1380,7 @@ gremlin> g.of().inject(1,[2,3,[4,5,[6]]]).unfold()
 ==>2
 ==>3
 ==>[4, 5, [6]]
-gremlin> g.of().inject(1,[2,3,[4,5,[6]]]).as('x').unfold().jump('x'){it.get() instanceof List}
+gremlin> g.of().inject(1,[2,3,[4,5,[6]]]).repeat(g.of().unfold()).until{!(it.get() instanceof List)}
 ==>1
 ==>2
 ==>3
@@ -1452,31 +1409,6 @@ gremlin> g.V(4).union(
 ==>[v[4], v[1], 29]
 ==>[v[4], v[5], java]
 ==>[v[4], v[3], java]
-
-[[until-step]]
-Until Step
-~~~~~~~~~~
-
-Gremlin provides *while-do* looping. This was demonstrated in the <<jump-step,Jump Step>> section of the documentation. However, when only using `jump()` for *while-do*, the representation can be confusing as there are numerous `jump` constructions. For the sake of simplicity, `until()`-step exists (*branch*).
-
-[source,groovy]
-gremlin> g.V(1).as('a').jump('b'){it.loops() > 1}.out().jump('a').as('b').values('name') <1>
-==>ripple
-==>lop
-gremlin> g.V(1).until('b'){it.loops() > 1}.out().as('b').values('name') <2>
-==>ripple
-==>lop
-
-<1> *while-do* looping using `jump()-step`.
-<2> *while-do* looping using `until()-step`.
-
-The `until()` expression in the example above states:
-. Get the vertex with id 1 from the graph.
-. Until the current traverser has loop'd two times, get the outgoing adjacent vertices of the current vertex of the traverser.
-. When the traverser has loop'd two times, break out of the until-clause and then get the `name` of the current vertex of the traverser.
-
-
-NOTE: The `until()`-step is not a "real" step. It is simply a marker that exist in the traversal. When the `UntilStrategy` is executed (see <<traversalstrategy,TraversalStrategy>>), the traversal is re-written by inserting `jump()`-steps accordingly. Thus, in the example above, the second traversal example using `until()` compiles to the first which uses `jump()`.
 
 [[valuemap-step]]
 ValueMap Step

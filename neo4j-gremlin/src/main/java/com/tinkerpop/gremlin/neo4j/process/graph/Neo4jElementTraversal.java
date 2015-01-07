@@ -171,7 +171,7 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().fold(seed, foldFunction);
     }
 
-    public default <E2> Neo4jGraphTraversal<A, E2> local(final Traversal<A, E2> localTraversal) {
+    public default <E2> Neo4jGraphTraversal<A, E2> local(final Traversal<?, E2> localTraversal) {
         return this.start().local(localTraversal);
     }
 
@@ -390,55 +390,19 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().branch(function);
     }
 
-    public default Neo4jGraphTraversal<A, A> jump(final String jumpLabel, final Predicate<Traverser<A>> ifPredicate, final Predicate<Traverser<A>> emitPredicate) {
-        return this.start().jump(jumpLabel, ifPredicate, emitPredicate);
-    }
-
-    public default Neo4jGraphTraversal<A, A> jump(final String jumpLabel, final Predicate<Traverser<A>> ifPredicate) {
-        return this.start().jump(jumpLabel, ifPredicate);
-    }
-
-    public default Neo4jGraphTraversal<A, A> jump(final String jumpLabel, final int loops, final Predicate<Traverser<A>> emitPredicate) {
-        return this.start().jump(jumpLabel, loops, emitPredicate);
-    }
-
-    public default Neo4jGraphTraversal<A, A> jump(final String jumpLabel, final int loops) {
-        return this.start().jump(jumpLabel, loops);
-    }
-
-    public default Neo4jGraphTraversal<A, A> jump(final String jumpLabel) {
-        return this.start().jump(jumpLabel);
-    }
-
-    public default Neo4jGraphTraversal<A, A> until(final String breakLabel, final Predicate<Traverser<A>> breakPredicate, final Predicate<Traverser<A>> emitPredicate) {
-        return this.start().until(breakLabel, breakPredicate, emitPredicate);
-    }
-
-    public default Neo4jGraphTraversal<A, A> until(final String breakLabel, final Predicate<Traverser<A>> breakPredicate) {
-        return this.start().until(breakLabel, breakPredicate);
-    }
-
-    public default Neo4jGraphTraversal<A, A> until(final String breakLabel, final int loops, final Predicate<Traverser<A>> emitPredicate) {
-        return this.start().until(breakLabel, loops, emitPredicate);
-    }
-
-    public default Neo4jGraphTraversal<A, A> until(final String breakLabel, final int loops) {
-        return this.start().until(breakLabel, loops);
-    }
-
-    public default <E2> Neo4jGraphTraversal<A, E2> choose(final Predicate<Traverser<A>> choosePredicate, final Traversal<A, E2> trueChoice, final Traversal<A, E2> falseChoice) {
+    public default <E2> Neo4jGraphTraversal<A, E2> choose(final Predicate<Traverser<A>> choosePredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
         return this.start().choose(choosePredicate, trueChoice, falseChoice);
     }
 
-    public default <E2, M> Neo4jGraphTraversal<A, E2> choose(final Function<Traverser<A>, M> mapFunction, final Map<M, Traversal<A, E2>> choices) {
+    public default <E2, M> Neo4jGraphTraversal<A, E2> choose(final Function<Traverser<A>, M> mapFunction, final Map<M, Traversal<?, E2>> choices) {
         return this.start().choose(mapFunction, choices);
     }
 
-    public default <E2> Neo4jGraphTraversal<A, E2> union(final Traversal<A, E2>... traversals) {
+    public default <E2> Neo4jGraphTraversal<A, E2> union(final Traversal<?, E2>... traversals) {
         return this.start().union(traversals);
     }
 
-    public default Neo4jGraphTraversal<A, A> repeat(final Traversal<A, A> traversal) {
+    public default Neo4jGraphTraversal<A, A> repeat(final Traversal<?, A> traversal) {
         return this.start().repeat(traversal);
     }
 

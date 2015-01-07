@@ -20,14 +20,14 @@ import static org.junit.Assert.assertFalse;
  */
 public abstract class InjectTest extends AbstractGremlinTest {
 
-    public abstract Traversal<Vertex, String> get_g_v1_out_injectXv2X_name(final Object v1Id, final Object v2Id);
+    public abstract Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id);
 
-    public abstract Traversal<Vertex, Path> get_g_v1_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id);
+    public abstract Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_out_injectXv2X_name() {
-        final Traversal<Vertex, String> traversal = get_g_v1_out_injectXv2X_name(convertToVertexId("marko"), convertToVertexId("vadas"));
+    public void g_VX1X_out_injectXv2X_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_out_injectXv2X_name(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
         Map<String, Long> counter = new HashMap<>();
         while (traversal.hasNext()) {
@@ -42,8 +42,8 @@ public abstract class InjectTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_out_name_injectXdanielX_asXaX_mapXlengthX_path() {
-        final Traversal<Vertex, Path> traversal = get_g_v1_out_name_injectXdanielX_asXaX_mapXlengthX_path(convertToVertexId("marko"));
+    public void g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path() {
+        final Traversal<Vertex, Path> traversal = get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -63,12 +63,12 @@ public abstract class InjectTest extends AbstractGremlinTest {
     public static class StandardTest extends InjectTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
+        public Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
             return g.V(v1Id).out().inject(g.V(v2Id).next()).values("name");
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_v1_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
             return g.V(v1Id).out().<String>values("name").inject("daniel").as("a").map(t -> t.get().length()).path();
         }
     }
@@ -76,12 +76,12 @@ public abstract class InjectTest extends AbstractGremlinTest {
     public static class ComputerTest extends InjectTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
+        public Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
             return g.V(v1Id).out().inject(g.V(v2Id).next()).<String>values("name").submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_v1_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
             return g.V(v1Id).out().<String>values("name").inject("daniel").as("a").map(t -> t.get().length()).path().submit(g.compute());
         }
     }

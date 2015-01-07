@@ -20,17 +20,17 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AddEdgeTest extends AbstractGremlinTest {
-    public abstract Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_aX(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    public void g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(convertToVertexId("marko"));
+    public void g_VX1X_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         final List<Vertex> cocreators = new ArrayList<>();
         final List<Object> ids = new ArrayList<>();
@@ -58,8 +58,8 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    public void g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX(convertToVertexId("marko"));
+    public void g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_aX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_aX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int count = 0;
         while (traversal.hasNext()) {
@@ -77,8 +77,8 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    public void g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X() {
-        final Traversal<Vertex, Vertex> traversal = get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(convertToVertexId("marko"));
+    public void g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int count = 0;
         while (traversal.hasNext()) {
@@ -98,17 +98,17 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
     public static class StandardTest extends AddEdgeTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(final Object v1Id) {
             return g.V(v1Id).as("a").out("created").in("created").addBothE("cocreator", "a");
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_aX(final Object v1Id) {
             return g.V(v1Id).as("a").out("created").addOutE("createdBy", "a");
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(final Object v1Id) {
             return g.V(v1Id).as("a").out("created").addOutE("createdBy", "a", "weight", 2);
         }
     }

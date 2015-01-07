@@ -22,7 +22,7 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, List>> get_g_V_valueMapXname_ageX();
 
-    public abstract Traversal<Vertex, Map<String, List<String>>> get_g_v1_outXcreatedX_valueMap(final Object v1Id);
+    public abstract Traversal<Vertex, Map<String, List<String>>> get_g_VX1X_outXcreatedX_valueMap(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -91,8 +91,8 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_outXcreatedX_valueMap() {
-        final Traversal<Vertex, Map<String, List<String>>> traversal = get_g_v1_outXcreatedX_valueMap(convertToVertexId("marko"));
+    public void g_VX1X_outXcreatedX_valueMap() {
+        final Traversal<Vertex, Map<String, List<String>>> traversal = get_g_VX1X_outXcreatedX_valueMap(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         final Map<String, List<String>> values = traversal.next();
@@ -119,7 +119,7 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, List<String>>> get_g_v1_outXcreatedX_valueMap(final Object v1Id) {
+        public Traversal<Vertex, Map<String, List<String>>> get_g_VX1X_outXcreatedX_valueMap(final Object v1Id) {
             return g.V(v1Id).out("created").valueMap();
         }
     }
@@ -141,7 +141,7 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, List<String>>> get_g_v1_outXcreatedX_valueMap(final Object v1Id) {
+        public Traversal<Vertex, Map<String, List<String>>> get_g_VX1X_outXcreatedX_valueMap(final Object v1Id) {
             return (Traversal) g.V(v1Id).out("created").valueMap().submit(g.compute());
         }
     }

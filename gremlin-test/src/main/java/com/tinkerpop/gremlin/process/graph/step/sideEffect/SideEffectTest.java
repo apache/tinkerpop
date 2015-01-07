@@ -19,16 +19,16 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class SideEffectTest extends AbstractGremlinTest {
-    public abstract Traversal<Vertex, String> get_g_v1_sideEffectXstore_aX_name(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_VX1X_sideEffectXstore_aX_name(final Object v1Id);
 
-    public abstract Traversal<Vertex, String> get_g_v1_out_sideEffectXincr_cX_name(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_VX1X_out_sideEffectXincr_cX_name(final Object v1Id);
 
-    public abstract Traversal<Vertex, String> get_g_v1_out_sideEffectXX_name(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_VX1X_out_sideEffectXX_name(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_sideEffectXstore_aX_valueXnameX() {
-        final Traversal<Vertex, String> traversal = get_g_v1_sideEffectXstore_aX_name(convertToVertexId("marko"));
+    public void g_VX1X_sideEffectXstore_aX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_sideEffectXstore_aX_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertEquals(traversal.next(), "marko");
         assertFalse(traversal.hasNext());
@@ -37,8 +37,8 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_out_sideEffectXincr_cX_valueXnameX() {
-        final Traversal<Vertex, String> traversal = get_g_v1_out_sideEffectXincr_cX_name(convertToVertexId("marko"));
+    public void g_VX1X_out_sideEffectXincr_cX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_out_sideEffectXincr_cX_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assert_g_v1_out_sideEffectXincr_cX_valueXnameX(traversal);
         assertEquals(new Integer(3), traversal.asAdmin().getSideEffects().<List<Integer>>get("c").get(0));
@@ -57,8 +57,8 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_out_sideEffectXX_valueXnameX() {
-        final Traversal<Vertex, String> traversal = get_g_v1_out_sideEffectXX_name(convertToVertexId("marko"));
+    public void g_VX1X_out_sideEffectXX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_out_sideEffectXX_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assert_g_v1_out_sideEffectXincr_cX_valueXnameX(traversal);
     }
@@ -66,7 +66,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
     public static class StandardTest extends SideEffectTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_sideEffectXstore_aX_name(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_VX1X_sideEffectXstore_aX_name(final Object v1Id) {
             return g.V(v1Id).withSideEffect("a", ArrayList::new).sideEffect(traverser -> {
                 traverser.<List>sideEffects("a").clear();
                 traverser.<List<Vertex>>sideEffects("a").add(traverser.get());
@@ -74,7 +74,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_out_sideEffectXincr_cX_name(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_VX1X_out_sideEffectXincr_cX_name(final Object v1Id) {
             return g.V(v1Id).withSideEffect("c", () -> {
                 final List<Integer> list = new ArrayList<>();
                 list.add(0);
@@ -87,7 +87,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_out_sideEffectXX_name(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_VX1X_out_sideEffectXX_name(final Object v1Id) {
             return g.V(v1Id).out().sideEffect(traverser -> {
             }).values("name");
         }

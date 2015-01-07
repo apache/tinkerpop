@@ -26,7 +26,6 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
     private static final Set<Class<? extends TraversalStrategy>> POSTS = new HashSet<>(Arrays.asList(
             ChooseLinearStrategy.class,
             UnionLinearStrategy.class,
-            UntilStrategy.class,
             EngineDependentStrategy.class));
 
     private RepeatLinearStrategy() {

@@ -24,7 +24,7 @@ public abstract class GroovyLocalTest {
 
         /*@Override
         public Traversal<Vertex, Map<Double, Long>> get_g_V_localXoutE_weight_groupCountX() {
-            return g.V().local((Traversal) g.<Vertex>of().outE().values("weight").groupCount());
+            return g.V().local((Traversal) g.of().outE().values("weight").groupCount());
         }*/
     }
 
@@ -42,7 +42,7 @@ public abstract class GroovyLocalTest {
 
         /*@Override
         public Traversal<Vertex, Map<Double, Long>> get_g_V_localXoutE_weight_groupCountX() {
-            return g.V().local((Traversal) g.<Vertex>of().outE().values("weight").groupCount());
+            return g.V().local((Traversal) g.of().outE().values("weight").groupCount());
         }*/
 
     }

@@ -3,10 +3,8 @@ package com.tinkerpop.gremlin.process;
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.process.graph.step.branch.BranchTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.UntilTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CoinTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupTest;
@@ -86,10 +84,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // branch
             BranchTest.StandardTest.class,
             ChooseTest.StandardTest.class,
-            JumpTest.StandardTest.class,
             RepeatTest.StandardTest.class,
             UnionTest.StandardTest.class,
-            UntilTest.StandardTest.class,
 
             // filter
             CyclicPathTest.StandardTest.class,
@@ -155,10 +151,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // branch
             BranchTest.class,
             ChooseTest.class,
-            JumpTest.class,
             RepeatTest.class,
             UnionTest.class,
-            UntilTest.class,
 
             // filter
             CyclicPathTest.class,

@@ -9,8 +9,10 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Relaxed the typing requirements for `g.of()` when applied to `choose()`, `repeat()`, `union()`, etc.
+* Removed `LoopStep` and `UntilStep` in favor of the new `RepeatStep` model of looping in Gremlin3.
+* `BranchStep` is now exposed in `GraphTraversal` via `branch(function)`.
 * `UnionStep` now implements `TraversalHolder`.
-* Removed `JumpStep` and `UntilStep` with `RepeatStep` being the new model for loops. Jump-based branching supported by `BranchStep`.
 * Added `RepeatStep` as the new looping construct supporting do/while, while/do, and emit semantics.
 * Moved `Traversal.sideEffects()` to `Traversal.Admin.getSideEffects()` as `cap()` should be used for sideEffect data access for a traversal.
 * Renamed vendor `XXXTraversal` to `XXXGraphTraversal` (interface) and `XXXGraphTraversal` to `DefaultXXXGraphTraversal` (implementation class).

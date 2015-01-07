@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.step.util.MarkerIdentityStep;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -13,7 +14,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RepeatStep<S> extends AbstractStep<S, S> {
+public final class RepeatStep<S> extends AbstractStep<S, S> implements PathConsumer {
 
     private Traversal<S, S> repeatTraversal = null;
     private Predicate<Traverser<S>> untilPredicate = null;
@@ -117,6 +118,11 @@ public final class RepeatStep<S> extends AbstractStep<S, S> {
             return TraversalHelper.makeStepString(this, this.repeatTraversal, "until(" + this.untilPredicate + ")", "emit(" + this.emitPredicate + ")");
         }
 
+    }
+
+    @Override
+    public boolean requiresPaths() {
+        return TraversalHelper.trackPaths(this.repeatTraversal);
     }
 
     ///
