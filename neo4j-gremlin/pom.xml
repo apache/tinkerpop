@@ -160,53 +160,74 @@
                 <version>1.3.2</version>
                 <executions>
                     <execution>
+                        <id>Neo4jGraphTraversal</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>java</goal>
                         </goals>
+                        <configuration>
+                            <includeProjectDependencies>true</includeProjectDependencies>
+                            <includePluginDependencies>true</includePluginDependencies>
+                            <mainClass>com.tinkerpop.gremlin.process.util.GraphTraversalSourceGenerator</mainClass>
+                            <arguments>
+                                <argument>com.tinkerpop.gremlin.process.graph.GraphTraversal</argument>
+                                <argument>${basedir}/src/main/java/com/tinkerpop/gremlin/neo4j/process/graph</argument>
+                                <argument>Neo4jGraphTraversalStub</argument>
+                                <argument>Neo4jGraphTraversal</argument>
+                                <argument>Neo4jGraphTraversal</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>Neo4jElementTraversal</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <includeProjectDependencies>true</includeProjectDependencies>
+                            <includePluginDependencies>true</includePluginDependencies>
+                            <mainClass>com.tinkerpop.gremlin.process.util.GraphTraversalSourceGenerator</mainClass>
+                            <arguments>
+                                <argument>com.tinkerpop.gremlin.process.graph.ElementTraversal</argument>
+                                <argument>${basedir}/src/main/java/com/tinkerpop/gremlin/neo4j/process/graph</argument>
+                                <argument>Neo4jElementTraversalStub</argument>
+                                <argument>Neo4jElementTraversal</argument>
+                                <argument>Neo4jGraphTraversal</argument>
+                            </arguments>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <includeProjectDependencies>true</includeProjectDependencies>
-                    <includePluginDependencies>true</includePluginDependencies>
-                    <mainClass>com.tinkerpop.gremlin.process.util.TraversalSourceGenerator</mainClass>
-                    <arguments>
-                        <argument>com.tinkerpop.gremlin.process.graph.GraphTraversal</argument>
-                        <argument>${basedir}/src/main/java/com/tinkerpop/gremlin/neo4j/process/graph</argument>
-                        <argument>Neo4jGraphTraversalStub</argument>
-                        <argument>Neo4jGraphTraversal</argument>
-                    </arguments>
-                </configuration>
             </plugin>
         </plugins>
     </build>
     <profiles>
-    <profile>
-        <id>lucky</id>
-        <activation>
-            <activeByDefault>false</activeByDefault>
-            <property>
-                <name>feelingLucky</name>
-            </property>
-        </activation>
-        <build>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <configuration>
-                        <skipTests>true</skipTests>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <configuration>
-                        <skipTests>true</skipTests>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </build>
+        <profile>
+            <id>lucky</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>feelingLucky</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>

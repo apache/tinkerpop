@@ -22,7 +22,6 @@ public class TinkerGraphGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT_SPACE + TinkerGraph.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + TinkerGraphComputer.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_STATIC_SPACE + DefaultTinkerGraphTraversalTokens.class.getCanonicalName() + DOT_STAR);
-
     }};
 
     @Override

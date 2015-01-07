@@ -14,9 +14,10 @@ import com.tinkerpop.gremlin.structure.Element;
 import java.util.Map;
 
 /**
- * Neo4jTraversalStub is merged with {@link GraphTraversal} via the Maven exec-plugin.
- * The Maven plugin yields Neo4jTraversal which is ultimately what is executed at runtime.
- * This class maintains {@link Neo4jGraphTraversal} specific methods that extends {@link GraphTraversal}.
+ * Neo4jGraphTraversal is merged with {@link GraphTraversal} via the Maven exec-plugin.
+ * The Maven plugin yields Neo4jGraphTraversal which is ultimately what is depended on by user source.
+ * This class maintains {@link Neo4jGraphTraversal} specific methods that extend {@link GraphTraversal}.
+ * Adding {@link Element} to the JavaDoc so it sticks in the import during "optimize imports" code cleaning.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)

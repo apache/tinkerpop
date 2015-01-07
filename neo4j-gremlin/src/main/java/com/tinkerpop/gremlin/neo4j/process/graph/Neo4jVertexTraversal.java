@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.neo4j.process.graph;
 
 import com.tinkerpop.gremlin.process.graph.VertexTraversal;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.List;
 import java.util.Map;
@@ -21,15 +21,15 @@ public interface Neo4jVertexTraversal extends Neo4jElementTraversal<Vertex>, Ver
     }
 
     public default <E2> Neo4jGraphTraversal<Vertex, Map<String, List<E2>>> valueMap(final String... propertyKeys) {
-        return this.start().valueMap(propertyKeys);
+        return (Neo4jGraphTraversal) this.start().valueMap(propertyKeys);
     }
 
 
     public default <E2> Neo4jGraphTraversal<Vertex, Map<String, List<E2>>> valueMap(final boolean includeTokens, final String... propertyKeys) {
-        return this.start().valueMap(includeTokens,propertyKeys);
+        return (Neo4jGraphTraversal) this.start().valueMap(includeTokens, propertyKeys);
     }
 
     public default <E2> Neo4jGraphTraversal<Vertex, E2> value() {
-        return this.start().value();
+        return (Neo4jGraphTraversal) this.start().value();
     }
 }

@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jEdgeTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jElementTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jGraphTraversal;
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jGraphTraversalStub;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jVertexPropertyTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jVertexTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jGraphTraversal;
@@ -35,7 +34,6 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
         add(Neo4jEdgeTraversal.class);
         add(Neo4jElementTraversal.class);
         add(Neo4jGraphTraversal.class);
-        add(Neo4jGraphTraversalStub.class);
         add(Neo4jVertexPropertyTraversal.class);
         add(DefaultNeo4jGraphTraversal.class);
         add(Neo4jVertexTraversal.class);

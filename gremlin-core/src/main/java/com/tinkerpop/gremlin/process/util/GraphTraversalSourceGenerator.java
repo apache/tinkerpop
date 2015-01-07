@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.process.util;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.lang.reflect.Executable;
@@ -19,7 +21,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalSourceGenerator {
+public class GraphTraversalSourceGenerator {
 
     private static final Set<String> methodsWithE2AsElementSingle = new HashSet<String>() {{
         add("has");
@@ -32,10 +34,16 @@ public class TraversalSourceGenerator {
     }};
 
     public static void main(final String[] args) throws Exception {
-        generateSource(args[0], args[1], args[2], args[3]);
+        generateSource(args[0], args[1], args[2], args[3], args[4]);
     }
 
-    public static void generateSource(final String traversalToCloneClassName, final String resultDirectory, final String stubTraversalClassName, final String resultTraversalClassName) throws Exception {
+    public static void generateSource(final String traversalToCloneClassName,
+                                      final String resultDirectory,
+                                      final String stubTraversalClassName,
+                                      final String resultTraversalClassName,
+                                      final String desiredTraversalReturnClassName) throws Exception {
+
+
         final StringBuilder builder = new StringBuilder();
         final Class traversalToCloneClass = Class.forName(traversalToCloneClassName);
 
@@ -44,6 +52,7 @@ public class TraversalSourceGenerator {
         String sourceCode = new String(encoded);
         int pos = sourceCode.lastIndexOf("}");
         sourceCode = sourceCode.substring(0, pos) + sourceCode.substring(pos + 1);
+        sourceCode = sourceCode.replace("interface " + stubTraversalClassName, "public interface " + stubTraversalClassName);
         sourceCode = sourceCode.replace(stubTraversalClassName, resultTraversalClassName);
         sourceCode = "////// THIS CLASS IS AUTO-GENERATED, DO NOT EDIT\n" +
                 "////// TO ADD METHODS TO THIS CLASS, EDIT " + stubTraversalClassName + "\n\n" + sourceCode;
@@ -55,10 +64,11 @@ public class TraversalSourceGenerator {
         final List<Method> methods = Arrays.asList(traversalToCloneClass.getMethods());
         Collections.sort(methods, (a, b) -> (a.getName() + a.getParameterCount() + a.toGenericString()).compareTo((b.getName() + b.getParameterCount() + b.toGenericString())));
         for (final Method method : methods) {
-            if (method.getReturnType().equals(traversalToCloneClass) && !Modifier.isStatic(method.getModifiers()) && !method.getName().equals("addStep")) {
+            if (method.getReturnType().equals(GraphTraversal.class) && !Modifier.isStatic(method.getModifiers()) && !method.getName().equals("addStep")) {
                 String methodName = sharedToGenericString(method);
-                methodName = methodName.replace(traversalToCloneClass.getCanonicalName(), resultTraversalClassName);
-                methodName = methodName.replace(resultTraversalClassName + ".", "");
+                methodName = methodName.replace(GraphTraversal.class.getCanonicalName(), desiredTraversalReturnClassName);
+                methodName = methodName.replace(traversalToCloneClass.getCanonicalName() + ".", "");  // needed for ElementTraversal
+                methodName = methodName.replace(resultTraversalClassName + ".", "");                  // needed for GraphTraversal
                 if (methodsWithE2AsElementSingle.contains(method.getName())) {
                     methodName = methodName.replace("<E2>", "<E2 extends Element>");
                 }
@@ -66,7 +76,7 @@ public class TraversalSourceGenerator {
                     methodName = methodName.replace("<E2,", "<E2 extends Element,");
                 }
                 final String parameters = Arrays.asList(method.getParameters()).stream().map(p -> p.getName()).collect(Collectors.toList()).toString().replace("[", "").replace("]", "");
-                methodName = "\t" + methodName + " {\n\t\treturn (" + resultTraversalClassName + ") " + traversalToCloneClass.getCanonicalName() + ".super." + method.getName() + "(" + parameters + ");\n\t}\n\n";
+                methodName = "\t" + methodName + " {\n\t\treturn (" + desiredTraversalReturnClassName + ") " + traversalToCloneClass.getCanonicalName() + ".super." + method.getName() + "(" + parameters + ");\n\t}\n\n";
                 methodName = methodName.replace("$", ".");
                 builder.append(methodName);
             }
