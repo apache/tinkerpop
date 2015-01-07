@@ -10,12 +10,12 @@ import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.ProfileMapReduce;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
-import com.tinkerpop.gremlin.process.util.TraversalMetricsUtil;
+import com.tinkerpop.gremlin.process.util.StandardTraversalMetrics;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, MapReducer<MapReduce.NullObject, TraversalMetricsUtil, MapReduce.NullObject, TraversalMetricsUtil, TraversalMetricsUtil> {
+public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, MapReducer<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> {
 
     private final String name;
 
@@ -38,7 +38,7 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffec
 
 
     @Override
-    public MapReduce<MapReduce.NullObject, TraversalMetricsUtil, MapReduce.NullObject, TraversalMetricsUtil, TraversalMetricsUtil> getMapReduce() {
+    public MapReduce<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> getMapReduce() {
         return new ProfileMapReduce(this);
     }
 
@@ -46,7 +46,7 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffec
     @Override
     public Traverser next() {
         // Wrap SideEffectStep's next() with timer.
-        TraversalMetricsUtil traversalMetrics = getTraversalMetricsUtil();
+        StandardTraversalMetrics traversalMetrics = getTraversalMetricsUtil();
 
         Traverser<?> ret = null;
         traversalMetrics.start(this.getLabel());
@@ -64,7 +64,7 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffec
     @Override
     public boolean hasNext() {
         // Wrap SideEffectStep's hasNext() with timer.
-        TraversalMetricsUtil traversalMetrics = getTraversalMetricsUtil();
+        StandardTraversalMetrics traversalMetrics = getTraversalMetricsUtil();
 
         traversalMetrics.start(this.getLabel());
         boolean ret = super.hasNext();
@@ -72,8 +72,8 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffec
         return ret;
     }
 
-    private TraversalMetricsUtil getTraversalMetricsUtil() {
-        TraversalMetricsUtil traversalMetrics = this.getTraversal().asAdmin().getSideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, TraversalMetricsUtil::new);
+    private StandardTraversalMetrics getTraversalMetricsUtil() {
+        StandardTraversalMetrics traversalMetrics = this.getTraversal().asAdmin().getSideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, StandardTraversalMetrics::new);
         traversalMetrics.initializeIfNecessary(this.getLabel(), this.traversal.asAdmin().getSteps().indexOf(this), name);
         return traversalMetrics;
     }

@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.Metrics;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
-import com.tinkerpop.gremlin.process.util.TraversalMetricsUtil;
+import com.tinkerpop.gremlin.process.util.StandardTraversalMetrics;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -19,13 +19,13 @@ import static org.junit.Assert.assertNotEquals;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class ProfileTest extends AbstractGremlinProcessTest {
-    public abstract Traversal<Vertex, TraversalMetricsUtil> get_g_V_out_out_profile();
+    public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile();
 
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_out_out_modern_profile() {
-        final Traversal<Vertex, TraversalMetricsUtil> traversal = get_g_V_out_out_profile();
+        final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_out_out_profile();
         printTraversalForm(traversal);
 
         traversal.iterate();
@@ -53,7 +53,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(GRATEFUL)
     public void g_V_out_out_grateful_profile() {
-        final Traversal<Vertex, TraversalMetricsUtil> traversal = get_g_V_out_out_profile();
+        final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_out_out_profile();
         printTraversalForm(traversal);
 
         traversal.iterate();
@@ -79,7 +79,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public static class StandardTest extends ProfileTest {
 
         @Override
-        public Traversal<Vertex, TraversalMetricsUtil> get_g_V_out_out_profile() {
+        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile() {
             return (Traversal) g.V().out().out().profile();
         }
 
@@ -91,7 +91,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, TraversalMetricsUtil> get_g_V_out_out_profile() {
+        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile() {
             return (Traversal) g.V().out().out().profile().submit(g.compute());
         }
 

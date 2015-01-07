@@ -5,15 +5,15 @@ import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
+import com.tinkerpop.gremlin.process.util.StandardTraversalMetrics;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
-import com.tinkerpop.gremlin.process.util.TraversalMetricsUtil;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.Iterator;
 
-public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, TraversalMetricsUtil, MapReduce.NullObject, TraversalMetricsUtil, TraversalMetricsUtil> {
+public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> {
 
     private Traversal traversal;
 
@@ -37,23 +37,23 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, T
     }
 
     @Override
-    public void map(final Vertex vertex, final MapEmitter<NullObject, TraversalMetricsUtil> emitter) {
+    public void map(final Vertex vertex, final MapEmitter<NullObject, StandardTraversalMetrics> emitter) {
         this.traversal.asAdmin().getSideEffects().setLocalVertex(vertex);
-        this.traversal.asAdmin().getSideEffects().<TraversalMetricsUtil>ifPresent(TraversalMetrics.METRICS_KEY, emitter::emit);
+        this.traversal.asAdmin().getSideEffects().<StandardTraversalMetrics>ifPresent(TraversalMetrics.METRICS_KEY, emitter::emit);
     }
 
     @Override
-    public void combine(final NullObject key, final Iterator<TraversalMetricsUtil> values, final ReduceEmitter<NullObject, TraversalMetricsUtil> emitter) {
+    public void combine(final NullObject key, final Iterator<StandardTraversalMetrics> values, final ReduceEmitter<NullObject, StandardTraversalMetrics> emitter) {
         reduce(key, values, emitter);
     }
 
     @Override
-    public void reduce(final NullObject key, final Iterator<TraversalMetricsUtil> values, final ReduceEmitter<NullObject, TraversalMetricsUtil> emitter) {
-        emitter.emit(TraversalMetricsUtil.merge(values));
+    public void reduce(final NullObject key, final Iterator<StandardTraversalMetrics> values, final ReduceEmitter<NullObject, StandardTraversalMetrics> emitter) {
+        emitter.emit(StandardTraversalMetrics.merge(values));
     }
 
     @Override
-    public TraversalMetricsUtil generateFinalResult(final Iterator<KeyValue<NullObject, TraversalMetricsUtil>> keyValues) {
+    public StandardTraversalMetrics generateFinalResult(final Iterator<KeyValue<NullObject, StandardTraversalMetrics>> keyValues) {
         return keyValues.next().getValue();
     }
 

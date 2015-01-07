@@ -7,37 +7,67 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class TraversalMetricsUtil implements TraversalMetrics, Serializable {
+public final class StandardTraversalMetrics implements TraversalMetrics, Serializable {
     // toString() specific headers
     private static final String[] HEADERS = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
 
     private static final String ITEM_COUNT_DISPLAY = "item count";
 
     private long totalStepDuration;
+    private boolean dirty = true;
 
-    private final Map<String, MetricsUtil> metrics = new LinkedHashMap<>();
-    private final Map<Integer, MetricsUtil> orderedMetrics = new TreeMap<>();
+    private final Map<String, MutableMetrics> metrics = new LinkedHashMap<>();
+    private final Map<Integer, MutableMetrics> orderedMetrics = new TreeMap<>();
+    private List<ImmutableMetrics> computedMetrics;
 
-    public TraversalMetricsUtil() {
+    public StandardTraversalMetrics() {
     }
 
     public void start(final String metricsId) {
+        dirty = true;
         this.metrics.get(metricsId).start();
     }
 
     public void stop(final String metricsId) {
+        dirty = true;
         this.metrics.get(metricsId).stop();
     }
 
     public void finish(final String metricsId, final long bulk) {
-        final MetricsUtil metricsUtil = this.metrics.get(metricsId);
+        dirty = true;
+        final MutableMetrics metricsUtil = this.metrics.get(metricsId);
         metricsUtil.finish(1);
         metricsUtil.getNested(ELEMENT_COUNT_ID).incrementCount(bulk);
     }
 
+
+    @Override
+    public long getDuration(final TimeUnit unit) {
+        computeTotals();
+        return unit.convert(totalStepDuration, MutableMetrics.SOURCE_UNIT);
+    }
+
+    @Override
+    public Metrics getMetrics(final int index) {
+        computeTotals();
+        return (Metrics) orderedMetrics.values().toArray()[index];
+    }
+
+    @Override
+    public Metrics getMetrics(final String stepLabel) {
+        computeTotals();
+        return metrics.get(stepLabel);
+    }
+
+    @Override
+    public Collection<ImmutableMetrics> getMetrics() {
+        computeTotals();
+        return computedMetrics;
+    }
+
     @Override
     public String toString() {
-        List<MetricsUtil> snapshot = computeTotals();
+        computeTotals();
 
         // Build a pretty table of metrics data.
 
@@ -46,7 +76,7 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
         sb.append("Traversal Metrics\n").append(String.format("%28s %13s %11s %15s %8s", HEADERS));
 
         // Append each StepMetric's row.
-        for (MetricsUtil s : snapshot) {
+        for (ImmutableMetrics s : computedMetrics) {
             String rowName = s.getName();
 
             if (rowName.length() > 28)
@@ -65,37 +95,45 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
         return sb.toString();
     }
 
-    private List<MetricsUtil> computeTotals() {
-        // Create a temporary copy of all the Metrics since we will be modifying their durations.
-        List<MetricsUtil> copy = new ArrayList<>(orderedMetrics.size());
-        orderedMetrics.values().forEach(metrics -> copy.add(metrics.clone()));
+    private void computeTotals() {
+        if (!dirty) {
+            // already good to go
+            return;
+        }
+
+        List<MutableMetrics> tempMetrics = new ArrayList<>(orderedMetrics.size());
+        orderedMetrics.values().forEach(metrics -> tempMetrics.add(metrics.clone()));
 
         // Subtract upstream traversal time from each step
-        for (int ii = copy.size() - 1; ii > 0; ii--) {
-            MetricsUtil cur = copy.get(ii);
-            MetricsUtil upStream = copy.get(ii - 1);
-            cur.setDuration(cur.getDuration(MetricsUtil.SOURCE_UNIT) - upStream.getDuration(MetricsUtil.SOURCE_UNIT));
+        for (int ii = tempMetrics.size() - 1; ii > 0; ii--) {
+            MutableMetrics cur = tempMetrics.get(ii);
+            MutableMetrics upStream = tempMetrics.get(ii - 1);
+            cur.setDuration(cur.getDuration(MutableMetrics.SOURCE_UNIT) - upStream.getDuration(MutableMetrics.SOURCE_UNIT));
         }
 
         // Calculate total duration
         this.totalStepDuration = 0;
-        copy.forEach(metrics -> this.totalStepDuration += metrics.getDuration(MetricsUtil.SOURCE_UNIT));
+        tempMetrics.forEach(metrics -> this.totalStepDuration += metrics.getDuration(MutableMetrics.SOURCE_UNIT));
 
         // Assign %'s
-        copy.forEach(metrics ->
+        tempMetrics.forEach(metrics ->
                         metrics.setPercentDuration(metrics.getDuration(TimeUnit.NANOSECONDS) * 100.d / this.totalStepDuration)
         );
 
-        return copy;
+        // Store immutable instances of the calculated metrics
+        computedMetrics = new ArrayList<>(orderedMetrics.size());
+        tempMetrics.forEach(it -> computedMetrics.add(it.getImmutableClone()));
+
+        dirty = false;
     }
 
-    public static TraversalMetricsUtil merge(final Iterator<TraversalMetricsUtil> toMerge) {
-        final TraversalMetricsUtil traversalMetricsUtil = new TraversalMetricsUtil();
+    public static StandardTraversalMetrics merge(final Iterator<StandardTraversalMetrics> toMerge) {
+        final StandardTraversalMetrics traversalMetricsUtil = new StandardTraversalMetrics();
         toMerge.forEachRemaining(incomingMetrics -> {
             incomingMetrics.orderedMetrics.forEach((index, toAggregate) -> {
-                MetricsUtil aggregateMetrics = traversalMetricsUtil.metrics.get(toAggregate.getId());
+                MutableMetrics aggregateMetrics = traversalMetricsUtil.metrics.get(toAggregate.getId());
                 if (null == aggregateMetrics) {
-                    aggregateMetrics = new MetricsUtil(toAggregate.getId(), toAggregate.getName());
+                    aggregateMetrics = new MutableMetrics(toAggregate.getId(), toAggregate.getName());
                     traversalMetricsUtil.metrics.put(aggregateMetrics.getId(), aggregateMetrics);
                     traversalMetricsUtil.orderedMetrics.put(index, aggregateMetrics);
                 }
@@ -105,38 +143,18 @@ public final class TraversalMetricsUtil implements TraversalMetrics, Serializabl
         return traversalMetricsUtil;
     }
 
-    @Override
-    public long getDuration(final TimeUnit unit) {
-        return unit.convert(totalStepDuration, MetricsUtil.SOURCE_UNIT);
-    }
-
-    @Override
-    public Metrics getMetrics(final int index) {
-        return (Metrics) orderedMetrics.values().toArray()[index];
-    }
-
-    @Override
-    public Metrics getMetrics(final String stepLabel) {
-        return metrics.get(stepLabel);
-    }
-
-    @Override
-    public Collection<MetricsUtil> getMetrics() {
-        return orderedMetrics.values();
-    }
-
     // The index is necessary to ensure that step order is preserved after a merge.
     public void initializeIfNecessary(final String metricsId, final int index, final String displayName) {
         if (metrics.containsKey(metricsId)) {
             return;
         }
 
-        MetricsUtil metrics = new MetricsUtil(metricsId, displayName);
+        MutableMetrics metrics = new MutableMetrics(metricsId, displayName);
         // Add a nested metric for item count
-        metrics.addNested(new MetricsUtil(ELEMENT_COUNT_ID, ITEM_COUNT_DISPLAY));
+        metrics.addNested(new MutableMetrics(ELEMENT_COUNT_ID, ITEM_COUNT_DISPLAY));
 
         this.metrics.put(metricsId, metrics);
         this.orderedMetrics.put(index, metrics);
     }
-   
+
 }
