@@ -10,6 +10,7 @@ TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * The only `GraphTraversal` steps that operate on `Traverser` are the base lambdas and `repeat()` (i.e. `emit()` and `until()`).
+* Removed dependency on the `reflections` library in `gremlin-test` which removed the default implementation of `GraphProvider.getImplementations()` - vendors now need to implement this method themselves.
 * Relaxed the typing requirements for `g.of()` when applied to `choose()`, `repeat()`, `union()`, etc.
 * Removed `LoopStep` and `UntilStep` in favor of the new `RepeatStep` model of looping in Gremlin3.
 * `BranchStep` is now exposed in `GraphTraversal` via `branch(function)`.
