@@ -132,7 +132,7 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
     }
 
     public static StandardTraversalMetrics merge(final Iterator<StandardTraversalMetrics> toMerge) {
-        final StandardTraversalMetrics newMetrics = new StandardTraversalMetrics();
+        final StandardTraversalMetrics newTraversalMetrics = new StandardTraversalMetrics();
 
         // iterate the incoming TraversalMetrics
         toMerge.forEachRemaining(inTraversalMetrics -> {
@@ -140,16 +140,16 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
             // aggregate the internal Metrics
             inTraversalMetrics.metrics.forEach((metricsId, toAggregate) -> {
 
-                MutableMetrics aggregateMetrics = newMetrics.metrics.get(metricsId);
+                MutableMetrics aggregateMetrics = newTraversalMetrics.metrics.get(metricsId);
                 if (null == aggregateMetrics) {
                     // need to create a Metrics to aggregate into
                     aggregateMetrics = new MutableMetrics(toAggregate.getId(), toAggregate.getName());
 
-                    newMetrics.metrics.put(metricsId, aggregateMetrics);
+                    newTraversalMetrics.metrics.put(metricsId, aggregateMetrics);
                     // Set the index of the Metrics
-                    for (Map.Entry<Integer, String> entry : newMetrics.indexToLabelMap.entrySet()) {
+                    for (Map.Entry<Integer, String> entry : inTraversalMetrics.indexToLabelMap.entrySet()) {
                         if (metricsId.equals(entry.getValue())) {
-                            newMetrics.indexToLabelMap.put(entry.getKey(), metricsId);
+                            newTraversalMetrics.indexToLabelMap.put(entry.getKey(), metricsId);
                             break;
                         }
                     }
@@ -157,7 +157,7 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
                 aggregateMetrics.aggregate(toAggregate);
             });
         });
-        return newMetrics;
+        return newTraversalMetrics;
     }
 
     public void initializeIfNecessary(final String metricsId, final int index, final String displayName) {

@@ -36,8 +36,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         Metrics metrics = traversalMetrics.getMetrics(0);
-        assertEquals(6, metrics.getNested(TraversalMetrics.ELEMENT_COUNT_ID).getCount());
         assertEquals(6, metrics.getCount());
+        assertEquals(6, metrics.getNested(TraversalMetrics.ELEMENT_COUNT_ID).getCount());
         assertNotEquals(0, metrics.getPercentDuration());
 
         metrics = traversalMetrics.getMetrics(1);
@@ -69,8 +69,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         Metrics metrics = traversalMetrics.getMetrics(0);
-        assertEquals(808, metrics.getNested(TraversalMetrics.ELEMENT_COUNT_ID).getCount());
         assertEquals(808, metrics.getCount());
+        assertEquals(808, metrics.getNested(TraversalMetrics.ELEMENT_COUNT_ID).getCount());
         assertNotEquals(0, metrics.getPercentDuration());
 
         metrics = traversalMetrics.getMetrics(1);
