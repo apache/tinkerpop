@@ -250,7 +250,7 @@ CAUTION: Path calculation is costly in terms of space as an array of previously 
 Another example is the `repeat()`-step which takes into account the number of times the traverser has gone through a particular section of the traversal expression.
 
 [source,groovy]
-gremlin> marko.repeat(g.of().out()).until(2).values('name')
+gremlin> marko.repeat(__.out()).until(2).values('name')
 ==>ripple
 ==>lop
 

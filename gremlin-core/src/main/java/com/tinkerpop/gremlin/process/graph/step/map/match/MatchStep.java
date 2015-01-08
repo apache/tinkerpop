@@ -54,6 +54,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         this.traversalsByStartAs = new HashMap<>();
         this.currentStart = new SimpleTraverser<>(null, this);
         for (final Traversal tl : traversals) {
+            tl.asAdmin().setTraversalStrategies(this.getTraversal().asAdmin().getTraversalStrategies());
             addTraversalPrivate(tl);
         }
         checkSolvability();

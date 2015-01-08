@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.util.HashMap;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,8 +35,12 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
     public static class StandardTest extends UnionTest {
 
+        public StandardTest() {
+            requiresGraphComputer = false;
+        }
+
         public Traversal<Vertex, String> get_g_V_unionXout_inX_name() {
-            return g.V().union(g.of().out(), g.of().in()).values("name");
+            return g.V().union(__.out(), __.in()).values("name");
         }
     }
 
@@ -46,7 +51,7 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, String> get_g_V_unionXout_inX_name() {
-            return g.V().union(g.of().out(), g.of().in()).<String>values("name").submit(g.compute());
+            return g.V().union(__.out(), __.in()).<String>values("name").submit(g.compute());
         }
     }
 }

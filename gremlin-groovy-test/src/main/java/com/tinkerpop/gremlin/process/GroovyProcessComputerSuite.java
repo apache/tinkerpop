@@ -113,7 +113,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             PageRankVertexProgramTest.class,
 
             // compliance
-            TraversalCoverageTest.class
+            GraphTraversalCoverageTest.class
 
 
     };

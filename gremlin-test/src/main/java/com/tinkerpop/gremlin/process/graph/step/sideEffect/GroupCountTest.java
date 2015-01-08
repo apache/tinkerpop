@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -107,7 +108,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_untilX2X_capXaX() {
-            return g.V().repeat(g.of().out().groupCount("a").by("name")).until(2).cap("a");
+            return g.V().repeat(__.out().groupCount("a").by("name")).until(2).cap("a");
         }
     }
 
@@ -138,7 +139,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_untilX2X_capXaX() {
-            return g.V().repeat(g.<Vertex>of().out().groupCount("a").by("name")).until(2).<Map<Object, Long>>cap("a").submit(g.compute());
+            return g.V().repeat(__.out().groupCount("a").by("name")).until(2).<Map<Object, Long>>cap("a").submit(g.compute());
         }
     }
 }

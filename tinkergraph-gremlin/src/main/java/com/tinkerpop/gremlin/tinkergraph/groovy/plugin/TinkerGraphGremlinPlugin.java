@@ -1,12 +1,10 @@
 package com.tinkerpop.gremlin.tinkergraph.groovy.plugin;
 
 import com.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
-import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import com.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerGraphTraversalTokens;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import java.util.HashSet;
@@ -21,7 +19,6 @@ public class TinkerGraphGremlinPlugin extends AbstractGremlinPlugin {
     private static final Set<String> IMPORTS = new HashSet<String>() {{
         add(IMPORT_SPACE + TinkerGraph.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + TinkerGraphComputer.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT_STATIC_SPACE + DefaultTinkerGraphTraversalTokens.class.getCanonicalName() + DOT_STAR);
     }};
 
     @Override

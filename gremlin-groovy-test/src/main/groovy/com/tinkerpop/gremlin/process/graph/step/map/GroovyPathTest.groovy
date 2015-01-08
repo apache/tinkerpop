@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
 
-import java.util.function.Function
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -26,7 +26,7 @@ public abstract class GroovyPathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_untilX2X_path_byXitX_byXnameX_byXlangX() {
-            g.V.repeat(g.of().out).until(2).path.by{it}.by('name').by('lang');
+            g.V.repeat(__.out).until(2).path.by { it }.by('name').by('lang');
         }
 
         @Override
@@ -55,7 +55,7 @@ public abstract class GroovyPathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_untilX2X_path_byXitX_byXnameX_byXlangX() {
-            g.V.repeat(g.of().out).until(2).path.by{it}.by('name').by('lang');
+            g.V.repeat(__.out).until(2).path.by { it }.by('name').by('lang');
             //TODO
         }
 
@@ -67,7 +67,7 @@ public abstract class GroovyPathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path() {
-            ComputerTestHelper.compute("g.V.as('a').has('name', 'marko').as('b').has('age', 29).as('c').path",g);
+            ComputerTestHelper.compute("g.V.as('a').has('name', 'marko').as('b').has('age', 29).as('c').path", g);
         }
     }
 }

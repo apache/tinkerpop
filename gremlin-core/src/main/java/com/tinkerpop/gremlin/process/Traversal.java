@@ -244,6 +244,10 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          */
         public void applyStrategies(final TraversalEngine engine);
 
+        public void setTraversalStrategies(final TraversalStrategies strategies);
+
+        public TraversalStrategies getTraversalStrategies();
+
         /**
          * When the {@link TraversalStrategies} have been applied, the destined {@link TraversalEngine} has been declared.
          * Once a traversal engine has been declared, the traversal can no longer be extended, only executed.

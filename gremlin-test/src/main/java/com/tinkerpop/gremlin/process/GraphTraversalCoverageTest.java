@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -18,7 +19,7 @@ import static org.junit.Assert.fail;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalCoverageTest extends AbstractGremlinProcessTest {
+public class GraphTraversalCoverageTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -30,8 +31,8 @@ public class TraversalCoverageTest extends AbstractGremlinProcessTest {
                 Pair.<String, Object>with("v.identity Traversal", g.V().next().identity()),
                 Pair.<String, Object>with("e.identity Traversal", g.E().next().identity()),
                 Pair.<String, Object>with("v", g.V().next()),
-                Pair.<String, Object>with("e", g.E().next()),
-                Pair.<String, Object>with("g.of()", g.of())
+                Pair.<String, Object>with("e", g.E().next())
+                //Pair.<String, Object>with("__", AnonymousGraphTraversal.Tokens.__)
         );
         vendorsClasses.forEach(triplet -> {
             final String situation = triplet.getValue0();

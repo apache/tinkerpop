@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -26,7 +25,7 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements Trav
 
     public ChooseStep(final Traversal traversal, final Predicate<S> predicate, final Traversal<S, E> trueChoice, final Traversal<S, E> falseChoice) {
         this(traversal,
-                (Function) s -> predicate.test((S)s),
+                (Function) s -> predicate.test((S) s),
                 new HashMap() {{
                     put(Boolean.TRUE, trueChoice);
                     put(Boolean.FALSE, falseChoice);
@@ -37,6 +36,7 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements Trav
         super(traversal);
         this.mapFunction = mapFunction;
         this.choices = choices;
+        this.choices.values().forEach(choice -> choice.asAdmin().setTraversalStrategies(this.getTraversal().asAdmin().getTraversalStrategies()));
         ChooseStep.generateFunction(this);
     }
 

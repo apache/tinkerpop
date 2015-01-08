@@ -4,13 +4,13 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.util.ImmutablePath;
 import com.tinkerpop.gremlin.process.util.MutablePath;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.*;
 
 /**
@@ -71,7 +71,7 @@ public class PathTest extends AbstractGremlinProcessTest {
             assertTrue(path.<List<String>>get("a").contains("matthias"));
         });
 
-        final Path path = g.V().as("x").repeat(g.of().out().as("y")).until(2).path().by("name").next();
+        final Path path = g.V().as("x").repeat(__.out().as("y")).until(2).path().by("name").next();
         assertEquals(3, path.size());
         assertEquals(3, path.labels().size());
         assertEquals(2, new HashSet<>(path.labels()).size());

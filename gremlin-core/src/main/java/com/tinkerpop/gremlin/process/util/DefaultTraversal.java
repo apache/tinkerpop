@@ -27,6 +27,8 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     protected SideEffects sideEffects = new DefaultTraversalSideEffects();
     protected Optional<TraversalEngine> traversalEngine = Optional.empty();
 
+    private TraversalStrategies strategies = TraversalStrategies.GlobalCache.getStrategies(this.getClass());
+
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
         GraphTraversalStrategyRegistry.instance().getTraversalStrategies().forEach(traversalStrategies::addStrategy);
@@ -48,8 +50,8 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
 
     @Override
     public void applyStrategies(final TraversalEngine engine) {
-        if (!this.traversalEngine.isPresent()) {
-            TraversalStrategies.GlobalCache.getStrategies(this.getClass()).apply(this, engine);
+        if (!this.locked) {
+            this.strategies.apply(this, engine);
             this.traversalEngine = Optional.of(engine);
             this.locked = true;
         }
@@ -138,5 +140,15 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     public void mergeSideEffects(final SideEffects sideEffects) {
         this.sideEffects.mergeSideEffects(sideEffects);
         this.sideEffects = sideEffects;
+    }
+
+    @Override
+    public void setTraversalStrategies(final TraversalStrategies strategies) {
+        this.strategies = strategies;
+    }
+
+    @Override
+    public TraversalStrategies getTraversalStrategies() {
+        return this.strategies;
     }
 }

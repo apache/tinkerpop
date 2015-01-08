@@ -5,6 +5,8 @@ import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
 
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -19,7 +21,7 @@ public abstract class GroovySimplePathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_untilX3X_path() {
-            return g.V.repeat(g.of().both.simplePath).until(3).path()
+            return g.V.repeat(__.both.simplePath).until(3).path()
         }
     }
 
@@ -32,7 +34,7 @@ public abstract class GroovySimplePathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_untilX3X_path() {
-            ComputerTestHelper.compute("g.V.repeat(g.of().both.simplePath).until(3).path()", g);
+            ComputerTestHelper.compute("g.V.repeat(__.both.simplePath).until(3).path()", g);
         }
     }
 }

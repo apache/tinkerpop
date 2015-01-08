@@ -136,7 +136,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             TraversalSideEffectsTest.StandardTest.class,
 
             // compliance
-            TraversalCoverageTest.class,
+            GraphTraversalCoverageTest.class,
             CoreTraversalTest.class,
             PathTest.class,
 
@@ -202,7 +202,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             TraversalSideEffectsTest.class,
 
             // compliance
-            TraversalCoverageTest.class,
+            GraphTraversalCoverageTest.class,
             CoreTraversalTest.class,
             PathTest.class,
 

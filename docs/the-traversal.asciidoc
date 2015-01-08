@@ -19,7 +19,7 @@ Graph Traversal Steps
 
 image::step-types.png[width=650]
 
-A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A graph traversal is composed of an ordered list of steps. Each step is of particular general form as diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/x.y.z/core/com/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. A few of the more interesting/complex steps are presented in the following subsections.
+A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, Edge, or VertexProperty. It can also be spawned anonymously (i.e. empty) via `__`. A graph traversal is composed of an ordered list of steps. All the steps provided by `GraphTraversal` inherit from the more general forms diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/x.y.z/core/com/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. The following subsections will demonstrate the GraphTraversal steps using the <<gremlin-console,Gremlin Console>>.
 
 [[lambda-steps]]
 Lambda Steps
@@ -112,8 +112,8 @@ gremlin> g.V().branch{it.get().value('name') == 'marko' ? ['a'] : ['b'] }.as('a'
 ==>ripple
 ==>peter
 gremlin> g.V().choose({it.get().value('name') == 'marko'},
-                        g.of().values('age'),
-                        g.of().values('name')) <2>
+                        __.values('age'),
+                        __.values('name')) <2>
 ==>29
 ==>vadas
 ==>lop
@@ -240,14 +240,14 @@ image::choose-step.png[width=700]
 
 [source,groovy]
 gremlin> g.V().has('age').choose({it.value('name').length() == 5},   // If the predicate is true, then do `in`, else do `out`.
-  g.of().in(),
-  g.of().out()).values('name')
+  __.in(),
+  __.out()).values('name')
 ==>marko
 ==>ripple
 ==>lop
 gremlin> g.V().has('age').choose({it.value('name').length()},   // Use the result of the function as a key to the map of traversal choices.
-  [5:g.of().in(),
-   4:g.of().out()]).values('name')
+  [5:__.in(),
+   4:__.out()]).values('name')
 ==>marko
 ==>ripple
 ==>lop
@@ -256,8 +256,8 @@ In Java8, there is no elegant syntax to create a `Map`. Thus, the last traversal
 
 [source,java]
 g.V().has("age").choose(v -> v.value("name").length(), new HashMap() {{
-  put(5,g.of().in());
-  put(4,g.of().out());
+  put(5,__.in());
+  put(4,__.out());
 }}).values("name")
 
 [[coin-step]]
@@ -425,7 +425,7 @@ There is one person that is 32, one person that is 35, one person that is 27, an
 image::groupcount-step.png[width=500]
 
 [source,groovy]
-gremlin> g.V().repeat(g.of().both().groupCount('m').by{it.value('name')[1]}).until(10).cap('m')
+gremlin> g.V().repeat(__.both().groupCount('m').by{it.value('name')[1]}).until(10).cap('m')
 ==>[a:19598, e:5740, i:5740, o:27716]
 
 The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount()` with a string variable. Given that `groupCount()` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount()`, the object's count is incremented. If `groupCount()` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount()` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount()`) can be accessed with `cap()`-step by referencing the desired variable.
@@ -480,13 +480,13 @@ gremlin> g.V(4).out().values('name').inject('daniel').map{it.get().length()}.pat
 In the last example above, note that the path starting with `daniel` is only of length 2. This is because the `daniel` string was inserted half-way in the traversal. Finally, a typical use case is provided below -- when the start of the traversal is not a graph object.
 
 [source,groovy]
-gremlin> g.of().inject(1,2)
+gremlin> __.inject(1,2)
 ==>1
 ==>2
-gremlin> g.of().inject(1,2).map{it.get() + 1}
+gremlin> __.inject(1,2).map{it.get() + 1}
 ==>2
 ==>3
-gremlin> g.of().inject(1,2).map{it.get() + 1}.map{g.V(it.get()).next()}.values('name')
+gremlin> __.inject(1,2).map{it.get() + 1}.map{g.V(it.get()).next()}.values('name')
 ==>vadas
 ==>lop
 
@@ -540,7 +540,7 @@ gremlin> g.V().as('person').
 ==>[person:daniel, location:spremberg]
 ==>[person:stephen, location:centreville]
 gremlin> g.V().as('person').
-           local(g.of().properties('location').order().by('startTime',incr).limit(2)).
+           local(__.properties('location').order().by('startTime',incr).limit(2)).
            value().as('location').select().by('name').by{it} <2>
 ==>[person:marko, location:san diego]
 ==>[person:marko, location:santa cruz]
@@ -568,10 +568,10 @@ image::match-step.png[width=500]
 
 [source,groovy]
 gremlin> g.V().match('a',
-            g.of().as('a').out('created').as('b'),
-            g.of().as('b').has('name', 'lop'),
-            g.of().as('b').in('created').as('c'),
-            g.of().as('c').has('age', 29)).
+            __.as('a').out('created').as('b'),
+            __.as('b').has('name', 'lop'),
+            __.as('b').in('created').as('c'),
+            __.as('c').has('age', 29)).
           select('a', 'c').by('name')
 ==>[a:marko, c:marko]
 ==>[a:josh, c:marko]
@@ -581,8 +581,8 @@ Note that the above can also be more concisely written as below which demonstrat
 
 [source,groovy]
 gremlin> g.V().match('a',
-            g.of().as('a').out('created').has('name', 'lop').as('b'),
-            g.of().as('b').in('created').has('age', 29).as('c')).
+            __.as('a').out('created').has('name', 'lop').as('b'),
+            __.as('b').in('created').has('age', 29).as('c')).
           select('a','c').by('name')
 ==>[a:marko, c:marko]
 ==>[a:josh, c:marko]
@@ -597,9 +597,9 @@ gremlin> g = TinkerGraph.open()
 gremlin> g.io().readGraphML('data/grateful-dead.xml')
 ==>null
 gremlin> g.V().match('a',
-            g.of().as('a').has('name', 'Garcia'),
-            g.of().as('a').in('writtenBy').as('b'),
-            g.of().as('a').in('sungBy').as('b')).select('b').values('name')
+            __.as('a').has('name', 'Garcia'),
+            __.as('a').in('writtenBy').as('b'),
+            __.as('a').in('sungBy').as('b')).select('b').values('name')
 ==>CREAM PUFF WAR
 ==>CRYPTICAL ENVELOPMENT
 
@@ -607,9 +607,9 @@ Among the features which differentiate `match()` from SPARQL are:
 
 [source,groovy]
 gremlin> g.V().match('a',
-            g.of().as('a').out('created').has('name','lop').as('b'), <1>
-            g.of().as('b').in('created').has('age', 29).as('c'),
-            g.of().as('c').repeat(g.of().out()).until(2)). <2>
+            __.as('a').out('created').has('name','lop').as('b'), <1>
+            __.as('b').in('created').has('age', 29).as('c'),
+            __.as('c').repeat(__.out()).until(2)). <2>
            select('c').out('knows').dedup().values('name') <3>
 ==>vadas
 ==>josh
@@ -622,13 +622,13 @@ To extend point #3, it is possible to support going from imperative, to declarat
 
 [source,groovy]
 gremlin> g.V().match('a',
-            g.of().as('a').out('knows').as('b'),
-            g.of().as('b').out('created').has('name','lop')).
+            __.as('a').out('knows').as('b'),
+            __.as('b').out('created').has('name','lop')).
           select('b').
           out('created').
           match('a',
-            g.of().as('a').in('created').as('b'),
-            g.of().as('b').out('knows').as('c')).
+            __.as('a').in('created').as('b'),
+            __.as('b').out('knows').as('c')).
           select('c').values('name')
 ==>vadas
 ==>josh
@@ -637,11 +637,11 @@ Like all other steps in Gremlin, `match()` is a function and thus, `match()` wit
 
 [source,groovy]
 gremlin> g.V().match('a',
-            g.of().as('a').out('knows').as('b'),
-            g.of().as('b').out('created').has('name','lop'),
-            g.of().as('b').match('x',
-                g.of().as('x').out('created').as('y'),
-                g.of().as('y').has('name','ripple')).select('y').as('c')).
+            __.as('a').out('knows').as('b'),
+            __.as('b').out('created').has('name','lop'),
+            __.as('b').match('x',
+                __.as('x').out('created').as('y'),
+                __.as('y').has('name','ripple')).select('y').as('c')).
             select('a','c').by('name')
 ==>[a:marko, c:ripple]
 
@@ -655,8 +655,8 @@ Match is typically used in conjunction with both `select()` (demonstrated previo
 
 [source,groovy]
 gremlin> g.V().match('a',
-            g.of().as('a').out('created').as('b'),
-            g.of().as('b').in('created').as('c')).
+            __.as('a').out('created').as('b'),
+            __.as('b').in('created').as('c')).
               where('a', neq, 'c').
                select('a','c').by('name')
 ==>[a:marko, c:josh]
@@ -670,9 +670,9 @@ The `where()`-step can take either a `BiPredicate` (first example below) or a `T
 
 [source,groovy]
 gremlin> traversal = g.V().match('a',
-            g.of().as('a').out('created').as('b'),
-            g.of().as('b').in('created').as('c')).
-              where(g.of().as('a').out('knows').as('c')). <1>
+            __.as('a').out('created').as('b'),
+            __.as('b').in('created').as('c')).
+              where(__.as('a').out('knows').as('c')). <1>
                select('a','c').by('name'); null <2>
 ==>null
 gremlin> traversal.toString()
@@ -812,8 +812,8 @@ Finally, because `by()`-based post-processing, nothing prevents triggering yet a
 [source,groovy]
 gremlin> g.V().out().out().path().by{
   it.choose({it.get().has('age').hasNext()}, 
-    g.of().out('created').values('name'),
-    g.of().in('created').values('name')).toList()}
+    __.out('created').values('name'),
+    __.in('created').values('name')).toList()}
 ==>[[lop], [ripple, lop], [josh]]
 ==>[[lop], [ripple, lop], [marko, josh, peter]]
 
@@ -925,7 +925,7 @@ gremlin> g.V().range(0,3)
 gremlin> g.V().range(1,3)
 ==>v[2]
 ==>v[3]
-gremlin> g.V().repeat(g.of().both()).until(1000000).emit().range(6,10)
+gremlin> g.V().repeat(__.both()).until(1000000).emit().range(6,10)
 ==>v[1]
 ==>v[5]
 ==>v[3]
@@ -938,11 +938,11 @@ Repeat Step
 The `repeat()`-step (*branch*) is used for looping over a traversal given some break predicate. Below are some examples of `repeat()`-step in action.
 
 [source,groovy]
-gremlin> g.V(1).repeat(g.of().out()).until(2).path().by('name') <1>
+gremlin> g.V(1).repeat(__.out()).until(2).path().by('name') <1>
 ==>[marko, josh, ripple]
 ==>[marko, josh, lop]
 gremlin> g.V().until{it.get().value('name') == 'ripple'}.
-                 repeat(g.of().out()).path().by('name') <2>
+                 repeat(__.out()).path().by('name') <2>
 ==>[marko, josh, ripple]
 ==>[josh, ripple]
 ==>[ripple]
@@ -955,13 +955,13 @@ IMPORTANT: There are two modulators for `repeat()`: `until()` and `emit()`. If `
 The `repeat()`-step also supports an "emit predicate", where the predicate for an empty argument `emit()` is true (i.e. `emit() == emit{true}`). With `emit()`, the traverser is split in two -- the traverser exits the code block as well as continues back within the code block (assuming `until()` holds true).
 
 [source,groovy]
-gremlin> g.V(1).repeat(g.of().out()).until(2).emit().path().by('name') <1>
+gremlin> g.V(1).repeat(__.out()).until(2).emit().path().by('name') <1>
 ==>[marko, lop]
 ==>[marko, vadas]
 ==>[marko, josh]
 ==>[marko, josh, ripple]
 ==>[marko, josh, lop]
-gremlin> g.V(1).emit().repeat(g.of().out()).until(2).path().by('name') <2>
+gremlin> g.V(1).emit().repeat(__.out()).until(2).path().by('name') <2>
 ==>[marko]
 ==>[marko, lop]
 ==>[marko, vadas]
@@ -975,7 +975,7 @@ gremlin> g.V(1).emit().repeat(g.of().out()).until(2).path().by('name') <2>
 The `emit()`-modulator can take an arbitrary predicate.
 
 [source,groovy]
-gremlin> g.V(1).repeat(g.of().out()).
+gremlin> g.V(1).repeat(__.out()).
                   until(2).
                   emit{it.get().property('lang').isPresent()}.path().by('name')
 ==>[marko, lop]
@@ -985,7 +985,7 @@ gremlin> g.V(1).repeat(g.of().out()).
 image::repeat-step.png[width=500]
 
 [source,groovy]
-gremlin> g.V(1).repeat(g.of().out()).until(2).emit().path().by('name')
+gremlin> g.V(1).repeat(__.out()).until(2).emit().path().by('name')
 ==>[marko, lop]
 ==>[marko, vadas]
 ==>[marko, josh]
@@ -1047,13 +1047,13 @@ gremlin> g.V().withSack{rand.nextFloat()}.sack()
 A more complicated initial value supplier example is presented below where the sack values are used in a running computation and then emitted at the end of the traversal. When an edge is traversed, the edge weight is multiplied by the sack value (`sack(mult,'weight')`).
 
 [source,groovy]
-gremlin> g.V().withSack{1.0f}.repeat(g.of().outE().sack(mult,'weight').inV()).until(2)
+gremlin> g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).until(2)
 ==>v[5]
 ==>v[3]
-gremlin> g.V().withSack{1.0f}.repeat(g.of().outE().sack(mult,'weight').inV()).until(2).sack()
+gremlin> g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).until(2).sack()
 ==>1.0
 ==>0.4
-gremlin> g.V().withSack{1.0f}.repeat(g.of().outE().sack(mult,'weight').inV()).until(2).path().by{it}.by('weight')
+gremlin> g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).until(2).path().by{it}.by('weight')
 ==>[v[1], 1.0, v[4], 1.0, v[5]]   // 1.0 * 1.0 * 1.0 = 1.0
 ==>[v[1], 1.0, v[4], 0.4, v[3]]   // 1.0 * 1.0 * 0.4 = 0.4
 
@@ -1091,16 +1091,16 @@ gremlin> g.V().outE().sample(2).by('weight').values('weight')
 One of the more interesting use cases for `sample()` is when it is used in conjunction with <<local-step,`local()`>>. The combination of the two steps supports the execution of link:http://en.wikipedia.org/wiki/Random_walk[random walks]. In the example below, the traversal starts are vertex 1 and selects one edge to traverse based on a probability distribution generated by the weights of the edges. The output is always a single path as by selecting a single edge, the traverser never splits and continues down a single path in the graph.
 
 [source,groovy]
-gremlin> g.V(1).repeat(g.of().local(
-           g.of().bothE().sample(1).by('weight').otherV()
+gremlin> g.V(1).repeat(__.local(
+           __.bothE().sample(1).by('weight').otherV()
          )).until(5)
 ==>v[4]
-gremlin> g.V(1).repeat(g.of().local(
-           g.of().bothE().sample(1).by('weight').otherV()
+gremlin> g.V(1).repeat(__.local(
+           __.bothE().sample(1).by('weight').otherV()
          )).until(5).path()
 ==>[v[1], v[2], v[1], v[2], v[1], v[2]]
-gremlin> g.V(1).repeat(g.of().local(
-           g.of().bothE().sample(1).by('weight').otherV()
+gremlin> g.V(1).repeat(__.local(
+           __.bothE().sample(1).by('weight').otherV()
          )).until(10).path()
 ==>[v[1], v[4], v[1], v[3], v[4], v[5], v[4], v[5], v[4], v[3], v[4]]
 
@@ -1182,7 +1182,7 @@ gremlin> g.V().as('a').out('created').in('created').as('b').
 ==>[a:peter, b:josh]
 gremlin> g.V().as('a').out('created').in('created').as('b').select(). <3>
               where('a',neq,'b').
-              where(g.of().as('a').out('knows').as('b')).
+              where(__.as('a').out('knows').as('b')).
                 select().by('name')
 ==>[a:marko, b:josh]
 
@@ -1197,15 +1197,15 @@ Shuffle Step
 Randomizing the order of the traversers at a particular point in the traversal is possible with `shuffle()`-step (*map*).
 
 [source,groovy]
-gremlin> g.of().inject(1,2,3).map{it.get() * 2}
+gremlin> __.inject(1,2,3).map{it.get() * 2}
 ==>2
 ==>4
 ==>6
-gremlin> g.of().inject(1,2,3).map{it.get() * 2}.shuffle()
+gremlin> __.inject(1,2,3).map{it.get() * 2}.shuffle()
 ==>4
 ==>6
 ==>2
-gremlin> g.of().inject(1,2,3).map{it.get() * 2}.shuffle()
+gremlin> __.inject(1,2,3).map{it.get() * 2}.shuffle()
 ==>6
 ==>4
 ==>2
@@ -1282,7 +1282,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 ----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> sg = g.V(3).repeat(g.of().inE().outV()).until(3).emit().subgraph({true}).next()   <1>
+gremlin> sg = g.V(3).repeat(__.inE().outV()).until(3).emit().subgraph({true}).next()   <1>
 ==>tinkergraph[vertices:4 edges:4]
 gremlin> sg.E()
 ==>e[8][1-knows->4]
@@ -1308,23 +1308,23 @@ gremlin> :pin use tinkerpop.utilities
 ==>tinkerpop.utilities activated
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V().repeat(g.of().both().groupCount('m')).until(16).cap('m').next().sort{-it.value}
+gremlin> g.V().repeat(__.both().groupCount('m')).until(16).cap('m').next().sort{-it.value}
 ==>v[1]=2744208
 ==>v[3]=2744208
 ==>v[4]=2744208
 ==>v[2]=1136688
 ==>v[5]=1136688
 ==>v[6]=1136688
-gremlin> clock(1){g.V().repeat(g.of().both().groupCount('m')).until(16).cap('m').next().sort{-it.value}}
+gremlin> clock(1){g.V().repeat(__.both().groupCount('m')).until(16).cap('m').next().sort{-it.value}}
 ==>11.996000
-gremlin> g.V().repeat(g.of().timeLimit(2).both().groupCount('m')).until(16).cap('m').next().sort{-it.value}
+gremlin> g.V().repeat(__.timeLimit(2).both().groupCount('m')).until(16).cap('m').next().sort{-it.value}
 ==>v[1]=648473
 ==>v[3]=647510
 ==>v[4]=647499
 ==>v[5]=268540
 ==>v[6]=268533
 ==>v[2]=267941
-gremlin> clock(1){g.V().repeat(g.of().timeLimit(2).both().groupCount('m')).until(16).cap('m').next().sort{-it.value}}
+gremlin> clock(1){g.V().repeat(__.timeLimit(2).both().groupCount('m')).until(16).cap('m').next().sort{-it.value}}
 ==>2.214000
 
 In essence, the relative order is respected, even through the number traversers at each vertex is not. The primary benefit being that the calculation is guaranteed to complete at the specified time limit (in milliseconds). Finally, note that the internal clock of `timeLimit()`-step starts when the first traverser enters it. When the time limit is reached, any `next()` evaluation of the step will yield a `NoSuchElementException` and any `hasNext()` evaluation will yield `false`.
@@ -1381,15 +1381,15 @@ gremlin> g.V(1).out().fold().inject('gremlin',[1.23,2.34]).unfold()
 Note that `unfold()` does not recursively unroll iterators. Instead, `repeat()` can be used to for recursive unrolling.
 
 [source,groovy]
-gremlin> g.of().inject(1,[2,3,[4,5,[6]]])
+gremlin> __.inject(1,[2,3,[4,5,[6]]])
 ==>1
 ==>[2, 3, [4, 5, [6]]]
-gremlin> g.of().inject(1,[2,3,[4,5,[6]]]).unfold()
+gremlin> __.inject(1,[2,3,[4,5,[6]]]).unfold()
 ==>1
 ==>2
 ==>3
 ==>[4, 5, [6]]
-gremlin> g.of().inject(1,[2,3,[4,5,[6]]]).repeat(g.of().unfold()).until{!(it.get() instanceof List)}
+gremlin> __.inject(1,[2,3,[4,5,[6]]]).repeat(__.unfold()).until{!(it.get() instanceof List)}
 ==>1
 ==>2
 ==>3
@@ -1407,14 +1407,14 @@ The `union()`-step (*branch*) supports the merging of the results of an arbitrar
 
 [source,groovy]
 gremlin> g.V(4).union(
-            g.of().in().values('age'),
-            g.of().out().values('lang'))
+            __.in().values('age'),
+            __.out().values('lang'))
 ==>29
 ==>java
 ==>java
 gremlin> g.V(4).union(
-            g.of().in().values('age'),
-            g.of().out().values('lang')).path()
+            __.in().values('age'),
+            __.out().values('lang')).path()
 ==>[v[4], v[1], 29]
 ==>[v[4], v[5], java]
 ==>[v[4], v[3], java]

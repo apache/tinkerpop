@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -30,6 +31,14 @@ import java.util.function.UnaryOperator;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface AnonymousGraphTraversal {
+
+    public enum Tokens implements AnonymousGraphTraversal {
+        __;
+
+        public <S> GraphTraversal<S, S> start() {
+            return new DefaultGraphTraversal<>();
+        }
+    }
 
     //////////////////////////////////////////////////////////////////////
 
@@ -132,6 +141,22 @@ public interface AnonymousGraphTraversal {
 
     public default <A, E2> GraphTraversal<A, E2> values(final String... propertyKeys) {
         return this.<A>start().values(propertyKeys);
+    }
+
+    public default <A, E2> GraphTraversal<A, Map<String, E2>> propertyMap(final String... propertyKeys) {
+        return this.<A>start().propertyMap(propertyKeys);
+    }
+
+    public default <A, E2> GraphTraversal<A, Map<String, E2>> valueMap(final String... propertyKeys) {
+        return this.<A>start().valueMap(propertyKeys);
+    }
+
+    public default <A, E2> GraphTraversal<A, Map<String, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
+        return this.<A>start().valueMap(includeTokens, propertyKeys);
+    }
+
+    public default <A, E2> GraphTraversal<A, E2> value() {
+        return this.<A>start().value();
     }
 
     public default <A> GraphTraversal<A, Path> path() {

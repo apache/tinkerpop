@@ -138,7 +138,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             PageRankVertexProgramTest.class,
 
             // compliance
-            TraversalCoverageTest.class,
+            GraphTraversalCoverageTest.class,
 
             // strategy
             ComputerDataStrategyTest.class
@@ -210,7 +210,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             PageRankVertexProgramTest.class,
 
             // compliance
-            TraversalCoverageTest.class,
+            GraphTraversalCoverageTest.class,
 
             // strategy
             ComputerDataStrategyTest.class

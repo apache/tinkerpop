@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.*;
 
 /**
@@ -58,7 +59,7 @@ public abstract class SimplePathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_untilX3X_path() {
-            return g.V().repeat(g.of().both().simplePath()).until(3).path();
+            return g.V().repeat(__.both().simplePath()).until(3).path();
         }
     }
 
@@ -74,7 +75,7 @@ public abstract class SimplePathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_untilX3X_path() {
-            return g.V().repeat(g.of().both().simplePath()).until(3).path().submit(g.compute());
+            return g.V().repeat(__.both().simplePath()).until(3).path().submit(g.compute());
         }
     }
 }

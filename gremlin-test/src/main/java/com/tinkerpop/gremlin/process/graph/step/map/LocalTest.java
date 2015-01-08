@@ -9,11 +9,10 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.function.Function;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 
 
 /**
@@ -69,17 +68,17 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
-            return g.V().local(g.of().properties("location").order().by(T.value, Order.incr).range(0, 2)).value();
+            return g.V().local(__.properties("location").order().by(T.value, Order.incr).range(0, 2)).value();
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_localXoutE_countX() {
-            return g.V().local(g.of().outE().count());
+            return g.V().local(__.outE().count());
         }
 
         /*@Override
         public Traversal<Vertex, Map<Double, Long>> get_g_V_localXoutE_weight_groupCountX() {
-            return g.V().local((Traversal) g.of().outE().values("weight").groupCount());
+            return g.V().local((Traversal) __.outE().values("weight").groupCount());
         }*/
 
     }
@@ -91,17 +90,17 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
-            return g.V().local(g.of().properties("location").order().by(T.value, Order.incr).range(0, 2)).<String>value().submit(g.compute());
+            return g.V().local(__.properties("location").order().by(T.value, Order.incr).range(0, 2)).<String>value().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_localXoutE_countX() {
-            return g.V().local(g.of().outE().count()).submit(g.compute());
+            return g.V().local(__.outE().count()).submit(g.compute());
         }
 
         /*@Override
         public Traversal<Vertex, Map<Double, Long>> get_g_V_localXoutE_weight_groupCountX() {
-            return g.V().local((Traversal) g.of().outE().values("weight").groupCount()).submit(g.compute());
+            return g.V().local((Traversal) __.outE().values("weight").groupCount()).submit(g.compute());
         }*/
 
     }

@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -95,5 +96,15 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public void mergeSideEffects(final SideEffects sideEffects) {
+    }
+
+    @Override
+    public TraversalStrategies getTraversalStrategies() {
+        return new DefaultTraversalStrategies();
+    }
+
+    @Override
+    public void setTraversalStrategies(final TraversalStrategies traversalStrategies) {
+
     }
 }

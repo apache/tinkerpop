@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
 
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -33,7 +35,7 @@ public abstract class GroovyGroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_untilX2X_capXaX() {
-            g.V.repeat(g.of().out.groupCount('a').by('name')).until(2).cap('a')
+            g.V.repeat(__.out.groupCount('a').by('name')).until(2).cap('a')
         }
     }
 
@@ -61,7 +63,7 @@ public abstract class GroovyGroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_untilX2X_capXaX() {
-            ComputerTestHelper.compute("g.V.repeat(g.of().out.groupCount('a').by('name')).until(2).cap('a')", g)
+            ComputerTestHelper.compute("g.V.repeat(__.out.groupCount('a').by('name')).until(2).cap('a')", g)
         }
     }
 }

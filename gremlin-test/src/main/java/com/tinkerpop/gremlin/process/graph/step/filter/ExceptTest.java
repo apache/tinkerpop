@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.*;
 
 /**
@@ -139,7 +140,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(final Object v1Id) {
-            return g.V(v1Id).repeat(g.of().bothE("created").except("e").aggregate("e").otherV()).emit().path();
+            return g.V(v1Id).repeat(__.bothE("created").except("e").aggregate("e").otherV()).emit().path();
             //g.V(v1Id).as('x').bothE("created").except('e').aggregate('e').otherV.jump('x') { true } { true }.path
         }
     }
@@ -177,7 +178,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(final Object v1Id) {
-            return g.V(v1Id).repeat(g.of().bothE("created").except("e").aggregate("e").otherV()).emit().path().submit(g.compute());
+            return g.V(v1Id).repeat(__.bothE("created").except("e").aggregate("e").otherV()).emit().path().submit(g.compute());
         }
     }
 }

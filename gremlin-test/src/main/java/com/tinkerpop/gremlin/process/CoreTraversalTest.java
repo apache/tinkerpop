@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Random;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.*;
 
 /**
@@ -49,7 +50,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldAddStartsProperly() {
-        final Traversal<Object, Vertex> traversal = g.of().out().out();
+        final Traversal<Object, Vertex> traversal = __.out().out();
         assertFalse(traversal.hasNext());
         traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
         assertTrue(traversal.hasNext());
@@ -74,7 +75,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldTraversalResetProperly() {
-        final Traversal<Object, Vertex> traversal = g.of().as("a").out().out().<Vertex>has("name", Contains.within, Arrays.asList("ripple", "lop")).as("b");
+        final Traversal<Object, Vertex> traversal = __.as("a").out().out().<Vertex>has("name", Contains.within, Arrays.asList("ripple", "lop")).as("b");
         if (new Random().nextBoolean()) traversal.asAdmin().reset();
         assertFalse(traversal.hasNext());
         traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));

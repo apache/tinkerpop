@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -27,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
 
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -80,7 +80,7 @@ public class TinkerGraphTest {
         v7.addEdge("link", v9, "weight", 1f);
         v8.addEdge("link", v9, "weight", 7f);
 
-        v1.withSack(() -> Float.MIN_VALUE).repeat(g.of().outE().sack(Operator.max, "weight").inV()).until(5).sack().submit(g.compute()).forEachRemaining(System.out::println);
+        v1.withSack(() -> Float.MIN_VALUE).repeat(__.outE().sack(Operator.max, "weight").inV()).until(5).sack().submit(g.compute()).forEachRemaining(System.out::println);
     }
 
     @Test
@@ -96,7 +96,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay2() throws Exception {
         Graph g = TinkerFactory.createClassic();
-        Traversal t = g.V(1).repeat(g.<Vertex>of().bothE("created").except("e").aggregate("e").otherV()).emit().path();
+        Traversal t = g.V(1).repeat(__.bothE("created").except("e").aggregate("e").otherV()).emit().path();
         System.out.println(t);
         t.forEachRemaining(System.out::println);
         System.out.println(t);
