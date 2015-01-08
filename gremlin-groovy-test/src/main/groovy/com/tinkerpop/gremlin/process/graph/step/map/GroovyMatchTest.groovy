@@ -48,18 +48,18 @@ public abstract class GroovyMatchTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_repeatXoutX_untilX2XX_selectXab_nameX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXab_nameX() {
             g.V().match('a',
                     __.as('a').out('created').as('b'),
-                    __.as('a').repeat(__.out).until(2).as('b')).select('a','b').by('name')
+                    __.as('a').repeat(__.out).times(2).as('b')).select('a','b').by('name')
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_c__c_repeatXoutX_untilX2XX_selectXnameX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_c__c_repeatXoutX_timesX2XX_selectXnameX() {
             g.V().match('a',
                     __.as('a').out('created').has('name', 'lop').as('b'),
                     __.as('b').in('created').has('age', 29).as('c'),
-                    __.as('c').repeat(__.out).until(2)).select.by('name')
+                    __.as('c').repeat(__.out).times(2)).select.by('name')
         }
 
         @Override
@@ -132,11 +132,11 @@ public abstract class GroovyMatchTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_untilX2XX_selectXnameX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_selectXnameX() {
             g.V().match("a",
                     __.as("a").out("created").has("name", "lop").as("b"),
                     __.as("b").in("created").has("age", 29).as("c"))
-                    .where(__.as("c").repeat(__.out()).until(2))
+                    .where(__.as("c").repeat(__.out()).times(2))
                     .select.by('name')
         }
 

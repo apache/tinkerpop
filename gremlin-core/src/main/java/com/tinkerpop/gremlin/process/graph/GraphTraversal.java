@@ -535,7 +535,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return RepeatStep.addUntilToTraversal(this, untilPredicate);
     }
 
-    public default GraphTraversal<S, E> until(final int maxLoops) {
+    public default GraphTraversal<S, E> times(final int maxLoops) {
         return this.until(new RepeatStep.LoopPredicate<>(maxLoops));
     }
 

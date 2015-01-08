@@ -34,8 +34,8 @@ public abstract class GroovyGroupCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_untilX2X_capXaX() {
-            g.V.repeat(__.out.groupCount('a').by('name')).until(2).cap('a')
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX() {
+            g.V.repeat(__.out.groupCount('a').by('name')).times(2).cap('a')
         }
     }
 
@@ -62,8 +62,8 @@ public abstract class GroovyGroupCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_untilX2X_capXaX() {
-            ComputerTestHelper.compute("g.V.repeat(__.out.groupCount('a').by('name')).until(2).cap('a')", g)
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX() {
+            ComputerTestHelper.compute("g.V.repeat(__.out.groupCount('a').by('name')).times(2).cap('a')", g)
         }
     }
 }

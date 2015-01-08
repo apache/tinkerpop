@@ -44,8 +44,8 @@ public abstract class GroovyRangeTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_untilX3X_rangeX5_11X() {
-            g.V().repeat(__.both).until(3)[5..11];
+        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X() {
+            g.V().repeat(__.both).times(3)[5..11];
         }
     }
 
@@ -82,8 +82,8 @@ public abstract class GroovyRangeTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_untilX3X_rangeX5_11X() {
-            ComputerTestHelper.compute("g.V().repeat(__.both).until(3)[5..11]", g);
+        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X() {
+            ComputerTestHelper.compute("g.V().repeat(__.both).times(3)[5..11]", g);
         }
     }
 }

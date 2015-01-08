@@ -18,7 +18,7 @@ public abstract class SimplePathTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_simplePath(final Object v1Id);
 
-    public abstract Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_untilX3X_path();
+    public abstract Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_timesX3X_path();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -37,8 +37,8 @@ public abstract class SimplePathTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_repeatXboth_simplePathX_untilX3X_path() {
-        final Traversal<Vertex, Path> traversal = get_g_V_repeatXboth_simplePathX_untilX3X_path();
+    public void g_V_repeatXboth_simplePathX_timesX3X_path() {
+        final Traversal<Vertex, Path> traversal = get_g_V_repeatXboth_simplePathX_timesX3X_path();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -58,8 +58,8 @@ public abstract class SimplePathTest extends AbstractGremlinProcessTest {
 
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_untilX3X_path() {
-            return g.V().repeat(__.both().simplePath()).until(3).path();
+        public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_timesX3X_path() {
+            return g.V().repeat(__.both().simplePath()).times(3).path();
         }
     }
 
@@ -74,8 +74,8 @@ public abstract class SimplePathTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_untilX3X_path() {
-            return g.V().repeat(__.both().simplePath()).until(3).path().submit(g.compute());
+        public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_timesX3X_path() {
+            return g.V().repeat(__.both().simplePath()).times(3).path().submit(g.compute());
         }
     }
 }

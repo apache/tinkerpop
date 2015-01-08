@@ -451,8 +451,8 @@ public interface Neo4jGraphTraversal<S, E> extends GraphTraversal.Admin<S, E>, G
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.union(arg0);
 	}
 
-	public default Neo4jGraphTraversal<S, E> until(int arg0) {
-		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.until(arg0);
+	public default Neo4jGraphTraversal<S, E> times(int arg0) {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.times(arg0);
 	}
 
 	public default Neo4jGraphTraversal<S, E> until(java.util.function.Predicate<com.tinkerpop.gremlin.process.Traverser<E>> arg0) {
