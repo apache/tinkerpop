@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import org.javatuples.Pair;
 import org.junit.Test;

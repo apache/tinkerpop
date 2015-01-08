@@ -437,7 +437,7 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().until(untilPredicate);
     }
 
-    public default <A> GraphTraversal<A, A> until(final int maxLoops) {
+    public default <A> GraphTraversal<A, A> times(final int maxLoops) {
         return this.<A>start().times(maxLoops);
     }
 
