@@ -105,12 +105,12 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
 
             Metrics metrics = traversalMetrics.getMetrics(1);
-            // 6 elements w/ a 10ms sleep each = 60ms with a 5ms error range
-            assertEquals(60, metrics.getDuration(TimeUnit.MILLISECONDS), 5);
+            // 6 elements w/ a 10ms sleep each = 60ms with 10ms for other computation
+            assertEquals(60, metrics.getDuration(TimeUnit.MILLISECONDS), 10);
 
-            // 6 elements w/ a 5ms sleep each = 30ms with a 5ms error range
+            // 6 elements w/ a 5ms sleep each = 30ms with 10ms for other computation
             metrics = traversalMetrics.getMetrics(2);
-            assertEquals(30, metrics.getDuration(TimeUnit.MILLISECONDS), 5);
+            assertEquals(30, metrics.getDuration(TimeUnit.MILLISECONDS), 10);
 
             double totalPercentDuration = 0;
             for (Metrics m : traversalMetrics.getMetrics()) {
