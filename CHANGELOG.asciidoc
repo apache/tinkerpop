@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `SerializationTest` to the `StructureStandardSuite` in `gremlin-test` which validates serialization at a lower level than `IoTest`.
 * Removed `IntervalStep` and renamed `interval()` to `between()` which is simply an alias to a `has().has()` chain.
 * Added `AnonymousGraphTraversal.Tokens.__` which allows for `__.out().out()`-style construction of anonymous traversals (instead of `g.of()`).
 * The only `GraphTraversal` steps that operate on `Traverser` are the base lambdas and `repeat()` (i.e. `emit()` and `until()`).
