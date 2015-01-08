@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile();
 
-    //    @Test
+    @Test
     @LoadGraphWith(MODERN)
     public void g_V_out_out_modern_profile() {
         final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_out_out_profile();
@@ -57,7 +57,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertEquals(100, totalPercentDuration, 0.000001);
     }
 
-    //    @Test
+    @Test
     @LoadGraphWith(GRATEFUL)
     public void g_V_out_out_grateful_profile() {
         final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_out_out_profile();
