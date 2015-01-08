@@ -3,11 +3,15 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.Metrics;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.process.util.StandardTraversalMetrics;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -21,7 +25,6 @@ import static org.junit.Assert.assertNotEquals;
 public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile();
 
-
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_out_out_modern_profile() {
@@ -32,7 +35,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(TraversalMetrics.METRICS_KEY);
         traversalMetrics.toString(); // ensure no exceptions are thrown
-
 
         Metrics metrics = traversalMetrics.getMetrics(0);
         assertEquals(6, metrics.getNested(TraversalMetrics.ELEMENT_COUNT_ID).getCount());
@@ -48,6 +50,12 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertEquals(2, metrics.getNested(TraversalMetrics.ELEMENT_COUNT_ID).getCount());
         assertNotEquals(0, metrics.getCount());
         assertNotEquals(0, metrics.getPercentDuration());
+
+        double totalPercentDuration = 0;
+        for (Metrics m : traversalMetrics.getMetrics()) {
+            totalPercentDuration += m.getPercentDuration();
+        }
+        assertEquals(100, totalPercentDuration, 0.000001);
     }
 
     @Test
@@ -74,13 +82,68 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertEquals(327370, metrics.getNested(TraversalMetrics.ELEMENT_COUNT_ID).getCount());
         assertNotEquals(0, metrics.getCount());
         assertNotEquals(0, metrics.getPercentDuration());
+
+        double totalPercentDuration = 0;
+        for (Metrics m : traversalMetrics.getMetrics()) {
+            totalPercentDuration += m.getPercentDuration();
+        }
+        assertEquals(100, totalPercentDuration, 0.000001);
     }
 
     public static class StandardTest extends ProfileTest {
 
+        @Test
+        @LoadGraphWith(MODERN)
+        public void testProfileTimes() {
+            final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_sleep_sleep_profile();
+            printTraversalForm(traversal);
+
+            traversal.iterate();
+
+            TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(TraversalMetrics.METRICS_KEY);
+            traversalMetrics.toString(); // ensure no exceptions are thrown
+
+
+            Metrics metrics = traversalMetrics.getMetrics(1);
+            // 6 elements w/ a 10ms sleep each = 60ms with a 5ms error range
+            assertEquals(60, metrics.getDuration(TimeUnit.MILLISECONDS), 5);
+
+            // 6 elements w/ a 5ms sleep each = 30ms with a 5ms error range
+            metrics = traversalMetrics.getMetrics(2);
+            assertEquals(30, metrics.getDuration(TimeUnit.MILLISECONDS), 5);
+
+            double totalPercentDuration = 0;
+            for (Metrics m : traversalMetrics.getMetrics()) {
+                totalPercentDuration += m.getPercentDuration();
+            }
+            assertEquals(100, totalPercentDuration, 0.000001);
+        }
+
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile() {
             return (Traversal) g.V().out().out().profile();
+        }
+
+        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_sleep_sleep_profile() {
+            return (Traversal) g.V().sideEffect(new Consumer<Traverser<Vertex>>() {
+                @Override
+                public void accept(final Traverser<Vertex> vertexTraverser) {
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).sideEffect(new Consumer<Traverser<Vertex>>() {
+                @Override
+                public void accept(final Traverser<Vertex> vertexTraverser) {
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).profile();
         }
 
     }
@@ -94,6 +157,5 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile() {
             return (Traversal) g.V().out().out().profile().submit(g.compute());
         }
-
     }
 }

@@ -14,8 +14,8 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
     private static final String ITEM_COUNT_DISPLAY = "item count";
 
     private boolean dirty = true;
-    private final Map<String, MutableMetrics> metrics = new LinkedHashMap<>();
     private final Map<Integer, MutableMetrics> orderedMetrics = new TreeMap<>();
+    private final Map<String, Integer> labelToIndexMap = new HashMap<>();
 
     /*
     The following are computed values upon the completion of profiling in order to report the results back to the user
@@ -28,17 +28,17 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
 
     public void start(final String metricsId) {
         dirty = true;
-        this.metrics.get(metricsId).start();
+        getByLabelInternal(metricsId).start();
     }
 
     public void stop(final String metricsId) {
         dirty = true;
-        this.metrics.get(metricsId).stop();
+        getByLabelInternal(metricsId).stop();
     }
 
     public void finish(final String metricsId, final long bulk) {
         dirty = true;
-        final MutableMetrics metricsUtil = this.metrics.get(metricsId);
+        final MutableMetrics metricsUtil = getByLabelInternal(metricsId);
         metricsUtil.finish(1);
         metricsUtil.getNested(ELEMENT_COUNT_ID).incrementCount(bulk);
     }
@@ -53,13 +53,13 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
     @Override
     public Metrics getMetrics(final int index) {
         computeTotals();
-        return (Metrics) orderedMetrics.values().toArray()[index];
+        return (Metrics) computedMetrics.get(index);
     }
 
     @Override
     public Metrics getMetrics(final String stepLabel) {
         computeTotals();
-        return metrics.get(stepLabel);
+        return computedMetrics.get(labelToIndexMap.get(stepLabel));
     }
 
     @Override
@@ -134,10 +134,10 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
         final StandardTraversalMetrics traversalMetricsUtil = new StandardTraversalMetrics();
         toMerge.forEachRemaining(incomingMetrics -> {
             incomingMetrics.orderedMetrics.forEach((index, toAggregate) -> {
-                MutableMetrics aggregateMetrics = traversalMetricsUtil.metrics.get(toAggregate.getId());
+                MutableMetrics aggregateMetrics = traversalMetricsUtil.getByLabelInternal(toAggregate.getId());
                 if (null == aggregateMetrics) {
                     aggregateMetrics = new MutableMetrics(toAggregate.getId(), toAggregate.getName());
-                    traversalMetricsUtil.metrics.put(aggregateMetrics.getId(), aggregateMetrics);
+                    traversalMetricsUtil.labelToIndexMap.put(aggregateMetrics.getId(), index);
                     traversalMetricsUtil.orderedMetrics.put(index, aggregateMetrics);
                 }
                 aggregateMetrics.aggregate(toAggregate);
@@ -148,7 +148,7 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
 
     // The index is necessary to ensure that step order is preserved after a merge.
     public void initializeIfNecessary(final String metricsId, final int index, final String displayName) {
-        if (metrics.containsKey(metricsId)) {
+        if (labelToIndexMap.containsKey(metricsId)) {
             return;
         }
 
@@ -156,8 +156,15 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
         // Add a nested metric for item count
         metrics.addNested(new MutableMetrics(ELEMENT_COUNT_ID, ITEM_COUNT_DISPLAY));
 
-        this.metrics.put(metricsId, metrics);
+        labelToIndexMap.put(metricsId, index);
         this.orderedMetrics.put(index, metrics);
     }
 
+    private MutableMetrics getByLabelInternal(final String metricsId) {
+        final Integer key = labelToIndexMap.get(metricsId);
+        if (key == null) {
+            return null;
+        }
+        return orderedMetrics.get(key);
+    }
 }
