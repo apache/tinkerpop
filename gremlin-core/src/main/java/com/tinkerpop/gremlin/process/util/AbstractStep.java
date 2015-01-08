@@ -78,11 +78,9 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     @Override
     public Traverser<E> next() {
         if (null != this.nextEnd) {
-            try {
-                return this.prepareTraversalForNextStep(this.nextEnd);
-            } finally {
-                this.nextEnd = null;
-            }
+            final Traverser<E> temp = this.prepareTraversalForNextStep(this.nextEnd);
+            this.nextEnd = null;
+            return temp;
         } else {
             while (true) {
                 final Traverser<E> traverser = this.processNextStart();

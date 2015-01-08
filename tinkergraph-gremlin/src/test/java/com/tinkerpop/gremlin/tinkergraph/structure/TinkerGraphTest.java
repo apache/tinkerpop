@@ -96,10 +96,10 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay2() throws Exception {
         Graph g = TinkerFactory.createClassic();
-        Traversal t = g.V(1).repeat(__.bothE("created").except("e").aggregate("e").otherV()).emit().path();
-        System.out.println(t);
-        t.forEachRemaining(System.out::println);
-        System.out.println(t);
+        Traversal t = g.V().outE().inV().iterate();
+       // System.out.println(t);
+       // t.forEachRemaining(System.out::println);
+       // System.out.println(t);
     }
 
     /**

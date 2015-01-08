@@ -20,6 +20,7 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
     private static final SideEffects SIDE_EFFECTS = new DefaultTraversalSideEffects();
+    private static final TraversalStrategies STRATEGIES = new DefaultTraversalStrategies();
 
     public static <A, B> EmptyTraversal<A, B> instance() {
         return INSTANCE;
@@ -95,12 +96,12 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void mergeSideEffects(final SideEffects sideEffects) {
+    public void setSideEffects(final SideEffects sideEffects) {
     }
 
     @Override
     public TraversalStrategies getStrategies() {
-        return new DefaultTraversalStrategies();
+        return STRATEGIES;
     }
 
     @Override

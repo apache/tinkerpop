@@ -19,6 +19,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     private E lastEnd = null;
     private long lastEndCount = 0l;
     private boolean locked = false; // an optimization so getTraversalEngine().isEmpty() isn't required on each next()/hasNext()
+    private Step<?, E> finalEndStep = EmptyStep.instance();
 
     protected List<Step> steps = new ArrayList<>();
     protected SideEffects sideEffects = new DefaultTraversalSideEffects();
@@ -41,6 +42,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
             this.strategies.applyStrategies(this, engine);
             this.traversalEngine = Optional.of(engine);
             this.locked = true;
+            this.finalEndStep = TraversalHelper.getEnd(this);
         }
     }
 
@@ -52,11 +54,6 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     @Override
     public List<Step> getSteps() {
         return this.steps;
-    }
-
-    @Override
-    public SideEffects getSideEffects() {
-        return this.sideEffects;
     }
 
     @Override
@@ -72,7 +69,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     @Override
     public boolean hasNext() {
         if (!this.locked) this.applyStrategies(TraversalEngine.STANDARD);
-        return this.lastEndCount > 0l || TraversalHelper.getEnd(this).hasNext();
+        return this.lastEndCount > 0l || this.finalEndStep.hasNext();
     }
 
     @Override
@@ -82,11 +79,12 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
             this.lastEndCount--;
             return this.lastEnd;
         } else {
-            final Traverser<E> next = TraversalHelper.getEnd(this).next();
-            if (next.bulk() == 1) {
+            final Traverser<E> next = this.finalEndStep.next();
+            final long nextBulk = next.bulk();
+            if (nextBulk == 1) {
                 return next.get();
             } else {
-                this.lastEndCount = next.bulk() - 1;
+                this.lastEndCount = nextBulk - 1;
                 this.lastEnd = next.get();
                 return this.lastEnd;
             }
@@ -121,9 +119,13 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     }
 
     @Override
-    public void mergeSideEffects(final SideEffects sideEffects) {
-        this.sideEffects.mergeSideEffects(sideEffects);
+    public void setSideEffects(final SideEffects sideEffects) {
         this.sideEffects = sideEffects;
+    }
+
+    @Override
+    public SideEffects getSideEffects() {
+        return this.sideEffects;
     }
 
     @Override

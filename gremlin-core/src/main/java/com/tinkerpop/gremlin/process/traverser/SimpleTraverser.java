@@ -28,6 +28,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     protected short loops = 0;
     protected transient Traversal.SideEffects sideEffects;
     protected long bulk = 1l;
+    protected Path path;
 
     protected SimpleTraverser() {
     }
@@ -36,7 +37,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         this.t = t;
         this.sideEffects = step.getTraversal().asAdmin().getSideEffects();
         this.sideEffects.getSackInitialValue().ifPresent(supplier -> this.sack = supplier.get());
-        getOrCreateFromCache(this.sideEffects).extend(step.getLabel(), t);
+        this.path = getOrCreateFromCache(this.sideEffects).extend(step.getLabel(), t);
     }
 
     @Override
@@ -53,7 +54,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
 
     @Override
     public Path path() {
-        return getOrCreateFromCache(this.sideEffects);
+        return this.path;
     }
 
     ////////
@@ -127,6 +128,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         traverser.loops = this.loops;
         traverser.bulk = this.bulk;
         traverser.sack = null == this.sack ? null : this.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(this.sack);
+        traverser.path = this.path;
         traverser.path().extend(label, r);
         return traverser;
     }
@@ -140,6 +142,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         traverser.loops = this.loops;
         traverser.bulk = this.bulk;
         traverser.sack = null == this.sack ? null : this.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(this.sack);
+        traverser.path = this.path;
         return traverser;
     }
 
@@ -150,7 +153,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
 
     @Override
     public String toString() {
-        return t.toString();
+        return this.t.toString();
     }
 
     @Override

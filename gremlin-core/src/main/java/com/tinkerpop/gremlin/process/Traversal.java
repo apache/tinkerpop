@@ -304,7 +304,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          *
          * @param sideEffects the sideEffects to add this traversal's sideEffect data to.
          */
-        public void mergeSideEffects(final SideEffects sideEffects);
+        public void setSideEffects(final SideEffects sideEffects);
 
         /**
          * Get the {@link SideEffects} associated with the traversal.

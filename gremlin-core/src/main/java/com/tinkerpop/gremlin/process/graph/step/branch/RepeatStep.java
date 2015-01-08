@@ -31,7 +31,9 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements PathConsu
         //try {
         this.repeatTraversal = repeatTraversal; // .clone()
         this.repeatTraversal.asAdmin().addStep(new MarkerIdentityStep<>(this.repeatTraversal)); // TODO: this is really bad
-        this.repeatTraversal.asAdmin().mergeSideEffects(this.getTraversal().asAdmin().getSideEffects());
+        final Traversal.SideEffects parentSideEffects = this.getTraversal().asAdmin().getSideEffects();
+        this.repeatTraversal.asAdmin().getSideEffects().mergeSideEffects(parentSideEffects);
+        this.repeatTraversal.asAdmin().setSideEffects(parentSideEffects);
         this.repeatTraversal.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());
         //} catch (final CloneNotSupportedException e) {
         //    throw new IllegalArgumentException(e.getMessage(), e);

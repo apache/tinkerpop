@@ -13,8 +13,6 @@ import java.util.function.UnaryOperator;
  */
 public class PathTraverser<T> extends SimpleTraverser<T> {
 
-    private Path path;
-
     protected PathTraverser() {
         super();
     }
