@@ -5,8 +5,8 @@ import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.Metrics;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.process.util.StandardTraversalMetrics;
+import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -15,8 +15,7 @@ import java.util.function.Consumer;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -106,11 +105,13 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
             Metrics metrics = traversalMetrics.getMetrics(1);
             // 6 elements w/ a 10ms sleep each = 60ms with 10ms for other computation
-            assertEquals(60, metrics.getDuration(TimeUnit.MILLISECONDS), 10);
+            assertTrue(metrics.getDuration(TimeUnit.MILLISECONDS) > 60);
+            assertTrue(metrics.getDuration(TimeUnit.MILLISECONDS) < 70);
 
             // 6 elements w/ a 5ms sleep each = 30ms with 10ms for other computation
             metrics = traversalMetrics.getMetrics(2);
-            assertEquals(30, metrics.getDuration(TimeUnit.MILLISECONDS), 10);
+            assertTrue(metrics.getDuration(TimeUnit.MILLISECONDS) > 30);
+            assertTrue(metrics.getDuration(TimeUnit.MILLISECONDS) < 40);
 
             double totalPercentDuration = 0;
             for (Metrics m : traversalMetrics.getMetrics()) {
