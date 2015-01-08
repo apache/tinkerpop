@@ -9,7 +9,7 @@ import java.io.Serializable;
 /**
  * A {@link Traverser} represents the current state of an object flowing through a {@link Traversal}.
  * A traverser maintains a reference to the current object, a traverser-local "sack", a traversal-global sideEffect, a bulk count, and a path history.
- *
+ * <p/>
  * Different types of traverser can exist depending on the semantics of the traversal and the desire for
  * space/time optimizations of the developer.
  *
@@ -73,13 +73,6 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
     public long bulk();
 
     /**
-     * Get the sideEffects associated with the traversal of the traverser.
-     *
-     * @return the traversal sideEffects of the traverser
-     */
-    public Traversal.SideEffects sideEffects();
-
-    /**
      * Get a particular value from the sideEffects of the traverser.
      *
      * @param sideEffectKey the key of the value to get from the sideEffects
@@ -87,7 +80,17 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      * @return the object in the sideEffects of the respective key
      */
     public default <A> A sideEffects(final String sideEffectKey) {
-        return this.sideEffects().get(sideEffectKey);
+        return this.asAdmin().getSideEffects().get(sideEffectKey);
+    }
+
+    /**
+     * Set a particular value in the sideEffects of the traverser.
+     *
+     * @param sideEffectKey   the key of the value to set int the sideEffects
+     * @param sideEffectValue the value to set for the sideEffect key
+     */
+    public default void sideEffects(final String sideEffectKey, final Object sideEffectValue) {
+        this.asAdmin().getSideEffects().set(sideEffectKey, sideEffectValue);
     }
 
     /**
@@ -246,6 +249,13 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          * @param sideEffects the sideEffects of the traversal.
          */
         public void setSideEffects(final Traversal.SideEffects sideEffects);
+
+        /**
+         * Get the sideEffects associated with the traversal of the traverser.
+         *
+         * @return the traversal sideEffects of the traverser
+         */
+        public Traversal.SideEffects getSideEffects();
 
     }
 }

@@ -76,7 +76,7 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
 
     private static final <S> void generateConsumer(final TreeStep<S> treeStep) {
         treeStep.setConsumer(traverser -> {
-            Tree depth = traverser.sideEffects().get(treeStep.sideEffectKey);
+            Tree depth = traverser.sideEffects(treeStep.sideEffectKey);
             final Path path = traverser.path();
             for (int i = 0; i < path.size(); i++) {
                 final Object object = treeStep.functionRing.next().apply(path.get(i));

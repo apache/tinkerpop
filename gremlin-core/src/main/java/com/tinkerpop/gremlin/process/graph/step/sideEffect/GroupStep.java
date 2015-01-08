@@ -41,13 +41,13 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMap<K, Collection<V>>::new);
         this.setConsumer(traverser -> {
-            final Map<K, Collection<V>> groupByMap = null == this.tempGroupByMap ? traverser.sideEffects().get(this.sideEffectKey) : this.tempGroupByMap; // for nested traversals and not !starts.hasNext()
+            final Map<K, Collection<V>> groupByMap = null == this.tempGroupByMap ? traverser.sideEffects(this.sideEffectKey) : this.tempGroupByMap; // for nested traversals and not !starts.hasNext()
             doGroup(traverser, groupByMap, this.keyFunction, this.valueFunction);
             if (!this.onGraphComputer && null != reduceFunction && !this.starts.hasNext()) {
                 this.tempGroupByMap = groupByMap;
                 final Map<K, R> reduceMap = new HashMap<>();
                 doReduce(groupByMap, reduceMap, this.reduceFunction);
-                traverser.sideEffects().set(this.sideEffectKey, reduceMap);
+                traverser.sideEffects(this.sideEffectKey, reduceMap);
             }
         });
     }

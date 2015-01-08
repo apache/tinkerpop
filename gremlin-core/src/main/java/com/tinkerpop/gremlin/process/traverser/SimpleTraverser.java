@@ -79,7 +79,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     }
 
     @Override
-    public Traversal.SideEffects sideEffects() {
+    public Traversal.SideEffects getSideEffects() {
         return this.sideEffects;
     }
 

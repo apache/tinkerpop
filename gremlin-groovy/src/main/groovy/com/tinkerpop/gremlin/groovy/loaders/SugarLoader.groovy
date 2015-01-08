@@ -3,8 +3,6 @@ package com.tinkerpop.gremlin.groovy.loaders
 import com.tinkerpop.gremlin.process.Traverser
 import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
-import com.tinkerpop.gremlin.process.traverser.PathTraverser
-import com.tinkerpop.gremlin.process.traverser.SimpleTraverser
 import com.tinkerpop.gremlin.process.util.TraversalHelper
 import com.tinkerpop.gremlin.structure.*
 
@@ -17,7 +15,7 @@ class SugarLoader {
 
         GremlinLoader.load();
 
-        [Traverser, PathTraverser, SimpleTraverser].forEach {
+        [Traverser].forEach {
             it.metaClass.getProperty = { final String key ->
                 TraverserCategory.get((Traverser) delegate, key);
             }
@@ -42,12 +40,13 @@ class SugarLoader {
 
     public static class TraverserCategory {
         public static final get(final Traverser traverser, final String key) {
-            return traverser.sideEffects().exists(key) ? traverser.sideEffects().get(key) : traverser.get()."$key";
+            return traverser.asAdmin().getSideEffects().exists(key) ? traverser.sideEffects(key) : traverser.get()."$key";
         }
     }
 
     public static class ElementCategory {
-        public static final get(final Element element, final String key) {
+        public static final Object get(final Element element, final String key) {
+            // TODO: Weird:::: return element.property(key).orElseGet{vertex."$key"()};
             final Property property = element.property(key);
             if (property.isPresent())
                 return property.value();
@@ -61,7 +60,8 @@ class SugarLoader {
     }
 
     public static class VertexCategory {
-        public static final get(final Vertex vertex, final String key) {
+        public static final Object get(final Vertex vertex, final String key) {
+            // TODO: Weird:::: return vertex.property(key).orElseGet{vertex."$key"()};
             final Property property = vertex.property(key);
             if (property.isPresent())
                 return property.value();
@@ -95,7 +95,6 @@ class SugarLoader {
     public static class GraphTraversalCategory {
 
         public static final get(final GraphTraversal graphTraversal, final String key) {
-            // GraphTraversal.metaClass.getMetaMethod(key) ? graphTraversal."$key"() : graphTraversal.value(key);
             graphTraversal."$key"()
         }
 
