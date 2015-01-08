@@ -78,10 +78,6 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffec
         return traversalMetrics;
     }
 
-    public String getEventName() {
-        return name;
-    }
-
     @Override
     public String getSideEffectKey(){
         return TraversalMetrics.METRICS_KEY;
