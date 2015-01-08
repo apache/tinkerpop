@@ -63,7 +63,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      *
      * @return The number of times the traverser has gone through a loop
      */
-    public short loops();
+    public int loops();
 
     /**
      * A traverser may represent a grouping of traversers to allow for more efficient data propagation.

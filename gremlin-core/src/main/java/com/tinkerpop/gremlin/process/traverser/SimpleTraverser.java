@@ -86,7 +86,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     ////////
 
     @Override
-    public short loops() {
+    public int loops() {
         return this.loops;
     }
 

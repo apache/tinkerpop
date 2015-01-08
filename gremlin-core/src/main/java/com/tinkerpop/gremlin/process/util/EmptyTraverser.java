@@ -101,7 +101,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public short loops() {
+    public int loops() {
         return 0;
     }
 
