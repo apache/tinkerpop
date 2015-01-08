@@ -10,7 +10,9 @@ import com.esotericsoftware.kryo.util.IdentityObjectIntMap;
 import com.esotericsoftware.kryo.util.IntMap;
 import com.esotericsoftware.kryo.util.ObjectMap;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -66,16 +68,16 @@ class GremlinClassResolver implements ClassResolver {
 
     @Override
     public Registration getRegistration(final Class clazz) {
-        // force all instances of Vertex and Edge to that respective interface
+        // force all instances of Vertex, Edge, VertexProperty, etc. to their respective interface
         final Class type;
         if (!DetachedVertex.class.isAssignableFrom(clazz) && Vertex.class.isAssignableFrom(clazz))
             type = Vertex.class;
         else if (!DetachedEdge.class.isAssignableFrom(clazz) && Edge.class.isAssignableFrom(clazz))
             type = Edge.class;
-        else if (!DetachedVertexProperty.class.isAssignableFrom(clazz) && DetachedVertexProperty.class.isAssignableFrom(clazz))
-            type = DetachedVertexProperty.class;
-        else if (!DetachedProperty.class.isAssignableFrom(clazz) && DetachedProperty.class.isAssignableFrom(clazz))
-            type = DetachedProperty.class;
+        else if (!DetachedVertexProperty.class.isAssignableFrom(clazz) && VertexProperty.class.isAssignableFrom(clazz))
+            type = VertexProperty.class;
+        else if (!DetachedProperty.class.isAssignableFrom(clazz) && !DetachedVertexProperty.class.isAssignableFrom(clazz) && Property.class.isAssignableFrom(clazz))
+            type = Property.class;
         else
             type = clazz;
 

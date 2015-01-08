@@ -67,6 +67,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             PropertyTest.class,
             ReadOnlyStrategyTest.class,
             SequenceStrategyTest.class,
+            SerializationTest.class,
             SubgraphStrategyTest.class,
             StrategyGraphTest.class,
             TransactionTest.class,
