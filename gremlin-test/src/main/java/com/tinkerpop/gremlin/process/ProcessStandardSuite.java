@@ -5,44 +5,9 @@ import com.tinkerpop.gremlin.process.graph.step.branch.BranchTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.BetweenTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.CoinTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.DedupTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.RangeTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.SampleTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.WhereTest;
-import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
-import com.tinkerpop.gremlin.process.graph.step.map.FoldTest;
-import com.tinkerpop.gremlin.process.graph.step.map.LocalTest;
-import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
-import com.tinkerpop.gremlin.process.graph.step.map.MatchTest;
-import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
-import com.tinkerpop.gremlin.process.graph.step.map.PropertiesTest;
-import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
-import com.tinkerpop.gremlin.process.graph.step.map.ShuffleTest;
-import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
-import com.tinkerpop.gremlin.process.graph.step.map.ValueMapTest;
-import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SackTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.*;
+import com.tinkerpop.gremlin.process.graph.step.map.*;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.*;
 import com.tinkerpop.gremlin.process.graph.step.util.TraversalSideEffectsTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -81,67 +46,68 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] allTests = new Class<?>[]{
-            // branch
-            BranchTest.StandardTest.class,
-            ChooseTest.StandardTest.class,
-            RepeatTest.StandardTest.class,
-            UnionTest.StandardTest.class,
-
-            // filter
-            BetweenTest.StandardTest.class,
-            CyclicPathTest.StandardTest.class,
-            DedupTest.StandardTest.class,
-            ExceptTest.StandardTest.class,
-            FilterTest.StandardTest.class,
-            HasNotTest.StandardTest.class,
-            HasTest.StandardTest.class,
-            CoinTest.StandardTest.class,
-            RangeTest.StandardTest.class,
-            RetainTest.StandardTest.class,
-            SampleTest.StandardTest.class,
-            SimplePathTest.StandardTest.class,
-            WhereTest.StandardTest.class,
-
-            // map
-            BackTest.StandardTest.class,
-            FoldTest.StandardTest.class,
-            LocalTest.StandardTest.class,
-            MapTest.StandardTest.class,
-            MatchTest.StandardTest.class,
-            OrderTest.StandardTest.class,
-            com.tinkerpop.gremlin.process.graph.step.map.PathTest.StandardTest.class,
-            PropertiesTest.StandardTest.class,
-            SelectTest.StandardTest.class,
-            ShuffleTest.StandardTest.class,
-            VertexTest.StandardTest.class,
-            UnfoldTest.StandardTest.class,
-            ValueMapTest.StandardTest.class,
-
-            // sideEffect
-            AddEdgeTest.StandardTest.class,
-            AggregateTest.StandardTest.class,
-            CountTest.StandardTest.class,
-            GroupTest.StandardTest.class,
-            GroupCountTest.StandardTest.class,
-            InjectTest.StandardTest.class,
             ProfileTest.StandardTest.class,
-            SackTest.StandardTest.class,
-            SideEffectCapTest.StandardTest.class,
-            SideEffectTest.StandardTest.class,
-            StoreTest.StandardTest.class,
-            SubgraphTest.StandardTest.class,
-            TreeTest.StandardTest.class,
-
-            // util
-            TraversalSideEffectsTest.StandardTest.class,
-
-            // compliance
-            TraversalCoverageTest.class,
-            CoreTraversalTest.class,
-            PathTest.class,
-
-            // algorithms
-            // PageRankVertexProgramTest.class
+//            // branch
+//            BranchTest.StandardTest.class,
+//            ChooseTest.StandardTest.class,
+//            RepeatTest.StandardTest.class,
+//            UnionTest.StandardTest.class,
+//
+//            // filter
+//            BetweenTest.StandardTest.class,
+//            CyclicPathTest.StandardTest.class,
+//            DedupTest.StandardTest.class,
+//            ExceptTest.StandardTest.class,
+//            FilterTest.StandardTest.class,
+//            HasNotTest.StandardTest.class,
+//            HasTest.StandardTest.class,
+//            CoinTest.StandardTest.class,
+//            RangeTest.StandardTest.class,
+//            RetainTest.StandardTest.class,
+//            SampleTest.StandardTest.class,
+//            SimplePathTest.StandardTest.class,
+//            WhereTest.StandardTest.class,
+//
+//            // map
+//            BackTest.StandardTest.class,
+//            FoldTest.StandardTest.class,
+//            LocalTest.StandardTest.class,
+//            MapTest.StandardTest.class,
+//            MatchTest.StandardTest.class,
+//            OrderTest.StandardTest.class,
+//            com.tinkerpop.gremlin.process.graph.step.map.PathTest.StandardTest.class,
+//            PropertiesTest.StandardTest.class,
+//            SelectTest.StandardTest.class,
+//            ShuffleTest.StandardTest.class,
+//            VertexTest.StandardTest.class,
+//            UnfoldTest.StandardTest.class,
+//            ValueMapTest.StandardTest.class,
+//
+//            // sideEffect
+//            AddEdgeTest.StandardTest.class,
+//            AggregateTest.StandardTest.class,
+//            CountTest.StandardTest.class,
+//            GroupTest.StandardTest.class,
+//            GroupCountTest.StandardTest.class,
+//            InjectTest.StandardTest.class,
+//            ProfileTest.StandardTest.class,
+//            SackTest.StandardTest.class,
+//            SideEffectCapTest.StandardTest.class,
+//            SideEffectTest.StandardTest.class,
+//            StoreTest.StandardTest.class,
+//            SubgraphTest.StandardTest.class,
+//            TreeTest.StandardTest.class,
+//
+//            // util
+//            TraversalSideEffectsTest.StandardTest.class,
+//
+//            // compliance
+//            TraversalCoverageTest.class,
+//            CoreTraversalTest.class,
+//            PathTest.class,
+//
+//            // algorithms
+//            // PageRankVertexProgramTest.class
     };
 
     /**
