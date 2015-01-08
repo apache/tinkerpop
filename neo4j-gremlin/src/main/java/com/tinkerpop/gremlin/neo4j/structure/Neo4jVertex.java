@@ -176,7 +176,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
 
     @Override
     public Neo4jGraphTraversal<Vertex, Vertex> start() {
-        final Neo4jGraphTraversal<Vertex, Vertex> traversal = new DefaultNeo4jGraphTraversal<>(this.graph);
+        final Neo4jGraphTraversal<Vertex, Vertex> traversal = new DefaultNeo4jGraphTraversal<>(this.getClass(), this.graph);
         return traversal.addStep(new StartStep<>(traversal, this));
     }
 

@@ -2,12 +2,10 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
-import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -116,13 +114,7 @@ public class TinkerFactory {
 
     public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
-        public default SocialTraversal<S, Vertex> people() {
-            return (SocialTraversal) this.asAdmin().addStep(new StartStep<>(this, this.asAdmin().getSideEffects().getGraph().V().has("age")));
-        }
-
-        public default SocialTraversal<S, Vertex> people(String name) {
-            return (SocialTraversal) this.asAdmin().addStep(new StartStep<>(this, this.asAdmin().getSideEffects().getGraph().V().has("name", name)));
-        }
+        public SocialTraversal<S, Vertex> people(final String name);
 
         public default SocialTraversal<S, Vertex> knows() {
             final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
@@ -143,19 +135,21 @@ public class TinkerFactory {
         }
 
         public static <S> SocialTraversal<S, S> of(final Graph graph) {
-            final SocialTraversal traversal = new DefaultSocialTraversal(graph);
-            return traversal;
+            return new DefaultSocialTraversal<>(graph);
         }
 
-        public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {
-
-            static {
-                TraversalStrategies.GlobalCache.registerStrategies(DefaultSocialTraversal.class, new DefaultTraversalStrategies());
-            }
+        public class DefaultSocialTraversal<S, E> extends DefaultTraversal<S, E> implements SocialTraversal<S, E> {
+            private final Graph graph;
 
             public DefaultSocialTraversal(final Graph graph) {
-                super(graph);
+                super(Graph.class); // should be SocialGraph.class, SocialVertex.class, etc. Perhaps...
+                this.graph = graph;
             }
+
+            public SocialTraversal<S, Vertex> people(final String name) {
+                return (SocialTraversal) this.asAdmin().addStep(new StartStep<>(this, this.graph.V().has("name", name)));
+            }
+
         }
     }
 }

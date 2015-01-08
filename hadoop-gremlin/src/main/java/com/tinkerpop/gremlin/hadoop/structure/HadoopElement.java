@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.hadoop.structure;
 
+import com.tinkerpop.gremlin.hadoop.process.graph.strategy.HadoopElementStepStrategy;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;

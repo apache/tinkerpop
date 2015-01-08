@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.AbstractGraphProvider;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.TestHelper;
 import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
-import com.tinkerpop.gremlin.hadoop.process.graph.util.DefaultHadoopElementTraversal;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopElement;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -14,6 +13,7 @@ import com.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoOutputFormat;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoResourceAccess;
@@ -22,11 +22,6 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.conf.GiraphConstants;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,7 +40,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     private static final Set<Class> TP_IMPLEMENTATIONS = new HashSet<Class>() {{
         add(HadoopEdge.class);
         add(HadoopElement.class);
-        add(DefaultHadoopElementTraversal.class);
+        add(DefaultGraphTraversal.class);
         add(HadoopGraph.class);
         add(HadoopGraphVariables.class);
         add(HadoopProperty.class);

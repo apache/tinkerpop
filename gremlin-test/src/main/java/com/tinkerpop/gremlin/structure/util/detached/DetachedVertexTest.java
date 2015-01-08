@@ -241,14 +241,6 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         detachedVertex.remove();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldNotTraverse() {
-        final Vertex v = g.addVertex();
-        final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
-        detachedVertex.start();
-    }
-
     @Test(expected = IllegalStateException.class)
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     public void shouldNotBeAbleToCallPropertyIfThereAreMultipleProperties() {

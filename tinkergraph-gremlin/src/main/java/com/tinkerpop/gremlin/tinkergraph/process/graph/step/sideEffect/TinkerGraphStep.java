@@ -1,15 +1,13 @@
 package com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
@@ -27,8 +25,10 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 
     public final List<HasContainer> hasContainers = new ArrayList<>();
 
-    public TinkerGraphStep(final Traversal traversal, final Graph graph, final Class<E> returnClass, final Object... ids) {
-        super(traversal, graph, returnClass, ids);
+    public TinkerGraphStep(final GraphStep<E> originalGraphStep) {
+        super(originalGraphStep.getTraversal(), originalGraphStep.getGraph(TinkerGraph.class), originalGraphStep.getReturnClass(), originalGraphStep.getIds());
+        if (TraversalHelper.isLabeled(originalGraphStep))
+            this.setLabel(originalGraphStep.getLabel());
         this.setIteratorSupplier(() -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
     }
 

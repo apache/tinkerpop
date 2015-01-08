@@ -123,11 +123,6 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
     }
 
     @Override
-    public GraphTraversal<Edge, Edge> start() {
-        throw new UnsupportedOperationException("Detached edges cannot be traversed: " + this);
-    }
-
-    @Override
     public Iterator<Vertex> vertexIterator(final Direction direction) {
         switch (direction) {
             case OUT:

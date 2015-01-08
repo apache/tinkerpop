@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.tinkergraph.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.strategy.AbstractTraversalStrategy;
@@ -38,7 +39,7 @@ public class TinkerElementStepStrategy extends AbstractTraversalStrategy {
                 identityStep.setLabel(label);
                 TraversalHelper.insertStep(identityStep, 0, traversal);
             }
-            TraversalHelper.insertStep(new TinkerGraphStep<>(traversal, EmptyGraph.instance(), element.getClass(), element.id()), 0, traversal);
+            TraversalHelper.insertStep(new GraphStep<>(traversal, EmptyGraph.instance(), element.getClass(), element.id()), 0, traversal);
         }
     }
 

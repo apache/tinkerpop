@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -22,12 +21,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class PageRankVertexProgram extends StaticVertexProgram<Double> {
 
-    private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(() -> GraphTraversal.<Vertex>of().outE());
+    private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(__::outE);
     private MessageScope.Local<Double> countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
 
     public static final String PAGE_RANK = "gremlin.pageRankVertexProgram.pageRank";

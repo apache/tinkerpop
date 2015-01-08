@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -32,7 +33,7 @@ import java.util.function.UnaryOperator;
  * Another example may represent the graph using "social concepts" (e.g. people, cities, artifacts).
  * A {@link Traversal} is evaluated in one of two ways: {@link TraversalEngine#STANDARD} (OLTP) and {@link TraversalEngine#COMPUTER} (OLAP).
  * OLTP traversals leverage an iterator and are executed within a single JVM (with data access allowed to be remote).
- * OLAP traversals leverage {@link GraphComputer} and are executed between multiple JVMs (or cores).
+ * OLAP traversals leverage {@link GraphComputer} and are executed between multiple JVMs (and/or cores).
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -64,7 +65,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
             this.asAdmin().applyStrategies(TraversalEngine.COMPUTER);
             final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
-            final GraphTraversal<S, S> traversal = result.graph().of();
+            final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>(result.graph().getClass());
             return traversal.asAdmin().addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -244,9 +245,19 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          */
         public void applyStrategies(final TraversalEngine engine);
 
-        public void setTraversalStrategies(final TraversalStrategies strategies);
+        /**
+         * Set the {@link TraversalStrategies} to be used by this traversal at evaluation time.
+         *
+         * @param strategies the strategies to use on this traversal
+         */
+        public void setStrategies(final TraversalStrategies strategies);
 
-        public TraversalStrategies getTraversalStrategies();
+        /**
+         * Get the {@link TraversalStrategies} associated with this traversal.
+         *
+         * @return the strategies associated with this traversal
+         */
+        public TraversalStrategies getStrategies();
 
         /**
          * When the {@link TraversalStrategies} have been applied, the destined {@link TraversalEngine} has been declared.
@@ -262,7 +273,9 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          *
          * @return the generator of traversers
          */
-        public TraverserGenerator getTraverserGenerator();
+        public default TraverserGenerator getTraverserGenerator() {
+            return this.getStrategies().getTraverserGenerator(this);
+        }
 
         /**
          * Call the {@link Step#reset} method on every step in the traversal.
@@ -440,27 +453,6 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
                 this.set(key, v);
                 return v;
             }
-        }
-
-        ////////////
-
-        public default boolean graphExists() {
-            return this.exists(GRAPH_KEY);
-        }
-
-        public default void setGraph(final Graph graph) {
-            this.set(GRAPH_KEY, graph);
-        }
-
-        public default Graph getGraph() {
-            if (this.exists(GRAPH_KEY))
-                return this.<Graph>get(GRAPH_KEY);
-            else
-                throw new IllegalStateException("There is no graph stored in these side effects");
-        }
-
-        public default void removeGraph() {
-            this.remove(GRAPH_KEY);
         }
 
         ////////////

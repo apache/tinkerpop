@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -36,16 +35,13 @@ public interface AnonymousGraphTraversal {
         __;
 
         public <S> GraphTraversal<S, S> start() {
-            return new DefaultGraphTraversal<>();
+            return new DefaultGraphTraversal<>(AnonymousGraphTraversal.class);
         }
     }
 
     //////////////////////////////////////////////////////////////////////
 
-    public default <A> GraphTraversal<A, A> start() {
-        final GraphTraversal<A, A> traversal = GraphTraversal.of();
-        return traversal.asAdmin().addStep(new StartStep<>(traversal, this));
-    }
+    public <A> GraphTraversal<A, A> start();
 
     //////////////////////////////////////////////////////////////////////
 

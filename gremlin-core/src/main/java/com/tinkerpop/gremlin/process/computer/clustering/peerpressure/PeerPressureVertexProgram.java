@@ -4,14 +4,12 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
+import com.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -26,12 +24,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializable, Double>> {
 
-    private MessageScope.Local<?> voteScope = MessageScope.Local.of(() -> GraphTraversal.<Vertex>of().outE());
+    private MessageScope.Local<?> voteScope = MessageScope.Local.of(__::outE);
     private MessageScope.Local<?> countScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.voteScope));
     private final Set<MessageScope> VOTE_SCOPE = new HashSet<>(Arrays.asList(this.voteScope));
     private final Set<MessageScope> COUNT_SCOPE = new HashSet<>(Arrays.asList(this.countScope));

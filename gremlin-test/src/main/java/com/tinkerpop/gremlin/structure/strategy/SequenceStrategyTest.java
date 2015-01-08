@@ -464,7 +464,8 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         // invoke all the strategy methods
         Stream.of(methods).forEach(method -> {
             try {
-                method.invoke(strategy, new StrategyContext(new StrategyGraph(g), new StrategyWrapped() {}), strategy);
+                method.invoke(strategy, new StrategyContext(new StrategyGraph(g), new StrategyWrapped() {
+                }), strategy);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 fail("Should be able to invoke function");
@@ -706,17 +707,12 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public UnaryOperator<Function<Object[],GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
+        public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Function<Object[],GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
-            return spy();
-        }
-
-        @Override
-        public UnaryOperator<Supplier<GraphTraversal>> getGraphOfStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
+        public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
             return spy();
         }
 

@@ -139,7 +139,7 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX3X_count() {
-            return g.V().repeat(g.<Vertex>of().out()).times(3).count().submit(g.compute());
+            return g.V().repeat(__.out()).times(3).count().submit(g.compute());
         }
 
         @Override

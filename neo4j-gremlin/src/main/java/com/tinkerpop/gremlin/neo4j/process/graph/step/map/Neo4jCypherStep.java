@@ -10,7 +10,6 @@ import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.ResourceIterator;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -21,13 +20,8 @@ public class Neo4jCypherStep<S, E> extends FlatMapStep<S, Map<String, E>> {
 
     private static final String START = "start";
 
-    public Neo4jCypherStep(final Traversal traversal, final String query) {
-        this(traversal, query, new HashMap<>());
-    }
-
-    public Neo4jCypherStep(final Traversal traversal, final String query, final Map<String, Object> parameters) {
+    public Neo4jCypherStep(final Traversal traversal, final Neo4jGraph graph, final String query, final Map<String, Object> parameters) {
         super(traversal);
-        final Neo4jGraph graph = (Neo4jGraph) traversal.asAdmin().getSideEffects().getGraph();
         final ExecutionEngine cypher = Neo4jHelper.getCypher(graph);
         this.setFunction(traverser -> {
             final S s = traverser.get();

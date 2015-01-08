@@ -60,8 +60,8 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
 
     @Override
     public Neo4jGraphTraversal<VertexProperty, VertexProperty> start() {
-        final Neo4jGraphTraversal<VertexProperty, VertexProperty> traversal = new DefaultNeo4jGraphTraversal<>(this.vertex.graph);
-        return (Neo4jGraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
+        final Neo4jGraphTraversal<VertexProperty, VertexProperty> traversal = new DefaultNeo4jGraphTraversal<>(this.getClass(), this.vertex.graph);
+        return traversal.addStep(new StartStep<>(traversal, this));
     }
 
     @Override

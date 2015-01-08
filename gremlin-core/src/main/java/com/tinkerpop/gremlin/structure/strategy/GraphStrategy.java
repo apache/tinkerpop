@@ -50,7 +50,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Iterators#vertexIterator}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.Graph.Iterators#vertexIterator} signature
@@ -63,7 +63,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Iterators#edgeIterator}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.Graph.Iterators#edgeIterator} signature
@@ -76,7 +76,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#keys()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Graph.Variables#keys()} signature
@@ -89,7 +89,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#asMap()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Graph.Variables#asMap()} signature
@@ -102,7 +102,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#get(String)}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with {@link com.tinkerpop.gremlin.structure.Graph.Variables#get(String)} signature
      * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
@@ -114,7 +114,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.BiConsumer} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#set(String, Object)}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.BiConsumer} with {@link com.tinkerpop.gremlin.structure.Graph.Variables#set(String, Object)} signature
      * and returns an enhanced strategy {@link java.util.function.BiConsumer} with the same signature
@@ -126,7 +126,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Consumer} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#remove(String)}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Consumer} with {@link com.tinkerpop.gremlin.structure.Graph.Variables#remove(String)} signature
      * and returns an enhanced strategy {@link java.util.function.BiConsumer} with the same signature
@@ -138,7 +138,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#addVertex(Object...)}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with {@link com.tinkerpop.gremlin.structure.Graph#addVertex(Object...)} signature
      * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
@@ -151,7 +151,7 @@ public interface GraphStrategy {
      * Construct a {@link com.tinkerpop.gremlin.util.function.TriFunction} that enhances the features of
      * {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link com.tinkerpop.gremlin.util.function.TriFunction} with
      * {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)} signature
@@ -164,7 +164,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge#remove()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Edge#remove()} signature
@@ -177,7 +177,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex#remove()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Vertex#remove()} signature
@@ -190,7 +190,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Property#remove()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Property#remove()} signature
@@ -203,7 +203,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty#remove()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.VertexProperty#remove()} signature
@@ -216,7 +216,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex#property(String)}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.Vertex#property(String)} signature
@@ -229,7 +229,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex#keys()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Vertex#keys()} signature
@@ -242,7 +242,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex#label()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Vertex#label()} signature
@@ -255,7 +255,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.BiFunction} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex#property(String, Object)}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.BiFunction} with
      * {@link com.tinkerpop.gremlin.structure.Vertex#property(String, Object)} signature
@@ -268,7 +268,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element.Iterators#propertyIterator}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.Element.Iterators#propertyIterator} signature
@@ -281,7 +281,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link TriFunction} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#vertexIterator}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link BiFunction} with
      * {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#vertexIterator} signature
@@ -294,7 +294,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link TriFunction} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#edgeIterator}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link BiFunction} with
      * {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#edgeIterator} signature
@@ -307,7 +307,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#valueIterator}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#valueIterator} signature
@@ -320,7 +320,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex#id()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Vertex#id()} signature
@@ -335,7 +335,7 @@ public interface GraphStrategy {
      * Note that in this case, the {@link Graph} is {@link StrategyGraph} and this would be the expected
      * type to pass back out.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Vertex#graph()} signature
@@ -348,7 +348,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#value(String)}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.Element#value(String)} signature
@@ -361,7 +361,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge#property(String)}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.Edge#property(String)} signature
@@ -374,7 +374,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge.Iterators#vertexIterator}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.Edge.Iterators#vertexIterator} signature
@@ -387,7 +387,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge.Iterators#valueIterator}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.Edge.Iterators#valueIterator} signature
@@ -400,7 +400,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge.Iterators#propertyIterator}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.Edge.Iterators#propertyIterator} signature
@@ -413,7 +413,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge#keys()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Edge#keys()} signature
@@ -426,7 +426,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.BiFunction} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge#property(String, Object)}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.BiFunction} with
      * {@link com.tinkerpop.gremlin.structure.Edge#property(String, Object)} signature
@@ -439,7 +439,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge#value(String)}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.Element#value(String)} signature
@@ -452,7 +452,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge#id()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Edge#id()} signature
@@ -467,7 +467,7 @@ public interface GraphStrategy {
      * Note that in this case, the {@link Graph} is {@link StrategyGraph} and this would be the expected
      * type to pass back out.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Edge#graph()} signature
@@ -480,7 +480,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge#label()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Edge#label()} signature
@@ -493,7 +493,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty#id()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.VertexProperty#id()} signature
@@ -506,7 +506,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty#value()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Supplier} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.VertexProperty#value()} signature
@@ -519,7 +519,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Property#key()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Supplier} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Property#key()} signature
@@ -532,7 +532,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty.Iterators#propertyIterator}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.VertexProperty.Iterators#propertyIterator} signature
@@ -545,7 +545,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty.Iterators#valueIterator}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.VertexProperty.Iterators#valueIterator} signature
@@ -558,7 +558,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.BiFunction} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty#property(String, Object)}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.BiFunction} with
      * {@link com.tinkerpop.gremlin.structure.VertexProperty#property(String, Object)} signature
@@ -573,7 +573,7 @@ public interface GraphStrategy {
      * Note that in this case, the {@link Graph} is {@link StrategyGraph} and this would be the expected
      * type to pass back out.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.VertexProperty#graph()} signature
@@ -586,7 +586,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty#label()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.VertexProperty#label()} signature
@@ -599,7 +599,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty#keys()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.VertexProperty#keys()} signature
@@ -612,7 +612,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty#element}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.VertexProperty#element} signature
@@ -625,7 +625,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#close()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Supplier} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Graph#close()} signature
@@ -638,7 +638,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#V}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.Graph#V} signature
@@ -651,7 +651,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#E}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
      * {@link com.tinkerpop.gremlin.structure.Graph#E} signature
@@ -662,22 +662,9 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#of()}.
-     *
-     * @param ctx the context within which this strategy function is called
-     * @param composingStrategy the strategy that composed this strategy function
-     * @return a {@link java.util.function.Supplier} that accepts a {@link java.util.function.Supplier} with
-     * {@link com.tinkerpop.gremlin.structure.Graph#of()} signature
-     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
-     */
-    public default UnaryOperator<Supplier<GraphTraversal>> getGraphOfStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
-        return UnaryOperator.identity();
-    }
-
-    /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Property#value()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Supplier} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Property#value()} signature
@@ -690,7 +677,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Property#key()}.
      *
-     * @param ctx the context within which this strategy function is called
+     * @param ctx               the context within which this strategy function is called
      * @param composingStrategy the strategy that composed this strategy function
      * @return a {@link java.util.function.Supplier} that accepts a {@link java.util.function.Supplier} with
      * {@link com.tinkerpop.gremlin.structure.Property#key()} signature

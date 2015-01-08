@@ -66,7 +66,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.util.ElementFunctionComparator;
 import com.tinkerpop.gremlin.process.util.ElementValueComparator;
@@ -77,7 +76,6 @@ import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -109,16 +107,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) Traversal.super.<S, E>submit(computer);
     }
 
-    public static <S> GraphTraversal<S, S> of(final Graph graph) {
-        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
-        traversal.asAdmin().getSideEffects().setGraph(graph);
-        return traversal;
-    }
-
-    public static <S> GraphTraversal<S, S> of() {
-        return new DefaultGraphTraversal<>();
-    }
-
+    @Override
     public GraphTraversal.Admin<S, E> asAdmin();
 
     public interface Admin<S, E> extends Traversal.Admin<S, E> {

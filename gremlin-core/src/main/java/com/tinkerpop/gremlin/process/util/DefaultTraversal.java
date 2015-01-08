@@ -5,9 +5,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.TraverserGenerator;
-import com.tinkerpop.gremlin.process.graph.strategy.GraphTraversalStrategyRegistry;
-import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,20 +24,10 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     protected SideEffects sideEffects = new DefaultTraversalSideEffects();
     protected Optional<TraversalEngine> traversalEngine = Optional.empty();
 
-    private TraversalStrategies strategies = TraversalStrategies.GlobalCache.getStrategies(this.getClass());
+    private TraversalStrategies strategies;
 
-    static {
-        final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
-        GraphTraversalStrategyRegistry.instance().getTraversalStrategies().forEach(traversalStrategies::addStrategy);
-        TraversalStrategies.GlobalCache.registerStrategies(DefaultTraversal.class, traversalStrategies);
-    }
-
-    public DefaultTraversal() {
-    }
-
-    public DefaultTraversal(final Graph graph) {
-        this();
-        this.getSideEffects().setGraph(graph);
+    public DefaultTraversal(final Class emanatingClass) {
+        this.strategies = TraversalStrategies.GlobalCache.getStrategies(emanatingClass);
     }
 
     @Override
@@ -51,7 +38,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     @Override
     public void applyStrategies(final TraversalEngine engine) {
         if (!this.locked) {
-            this.strategies.apply(this, engine);
+            this.strategies.applyStrategies(this, engine);
             this.traversalEngine = Optional.of(engine);
             this.locked = true;
         }
@@ -123,6 +110,8 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
         clone.sideEffects = this.sideEffects.clone();
         clone.lastEnd = null;
         clone.lastEndCount = 0l;
+        //clone.traversalEngine = Optional.empty();
+        //clone.locked = false;
         for (int i = this.steps.size() - 1; i >= 0; i--) {
             final Step<?, ?> clonedStep = this.steps.get(i).clone();
             clonedStep.setTraversal(clone);
@@ -132,23 +121,18 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     }
 
     @Override
-    public TraverserGenerator getTraverserGenerator() {
-        return TraversalStrategies.GlobalCache.getStrategies(this.getClass()).getTraverserGenerator(this);
-    }
-
-    @Override
     public void mergeSideEffects(final SideEffects sideEffects) {
         this.sideEffects.mergeSideEffects(sideEffects);
         this.sideEffects = sideEffects;
     }
 
     @Override
-    public void setTraversalStrategies(final TraversalStrategies strategies) {
+    public void setStrategies(final TraversalStrategies strategies) {
         this.strategies = strategies;
     }
 
     @Override
-    public TraversalStrategies getTraversalStrategies() {
+    public TraversalStrategies getStrategies() {
         return this.strategies;
     }
 }

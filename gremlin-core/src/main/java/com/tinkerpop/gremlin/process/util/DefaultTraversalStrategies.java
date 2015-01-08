@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -20,11 +21,29 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     protected final List<TraversalStrategy> traversalStrategies = new ArrayList<>();
     protected TraverserGeneratorFactory traverserGeneratorFactory = DefaultTraverserGeneratorFactory.instance();
 
-    public void addStrategy(final TraversalStrategy strategy) {
-        if (!this.traversalStrategies.contains(strategy)) {
-            this.traversalStrategies.add(strategy);
-            TraversalStrategies.sortStrategies(this.traversalStrategies);
+    public TraversalStrategies addStrategies(final TraversalStrategy... strategies) {
+        boolean added = false;
+        for (final TraversalStrategy strategy : strategies) {
+            if (!this.traversalStrategies.contains(strategy)) {
+                this.traversalStrategies.add(strategy);
+                added = true;
+            }
         }
+        if (added) TraversalStrategies.sortStrategies(this.traversalStrategies);
+        return this;
+    }
+
+    public TraversalStrategies removeStrategies(final Class<? extends TraversalStrategy>... strategyClasses) {
+        boolean removed = false;
+        for (final Class<? extends TraversalStrategy> strategyClass : strategyClasses) {
+            final Optional<TraversalStrategy> strategy = this.traversalStrategies.stream().filter(s -> s.getClass().equals(strategyClass)).findAny();
+            if (strategy.isPresent()) {
+                this.traversalStrategies.remove(strategy.get());
+                removed = true;
+            }
+        }
+        if (removed) TraversalStrategies.sortStrategies(this.traversalStrategies);
+        return this;
     }
 
     @Override
@@ -33,13 +52,22 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public void apply(final Traversal traversal, final TraversalEngine engine) {
+    public void applyStrategies(final Traversal traversal, final TraversalEngine engine) {
         this.traversalStrategies.forEach(ts -> ts.apply(traversal, engine));
     }
 
     @Override
     public TraverserGenerator getTraverserGenerator(final Traversal traversal) {
         return this.traverserGeneratorFactory.getTraverserGenerator(traversal);
+    }
+
+
+    @Override
+    public DefaultTraversalStrategies clone() throws CloneNotSupportedException {    // TODO: why does this not work with super.clone()?
+        final DefaultTraversalStrategies clone = new DefaultTraversalStrategies();
+        clone.addStrategies(this.traversalStrategies.toArray(new TraversalStrategy[this.traversalStrategies.size()]));
+        clone.traverserGeneratorFactory = this.traverserGeneratorFactory;
+        return clone;
     }
 
     @Override

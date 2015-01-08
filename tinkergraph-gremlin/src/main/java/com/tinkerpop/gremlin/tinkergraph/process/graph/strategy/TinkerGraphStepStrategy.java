@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.graph.marker.HasContainerHolder;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.AbstractTraversalStrategy;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -25,8 +26,11 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
             return;
 
         final Step<?, ?> startStep = TraversalHelper.getStart(traversal);
-        if (startStep instanceof TinkerGraphStep) {
-            final TinkerGraphStep<?> tinkerGraphStep = (TinkerGraphStep) startStep;
+        if (startStep instanceof GraphStep) {
+            final GraphStep<?> originalGraphStep = (GraphStep) startStep;
+            final TinkerGraphStep<?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
+            TraversalHelper.replaceStep(startStep, tinkerGraphStep, traversal);
+
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
             while (true) {
                 if (currentStep instanceof HasContainerHolder) {

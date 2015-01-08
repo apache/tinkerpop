@@ -1,14 +1,15 @@
 package com.tinkerpop.gremlin.hadoop.groovy.plugin;
 
-import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import com.tinkerpop.gremlin.groovy.engine.GroovyTraversalScript;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteException;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -87,7 +88,7 @@ public class HadoopRemoteAcceptor implements RemoteAcceptor {
             final ComputerResult computerResult = traversal.result().get();
             this.shell.getInterp().getContext().setProperty(RESULT, computerResult);
 
-            final GraphTraversal traversal2 = new DefaultGraphTraversal<>();
+            final GraphTraversal traversal2 = new DefaultGraphTraversal<>(Graph.class);
             traversal2.asAdmin().addStep(new ComputerResultStep<>(traversal2, computerResult, vertexProgram, false));
             traversal2.range(0, 19);
             return traversal2;

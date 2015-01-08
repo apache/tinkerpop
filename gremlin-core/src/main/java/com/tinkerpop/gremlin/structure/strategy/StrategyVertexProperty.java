@@ -1,11 +1,9 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyElementTraversal;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertexProperty;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -26,12 +24,6 @@ public class StrategyVertexProperty<V> extends StrategyElement implements Vertex
         super(baseVertexProperty, strategyGraph);
         this.strategyContext = new StrategyContext<>(strategyGraph, this);
     }
-
-    @Override
-    public GraphTraversal<VertexProperty, VertexProperty> start() {
-        return new StrategyElementTraversal<>(this, strategyGraph);
-    }
-
 
     @Override
     public Graph graph() {
@@ -75,7 +67,7 @@ public class StrategyVertexProperty<V> extends StrategyElement implements Vertex
 
     @Override
     public <U> Property<U> property(final String key, final U value) {
-        return new StrategyProperty<U>(this.strategyGraph.compose(
+        return new StrategyProperty<>(this.strategyGraph.compose(
                 s -> s.<U, V>getVertexPropertyPropertyStrategy(strategyContext, strategy),
                 this.getBaseVertexProperty()::property).<String, U>apply(key, value), this.strategyGraph);
     }

@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.hadoop.structure;
 
-import com.tinkerpop.gremlin.hadoop.process.graph.util.DefaultHadoopElementTraversal;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
@@ -21,11 +19,6 @@ public class HadoopEdge extends HadoopElement implements Edge, Edge.Iterators, W
 
     public HadoopEdge(final Edge edge, final HadoopGraph graph) {
         super(edge, graph);
-    }
-
-    @Override
-    public GraphTraversal<Edge, Edge> start() {
-        return new DefaultHadoopElementTraversal<>(this, this.graph);
     }
 
     @Override

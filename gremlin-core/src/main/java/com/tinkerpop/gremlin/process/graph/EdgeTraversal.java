@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.process.graph;
 
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 
@@ -10,6 +12,13 @@ import java.util.Map;
  */
 public interface EdgeTraversal extends ElementTraversal<Edge> {
 
+    @Override
+    default GraphTraversal<Edge, Edge> start() {
+        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this.getClass());
+        return traversal.asAdmin().addStep(new StartStep<>(traversal, this));
+    }
+
+    @Override
     public default <E2> GraphTraversal<Edge, Property<E2>> properties(final String... propertyKeys) {
         return (GraphTraversal) this.start().properties(propertyKeys);
     }

@@ -1,6 +1,9 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.VertexPropertyTraversal;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.util.empty.EmptyVertexProperty;
 
 import java.util.Iterator;
@@ -55,7 +58,7 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
 
     /**
      * Gets the {@link VertexProperty.Iterators} set.
-     *
+     * <p/>
      * {@inheritDoc}
      */
     @Override

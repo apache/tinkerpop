@@ -165,13 +165,4 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         final DetachedEdge detachedEdge = DetachedFactory.detach(e, false);
         detachedEdge.remove();
     }
-
-    @Test(expected = UnsupportedOperationException.class)
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    public void shouldNotTraverse() {
-        final Vertex v = g.addVertex();
-        final Edge e = v.addEdge("test", v);
-        final DetachedEdge detachedEdge = DetachedFactory.detach(e, false);
-        detachedEdge.start();
-    }
 }

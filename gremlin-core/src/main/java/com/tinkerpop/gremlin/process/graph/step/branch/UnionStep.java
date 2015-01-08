@@ -21,7 +21,7 @@ public final class UnionStep<S, E> extends AbstractStep<S, E> implements Travers
     public UnionStep(final Traversal traversal, final Traversal<S, E>... branchTraversals) {
         super(traversal);
         this.traversalRing = new TraversalRing<>(branchTraversals);
-        this.traversalRing.forEach(branch -> branch.asAdmin().setTraversalStrategies(this.getTraversal().asAdmin().getTraversalStrategies()));
+        this.traversalRing.forEach(branch -> branch.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies()));
     }
 
     @Override

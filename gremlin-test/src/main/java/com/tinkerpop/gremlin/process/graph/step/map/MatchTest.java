@@ -665,7 +665,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXab_nameX() {
             return g.V().match("a",
                     __.as("a").out("created").as("b"),
-                    g.<Vertex>of().as("a").repeat(__.out()).times(2).as("b")).<String>select("a", "b").by("name");
+                    __.<Vertex>as("a").repeat(__.out()).times(2).as("b")).<String>select("a", "b").by("name");
         }
 
         @Override
@@ -673,7 +673,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().match("a",
                     __.as("a").out("created").has("name", "lop").as("b"),
                     __.as("b").in("created").has("age", 29).as("c"),
-                    g.<Vertex>of().as("c").repeat(__.out()).times(2)).<String>select().by("name");
+                    __.<Vertex>as("c").repeat(__.out()).times(2)).<String>select().by("name");
         }
 
         @Override
@@ -681,7 +681,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().match("a",
                     __.as("a").out("created").has("name", "lop").as("b"),
                     __.as("b").in("created").has("age", 29).as("c"))
-                    .where(g.<Vertex>of().as("c").repeat(__.out()).times(2)).<String>select().by("name");
+                    .where(__.<Vertex>as("c").repeat(__.out()).times(2)).<String>select().by("name");
         }
 
         @Override

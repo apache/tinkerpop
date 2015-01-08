@@ -36,7 +36,7 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements Trav
         super(traversal);
         this.mapFunction = mapFunction;
         this.choices = choices;
-        this.choices.values().forEach(choice -> choice.asAdmin().setTraversalStrategies(this.getTraversal().asAdmin().getTraversalStrategies()));
+        this.choices.values().forEach(choice -> choice.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies()));
         ChooseStep.generateFunction(this);
     }
 

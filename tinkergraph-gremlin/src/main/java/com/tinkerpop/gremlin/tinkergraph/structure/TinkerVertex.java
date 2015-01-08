@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -10,7 +12,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerElementTraversal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -102,11 +103,6 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
         this.graph.vertexIndex.removeElement(this);
         this.graph.vertices.remove(this.id);
         this.removed = true;
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> start() {
-        return new DefaultTinkerElementTraversal<>(this, this.graph);
     }
 
     @Override

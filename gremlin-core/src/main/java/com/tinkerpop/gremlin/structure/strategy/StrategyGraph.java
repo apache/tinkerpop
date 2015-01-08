@@ -3,12 +3,12 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyGraphTraversal;
-import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyTraversal;
+import com.tinkerpop.gremlin.structure.strategy.process.graph.step.sideEffect.StrategyGraphStep;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
@@ -85,21 +85,18 @@ public class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, W
 
     @Override
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        return new StrategyGraphTraversal<>(Vertex.class, this.compose(
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this.getClass());
+        return traversal.asAdmin().addStep(new StrategyGraphStep<>(traversal, this, Vertex.class, this.compose(
                 s -> s.getGraphVStrategy(this.graphContext, strategy),
-                this.baseGraph::V).apply(vertexIds), this);
+                this.baseGraph::V).apply(vertexIds)));
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        return new StrategyGraphTraversal<>(Edge.class, this.compose(
+        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this.getClass());
+        return traversal.asAdmin().addStep(new StrategyGraphStep<>(traversal, this, Edge.class, this.compose(
                 s -> s.getGraphEStrategy(this.graphContext, strategy),
-                this.baseGraph::E).apply(edgeIds), this);
-    }
-
-    @Override
-    public <S> GraphTraversal<S, S> of() {
-        return new StrategyTraversal<>(this);
+                this.baseGraph::E).apply(edgeIds)));
     }
 
     @Override

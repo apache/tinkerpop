@@ -34,7 +34,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> {
         this.secondKey = null;
         this.biPredicate = null;
         this.constraint = constraint;
-        this.constraint.asAdmin().setTraversalStrategies(this.getTraversal().asAdmin().getTraversalStrategies());
+        this.constraint.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());
         WhereStep.generatePredicate(this);
     }
 

@@ -99,12 +99,12 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public TraversalStrategies getTraversalStrategies() {
+    public TraversalStrategies getStrategies() {
         return new DefaultTraversalStrategies();
     }
 
     @Override
-    public void setTraversalStrategies(final TraversalStrategies traversalStrategies) {
+    public void setStrategies(final TraversalStrategies traversalStrategies) {
 
     }
 }

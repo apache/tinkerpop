@@ -3,7 +3,9 @@ package com.tinkerpop.gremlin.neo4j.structure;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jGraphTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect.Neo4jGraphStep;
 import com.tinkerpop.gremlin.neo4j.process.graph.step.util.Neo4jCypherIterator;
+import com.tinkerpop.gremlin.neo4j.process.graph.strategy.Neo4jGraphStepStrategy;
 import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jGraphTraversal;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -20,6 +22,7 @@ import org.apache.commons.configuration.ConfigurationConverter;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.NotFoundException;
+import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.HighlyAvailableGraphDatabaseFactory;
 import org.neo4j.graphdb.schema.Schema;
@@ -45,6 +48,14 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDatabaseService> {
+
+    static {
+        try {
+            TraversalStrategies.GlobalCache.registerStrategies(Neo4jGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(Neo4jGraphStepStrategy.instance()));
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, Neo4jGraph.class.getName());
@@ -184,7 +195,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     @Override
     public Neo4jGraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         this.tx().readWrite();
-        final Neo4jGraphTraversal<Vertex, Vertex> traversal = new DefaultNeo4jGraphTraversal<>(this);
+        final Neo4jGraphTraversal<Vertex, Vertex> traversal = new DefaultNeo4jGraphTraversal<>(Neo4jGraph.class, this);
         traversal.addStep(new Neo4jGraphStep<>(traversal, this, Vertex.class, vertexIds));
         return traversal;
     }
@@ -192,14 +203,9 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     @Override
     public Neo4jGraphTraversal<Edge, Edge> E(final Object... edgeIds) {
         this.tx().readWrite();
-        final Neo4jGraphTraversal<Edge, Edge> traversal = new DefaultNeo4jGraphTraversal<>(this);
+        final Neo4jGraphTraversal<Edge, Edge> traversal = new DefaultNeo4jGraphTraversal<>(Neo4jGraph.class, this);
         traversal.addStep(new Neo4jGraphStep<>(traversal, this, Edge.class, edgeIds));
         return traversal;
-    }
-
-    @Override
-    public <S> Neo4jGraphTraversal<S, S> of() {
-        return Neo4jGraphTraversal.of(this);
     }
 
     @Override
@@ -324,7 +330,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
      * @param query the Cypher query to execute
      * @return a fluent Gremlin traversal
      */
-    public Neo4jGraphTraversal cypher(final String query) {
+    public <S, E> Neo4jGraphTraversal<S, E> cypher(final String query) {
         return cypher(query, Collections.emptyMap());
     }
 
@@ -335,10 +341,10 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
      * @param parameters the parameters of the Cypher query
      * @return a fluent Gremlin traversal
      */
-    public Neo4jGraphTraversal cypher(final String query, final Map<String, Object> parameters) {
+    public <S, E> Neo4jGraphTraversal<S, E> cypher(final String query, final Map<String, Object> parameters) {
         this.tx().readWrite();
-        final Neo4jGraphTraversal traversal = Neo4jGraphTraversal.of(this);
-        traversal.addStep(new StartStep(traversal, new Neo4jCypherIterator(this.cypher.execute(query, parameters).iterator(), this)));
+        final Neo4jGraphTraversal<S, E> traversal = new DefaultNeo4jGraphTraversal<>(Neo4jGraph.class, this);
+        traversal.addStep(new StartStep(traversal, new Neo4jCypherIterator<S>((ResourceIterator) this.cypher.execute(query, parameters).iterator(), this)));
         return traversal;
     }
 

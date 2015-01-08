@@ -46,11 +46,6 @@ public final class EmptyGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public <S> GraphTraversal<S, S> of() {
-        return EmptyGraphTraversal.instance();
-    }
-
-    @Override
     public Vertex addVertex(Object... keyValues) {
         throw new IllegalStateException(MESSAGE);
     }
