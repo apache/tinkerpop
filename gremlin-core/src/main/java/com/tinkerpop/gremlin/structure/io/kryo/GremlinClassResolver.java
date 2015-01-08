@@ -9,11 +9,13 @@ import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.util.IdentityObjectIntMap;
 import com.esotericsoftware.kryo.util.IntMap;
 import com.esotericsoftware.kryo.util.ObjectMap;
+import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
@@ -78,6 +80,8 @@ class GremlinClassResolver implements ClassResolver {
             type = VertexProperty.class;
         else if (!DetachedProperty.class.isAssignableFrom(clazz) && !DetachedVertexProperty.class.isAssignableFrom(clazz) && Property.class.isAssignableFrom(clazz))
             type = Property.class;
+        else if (!DetachedPath.class.isAssignableFrom(clazz) && Path.class.isAssignableFrom(clazz))
+            type = Path.class;
         else
             type = clazz;
 
