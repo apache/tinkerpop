@@ -73,11 +73,7 @@ Mutating the Graph
 
 Below is a sequence of basic graph mutation operations represented in Java8. One of the major differences between TinkerPop2 and TinkerPop3 is that in TinkerPop3, the Java convention of using setters and getters has been abandoned in favor of a syntax that is more aligned with the syntax of Gremlin-Groovy in TinkerPop2. Given that Gremlin-Java8 and Gremlin-Groovy are nearly identical due to the inclusion of Java8 lambdas, a big efforts was made to ensure that both languages are as similar as possible. 
 
-IMPORTANT: image:groovy-logo.png[width=175,float=left] Gremlin-Groovy leverages the link:http://groovy.codehaus.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of Groovy is the inclusion of a runtime console that makes it easy for developers to practice with the Gremlin language and for production users to connect to their graph and execute traversals in an interactive manner. Moreover, Gremlin-Groovy provides various syntax simplifications.
-
-TIP: image:gremlin-sugar.png[width=100,float=left] For those wishing to use the Gremlin2 syntax, please see <<sugar-plugin,SugarPlugin>>. This plugin provides syntactic sugar at, typically, a runtime cost. It can be loaded programmaticaly via `SugarLoader.load()`. Once loaded, it is possible to do `g.V.out.name` instead of `g.V().out().values('name')` as well as a host of other niceities.
-
-CAUTION: In the code examples presented throughout this documentation, either Gremlin-Java8 or Gremlin-Groovy is used. Usually which derivative of Gremlin is being used is made explicit in the text, however, if not, a simple mouse over on the code block will state the language as either "JAVA" or "GROOVY."
+CAUTION: In the code examples presented throughout this documentation, either Gremlin-Java8 or Gremlin-Groovy is used. It is possible to determine which derivative of Gremlin is being used by "mousing over" on the code block and see either "JAVA" or "GROOVY" pop up in the top right corner of the code block.
 
 image:basic-mutation.png[width=240,float=right] 
 [source,java]
@@ -116,6 +112,10 @@ assert(g.V().count() == 0)
 assert(g.E().count() == 0)
 // tada!
 
+IMPORTANT: image:groovy-logo.png[width=175,float=left] Gremlin-Groovy leverages the link:http://groovy.codehaus.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of Groovy is the inclusion of a runtime console that makes it easy for developers to practice with the Gremlin language and for production users to connect to their graph and execute traversals in an interactive manner. Moreover, Gremlin-Groovy provides various syntax simplifications.
+
+TIP: image:gremlin-sugar.png[width=100,float=left] For those wishing to use the Gremlin2 syntax, please see <<sugar-plugin,SugarPlugin>>. This plugin provides syntactic sugar at, typically, a runtime cost. It can be loaded programmaticaly via `SugarLoader.load()`. Once loaded, it is possible to do `g.V.out.name` instead of `g.V().out().values('name')` as well as a host of other conveniences.
+
 Here is the same code, but using Gremlin-Groovy in the <<gremlin-console,Gremlin Console>>.
 
 [source,groovy]
@@ -152,31 +152,33 @@ IMPORTANT: TinkerGraph is not a transactional graph. For more information on tra
 The Graph Process
 -----------------
 
-image:gremlin-running.png[width=125,float=left] The primary way in which graphs are processed are via graph traversals. The TinkerPop3 process API is focused on allowing users to create graph traversals in a syntacticly-friendly way over the structures defined in the previous section. A traversal is an algorithmic walk across the elements of a graph according to the referential structure explicit within the graph data structure. For example: _"What are the names of the companies that vertex 1's friends work for?"_ This English-statement can be represented in the following algorithmic/traversal fashion:
+image:gremlin-running.png[width=125,float=left] The primary way in which graphs are processed are via graph traversals. The TinkerPop3 process API is focused on allowing users to create graph traversals in a syntacticly-friendly way over the structures defined in the previous section. A traversal is an algorithmic walk across the elements of a graph according to the referential structure explicit within the graph data structure. For example: _"What software does vertex 1's friends work on?"_ This English-statement can be represented in the following algorithmic/traversal fashion:
 
  . Start at vertex 1.
- . Walk the incident friendship-edges to the respective adjacent friend vertices of 1. 
- . Move from those friend-vertices to company-vertices via worksFor-edges.
- . Finally, select the name-property value of the current company-vertices. 
+ . Walk the incident knows-edges to the respective adjacent friend vertices of 1.
+ . Move from those friend-vertices to software-vertices via created-edges.
+ . Finally, select the name-property value of the current software-vertices.
 
 Traversals in Gremlin are spawned from either a `Graph`, `Vertex`, `Edge`, or `VertexProperty`. The Graph interface provides two traversal methods.
 
  . `Graph.V()`: generates a traversal starting at all vertices in the graph. 
  . `Graph.E()`: generates a traversal starting at all edges in the graph.
 
-The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintains numerous methods that return GraphTraversal. In this way, a GraphTraversal supports function composition. Each method of GraphTraversal is called a step and each step modulates the results of the previous step in one of three general ways.
+The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintains numerous methods that return GraphTraversal. In this way, a GraphTraversal supports function composition. Each method of GraphTraversal is called a step and each step modulates the results of the previous step in one of five general ways.
 
- . `map`: transform the incoming object to another object (S &rarr; E).
- . `flatMap`: transform the incoming object to an iterator of other objects (S &rarr; E^*^).
- . `filter`: allow or disallow the object from proceeding to the next step (S &rarr; S &cup; &empty;).
+ . `map`: transform the incoming traverser's object to another object (S &rarr; E).
+ . `flatMap`: transform the incoming traverser's object to an iterator of other objects (S &rarr; E^*^).
+ . `filter`: allow or disallow the traverser from proceeding to the next step (S &rarr; S &cup; &empty;).
+ . `sideEffect`: allow the traverser to proceed unchanged, but yield some computational sideEffect in the process (S &rarrlp; S).
+ . `branch`: split the traverser and send each to an arbitrary location in the traversal (S &rArr; S~1~, S~2~, ..., S~n~).
 
-Nearly every step in GraphTraversal either extend `MapStep`, `FlatMapStep`, or `FilterStep`. Note that there is also `BranchStep` and `SideEffectStep` though their discussion will be left for later in the documentation (see <<traversal,The Traversal>>).
+Nearly every step in GraphTraversal either extends `MapStep`, `FlatMapStep`, `FilterStep`, `SideEffectStep`, or `BranchStep` (for more information, see <<lambda-steps,lambda steps>>).
+
+IMPORTANT: The steps `map()`, `flatMap()`, `filter()`, `sideEffect()`, and `branch()` all take a link:http://en.wikipedia.org/wiki/Anonymous_function[lambda function] (i.e. an anonymous function or closure). For `map()`, the function must return an object. For `flatMap()`, the function must return an iterator of objects. For `filter()`, the function is a predicate that returns either true or false. For `sideEffect()`, the function is a consumer that simply returns void. For `branch()`, the function returns a collection of traversal step-labels. The lambdas introduced by Java8 are supported in TinkerPop3.
 
 TIP: `GraphTraversal` is a link:http://en.wikipedia.org/wiki/Monoid[monoid] in that it is an algebraic structure that has a single binary operation that is associative. The binary operation is function composition (i.e. method chaining) and its identity is the step `identity()`. This is related to a link:http://en.wikipedia.org/wiki/Monad_(functional_programming)[monad] as popularized by the functional programming community. 
 
-NOTE: Both map and filter can be represented as flatMap. Map can return an iterator with a single object in it. Filter can return an iterator with a single object in it or no object at all. Thus, flatMap is the most general construct -- "turn the incoming object into an iterator of objects."
-
-Given the classic TinkerPop graph, the following query will return the names of all the people that Marko knows. The following query is demonstrated using Gremlin-Groovy.
+Given the classic TinkerPop graph, the following query will return the names of all the people that the marko-vertex knows. The following query is demonstrated using Gremlin-Groovy.
 
 [source,groovy]
 ----
@@ -192,10 +194,10 @@ gremlin> g.V().has('name','marko').out('knows').values('name')
 ==>josh
 ----
 
-Or, if the vertex marko is already realized with a direct reference pointer, then the traversal can be spawned off that vertex. This illustrates that vertex (as well as edge) also have `GraphTraversal`-return methods and an exploration of their respective JavaDocs will demonstrate what is available.
+Or, if the marko-vertex is already realized with a direct reference pointer (i.e. a variable), then the traversal can be spawned off that vertex. This illustrates that vertex (as well as edge and vertex property) also supports `GraphTraversal`-return methods.
 
 [source,groovy]
-gremlin> marko = g.V(1).next()
+gremlin> marko = g.V().has('name','marko').next()
 ==>v[1]
 gremlin> marko.out('knows') <1>
 ==>v[2]
@@ -204,15 +206,17 @@ gremlin> marko.out('knows').values('name') <2>
 ==>vadas
 ==>josh
 
+<1> Set the variable `marko` to the the vertex in the graph `g` named "marko".
+<2> Get the vertices that are outgoing adjacent to the marko-vertex via knows-edges.
+<3> Get the names of the marko-vertex's friends.
+
 .The Name of The People That Marko Knows
 image::tinkerpop-classic-ex1.png[width=500]
 
-Again, all steps extend either map, flatMap, or filter. Thus, the traversal above can be written in its generic form below. In the next section, the `it.get()` will be explained as this is an important feature of TinkerPop3 that is not available in previous versions of TinkerPop. 
-
-IMPORTANT: The steps map, flatMap, and filter take a link:http://en.wikipedia.org/wiki/Anonymous_function[lambda function] (i.e. an anonymous function or closure). For map, the function must return an object. For flatMap, the function must return an iterator of objects. For filter, the function is a predicate that returns either true or false. The lambdas introduced by Java8 are supported in TinkerPop3.
+It is possible to represent any `map()`, `filter()`, or `sideEffect()` step using `flatMap()`. Map can return an iterator with a single object in it. Filter can return an iterator with a single object in it or no object at all. Side-effect can return an iterator containing the incoming object, but also update some other area of memory. Thus, ignoring `branch()`, `flatMap()` is the most general construct -- "turn the incoming object into an iterator of objects."
 
 [source,groovy]
-gremlin> marko.
+gremlin> g.V().
   filter{it.get().value('name') == 'marko'}.
   flatMap{it.get().out('knows')}.
   map{it.get().value('name')}
@@ -222,7 +226,7 @@ gremlin> marko.
 Finally, as a strictly academic exercise, the traversal can be written completely using flatMap.
 
 [source,groovy]
-gremlin> marko.
+gremlin> g.V().
   flatMap{it.get().value('name') == 'marko' ? [it.get()].iterator() : [].iterator()}.
   flatMap{it.get().out('knows')}.
   flatMap{[it.get().value('name')].iterator()}
@@ -250,13 +254,13 @@ CAUTION: Path calculation is costly in terms of space as an array of previously 
 Another example is the `repeat()`-step which takes into account the number of times the traverser has gone through a particular section of the traversal expression.
 
 [source,groovy]
-gremlin> marko.repeat(__.out()).until(2).values('name')
+gremlin> marko.repeat(__.out()).times(2).values('name')
 ==>ripple
 ==>lop
 
-IMPORTANT: In TinkerPop2, the `repeat()`-step was called `loop()`. Repeat has been generalized to support both do-while and while-do semantics which is explained in <<repeat-step,Repeat Step>>.
+NOTE: In TinkerPop2, the `repeat()`-step was called `loop()`. Repeat has been generalized to support both do-while and while-do semantics which is explained in <<repeat-step,Repeat Step>>.
 
-CAUTION: A Traversal's result are never ordered unless explicitly by means of <<order-step,`order()`>> or <<orderby-step,`orderBy()`>>. Thus, never rely on the iteration sequence between TinkerPop3 releases and even within a release (as compiler optimizations may alter the flow).
+CAUTION: A Traversal's result are never ordered unless explicitly by means of <<order-step,`order()`>>. Thus, never rely on the iteration order between TinkerPop3 releases and even within a release (as compiler optimizations may alter the flow).
 
 On Gremlin Language Variants
 ----------------------------

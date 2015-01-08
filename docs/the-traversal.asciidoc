@@ -442,7 +442,7 @@ There is one person that is 32, one person that is 35, one person that is 27, an
 image::groupcount-step.png[width=500]
 
 [source,groovy]
-gremlin> g.V().repeat(__.both().groupCount('m').by{it.value('name')[1]}).until(10).cap('m')
+gremlin> g.V().repeat(__.both().groupCount('m').by{it.value('name')[1]}).times(10).cap('m')
 ==>[a:19598, e:5740, i:5740, o:27716]
 
 The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount()` with a string variable. Given that `groupCount()` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount()`, the object's count is incremented. If `groupCount()` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount()` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount()`) can be accessed with `cap()`-step by referencing the desired variable.
@@ -609,7 +609,7 @@ Among the features which differentiate `match()` from SPARQL are:
 gremlin> g.V().match('a',
             __.as('a').out('created').has('name','lop').as('b'), <1>
             __.as('b').in('created').has('age', 29).as('c'),
-            __.as('c').repeat(__.out()).until(2)). <2>
+            __.as('c').repeat(__.out()).times(2)). <2>
            select('c').out('knows').dedup().values('name') <3>
 ==>vadas
 ==>josh
@@ -925,7 +925,7 @@ gremlin> g.V().range(0,3)
 gremlin> g.V().range(1,3)
 ==>v[2]
 ==>v[3]
-gremlin> g.V().repeat(__.both()).until(1000000).emit().range(6,10)
+gremlin> g.V().repeat(__.both()).times(1000000).emit().range(6,10)
 ==>v[1]
 ==>v[5]
 ==>v[3]
@@ -938,7 +938,7 @@ Repeat Step
 The `repeat()`-step (*branch*) is used for looping over a traversal given some break predicate. Below are some examples of `repeat()`-step in action.
 
 [source,groovy]
-gremlin> g.V(1).repeat(__.out()).until(2).path().by('name') <1>
+gremlin> g.V(1).repeat(__.out()).times(2).path().by('name') <1>
 ==>[marko, josh, ripple]
 ==>[marko, josh, lop]
 gremlin> g.V().until{it.get().value('name') == 'ripple'}.
@@ -952,16 +952,18 @@ gremlin> g.V().until{it.get().value('name') == 'ripple'}.
 
 IMPORTANT: There are two modulators for `repeat()`: `until()` and `emit()`. If `until()` comes after `repeat()` it is do/while looping. If `until()` comes before `repeat()` it is while/do looping. If `emit()` is placed after `repeat()`, it is evaluated on the traversers leaving the repeat-traversal. If `emit()` is placed before `repeat()`, it is evaluated on the traversers prior to entering the repeat-traversal.
 
+NOTE: The `times(x)` step modulator is an alias for `until{it.loops() >= x}`.
+
 The `repeat()`-step also supports an "emit predicate", where the predicate for an empty argument `emit()` is true (i.e. `emit() == emit{true}`). With `emit()`, the traverser is split in two -- the traverser exits the code block as well as continues back within the code block (assuming `until()` holds true).
 
 [source,groovy]
-gremlin> g.V(1).repeat(__.out()).until(2).emit().path().by('name') <1>
+gremlin> g.V(1).repeat(__.out()).times(2).emit().path().by('name') <1>
 ==>[marko, lop]
 ==>[marko, vadas]
 ==>[marko, josh]
 ==>[marko, josh, ripple]
 ==>[marko, josh, lop]
-gremlin> g.V(1).emit().repeat(__.out()).until(2).path().by('name') <2>
+gremlin> g.V(1).emit().repeat(__.out()).times(2).path().by('name') <2>
 ==>[marko]
 ==>[marko, lop]
 ==>[marko, vadas]
@@ -976,7 +978,7 @@ The `emit()`-modulator can take an arbitrary predicate.
 
 [source,groovy]
 gremlin> g.V(1).repeat(__.out()).
-                  until(2).
+                  times(2).
                   emit{it.get().property('lang').isPresent()}.path().by('name')
 ==>[marko, lop]
 ==>[marko, josh, ripple]
@@ -985,7 +987,7 @@ gremlin> g.V(1).repeat(__.out()).
 image::repeat-step.png[width=500]
 
 [source,groovy]
-gremlin> g.V(1).repeat(__.out()).until(2).emit().path().by('name')
+gremlin> g.V(1).repeat(__.out()).times(2).emit().path().by('name')
 ==>[marko, lop]
 ==>[marko, vadas]
 ==>[marko, josh]
@@ -1047,13 +1049,13 @@ gremlin> g.V().withSack{rand.nextFloat()}.sack()
 A more complicated initial value supplier example is presented below where the sack values are used in a running computation and then emitted at the end of the traversal. When an edge is traversed, the edge weight is multiplied by the sack value (`sack(mult,'weight')`).
 
 [source,groovy]
-gremlin> g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).until(2)
+gremlin> g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2)
 ==>v[5]
 ==>v[3]
-gremlin> g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).until(2).sack()
+gremlin> g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2).sack()
 ==>1.0
 ==>0.4
-gremlin> g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).until(2).path().by{it}.by('weight')
+gremlin> g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2).path().by{it}.by('weight')
 ==>[v[1], 1.0, v[4], 1.0, v[5]]   // 1.0 * 1.0 * 1.0 = 1.0
 ==>[v[1], 1.0, v[4], 0.4, v[3]]   // 1.0 * 1.0 * 0.4 = 0.4
 
@@ -1093,15 +1095,15 @@ One of the more interesting use cases for `sample()` is when it is used in conju
 [source,groovy]
 gremlin> g.V(1).repeat(__.local(
            __.bothE().sample(1).by('weight').otherV()
-         )).until(5)
+         )).times(5)
 ==>v[4]
 gremlin> g.V(1).repeat(__.local(
            __.bothE().sample(1).by('weight').otherV()
-         )).until(5).path()
+         )).times(5).path()
 ==>[v[1], v[2], v[1], v[2], v[1], v[2]]
 gremlin> g.V(1).repeat(__.local(
            __.bothE().sample(1).by('weight').otherV()
-         )).until(10).path()
+         )).times(10).path()
 ==>[v[1], v[4], v[1], v[3], v[4], v[5], v[4], v[5], v[4], v[3], v[4]]
 
 [[select-step]]
@@ -1282,7 +1284,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 ----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> sg = g.V(3).repeat(__.inE().outV()).until(3).emit().subgraph({true}).next()   <1>
+gremlin> sg = g.V(3).repeat(__.inE().outV()).times(3).emit().subgraph({true}).next()   <1>
 ==>tinkergraph[vertices:4 edges:4]
 gremlin> sg.E()
 ==>e[8][1-knows->4]
@@ -1308,23 +1310,23 @@ gremlin> :pin use tinkerpop.utilities
 ==>tinkerpop.utilities activated
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V().repeat(__.both().groupCount('m')).until(16).cap('m').next().sort{-it.value}
+gremlin> g.V().repeat(__.both().groupCount('m')).times(16).cap('m').next().sort{-it.value}
 ==>v[1]=2744208
 ==>v[3]=2744208
 ==>v[4]=2744208
 ==>v[2]=1136688
 ==>v[5]=1136688
 ==>v[6]=1136688
-gremlin> clock(1){g.V().repeat(__.both().groupCount('m')).until(16).cap('m').next().sort{-it.value}}
+gremlin> clock(1){g.V().repeat(__.both().groupCount('m')).times(16).cap('m').next().sort{-it.value}}
 ==>11.996000
-gremlin> g.V().repeat(__.timeLimit(2).both().groupCount('m')).until(16).cap('m').next().sort{-it.value}
+gremlin> g.V().repeat(__.timeLimit(2).both().groupCount('m')).times(16).cap('m').next().sort{-it.value}
 ==>v[1]=648473
 ==>v[3]=647510
 ==>v[4]=647499
 ==>v[5]=268540
 ==>v[6]=268533
 ==>v[2]=267941
-gremlin> clock(1){g.V().repeat(__.timeLimit(2).both().groupCount('m')).until(16).cap('m').next().sort{-it.value}}
+gremlin> clock(1){g.V().repeat(__.timeLimit(2).both().groupCount('m')).times(16).cap('m').next().sort{-it.value}}
 ==>2.214000
 
 In essence, the relative order is respected, even through the number traversers at each vertex is not. The primary benefit being that the calculation is guaranteed to complete at the specified time limit (in milliseconds). Finally, note that the internal clock of `timeLimit()`-step starts when the first traverser enters it. When the time limit is reached, any `next()` evaluation of the step will yield a `NoSuchElementException` and any `hasNext()` evaluation will yield `false`.

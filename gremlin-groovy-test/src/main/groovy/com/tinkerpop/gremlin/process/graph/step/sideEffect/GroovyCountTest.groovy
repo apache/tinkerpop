@@ -28,13 +28,13 @@ public abstract class GroovyCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX3X_count() {
-            g.V().repeat(__.out).until(3).count()
+        public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX3X_count() {
+            g.V().repeat(__.out).times(3).count()
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX8X_count() {
-            g.V.repeat(__.out).until(8).count()
+        public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX8X_count() {
+            g.V.repeat(__.out).times(8).count()
         }
 
         @Override
@@ -60,13 +60,13 @@ public abstract class GroovyCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX3X_count() {
-            ComputerTestHelper.compute("g.V().repeat(__.out).until(3).count()", g);
+        public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX3X_count() {
+            ComputerTestHelper.compute("g.V().repeat(__.out).times(3).count()", g);
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX8X_count() {
-            ComputerTestHelper.compute("g.V.repeat(__.out).until(8).count()", g);
+        public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX8X_count() {
+            ComputerTestHelper.compute("g.V.repeat(__.out).times(8).count()", g);
         }
 
         @Override

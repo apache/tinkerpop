@@ -29,7 +29,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSet::new);
-        this.setConsumer(traverser -> TraversalHelper.addToCollection(traverser.sideEffects().get(this.sideEffectKey),
+        this.setConsumer(traverser -> TraversalHelper.addToCollection(traverser.sideEffects(this.sideEffectKey),
                 null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser.get()), traverser.bulk()));
     }
 

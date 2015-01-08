@@ -412,8 +412,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().until(untilPredicate);
     }
 
-    public default GraphTraversal<A, A> until(final int maxLoops) {
-        return this.start().until(maxLoops);
+    public default GraphTraversal<A, A> times(final int maxLoops) {
+        return this.start().times(maxLoops);
     }
 
     public default GraphTraversal<A, A> emit() {

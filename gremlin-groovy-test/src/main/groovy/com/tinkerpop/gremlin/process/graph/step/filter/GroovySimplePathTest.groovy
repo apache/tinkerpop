@@ -20,8 +20,8 @@ public abstract class GroovySimplePathTest {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_untilX3X_path() {
-            return g.V.repeat(__.both.simplePath).until(3).path()
+        public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_timesX3X_path() {
+            return g.V.repeat(__.both.simplePath).times(3).path()
         }
     }
 
@@ -33,8 +33,8 @@ public abstract class GroovySimplePathTest {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_untilX3X_path() {
-            ComputerTestHelper.compute("g.V.repeat(__.both.simplePath).until(3).path()", g);
+        public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_timesX3X_path() {
+            ComputerTestHelper.compute("g.V.repeat(__.both.simplePath).times(3).path()", g);
         }
     }
 }

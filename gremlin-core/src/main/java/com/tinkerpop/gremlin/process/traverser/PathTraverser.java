@@ -27,7 +27,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
     }
 
     @Override
-    public Traversal.SideEffects sideEffects() {
+    public Traversal.SideEffects getSideEffects() {
         return this.sideEffects;
     }
 

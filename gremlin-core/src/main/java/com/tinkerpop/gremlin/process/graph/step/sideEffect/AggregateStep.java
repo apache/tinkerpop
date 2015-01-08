@@ -32,7 +32,7 @@ public final class AggregateStep<S> extends BarrierStep<S> implements SideEffect
         this.getTraversal().asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSet::new);
         this.setConsumer(traverserSet ->
                 traverserSet.forEach(traverser ->
-                        TraversalHelper.addToCollection(traverser.sideEffects().get(this.sideEffectKey),
+                        TraversalHelper.addToCollection(traverser.getSideEffects().get(this.sideEffectKey),
                                 null == this.preAggregateFunction ? traverser.get() : this.preAggregateFunction.apply(traverser.get()),
                                 traverser.bulk())));
     }

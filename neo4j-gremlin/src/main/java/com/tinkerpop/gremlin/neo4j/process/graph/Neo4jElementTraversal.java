@@ -352,6 +352,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.timeLimit(arg0);
 	}
 
+	public default Neo4jGraphTraversal<A, A> times(int arg0) {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.times(arg0);
+	}
+
 	public default Neo4jGraphTraversal<A, com.tinkerpop.gremlin.structure.Vertex> to(com.tinkerpop.gremlin.structure.Direction arg0, java.lang.String... arg1) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.to(arg0, arg1);
 	}
@@ -378,10 +382,6 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 
 	public default <E2> Neo4jGraphTraversal<A, E2> union(com.tinkerpop.gremlin.process.Traversal<?, E2>... arg0) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.union(arg0);
-	}
-
-	public default Neo4jGraphTraversal<A, A> until(int arg0) {
-		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.until(arg0);
 	}
 
 	public default Neo4jGraphTraversal<A, A> until(java.util.function.Predicate<com.tinkerpop.gremlin.process.Traverser<A>> arg0) {

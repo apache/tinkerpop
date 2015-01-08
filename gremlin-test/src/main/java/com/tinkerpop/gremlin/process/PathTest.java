@@ -71,7 +71,7 @@ public class PathTest extends AbstractGremlinProcessTest {
             assertTrue(path.<List<String>>get("a").contains("matthias"));
         });
 
-        final Path path = g.V().as("x").repeat(__.out().as("y")).until(2).path().by("name").next();
+        final Path path = g.V().as("x").repeat(__.out().as("y")).times(2).path().by("name").next();
         assertEquals(3, path.size());
         assertEquals(3, path.labels().size());
         assertEquals(2, new HashSet<>(path.labels()).size());

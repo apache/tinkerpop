@@ -45,7 +45,7 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
             if (PROFILING_ENABLED) TraversalMetrics.start(this);
             this.done = true;
             traverser.setBulk(1l);
-            final Traverser.Admin<E> returnTraverser = traverser.split(this.getLabel(), traverser.sideEffects().<E>get(this.sideEffectKey));
+            final Traverser.Admin<E> returnTraverser = traverser.split(this.getLabel(), traverser.getSideEffects().<E>get(this.sideEffectKey));
             if (PROFILING_ENABLED) TraversalMetrics.finish(this, traverser);
             return returnTraverser;
         } else {
