@@ -17,13 +17,10 @@ public final class ExceptStep<S> extends FilterStep<S> implements Reversible {
         super(traversal);
         this.collectionSideEffectKey = collectionSideEffectKey;
         this.setPredicate(traverser -> {
-            if (!traverser.asAdmin().getSideEffects().exists(this.collectionSideEffectKey)) return true;
-            else {
-                final Object except = traverser.asAdmin().getSideEffects().exists(this.collectionSideEffectKey) ? traverser.sideEffects(this.collectionSideEffectKey) : traverser.path(this.collectionSideEffectKey);
-                return except instanceof Collection ?
-                        !((Collection) except).contains(traverser.get()) :
-                        !except.equals(traverser.get());
-            }
+            final Object except = traverser.asAdmin().getSideEffects().exists(this.collectionSideEffectKey) ? traverser.sideEffects(this.collectionSideEffectKey) : traverser.path(this.collectionSideEffectKey);
+            return except instanceof Collection ?
+                    !((Collection) except).contains(traverser.get()) :
+                    !except.equals(traverser.get());
         });
     }
 

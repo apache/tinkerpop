@@ -19,6 +19,11 @@ public abstract class GroovyRetainTest {
         public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_retainXxX(final Object v1Id) {
             g.V(v1Id).out.aggregate('x').out.retain('x')
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_retainXaX_name(final Object v1Id) {
+            g.V(v1Id).as('a').out('created').in('created').retain('a').name
+        }
     }
 
     public static class ComputerTest extends RetainTest {
@@ -30,6 +35,11 @@ public abstract class GroovyRetainTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_retainXxX(final Object v1Id) {
             ComputerTestHelper.compute("g.V(${v1Id}).out.aggregate('x').out.retain('x')", g);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_retainXaX_name(final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).as('a').out('created').in('created').retain('a').name", g);
         }
     }
 }
