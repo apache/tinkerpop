@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed `IntervalStep` and renamed `interval()` to `between()` which is simply an alias to a `has().has()` chain.
 * Added `AnonymousGraphTraversal.Tokens.__` which allows for `__.out().out()`-style construction of anonymous traversals (over `g.of()`).
 * The only `GraphTraversal` steps that operate on `Traverser` are the base lambdas and `repeat()` (i.e. `emit()` and `until()`).
 * Removed dependency on the `reflections` library in `gremlin-test` which removed the default implementation of `GraphProvider.getImplementations()` - vendors now need to implement this method themselves.

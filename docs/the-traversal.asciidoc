@@ -216,6 +216,23 @@ gremlin> g.V().out().out().as('x').back('x') // pointless
 ==>v[5]
 ==>v[3]
 
+[[between-step]]
+Between Step
+~~~~~~~~~~~~
+
+The `between()`-step (*filter*) is similar to <<has-step,`has()`>>-step in that it filters elements according to their properties.
+
+[source,groovy]
+gremlin> g.V().between('age',20,30)
+==>v[1]
+==>v[2]
+gremlin> g.V().between('age',20,30).values('age')
+==>29
+==>27
+gremlin> g.V().has('age',gte,20).has('age',lt,30).values('age') // the equivalent expression using only has()
+==>29
+==>27
+
 [[choose-step]]
 Choose Step
 ~~~~~~~~~~~
@@ -489,23 +506,6 @@ gremlin> __.inject(1,2).map{it.get() + 1}
 gremlin> __.inject(1,2).map{it.get() + 1}.map{g.V(it.get()).next()}.values('name')
 ==>vadas
 ==>lop
-
-[[interval-step]]
-Interval Step
-~~~~~~~~~~~~~
-
-The `interval()`-step (*filter*) is similar to <<has-step,`has()`>>-step in that it filters elements according to their properties.
-
-[source,groovy]
-gremlin> g.V().interval('age',20,30)
-==>v[1]
-==>v[2]
-gremlin> g.V().interval('age',20,30).values('age')
-==>29
-==>27
-gremlin> g.V().has('age',gte,20).has('age',lt,30).values('age') // the equivalent expression using only has()
-==>29
-==>27
 
 [[limit-step]]
 Limit Step
@@ -1649,7 +1649,7 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
 ----
 
 
-The traversal is redefined by simply taking a chain of `has()`-steps and `interval()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
+The traversal is redefined by simply taking a chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
 
 [source,groovy]
 gremlin> t = g.V().has('name','marko'); null
