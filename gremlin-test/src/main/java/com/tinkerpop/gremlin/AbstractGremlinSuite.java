@@ -40,18 +40,19 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class AbstractGremlinSuite extends Suite {
 
+    // todo: how do we deal with graphs that don't implement all of these interfaces?  a feature check? but we don't have a Graph instance here....
     private static final Set<Class> STRUCTURE_INTERFACES = new HashSet<Class>() {{
         add(Edge.class);
         add(Edge.Iterators.class);
         add(Element.class);
         add(Element.Iterators.class);
         add(Graph.class);
-        add(Graph.Variables.class);
+        // add(Graph.Variables.class);
         add(Property.class);
         add(Vertex.class);
         add(Vertex.Iterators.class);
         add(VertexProperty.class);
-        add(VertexProperty.Iterators.class);
+        // add(VertexProperty.Iterators.class);
     }};
 
     /**
