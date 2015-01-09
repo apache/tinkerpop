@@ -95,8 +95,13 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay2() throws Exception {
-        Graph g = TinkerFactory.createClassic();
-        g.V(1).as("a").out("created").in("created").values("name").forEachRemaining(System.out::println);
+        Graph g = TinkerGraph.open();
+        g.io().readGraphML("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
+        while (true) {
+            final long t = System.currentTimeMillis();
+            g.V().outE().inV().outE().inV().outE().inV().iterate();
+            System.out.println(System.currentTimeMillis() - t);
+        }
         // System.out.println(t);
         // t.forEachRemaining(System.out::println);
         // System.out.println(t);

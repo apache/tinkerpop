@@ -28,22 +28,26 @@ public class SparsePath implements Path {
     @Override
     public Path extend(final String label, final Object object) {
         this.currentObject = object;
-        this.map.put(label, object);
+        if (TraversalHelper.isLabeled(label))
+            this.map.put(label, object);
         return this;
+
     }
 
     @Override
     public Path extend(final Set<String> labels, final Object object) {
         this.currentObject = object;
         for (final String label : labels) {
-            this.map.put(label, object);
+            if (TraversalHelper.isLabeled(label))
+                this.map.put(label, object);
         }
         return this;
     }
 
     @Override
     public void addLabel(final String label) {
-        this.map.put(label, this.currentObject);
+        if (TraversalHelper.isLabeled(label))
+            this.map.put(label, this.currentObject);
     }
 
     @Override

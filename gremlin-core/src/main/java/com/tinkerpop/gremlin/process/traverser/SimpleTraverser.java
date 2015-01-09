@@ -128,8 +128,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         traverser.loops = this.loops;
         traverser.bulk = this.bulk;
         traverser.sack = null == this.sack ? null : this.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(this.sack);
-        traverser.path = this.path;
-        traverser.path().extend(label, r);
+        traverser.path = this.path.extend(label, r);
         return traverser;
     }
 
