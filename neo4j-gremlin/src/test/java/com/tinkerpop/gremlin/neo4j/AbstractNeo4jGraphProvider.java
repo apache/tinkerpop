@@ -15,6 +15,7 @@ import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraphVariables;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jProperty;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
+import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.neo4j.graphdb.DynamicLabel;
@@ -28,7 +29,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
-    private static final Set<Class> TP_IMPLEMENTATIONS = new HashSet<Class>() {{
+    private static final Set<Class> IMPLEMENTATIONS = new HashSet<Class>() {{
         add(Neo4jEdge.class);
         add(Neo4jElement.class);
         add(Neo4jEdgeTraversal.class);
@@ -42,6 +43,7 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
         add(Neo4jProperty.class);
         add(Neo4jVertex.class);
         add(Neo4jVertexProperty.class);
+        add(AnonymousGraphTraversal.Tokens.class);
     }};
 
     @Override
@@ -145,6 +147,6 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
 
     @Override
     public Set<Class> getImplementations() {
-        return TP_IMPLEMENTATIONS;
+        return IMPLEMENTATIONS;
     }
 }

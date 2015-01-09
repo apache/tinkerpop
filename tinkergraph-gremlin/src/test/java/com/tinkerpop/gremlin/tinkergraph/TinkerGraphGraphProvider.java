@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
+import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
@@ -22,7 +23,7 @@ import java.util.Set;
  */
 public class TinkerGraphGraphProvider extends AbstractGraphProvider {
 
-    private static final Set<Class> TP_IMPLEMENTATIONS = new HashSet<Class>() {{
+    private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(TinkerEdge.class);
         add(TinkerElement.class);
         add(TinkerGraph.class);
@@ -31,6 +32,7 @@ public class TinkerGraphGraphProvider extends AbstractGraphProvider {
         add(TinkerVertex.class);
         add(TinkerVertexProperty.class);
         add(DefaultGraphTraversal.class);
+        add(AnonymousGraphTraversal.Tokens.class);
     }};
 
     @Override
@@ -48,6 +50,6 @@ public class TinkerGraphGraphProvider extends AbstractGraphProvider {
 
     @Override
     public Set<Class> getImplementations() {
-        return TP_IMPLEMENTATIONS;
+        return IMPLEMENTATION;
     }
 }

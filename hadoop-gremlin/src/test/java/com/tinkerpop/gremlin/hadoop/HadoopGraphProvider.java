@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoOutputFormat;
+import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
@@ -37,7 +38,7 @@ import java.util.Set;
 public class HadoopGraphProvider extends AbstractGraphProvider {
 
     public static Map<String, String> PATHS = new HashMap<>();
-    private static final Set<Class> TP_IMPLEMENTATIONS = new HashSet<Class>() {{
+    private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(HadoopEdge.class);
         add(HadoopElement.class);
         add(DefaultGraphTraversal.class);
@@ -46,6 +47,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
         add(HadoopProperty.class);
         add(HadoopVertex.class);
         add(HadoopVertexProperty.class);
+        add(AnonymousGraphTraversal.Tokens.class);
     }};
 
     static {
@@ -110,7 +112,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
 
     @Override
     public Set<Class> getImplementations() {
-        return TP_IMPLEMENTATIONS;
+        return IMPLEMENTATION;
     }
 
     public void loadGraphDataViaHadoopConfig(final Graph g, final LoadGraphWith.GraphData graphData) {
