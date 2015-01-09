@@ -3,9 +3,12 @@ package com.tinkerpop.gremlin.structure;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -13,6 +16,9 @@ import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -20,7 +26,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Serialization tests that occur at a lower level than IO.
+ * Serialization tests that occur at a lower level than IO.  Note that there is no need to test GraphML here as
+ * it is not a format that can be used for generalized serialization (i.e. it only serializes an entire graph).
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -50,7 +57,7 @@ public class SerializationTest {
 
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldSerializeEdgeAsDetached() {
+        public void shouldSerializeEdgeAsDetached()throws Exception {
             final GremlinKryo gremlinKryo = g.io().gremlinKryoSerializer();
             final Kryo kryo = gremlinKryo.createKryo();
             final Edge e = g.E(convertToEdgeId("marko", "knows", "vadas")).next();
@@ -69,7 +76,7 @@ public class SerializationTest {
 
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldSerializePropertyAsDetached() {
+        public void shouldSerializePropertyAsDetached()throws Exception {
             final GremlinKryo gremlinKryo = g.io().gremlinKryoSerializer();
             final Kryo kryo = gremlinKryo.createKryo();
             final Property p = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
@@ -173,7 +180,121 @@ public class SerializationTest {
 
             // this is a SimpleTraverser so no properties are present in detachment
             assertFalse(detachedVIn.iterators().propertyIterator().hasNext());
+        }
+    }
 
+    public static class GraphSONTest extends AbstractGremlinTest {
+        private final TypeReference<HashMap<String,Object>> mapTypeReference = new TypeReference<HashMap<String,Object>>() {};
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeVertex() throws Exception {
+            final GraphSONObjectMapper mapper = g.io().graphSONSerializer();
+            final Vertex v = g.V(convertToVertexId("marko")).next();
+            final String json = mapper.writeValueAsString(v);
+            final Map<String,Object> m = mapper.readValue(json, mapTypeReference);
+
+            assertEquals(GraphSONTokens.VERTEX, m.get(GraphSONTokens.TYPE));
+            assertEquals(v.label(), m.get(GraphSONTokens.LABEL));
+            assertEquals(Long.parseLong(v.id().toString()), Long.parseLong(m.get(GraphSONTokens.ID).toString()));
+            assertEquals(v.value("name").toString(), ((Map) ((List) ((Map) m.get(GraphSONTokens.PROPERTIES)).get("name")).get(0)).get(GraphSONTokens.VALUE));
+            assertEquals((Integer) v.value("age"), ((Map) ((List) ((Map) m.get(GraphSONTokens.PROPERTIES)).get("age")).get(0)).get(GraphSONTokens.VALUE));
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeEdge() throws Exception {
+            final GraphSONObjectMapper mapper = g.io().graphSONSerializer();
+            final Edge e = g.E(convertToEdgeId("marko", "knows", "vadas")).next();
+            final String json = mapper.writeValueAsString(e);
+            final Map<String,Object> m = mapper.readValue(json, mapTypeReference);
+
+            assertEquals(GraphSONTokens.EDGE, m.get(GraphSONTokens.TYPE));
+            assertEquals(e.label(), m.get(GraphSONTokens.LABEL));
+            assertEquals(Long.parseLong(e.id().toString()), Long.parseLong(m.get(GraphSONTokens.ID).toString()));
+            assertEquals((Double) e.value("weight"), ((Map) m.get(GraphSONTokens.PROPERTIES)).get("weight"));
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeProperty()throws Exception {
+            final GraphSONObjectMapper mapper = g.io().graphSONSerializer();
+            final Property p = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
+            final String json = mapper.writeValueAsString(p);
+            final Map<String,Object> m = mapper.readValue(json, mapTypeReference);
+
+            // todo: decide if this should really include "key" and "type" since Property is a first class citizen
+            assertEquals(p.value(), m.get(GraphSONTokens.VALUE));
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeVertexProperty() throws Exception {
+            final GraphSONObjectMapper mapper = g.io().graphSONSerializer();
+            final VertexProperty vp = g.V(convertToVertexId("marko")).next().property("name");
+            final String json = mapper.writeValueAsString(vp);
+            final Map<String,Object> m = mapper.readValue(json, mapTypeReference);
+
+            // todo: should we have "type" here too?
+            assertEquals(vp.label(), m.get(GraphSONTokens.LABEL));
+            assertEquals(vp.id(), Long.parseLong(m.get(GraphSONTokens.ID).toString()));
+            assertEquals(vp.value(), m.get(GraphSONTokens.VALUE));
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.CREW)
+        public void shouldSerializeVertexPropertyWithProperties() throws Exception {
+            final GraphSONObjectMapper mapper = g.io().graphSONSerializer();
+            final VertexProperty vp = g.V(convertToVertexId("marko")).next().iterators().propertyIterator("location").next();
+            final String json = mapper.writeValueAsString(vp);
+            final Map<String,Object> m = mapper.readValue(json, mapTypeReference);
+
+            // todo: should we have "type" here too?
+            assertEquals(vp.label(), m.get(GraphSONTokens.LABEL));
+            assertEquals(vp.id(), Long.parseLong(m.get(GraphSONTokens.ID).toString()));
+            assertEquals(vp.value(), m.get(GraphSONTokens.VALUE));
+            assertEquals(vp.iterators().propertyIterator("startTime").next().value(), ((Map) m.get(GraphSONTokens.PROPERTIES)).get("startTime"));
+            assertEquals(vp.iterators().propertyIterator("endTime").next().value(), ((Map) m.get(GraphSONTokens.PROPERTIES)).get("endTime"));
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializePath() throws Exception {
+            final GraphSONObjectMapper mapper = g.io().graphSONSerializer();
+            final Path p = g.V(convertToVertexId("marko")).as("a").outE().as("b").inV().as("c").path().next();
+            final String json = mapper.writeValueAsString(p);
+            final Map<String,Object> m = mapper.readValue(json, mapTypeReference);
+
+            /*
+            assertEquals(p.labels().size(), detached.labels().size());
+            assertEquals(p.labels().get(0).size(), detached.labels().get(0).size());
+            assertEquals(p.labels().get(1).size(), detached.labels().get(1).size());
+            assertEquals(p.labels().get(2).size(), detached.labels().get(2).size());
+            assertTrue(p.labels().stream().flatMap(Collection::stream).allMatch(detached::hasLabel));
+
+            final Vertex vOut = p.get("a");
+            final Vertex detachedVOut = detached.get("a");
+            assertEquals(vOut.label(), detachedVOut.label());
+            assertEquals(vOut.id(), detachedVOut.id());
+
+            // this is a SimpleTraverser so no properties are present in detachment
+            assertFalse(detachedVOut.iterators().propertyIterator().hasNext());
+
+            final Edge e = p.get("b");
+            final Edge detachedE = detached.get("b");
+            assertEquals(e.label(), detachedE.label());
+            assertEquals(e.id(), detachedE.id());
+
+            // this is a SimpleTraverser so no properties are present in detachment
+            assertFalse(detachedE.iterators().propertyIterator().hasNext());
+
+            final Vertex vIn = p.get("c");
+            final Vertex detachedVIn = detached.get("c");
+            assertEquals(vIn.label(), detachedVIn.label());
+            assertEquals(vIn.id(), detachedVIn.id());
+
+            // this is a SimpleTraverser so no properties are present in detachment
+            assertFalse(detachedVIn.iterators().propertyIterator().hasNext());
+            */
         }
     }
 }

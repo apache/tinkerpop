@@ -201,6 +201,8 @@ public class GraphSONReader implements GraphReader {
         private String vertexIdKey = T.id.getAccessor();
         private String edgeIdKey = T.id.getAccessor();
 
+        private GraphSONObjectMapper overridingMapper = null;
+
         private Builder() {
         }
 
@@ -258,7 +260,19 @@ public class GraphSONReader implements GraphReader {
             return this;
         }
 
+        /**
+         * Override all of the {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper} builder
+         * options with this mapper.  If this value is set to something other than null then that value will be
+         * used to construct the writer.
+         */
+        public Builder overridingMapper(final GraphSONObjectMapper mapper) {
+            this.overridingMapper = mapper;
+            return this;
+        }
+
         public GraphSONReader create() {
+            if (overridingMapper != null) return new GraphSONReader(overridingMapper, batchSize, vertexIdKey, edgeIdKey);
+
             final GraphSONObjectMapper.Builder builder = GraphSONObjectMapper.build();
             customModules.forEach(builder::addCustomModule);
             final ObjectMapper mapper = builder.embedTypes(embedTypes)

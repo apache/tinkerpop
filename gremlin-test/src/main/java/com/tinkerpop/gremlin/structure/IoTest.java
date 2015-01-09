@@ -179,7 +179,7 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldWriteNormalizedGraphSON() throws Exception {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            final GraphSONWriter w = g.io().graphSONWriter().normalize(true).create();
+            final GraphSONWriter w = g.io().graphSONWriter().overridingMapper(null).normalize(true).create();
             w.writeGraph(bos, g);
 
             final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "tinkerpop-classic-normalized.json"));
@@ -244,7 +244,7 @@ public class IoTest extends AbstractGremlinTest {
         final SimpleModule module = new SimpleModule();
         module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
         module.addDeserializer(CustomId.class, new CustomId.CustomIdJacksonDeserializer());
-        final GraphWriter writer = g.io().graphSONWriter()
+        final GraphWriter writer = g.io().graphSONWriter().overridingMapper(null)
                 .addCustomModule(module)
                 .embedTypes(true).create();
 
@@ -267,6 +267,7 @@ public class IoTest extends AbstractGremlinTest {
 
             try (final InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
                 final GraphReader reader = g.io().graphSONReader()
+                        .overridingMapper(null)
                         .embedTypes(true)
                         .addCustomModule(module).create();
                 reader.readGraph(is, g2);
@@ -811,11 +812,11 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, "acl", "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = g.io().graphSONWriter().embedTypes(true).create();
+            final GraphSONWriter writer = g.io().graphSONWriter().overridingMapper(null).embedTypes(true).create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = g.io().graphSONReader().embedTypes(true).create();
+            final GraphSONReader reader = g.io().graphSONReader().overridingMapper(null).embedTypes(true).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
@@ -847,11 +848,11 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friend", v2, "uuid", id);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = g.io().graphSONWriter().embedTypes(true).create();
+            final GraphSONWriter writer = g.io().graphSONWriter().overridingMapper(null).embedTypes(true).create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = g.io().graphSONReader().embedTypes(true).create();
+            final GraphSONReader reader = g.io().graphSONReader().overridingMapper(null).embedTypes(true).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), graphProvider.reconstituteGraphSONIdentifier(Edge.class, detachedEdge.id()));
@@ -1627,14 +1628,14 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = g.io().graphSONWriter().embedTypes(true).create();
+            final GraphSONWriter writer = g.io().graphSONWriter().overridingMapper(null).embedTypes(true).create();
             writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edge1Called = new AtomicBoolean(false);
             final AtomicBoolean edge2Called = new AtomicBoolean(false);
 
-            final GraphSONReader reader = g.io().graphSONReader().embedTypes(true).create();
+            final GraphSONReader reader = g.io().graphSONReader().overridingMapper(null).embedTypes(true).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.BOTH, detachedVertex -> {
                     assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedVertex.id()));

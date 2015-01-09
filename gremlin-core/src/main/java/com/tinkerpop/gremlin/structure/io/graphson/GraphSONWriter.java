@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A @{link GraphWriter} that writes a graph and its elements to a JSON-based representation. This implementation
@@ -92,6 +93,8 @@ public class GraphSONWriter implements GraphWriter {
         private List<SimpleModule> customModules = new ArrayList<>();
         private boolean embedTypes = false;
 
+        private GraphSONObjectMapper overridingMapper = null;
+
         private Builder() {
         }
 
@@ -132,7 +135,18 @@ public class GraphSONWriter implements GraphWriter {
             return this;
         }
 
+        /**
+         * Override all of the builder options with this mapper.  If this value is set to something other than
+         * null then that value will be used to construct the writer.
+         */
+        public Builder overridingMapper(final GraphSONObjectMapper mapper) {
+            this.overridingMapper = mapper;
+            return this;
+        }
+
         public GraphSONWriter create() {
+            if (overridingMapper != null) return new GraphSONWriter(overridingMapper);
+
             final GraphSONObjectMapper.Builder builder = GraphSONObjectMapper.build();
             customModules.forEach(builder::addCustomModule);
             final GraphSONObjectMapper mapper = builder.loadCustomModules(loadCustomModules)
