@@ -41,6 +41,7 @@ import static org.junit.Assert.assertTrue;
 public abstract class AbstractGremlinSuite extends Suite {
 
     // todo: how do we deal with graphs that don't implement all of these interfaces?  a feature check? but we don't have a Graph instance here....
+    // todo: perhaps there is a test that validates against the implementations to be sure that the Graph constructed matches what's defined???
     private static final Set<Class> STRUCTURE_INTERFACES = new HashSet<Class>() {{
         add(Edge.class);
         add(Edge.Iterators.class);
