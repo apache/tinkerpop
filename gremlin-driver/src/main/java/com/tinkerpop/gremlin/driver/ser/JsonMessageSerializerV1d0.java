@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +26,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
      * ObjectMapper instance for JSON serialization via Jackson databind.  Uses mapper serializers to write
      * out {@link com.tinkerpop.gremlin.structure.Graph} objects and {@code toString} for unknown objects.
      */
-    protected static final ObjectMapper mapper = GraphSONObjectMapper.build()
+    protected static final ObjectMapper mapper = GraphSONMapper.build()
             .addCustomModule(new GremlinServerModule())
             .embedTypes(false)
             .create().createMapper();

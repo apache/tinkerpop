@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.io.DefaultIo;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
@@ -320,7 +320,7 @@ public interface Graph extends AutoCloseable {
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for GraphSON serializations.
          * GraphSON is forgiving for implementers and will typically do a "reasonable" job in serializing most
-         * mapper classes.  This method by default uses the {@link GraphSONObjectMapper} created by
+         * mapper classes.  This method by default uses the {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper} created by
          * {@link #graphSONMapper}.  That method enables implementers to register mapper serialization
          * modules for classes that do not serialize nicely by the default JSON serializers or completely
          * fail to do so.
@@ -332,7 +332,7 @@ public interface Graph extends AutoCloseable {
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphWriter} builder for GraphML serializations.
          * GraphSON is forgiving for implementers and will typically do a "reasonable" job in serializing most
-         * mapper classes.  This method by default uses the {@link GraphSONObjectMapper} created by
+         * mapper classes.  This method by default uses the {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper} created by
          * {@link #graphSONMapper}. That method enables implementers to register mapper serialization
          * modules for classes that do not serialize nicely by the default JSON serializers or completely
          * fail to do so.
@@ -353,22 +353,22 @@ public interface Graph extends AutoCloseable {
 
         /**
          * By default, this method creates an instance of the most current version of
-         * {@link GraphSONObjectMapper.Builder} which is can produce a
+         * {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper.Builder} which is can produce a
          * {@link com.tinkerpop.gremlin.structure.io.Mapper} implementation for GraphSON to
          * serialize data to and from the graph.   Implementers with custom classes (e.g. a
          * non-primitive class returned from {@link Element#id}) should override this method with serialization
          * modules added.
          * <br/>
          * It is considered good practice to make serialization classes generally available so that users may
-         * register these classes themselves if necessary when building up a mapper {@link GraphSONObjectMapper}
+         * register these classes themselves if necessary when building up a mapper {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper}
          * instance.
          * <br/>
-         * Note that this method is meant to return a {@link GraphSONObjectMapper.Builder} with default configuration
+         * Note that this method is meant to return a {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper.Builder} with default configuration
          * for the current {@link Graph}.  Users can adjust and override such settings by altering the builder
          * settings.
          */
-        public default GraphSONObjectMapper.Builder graphSONMapper() {
-            return GraphSONObjectMapper.build();
+        public default GraphSONMapper.Builder graphSONMapper() {
+            return GraphSONMapper.build();
         }
     }
 

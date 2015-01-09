@@ -27,7 +27,7 @@ import java.io.OutputStreamWriter;
 public class GraphSONWriter implements GraphWriter {
     private final ObjectMapper mapper;
 
-    private GraphSONWriter(final GraphSONObjectMapper mapper) {
+    private GraphSONWriter(final GraphSONMapper mapper) {
         this.mapper = mapper.createMapper();
     }
 
@@ -85,7 +85,7 @@ public class GraphSONWriter implements GraphWriter {
 
     public static class Builder {
 
-        private GraphSONObjectMapper mapper = GraphSONObjectMapper.build().create();
+        private GraphSONMapper mapper = GraphSONMapper.build().create();
 
         private Builder() {
         }
@@ -94,7 +94,7 @@ public class GraphSONWriter implements GraphWriter {
          * Override all of the builder options with this mapper.  If this value is set to something other than
          * null then that value will be used to construct the writer.
          */
-        public Builder mapper(final GraphSONObjectMapper mapper) {
+        public Builder mapper(final GraphSONMapper mapper) {
             this.mapper = mapper;
             return this;
         }

@@ -17,15 +17,15 @@ import java.util.List;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONObjectMapper implements Mapper<ObjectMapper> {
+public class GraphSONMapper implements Mapper<ObjectMapper> {
 
     private final List<SimpleModule> customModules;
     private final boolean loadCustomSerializers;
     private final boolean normalize;
     private final boolean embedTypes;
 
-    private GraphSONObjectMapper(final List<SimpleModule> customModules, final boolean loadCustomSerializers,
-                                 final boolean normalize, final boolean embedTypes) {
+    private GraphSONMapper(final List<SimpleModule> customModules, final boolean loadCustomSerializers,
+                           final boolean normalize, final boolean embedTypes) {
         this.customModules = customModules;
         this.loadCustomSerializers = loadCustomSerializers;
         this.normalize = normalize;
@@ -107,8 +107,8 @@ public class GraphSONObjectMapper implements Mapper<ObjectMapper> {
             return this;
         }
 
-        public GraphSONObjectMapper create() {
-            return new GraphSONObjectMapper(customModules, loadCustomModules, normalize, embedTypes);
+        public GraphSONMapper create() {
+            return new GraphSONMapper(customModules, loadCustomModules, normalize, embedTypes);
         }
     }
 }

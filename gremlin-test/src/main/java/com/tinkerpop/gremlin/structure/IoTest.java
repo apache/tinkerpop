@@ -24,7 +24,7 @@ import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
@@ -180,7 +180,7 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldWriteNormalizedGraphSON() throws Exception {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            final GraphSONObjectMapper mapper = g.io().graphSONMapper().normalize(true).create();
+            final GraphSONMapper mapper = g.io().graphSONMapper().normalize(true).create();
             final GraphSONWriter w = g.io().graphSONWriter().mapper(mapper).create();
             w.writeGraph(bos, g);
 
