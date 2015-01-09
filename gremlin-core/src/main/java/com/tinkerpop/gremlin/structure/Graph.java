@@ -373,19 +373,34 @@ public interface Graph extends AutoCloseable {
     }
 
     /**
-     * Graph variables are a set of key/value pairs associated with the graph.
-     * The keys are String and the values are Objects.
+     * Graph variables are a set of key/value pairs associated with the graph.The keys are String and the values
+     * are Objects.
      */
     public interface Variables {
 
+        /**
+         * Keys set for the available variables.
+         */
         public Set<String> keys();
 
+        /**
+         * Gets a variable.
+         */
         public <R> Optional<R> get(final String key);
 
+        /**
+         * Sets a variable.
+         */
         public void set(final String key, Object value);
 
+        /**
+         * Removes a variable.
+         */
         public void remove(final String key);
 
+        /**
+         * Gets the variables of the {@link Graph} as a {@code Map}.
+         */
         @Graph.Helper
         public default Map<String, Object> asMap() {
             final Map<String, Object> map = keys().stream()
