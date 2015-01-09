@@ -231,8 +231,6 @@ public class GremlinExecutor implements AutoCloseable {
                         hasErrors.set(true);
                     }
 
-                    System.out.println("****************" + f.getAbsolutePath());
-
                     return f.exists();
                 }).map(f -> {
                     try {
