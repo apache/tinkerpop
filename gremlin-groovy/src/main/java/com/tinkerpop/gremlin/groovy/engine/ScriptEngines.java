@@ -255,7 +255,7 @@ public class ScriptEngines implements AutoCloseable {
                                                                           final Set<String> imports,
                                                                           final Set<String> staticImports,
                                                                           final Map<String,Object> config) {
-        // gremlin-groovy gets special initialization for custom imports and such.  could implement this more
+        // gremlin-groovy gets special initialization for mapper imports and such.  could implement this more
         // generically with the DependencyManager interface, but going to wait to see how other ScriptEngines
         // develop for TinkerPop3 before committing too deeply here to any specific way of doing this.
         if (language.equals(gremlinGroovyScriptEngineFactory.getLanguageName())) {

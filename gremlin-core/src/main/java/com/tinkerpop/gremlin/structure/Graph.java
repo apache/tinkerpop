@@ -232,29 +232,29 @@ public interface Graph extends AutoCloseable {
 
     /**
      * Provides access to functions related to reading and writing graph data.  Implementers can override these
-     * methods to provider custom configurations to the default {@link com.tinkerpop.gremlin.structure.io.GraphReader}
-     * and {@link com.tinkerpop.gremlin.structure.io.GraphWriter} implementations (i.e. to register custom
+     * methods to provider mapper configurations to the default {@link com.tinkerpop.gremlin.structure.io.GraphReader}
+     * and {@link com.tinkerpop.gremlin.structure.io.GraphWriter} implementations (i.e. to register mapper
      * serialization classes).
      */
     public interface Io {
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for Kryo serializations. This
-         * method calls the {@link Io#gremlinKryoSerializer} method to supply to
-         * {@link com.tinkerpop.gremlin.structure.io.kryo.KryoReader.Builder#custom} which means that implementers
-         * should usually just override {@link Io#gremlinKryoSerializer} to append in their custom classes.
+         * method calls the {@link Io#kryoMapper} method to supply to
+         * {@link com.tinkerpop.gremlin.structure.io.kryo.KryoReader.Builder#mapper} which means that implementers
+         * should usually just override {@link Io#kryoMapper} to append in their mapper classes.
          */
         public default KryoReader.Builder kryoReader() {
-            return KryoReader.build().custom(gremlinKryoSerializer());
+            return KryoReader.build().mapper(kryoMapper().create());
         }
 
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphWriter} builder for Kryo serializations. This
-         * method calls the {@link Io#gremlinKryoSerializer} method to supply to
-         * {@link com.tinkerpop.gremlin.structure.io.kryo.KryoWriter.Builder#custom} which means that implementers
-         * should usually just override {@link Io#gremlinKryoSerializer} to append in their custom classes.
+         * method calls the {@link Io#kryoMapper} method to supply to
+         * {@link com.tinkerpop.gremlin.structure.io.kryo.KryoWriter.Builder#mapper} which means that implementers
+         * should usually just override {@link Io#kryoMapper} to append in their mapper classes.
          */
         public default KryoWriter.Builder kryoWriter() {
-            return KryoWriter.build().custom(gremlinKryoSerializer());
+            return KryoWriter.build().mapper(kryoMapper().create());
         }
 
         /**
@@ -269,7 +269,7 @@ public interface Graph extends AutoCloseable {
 
         /**
          * By default, this method creates an instance of the most current version of {@link GremlinKryo} which is
-         * used to serialize data to and from the graph.   Implementers with custom classes (e.g. a non-primitive
+         * used to serialize data to and from the graph.   Implementers with mapper classes (e.g. a non-primitive
          * class returned from {@link Element#id}) should override this method with those classes automatically
          * registered to the returned {@link GremlinKryo}.
          * <br/>
@@ -277,20 +277,20 @@ public interface Graph extends AutoCloseable {
          * maintained. Note that registering such classes will reduce the portability of the graph data as data
          * written with {@link GremlinKryo} will not be readable without this serializer configuration.  It is
          * considered good practice to make serialization classes generally available so that users may
-         * register these classes themselves if necessary when building up a custom {@link GremlinKryo}
+         * register these classes themselves if necessary when building up a mapper {@link GremlinKryo}
          * instance.
          * <br/>
          * Note that this method is meant to return current versions for serialization operations.  Users wishing
          * to use an "older" version should construct this instance as well as their readers and writers manually.
          */
-        public default GremlinKryo gremlinKryoSerializer() {
-            return GremlinKryo.build().create();
+        public default GremlinKryo.Builder kryoMapper() {
+            return GremlinKryo.build();
         }
 
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for GraphML serializations. GraphML
          * is the most portable of all the formats, but comes at the price of the least flexibility.
-         * {@code Graph} implementations that have custom classes that need to be serialized will not be able
+         * {@code Graph} implementations that have mapper classes that need to be serialized will not be able
          * to properly use this format effectively.
          */
         public default GraphMLReader.Builder graphMLReader() {
@@ -300,7 +300,7 @@ public interface Graph extends AutoCloseable {
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphWriter} builder for GraphML serializations. GraphML
          * is the most portable of all the formats, but comes at the price of the least flexibility.
-         * {@code Graph} implementations that have custom classes that need to be serialized will not be able
+         * {@code Graph} implementations that have mapper classes that need to be serialized will not be able
          * to properly use this format effectively.
          */
         public default GraphMLWriter.Builder graphMLWriter() {
@@ -320,25 +320,25 @@ public interface Graph extends AutoCloseable {
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for GraphSON serializations.
          * GraphSON is forgiving for implementers and will typically do a "reasonable" job in serializing most
-         * custom classes.  This method by default uses the {@link GraphSONObjectMapper} created by
-         * {@link #graphSONSerializer}.  That method enables implementers to register custom serialization
+         * mapper classes.  This method by default uses the {@link GraphSONObjectMapper} created by
+         * {@link #graphSONMapper}.  That method enables implementers to register mapper serialization
          * modules for classes that do not serialize nicely by the default JSON serializers or completely
          * fail to do so.
          */
         public default GraphSONReader.Builder graphSONReader() {
-            return GraphSONReader.build().overridingMapper(graphSONSerializer());
+            return GraphSONReader.build().mapper(graphSONMapper().create());
         }
 
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphWriter} builder for GraphML serializations.
          * GraphSON is forgiving for implementers and will typically do a "reasonable" job in serializing most
-         * custom classes.  This method by default uses the {@link GraphSONObjectMapper} created by
-         * {@link #graphSONSerializer}. That method enables implementers to register custom serialization
+         * mapper classes.  This method by default uses the {@link GraphSONObjectMapper} created by
+         * {@link #graphSONMapper}. That method enables implementers to register mapper serialization
          * modules for classes that do not serialize nicely by the default JSON serializers or completely
          * fail to do so.
          */
         public default GraphSONWriter.Builder graphSONWriter() {
-            return GraphSONWriter.build().overridingMapper(graphSONSerializer());
+            return GraphSONWriter.build().mapper(graphSONMapper().create());
         }
 
         /**
@@ -352,21 +352,23 @@ public interface Graph extends AutoCloseable {
         public void readGraphSON(final String file) throws IOException;
 
         /**
-         * By default, this method creates an instance of the most current version of {@link GraphSONObjectMapper}
-         * which is used to serialize data to and from the graph.   Implementers with custom classes (e.g. a
-         * non-primitive class returned from {@link Element#id}) should override this method with custom serialization
+         * By default, this method creates an instance of the most current version of
+         * {@link GraphSONObjectMapper.Builder} which is can produce a
+         * {@link com.tinkerpop.gremlin.structure.io.Mapper} implementation for GraphSON to
+         * serialize data to and from the graph.   Implementers with custom classes (e.g. a
+         * non-primitive class returned from {@link Element#id}) should override this method with serialization
          * modules added.
          * <br/>
          * It is considered good practice to make serialization classes generally available so that users may
-         * register these classes themselves if necessary when building up a custom {@link GraphSONObjectMapper}
+         * register these classes themselves if necessary when building up a mapper {@link GraphSONObjectMapper}
          * instance.
          * <br/>
-         * Note that this method is meant to return a {@link GraphSONObjectMapper} with default configuration save
-         * for custom serialization options.  Users wishing to add their own classes or use other settings like
-         * type embedding should construct this instance as well as their readers and writers manually.
+         * Note that this method is meant to return a {@link GraphSONObjectMapper.Builder} with default configuration
+         * for the current {@link Graph}.  Users can adjust and override such settings by altering the builder
+         * settings.
          */
-        public default GraphSONObjectMapper graphSONSerializer() {
-            return GraphSONObjectMapper.build().create();
+        public default GraphSONObjectMapper.Builder graphSONMapper() {
+            return GraphSONObjectMapper.build();
         }
     }
 
@@ -657,7 +659,7 @@ public interface Graph extends AutoCloseable {
             }
 
             /**
-             * Determines if an {@link Element} has custom identifiers where "custom" refers to an implementation
+             * Determines if an {@link Element} has mapper identifiers where "mapper" refers to an implementation
              * defined object.
              */
             @FeatureDescriptor(name = FEATURE_CUSTOM_IDS)
@@ -736,7 +738,7 @@ public interface Graph extends AutoCloseable {
             }
 
             /**
-             * Determines if an {@link VertexProperty} has custom identifiers where "custom" refers to an implementation
+             * Determines if an {@link VertexProperty} has mapper identifiers where "mapper" refers to an implementation
              * defined object.
              */
             @FeatureDescriptor(name = FEATURE_CUSTOM_IDS)

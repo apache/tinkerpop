@@ -37,9 +37,8 @@ public class KryoWriter implements GraphWriter {
     }
 
     private KryoWriter(final GremlinKryo gremlinKryo) {
-        this.kryo = gremlinKryo.createKryo();
+        this.kryo = gremlinKryo.createMapper();
         this.headerWriter = gremlinKryo.getHeaderWriter();
-
     }
 
     @Override
@@ -146,17 +145,15 @@ public class KryoWriter implements GraphWriter {
         }
 
         /**
-         * Supply a custom {@link GremlinKryo} instance to use as the serializer for the {@code KryoWriter}.
+         * Supply a mapper {@link GremlinKryo} instance to use as the serializer for the {@code KryoWriter}.
          */
-        public Builder custom(final GremlinKryo gremlinKryo) {
+        public Builder mapper(final GremlinKryo gremlinKryo) {
             this.gremlinKryo = gremlinKryo;
             return this;
         }
 
         /**
          * Create the {@code KryoWriter}.
-         *
-         * @return
          */
         public KryoWriter create() {
             return new KryoWriter(this.gremlinKryo);

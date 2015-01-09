@@ -89,7 +89,7 @@ public class StringFactory {
     /**
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Graph}.
      *
-     * @param internalString a custom {@link String} that appends to the end of the standard representation
+     * @param internalString a mapper {@link String} that appends to the end of the standard representation
      */
     public static String graphString(final Graph graph, final String internalString) {
         return graph.getClass().getSimpleName().toLowerCase() + L_BRACKET + internalString + R_BRACKET;

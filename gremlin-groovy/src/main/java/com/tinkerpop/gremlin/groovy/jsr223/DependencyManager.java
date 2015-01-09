@@ -23,7 +23,7 @@ public interface DependencyManager {
      * <br/>
      * It is up to the caller to execute the
      * {@link GremlinPlugin#pluginTo(com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor)} method.  The reason for
-     * this has to do with conflicts that can occur with custom imports that are added via the
+     * this has to do with conflicts that can occur with mapper imports that are added via the
      * {@link com.tinkerpop.gremlin.groovy.ImportCustomizerProvider} and scripts executed through the
      * {@link com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor}. Generally speaking, all calls to this "use" method
      * should be complete prior to calling

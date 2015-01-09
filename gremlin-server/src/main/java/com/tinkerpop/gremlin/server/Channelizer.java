@@ -9,7 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * An interface that makes it possible to plugin different Netty pipleines to Gremlin Server, enabling the use of
- * different protocols, custom security and other such functions.  A {@code Channelizer} implementation can be
+ * different protocols, mapper security and other such functions.  A {@code Channelizer} implementation can be
  * configured in Gremlin Server with the {@code channelizer} setting in the configuration file.
  *
  * @see com.tinkerpop.gremlin.server.AbstractChannelizer

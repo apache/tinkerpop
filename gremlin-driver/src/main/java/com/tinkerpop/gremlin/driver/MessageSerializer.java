@@ -57,7 +57,7 @@ public interface MessageSerializer {
     public String[] mimeTypesSupported();
 
     /**
-     * Configure the serializer with custom settings as required.  The default implementation does not perform any
+     * Configure the serializer with mapper settings as required.  The default implementation does not perform any
      * function and it is up to the interface implementation to determine how the configuration will be executed
      * and what its requirements are.
      */

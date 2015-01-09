@@ -23,13 +23,13 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     private static final String MIME_TYPE = SerTokens.MIME_JSON;
 
     /**
-     * ObjectMapper instance for JSON serialization via Jackson databind.  Uses custom serializers to write
+     * ObjectMapper instance for JSON serialization via Jackson databind.  Uses mapper serializers to write
      * out {@link com.tinkerpop.gremlin.structure.Graph} objects and {@code toString} for unknown objects.
      */
     protected static final ObjectMapper mapper = GraphSONObjectMapper.build()
             .addCustomModule(new GremlinServerModule())
             .embedTypes(false)
-            .create();
+            .create().createMapper();
 
     private static byte[] header;
 

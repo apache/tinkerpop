@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 
 /**
  * An extension to the MessageSerializer interface that allows a format to be compatible with text-based
- * websocket messages.  This interface is for internal purposes only.  Implementers who have custom serialization
+ * websocket messages.  This interface is for internal purposes only.  Implementers who have mapper serialization
  * needs should NOT implement this interface as it will not be used.  Gremlin Server only supports plain JSON
  * for text-based requests.
  *

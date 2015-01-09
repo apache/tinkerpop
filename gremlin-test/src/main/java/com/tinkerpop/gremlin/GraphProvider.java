@@ -158,7 +158,7 @@ public interface GraphProvider {
 
     /**
      * Converts the GraphSON representation of an identifier to the implementation's representation of an identifier.
-     * When serializing a custom identifier type to GraphSON an implementer will typically specify a custom serializer
+     * When serializing a mapper identifier type to GraphSON an implementer will typically specify a mapper serializer
      * in {@link com.tinkerpop.gremlin.structure.Graph.Io}.  That will serialize the identifier to a GraphSON representation.
      * When the GraphSON is deserialized, the identifier is written to an
      * {@link com.tinkerpop.gremlin.structure.util.detached.Attachable} object where it is passed to a user supplied

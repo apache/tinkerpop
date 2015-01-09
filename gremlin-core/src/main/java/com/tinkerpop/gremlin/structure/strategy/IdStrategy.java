@@ -24,11 +24,11 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
- * A {@link GraphStrategy} implementation which enables custom element IDs even for those graphs which don't
+ * A {@link GraphStrategy} implementation which enables mapper element IDs even for those graphs which don't
  * otherwise support them.
  * <p/>
  * For those graphs which support vertex indices but not edge indices (or vice versa), the strategy can be configured
- * to use custom IDs only for vertices or only for edges.  ID generation is also configurable via ID {@link Supplier}
+ * to use mapper IDs only for vertices or only for edges.  ID generation is also configurable via ID {@link Supplier}
  * functions.
  * <p/>
  * If the {@link IdStrategy} is used in combination with a sequence of other strategies and when ID assignment

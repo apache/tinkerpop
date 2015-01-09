@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * The StructureStandardSuite is a custom JUnit test runner that executes the Gremlin Test Suite over a Graph
+ * The StructureStandardSuite is a mapper JUnit test runner that executes the Gremlin Test Suite over a Graph
  * implementation.  This specialized test suite and runner is for use by Gremlin implementers to test their
  * Graph implementations.  The ProcessStandardSuite ensures consistency and validity of the implementations that they
  * test.

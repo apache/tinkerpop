@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 /**
  * Response status codes for Gremlin Server responses. Result codes tend to map to
  * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">HTTP status codes</a>.  It is not a one-to-one
- * mapping and there are custom status codes to be considered.
+ * mapping and there are mapper status codes to be considered.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -60,7 +60,7 @@ public enum ResponseStatusCode {
 
     /**
      * The server was not capable of serializing an object that was returned from the script supplied on the request.
-     * Either transform the object into something Gremlin Server can process within the script or install custom
+     * Either transform the object into something Gremlin Server can process within the script or install mapper
      * serialization classes to Gremlin Server.
      */
     SERVER_ERROR_SERIALIZATION(599);

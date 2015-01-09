@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.structure.Operator;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
@@ -229,7 +230,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteClassicGraphNormalizedAsGraphSON() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-normalized.json");
-        GraphSONWriter.build().normalize(true).create().writeGraph(os, TinkerFactory.createClassic());
+        GraphSONWriter.build().mapper(GraphSONObjectMapper.build().normalize(true).create()).create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
 
@@ -239,7 +240,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernGraphNormalizedAsGraphSON() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-normalized.json");
-        GraphSONWriter.build().normalize(true).create().writeGraph(os, TinkerFactory.createClassic());
+        GraphSONWriter.build().mapper(GraphSONObjectMapper.build().normalize(true).create()).create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
 
@@ -249,7 +250,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteClassicGraphAsGraphSONWithTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-typed.json");
-        GraphSONWriter.build().embedTypes(true)
+        GraphSONWriter.build().mapper(GraphSONObjectMapper.build().embedTypes(true).create())
                 .create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
@@ -260,7 +261,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernGraphAsGraphSONWithTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-typed.json");
-        GraphSONWriter.build().embedTypes(true)
+        GraphSONWriter.build().mapper(GraphSONObjectMapper.build().embedTypes(true).create())
                 .create().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
@@ -271,7 +272,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteCrewGraphAsGraphSONWithTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-typed.json");
-        GraphSONWriter.build().embedTypes(true)
+        GraphSONWriter.build().mapper(GraphSONObjectMapper.build().embedTypes(true).create())
                 .create().writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
     }
@@ -555,7 +556,7 @@ public class TinkerGraphTest {
         os.close();
 
         final OutputStream os2 = new FileOutputStream(tempPath + "grateful-dead.json");
-        GraphSONWriter.build().embedTypes(true).create().writeGraph(os2, g);
+        GraphSONWriter.build().mapper(GraphSONObjectMapper.build().embedTypes(true).create()).create().writeGraph(os2, g);
         os2.close();
 
         final OutputStream os3 = new FileOutputStream(tempPath + "grateful-dead.xml");

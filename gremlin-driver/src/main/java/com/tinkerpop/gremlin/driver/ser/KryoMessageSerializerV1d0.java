@@ -59,7 +59,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
     }
 
     /**
-     * Creates an instance with a provided custom configured {@link GremlinKryo} instance. Note that this instance
+     * Creates an instance with a provided mapper configured {@link GremlinKryo} instance. Note that this instance
      * will be overriden by {@link #configure} is called.
      */
     public KryoMessageSerializerV1d0(final GremlinKryo kryo) {

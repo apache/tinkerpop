@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
+import com.tinkerpop.gremlin.structure.io.Mapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,32 +17,48 @@ import java.util.List;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONObjectMapper extends ObjectMapper {
+public class GraphSONObjectMapper implements Mapper<ObjectMapper> {
+
+    private final List<SimpleModule> customModules;
+    private final boolean loadCustomSerializers;
+    private final boolean normalize;
+    private final boolean embedTypes;
 
     private GraphSONObjectMapper(final List<SimpleModule> customModules, final boolean loadCustomSerializers,
                                  final boolean normalize, final boolean embedTypes) {
-        disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        this.customModules = customModules;
+        this.loadCustomSerializers = loadCustomSerializers;
+        this.normalize = normalize;
+        this.embedTypes = embedTypes;
+    }
+
+    @Override
+    public ObjectMapper createMapper() {
+        final ObjectMapper om = new ObjectMapper();
+        om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
         if (embedTypes)
-            enableDefaultTypingAsProperty(DefaultTyping.NON_FINAL, GraphSONTokens.CLASS);
+            om.enableDefaultTypingAsProperty(ObjectMapper.DefaultTyping.NON_FINAL, GraphSONTokens.CLASS);
 
         if (normalize)
-            enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+            om.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
 
         // this provider toStrings all unknown classes and converts keys in Map objects that are Object to String.
         final DefaultSerializerProvider provider = new GraphSONSerializerProvider();
         provider.setDefaultKeySerializer(new GraphSONModule.GraphSONKeySerializer());
-        setSerializerProvider(provider);
+        om.setSerializerProvider(provider);
 
-        registerModule(new GraphSONModule(normalize));
-        customModules.forEach(this::registerModule);
+        om.registerModule(new GraphSONModule(normalize));
+        customModules.forEach(om::registerModule);
 
         // plugin external serialization modules
         if (loadCustomSerializers)
-            findAndRegisterModules();
+            om.findAndRegisterModules();
 
         // keep streams open to accept multiple values (e.g. multiple vertices)
-        _jsonFactory.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+        om.getFactory().disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+
+        return om;
     }
 
     public static Builder build() {
@@ -58,7 +75,7 @@ public class GraphSONObjectMapper extends ObjectMapper {
         }
 
         /**
-         * Supply a custom module for serialization/deserialization.
+         * Supply a mapper module for serialization/deserialization.
          */
         public Builder addCustomModule(final SimpleModule custom) {
             this.customModules.add(custom);

@@ -54,7 +54,7 @@ public class KryoReader implements GraphReader {
     private KryoReader(final File tempFile, final long batchSize,
                        final String vertexIdKey, final String edgeIdKey,
                        final GremlinKryo gremlinKryo) {
-        this.kryo = gremlinKryo.createKryo();
+        this.kryo = gremlinKryo.createMapper();
         this.headerReader = gremlinKryo.getHeaderReader();
         this.vertexIdKey = vertexIdKey;
         this.edgeIdKey = edgeIdKey;
@@ -347,9 +347,9 @@ public class KryoReader implements GraphReader {
         }
 
         /**
-         * Supply a custom {@link GremlinKryo} instance to use as the serializer for the {@code KryoWriter}.
+         * Supply a mapper {@link GremlinKryo} instance to use as the serializer for the {@code KryoWriter}.
          */
-        public Builder custom(final GremlinKryo gremlinKryo) {
+        public Builder mapper(final GremlinKryo gremlinKryo) {
             this.gremlinKryo = gremlinKryo;
             return this;
         }

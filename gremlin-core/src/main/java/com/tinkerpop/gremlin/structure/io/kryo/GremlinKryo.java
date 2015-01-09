@@ -24,6 +24,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.structure.io.Mapper;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
@@ -63,7 +64,7 @@ import java.util.stream.Collectors;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class GremlinKryo {
+public final class GremlinKryo implements Mapper<Kryo> {
     static final byte[] GIO = "gio".getBytes();
     private final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList;
     private final HeaderWriter headerWriter;
@@ -88,13 +89,18 @@ public final class GremlinKryo {
         this.versionedHeader = out.toBytes();
     }
 
+    @Override
+    public Kryo createMapper() {
+        return createKryo();
+    }
+
     public Kryo createKryo() {
         final Kryo kryo = new Kryo(new GremlinClassResolver(), new MapReferenceResolver(), new DefaultStreamFactory());
         kryo.addDefaultSerializer(Map.Entry.class, new EntrySerializer());
         kryo.setRegistrationRequired(true);
         serializationList.forEach(p -> {
             final Function<Kryo, Serializer> serializer = p.getValue1();
-            if (serializer == null)
+            if (null == serializer)
                 kryo.register(p.getValue0(), kryo.getDefaultSerializer(p.getValue0()), p.getValue2());
             else
                 kryo.register(p.getValue0(), serializer.apply(kryo), p.getValue2());
@@ -144,22 +150,22 @@ public final class GremlinKryo {
 
     public static interface Builder {
         /**
-         * Add custom classes to serializes with kryo using standard serialization.
+         * Add mapper classes to serializes with kryo using standard serialization.
          */
         public Builder addCustom(final Class... custom);
 
         /**
-         * Add custom class to serializes with custom serialization.
+         * Add mapper class to serializes with mapper serialization.
          */
         public Builder addCustom(final Class clazz, final Serializer serializer);
 
         /**
-         * Add custom class to serializes with custom serialization as returned from a {@link Function}.
+         * Add mapper class to serializes with mapper serialization as returned from a {@link Function}.
          */
         public Builder addCustom(final Class clazz, final Function<Kryo, Serializer> serializer);
 
         /**
-         * If using custom classes it might be useful to tag the version stamped to the serialization with a custom
+         * If using mapper classes it might be useful to tag the version stamped to the serialization with a mapper
          * value, such that Kryo serialization at 1.0.0 would have a fourth byte for an extended version.  The user
          * supplied fourth byte can then be used to ensure the right deserializer is used to read the data. If this
          * value is not supplied then it is written as {@link Byte#MIN_VALUE}. The value supplied here should be greater
@@ -170,7 +176,7 @@ public final class GremlinKryo {
         /**
          * By default the {@link #extendedVersion(byte)} is checked against what is read from an input source and if
          * those values are equal the version being read is considered "compliant".  To alter this behavior, supply a
-         * custom compliance {@link Predicate} to evaluate the value read from the input source (i.e. first argument)
+         * mapper compliance {@link Predicate} to evaluate the value read from the input source (i.e. first argument)
          * and the value marked in the {@code GremlinKryo} instance {i.e. second argument}.  Supplying this function is
          * useful when versions require backward compatibility or other more complex checks.  This function is only used
          * if the {@link #extendedVersion(byte)} is set to something other than its default.
