@@ -116,9 +116,9 @@ public interface GraphProvider {
      * "gremlin.graph" setting which should be defined by the implementer. It should provide a
      * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
      *
-     * @param graphName a unique test graph name
-     * @param test the test class
-     * @param testMethodName the name of the test
+     * @param graphName              a unique test graph name
+     * @param test                   the test class
+     * @param testMethodName         the name of the test
      * @param configurationOverrides settings to override defaults with.
      */
     public Configuration newGraphConfiguration(final String graphName,
@@ -131,8 +131,8 @@ public interface GraphProvider {
      * "gremlin.graph" setting which should be defined by the implementer. It should provide a
      * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
      *
-     * @param graphName a unique test graph name
-     * @param test the test class
+     * @param graphName      a unique test graph name
+     * @param test           the test class
      * @param testMethodName the name of the test
      */
     default public Configuration newGraphConfiguration(final String graphName,
@@ -167,8 +167,8 @@ public interface GraphProvider {
      * providing the mechanism that a test can use to do the conversion.
      *
      * @param clazz The {@link Element} class that represents the identifier.
-     * @param id The identifier to convert.
-     * @param <ID> The type of the identifier.
+     * @param id    The identifier to convert.
+     * @param <ID>  The type of the identifier.
      * @return The reconstituted identifier.
      */
     public default <ID> ID reconstituteGraphSONIdentifier(final Class<? extends Element> clazz, final Object id) {
@@ -179,37 +179,39 @@ public interface GraphProvider {
      * Get the set of concrete implementations of certain classes and interfaces utilized by the test suite. This
      * method should return any implementations or extensions of the following interfaces or classes:
      * <ul>
-     *     <li>{@link Edge}</li>
-     *     <li>{@link Edge.Iterators}</li>
-     *     <li>{@link Element}</li>
-     *     <li>{@link Element.Iterators}</li>
-     *     <li>{@link DefaultGraphTraversal}</li>
-     *     <li>{@link Graph}</li>
-     *     <li>{@link Graph.Variables}</li>
-     *     <li>{@link GraphTraversal}</li>
-     *     <li>{@link Property}</li>
-     *     <li>{@link Traversal}</li>
-     *     <li>{@link Traverser}</li>
-     *     <li>{@link Vertex}</li>
-     *     <li>{@link Vertex.Iterators}</li>
-     *     <li>{@link VertexProperty}</li>
-     *     <li>{@link VertexProperty.Iterators}</li>
+     * <li>{@link Edge}</li>
+     * <li>{@link Edge.Iterators}</li>
+     * <li>{@link Element}</li>
+     * <li>{@link Element.Iterators}</li>
+     * <li>{@link DefaultGraphTraversal}</li>
+     * <li>{@link Graph}</li>
+     * <li>{@link Graph.Variables}</li>
+     * <li>{@link Graph.Iterators}</li>
+     * <li>{@link GraphTraversal}</li>
+     * <li>{@link Property}</li>
+     * <li>{@link Traversal}</li>
+     * <li>{@link Traverser}</li>
+     * <li>{@link Vertex}</li>
+     * <li>{@link Vertex.Iterators}</li>
+     * <li>{@link VertexProperty}</li>
+     * <li>{@link VertexProperty.Iterators}</li>
      * </ul>
      * <br/>
      * The test suite only enforces registration of the following core structure interfaces (i.e. these classes must
      * be registered or the tests will fail to execute):
      * <ul>
-     *     <li>{@link Edge}</li>
-     *     <li>{@link Edge.Iterators}</li>
-     *     <li>{@link Element}</li>
-     *     <li>{@link Element.Iterators}</li>
-     *     <li>{@link Graph}</li>
-     *     <li>{@link Graph.Variables}</li>
-     *     <li>{@link Property}</li>
-     *     <li>{@link Vertex}</li>
-     *     <li>{@link Vertex.Iterators}</li>
-     *     <li>{@link VertexProperty}</li>
-     *     <li>{@link VertexProperty.Iterators}</li>
+     * <li>{@link Edge}</li>
+     * <li>{@link Edge.Iterators}</li>
+     * <li>{@link Element}</li>
+     * <li>{@link Element.Iterators}</li>
+     * <li>{@link Graph}</li>
+     * <li>{@link Graph.Variables}</li>
+     * <li>{@link Graph.Iterators}</li>
+     * <li>{@link Property}</li>
+     * <li>{@link Vertex}</li>
+     * <li>{@link Vertex.Iterators}</li>
+     * <li>{@link VertexProperty}</li>
+     * <li>{@link VertexProperty.Iterators}</li>
      * </ul>
      * <br/>
      * The remaining interfaces and classes should be registered however as failure to do so, might cause failures
