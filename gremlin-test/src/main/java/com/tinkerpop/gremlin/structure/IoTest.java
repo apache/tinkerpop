@@ -29,7 +29,7 @@ import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader;
-import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.VertexByteArrayInputStream;
@@ -288,7 +288,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
     public void shouldProperlySerializeCustomIdWithKryo() throws Exception {
         g.addVertex(T.id, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
-        final GremlinKryo kryo = GremlinKryo.build().addCustom(CustomId.class).create();
+        final KryoMapper kryo = KryoMapper.build().addCustom(CustomId.class).create();
 
         final KryoWriter writer = KryoWriter.build().mapper(kryo).create();
         final KryoReader reader = KryoReader.build().mapper(kryo).create();

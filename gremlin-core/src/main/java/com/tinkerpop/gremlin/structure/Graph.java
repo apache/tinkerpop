@@ -12,7 +12,7 @@ import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
-import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
@@ -268,23 +268,23 @@ public interface Graph extends AutoCloseable {
         public void readKryo(final String file) throws IOException;
 
         /**
-         * By default, this method creates an instance of the most current version of {@link GremlinKryo} which is
+         * By default, this method creates an instance of the most current version of {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} which is
          * used to serialize data to and from the graph.   Implementers with mapper classes (e.g. a non-primitive
          * class returned from {@link Element#id}) should override this method with those classes automatically
-         * registered to the returned {@link GremlinKryo}.
+         * registered to the returned {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper}.
          * <br/>
          * Implementers should respect versions.  Once a class is registered, the order of its registration should be
          * maintained. Note that registering such classes will reduce the portability of the graph data as data
-         * written with {@link GremlinKryo} will not be readable without this serializer configuration.  It is
+         * written with {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} will not be readable without this serializer configuration.  It is
          * considered good practice to make serialization classes generally available so that users may
-         * register these classes themselves if necessary when building up a mapper {@link GremlinKryo}
+         * register these classes themselves if necessary when building up a mapper {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper}
          * instance.
          * <br/>
          * Note that this method is meant to return current versions for serialization operations.  Users wishing
          * to use an "older" version should construct this instance as well as their readers and writers manually.
          */
-        public default GremlinKryo.Builder kryoMapper() {
-            return GremlinKryo.build();
+        public default KryoMapper.Builder kryoMapper() {
+            return KryoMapper.build();
         }
 
         /**

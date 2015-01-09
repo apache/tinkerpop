@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
-import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -37,8 +37,8 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeVertexAsDetached() throws Exception {
-            final GremlinKryo gremlinKryo = g.io().kryoMapper().create();
-            final Kryo kryo = gremlinKryo.createMapper();
+            final KryoMapper kryoMapper = g.io().kryoMapper().create();
+            final Kryo kryo = kryoMapper.createMapper();
             final Vertex v = g.V(convertToVertexId("marko")).next();
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
             final Output output = new Output(stream);
@@ -58,8 +58,8 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeEdgeAsDetached()throws Exception {
-            final GremlinKryo gremlinKryo = g.io().kryoMapper().create();
-            final Kryo kryo = gremlinKryo.createMapper();
+            final KryoMapper kryoMapper = g.io().kryoMapper().create();
+            final Kryo kryo = kryoMapper.createMapper();
             final Edge e = g.E(convertToEdgeId("marko", "knows", "vadas")).next();
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
             final Output output = new Output(stream);
@@ -77,8 +77,8 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializePropertyAsDetached()throws Exception {
-            final GremlinKryo gremlinKryo = g.io().kryoMapper().create();
-            final Kryo kryo = gremlinKryo.createMapper();
+            final KryoMapper kryoMapper = g.io().kryoMapper().create();
+            final Kryo kryo = kryoMapper.createMapper();
             final Property p = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
             final Output output = new Output(stream);
@@ -95,8 +95,8 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeVertexPropertyAsDetached() throws Exception {
-            final GremlinKryo gremlinKryo = g.io().kryoMapper().create();
-            final Kryo kryo = gremlinKryo.createMapper();
+            final KryoMapper kryoMapper = g.io().kryoMapper().create();
+            final Kryo kryo = kryoMapper.createMapper();
             final VertexProperty vp = g.V(convertToVertexId("marko")).next().property("name");
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
             final Output output = new Output(stream);
@@ -115,8 +115,8 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.CREW)
         public void shouldSerializeVertexPropertyWithPropertiesAsDetached() throws Exception {
-            final GremlinKryo gremlinKryo = g.io().kryoMapper().create();
-            final Kryo kryo = gremlinKryo.createMapper();
+            final KryoMapper kryoMapper = g.io().kryoMapper().create();
+            final Kryo kryo = kryoMapper.createMapper();
             final VertexProperty vp = g.V(convertToVertexId("marko")).next().iterators().propertyIterator("location").next();
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
             final Output output = new Output(stream);
@@ -139,8 +139,8 @@ public class SerializationTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializePathAsDetached() throws Exception {
-            final GremlinKryo gremlinKryo = g.io().kryoMapper().create();
-            final Kryo kryo = gremlinKryo.createMapper();
+            final KryoMapper kryoMapper = g.io().kryoMapper().create();
+            final Kryo kryo = kryoMapper.createMapper();
             final Path p = g.V(convertToVertexId("marko")).as("a").outE().as("b").inV().as("c").path().next();
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
             final Output output = new Output(stream);

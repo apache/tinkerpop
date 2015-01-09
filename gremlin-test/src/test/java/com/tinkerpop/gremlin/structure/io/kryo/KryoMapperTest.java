@@ -7,10 +7,10 @@ import static org.junit.Assert.assertNotSame;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinKryoTest {
+public class KryoMapperTest {
     @Test
     public void shouldGetMostRecentVersion() {
-        final GremlinKryo.Builder b = GremlinKryo.build();
-        assertNotSame(b, GremlinKryo.build());
+        final KryoMapper.Builder b = KryoMapper.build();
+        assertNotSame(b, KryoMapper.build());
     }
 }

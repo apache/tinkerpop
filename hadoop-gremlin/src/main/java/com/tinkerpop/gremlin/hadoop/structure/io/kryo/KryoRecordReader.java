@@ -1,8 +1,7 @@
 package com.tinkerpop.gremlin.hadoop.structure.io.kryo;
 
 import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
@@ -23,7 +22,7 @@ public class KryoRecordReader extends RecordReader<NullWritable, VertexWritable>
     private VertexStreamIterator vertexStreamIterator;
     private FSDataInputStream inputStream;
 
-    private static final byte[] PATTERN = GremlinKryo.build().create().getVersionedHeader();
+    private static final byte[] PATTERN = KryoMapper.build().create().getVersionedHeader();
 
     public KryoRecordReader() {
     }

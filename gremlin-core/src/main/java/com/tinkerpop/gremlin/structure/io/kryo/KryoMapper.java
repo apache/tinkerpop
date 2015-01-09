@@ -64,7 +64,7 @@ import java.util.stream.Collectors;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class GremlinKryo implements Mapper<Kryo> {
+public final class KryoMapper implements Mapper<Kryo> {
     static final byte[] GIO = "gio".getBytes();
     private final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList;
     private final HeaderWriter headerWriter;
@@ -73,9 +73,9 @@ public final class GremlinKryo implements Mapper<Kryo> {
 
     public static final byte DEFAULT_EXTENDED_VERSION = Byte.MIN_VALUE;
 
-    private GremlinKryo(final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList,
-                        final HeaderWriter headerWriter,
-                        final HeaderReader headerReader) {
+    private KryoMapper(final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList,
+                       final HeaderWriter headerWriter,
+                       final HeaderReader headerReader) {
         this.serializationList = serializationList;
         this.headerWriter = headerWriter;
         this.headerReader = headerReader;
@@ -183,7 +183,7 @@ public final class GremlinKryo implements Mapper<Kryo> {
          */
         public Builder compliant(final BiPredicate<Byte, Byte> compliant);
 
-        public GremlinKryo create();
+        public KryoMapper create();
     }
 
     public enum Version {
@@ -354,8 +354,8 @@ public final class GremlinKryo implements Mapper<Kryo> {
         }
 
         @Override
-        public GremlinKryo create() {
-            return new GremlinKryo(serializationList, this::writeHeader, this::readHeader);
+        public KryoMapper create() {
+            return new KryoMapper(serializationList, this::writeHeader, this::readHeader);
         }
 
         private void writeHeader(final Kryo kryo, final Output output) throws IOException {
