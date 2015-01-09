@@ -22,10 +22,10 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     private Step<?, E> finalEndStep = EmptyStep.instance();
 
     protected List<Step> steps = new ArrayList<>();
+    protected TraversalStrategies strategies;
     protected SideEffects sideEffects = new DefaultTraversalSideEffects();
     protected Optional<TraversalEngine> traversalEngine = Optional.empty();
 
-    private TraversalStrategies strategies;
 
     public DefaultTraversal(final Class emanatingClass) {
         this.strategies = TraversalStrategies.GlobalCache.getStrategies(emanatingClass);

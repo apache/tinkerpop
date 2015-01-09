@@ -239,7 +239,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          */
         @Override
         public default Admin<T> attach(final Graph graph) throws UnsupportedOperationException {
-            throw new UnsupportedOperationException("A traverser can only exist a vertices, not the graph");
+            throw new UnsupportedOperationException("A traverser can only exist at the vertices of the graph, not the graph itself");
         }
 
         /**

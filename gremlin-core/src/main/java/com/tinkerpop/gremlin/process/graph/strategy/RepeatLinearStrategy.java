@@ -37,13 +37,13 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
             return;
 
         for (final RepeatStep<?> repeatStep : TraversalHelper.getStepsOfClass(RepeatStep.class, traversal)) {
-            if (null == repeatStep.getRepeatTraversal())
+            if (repeatStep.getTraversals().isEmpty())
                 throw new IllegalStateException("No traversal to repeat was provided to RepeatStep");
 
             Step currentStep = repeatStep.getPreviousStep();
             final Step firstStep = currentStep;
             TraversalHelper.removeStep(repeatStep, traversal);
-            currentStep = TraversalHelper.insertTraversal(repeatStep.getRepeatTraversal(), currentStep, traversal);
+            currentStep = TraversalHelper.insertTraversal(repeatStep.getTraversals().get(0), currentStep, traversal);
             final SideEffectStep<?> incrLoopStep = new SideEffectStep<>(traversal);
             incrLoopStep.setConsumer(traverser -> traverser.asAdmin().incrLoops());
             TraversalHelper.insertAfterStep(incrLoopStep, currentStep, traversal);
