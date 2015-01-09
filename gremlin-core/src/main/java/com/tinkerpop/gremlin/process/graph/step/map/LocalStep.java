@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LocalStep<S, E> extends FlatMapStep<S, E> implements PathConsumer, TraversalHolder<S, E> {
+public final class LocalStep<S, E> extends FlatMapStep<S, E> implements TraversalHolder<S, E> {
 
     private Traversal<S, E> localTraversal;
 
@@ -40,11 +40,6 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements PathCons
     @Override
     public Collection<Traversal<S, E>> getTraversals() {
         return Collections.singletonList(this.localTraversal);
-    }
-
-    @Override
-    public boolean requiresPaths() {
-        return TraversalHelper.trackPaths(this.localTraversal);
     }
 
     ////////////////

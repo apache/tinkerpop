@@ -3,18 +3,20 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.MarkerIdentityStep;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RepeatStep<S> extends AbstractStep<S, S> implements PathConsumer {
+public final class RepeatStep<S> extends AbstractStep<S, S> implements TraversalHolder<S, S> {
 
     private Traversal<S, S> repeatTraversal = null;
     private Predicate<Traverser<S>> untilPredicate = null;
@@ -50,8 +52,8 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements PathConsu
         this.emitPredicate = emitPredicate;
     }
 
-    public Traversal<S, S> getRepeatTraversal() {
-        return this.repeatTraversal;
+    public List<Traversal<S, S>> getTraversals() {
+        return null == this.repeatTraversal ? Collections.emptyList() : Collections.singletonList(this.repeatTraversal);
     }
 
     public Predicate<Traverser<S>> getUntilPredicate() {
@@ -135,7 +137,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements PathConsu
     //////
     public static <A, B, C extends Traversal<A, B>> C addRepeatToTraversal(final C traversal, final Traversal<B, B> repeatTraversal) {
         final Step<?, B> step = TraversalHelper.getEnd(traversal);
-        if (step instanceof RepeatStep && null == ((RepeatStep) step).getRepeatTraversal()) {
+        if (step instanceof RepeatStep && ((RepeatStep) step).getTraversals().isEmpty()) {
             ((RepeatStep<B>) step).setRepeatTraversal(repeatTraversal);
         } else {
             final RepeatStep<B> repeatStep = new RepeatStep<>(traversal);
