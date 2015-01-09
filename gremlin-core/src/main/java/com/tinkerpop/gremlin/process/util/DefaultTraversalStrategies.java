@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.traverser.util.DefaultTraverserGeneratorFac
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,7 +49,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
 
     @Override
     public List<TraversalStrategy> toList() {
-        return new ArrayList<>(this.traversalStrategies);
+        return Collections.unmodifiableList(this.traversalStrategies);
     }
 
     @Override

@@ -96,7 +96,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay2() throws Exception {
         Graph g = TinkerFactory.createClassic();
-        g.V(1).as("a").out("created").in("created").retain("a").values("name").forEachRemaining(System.out::println);
+        g.V(1).as("a").out("created").in("created").values("name").forEachRemaining(System.out::println);
         // System.out.println(t);
         // t.forEachRemaining(System.out::println);
         // System.out.println(t);
