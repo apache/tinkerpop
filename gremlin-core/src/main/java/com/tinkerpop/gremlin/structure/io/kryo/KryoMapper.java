@@ -62,6 +62,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
+ * A {@link Mapper} implementation for Kryo.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class KryoMapper implements Mapper<Kryo> {
@@ -82,7 +84,7 @@ public final class KryoMapper implements Mapper<Kryo> {
 
         final Output out = new Output(32);
         try {
-            this.headerWriter.write(createKryo(), out);
+            this.headerWriter.write(createMapper(), out);
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
@@ -91,10 +93,6 @@ public final class KryoMapper implements Mapper<Kryo> {
 
     @Override
     public Kryo createMapper() {
-        return createKryo();
-    }
-
-    public Kryo createKryo() {
         final Kryo kryo = new Kryo(new GremlinClassResolver(), new MapReferenceResolver(), new DefaultStreamFactory());
         kryo.addDefaultSerializer(Map.Entry.class, new EntrySerializer());
         kryo.setRegistrationRequired(true);

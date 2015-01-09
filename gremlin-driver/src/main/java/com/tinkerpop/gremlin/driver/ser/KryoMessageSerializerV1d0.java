@@ -35,7 +35,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
     private ThreadLocal<Kryo> kryoThreadLocal = new ThreadLocal<Kryo>() {
         @Override
         protected Kryo initialValue() {
-            return kryoMapper.createKryo();
+            return kryoMapper.createMapper();
         }
     };
 
