@@ -34,20 +34,28 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 
     private Iterator<? extends Edge> edges() {
         final HasContainer indexedContainer = getIndexKey(Edge.class);
-        return null == indexedContainer ?
-                this.iteratorList(this.getGraph(TinkerGraph.class).iterators().edgeIterator(this.ids)) :
-                TinkerHelper.queryEdgeIndex(this.getGraph(TinkerGraph.class), indexedContainer.key, indexedContainer.value).stream()
-                        .filter(edge -> ElementHelper.idExists(edge.id(), this.ids) && HasContainer.testAll(edge, this.hasContainers))
-                        .collect(Collectors.<Edge>toList()).iterator();
+        // ids are present, filter on them first
+        if (this.ids != null && this.ids.length > 0)
+            return this.iteratorList(this.getGraph(TinkerGraph.class).iterators().edgeIterator(this.ids));
+        else
+            return null == indexedContainer ?
+                    this.iteratorList(this.getGraph(TinkerGraph.class).iterators().edgeIterator()) :
+                    TinkerHelper.queryEdgeIndex(this.getGraph(TinkerGraph.class), indexedContainer.key, indexedContainer.value).stream()
+                            .filter(edge -> HasContainer.testAll(edge, this.hasContainers))
+                            .collect(Collectors.<Edge>toList()).iterator();
     }
 
     private Iterator<? extends Vertex> vertices() {
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
-        return null == indexedContainer ?
-                this.iteratorList(this.getGraph(TinkerGraph.class).iterators().vertexIterator(this.ids)) :
-                TinkerHelper.queryVertexIndex(this.getGraph(TinkerGraph.class), indexedContainer.key, indexedContainer.value).stream()
-                        .filter(vertex -> ElementHelper.idExists(vertex.id(), this.ids) && HasContainer.testAll(vertex, this.hasContainers))
-                        .collect(Collectors.<Vertex>toList()).iterator();
+        // ids are present, filter on them first
+        if (this.ids != null && this.ids.length > 0)
+            return this.iteratorList(this.getGraph(TinkerGraph.class).iterators().vertexIterator(this.ids));
+        else
+            return null == indexedContainer ?
+                    this.iteratorList(this.getGraph(TinkerGraph.class).iterators().vertexIterator()) :
+                    TinkerHelper.queryVertexIndex(this.getGraph(TinkerGraph.class), indexedContainer.key, indexedContainer.value).stream()
+                            .filter(vertex -> HasContainer.testAll(vertex, this.hasContainers))
+                            .collect(Collectors.<Vertex>toList()).iterator();
     }
 
     private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
