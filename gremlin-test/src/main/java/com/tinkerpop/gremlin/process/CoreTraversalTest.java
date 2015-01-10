@@ -1,10 +1,14 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.ExceptionCoverage;
+import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Contains;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -13,6 +17,7 @@ import java.util.Random;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static org.junit.Assert.*;
 
 /**
@@ -54,21 +59,11 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
         traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
         assertTrue(traversal.hasNext());
-        int counter = 0;
-        while (traversal.hasNext()) {
-            traversal.next();
-            counter++;
-        }
-        assertEquals(2, counter);
+        assertEquals(2, IteratorUtils.count(traversal));
 
         traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
         traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
-        counter = 0;
-        while (traversal.hasNext()) {
-            counter++;
-            traversal.next();
-        }
-        assertEquals(4, counter);
+        assertEquals(4, IteratorUtils.count(traversal));
         assertFalse(traversal.hasNext());
     }
 
@@ -80,12 +75,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
         traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
         assertTrue(traversal.hasNext());
-        int counter = 0;
-        while (traversal.hasNext()) {
-            traversal.next();
-            counter++;
-        }
-        assertEquals(2, counter);
+        assertEquals(2, IteratorUtils.count(traversal));
 
         if (new Random().nextBoolean()) traversal.asAdmin().reset();
         traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
@@ -96,15 +86,43 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
 
         traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
-        counter = 0;
-        while (traversal.hasNext()) {
-            counter++;
-            traversal.next();
-        }
-        assertEquals(2, counter);
+        assertEquals(2, IteratorUtils.count(traversal));
 
         assertFalse(traversal.hasNext());
         if (new Random().nextBoolean()) traversal.asAdmin().reset();
         assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldTraverseIfAutoTxEnabledAndOriginalTxIsClosed() {
+        // this should be the default, but manually set in just in case the implementation has other ideas
+        g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.AUTO);
+
+        // close down the current transaction
+        final Traversal t = g.V().has("name", "marko");
+        g.tx().rollback();
+
+        // the traversal should still work since there are auto transactions
+        assertEquals(1, IteratorUtils.count(t));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldTraverseIfManualTxEnabledAndOriginalTxIsClosed() {
+        // auto should be the default, so force manual
+        g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
+
+        // close down the current transaction and fire up a fresh one
+        g.tx().open();
+        final Traversal t = g.V().has("name", "marko");
+        g.tx().rollback();
+
+        // the traversal should still work since there are auto transactions
+        g.tx().open();
+        assertEquals(1, IteratorUtils.count(t));
+        g.tx().rollback();
     }
 }
