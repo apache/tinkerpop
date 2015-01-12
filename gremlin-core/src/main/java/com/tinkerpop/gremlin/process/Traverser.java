@@ -15,7 +15,7 @@ import java.io.Serializable;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
+public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cloneable {
 
     /**
      * Get the object that the traverser is current at.
@@ -120,6 +120,11 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public Traverser<T> clone() throws CloneNotSupportedException;
+
+    /**
      * The methods in System.Traverser are useful to underlying Step and Traversal implementations.
      * They should not be accessed by the user during lambda-based manipulations.
      */
@@ -154,7 +159,6 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          * @return The split traverser
          */
         public Admin<T> split();
-
 
         /**
          * Set the current object location of the traverser.

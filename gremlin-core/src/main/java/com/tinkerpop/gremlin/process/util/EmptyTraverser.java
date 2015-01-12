@@ -124,4 +124,9 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     public boolean equals(final Object object) {
         return object instanceof EmptyTraverser;
     }
+
+    @Override
+    public EmptyTraverser<T> clone() throws CloneNotSupportedException {
+        return this;
+    }
 }
