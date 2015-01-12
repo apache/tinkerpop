@@ -22,6 +22,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     protected List<TraversalStrategy> traversalStrategies = new ArrayList<>();
     protected TraverserGeneratorFactory traverserGeneratorFactory = DefaultTraverserGeneratorFactory.instance();
 
+    @Override
     public TraversalStrategies addStrategies(final TraversalStrategy... strategies) {
         boolean added = false;
         for (final TraversalStrategy strategy : strategies) {
