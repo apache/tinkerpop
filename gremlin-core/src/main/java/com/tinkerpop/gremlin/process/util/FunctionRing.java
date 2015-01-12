@@ -27,8 +27,8 @@ public class FunctionRing<A, B> implements Cloneable {
         }
     }
 
-    public boolean hasFunctions() {
-        return this.functions.size() > 0;
+    public boolean isEmpty() {
+        return this.functions.isEmpty();
     }
 
     public void reset() {
@@ -37,10 +37,6 @@ public class FunctionRing<A, B> implements Cloneable {
 
     public int size() {
         return this.functions.size();
-    }
-
-    public boolean roundComplete() {
-        return this.currentFunction == this.functions.size() - 1;
     }
 
     public void addFunction(final Function<A, B> function) {
