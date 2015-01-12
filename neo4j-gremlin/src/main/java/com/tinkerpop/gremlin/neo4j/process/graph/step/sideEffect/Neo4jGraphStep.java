@@ -50,14 +50,20 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private Iterator<? extends Edge> edges() {
         this.graph.tx().readWrite();
+        // ids are present, filter on them first
+        if (this.ids != null && this.ids.length > 0)
+            return IteratorUtils.filter(this.graph.iterators().edgeIterator(this.ids), edge -> HasContainer.testAll((Edge) edge, this.hasContainers));
         final HasContainer hasContainer = this.getHasContainerForAutomaticIndex(Edge.class);
         return (null == hasContainer) ?
-                IteratorUtils.filter(this.graph.iterators().edgeIterator(this.ids), edge -> HasContainer.testAll((Edge) edge, this.hasContainers)) :
+                IteratorUtils.filter(this.graph.iterators().edgeIterator(), edge -> HasContainer.testAll((Edge) edge, this.hasContainers)) :
                 getEdgesUsingAutomaticIndex(hasContainer).filter(edge -> HasContainer.testAll((Edge) edge, this.hasContainers)).iterator();
     }
 
     private Iterator<? extends Vertex> vertices() {
         this.graph.tx().readWrite();
+        // ids are present, filter on them first
+        if (this.ids != null && this.ids.length > 0)
+            return IteratorUtils.filter(this.graph.iterators().vertexIterator(this.ids), vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers));
         // a label and a property
         final Pair<String, HasContainer> labelHasPair = this.getHasContainerForLabelIndex();
         if (null != labelHasPair)
@@ -73,7 +79,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         if (null != labels)
             return this.getVerticesUsingOnlyLabels(labels).filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
         // linear scan
-        return IteratorUtils.filter(this.graph.iterators().vertexIterator(this.ids), vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers));
+        return IteratorUtils.filter(this.graph.iterators().vertexIterator(), vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers));
     }
 
 
