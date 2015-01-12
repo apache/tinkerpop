@@ -2,8 +2,11 @@ package com.tinkerpop.gremlin;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.traverser.PathTraverser;
+import com.tinkerpop.gremlin.process.traverser.SimpleTraverser;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -16,6 +19,7 @@ import org.apache.commons.configuration.Configuration;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,6 +37,18 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphProvider {
+
+    /**
+     * Implementations from {@code gremlin-core} that need to be part of the clear process.  This does not exempt
+     * vendors from having to register their extensions to any of these classes, but does prevent them from
+     * having to register them in addition to their own.
+     */
+    public static final Set<Class> CORE_IMPLEMENTATIONS = new HashSet<Class>() {{
+        add(AnonymousGraphTraversal.Tokens.class);
+        add(DefaultGraphTraversal.class);
+        add(SimpleTraverser.class);
+        add(PathTraverser.class);
+    }};
 
     /**
      * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance using the default
