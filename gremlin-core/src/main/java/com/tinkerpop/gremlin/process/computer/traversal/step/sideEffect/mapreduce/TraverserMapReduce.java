@@ -67,7 +67,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
         Object mutatingSeed = this.reducer.get().getValue0().get();
         final BiFunction function = this.reducer.get().getValue1();
         while (values.hasNext()) {
-            mutatingSeed = function.apply(mutatingSeed, ((Traverser)values.next()).get());
+            mutatingSeed = function.apply(mutatingSeed, ((Traverser) values.next()).get());
         }
         emitter.emit(key, new SimpleTraverser(mutatingSeed, EmptyStep.instance()));
     }

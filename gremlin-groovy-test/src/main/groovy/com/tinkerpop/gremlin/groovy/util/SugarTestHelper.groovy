@@ -1,11 +1,6 @@
 package com.tinkerpop.gremlin.groovy.util
 
 import com.tinkerpop.gremlin.GraphProvider
-import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal
-import com.tinkerpop.gremlin.process.traverser.PathTraverser
-import com.tinkerpop.gremlin.process.traverser.SimpleTraverser
-import org.codehaus.groovy.runtime.InvokerHelper
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

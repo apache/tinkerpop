@@ -1,10 +1,6 @@
 package com.tinkerpop.gremlin.console
 
-import com.tinkerpop.gremlin.console.commands.InstallCommand
-import com.tinkerpop.gremlin.console.commands.PluginCommand
-import com.tinkerpop.gremlin.console.commands.RemoteCommand
-import com.tinkerpop.gremlin.console.commands.SubmitCommand
-import com.tinkerpop.gremlin.console.commands.UninstallCommand
+import com.tinkerpop.gremlin.console.commands.*
 import com.tinkerpop.gremlin.console.plugin.PluggedIn
 import com.tinkerpop.gremlin.console.util.ArrayIterator
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader

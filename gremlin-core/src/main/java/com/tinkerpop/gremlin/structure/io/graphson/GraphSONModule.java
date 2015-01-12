@@ -63,7 +63,7 @@ public class GraphSONModule extends SimpleModule {
             jsonGenerator.writeObject(m);
         }
 
-        private Map<String,Object> props(final VertexProperty property) {
+        private Map<String, Object> props(final VertexProperty property) {
             if (property instanceof DetachedVertexProperty) {
                 try {
                     return IteratorUtils.collectMap(property.iterators().propertyIterator(), Property::key, Property::value);
@@ -126,7 +126,7 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.LABEL, edge.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
 
-            final Map<String,Object> properties = IteratorUtils.collectMap(edge.iterators().propertyIterator(), Property::key, Property::value);
+            final Map<String, Object> properties = IteratorUtils.collectMap(edge.iterators().propertyIterator(), Property::key, Property::value);
             m.put(GraphSONTokens.PROPERTIES, properties);
 
             final Vertex inV = edge.iterators().vertexIterator(Direction.IN).next();

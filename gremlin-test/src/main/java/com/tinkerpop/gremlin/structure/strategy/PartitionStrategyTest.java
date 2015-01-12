@@ -10,7 +10,6 @@ import org.junit.Test;
 import java.util.NoSuchElementException;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

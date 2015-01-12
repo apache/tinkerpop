@@ -13,8 +13,6 @@ import com.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoOutputFormat;
-import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoResourceAccess;

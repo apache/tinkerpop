@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
@@ -205,9 +204,10 @@ public final class PartitionStrategy implements GraphStrategy {
 
     public static class Builder {
         private String startPartition = "default";
-        private String partitionKey = "_partition" ;
+        private String partitionKey = "_partition";
 
-        private Builder() {}
+        private Builder() {
+        }
 
         /**
          * The initial partition to filter by. If this value is not set, it will be defaulted to "default".

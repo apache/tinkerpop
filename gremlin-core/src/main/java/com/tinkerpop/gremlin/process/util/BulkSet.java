@@ -57,7 +57,7 @@ public class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializable {
         return true;
     }
 
-    public void forEach(final BiConsumer<S,Long> consumer) {
+    public void forEach(final BiConsumer<S, Long> consumer) {
         this.map.forEach(consumer);
     }
 

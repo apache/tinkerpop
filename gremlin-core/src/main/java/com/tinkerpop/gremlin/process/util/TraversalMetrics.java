@@ -52,7 +52,7 @@ public final class TraversalMetrics implements Serializable {
         step.getTraversal().asAdmin().getSideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).finishInternal(step, traverser);
     }
 
-     private static boolean profiling(final Traversal<?, ?> traversal) {
+    private static boolean profiling(final Traversal<?, ?> traversal) {
         Boolean profiling;
         if ((profiling = PROFILING_CACHE.get(traversal)) != null)
             return profiling;

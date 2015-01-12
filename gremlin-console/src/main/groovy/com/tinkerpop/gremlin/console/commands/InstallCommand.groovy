@@ -8,11 +8,7 @@ import groovy.grape.Grape
 import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 
-import java.nio.file.DirectoryStream
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.StandardCopyOption
+import java.nio.file.*
 import java.util.jar.JarFile
 import java.util.jar.Manifest
 
@@ -63,25 +59,29 @@ class InstallCommand extends CommandSupport {
             // smart and they are therefore capable of resolving their own dependency problems.  this could also
             // mean that they are running gremlin from source and not from target/*standalone*
             io.println "Detected a non-standard Gremlin directory structure during install.  Expecting a 'lib' " +
-                       "directory sibling to 'ext'. This message does not necessarily imply failure, however " +
-                       "the console requires a certain directory structure for proper execution. Altering that " +
-                       "structure can lead to unexpected behavior."
+                    "directory sibling to 'ext'. This message does not necessarily imply failure, however " +
+                    "the console requires a certain directory structure for proper execution. Altering that " +
+                    "structure can lead to unexpected behavior."
         }
 
         // ignore slf4j related jars.  they are already in the path and will create duplicate bindings which
         // generate annoying log messages that make you think stuff is wrong.  also, don't bring over files
         // that are already on the path
-        dependencyLocations.collect{fs.getPath(it.path)}
-                .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
-                .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}
+        dependencyLocations.collect { fs.getPath(it.path) }
+                .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
+                .findAll {
+            !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
+        }
                 .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
 
         // additional dependencies are outside those pulled by grape and are defined in the manifest of the plugin jar.
         // if a plugin uses that setting, it should force "restart" when the plugin is activated.  right now,
         // it is up to the plugin developer to enforce that setting.
-        getAdditionalDependencies(target, artifact).collect{fs.getPath(it.path)}
-                .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
-                .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}
+        getAdditionalDependencies(target, artifact).collect { fs.getPath(it.path) }
+                .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
+                .findAll {
+            !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
+        }
                 .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
 
         // the ordering of jars seems to matter in some cases (e.g. neo4j).  the plugin system allows the plugin
@@ -175,7 +175,7 @@ class InstallCommand extends CommandSupport {
     private static def createArtifact(final List<String> arguments) {
         final String group = arguments.size() >= 1 ? arguments.get(0) : null
         final String module = arguments.size() >= 2 ? arguments.get(1) : null
-        final String version = arguments.size() >=3 ? arguments.get(2) : null
+        final String version = arguments.size() >= 3 ? arguments.get(2) : null
 
         if (group == null || group.isEmpty())
             throw new IllegalArgumentException("Group cannot be null or empty")
@@ -199,10 +199,10 @@ class InstallCommand extends CommandSupport {
         return map
     }
 
-    private static void getFileNames(final List fileNames, final Path dir){
+    private static void getFileNames(final List fileNames, final Path dir) {
         final DirectoryStream<Path> stream = Files.newDirectoryStream(dir)
         for (Path path : stream) {
-            if(path.toFile().isDirectory()) getFileNames(fileNames, path)
+            if (path.toFile().isDirectory()) getFileNames(fileNames, path)
             else {
                 fileNames.add(path.toAbsolutePath())
             }

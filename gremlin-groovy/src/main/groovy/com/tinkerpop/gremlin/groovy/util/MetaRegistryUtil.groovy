@@ -19,9 +19,9 @@ class MetaRegistryUtil {
         // this call returns interfaces and removes meta clases from there.  not sure why it doesn't return
         // concrete classes that are in the registry, but such is the nature of groovy
         def metaClassesToRemove = metaRegistry.iterator()
-        metaClassesToRemove.collect{(Class) it.theClass}.each{ metaRegistry.removeMetaClass(it) }
+        metaClassesToRemove.collect { (Class) it.theClass }.each { metaRegistry.removeMetaClass(it) }
 
         // since we don't get concrete classes those must come from the GraphProvider.
-        toClear.each{ metaRegistry.removeMetaClass(it) }
+        toClear.each { metaRegistry.removeMetaClass(it) }
     }
 }

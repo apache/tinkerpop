@@ -58,7 +58,7 @@ public class GraphSONVertexProperty {
             jsonGenerator.writeObject(m);
         }
 
-        private Map<String,Object> props(final VertexProperty property) {
+        private Map<String, Object> props(final VertexProperty property) {
             if (property instanceof DetachedVertexProperty) {
                 try {
                     return IteratorUtils.collectMap(property.iterators().propertyIterator(), Property::key, Property::value);

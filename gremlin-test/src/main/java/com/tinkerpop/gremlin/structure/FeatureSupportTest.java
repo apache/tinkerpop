@@ -21,19 +21,12 @@ import org.junit.runners.Parameterized;
 import java.util.Date;
 import java.util.UUID;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_ANY_IDS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_STRING_IDS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_NUMERIC_IDS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_UUID_IDS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.*;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.*;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -819,7 +812,7 @@ public class FeatureSupportTest {
             assertEquals(variablesFeatures.supportsVariables(), (variablesFeatures.supportsBooleanValues() || variablesFeatures.supportsDoubleValues()
                     || variablesFeatures.supportsFloatValues() || variablesFeatures.supportsIntegerValues()
                     || variablesFeatures.supportsLongValues() || variablesFeatures.supportsMapValues()
-                    || variablesFeatures.supportsMixedListValues()|| variablesFeatures.supportsByteValues()
+                    || variablesFeatures.supportsMixedListValues() || variablesFeatures.supportsByteValues()
                     || variablesFeatures.supportsBooleanArrayValues() || variablesFeatures.supportsByteArrayValues()
                     || variablesFeatures.supportsDoubleArrayValues() || variablesFeatures.supportsFloatArrayValues()
                     || variablesFeatures.supportsIntegerArrayValues() || variablesFeatures.supportsLongArrayValues()

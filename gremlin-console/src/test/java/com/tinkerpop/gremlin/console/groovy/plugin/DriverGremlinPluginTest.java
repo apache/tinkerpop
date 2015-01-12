@@ -38,7 +38,7 @@ public class DriverGremlinPluginTest {
     @Test
     public void shouldConstructRemoteAcceptorWhenInConsoleEnvironment() throws Exception {
         final DriverGremlinPlugin plugin = new DriverGremlinPlugin();
-        final Map<String,Object> env = new HashMap<>();
+        final Map<String, Object> env = new HashMap<>();
         env.put("ConsolePluginAcceptor.io", new IO());
         env.put("ConsolePluginAcceptor.shell", new Groovysh());
         final SpyPluginAcceptor spy = new SpyPluginAcceptor(() -> env);

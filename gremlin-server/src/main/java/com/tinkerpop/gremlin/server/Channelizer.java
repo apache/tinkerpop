@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelPipeline;
 import io.netty.util.concurrent.EventExecutorGroup;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -12,9 +11,8 @@ import java.util.concurrent.ScheduledExecutorService;
  * different protocols, mapper security and other such functions.  A {@code Channelizer} implementation can be
  * configured in Gremlin Server with the {@code channelizer} setting in the configuration file.
  *
- * @see com.tinkerpop.gremlin.server.AbstractChannelizer
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @see com.tinkerpop.gremlin.server.AbstractChannelizer
  */
 public interface Channelizer extends ChannelHandler {
 

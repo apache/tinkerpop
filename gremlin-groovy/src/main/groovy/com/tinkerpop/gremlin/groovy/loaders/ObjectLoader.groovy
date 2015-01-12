@@ -1,7 +1,4 @@
 package com.tinkerpop.gremlin.groovy.loaders
-
-import com.tinkerpop.gremlin.structure.Graph
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

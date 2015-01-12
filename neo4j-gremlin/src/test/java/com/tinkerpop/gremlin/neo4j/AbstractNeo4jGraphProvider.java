@@ -15,7 +15,6 @@ import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraphVariables;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jProperty;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
-import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.neo4j.graphdb.DynamicLabel;

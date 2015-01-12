@@ -1,4 +1,5 @@
 package com.tinkerpop.gremlin.console.plugin
+
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import com.tinkerpop.gremlin.groovy.plugin.RemoteException
 import com.tinkerpop.gremlin.process.Traversal
@@ -11,6 +12,7 @@ import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 
 import static groovyx.net.http.ContentType.JSON
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Randall Barnhart (randompi@gmail.com)
@@ -36,7 +38,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
 
         // traversal visualization defaults
         vizStepDelay = 1000;                 // 1 second pause between viz of steps
-        vizStartRGBColor = [0.0f,1.0f,0.5f]  // light aqua green
+        vizStartRGBColor = [0.0f, 1.0f, 0.5f]  // light aqua green
         vizColorToFade = 'g'                 // will fade so blue is strongest
         vizColorFadeRate = 0.7               // the multiplicative rate to fade visited vertices
     }
@@ -85,8 +87,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             } catch (Exception ignored) {
                 throw new RemoteException("Port must be an integer value")
             }
-        }
-        else if (args[0] == "workspace")
+        } else if (args[0] == "workspace")
             workspace = args[1]
         else if (args[0] == "stepDelay")
             parseVizStepDelay(args[1])
@@ -175,7 +176,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             // assumes user called store("1")...store("n") in ascension
             for (int i = 1; i <= memSize; i++) {
                 def stepKey = Integer.toString(i)
-                if(memKeys.contains(stepKey)) {
+                if (memKeys.contains(stepKey)) {
                     io.out.print("Visualizing vertices at step: $stepKey... ")
                     updateVisitedVertices()
                     int visitedCount = 0
@@ -232,8 +233,8 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
 
     def addVertexToGephi(def Vertex v, def boolean ignoreEdges = false) {
         // grab the first property value from the strategies of values
-        def props = v.valueMap().next().collectEntries {kv -> [(kv.key):kv.value[0]]}
-        props << [label:v.label()]
+        def props = v.valueMap().next().collectEntries { kv -> [(kv.key): kv.value[0]] }
+        props << [label: v.label()]
 
         // only add if it does not exist in graph already
         if (!getFromGephiGraph([operation: "getNode", id: v.id().toString()]).isPresent())

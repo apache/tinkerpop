@@ -17,7 +17,8 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(final Object v1Id) {
+        public Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(
+                final Object v1Id) {
             g.V(v1Id).as('a').out('knows').as('b').select.by('name')
         }
 
@@ -56,7 +57,8 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(final Object v1Id) {
+        public Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(
+                final Object v1Id) {
             g.V(v1Id).as('a').out('knows').as('b').select.by('name')
             // TODO
         }

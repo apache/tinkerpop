@@ -35,12 +35,12 @@ public abstract class AbstractGremlinPlugin implements GremlinPlugin {
 
     /**
      * {@inheritDoc}
-     * <p>
+     * <p/>
      * Provides a base implementation for plugins by grabbing the console environment variables and assigning them
      * to the {@link #io} and {@link #shell} member variables.
      *
      * @throws IllegalEnvironmentException if {@link #requireConsoleEnvironment} is set to true and if either
-     * the {@link #io} and {@link #shell} member variables are null.
+     *                                     the {@link #io} and {@link #shell} member variables are null.
      */
     @Override
     public void pluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
@@ -48,7 +48,8 @@ public abstract class AbstractGremlinPlugin implements GremlinPlugin {
         io = (IO) environment.get(ENV_CONSOLE_IO);
         shell = (Groovysh) environment.get(ENV_CONSOLE_SHELL);
 
-        if (requireConsoleEnvironment && (null == io || null == shell)) throw new IllegalEnvironmentException(this, ENV_CONSOLE_SHELL, ENV_CONSOLE_IO);
+        if (requireConsoleEnvironment && (null == io || null == shell))
+            throw new IllegalEnvironmentException(this, ENV_CONSOLE_SHELL, ENV_CONSOLE_IO);
 
         try {
             afterPluginTo(pluginAcceptor);

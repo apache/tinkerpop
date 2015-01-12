@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.groovy.plugin;
 
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Those wanting to extend Gremlin can implement this interface to provide mapper imports and extension
@@ -26,8 +25,8 @@ public interface GremlinPlugin {
      * Implementers will typically execute imports of classes within their project that they want available in the
      * console or they may use meta programming to introduce new extensions to the Gremlin.
      *
-     * @throws IllegalEnvironmentException if there are missing environment properties required by the plugin as
-     * provided from {@link PluginAcceptor#environment()}.
+     * @throws IllegalEnvironmentException   if there are missing environment properties required by the plugin as
+     *                                       provided from {@link PluginAcceptor#environment()}.
      * @throws PluginInitializationException if there is a failure in the plugin iniitalization process
      */
     public void pluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException;

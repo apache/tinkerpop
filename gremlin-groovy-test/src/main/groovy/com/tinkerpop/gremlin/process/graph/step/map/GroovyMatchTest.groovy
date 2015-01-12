@@ -51,7 +51,7 @@ public abstract class GroovyMatchTest {
         public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXab_nameX() {
             g.V().match('a',
                     __.as('a').out('created').as('b'),
-                    __.as('a').repeat(__.out).times(2).as('b')).select('a','b').by('name')
+                    __.as('a').repeat(__.out).times(2).as('b')).select('a', 'b').by('name')
         }
 
         @Override
@@ -146,7 +146,7 @@ public abstract class GroovyMatchTest {
                     __.as('a').out('created').as('b'),
                     __.as('b').in('created').as('c'))
                     .where('a', Compare.neq, 'c')
-                    .select('a','c').by('name')
+                    .select('a', 'c').by('name')
         }
 
         /*@Override

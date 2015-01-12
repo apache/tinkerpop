@@ -1,8 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
-import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;

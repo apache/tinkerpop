@@ -14,8 +14,6 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -24,9 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  * Serializer tests that cover non-lossy serialization/deserialization methods.
@@ -173,7 +169,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final Map<String, Object> properties = (Map<String, Object>) deserializedVertex.get(GraphSONTokens.PROPERTIES);
         assertEquals(1, properties.size());
 
-        final List<Object> deserializedInnerList = (List<Object>) ((Map<String,Object>) ((List<Object>) properties.get("friends")).get(0)).get(GraphSONTokens.VALUE);
+        final List<Object> deserializedInnerList = (List<Object>) ((Map<String, Object>) ((List<Object>) properties.get("friends")).get(0)).get(GraphSONTokens.VALUE);
         assertEquals(3, deserializedInnerList.size());
         assertEquals("x", deserializedInnerList.get(0));
         assertEquals(5, deserializedInnerList.get(1));
@@ -206,11 +202,11 @@ public class JsonMessageSerializerGremlinV1d0Test {
     public void serializeFullResponseMessage() throws Exception {
         final UUID id = UUID.randomUUID();
 
-        final Map<String,Object> metaData = new HashMap<>();
+        final Map<String, Object> metaData = new HashMap<>();
         metaData.put("test", "this");
         metaData.put("one", 1);
 
-        final Map<String,Object> attributes = new HashMap<>();
+        final Map<String, Object> attributes = new HashMap<>();
         attributes.put("test", "that");
         attributes.put("two", 2);
 

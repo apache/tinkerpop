@@ -27,11 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Integration tests for gremlin-driver configurations and settings.
@@ -302,23 +298,23 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect(name.getMethodName());
 
-        final Map<String,Object> bindings1 = new HashMap<>();
+        final Map<String, Object> bindings1 = new HashMap<>();
         bindings1.put("a", 100);
         bindings1.put("b", 200);
         final ResultSet results1 = client.submit("x = a + b", bindings1);
         assertEquals(300, results1.one().getInt());
 
-        final Map<String,Object> bindings2 = new HashMap<>();
+        final Map<String, Object> bindings2 = new HashMap<>();
         bindings2.put("b", 100);
         final ResultSet results2 = client.submit("x + b + a", bindings2);
         assertEquals(500, results2.one().getInt());
 
-        final Map<String,Object> bindings3 = new HashMap<>();
+        final Map<String, Object> bindings3 = new HashMap<>();
         bindings3.put("x", 100);
         final ResultSet results3 = client.submit("x + b + a + 1", bindings3);
         assertEquals(301, results3.one().getInt());
 
-        final Map<String,Object> bindings4 = new HashMap<>();
+        final Map<String, Object> bindings4 = new HashMap<>();
         final ResultSet results4 = client.submit("x + b + a + 1", bindings4);
         assertEquals(301, results4.one().getInt());
 

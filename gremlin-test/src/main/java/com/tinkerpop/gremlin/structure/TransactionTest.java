@@ -19,9 +19,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_DOUBLE_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -864,7 +864,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldAllowReferenceOfVertexIdOutsideOfOriginalThreadAuto() throws Exception  {
+    public void shouldAllowReferenceOfVertexIdOutsideOfOriginalThreadAuto() throws Exception {
         final Vertex v1 = g.addVertex("name", "stephen");
 
         final AtomicReference<Object> id = new AtomicReference<>();
@@ -880,7 +880,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldAllowReferenceOfEdgeIdOutsideOfOriginalThreadAuto() throws Exception  {
+    public void shouldAllowReferenceOfEdgeIdOutsideOfOriginalThreadAuto() throws Exception {
         final Vertex v1 = g.addVertex();
         final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
 

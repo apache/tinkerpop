@@ -6,8 +6,8 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
 import java.util.function.BiFunction;
@@ -109,9 +109,10 @@ public final class SubgraphStrategy implements GraphStrategy {
     public static class Builder {
 
         private Predicate<Vertex> vertexPredicate = v -> true;
-        private Predicate<Edge> edgePredicate  = v -> true;
+        private Predicate<Edge> edgePredicate = v -> true;
 
-        private Builder() {}
+        private Builder() {
+        }
 
         public Builder vertexPredicate(final Predicate<Vertex> vertexPredicate) {
             this.vertexPredicate = vertexPredicate;

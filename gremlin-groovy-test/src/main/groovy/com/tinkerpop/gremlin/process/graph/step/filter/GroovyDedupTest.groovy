@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.process.graph.step.filter
 
-import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader
-import com.tinkerpop.gremlin.groovy.loaders.SugarLoader
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex

@@ -1,9 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.step.util.MarkerIdentityStep;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.graph.step.util.MarkerIdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 

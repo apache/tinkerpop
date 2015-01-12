@@ -58,8 +58,8 @@ public class ResponseMessage {
         private ResponseStatusCode code = ResponseStatusCode.SUCCESS;
         private Object result = null;
         private String statusMessage = "";
-        private Map<String,Object> attributes = Collections.emptyMap();
-        private Map<String,Object> metaData = Collections.emptyMap();
+        private Map<String, Object> attributes = Collections.emptyMap();
+        private Map<String, Object> metaData = Collections.emptyMap();
 
         private Builder(final RequestMessage requestMessage) {
             this.requestId = requestMessage.getRequestId();
@@ -79,7 +79,7 @@ public class ResponseMessage {
             return this;
         }
 
-        public Builder statusAttributes(final Map<String,Object> attributes) {
+        public Builder statusAttributes(final Map<String, Object> attributes) {
             this.attributes = attributes;
             return this;
         }
@@ -89,7 +89,7 @@ public class ResponseMessage {
             return this;
         }
 
-        public Builder responseMetaData(final Map<String,Object> metaData) {
+        public Builder responseMetaData(final Map<String, Object> metaData) {
             this.metaData = metaData;
             return this;
         }

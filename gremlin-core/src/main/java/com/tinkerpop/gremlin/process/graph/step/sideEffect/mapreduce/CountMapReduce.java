@@ -79,7 +79,7 @@ public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Lon
 
     @Override
     public CountMapReduce clone() throws CloneNotSupportedException {
-        final CountMapReduce clone = (CountMapReduce)super.clone();
+        final CountMapReduce clone = (CountMapReduce) super.clone();
         clone.traversal = this.traversal.clone();
         return clone;
     }

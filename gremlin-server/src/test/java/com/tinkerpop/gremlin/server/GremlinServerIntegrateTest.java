@@ -30,10 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Integration tests for server-side settings and processing.
@@ -93,7 +90,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 }
             });
 
-            if (!latch.await(300, TimeUnit.MILLISECONDS)) fail("Request should have returned error, but instead timed out");
+            if (!latch.await(300, TimeUnit.MILLISECONDS))
+                fail("Request should have returned error, but instead timed out");
             assertTrue(pass.get());
         }
     }
@@ -101,7 +99,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldReturnInvalidRequestArgsWhenInvalidBindingKeyIsUsed() throws Exception {
         try (SimpleClient client = new WebSocketClient()) {
-            final Map<String,Object> bindings = new HashMap<>();
+            final Map<String, Object> bindings = new HashMap<>();
             bindings.put(T.id.getAccessor(), "123");
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]")
@@ -115,7 +113,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 }
             });
 
-            if (!latch.await(300, TimeUnit.MILLISECONDS)) fail("Request should have returned error, but instead timed out");
+            if (!latch.await(300, TimeUnit.MILLISECONDS))
+                fail("Request should have returned error, but instead timed out");
             assertTrue(pass.get());
         }
     }
@@ -338,8 +337,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 // this request should get blocked by the server
                 client.submitAsync("'test-blocked'").join().one();
                 fail("Request should fail because max connections are exceeded");
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 assertTrue(true);
                 ex.printStackTrace();
             }

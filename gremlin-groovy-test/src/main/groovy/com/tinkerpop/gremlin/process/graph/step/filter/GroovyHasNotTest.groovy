@@ -24,12 +24,12 @@ public abstract class GroovyHasNotTest {
     public static class ComputerTest extends HasNotTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasNotXprop(final Object v1Id, final String propertyKey) {
-           ComputerTestHelper.compute("g.V(${v1Id}).hasNot('${propertyKey}')",g);
+            ComputerTestHelper.compute("g.V(${v1Id}).hasNot('${propertyKey}')", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey) {
-            ComputerTestHelper.compute("g.V.hasNot('${propertyKey}')",g);
+            ComputerTestHelper.compute("g.V.hasNot('${propertyKey}')", g);
         }
     }
 }

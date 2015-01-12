@@ -3,8 +3,6 @@ package com.tinkerpop.gremlin.process.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

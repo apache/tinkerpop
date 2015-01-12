@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
-* @author Stephen Mallette (http://stephen.genoprime.com)
-*/
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
 public class NioGremlinRequestEncoder extends MessageToByteEncoder<Object> {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketGremlinRequestEncoder.class);
     private boolean binaryEncoding = false;

@@ -33,7 +33,7 @@ import static org.junit.Assert.assertNull;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class KryoMessageSerializerV1d0Test {
-    private static final Map<String,Object> config = new HashMap<String,Object>(){{
+    private static final Map<String, Object> config = new HashMap<String, Object>() {{
         put("serializeResultToString", true);
     }};
 
@@ -230,11 +230,11 @@ public class KryoMessageSerializerV1d0Test {
     public void serializeFullResponseMessage() throws Exception {
         final UUID id = UUID.randomUUID();
 
-        final Map<String,Object> metaData = new HashMap<>();
+        final Map<String, Object> metaData = new HashMap<>();
         metaData.put("test", "this");
         metaData.put("one", 1);
 
-        final Map<String,Object> attributes = new HashMap<>();
+        final Map<String, Object> attributes = new HashMap<>();
         attributes.put("test", "that");
         attributes.put("two", 2);
 

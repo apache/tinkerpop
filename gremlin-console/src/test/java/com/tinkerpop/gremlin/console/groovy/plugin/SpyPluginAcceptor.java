@@ -16,24 +16,24 @@ import java.util.function.Supplier;
 public class SpyPluginAcceptor implements PluginAcceptor {
 
     private final Set<String> imports = new HashSet<>();
-    private final Map<String,Object> bindings = new HashMap<>();
+    private final Map<String, Object> bindings = new HashMap<>();
 
-    private final Function<String,Object> evalSpy;
-    private final Supplier<Map<String,Object>> environment;
+    private final Function<String, Object> evalSpy;
+    private final Supplier<Map<String, Object>> environment;
 
     public SpyPluginAcceptor() {
         this(script -> script);
     }
 
-    public SpyPluginAcceptor(final Function<String,Object> evalSpy) {
+    public SpyPluginAcceptor(final Function<String, Object> evalSpy) {
         this(evalSpy, HashMap::new);
     }
 
-    public SpyPluginAcceptor(final Supplier<Map<String,Object>> environmentMaker) {
+    public SpyPluginAcceptor(final Supplier<Map<String, Object>> environmentMaker) {
         this(script -> script, environmentMaker);
     }
 
-    public SpyPluginAcceptor(final Function<String,Object> evalSpy, final Supplier<Map<String,Object>> environmentMaker) {
+    public SpyPluginAcceptor(final Function<String, Object> evalSpy, final Supplier<Map<String, Object>> environmentMaker) {
         this.evalSpy = evalSpy;
         this.environment = environmentMaker;
     }

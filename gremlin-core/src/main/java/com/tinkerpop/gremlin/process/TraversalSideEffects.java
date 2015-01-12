@@ -10,8 +10,8 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
-* @author Marko A. Rodriguez (http://markorodriguez.com)
-*/
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ */
 public interface TraversalSideEffects extends Cloneable {
 
     public static final String SIDE_EFFECTS = "gremlin.traversal.sideEffects";

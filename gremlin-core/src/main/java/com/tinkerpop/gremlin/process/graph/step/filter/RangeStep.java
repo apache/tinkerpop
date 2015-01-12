@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Predicate;
 
 /**
  * @author Bob Briody (http://bobbriody.com)

@@ -283,8 +283,8 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         final ComputerResult results = get_g_compute_mapXidX_reduceXidX_reduceKeySortXreverseX_memoryKeyXidsX().submit().get();
         final List<Long> ids = results.memory().get("ids");
         assertEquals(6, ids.size());
-        for (int i=1;i<ids.size();i++) {
-            assertTrue(ids.get(i)<ids.get(i-1));
+        for (int i = 1; i < ids.size(); i++) {
+            assertTrue(ids.get(i) < ids.get(i - 1));
         }
     }
 

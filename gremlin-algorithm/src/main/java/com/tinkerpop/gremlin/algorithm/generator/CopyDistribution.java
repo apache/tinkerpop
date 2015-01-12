@@ -4,7 +4,7 @@ import java.util.Random;
 
 /**
  * CopyDistribution returns the conditional value.
- * <p>
+ * <p/>
  * Hence, this class can be used as the in-degree distribution to ensure that
  * the in-degree of a vertex is equal to the out-degree.
  *

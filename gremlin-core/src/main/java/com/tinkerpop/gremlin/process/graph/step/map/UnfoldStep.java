@@ -22,7 +22,7 @@ public final class UnfoldStep<S, E> extends FlatMapStep<S, E> {
             else if (s instanceof Map)
                 return ((Map) s).entrySet().iterator();
             else
-                return IteratorUtils.of((E)s);
+                return IteratorUtils.of((E) s);
         });
     }
 }

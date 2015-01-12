@@ -19,7 +19,7 @@ public class NioGremlinResponseDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final ByteBuf byteBuf, final List<Object> objects) throws Exception {
-        if (byteBuf.readableBytes() < 1)  return;
+        if (byteBuf.readableBytes() < 1) return;
         objects.add(serializer.deserializeResponse(byteBuf));
     }
 }

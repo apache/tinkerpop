@@ -7,9 +7,9 @@ import java.util.Map;
  */
 public class ResponseResult {
     private final Object data;
-    private final Map<String,Object> meta;
+    private final Map<String, Object> meta;
 
-    public ResponseResult(final Object data, final Map<String,Object> meta) {
+    public ResponseResult(final Object data, final Map<String, Object> meta) {
         this.data = data;
         this.meta = meta;
     }
@@ -18,7 +18,7 @@ public class ResponseResult {
         return data;
     }
 
-    public Map<String,Object> getMeta() {
+    public Map<String, Object> getMeta() {
         return meta;
     }
 

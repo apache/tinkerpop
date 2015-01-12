@@ -42,7 +42,7 @@ public abstract class BarrierStep<S> extends AbstractStep<S, S> implements Barri
 
     @Override
     public BarrierStep<S> clone() throws CloneNotSupportedException {
-        final BarrierStep<S> clone = (BarrierStep<S>)super.clone();
+        final BarrierStep<S> clone = (BarrierStep<S>) super.clone();
         clone.traverserSet = new TraverserSet<>();
         return clone;
     }

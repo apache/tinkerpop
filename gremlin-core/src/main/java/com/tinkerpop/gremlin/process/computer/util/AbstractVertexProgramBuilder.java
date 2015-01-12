@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.computer.util;
 
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.BaseConfiguration;
 
 /**

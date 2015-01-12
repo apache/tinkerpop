@@ -87,7 +87,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
         }
 
         if (!classNameList.isEmpty()) {
-            final List<Pair<Class, Function<Kryo,Serializer>>> classList = classNameList.stream().map(serializerDefinition -> {
+            final List<Pair<Class, Function<Kryo, Serializer>>> classList = classNameList.stream().map(serializerDefinition -> {
                 String className;
                 Optional<String> serializerName;
                 if (serializerDefinition.contains(";")) {
@@ -111,7 +111,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                     } else
                         serializer = null;
 
-                    return Pair.<Class, Function<Kryo,Serializer>>with(clazz, kryo -> serializer);
+                    return Pair.<Class, Function<Kryo, Serializer>>with(clazz, kryo -> serializer);
                 } catch (Exception ex) {
                     throw new IllegalStateException("Class could not be found", ex);
                 }
@@ -138,12 +138,12 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
                 final Map<String, Object> responseData = (Map<String, Object>) kryo.readClassAndObject(input);
-                final Map<String, Object> status = (Map<String,Object>) responseData.get(SerTokens.TOKEN_STATUS);
-                final Map<String, Object> result = (Map<String,Object>) responseData.get(SerTokens.TOKEN_RESULT);
+                final Map<String, Object> status = (Map<String, Object>) responseData.get(SerTokens.TOKEN_STATUS);
+                final Map<String, Object> result = (Map<String, Object>) responseData.get(SerTokens.TOKEN_RESULT);
                 return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                         .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
                         .statusMessage(Optional.ofNullable((String) status.get(SerTokens.TOKEN_MESSAGE)).orElse(""))
-                        .statusAttributes((Map<String,Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
+                        .statusAttributes((Map<String, Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
                         .result(result.get(SerTokens.TOKEN_DATA))
                         .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))
                         .create();

@@ -20,10 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Serialization tests that occur at a lower level than IO.  Note that there is no need to test GraphML here as
@@ -57,7 +54,7 @@ public class SerializationTest {
 
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldSerializeEdgeAsDetached()throws Exception {
+        public void shouldSerializeEdgeAsDetached() throws Exception {
             final KryoMapper kryoMapper = g.io().kryoMapper().create();
             final Kryo kryo = kryoMapper.createMapper();
             final Edge e = g.E(convertToEdgeId("marko", "knows", "vadas")).next();
@@ -76,7 +73,7 @@ public class SerializationTest {
 
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldSerializePropertyAsDetached()throws Exception {
+        public void shouldSerializePropertyAsDetached() throws Exception {
             final KryoMapper kryoMapper = g.io().kryoMapper().create();
             final Kryo kryo = kryoMapper.createMapper();
             final Property p = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
@@ -184,14 +181,16 @@ public class SerializationTest {
     }
 
     public static class GraphSONTest extends AbstractGremlinTest {
-        private final TypeReference<HashMap<String,Object>> mapTypeReference = new TypeReference<HashMap<String,Object>>() {};
+        private final TypeReference<HashMap<String, Object>> mapTypeReference = new TypeReference<HashMap<String, Object>>() {
+        };
+
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeVertex() throws Exception {
             final ObjectMapper mapper = g.io().graphSONMapper().create().createMapper();
             final Vertex v = g.V(convertToVertexId("marko")).next();
             final String json = mapper.writeValueAsString(v);
-            final Map<String,Object> m = mapper.readValue(json, mapTypeReference);
+            final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
             assertEquals(GraphSONTokens.VERTEX, m.get(GraphSONTokens.TYPE));
             assertEquals(v.label(), m.get(GraphSONTokens.LABEL));
@@ -206,7 +205,7 @@ public class SerializationTest {
             final ObjectMapper mapper = g.io().graphSONMapper().create().createMapper();
             final Edge e = g.E(convertToEdgeId("marko", "knows", "vadas")).next();
             final String json = mapper.writeValueAsString(e);
-            final Map<String,Object> m = mapper.readValue(json, mapTypeReference);
+            final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
             assertEquals(GraphSONTokens.EDGE, m.get(GraphSONTokens.TYPE));
             assertEquals(e.label(), m.get(GraphSONTokens.LABEL));
@@ -216,11 +215,11 @@ public class SerializationTest {
 
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldSerializeProperty()throws Exception {
+        public void shouldSerializeProperty() throws Exception {
             final ObjectMapper mapper = g.io().graphSONMapper().create().createMapper();
             final Property p = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
             final String json = mapper.writeValueAsString(p);
-            final Map<String,Object> m = mapper.readValue(json, mapTypeReference);
+            final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
             // todo: decide if this should really include "key" and "type" since Property is a first class citizen
             assertEquals(p.value(), m.get(GraphSONTokens.VALUE));
@@ -232,7 +231,7 @@ public class SerializationTest {
             final ObjectMapper mapper = g.io().graphSONMapper().create().createMapper();
             final VertexProperty vp = g.V(convertToVertexId("marko")).next().property("name");
             final String json = mapper.writeValueAsString(vp);
-            final Map<String,Object> m = mapper.readValue(json, mapTypeReference);
+            final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
             // todo: should we have "type" here too?
             assertEquals(vp.label(), m.get(GraphSONTokens.LABEL));
@@ -246,7 +245,7 @@ public class SerializationTest {
             final ObjectMapper mapper = g.io().graphSONMapper().create().createMapper();
             final VertexProperty vp = g.V(convertToVertexId("marko")).next().iterators().propertyIterator("location").next();
             final String json = mapper.writeValueAsString(vp);
-            final Map<String,Object> m = mapper.readValue(json, mapTypeReference);
+            final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
             // todo: should we have "type" here too?
             assertEquals(vp.label(), m.get(GraphSONTokens.LABEL));
@@ -262,7 +261,7 @@ public class SerializationTest {
             final ObjectMapper mapper = g.io().graphSONMapper().create().createMapper();
             final Path p = g.V(convertToVertexId("marko")).as("a").outE().as("b").inV().as("c").path().next();
             final String json = mapper.writeValueAsString(p);
-            final Map<String,Object> m = mapper.readValue(json, mapTypeReference);
+            final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
             /*
             assertEquals(p.labels().size(), detached.labels().size());

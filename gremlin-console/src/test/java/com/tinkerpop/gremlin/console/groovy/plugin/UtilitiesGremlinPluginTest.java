@@ -8,12 +8,8 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -34,7 +30,8 @@ public class UtilitiesGremlinPluginTest {
         try {
             groovysh.execute("describeGraph(g.class)");
             fail("Utilities were not loaded - this should fail.");
-        } catch (Exception ignored) { }
+        } catch (Exception ignored) {
+        }
     }
 
     @Test
@@ -44,7 +41,7 @@ public class UtilitiesGremlinPluginTest {
         final Groovysh groovysh = new Groovysh();
         groovysh.getInterp().getContext().setProperty("g", TinkerFactory.createClassic());
 
-        final Map<String,Object> env = new HashMap<>();
+        final Map<String, Object> env = new HashMap<>();
         env.put("ConsolePluginAcceptor.io", new IO());
         env.put("ConsolePluginAcceptor.shell", groovysh);
 

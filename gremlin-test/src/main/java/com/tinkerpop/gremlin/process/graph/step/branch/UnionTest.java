@@ -9,7 +9,7 @@ import org.junit.Test;
 import java.util.HashMap;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.*;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

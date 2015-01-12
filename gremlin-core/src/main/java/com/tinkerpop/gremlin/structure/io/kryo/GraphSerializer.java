@@ -11,10 +11,10 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 
 /**
  * Class used to serialize graph-based objects such as vertices, edges, properties, and paths.

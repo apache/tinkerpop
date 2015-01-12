@@ -9,7 +9,7 @@ import org.junit.runners.model.RunnerBuilder;
  * implementation.  This specialized test suite and runner is for use by Gremlin Structure implementers to test their
  * Graph implementations.  The StructurePerformanceSuite runs more complex testing scenarios over Graph
  * implementations than the standard StructureStandardSuite.
- * <p>
+ * <p/>
  * To use the StructurePerformanceSuite define a class in a test module.  Simple naming would expect the name of the
  * implementation followed by "StructurePerformanceTest".  This class should be annotated as follows (note that
  * the "Suite" implements StructureStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate

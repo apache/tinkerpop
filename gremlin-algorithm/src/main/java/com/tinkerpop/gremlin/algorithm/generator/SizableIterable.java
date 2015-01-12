@@ -5,10 +5,10 @@ import java.util.Iterator;
 
 /**
  * Utility class to make size determinations for {@link Iterable} for efficient.
- * <p>
+ * <p/>
  * If the number of elements in an Iterable is known, then the Iterable can be wrapped in this class to make
  * determining the size a constant time operation rather than an iteration over the whole Iterable.
- * <p>
+ * <p/>
  * Some generators need to know the number of vertices prior to generation. Using this class can speed up the generator.
  *
  * @author Matthias Broecheler (me@matthiasb.com)
@@ -20,7 +20,7 @@ public class SizableIterable<T> implements Iterable<T> {
 
     /**
      * Wraps the given Iterable with the given size.
-     * <p>
+     * <p/>
      * NOTE: the size MUST be the size of the Iterable. This is not verified.
      */
     public SizableIterable(final Iterable<T> iterable, final int size) {
@@ -48,7 +48,7 @@ public class SizableIterable<T> implements Iterable<T> {
 
     /**
      * Utility method to determine the number of elements in an Iterable.
-     * <p>
+     * <p/>
      * Checks if the given Iterable is an instance of a Collection or SizableIterable before iterating to improve performance.
      *
      * @return The size of the given Iterable.

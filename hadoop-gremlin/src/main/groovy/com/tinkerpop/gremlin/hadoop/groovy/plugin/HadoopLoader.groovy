@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.hadoop.groovy.plugin
 
-import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable
-import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator
 import com.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools
 import com.tinkerpop.gremlin.hadoop.structure.hdfs.HiddenFileFilter
 import com.tinkerpop.gremlin.hadoop.structure.hdfs.TextIterator
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator
 import com.tinkerpop.gremlin.util.StreamFactory
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.*

@@ -159,7 +159,7 @@ public class GremlinExecutor implements AutoCloseable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Note that the executors are not closed by virtue of this operation.  Manage them manually.
      */
     @Override
@@ -316,11 +316,11 @@ public class GremlinExecutor implements AutoCloseable {
          */
         public Builder addEngineSettings(final String engineName, final List<String> imports,
                                          final List<String> staticImports, final List<String> scripts,
-                                         final Map<String,Object> config) {
+                                         final Map<String, Object> config) {
             if (null == imports) throw new IllegalArgumentException("imports cannot be null");
             if (null == staticImports) throw new IllegalArgumentException("staticImports cannot be null");
             if (null == scripts) throw new IllegalArgumentException("scripts cannot be null");
-            final Map<String,Object> m = null == config ? Collections.emptyMap() : config;
+            final Map<String, Object> m = null == config ? Collections.emptyMap() : config;
 
             settings.put(engineName, new EngineSettings(imports, staticImports, scripts, m));
             return this;
@@ -423,10 +423,10 @@ public class GremlinExecutor implements AutoCloseable {
         private List<String> imports;
         private List<String> staticImports;
         private List<String> scripts;
-        private Map<String,Object> config;
+        private Map<String, Object> config;
 
         public EngineSettings(final List<String> imports, final List<String> staticImports,
-                              final List<String> scripts, final Map<String,Object> config) {
+                              final List<String> scripts, final Map<String, Object> config) {
             this.imports = imports;
             this.staticImports = staticImports;
             this.scripts = scripts;

@@ -2,9 +2,9 @@ package com.tinkerpop.gremlin.groovy.jsr223;
 
 import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
-import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
+import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.plugin.Artifact;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;

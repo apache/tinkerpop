@@ -206,7 +206,7 @@ public abstract class GroovyVertexTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXbothEXcreatedX_limitX1XX_otherV_name() {
-            ComputerTestHelper.compute("g.V().local(__.bothE('created').limit(1)).otherV.name",g);
+            ComputerTestHelper.compute("g.V().local(__.bothE('created').limit(1)).otherV.name", g);
         }
 
         @Override

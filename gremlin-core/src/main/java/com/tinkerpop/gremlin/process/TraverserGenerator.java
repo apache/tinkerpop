@@ -7,9 +7,9 @@ import java.util.Iterator;
  */
 public interface TraverserGenerator {
 
-    public <S> Traverser.Admin<S> generate(final S start, final Step<S,?> startStep, final long initialBulk);
+    public <S> Traverser.Admin<S> generate(final S start, final Step<S, ?> startStep, final long initialBulk);
 
-    public default <S> Iterator<Traverser.Admin<S>> generateIterator(final Iterator<S> starts, final Step<S,?> startStep, final long initialBulk) {
+    public default <S> Iterator<Traverser.Admin<S>> generateIterator(final Iterator<S> starts, final Step<S, ?> startStep, final long initialBulk) {
         return new Iterator<Traverser.Admin<S>>() {
             @Override
             public boolean hasNext() {

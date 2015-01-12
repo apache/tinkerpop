@@ -1,12 +1,6 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.AbstractGremlinTest
-import com.tinkerpop.gremlin.FeatureRequirement
-import com.tinkerpop.gremlin.FeatureRequirements
-import com.tinkerpop.gremlin.LoadGraphWith
-import com.tinkerpop.gremlin.process.T
-import com.tinkerpop.gremlin.structure.Graph
-import com.tinkerpop.gremlin.structure.IoTest
 import org.junit.Test
 
 import static org.junit.Assert.assertEquals

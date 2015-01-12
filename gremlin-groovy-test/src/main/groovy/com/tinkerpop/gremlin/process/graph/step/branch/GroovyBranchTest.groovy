@@ -13,7 +13,9 @@ public abstract class GroovyBranchTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_branch_byXsoftware__a_bX_asXaX_lang_branchXcX_asXbX_name_asXcX() {
-            g.V.branch{ it.label() == 'software' ? ['a','b'] : ['b'] }.as('a').lang.branch{ ['c'] }.as('b').name.as('c')
+            g.V.branch { it.label() == 'software' ? ['a', 'b'] : ['b'] }.as('a').lang.branch {
+                ['c']
+            }.as('b').name.as('c')
         }
     }
 

@@ -11,10 +11,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -48,7 +45,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldBeEqualProperties() {
-       assertTrue(DetachedFactory.detach(g.E(convertToEdgeId("josh", "created", "lop")).next().property("weight")).equals(DetachedFactory.detach(g.E(convertToEdgeId("josh", "created", "lop")).next().property("weight"))));
+        assertTrue(DetachedFactory.detach(g.E(convertToEdgeId("josh", "created", "lop")).next().property("weight")).equals(DetachedFactory.detach(g.E(convertToEdgeId("josh", "created", "lop")).next().property("weight"))));
     }
 
     @Test

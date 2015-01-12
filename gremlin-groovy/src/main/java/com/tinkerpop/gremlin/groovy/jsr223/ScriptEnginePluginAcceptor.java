@@ -51,7 +51,7 @@ public class ScriptEnginePluginAcceptor implements PluginAcceptor {
 
     @Override
     public Map<String, Object> environment() {
-        final Map<String,Object> env = new HashMap<>();
+        final Map<String, Object> env = new HashMap<>();
         env.put(GremlinPlugin.ENVIRONMENT, "scriptEngine");
         return env;
     }

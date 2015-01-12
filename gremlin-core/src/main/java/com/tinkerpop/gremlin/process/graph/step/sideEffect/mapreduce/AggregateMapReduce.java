@@ -90,7 +90,7 @@ public final class AggregateMapReduce implements MapReduce<MapReduce.NullObject,
 
     @Override
     public AggregateMapReduce clone() throws CloneNotSupportedException {
-        final AggregateMapReduce clone = (AggregateMapReduce)super.clone();
+        final AggregateMapReduce clone = (AggregateMapReduce) super.clone();
         clone.traversal = this.traversal.clone();
         return clone;
     }

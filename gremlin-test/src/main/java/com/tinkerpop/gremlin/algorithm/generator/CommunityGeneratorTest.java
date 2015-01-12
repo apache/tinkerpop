@@ -13,8 +13,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -129,7 +129,7 @@ public class CommunityGeneratorTest {
         protected Iterable<Vertex> verticesByOid(final Graph graph) {
             List<Vertex> vertices = graph.V().toList();
             Collections.sort(vertices,
-                (v1, v2) -> ((Integer)v1.value("oid")).compareTo((Integer)v2.value("oid")));
+                    (v1, v2) -> ((Integer) v1.value("oid")).compareTo((Integer) v2.value("oid")));
             return vertices;
         }
 

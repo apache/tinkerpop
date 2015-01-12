@@ -60,7 +60,8 @@ public class Cluster {
      * @param sessionId user supplied id for the session which should be unique (a UUID is ideal).
      */
     public Client connect(final String sessionId) {
-        if (null == sessionId || sessionId.isEmpty()) throw new IllegalArgumentException("sessionId cannot be null or empty");
+        if (null == sessionId || sessionId.isEmpty())
+            throw new IllegalArgumentException("sessionId cannot be null or empty");
         return new Client.SessionedClient(this, sessionId);
     }
 
@@ -124,9 +125,13 @@ public class Cluster {
         return build(file).create();
     }
 
-    public void close() { closeAsync().join(); }
+    public void close() {
+        closeAsync().join();
+    }
 
-    public CompletableFuture<Void> closeAsync() { return manager.close(); }
+    public CompletableFuture<Void> closeAsync() {
+        return manager.close();
+    }
 
     public List<URI> availableHosts() {
         return Collections.unmodifiableList(getClusterInfo().allHosts().stream()
@@ -135,17 +140,29 @@ public class Cluster {
                 .collect(Collectors.toList()));
     }
 
-    Factory getFactory() { return manager.factory; }
+    Factory getFactory() {
+        return manager.factory;
+    }
 
-    MessageSerializer getSerializer() { return manager.serializer; }
+    MessageSerializer getSerializer() {
+        return manager.serializer;
+    }
 
-    ScheduledExecutorService executor() { return manager.executor; }
+    ScheduledExecutorService executor() {
+        return manager.executor;
+    }
 
-    Settings.ConnectionPoolSettings connectionPoolSettings() { return manager.connectionPoolSettings; }
+    Settings.ConnectionPoolSettings connectionPoolSettings() {
+        return manager.connectionPoolSettings;
+    }
 
-    LoadBalancingStrategy loadBalancingStrategy() { return manager.loadBalancingStrategy; }
+    LoadBalancingStrategy loadBalancingStrategy() {
+        return manager.loadBalancingStrategy;
+    }
 
-    ClusterInfo getClusterInfo() { return manager.clusterInfo; }
+    ClusterInfo getClusterInfo() {
+        return manager.clusterInfo;
+    }
 
     public static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
