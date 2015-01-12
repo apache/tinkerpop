@@ -43,7 +43,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
     }
 
     public boolean hasStepFunctions() {
-        return this.functionRing.hasFunctions();
+        return !this.functionRing.isEmpty();
     }
 
     @Override

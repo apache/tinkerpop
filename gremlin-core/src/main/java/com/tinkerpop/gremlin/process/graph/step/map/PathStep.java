@@ -57,8 +57,13 @@ public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer,
 
     private static final <S> void generateFunction(final PathStep<S> pathStep) {
         pathStep.setFunction(traverser -> {
-            final Path path = MutablePath.make();
-            traverser.path().forEach((labels, object) -> path.extend(labels, pathStep.functionRing.next().apply(object)));
+            final Path path;
+            if (pathStep.functionRing.isEmpty())
+                path = traverser.path();
+            else {
+                path = MutablePath.make();
+                traverser.path().forEach((labels, object) -> path.extend(labels, pathStep.functionRing.next().apply(object)));
+            }
             pathStep.functionRing.reset();
             return path;
         });
