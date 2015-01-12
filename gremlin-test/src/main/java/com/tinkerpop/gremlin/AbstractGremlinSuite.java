@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -30,9 +31,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 /**
  * Base Gremlin test suite from which different classes of tests can be exposed to implementers.
  *
@@ -40,7 +38,6 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class AbstractGremlinSuite extends Suite {
 
-    // todo: how do we deal with graphs that don't implement all of these interfaces?  a feature check? but we don't have a Graph instance here....
     // todo: perhaps there is a test that validates against the implementations to be sure that the Graph constructed matches what's defined???
     private static final Set<Class> STRUCTURE_INTERFACES = new HashSet<Class>() {{
         add(Edge.class);
@@ -48,12 +45,12 @@ public abstract class AbstractGremlinSuite extends Suite {
         add(Element.class);
         add(Element.Iterators.class);
         add(Graph.class);
-        // add(Graph.Variables.class);
+        add(Graph.Variables.class);
         add(Property.class);
         add(Vertex.class);
         add(Vertex.Iterators.class);
         add(VertexProperty.class);
-        // add(VertexProperty.Iterators.class);
+        add(VertexProperty.Iterators.class);
     }};
 
     /**
@@ -119,10 +116,21 @@ public abstract class AbstractGremlinSuite extends Suite {
      * Need to validate that structure interfaces are implemented so that checks to {@link Graph.Helper} can be
      * properly enforced.
      */
-    private void validateStructureInterfacesRegistered(final GraphProvider graphProvider) {
+    private void validateStructureInterfacesRegistered(final GraphProvider graphProvider) throws Exception {
         final Set<Class> implementations = graphProvider.getImplementations();
         final Set<Class> noImplementationRegistered = new HashSet<>();
-        final boolean missingImplementations = STRUCTURE_INTERFACES.stream().anyMatch(iface -> {
+
+        final Configuration conf = graphProvider.newGraphConfiguration("prototype", AbstractGremlinSuite.class, "validateStructureInterfacesRegistered");
+        final Graph g = graphProvider.openTestGraph(conf);
+        final Set<Class> structureInterfaces = new HashSet<>(STRUCTURE_INTERFACES);
+
+        // not all graphs implement all features and therefore may not have implementations of certain "core" interfaces
+        if (!g.features().graph().variables().supportsVariables()) structureInterfaces.remove(Graph.Variables.class);
+        if (!g.features().vertex().supportsMultiProperties()) structureInterfaces.remove(VertexProperty.Iterators.class);
+
+        graphProvider.clear(g, conf);
+
+        final boolean missingImplementations = structureInterfaces.stream().anyMatch(iface -> {
             final boolean noneMatch = implementations.stream().noneMatch(c -> iface.isAssignableFrom(c));
             if (noneMatch) noImplementationRegistered.add(iface);
             return noneMatch;
