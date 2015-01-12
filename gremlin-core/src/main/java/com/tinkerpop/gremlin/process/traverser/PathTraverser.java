@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.traverser;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.util.ImmutablePath;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
@@ -25,7 +25,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
     }
 
     @Override
-    public Traversal.SideEffects getSideEffects() {
+    public TraversalSideEffects getSideEffects() {
         return this.sideEffects;
     }
 

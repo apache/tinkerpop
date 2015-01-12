@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Path;
-import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -71,7 +71,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public void setSideEffects(final Traversal.SideEffects sideEffects) {
+    public void setSideEffects(final TraversalSideEffects sideEffects) {
 
     }
 
@@ -111,7 +111,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public Traversal.SideEffects getSideEffects() {
+    public TraversalSideEffects getSideEffects() {
         return null;
     }
 

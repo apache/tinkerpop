@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.traverser;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.SparsePath;
 import com.tinkerpop.gremlin.structure.Element;
@@ -26,7 +26,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     protected Object sack = null;
     protected String future = HALT;
     protected short loops = 0;
-    protected transient Traversal.SideEffects sideEffects;
+    protected transient TraversalSideEffects sideEffects;
     protected long bulk = 1l;
     protected Path path;
 
@@ -80,7 +80,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     }
 
     @Override
-    public Traversal.SideEffects getSideEffects() {
+    public TraversalSideEffects getSideEffects() {
         return this.sideEffects;
     }
 
@@ -146,7 +146,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     }
 
     @Override
-    public void setSideEffects(final Traversal.SideEffects sideEffects) {
+    public void setSideEffects(final TraversalSideEffects sideEffects) {
         this.sideEffects = sideEffects;
     }
 
@@ -194,9 +194,9 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
 
     //////////////////////
 
-    private static final Map<Traversal.SideEffects, Path> PATH_CACHE = new WeakHashMap<>();
+    private static final Map<TraversalSideEffects, Path> PATH_CACHE = new WeakHashMap<>();
 
-    private static Path getOrCreateFromCache(final Traversal.SideEffects sideEffects) {
+    private static Path getOrCreateFromCache(final TraversalSideEffects sideEffects) {
         Path path = PATH_CACHE.get(sideEffects);
         if (null == path) {
             path = SparsePath.make();

@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
@@ -35,7 +36,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
             this.repeatTraversal = repeatTraversal; // .clone();
             // this.getTraversal().asAdmin().getSideEffects().mergeSideEffects(this.repeatTraversal.asAdmin().getSideEffects());
             //
-            final Traversal.SideEffects parentSideEffects = this.getTraversal().asAdmin().getSideEffects();
+            final TraversalSideEffects parentSideEffects = this.getTraversal().asAdmin().getSideEffects();
             this.repeatTraversal.asAdmin().getSideEffects().mergeSideEffects(parentSideEffects);
             this.repeatTraversal.asAdmin().setSideEffects(parentSideEffects);
             //

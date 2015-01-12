@@ -7,7 +7,7 @@ import java.util.Iterator;
  * A step takes an incoming object and yields an outgoing object.
  * Steps are chained together in a {@link Traversal} to yield a lazy function chain of computation.
  * <p/>
- * In the constructor of a Step, never store explicit sideEffect objects in {@link com.tinkerpop.gremlin.process.Traversal.SideEffects}.
+ * In the constructor of a Step, never store explicit sideEffect objects in {@link TraversalSideEffects}.
  * If a sideEffect needs to be registered with the {@link Traversal}, use SideEffects.registerSupplier().
  *
  * @param <S> The incoming object type of the step

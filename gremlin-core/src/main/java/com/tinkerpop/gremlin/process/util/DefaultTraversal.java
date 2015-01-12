@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 
@@ -23,7 +24,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
 
     protected List<Step> steps = new ArrayList<>();
     protected TraversalStrategies strategies;
-    protected SideEffects sideEffects = new DefaultTraversalSideEffects();
+    protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
     protected Optional<TraversalEngine> traversalEngine = Optional.empty();
 
 
@@ -106,6 +107,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
         final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
         clone.steps = new ArrayList<>();
         clone.sideEffects = this.sideEffects.clone();
+        clone.strategies = this.strategies.clone();
         clone.lastEnd = null;
         clone.lastEndCount = 0l;
         //clone.traversalEngine = Optional.empty();
@@ -119,12 +121,12 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     }
 
     @Override
-    public void setSideEffects(final SideEffects sideEffects) {
+    public void setSideEffects(final TraversalSideEffects sideEffects) {
         this.sideEffects = sideEffects;
     }
 
     @Override
-    public SideEffects getSideEffects() {
+    public TraversalSideEffects getSideEffects() {
         return this.sideEffects;
     }
 

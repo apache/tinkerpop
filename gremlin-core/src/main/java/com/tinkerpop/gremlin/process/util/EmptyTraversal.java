@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
@@ -19,7 +20,7 @@ import java.util.Optional;
 public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
-    private static final SideEffects SIDE_EFFECTS = new DefaultTraversalSideEffects();
+    private static final TraversalSideEffects SIDE_EFFECTS = new DefaultTraversalSideEffects();
     private static final TraversalStrategies STRATEGIES = new DefaultTraversalStrategies();
 
     public static <A, B> EmptyTraversal<A, B> instance() {
@@ -46,7 +47,7 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public SideEffects getSideEffects() {
+    public TraversalSideEffects getSideEffects() {
         return SIDE_EFFECTS;
     }
 
@@ -96,7 +97,7 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void setSideEffects(final SideEffects sideEffects) {
+    public void setSideEffects(final TraversalSideEffects sideEffects) {
     }
 
     @Override

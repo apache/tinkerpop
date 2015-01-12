@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
@@ -55,7 +56,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
     private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Arrays.asList(MessageScope.Global.instance()));
-    private static final Set<String> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, Traversal.SideEffects.SIDE_EFFECTS));
+    private static final Set<String> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, TraversalSideEffects.SIDE_EFFECTS));
     private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VOTE_TO_HALT));
 
     private LambdaHolder<Supplier<Traversal>> traversalSupplier;

@@ -208,12 +208,6 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
             return getFuture().equals(HALT);
         }
 
-        /*
-          A helper that sets the future of the traverser to {@link Traverser.Admin#HALT}.
-        public default void halt() {
-            this.setFuture(HALT);
-        } */
-
         /**
          * Prepare the traverser for migration across a JVM boundary.
          *
@@ -248,14 +242,14 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          *
          * @param sideEffects the sideEffects of the traversal.
          */
-        public void setSideEffects(final Traversal.SideEffects sideEffects);
+        public void setSideEffects(final TraversalSideEffects sideEffects);
 
         /**
          * Get the sideEffects associated with the traversal of the traverser.
          *
          * @return the traversal sideEffects of the traverser
          */
-        public Traversal.SideEffects getSideEffects();
+        public TraversalSideEffects getSideEffects();
 
     }
 }

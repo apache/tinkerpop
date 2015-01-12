@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -16,7 +16,7 @@ import java.util.function.UnaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultTraversalSideEffects implements Traversal.SideEffects {
+public class DefaultTraversalSideEffects implements TraversalSideEffects {
 
     protected Map<String, Object> objectMap = new HashMap<>();
     protected Map<String, Supplier> supplierMap = new HashMap<>();
@@ -98,7 +98,7 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
                 this.objectMap.put(key, v);
                 return v;
             } else {
-                throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
+                throw TraversalSideEffects.Exceptions.sideEffectDoesNotExist(key);
             }
         }
     }
@@ -156,7 +156,7 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
     }
 
     @Override
-    public void mergeSideEffects(final Traversal.SideEffects sideEffects) {
+    public void mergeSideEffects(final TraversalSideEffects sideEffects) {
         this.objectMap.forEach(sideEffects::set);
         this.supplierMap.forEach(sideEffects::registerSupplierIfAbsent);
         // TODO: add sack information?
