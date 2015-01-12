@@ -118,15 +118,22 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
     @Override
     public String toString() {
         if (this.emitFirst && this.untilFirst) {
-            return TraversalHelper.makeStepString(this, "until(" + this.untilPredicate + ")", "emit(" + this.emitPredicate + ")", this.repeatTraversal);
+            return TraversalHelper.makeStepString(this, untilString(), emitString(), this.repeatTraversal);
         } else if (this.emitFirst && !this.untilFirst) {
-            return TraversalHelper.makeStepString(this, "emit(" + this.emitPredicate + ")", this.repeatTraversal, "until(" + this.untilPredicate + ")");
+            return TraversalHelper.makeStepString(this, emitString(), this.repeatTraversal, untilString());
         } else if (!this.emitFirst && this.untilFirst) {
-            return TraversalHelper.makeStepString(this, "until(" + this.untilPredicate + ")", this.repeatTraversal, "emit(" + this.emitPredicate + ")");
+            return TraversalHelper.makeStepString(this, untilString(), this.repeatTraversal, emitString());
         } else {
-            return TraversalHelper.makeStepString(this, this.repeatTraversal, "until(" + this.untilPredicate + ")", "emit(" + this.emitPredicate + ")");
+            return TraversalHelper.makeStepString(this, this.repeatTraversal, untilString(), emitString());
         }
+    }
 
+    private final String untilString() {
+        return null == this.untilPredicate ? "until(true)" : "until(" + this.untilPredicate + ")";
+    }
+
+    private final String emitString() {
+        return null == this.emitPredicate ? "emit(false)" : "emit(" + this.emitFirst + ")";
     }
 
     @Override
