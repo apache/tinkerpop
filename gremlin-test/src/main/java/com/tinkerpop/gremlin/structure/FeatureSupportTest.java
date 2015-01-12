@@ -773,6 +773,21 @@ public class FeatureSupportTest {
                 validateException(VertexProperty.Exceptions.metaPropertiesNotSupported(), ex);
             }
         }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_META_PROPERTIES, supported = false)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_ADD_PROPERTY)
+        public void shouldSupportMetaPropertyIfPropertiesHaveAnIteratorViaVertexProperty() throws Exception {
+            try {
+                final Vertex v = g.addVertex("name", "stephen");
+                v.property("name").iterators();
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_META_PROPERTIES));
+            } catch (Exception ex) {
+                validateException(VertexProperty.Exceptions.metaPropertiesNotSupported(), ex);
+            }
+        }
     }
 
     /**
