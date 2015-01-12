@@ -188,6 +188,12 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
         assertEquals(new Long(1), g.V(vA.id()).out().count().next());
         assertEquals(vAA.id(), g.V(vA.id()).out().next().id());
 
+        final Vertex vA1 = g.V(vA.id()).next();
+        assertEquals(new Long(1), vA1.outE().count().next());
+        assertEquals(eAtoAA.id(), vA1.outE().next().id());
+        assertEquals(new Long(1), vA1.out().count().next());
+        assertEquals(vAA.id(), vA1.out().next().id());
+
         strategy.addReadPartition("B");
         assertEquals(new Long(3), g.V().count().next());
         assertEquals(new Long(2), g.E().count().next());
