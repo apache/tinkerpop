@@ -234,6 +234,10 @@ public interface GraphProvider {
      * <br/>
      * The remaining interfaces and classes should be registered however as failure to do so, might cause failures
      * in the Groovy environment testing suite.
+     * <br/>
+     * Internally speaking, tests that make use of this method should bind in {@link #CORE_IMPLEMENTATIONS} to the
+     * {@link Set} because these represent {@code gremlin-core} implementations that are likely not registered
+     * by the vendor implementations.
      */
     public Set<Class> getImplementations();
 }
