@@ -19,7 +19,7 @@ import java.util.Optional;
  */
 public class DefaultTraversalStrategies implements TraversalStrategies {
 
-    protected final List<TraversalStrategy> traversalStrategies = new ArrayList<>();
+    protected List<TraversalStrategy> traversalStrategies = new ArrayList<>();
     protected TraverserGeneratorFactory traverserGeneratorFactory = DefaultTraverserGeneratorFactory.instance();
 
     public TraversalStrategies addStrategies(final TraversalStrategy... strategies) {
@@ -64,10 +64,11 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
 
 
     @Override
-    public DefaultTraversalStrategies clone() throws CloneNotSupportedException {    // TODO: why does this not work with super.clone()?
-        final DefaultTraversalStrategies clone = new DefaultTraversalStrategies();
-        clone.addStrategies(this.traversalStrategies.toArray(new TraversalStrategy[this.traversalStrategies.size()]));
-        clone.traverserGeneratorFactory = this.traverserGeneratorFactory;
+    public DefaultTraversalStrategies clone() throws CloneNotSupportedException {
+        final DefaultTraversalStrategies clone = (DefaultTraversalStrategies) super.clone();
+        clone.traversalStrategies = new ArrayList<>();
+        clone.traversalStrategies.addAll(this.traversalStrategies);
+        TraversalStrategies.sortStrategies(clone.traversalStrategies);
         return clone;
     }
 

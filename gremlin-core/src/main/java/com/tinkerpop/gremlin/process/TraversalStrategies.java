@@ -32,7 +32,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface TraversalStrategies {
+public interface TraversalStrategies extends Cloneable {
 
     /**
      * Return all the {@link TraversalStrategy} singleton instances associated with this {@link TraversalStrategies}.
@@ -48,13 +48,28 @@ public interface TraversalStrategies {
      */
     public void applyStrategies(final Traversal traversal, final TraversalEngine engine);
 
+    /**
+     * Add all the provided {@link TraversalStrategy} instances to the current collection.
+     * When all the provided strategies have been added, the collection is resorted.
+     *
+     * @param strategies the traversal strategies to add
+     * @return the newly updated/sorted traversal strategies collection
+     */
     public TraversalStrategies addStrategies(final TraversalStrategy... strategies);
 
+    /**
+     * Remove all the provided {@link TraversalStrategy} classes from the current collection.
+     * When all the provided strategies have been removed, the collection is resorted.
+     *
+     * @param strategyClasses the traversal strategies to remove by their class
+     * @return the newly updated/sorted traversal strategies collection
+     */
     public TraversalStrategies removeStrategies(final Class<? extends TraversalStrategy>... strategyClasses);
 
-    public default TraversalStrategies clone() throws CloneNotSupportedException {
-        return this;
-    }
+    /**
+     * {@inheritDoc}
+     */
+    public TraversalStrategies clone() throws CloneNotSupportedException;
 
     /**
      * Get the {@link TraverserGenerator} to use to generate traversers in the {@link Traversal}.

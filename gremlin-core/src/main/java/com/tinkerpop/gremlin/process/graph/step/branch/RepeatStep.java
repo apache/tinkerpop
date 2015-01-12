@@ -2,9 +2,10 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
-import com.tinkerpop.gremlin.process.graph.step.util.MarkerIdentityStep;
+import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
@@ -30,16 +31,20 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
     }
 
     public void setRepeatTraversal(final Traversal<S, S> repeatTraversal) {
-        //try {
-        this.repeatTraversal = repeatTraversal; // .clone()
-        this.repeatTraversal.asAdmin().addStep(new MarkerIdentityStep<>(this.repeatTraversal)); // TODO: this is really bad
-        final Traversal.SideEffects parentSideEffects = this.getTraversal().asAdmin().getSideEffects();
-        this.repeatTraversal.asAdmin().getSideEffects().mergeSideEffects(parentSideEffects);
-        this.repeatTraversal.asAdmin().setSideEffects(parentSideEffects);
-        this.repeatTraversal.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());
-        //} catch (final CloneNotSupportedException e) {
-        //    throw new IllegalArgumentException(e.getMessage(), e);
-        //}
+        try {
+            this.repeatTraversal = repeatTraversal; // .clone();
+            // this.getTraversal().asAdmin().getSideEffects().mergeSideEffects(this.repeatTraversal.asAdmin().getSideEffects());
+            //
+            final Traversal.SideEffects parentSideEffects = this.getTraversal().asAdmin().getSideEffects();
+            this.repeatTraversal.asAdmin().getSideEffects().mergeSideEffects(parentSideEffects);
+            this.repeatTraversal.asAdmin().setSideEffects(parentSideEffects);
+            //
+            final TraversalStrategies strategies = this.getTraversal().asAdmin().getStrategies().clone();
+            strategies.removeStrategies(SideEffectCapStrategy.class); // no auto cap()
+            this.repeatTraversal.asAdmin().setStrategies(strategies);
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
     }
 
     public void setUntilPredicate(final Predicate<Traverser<S>> untilPredicate) {
