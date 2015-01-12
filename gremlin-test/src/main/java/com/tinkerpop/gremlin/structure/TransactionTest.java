@@ -754,7 +754,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldAllowReferenceOfVertexOutsideOfOrginialTransactionalContextManual() {
+    public void shouldAllowReferenceOfVertexOutsideOfOriginalTransactionalContextManual() {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
         g.tx().open();
         final Vertex v1 = g.addVertex("name", "stephen");
@@ -772,7 +772,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldAllowReferenceOfEdgeOutsideOfOrginialTransactionalContextManual() {
+    public void shouldAllowReferenceOfEdgeOutsideOfOriginalTransactionalContextManual() {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
         g.tx().open();
         final Vertex v1 = g.addVertex();
@@ -791,7 +791,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldAllowReferenceOfVertexOutsideOfOrginialTransactionalContextAuto() {
+    public void shouldAllowReferenceOfVertexOutsideOfOriginalTransactionalContextAuto() {
         final Vertex v1 = g.addVertex("name", "stephen");
         g.tx().commit();
 
@@ -805,7 +805,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldAllowReferenceOfEdgeOutsideOfOrginialTransactionalContextAuto() {
+    public void shouldAllowReferenceOfEdgeOutsideOfOriginalTransactionalContextAuto() {
         final Vertex v1 = g.addVertex();
         final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
         g.tx().commit();
@@ -819,7 +819,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldAllowReferenceOfVertexIdOutsideOfOrginialThreadManual() throws Exception {
+    public void shouldAllowReferenceOfVertexIdOutsideOfOriginalThreadManual() throws Exception {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
         g.tx().open();
         final Vertex v1 = g.addVertex("name", "stephen");
@@ -841,7 +841,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldAllowReferenceOfEdgeIdOutsideOfOrginialThreadManual() throws Exception {
+    public void shouldAllowReferenceOfEdgeIdOutsideOfOriginalThreadManual() throws Exception {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
         g.tx().open();
         final Vertex v1 = g.addVertex();
@@ -864,7 +864,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldAllowReferenceOfVertexIdOutsideOfOrginialThreadAuto() throws Exception  {
+    public void shouldAllowReferenceOfVertexIdOutsideOfOriginalThreadAuto() throws Exception  {
         final Vertex v1 = g.addVertex("name", "stephen");
 
         final AtomicReference<Object> id = new AtomicReference<>();
@@ -880,7 +880,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldAllowReferenceOfEdgeIdOutsideOfOrginialThreadAuto() throws Exception  {
+    public void shouldAllowReferenceOfEdgeIdOutsideOfOriginalThreadAuto() throws Exception  {
         final Vertex v1 = g.addVertex();
         final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
 
