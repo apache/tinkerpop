@@ -9,12 +9,15 @@ import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.function.CloneableFunction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -57,57 +60,47 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
             resetLoopStep.setConsumer(traverser -> traverser.asAdmin().resetLoops());
             TraversalHelper.insertAfterStep(resetLoopStep, rightBranchStep, traversal);
 
-            leftBranchStep.setFunction(traverser -> {
-                try {
-                    final RepeatStep<?> clone = repeatStep.clone();    // TODO: EEK!!! THIS IS CRAZY EXPENSIVE
-                    final List<String> stepLabels = new ArrayList<>(2);
-                    if (clone.isUntilFirst()) {    // left until
-                        if (clone.doUntil((Traverser) traverser)) {
-                            stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
-                            return stepLabels;
-                        } else {
-                            stepLabels.add("");
-                            if (clone.isEmitFirst() && clone.doEmit((Traverser) traverser))
-                                stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
-                            return stepLabels;
-                        }
-                    } else {  // right until
+            leftBranchStep.setFunction((Function) new RepeatBranchFunction<>(repeatStep, step -> traverser -> {
+                final List<String> stepLabels = new ArrayList<>(2);
+                if (step.isUntilFirst()) {    // left until
+                    if (step.doUntil((Traverser) traverser)) {
+                        stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
+                        return stepLabels;
+                    } else {
                         stepLabels.add("");
-                        if (clone.isEmitFirst() && clone.doEmit((Traverser) traverser))
+                        if (step.isEmitFirst() && step.doEmit((Traverser) traverser))
                             stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
                         return stepLabels;
                     }
-                } catch (final CloneNotSupportedException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
+                } else {  // right until
+                    stepLabels.add("");
+                    if (step.isEmitFirst() && step.doEmit((Traverser) traverser))
+                        stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
+                    return stepLabels;
                 }
-            });
+            }));
 
-            rightBranchStep.setFunction(traverser -> {
-                try {
-                    final RepeatStep<?> clone = repeatStep.clone();  // TODO: EEK!!! THIS IS CRAZY EXPENSIVE
-                    final List<String> stepLabels = new ArrayList<>(2);
-                    if (!clone.isUntilFirst()) {      // right until
-                        if (clone.doUntil((Traverser) traverser)) {
-                            stepLabels.add("");
-                            return stepLabels;
-                        } else {
-                            stepLabels.add(leftBranchStep.getPreviousStep().getLabel());
-                            if (!clone.isEmitFirst() && clone.doEmit((Traverser) traverser))
-                                stepLabels.add("");
-                            return stepLabels;
-                        }
-
-                    } else { // left until
+            rightBranchStep.setFunction((Function) new RepeatBranchFunction<>(repeatStep, step -> traverser -> {
+                final List<String> stepLabels = new ArrayList<>(2);
+                if (!step.isUntilFirst()) {      // right until
+                    if (step.doUntil((Traverser) traverser)) {
+                        stepLabels.add("");
+                        return stepLabels;
+                    } else {
                         stepLabels.add(leftBranchStep.getPreviousStep().getLabel());
-                        if (!clone.isEmitFirst() && clone.doEmit((Traverser) traverser)) {
+                        if (!step.isEmitFirst() && step.doEmit((Traverser) traverser))
                             stepLabels.add("");
-                        }
                         return stepLabels;
                     }
-                } catch (final CloneNotSupportedException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
+
+                } else { // left until
+                    stepLabels.add(leftBranchStep.getPreviousStep().getLabel());
+                    if (!step.isEmitFirst() && step.doEmit((Traverser) traverser)) {
+                        stepLabels.add("");
+                    }
+                    return stepLabels;
                 }
-            });
+            }));
         }
     }
 
@@ -120,26 +113,31 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
         return POSTS;
     }
 
-    /*public static class RepeatBranchFunction<S> implements Function<Traverser<S>, Collection<String>> {
+    public static class RepeatBranchFunction<S> implements CloneableFunction<Traverser<S>, Collection<String>> {
 
-        private final RepeatStep<?> repeatStep;
-        private RepeatStep<?> cloneStep;
-        private final BiFunction<RepeatStep<?>, Traverser<S>, Collection<String>> function;
+        private RepeatStep<S> repeatStep;
+        private Function<Traverser<S>, Collection<String>> function;
+        private final Function<RepeatStep<S>, Function<Traverser<S>, Collection<String>>> generatingFunction;
 
-        public RepeatBranchFunction(final RepeatStep repeatStep, final BiFunction<RepeatStep<?>, Traverser<S>, Collection<String>> function) {
+        public RepeatBranchFunction(final RepeatStep<S> repeatStep, final Function<RepeatStep<S>, Function<Traverser<S>, Collection<String>>> generatingFunction) {
             this.repeatStep = repeatStep;
-            this.function = function;
+            this.generatingFunction = generatingFunction;
+            this.function = this.generatingFunction.apply(this.repeatStep);
         }
 
         @Override
-        public Collection<String> apply(Traverser<S> traverser) {
-            try {
-                if (null == this.cloneStep)
-                    this.cloneStep = repeatStep.clone();
-            } catch (final CloneNotSupportedException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-            return this.function.apply(this.cloneStep, traverser);
+        public Collection<String> apply(final Traverser<S> traverser) {
+            return this.function.apply(traverser);
         }
-    }*/
+
+        @Override
+        public RepeatBranchFunction<S> clone() throws CloneNotSupportedException {
+            final RepeatBranchFunction<S> clone = (RepeatBranchFunction<S>) super.clone();
+            clone.repeatStep = this.repeatStep.clone();
+            clone.function = this.generatingFunction.apply(clone.repeatStep);
+            return clone;
+        }
+    }
+
+
 }
