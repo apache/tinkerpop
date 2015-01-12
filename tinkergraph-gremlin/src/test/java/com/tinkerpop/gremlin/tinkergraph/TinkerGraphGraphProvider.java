@@ -31,8 +31,6 @@ public class TinkerGraphGraphProvider extends AbstractGraphProvider {
         add(TinkerProperty.class);
         add(TinkerVertex.class);
         add(TinkerVertexProperty.class);
-        add(DefaultGraphTraversal.class);
-        add(AnonymousGraphTraversal.Tokens.class);
     }};
 
     @Override

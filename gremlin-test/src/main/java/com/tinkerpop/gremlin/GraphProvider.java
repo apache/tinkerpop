@@ -188,7 +188,9 @@ public interface GraphProvider {
      * <li>{@link Graph.Variables}</li>
      * <li>{@link Graph.Iterators}</li>
      * <li>{@link GraphTraversal}</li>
+     * <li>{@link com.tinkerpop.gremlin.process.traverser.PathTraverser}</li>
      * <li>{@link Property}</li>
+     * <li>{@link com.tinkerpop.gremlin.process.traverser.SimpleTraverser}</li>
      * <li>{@link Traversal}</li>
      * <li>{@link Traverser}</li>
      * <li>{@link Vertex}</li>

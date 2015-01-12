@@ -41,13 +41,11 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(HadoopEdge.class);
         add(HadoopElement.class);
-        add(DefaultGraphTraversal.class);
         add(HadoopGraph.class);
         add(HadoopGraphVariables.class);
         add(HadoopProperty.class);
         add(HadoopVertex.class);
         add(HadoopVertexProperty.class);
-        add(AnonymousGraphTraversal.Tokens.class);
     }};
 
     static {

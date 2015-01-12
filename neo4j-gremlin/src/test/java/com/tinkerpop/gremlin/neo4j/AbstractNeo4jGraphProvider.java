@@ -43,7 +43,6 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
         add(Neo4jProperty.class);
         add(Neo4jVertex.class);
         add(Neo4jVertexProperty.class);
-        add(AnonymousGraphTraversal.Tokens.class);
     }};
 
     @Override
