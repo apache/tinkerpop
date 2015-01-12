@@ -69,10 +69,12 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
 
     /////////////////
 
+    @Override
     public void setBulk(final long count) {
         this.bulk = count;
     }
 
+    @Override
     public long bulk() {
         return this.bulk;
     }
@@ -123,15 +125,19 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
 
     @Override
     public Traverser.Admin<T> detach() {
-        if (this.t instanceof Element) {
-            this.t = (T) DetachedFactory.detach((Element) this.t, false);
-        } else if (this.t instanceof Property) {
-            this.t = (T) DetachedFactory.detach((Property) this.t);
-        } else if (this.t instanceof Path) {
-            this.t = (T) DetachedFactory.detach((Path) this.t, false);
+        try {
+            if (this.t instanceof Element) {
+                this.t = (T) DetachedFactory.detach((Element) this.t, false);
+            } else if (this.t instanceof Property) {
+                this.t = (T) DetachedFactory.detach((Property) this.t);
+            } else if (this.t instanceof Path) {
+                this.t = (T) DetachedFactory.detach((Path) this.t, false);
+            }
+            this.path = DetachedFactory.detach(this.path.clone(), true);
+            return this;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
-        this.path = DetachedFactory.detach(this.path.clone(), true);
-        return this;
     }
 
     @Override
@@ -190,5 +196,4 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
     public String toString() {
         return this.t.toString();
     }
-
 }

@@ -25,7 +25,7 @@ public class MutablePath implements Path, Serializable, Cloneable {
     }
 
     @Override
-    public MutablePath clone() {
+    public MutablePath clone() throws CloneNotSupportedException {
         final MutablePath clone = new MutablePath();
         for (int i = 0; i < this.objects.size(); i++) {
             clone.objects.add(this.objects.get(i));

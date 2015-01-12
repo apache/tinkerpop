@@ -57,7 +57,9 @@ public class SparsePath implements Path {
 
     @Override
     public List<Set<String>> labels() {
-        return Collections.singletonList(this.map.keySet());
+        final List<Set<String>> labels = new ArrayList<>();
+        this.map.forEach((k, v) -> labels.add(Collections.singleton(k)));
+        return labels;
     }
 
 
@@ -69,7 +71,17 @@ public class SparsePath implements Path {
     }
 
     @Override
+    public boolean hasLabel(final String label) {
+        return this.map.containsKey(label);
+    }
+
+    @Override
     public Path clone() {
         return this;
+    }
+
+    @Override
+    public int size() {
+        return this.map.size();
     }
 }

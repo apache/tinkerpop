@@ -743,7 +743,7 @@
                             <argLine>-Dlog4j.configuration=${log4j.properties}
                             </argLine>
                             <systemPropertyVariables>
-                                <muteTestLogs>true</muteTestLogs>
+                                <muteTestLogs>false</muteTestLogs>
                             </systemPropertyVariables>
                             <additionalClasspathElements>
                                 <!-- So that Log4j can find the Log4j properties file -->

@@ -25,7 +25,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         return EmptyPath.instance();
     }
 
-    public ImmutablePath clone() {
+    public ImmutablePath clone() throws CloneNotSupportedException {
         return this;
     }
 

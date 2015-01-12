@@ -126,7 +126,10 @@ public interface Path extends Cloneable {
      */
     public List<Set<String>> labels();
 
-    public Path clone();
+    /**
+     * {@inheritDoc}
+     */
+    public Path clone() throws CloneNotSupportedException;
 
     /**
      * Determines whether the path is a simple or not.
