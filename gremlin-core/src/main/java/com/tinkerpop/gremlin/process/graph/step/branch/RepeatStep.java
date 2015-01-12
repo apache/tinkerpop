@@ -231,7 +231,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
         @Override
         public boolean test(final Traverser<S> traverser) {
             this.traversal.asAdmin().reset();
-            this.traversal.asAdmin().addStart(traverser);
+            this.traversal.asAdmin().addStart(traverser.asAdmin().split());
             return this.traversal.hasNext();
         }
 

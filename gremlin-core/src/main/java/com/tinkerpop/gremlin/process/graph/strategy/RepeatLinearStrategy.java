@@ -58,44 +58,54 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
             TraversalHelper.insertAfterStep(resetLoopStep, rightBranchStep, traversal);
 
             leftBranchStep.setFunction(traverser -> {
-                final List<String> stepLabels = new ArrayList<>(2);
-                if (repeatStep.isUntilFirst()) {    // left until
-                    if (repeatStep.doUntil((Traverser) traverser)) {
-                        stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
-                        return stepLabels;
-                    } else {
+                try {
+                    final RepeatStep<?> clone = repeatStep.clone();    // TODO: EEK!!! THIS IS CRAZY EXPENSIVE
+                    final List<String> stepLabels = new ArrayList<>(2);
+                    if (clone.isUntilFirst()) {    // left until
+                        if (clone.doUntil((Traverser) traverser)) {
+                            stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
+                            return stepLabels;
+                        } else {
+                            stepLabels.add("");
+                            if (clone.isEmitFirst() && clone.doEmit((Traverser) traverser))
+                                stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
+                            return stepLabels;
+                        }
+                    } else {  // right until
                         stepLabels.add("");
-                        if (repeatStep.isEmitFirst() && repeatStep.doEmit((Traverser) traverser))
+                        if (clone.isEmitFirst() && clone.doEmit((Traverser) traverser))
                             stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
                         return stepLabels;
                     }
-                } else {  // right until
-                    stepLabels.add("");
-                    if (repeatStep.isEmitFirst() && repeatStep.doEmit((Traverser) traverser))
-                        stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
-                    return stepLabels;
+                } catch (final CloneNotSupportedException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
                 }
             });
 
             rightBranchStep.setFunction(traverser -> {
-                final List<String> stepLabels = new ArrayList<>(2);
-                if (!repeatStep.isUntilFirst()) {      // right until
-                    if (repeatStep.doUntil((Traverser) traverser)) {
-                        stepLabels.add("");
-                        return stepLabels;
-                    } else {
-                        stepLabels.add(leftBranchStep.getPreviousStep().getLabel());
-                        if (!repeatStep.isEmitFirst() && repeatStep.doEmit((Traverser) traverser))
+                try {
+                    final RepeatStep<?> clone = repeatStep.clone();  // TODO: EEK!!! THIS IS CRAZY EXPENSIVE
+                    final List<String> stepLabels = new ArrayList<>(2);
+                    if (!clone.isUntilFirst()) {      // right until
+                        if (clone.doUntil((Traverser) traverser)) {
                             stepLabels.add("");
+                            return stepLabels;
+                        } else {
+                            stepLabels.add(leftBranchStep.getPreviousStep().getLabel());
+                            if (!clone.isEmitFirst() && clone.doEmit((Traverser) traverser))
+                                stepLabels.add("");
+                            return stepLabels;
+                        }
+
+                    } else { // left until
+                        stepLabels.add(leftBranchStep.getPreviousStep().getLabel());
+                        if (!clone.isEmitFirst() && clone.doEmit((Traverser) traverser)) {
+                            stepLabels.add("");
+                        }
                         return stepLabels;
                     }
-
-                } else { // left until
-                    stepLabels.add(leftBranchStep.getPreviousStep().getLabel());
-                    if (!repeatStep.isEmitFirst() && repeatStep.doEmit((Traverser) traverser)) {
-                        stepLabels.add("");
-                    }
-                    return stepLabels;
+                } catch (final CloneNotSupportedException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
                 }
             });
         }
@@ -109,4 +119,27 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
     public Set<Class<? extends TraversalStrategy>> applyPost() {
         return POSTS;
     }
+
+    /*public static class RepeatBranchFunction<S> implements Function<Traverser<S>, Collection<String>> {
+
+        private final RepeatStep<?> repeatStep;
+        private RepeatStep<?> cloneStep;
+        private final BiFunction<RepeatStep<?>, Traverser<S>, Collection<String>> function;
+
+        public RepeatBranchFunction(final RepeatStep repeatStep, final BiFunction<RepeatStep<?>, Traverser<S>, Collection<String>> function) {
+            this.repeatStep = repeatStep;
+            this.function = function;
+        }
+
+        @Override
+        public Collection<String> apply(Traverser<S> traverser) {
+            try {
+                if (null == this.cloneStep)
+                    this.cloneStep = repeatStep.clone();
+            } catch (final CloneNotSupportedException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+            return this.function.apply(this.cloneStep, traverser);
+        }
+    }*/
 }

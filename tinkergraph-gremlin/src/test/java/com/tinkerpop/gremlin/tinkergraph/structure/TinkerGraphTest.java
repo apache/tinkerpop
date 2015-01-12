@@ -110,8 +110,12 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay3() throws Exception {
-        Graph g = TinkerFactory.createClassic();
-        g.V(1).emit(__.has("age")).repeat(__.out()).path().by("name").forEachRemaining(System.out::println);
+        Graph g = TinkerFactory.createModern();
+        System.out.println(__.out().getClass());
+        while (true) {
+            g.V(1).emit(__.has(T.label, "person")).repeat(__.out()).<String>values("name").submit(g.compute()).forEachRemaining(System.out::println);
+            System.out.println("good");
+        }
     }
 
     /**
