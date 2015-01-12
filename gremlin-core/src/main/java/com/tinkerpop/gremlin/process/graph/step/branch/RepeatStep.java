@@ -78,13 +78,14 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
         return this.emitFirst;
     }
 
-    public final boolean doRepeat(final Traverser<S> traverser) {
-        return null == this.untilPredicate || this.untilPredicate.test(traverser);
+    public final boolean doUntil(final Traverser<S> traverser) {
+        return null != this.untilPredicate && this.untilPredicate.test(traverser);
     }
 
     public final boolean doEmit(final Traverser<S> traverser) {
         return null != this.emitPredicate && this.emitPredicate.test(traverser);
     }
+
 
     @Override
     protected Traverser<S> processNextStart() throws NoSuchElementException {
@@ -94,7 +95,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
             if (this.repeatTraversal.hasNext()) {
                 final Traverser.Admin<S> s = this.endStep.next().asAdmin();
                 s.incrLoops();
-                if (doRepeat(s)) {
+                if (doUntil(s)) {
                     s.resetLoops();
                     return s;
                 } else {
@@ -107,7 +108,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
                 }
             } else {
                 final Traverser.Admin<S> s = this.starts.next();
-                if (this.untilFirst && doRepeat(s)) {
+                if (this.untilFirst && doUntil(s)) {
                     s.resetLoops();
                     return s;
                 }
@@ -147,7 +148,22 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
         return TraversalHelper.trackPaths(this.repeatTraversal);
     }
 
-    //////
+    /////////////////////////
+
+    @Override
+    public RepeatStep<S> clone() throws CloneNotSupportedException {
+        final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
+        if (this.untilPredicate instanceof TraversalPredicate) {
+            clone.untilPredicate = ((TraversalPredicate<S>) this.untilPredicate).clone();
+        }
+        if (this.emitPredicate instanceof TraversalPredicate) {
+            clone.emitPredicate = ((TraversalPredicate<S>) this.emitPredicate).clone();
+        }
+        return clone;
+    }
+
+    /////////////////////////
+
     public static <A, B, C extends Traversal<A, B>> C addRepeatToTraversal(final C traversal, final Traversal<B, B> repeatTraversal) {
         final Step<?, B> step = TraversalHelper.getEnd(traversal);
         if (step instanceof RepeatStep && ((RepeatStep) step).getTraversals().isEmpty()) {
@@ -200,6 +216,35 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
         @Override
         public String toString() {
             return "loops(" + this.maxLoops + ")";
+        }
+    }
+
+    // TODO: linearize this for OLAP!!
+    public static class TraversalPredicate<S> implements Predicate<Traverser<S>>, Cloneable {
+
+        private Traversal<S, ?> traversal;
+
+        public TraversalPredicate(final Traversal<S, ?> traversal) {
+            this.traversal = traversal;
+        }
+
+        @Override
+        public boolean test(final Traverser<S> traverser) {
+            this.traversal.asAdmin().reset();
+            this.traversal.asAdmin().addStart(traverser);
+            return this.traversal.hasNext();
+        }
+
+        @Override
+        public String toString() {
+            return this.traversal.toString();
+        }
+
+        @Override
+        public TraversalPredicate<S> clone() throws CloneNotSupportedException {
+            final TraversalPredicate<S> clone = (TraversalPredicate<S>) super.clone();
+            clone.traversal = this.traversal.clone();
+            return clone;
         }
     }
 }

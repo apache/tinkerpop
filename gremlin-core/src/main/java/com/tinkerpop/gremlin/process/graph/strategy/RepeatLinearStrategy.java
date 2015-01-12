@@ -60,7 +60,7 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
             leftBranchStep.setFunction(traverser -> {
                 final List<String> stepLabels = new ArrayList<>(2);
                 if (repeatStep.isUntilFirst()) {    // left until
-                    if (repeatStep.doRepeat((Traverser) traverser)) {
+                    if (repeatStep.doUntil((Traverser) traverser)) {
                         stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
                         return stepLabels;
                     } else {
@@ -80,7 +80,7 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
             rightBranchStep.setFunction(traverser -> {
                 final List<String> stepLabels = new ArrayList<>(2);
                 if (!repeatStep.isUntilFirst()) {      // right until
-                    if (repeatStep.doRepeat((Traverser) traverser)) {
+                    if (repeatStep.doUntil((Traverser) traverser)) {
                         stepLabels.add("");
                         return stepLabels;
                     } else {

@@ -20,7 +20,7 @@ public final class HasStep<S extends Element> extends FilterStep<S> implements H
     public HasStep(final Traversal traversal, final HasContainer hasContainer) {
         super(traversal);
         this.hasContainer = hasContainer;
-        this.setPredicate(traverser -> hasContainer.test(traverser.get()));
+        this.setPredicate(traverser -> this.hasContainer.test(traverser.get()));
     }
 
     public String toString() {

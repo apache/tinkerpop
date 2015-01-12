@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.branch
 
 import com.tinkerpop.gremlin.process.Path
+import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
@@ -83,6 +84,11 @@ public abstract class GroovyRepeatTest {
         }
 
         @Override
+        public Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
+            g.V(v1Id).emit(__.has(T.label, 'person')).repeat(__.out).name
+        }
+
+        @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
             g.V.repeat(__.groupCount('m').by('name').out).times(2).cap('m')
         }
@@ -156,6 +162,11 @@ public abstract class GroovyRepeatTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_emit_timesX2X_repeatXoutX_path() {
             ComputerTestHelper.compute("g.V.emit.times(2).repeat(__.out).path", g)
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).emit(__.has(T.label, 'person')).repeat(__.out).name", g)
         }
 
         @Override

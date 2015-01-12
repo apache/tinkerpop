@@ -107,6 +107,13 @@ public class TinkerGraphTest {
         // System.out.println(t);
     }
 
+    @Test
+    @Ignore
+    public void testPlay3() throws Exception {
+        Graph g = TinkerFactory.createClassic();
+        g.V(1).emit(__.has("age")).repeat(__.out()).path().by("name").forEachRemaining(System.out::println);
+    }
+
     /**
      * No assertions.  Just write out the graph for convenience.
      */

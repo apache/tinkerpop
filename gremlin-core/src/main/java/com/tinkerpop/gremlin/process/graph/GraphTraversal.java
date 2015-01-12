@@ -520,12 +520,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return RepeatStep.addEmitToTraversal(this, emitPredicate);
     }
 
+    public default GraphTraversal<S, E> emit(final Traversal<?, ?> emitTraversal) {
+        return this.emit(new RepeatStep.TraversalPredicate<>((Traversal<E, ?>) emitTraversal));
+    }
+
     public default GraphTraversal<S, E> emit() {
         return this.emit(t -> true);
     }
 
     public default GraphTraversal<S, E> until(final Predicate<Traverser<E>> untilPredicate) {
         return RepeatStep.addUntilToTraversal(this, untilPredicate);
+    }
+
+    public default GraphTraversal<S, E> until(final Traversal<?, ?> untilTraversal) {
+        return this.until(new RepeatStep.TraversalPredicate<>((Traversal<E, ?>) untilTraversal));
     }
 
     public default GraphTraversal<S, E> times(final int maxLoops) {

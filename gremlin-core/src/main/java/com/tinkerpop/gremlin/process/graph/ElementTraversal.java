@@ -406,16 +406,24 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().emit(emitPredicate);
     }
 
-    public default GraphTraversal<A, A> until(final Predicate<Traverser<A>> untilPredicate) {
-        return this.start().until(untilPredicate);
-    }
-
-    public default GraphTraversal<A, A> times(final int maxLoops) {
-        return this.start().times(maxLoops);
+    public default GraphTraversal<A, A> emit(final Traversal<?, ?> emitTraversal) {
+        return this.start().emit(emitTraversal);
     }
 
     public default GraphTraversal<A, A> emit() {
         return this.start().emit();
+    }
+
+    public default GraphTraversal<A, A> until(final Predicate<Traverser<A>> untilPredicate) {
+        return this.start().until(untilPredicate);
+    }
+
+    public default GraphTraversal<A, A> until(final Traversal<?, ?> untilTraversal) {
+        return this.start().until(untilTraversal);
+    }
+
+    public default GraphTraversal<A, A> times(final int maxLoops) {
+        return this.start().times(maxLoops);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

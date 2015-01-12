@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -52,6 +53,8 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Path> get_g_V_emit_timesX2X_repeatXoutX_path();
 
     public abstract Traversal<Vertex, Path> get_g_V_emit_repeatXoutX_timesX2X_path();
+
+    public abstract Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id);
 
     // SIDE-EFFECTS
 
@@ -200,6 +203,16 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void g_V_emitXhasXlabel_personXX_repeatXoutX_name() {
+        final List<Traversal<Vertex, String>> traversals = Arrays.asList(get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(convertToVertexId("marko")));
+        traversals.forEach(traversal -> {
+            printTraversalForm(traversal);
+            checkResults(Arrays.asList("marko", "josh", "vadas"), traversal);
+        });
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
         final List<Traversal<Vertex, Map<String, Long>>> traversals = Arrays.asList(get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX());
         traversals.forEach(traversal -> {
@@ -288,6 +301,11 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         }
 
         @Override
+        public Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
+            return g.V(v1Id).emit(__.has(T.label, "person")).repeat(__.out()).values("name");
+        }
+
+        @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
             return g.V().repeat(__.groupCount("m").by("name").out()).times(2).cap("m");
         }
@@ -361,6 +379,11 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_emit_timesX2X_repeatXoutX_path() {
             return g.V().emit().times(2).repeat(__.out()).path().submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
+            return g.V(v1Id).emit(__.has(T.label, "person")).repeat(__.out()).<String>values("name").submit(g.compute());
         }
 
         @Override
