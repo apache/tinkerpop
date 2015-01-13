@@ -7,6 +7,9 @@ import com.tinkerpop.gremlin.process.traverser.SimpleTraverserGenerator;
 import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -24,8 +27,14 @@ public class DefaultTraverserGeneratorFactory implements TraverserGeneratorFacto
     }
 
     public TraverserGenerator getTraverserGenerator(final Traversal traversal) {
-        return TraversalHelper.trackPaths(traversal) ?
+        return this.getRequirements(traversal).contains(TraverserRequirements.UNIQUE_PATH) ?
                 PATH_TRAVERSER_GENERATOR :
                 SIMPLE_TRAVERSER_GENERATOR;
+    }
+
+    public Set<TraverserRequirements> getRequirements(final Traversal traversal) {
+        return TraversalHelper.trackPaths(traversal) ?
+                Collections.singleton(TraverserRequirements.UNIQUE_PATH) :
+                Collections.emptySet();
     }
 }
