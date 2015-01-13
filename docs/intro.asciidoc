@@ -240,7 +240,7 @@ NOTE: Gremlin-Java is much more aligned with Gremlin-Groovy in TinkerPop3 than i
 The Traverser
 ~~~~~~~~~~~~~
 
-When a traversal is executed, the source of the traversal is on the left of the expression (e.g. vertex 1), the steps are the middle of the traversal (e.g. `out("knows")` and `value("name")`), and the results are "traversal.next()'d" out of the right of the traversal (e.g. "vadas" and "josh").
+When a traversal is executed, the source of the traversal is on the left of the expression (e.g. vertex 1), the steps are the middle of the traversal (e.g. `out('knows')` and `values('name')`), and the results are "traversal.next()'d" out of the right of the traversal (e.g. "vadas" and "josh").
 
 image::traversal-mechanics.png[width=500]
 
