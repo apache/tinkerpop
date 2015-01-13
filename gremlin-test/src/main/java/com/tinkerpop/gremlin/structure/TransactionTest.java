@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -425,6 +426,34 @@ public class TransactionTest extends AbstractGremlinTest {
         assertTrue(noVerticesInFirstThread.get());
         assertVertexEdgeCounts(0, 0);
     }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS)
+    public void shouldSupportMultipleThreadsOnTheSameTransaction() throws Exception {
+        final int numberOfThreads = 10;
+        final CountDownLatch latch = new CountDownLatch(numberOfThreads);
+
+        final Graph threadedG = g.tx().create();
+
+        for (int ix = 0; ix < numberOfThreads; ix++) {
+            new Thread(() -> {
+                threadedG.addVertex();
+                latch.countDown();
+            }).start();
+        }
+
+        latch.await(10000, TimeUnit.MILLISECONDS);
+
+        // threaded transaction is not yet committed so g should not reflect any change
+        assertVertexEdgeCounts(0,0);
+        threadedG.tx().commit();
+
+        // there should be one vertex for each thread
+        assertVertexEdgeCounts(numberOfThreads,0);
+    }
+
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
