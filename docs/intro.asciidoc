@@ -43,7 +43,7 @@ NOTE: The TinkerPop3 API rides a fine line between providing concise "query lang
 The Graph Structure
 -------------------
 
-image:gremlin-standing.png[width=125,float=left] A graph's structure is the topology formed by the explicit references between its vertices, edges, and properties. A vertex has incident edges. A vertex is adjacent to another vertex if they share an incident edge. A property is attached to an element and an element has a set of properties. A property is a key/value pair, where the key is always a character `String`. The graph structure API of TinkerPop3 provides the methods necessary to create such a structure. The classic TinkerPop graph previously diagrammed can be created with the following Java8 code. Note that this graph is available as an in-memory TinkerGraph using `TinkerFactory.createClassic()`.
+image:gremlin-standing.png[width=125,float=left] A graph's structure is the topology formed by the explicit references between its vertices, edges, and properties. A vertex has incident edges. A vertex is adjacent to another vertex if they share an incident edge. A property is attached to an element and an element has a set of properties. A property is a key/value pair, where the key is always a character `String`. The graph structure API of TinkerPop3 provides the methods necessary to create such a structure. The TinkerPop graph previously diagrammed can be created with the following Java8 code. Note that this graph is available as an in-memory TinkerGraph using `TinkerFactory.createClassic()`.
 
 [source,java]
 Graph g = TinkerGraph.open(); <1>
@@ -180,7 +180,7 @@ IMPORTANT: The steps `map()`, `flatMap()`, `filter()`, `sideEffect()`, and `bran
 
 TIP: `GraphTraversal` is a link:http://en.wikipedia.org/wiki/Monoid[monoid] in that it is an algebraic structure that has a single binary operation that is associative. The binary operation is function composition (i.e. method chaining) and its identity is the step `identity()`. This is related to a link:http://en.wikipedia.org/wiki/Monad_(functional_programming)[monad] as popularized by the functional programming community. 
 
-Given the classic TinkerPop graph, the following query will return the names of all the people that the marko-vertex knows. The following query is demonstrated using Gremlin-Groovy.
+Given the TinkerPop graph, the following query will return the names of all the people that the marko-vertex knows. The following query is demonstrated using Gremlin-Groovy.
 
 [source,groovy]
 ----

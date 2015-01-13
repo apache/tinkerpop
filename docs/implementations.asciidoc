@@ -851,7 +851,7 @@ A Command Line Example
 
 image::pagerank-logo.png[width=300]
 
-The classic link:http://en.wikipedia.org/wiki/PageRank[PageRank] centrality algorithm can be executed over TinkerPop classic from the command line using `GiraphGraphComputer`.
+The classic link:http://en.wikipedia.org/wiki/PageRank[PageRank] centrality algorithm can be executed over the TinkerPop graph from the command line using `GiraphGraphComputer`.
 
 NOTE: The extension `ldjson` in `hadoop-graphson.properties` refers to link:http://en.wikipedia.org/wiki/Line_Delimited_JSON[line-delimitated JSON] which is the file format used by `GraphSONWriter` when writing an link:http://en.wikipedia.org/wiki/Adjacency_list[adjacency list] representation of a graph.
 
