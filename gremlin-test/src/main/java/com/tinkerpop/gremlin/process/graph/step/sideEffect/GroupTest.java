@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -11,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
@@ -29,7 +27,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXsizeX();
 
-    public abstract Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_byXitX_byXsizeXX_timesX2X_capXaX();
+    public abstract Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -75,7 +73,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_repeatXout_groupXaX_byXnameX_byXitX_byXsizeXX_timesX2X_capXaX() {
         List<Traversal<Vertex, Map<String, Integer>>> traversals = new ArrayList<>();
-        traversals.add(get_g_V_repeatXout_groupXaX_byXnameX_byXitX_byXsizeXX_timesX2X_capXaX());
+        traversals.add(get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             final Map<String, Integer> map = traversal.next();
@@ -112,8 +110,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_byXitX_byXsizeXX_timesX2X_capXaX() {
-            return g.V().repeat(__.out().group("a").by("name").by(T.self).<Collection>by(Collection::size)).times(2).cap("a");
+        public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX() {
+            return g.V().repeat(__.out().group("a").by("name").by().<Collection>by(Collection::size)).times(2).cap("a");
             //g.V.as("x").out.group('a').by('name').by { it }.by { it.size() }.jump("x", 2).cap("a");
         }
     }
@@ -142,8 +140,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_byXitX_byXsizeXX_timesX2X_capXaX() {
-            return g.V().repeat(__.out().group("a").by("name").by(T.self).<Collection>by(Collection::size)).times(2).<Map<String, Integer>>cap("a").submit(g.compute());
+        public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX() {
+            return g.V().repeat(__.out().group("a").by("name").by().<Collection>by(Collection::size)).times(2).<Map<String, Integer>>cap("a").submit(g.compute());
         }
     }
 

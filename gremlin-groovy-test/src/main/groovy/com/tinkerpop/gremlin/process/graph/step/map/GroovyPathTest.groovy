@@ -26,8 +26,8 @@ public abstract class GroovyPathTest {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX() {
-            g.V.repeat(__.out).times(2).path.by(T.self).by('name').by('lang');
+        public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX() {
+            g.V.repeat(__.out).times(2).path.by.by('name').by('lang');
         }
 
         @Override
@@ -55,8 +55,8 @@ public abstract class GroovyPathTest {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX() {
-            g.V.repeat(__.out).times(2).path.by(T.self).by('name').by('lang');
+        public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX() {
+            g.V.repeat(__.out).times(2).path.by.by('name').by('lang');
             //TODO
         }
 
