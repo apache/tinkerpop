@@ -20,12 +20,6 @@ class StepLoader {
             }
         }
 
-        // THE CODE BELOW IS REQUIRED UNTIL GROOVY 2.3+ FIXES VAR ARG CONVERSION OF CLOSURES TO LAMBDAS
-
-        GraphTraversal.metaClass.branch = { final Closure... labelClosures ->
-            return ((GraphTraversal) delegate).branch(GFunction.make(labelClosures));
-        }
-
         GraphTraversal.metaClass.by = { final Closure closure ->
             return ((GraphTraversal) delegate).by(1 == closure.getMaximumNumberOfParameters() ? new GFunction(closure) : new GComparator(closure));
         }

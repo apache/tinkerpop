@@ -539,7 +539,7 @@ NeoTechnology are the creators of the graph pattern-match query language link:ht
 [source,groovy]
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> g.loadKryo('data/tinkerpop-classic.gio')
+gremlin> g.io().readKryo('data/tinkerpop-modern.gio')
 ==>null
 gremlin> g.cypher('MATCH (a {name:"marko"}) RETURN a')
 ==>[a:v[0]]
@@ -650,7 +650,7 @@ Properties Files
 
 [source,text]
 gremlin.graph=com.tinkerpop.gremlin.hadoop.structure.HadoopGraph
-gremlin.hadoop.inputLocation=tinkerpop-classic-vertices.gio
+gremlin.hadoop.inputLocation=tinkerpop-modern-vertices.gio
 gremlin.hadoop.graphInputFormat=com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat
 gremlin.hadoop.outputLocation=output
 gremlin.hadoop.graphOutputFormat=com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoOutputFormat
@@ -693,10 +693,10 @@ image:hadoop-pipes.png[width=180,float=left] It is possible to execute OLTP oper
 CAUTION: OLTP operations on `HadoopGraph` are not efficient. They require linear scans to execute and are unreasonable for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>> which is the OLAP implementation of the Gremlin language. Hadoop-Gremlin provides various `GraphComputer` implementations to execute OLAP computations over a `HadoopGraph`.
 
 [source,text]
-gremlin> hdfs.copyFromLocal('data/tinkerpop-classic-vertices.gio', 'tinkerpop-classic-vertices.gio')
+gremlin> hdfs.copyFromLocal('data/tinkerpop-modern-vertices.gio', 'tinkerpop-modern-vertices.gio')
 ==>null
 gremlin> hdfs.ls()
-==>rw-r--r-- marko supergroup 891 tinkerpop-classic-vertices.gio
+==>rw-r--r-- marko supergroup 891 tinkerpop-modern-vertices.gio
 gremlin> g = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-kryo.properties')
 ==>hadoopgraph[kryoinputformat->kryooutputformat]
 gremlin> g.V().count()
@@ -814,7 +814,7 @@ The distributed file system of Hadoop is called link:http://en.wikipedia.org/wik
 [source,text]
 gremlin> hdfs.ls()
 ==>rwxr-xr-x marko supergroup 0 (D) output
-==>rw-r--r-- marko supergroup 891 tinkerpop-classic-vertices.gio
+==>rw-r--r-- marko supergroup 891 tinkerpop-modern-vertices.gio
 gremlin> hdfs.ls('output')
 ==>rwxr-xr-x marko supergroup 0 (D) a
 ==>rwxr-xr-x marko supergroup 0 (D) ~g
@@ -856,10 +856,10 @@ The classic link:http://en.wikipedia.org/wiki/PageRank[PageRank] centrality algo
 NOTE: The extension `ldjson` in `hadoop-graphson.properties` refers to link:http://en.wikipedia.org/wiki/Line_Delimited_JSON[line-delimitated JSON] which is the file format used by `GraphSONWriter` when writing an link:http://en.wikipedia.org/wiki/Adjacency_list[adjacency list] representation of a graph.
 
 [source,text]
-$ hadoop fs -copyFromLocal data/tinkerpop-classic-vertices.ldjson tinkerpop-classic-vertices.ldjson
+$ hadoop fs -copyFromLocal data/tinkerpop-modern-vertices.ldjson tinkerpop-modern-vertices.ldjson
 $ hadoop fs -ls
 Found 2 items
--rw-r--r--   1 marko supergroup       2356 2014-07-28 13:00 /user/marko/tinkerpop-classic-vertices.ldjson
+-rw-r--r--   1 marko supergroup       2356 2014-07-28 13:00 /user/marko/tinkerpop-modern-vertices.ldjson
 $ hadoop jar target/hadoop-gremlin-x.y.z-job.jar com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer conf/hadoop-graphson.properties
 14/07/29 12:08:27 INFO giraph.GiraphGraphComputer: HadoopGremlin(Giraph): PageRankVertexProgram[alpha=0.85,iterations=30]
 14/07/29 12:08:28 INFO mapred.JobClient: Running job: job_201407281259_0041

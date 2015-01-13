@@ -393,28 +393,27 @@ As GraphML is a specification for the serialization of an entire graph and not t
 
 CAUTION: GraphML is a "lossy" format in that it only supports primitive values for properties and does not have support for `Graph` variables.  It will use `toString` to serialize property values outside of those primitives.
 
-The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.xml` and then how to read that file back into a different instance:
+The following code shows how to write a `Graph` instance to file called `tinkerpop-modern.xml` and then how to read that file back into a different instance:
 
 [source,java]
 ----
-final Graph g = TinkerFactory.createClassic();
-g.io().writeGraphML("tinkerpop-classic.xml");
-
+final Graph g = TinkerFactory.createModern();
+g.io().writeGraphML("tinkerpop-modern.xml");
 final Graph newGraph = TinkerGraph.open();
-newGraph.io().readGraphML("tinkerpop-classic.xml")'
+newGraph.io().readGraphML("tinkerpop-modern.xml");
 ----
 
 If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:
 
 [source,java]
 ----
-final Graph g = TinkerFactory.createClassic();
-try (final OutputStream os = new FileOutputStream("tinkerpop-classic.xml")) {
+final Graph g = TinkerFactory.createModern();
+try (final OutputStream os = new FileOutputStream("tinkerpop-modern.xml")) {
     g.io().graphMLWriter().normalize(true).create().writeGraph(os);
 }
 
 final Graph newGraph = TinkerGraph.open();
-try (final InputStream stream = new FileInputStream("tinkerpop-classic.xml")) {
+try (final InputStream stream = new FileInputStream("tinkerpop-modern.xml")) {
     newGraph.io().graphMLReader().vertexIdKey("name").create().readGraph(stream);
 }
 ----
@@ -427,28 +426,28 @@ image:gremlin-graphson.png[width=350,float=left] GraphSON is a link:http://json.
 * A text format of the graph or its elements is desired (e.g. debugging, usage in source control, etc.)
 * The graph or its elements need to be consumed by code that is not JVM-based (e.g. JavaScript, Python, .NET, etc.)
 
-GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.json` and then how to read that file back into a different instance:
+GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-modern.json` and then how to read that file back into a different instance:
 
 [source,java]
 ----
-final Graph g = TinkerFactory.createClassic();
-g.io().writeGraphSON("tinkerpop-classic.json");
+final Graph g = TinkerFactory.createModern();
+g.io().writeGraphSON("tinkerpop-modern.json");
 
 final Graph newGraph = TinkerGraph.open();
-newGraph.io().readGraphSON("tinkerpop-classic.json")'
+newGraph.io().readGraphSON("tinkerpop-modern.json")'
 ----
 
 If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:
 
 [source,java]
 ----
-final Graph g = TinkerFactory.createClassic();
-try (final OutputStream os = new FileOutputStream("tinkerpop-classic.json")) {
+final Graph g = TinkerFactory.createModern();
+try (final OutputStream os = new FileOutputStream("tinkerpop-modern.json")) {
     g.io().graphSONWriter().normalize(true).create().writeGraph(os);
 }
 
 final Graph newGraph = TinkerGraph.open();
-try (final InputStream stream = new FileInputStream("tinkerpop-classic.json")) {
+try (final InputStream stream = new FileInputStream("tinkerpop-modern.json")) {
     newGraph.io().graphSONReader().vertexIdKey("name").create().readGraph(stream);
 }
 ----
@@ -457,8 +456,10 @@ One of the important configuration options of the `GraphSONReader` and `GraphSON
 
 [source,groovy]
 ----
-gremlin> g = TinkerFactory.createClassic()
+gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
+gremlin> f = new FileOutputStream('vertex-1.json')
+==>java.io.FileOutputStream@4df39a88
 gremlin> g.io().graphSONWriter().create().writeVertex(f, g.V(1).next(), BOTH)
 ==>null
 gremlin> f.close()
@@ -470,64 +471,72 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
 [source,js]
 ----
 {
-    "inE": [],
-    "outE": [
-        {
-            "inV": 3,
-            "inVLabel": "vertex",
-            "outVLabel": "vertex",
-            "id": 9,
-            "label": "created",
-            "type": "edge",
-            "outV": 1,
-            "properties": {
-                "weight": 0.4
-            }
-        },
-        {
-            "inV": 2,
-            "inVLabel": "vertex",
-            "outVLabel": "vertex",
-            "id": 7,
-            "label": "knows",
-            "type": "edge",
-            "outV": 1,
-            "properties": {
-                "weight": 0.5
-            }
-        },
-        {
-            "inV": 4,
-            "inVLabel": "vertex",
-            "outVLabel": "vertex",
-            "id": 8,
-            "label": "knows",
-            "type": "edge",
-            "outV": 1,
-            "properties": {
-                "weight": 1
-            }
-        }
-    ],
-    "id": 1,
-    "label": "vertex",
-    "type": "vertex",
-    "properties": {
-        "name": [
-            {
-                "id": 0,
-                "value": "marko",
-                "properties": {}
-            }
-        ],
-        "age": [
-            {
-                "id": 1,
-                "value": 29,
-                "properties": {}
-            }
-        ]
+  "inE": [
+
+  ],
+  "outE": [
+    {
+      "inV": 3,
+      "inVLabel": "software",
+      "outVLabel": "person",
+      "id": 9,
+      "label": "created",
+      "type": "edge",
+      "outV": 1,
+      "properties": {
+        "weight": 0.4
+      }
+    },
+    {
+      "inV": 2,
+      "inVLabel": "person",
+      "outVLabel": "person",
+      "id": 7,
+      "label": "knows",
+      "type": "edge",
+      "outV": 1,
+      "properties": {
+        "weight": 0.5
+      }
+    },
+    {
+      "inV": 4,
+      "inVLabel": "person",
+      "outVLabel": "person",
+      "id": 8,
+      "label": "knows",
+      "type": "edge",
+      "outV": 1,
+      "properties": {
+        "weight": 1
+      }
     }
+  ],
+  "id": 1,
+  "label": "person",
+  "type": "vertex",
+  "properties": {
+    "name": [
+      {
+        "id": 0,
+        "label": "name",
+        "value": "marko",
+        "properties": {
+
+        }
+      }
+    ],
+    "age": [
+      {
+        "id": 1,
+        "label": "age",
+        "value": 29,
+        "properties": {
+
+        }
+      }
+    ]
+  }
 }
 ----
 
@@ -537,9 +546,9 @@ With a minor change to the construction of the `GraphSONWriter` the lossy nature
 
 [source,groovy]
 ----
-gremlin> f = new FileOutputStream("test.txt")
+gremlin> f = new FileOutputStream('vertex-1.json')
 ==>java.io.FileOutputStream@43034809
-gremlin> g.io().graphSONWriter().embedTypes(true).create().writeVertex(f, g.V(1).next(), BOTH)
+gremlin> g.io().graphSONWriter().mapper(g.io().graphSONMapper().embedTypes(true).create()).create().writeVertex(f, g.V(1).next(), BOTH)
 ==>null
 gremlin> f.close()
 ----
@@ -549,105 +558,100 @@ In the above code, the `embedTypes` option is set to `true` and the output below
 [source,js]
 ----
 {
-    "@class": "java.util.HashMap",
-    "inE": [
-        "java.util.ArrayList",
-        []
-    ],
-    "outE": [
-        "java.util.ArrayList",
-        [
-            {
-                "@class": "java.util.HashMap",
-                "inV": 3,
-                "inVLabel": "vertex",
-                "outVLabel": "vertex",
-                "id": 9,
-                "label": "created",
-                "type": "edge",
-                "outV": 1,
-                "properties": {
-                    "@class": "java.util.HashMap",
-                    "weight": [
-                        "java.lang.Float",
-                        0.4
-                    ]
-                }
-            },
-            {
-                "@class": "java.util.HashMap",
-                "inV": 2,
-                "inVLabel": "vertex",
-                "outVLabel": "vertex",
-                "id": 7,
-                "label": "knows",
-                "type": "edge",
-                "outV": 1,
-                "properties": {
-                    "@class": "java.util.HashMap",
-                    "weight": [
-                        "java.lang.Float",
-                        0.5
-                    ]
-                }
-            },
-            {
-                "@class": "java.util.HashMap",
-                "inV": 4,
-                "inVLabel": "vertex",
-                "outVLabel": "vertex",
-                "id": 8,
-                "label": "knows",
-                "type": "edge",
-                "outV": 1,
-                "properties": {
-                    "@class": "java.util.HashMap",
-                    "weight": [
-                        "java.lang.Float",
-                        1
-                    ]
-                }
-            }
-        ]
-    ],
-    "id": 1,
-    "label": "vertex",
-    "type": "vertex",
-    "properties": {
+  "@class": "java.util.HashMap",
+  "inE": [
+    "java.util.ArrayList",
+    [
+
+    ]
+  ],
+  "outE": [
+    "java.util.ArrayList",
+    [
+      {
         "@class": "java.util.HashMap",
-        "name": [
-            "java.util.ArrayList",
-            [
-                {
-                    "@class": "java.util.HashMap",
-                    "id": [
-                        "java.lang.Long",
-                        0
-                    ],
-                    "value": "marko",
-                    "properties": {
-                        "@class": "java.util.HashMap"
-                    }
-                }
-            ]
-        ],
-        "age": [
-            "java.util.ArrayList",
-            [
-                {
-                    "@class": "java.util.HashMap",
-                    "id": [
-                        "java.lang.Long",
-                        1
-                    ],
-                    "value": 29,
-                    "properties": {
-                        "@class": "java.util.HashMap"
-                    }
-                }
-            ]
-        ]
-    }
+        "inV": 3,
+        "inVLabel": "software",
+        "outVLabel": "person",
+        "id": 9,
+        "label": "created",
+        "type": "edge",
+        "outV": 1,
+        "properties": {
+          "@class": "java.util.HashMap",
+          "weight": 0.4
+        }
+      },
+      {
+        "@class": "java.util.HashMap",
+        "inV": 2,
+        "inVLabel": "person",
+        "outVLabel": "person",
+        "id": 7,
+        "label": "knows",
+        "type": "edge",
+        "outV": 1,
+        "properties": {
+          "@class": "java.util.HashMap",
+          "weight": 0.5
+        }
+      },
+      {
+        "@class": "java.util.HashMap",
+        "inV": 4,
+        "inVLabel": "person",
+        "outVLabel": "person",
+        "id": 8,
+        "label": "knows",
+        "type": "edge",
+        "outV": 1,
+        "properties": {
+          "@class": "java.util.HashMap",
+          "weight": 1
+        }
+      }
+    ]
+  ],
+  "id": 1,
+  "label": "person",
+  "type": "vertex",
+  "properties": {
+    "@class": "java.util.HashMap",
+    "name": [
+      "java.util.ArrayList",
+      [
+        {
+          "@class": "java.util.HashMap",
+          "id": [
+            "java.lang.Long",
+            0
+          ],
+          "label": "name",
+          "value": "marko",
+          "properties": {
+            "@class": "java.util.HashMap"
+          }
+        }
+      ]
+    ],
+    "age": [
+      "java.util.ArrayList",
+      [
+        {
+          "@class": "java.util.HashMap",
+          "id": [
+            "java.lang.Long",
+            1
+          ],
+          "label": "age",
+          "value": 29,
+          "properties": {
+            "@class": "java.util.HashMap"
+          }
+        }
+      ]
+    ]
+  }
 }
 ----
 
@@ -665,29 +669,29 @@ image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSof
 
 CAUTION: When migrating between Gremlin Structure implementations, Kryo may not lose data, but it is important to consider the features of each `Graph` and whether or not the data types supported in one will be supported in the other.  Failure to do so, may result in errors.
 
-Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.gio` and then how to read that file back into a different instance:
+Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-modern.gio` and then how to read that file back into a different instance:
 
 
 [source,java]
 ----
-final Graph g = TinkerFactory.createClassic();
-g.io().writeKryo("tinkerpop-classic.gio");
+final Graph g = TinkerFactory.createModern();
+g.io().writeKryo("tinkerpop-modern.gio");
 
 final Graph newGraph = TinkerGraph.open();
-newGraph.io().readKryo("tinkerpop-classic.gio")'
+newGraph.io().readKryo("tinkerpop-modern.gio")'
 ----
 
 If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:
 
 [source,java]
 ----
-final Graph g = TinkerFactory.createClassic();
-try (final OutputStream os = new FileOutputStream("tinkerpop-classic.gio")) {
+final Graph g = TinkerFactory.createModern();
+try (final OutputStream os = new FileOutputStream("tinkerpop-modern.gio")) {
     g.io().kryoWriter().normalize(true).create().writeGraph(os);
 }
 
 final Graph newGraph = TinkerGraph.open();
-try (final InputStream stream = new FileInputStream("tinkerpop-classic.gio")) {
+try (final InputStream stream = new FileInputStream("tinkerpop-modern.gio")) {
     newGraph.io().kryoReader().vertexIdKey("name").create().readGraph(stream);
 }
 ----

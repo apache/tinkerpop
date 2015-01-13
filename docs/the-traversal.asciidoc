@@ -6,9 +6,9 @@ image::gremlin-running.png[width=125]
 
 At the most general level there is `Traversal<S,E>` which implements `Iterator<E>`, where the `S` stands for start and the `E` stands for end. A traversal is composed of four primary components:
   
- . `Step<S,E>`: an individual function applied to `S` to yield `E`.
+ . `Step<S,E>`: an individual function applied to `S` to yield `E`. Steps are chained within a traversal.
  . `TraversalStrategy`: interceptor methods to alter the execution of the traversal (i.e. query re-writing typically used only by vendors).
- . `Traversal.SideEffects`: key/value pairs that can be used to store global information about the traversal.
+ . `TraversalSideEffects`: key/value pairs that can be used to store global information about the traversal.
  . `Traverser<T>`: the object propagating through the `Traversal` currently representing an object of type `T`. 
 
 The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal<S,E>`. GraphTraversal provides an interpretation of the graph data in terms of vertices, edges, etc. and thus, a graph traversal link:http://en.wikipedia.org/wiki/Domain-specific_language[DSL].
@@ -34,19 +34,19 @@ There are four generic steps by which all other specific steps described later e
 | `flatMap(Function<Traverser<S>, Iterator<E>>)` | map the traverser to an iterator of `E` objects that are streamed to the next step.
 | `filter(Predicate<Traverser<S>>)` | map the traverser to either true or false, where false will not pass the traverser to the next step.
 | `sideEffect(Consumer<Traverser<S>>)` | perform some operation on the traverser and pass it to the next step.
-| `branch(Function<Traverser<S>,Collection<String>>)` | split the traverser to all steps labeled in returned string collection.
+| `branch(Function<Traverser<S>,Collection<String>>)` | split the traverser to all the steps that have a label in the returned string collection.
 |=========================================================
 
 The `Traverser<S>` object provides access to:
 
-. The current traversed `S` object -- `Traverser.get()`.
-. The current path traversed by the traverser -- `Traverser.path()`.
-. The number of times the traverser has gone through a loop -- `Traverser.loops()`.
-. The number of objects represented by this traverser -- `Traverser.bulk()`.
-. The local sideEffect data structure associated with this traverser -- `Traverser.sack()`.
-. The side-effects associated with the traversal -- `Traverser.sideEffects()`.
-. A helper shorthand to get a particular side-effect -- `Traverser.sideEffect(String) == Traverser.sideEffects().get(String)`.
-. A helper shorthand to get a particular path-history object -- `Traverser.path(String) == Traverser.path().get(String)`.
+ . The current traversed `S` object -- `Traverser.get()`.
+ . The current path traversed by the traverser -- `Traverser.path()`.
+  .. A helper shorthand to get a particular path-history object -- `Traverser.path(String) == Traverser.path().get(String)`.
+ . The number of times the traverser has gone through the current loop -- `Traverser.loops()`.
+ . The number of objects represented by this traverser -- `Traverser.bulk()`.
+ . The local data structure associated with this traverser -- `Traverser.sack()`.
+ . The side-effects associated with the traversal -- `Traverser.sideEffects()`.
+  .. A helper shorthand to get a particular side-effect -- `Traverser.sideEffect(String) == Traverser.sideEffects().get(String)`.
 
 IMPORTANT: If a specific traversal step can do the necessary step-computation, use it. Lambda steps can not be optimized by the Gremlin <<traversalstrategy,traversal strategies>> and should only be used when the requisite computation does not have a corresponding standard Gremlin step. For example, instead of `filter{it.get().property('name').isPresent()}` use `has('name')`.
 
@@ -67,28 +67,28 @@ gremlin> g.V(1).as('a').out().back('a') <3>
 
 <1> A standard outgoing traversal from vertex 1.
 <2> For each vertex outgoing adjacent to vertex 1, get the vertex at `a` (which is vertex 1).
-<3> The <<back-step,`back()`>>-step is implemented as a `map()`-step that accesses side effects.
+<3> The <<back-step,`back()`>>-step is implemented as a `map()`-step that accesses data in the historic path.
 
 image:filter-lambda.png[width=160,float=right]
 [source,groovy]
-gremlin> g.V().filter{it.get().property('age').isPresent()} <1>
+gremlin> g.V().filter{it.get().label() == 'person'} <1>
 ==>v[1]
 ==>v[2]
 ==>v[4]
 ==>v[6]
-gremlin> g.V().has('age') <2>
+gremlin> g.V().has(label,'person') <2>
 ==>v[1]
 ==>v[2]
 ==>v[4]
 ==>v[6]
 
-<1> A filter that only allows the vertex to pass if it has an age property.
+<1> A filter that only allows the vertex to pass if it has an age-property.
 <2> The more specific `has()`-step is implemented as a `filter()` with respective predicate.
 
 
 image:side-effect-lambda.png[width=175,float=right]
 [source,groovy]
-gremlin> g.V().has('age').sideEffect{println it} <1>
+gremlin> g.V().has(label,'person').sideEffect{println it} <1>
 v[1]
 ==>v[1]
 v[2]
@@ -98,12 +98,12 @@ v[4]
 v[6]
 ==>v[6]
 
-<1> Whatever enters sideEffect is passed to the next step, but some intervening process can occur.
+<1> Whatever enters `sideEffect()` is passed to the next step, but some intervening process can occur.
 
 image:branch-lambda.png[width=180,float=right]
 [source,groovy]
 gremlin> g.V().branch{it.get().value('name') == 'marko' ? ['a'] : ['b'] }.as('a').
-                 values('age').branch().by{['c']}.as('b').
+                 values('age').branch{['c']}.as('b').
                  values('name').as('c') <1>
 ==>vadas
 ==>29
@@ -111,7 +111,7 @@ gremlin> g.V().branch{it.get().value('name') == 'marko' ? ['a'] : ['b'] }.as('a'
 ==>josh
 ==>ripple
 ==>peter
-gremlin> g.V().choose({it.get().value('name') == 'marko'},
+gremlin> g.V().choose({it.value('name') == 'marko'},
                         __.values('age'),
                         __.values('name')) <2>
 ==>29
@@ -240,14 +240,14 @@ Choose Step
 The `choose()`-step (*branch*) allows for the current traverser to select which traversal branch to take. With `choose()`, it is possible to implement if/else-based semantics. The first set of examples below provide information about the vertices of the graph so its easier to understand the `choose()` examples to follow.
 
 [source,groovy]
-gremlin> g.V().has('age').values('name').map{[it.get(), it.get().length()]}
+gremlin> g.V().has(label,'person').values('name').map{[it.get(), it.get().length()]}
 ==>[marko, 5]
 ==>[vadas, 5]
 ==>[josh, 4]
 ==>[peter, 5]
-gremlin> g.V().has('age').filter{it.get().value('name').length() == 5}.in().values('name')
+gremlin> g.V().has(label,'person').filter{it.get().value('name').length() == 5}.in().values('name')
 ==>marko
-gremlin> g.V().has('age').filter{it.get().value('name').length() == 4}.out().values('name')
+gremlin> g.V().has(label,'person').filter{it.get().value('name').length() == 4}.out().values('name')
 ==>ripple
 ==>lop
 
@@ -256,13 +256,13 @@ Given the facts above, the following examples show how to use `choose()` to sele
 image::choose-step.png[width=700]
 
 [source,groovy]
-gremlin> g.V().has('age').choose({it.value('name').length() == 5},   // If the predicate is true, then do `in`, else do `out`.
+gremlin> g.V().has(label,'person').choose({it.value('name').length() == 5},   // If the predicate is true, then do `in`, else do `out`.
   __.in(),
   __.out()).values('name')
 ==>marko
 ==>ripple
 ==>lop
-gremlin> g.V().has('age').choose({it.value('name').length()},   // Use the result of the function as a key to the map of traversal choices.
+gremlin> g.V().has(label,'person').choose({it.value('name').length()},   // Use the result of the function as a key to the map of traversal choices.
   [5:__.in(),
    4:__.out()]).values('name')
 ==>marko
@@ -430,9 +430,9 @@ When it is important to know how many times a particular object has been at a pa
 	"What is the distribution of ages in the graph?"
 
 [source,groovy]
-gremlin> g.V().has('age').values('age').groupCount()
+gremlin> g.V().has(label,'person').values('age').groupCount()
 ==>[32:1, 35:1, 27:1, 29:1]
-gremlin> g.V().has('age').groupCount().by('age') // you can also supply a pre-group projection
+gremlin> g.V().has(label,'person').groupCount().by('age') // you can also supply a pre-group projection
 ==>[32:1, 35:1, 27:1, 29:1]
 
 There is one person that is 32, one person that is 35, one person that is 27, and one person that is 29.
@@ -458,15 +458,15 @@ image::has-step.png[width=670]
 It is possible to filter vertices, edges, and vertex properties based on their properties using `has()`-step (*filter*).
 
 [source,groovy]
-gremlin> g.V().has('age')
+gremlin> g.V().has(label,'person')
 ==>v[1]
 ==>v[2]
 ==>v[4]
 ==>v[6]
-gremlin> g.V().has('age').out().has('name',within,['vadas','josh'])
+gremlin> g.V().has(label,'person').out().has('name',within,['vadas','josh'])
 ==>v[2]
 ==>v[4]
-gremlin> g.V().has('age').out().has('name',within,['vadas','josh']).outE().has(label,'created') // label is a "token" from T
+gremlin> g.V().has(label,'person').out().has('name',within,['vadas','josh']).outE().has(label,'created') // label is a "token" from T
 ==>e[10][4-created->5]
 ==>e[11][4-created->3]
 
@@ -606,6 +606,8 @@ gremlin> g.V().match('a',
 Among the features which differentiate `match()` from SPARQL are:
 
 [source,groovy]
+gremlin> g = TinkerFactory.createModern()
+==>tinkergraph[vertices:6 edges:6]
 gremlin> g.V().match('a',
             __.as('a').out('created').has('name','lop').as('b'), <1>
             __.as('b').in('created').has('age', 29).as('c'),
@@ -766,12 +768,12 @@ gremlin> g.V().order().by('name',decr).values('name')
 The `order()`-step allows the user to provide an arbitrary number of comparators for primary, secondary, etc. sorting. These comparators can be lambdas or they can be pre-defined enums (e.g. `Order.incr`). It is always best to use a pre-defined enum instead of a generic lambda as the underlying vendor may be able to optimize the execution when the comparator is inspectable.
 
 [source,groovy]
-gremlin> g.V().has('age').order().by('name'){a,b->a[1] <=> b[1]}.by('age',incr).values('name')
+gremlin> g.V().has(label,'person').order().by('name'){a,b->a[1] <=> b[1]}.by('age',incr).values('name')
 ==>vadas
 ==>marko
 ==>peter
 ==>josh
-gremlin> g.V().has('age').order().by('name'){a,b->a[1] <=> b[1]}.by('age',decr).values('name')
+gremlin> g.V().has(label,'person').order().by('name'){a,b->a[1] <=> b[1]}.by('age',decr).values('name')
 ==>marko
 ==>vadas
 ==>peter
@@ -811,7 +813,7 @@ Finally, because `by()`-based post-processing, nothing prevents triggering yet a
 
 [source,groovy]
 gremlin> g.V().out().out().path().by{
-  it.choose({it.get().has('age').hasNext()}, 
+  it.choose({it.has(label,'person').hasNext()},
     __.out('created').values('name'),
     __.in('created').values('name')).toList()}
 ==>[[lop], [ripple, lop], [josh]]
@@ -867,7 +869,7 @@ $ JAVA_OPTIONS=-Dtinkerpop.profiling=true bin/gremlin.sh
          (o o)
 -----oOOo-(3)-oOOo-----
 plugin activated: tinkerpop.tinkergraph
-gremlin> g = TinkerFactory.createClassic()
+gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> g.V().out().out().profile()
 ==>Traversal Metrics
@@ -901,7 +903,7 @@ $ bin/gremlin.sh
          (o o)
 -----oOOo-(3)-oOOo-----
 plugin activated: tinkerpop.tinkergraph
-gremlin> g = TinkerFactory.createClassic()
+gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> g.V().out().out().profile()
 The profile()-step can only be used when profiling is enabled via 'gremlin.sh -p' or directly via -Dtinkerpop.profiling=true
@@ -941,7 +943,7 @@ The `repeat()`-step (*branch*) is used for looping over a traversal given some b
 gremlin> g.V(1).repeat(__.out()).times(2).path().by('name') <1>
 ==>[marko, josh, ripple]
 ==>[marko, josh, lop]
-gremlin> g.V().until{it.get().value('name') == 'ripple'}.
+gremlin> g.V().until(__.has('name','ripple')).
                  repeat(__.out()).path().by('name') <2>
 ==>[marko, josh, ripple]
 ==>[josh, ripple]
@@ -983,6 +985,12 @@ gremlin> g.V(1).repeat(__.out()).
 ==>[marko, lop]
 ==>[marko, josh, ripple]
 ==>[marko, josh, lop]
+gremlin> g.V(1).repeat(__.out()).
+                  times(2).
+                  emit(__.has('lang')).path().by('name') // the same query, but using a traversal instead of a predicate
+==>[marko, lop]
+==>[marko, josh, ripple]
+==>[marko, josh, lop]
 
 image::repeat-step.png[width=500]
 
@@ -999,11 +1007,11 @@ The first time through the `repeat()`, the vertices lop, vadas, and josh are see
 Finally, note that both `emit()` and `until()` can take a traversal and in such, situations, the predicate is determined by `traversal.hasNext()`. A few examples are provided below.
 
 [source,groovy]
-gremlin> g.V(1).repeat(__.out()).until(__.has('lang')).path().by('name') <1>
+gremlin> g.V(1).repeat(__.out()).until(__.has(label,'software')).path().by('name') <1>
 ==>[marko, lop]
 ==>[marko, josh, ripple]
 ==>[marko, josh, lop]
-gremlin> g.V(1).emit(__.has('age')).repeat(__.out()).path().by('name') <2>
+gremlin> g.V(1).emit(__.has(label,'person')).repeat(__.out()).path().by('name') <2>
 ==>[marko]
 ==>[marko, vadas]
 ==>[marko, josh]
@@ -1019,8 +1027,8 @@ gremlin> g.V(1).repeat(__.out()).until{!it.get().outE().hasNext()}.path().by('na
 ==>[marko, josh, lop]
 
 
-<1> Starting from vertex 1, keep taking outgoing edges until a software vertex is reached (i.e. a vertex with a `lang` property).
-<2> Starting from vertex 1, and in an infinite loop, emit the vertex if it is a person (i.e. has an `age` property) and then traverser the outgoing edges.
+<1> Starting from vertex 1, keep taking outgoing edges until a software vertex is reached.
+<2> Starting from vertex 1, and in an infinite loop, emit the vertex if it is a person and then traverser the outgoing edges.
 <3> Starting from vertex 1, keep taking outgoing edges until a vertex is reached that has no more outgoing edges.
 <4> The same as <3>, but using a predicate argument for `until()`.
 
@@ -1274,9 +1282,9 @@ Store Step
 When link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy] aggregation is needed, `store()`-step (*sideEffect*) should be used over <<aggregate-step,`aggregate()`>>. The two steps differ in that `store()` does not block and only stores objects in its side-effect collection as they pass through.
 
 [source,groovy]
-gremlin> g.V().aggregate('x').range(0, 1).cap('x')
+gremlin> g.V().aggregate('x').limit(1).cap('x')
 ==>{v[1]=1, v[2]=1, v[3]=1, v[4]=1, v[5]=1, v[6]=1}
-gremlin> g.V().store('x').range(0, 1).cap('x')
+gremlin> g.V().store('x').limit(1).cap('x')
 ==>{v[1]=1, v[2]=1}
 
 It is interesting to note that there are three results in the `store()` side-effect even though the interval selection is for 2 objects. Realize that when the third object is on its way to the `range()` filter (i.e. `[0..1]`), it passes through `store()` and thus, stored before filtered.
@@ -1293,7 +1301,7 @@ Extracting a portion of a graph from a larger one for analysis, visualization or
 
 [source,groovy]
 ----
-gremlin> g = TinkerFactory.createClassic()
+gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> sg = g.E().subgraph { it.label() == 'knows' }.next() <1>
 ==>tinkergraph[vertices:3 edges:2]
@@ -1309,7 +1317,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 
 [source,groovy]
 ----
-gremlin> g = TinkerFactory.createClassic()
+gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> sg = g.V(3).repeat(__.inE().outV()).times(3).emit().subgraph({true}).next()   <1>
 ==>tinkergraph[vertices:4 edges:4]
@@ -1333,9 +1341,9 @@ NOTE: The method `clock(int runs, Closure code)` is a utility preloaded in the <
 image::timelimit-step.png[width=500]
 
 [source,groovy]
-gremlin> :pin use tinkerpop.utilities
+gremlin> :plugin use tinkerpop.utilities
 ==>tinkerpop.utilities activated
-gremlin> g = TinkerFactory.createClassic()
+gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> g.V().repeat(__.both().groupCount('m')).times(16).cap('m').next().sort{-it.value}
 ==>v[1]=2744208
@@ -1543,7 +1551,7 @@ Vertex Steps
 
 image::vertex-steps.png[width=350]
 
-The vertex steps (*flatMap*) are fundamental to the Gremlin language and are perhaps the only "graph oriented" steps. Via these steps, its possible to "move" on the graph -- i.e. traverse.
+The vertex steps (*flatMap*) are fundamental to the Gremlin language. Via these steps, its possible to "move" on the graph -- i.e. traverse.
 
 * `out(string...)`: Move to the outgoing adjacent vertices given the edge labels.
 * `in(string...)`: Move to the incoming adjacent vertices given the edge labels.
@@ -1611,7 +1619,7 @@ public class IdentityRemovalStrategy extends AbstractTraversalStrategy {
 
     @Override
     public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
-        if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))  // break fast if there are no identity steps
+        if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
             return;
         TraversalHelper.getStepsOfClass(IdentityStep.class, traversal).stream()
                 .filter(step -> !TraversalHelper.isLabeled(step))
@@ -1651,23 +1659,29 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
         if (engine.equals(TraversalEngine.COMPUTER))
             return;
 
-        final TinkerGraphStep<?> tinkerGraphStep = (TinkerGraphStep) TraversalHelper.getStart(traversal);
-        Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
-        while (true) {
-            if (currentStep instanceof HasContainerHolder) {
-                tinkerGraphStep.hasContainers.addAll(((HasContainerHolder) currentStep).getHasContainers());
-                if (TraversalHelper.isLabeled(currentStep)) {
-                    final IdentityStep identityStep = new IdentityStep<>(traversal);
-                    identityStep.setLabel(currentStep.getLabel());
-                    TraversalHelper.insertAfterStep(identityStep, currentStep, traversal);
+        final Step<?, ?> startStep = TraversalHelper.getStart(traversal);
+        if (startStep instanceof GraphStep) {
+            final GraphStep<?> originalGraphStep = (GraphStep) startStep;
+            final TinkerGraphStep<?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
+            TraversalHelper.replaceStep(startStep, tinkerGraphStep, traversal);
+
+            Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
+            while (true) {
+                if (currentStep instanceof HasContainerHolder) {
+                    tinkerGraphStep.hasContainers.addAll(((HasContainerHolder) currentStep).getHasContainers());
+                    if (TraversalHelper.isLabeled(currentStep)) {
+                        final IdentityStep identityStep = new IdentityStep<>(traversal);
+                        identityStep.setLabel(currentStep.getLabel());
+                        TraversalHelper.insertAfterStep(identityStep, currentStep, traversal);
+                    }
+                    TraversalHelper.removeStep(currentStep, traversal);
+                } else if (currentStep instanceof IdentityStep) {
+                    // do nothing
+                } else {
+                    break;
                 }
-                TraversalHelper.removeStep(currentStep, traversal);
-            } else if (currentStep instanceof IdentityStep) {
-                // do nothing
-            } else {
-                break;
+                currentStep = currentStep.getNextStep();
             }
-            currentStep = currentStep.getNextStep();
         }
     }
 
@@ -1684,11 +1698,11 @@ The traversal is redefined by simply taking a chain of `has()`-steps after `g.V(
 gremlin> t = g.V().has('name','marko'); null
 ==>null
 gremlin> t.toString()
-==>[TinkerGraphStep(vertex), HasStep([name,eq,marko])]
+==>[GraphStep(vertex), HasStep([name,eq,marko])]
 gremlin> t.iterate(); null
 ==>null
 gremlin> t.toString()
-==>[TinkerGraphStep([[name,eq,marko]])]
+==>[TinkerGraphStep(vertex,[[name,eq,marko]])]
 
 Domain Specific Languages
 -------------------------
@@ -1699,57 +1713,56 @@ image:gremlin-quill.png[width=200,float=right] The super interface of GraphTrave
 
 [source,java]
 ----
-public interface SocialTraversal<S, E> extends Traversal<S, E> {
+ public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
-    public default SocialTraversal<S, Vertex> people() {
-        return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("age")));
-    }
+     public SocialTraversal<S, Vertex> people(final String name);
 
-    public default SocialTraversal<S, Vertex> people(String name) {
-        return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("name", name)));
-    }
+     public default SocialTraversal<S, Vertex> knows() {
+         final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
+         flatMapStep.setFunction(v -> v.get().out("knows"));
+         return (SocialTraversal) this.asAdmin().addStep(flatMapStep);
+     }
 
-    public default SocialTraversal<S, Vertex> knows() {
-        final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
-        flatMapStep.setFunction(v -> v.get().out("knows"));
-        return (SocialTraversal) this.addStep(flatMapStep);
-    }
+     public default SocialTraversal<S, Vertex> created() {
+         final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
+         flatMapStep.setFunction(v -> v.get().out("created"));
+         return (SocialTraversal) this.asAdmin().addStep(flatMapStep);
+     }
 
-    public default SocialTraversal<S, Vertex> created() {
-        final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
-        flatMapStep.setFunction(v -> v.get().out("created"));
-        return (SocialTraversal) this.addStep(flatMapStep);
-    }
+     public default SocialTraversal<S, String> name() {
+         MapStep<Vertex, String> mapStep = new MapStep<>(this);
+         mapStep.setFunction(v -> v.get().<String>value("name"));
+         return (SocialTraversal) this.asAdmin().addStep(mapStep);
+     }
 
-    public default SocialTraversal<S, String> name() {
-        MapStep<Vertex, String> mapStep = new MapStep<>(this);
-        mapStep.setFunction(v -> v.get().<String>value("name"));
-        return (SocialTraversal) this.addStep(mapStep);
-    }
+     public static <S> SocialTraversal<S, S> of(final Graph graph) {
+         return new DefaultSocialTraversal<>(graph);
+     }
 
-    public static <S> SocialTraversal<S, S> of(final Graph graph) {
-        final SocialTraversal traversal = new DefaultSocialTraversal(graph);
-        return traversal;
-    }
+     public class DefaultSocialTraversal<S, E> extends DefaultTraversal<S, E> implements SocialTraversal<S, E> {
+         private final Graph graph;
 
-    public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {
-        static {
-            final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
-            traversalStrategies.addStrategy(TraverserSourceStrategy.instance());
-            TraversalStrategies.GlobalCache.registerStrategies(DefaultSocialTraversal.class, traversalStrategies);
-        }
+         public DefaultSocialTraversal(final Graph graph) {
+             super(Graph.class);
+             this.graph = graph;
+         }
 
-        public DefaultSocialTraversal(final Graph graph) {
-            super(graph);
-        }
-    }
-}
+         public SocialTraversal<S, Vertex> people(final String name) {
+             return (SocialTraversal) this.asAdmin().addStep(new StartStep<>(this, this.graph.V().has("name", name)));
+         }
+
+     }
+ }
 ----
 
 This traversal definition can now be used as follows.
 
-[source,java]
-g.of(SocialTraversal.class).people("marko").knows().name()
+[source,groovy]
+gremlin> import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
+==>...
+gremlin> g.of(SocialTraversal).people("marko").knows().name()
+==>vadas
+==>josh
 
 By extending `Traversal`, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
 
