@@ -680,9 +680,9 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
 
     @Test
     public void shouldSupportNeo4jMultiLabels() {
-        final Neo4jVertex vertex = (Neo4jVertex) g.addVertex(T.label, "person::animal", "name", "marko");
+        final Neo4jVertex vertex = (Neo4jVertex) g.addVertex(T.label, "animal::person", "name", "marko");
         tryCommit(g, g -> {
-            assertTrue(vertex.label().equals("person::animal") || vertex.label().equals("animal::person"));
+            assertTrue(vertex.label().equals("animal::person"));
             assertEquals(2, vertex.labels().size());
             assertTrue(vertex.labels().contains("person"));
             assertTrue(vertex.labels().contains("animal"));
@@ -691,12 +691,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
 
         vertex.addLabel("organism");
         tryCommit(g, g -> {
-            assertTrue(vertex.label().equals("person::animal::organism") ||
-                    vertex.label().equals("person::organism::animal") ||
-                    vertex.label().equals("animal::person::organism") ||
-                    vertex.label().equals("animal::organism::person") ||
-                    vertex.label().equals("organism::person::animal") ||
-                    vertex.label().equals("organism::animal::person"));
+            assertTrue(vertex.label().equals("animal::organism::person"));
             assertEquals(3, vertex.labels().size());
             assertTrue(vertex.labels().contains("person"));
             assertTrue(vertex.labels().contains("animal"));
@@ -706,7 +701,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
 
         vertex.removeLabel("person");
         tryCommit(g, g -> {
-            assertTrue(vertex.label().equals("animal::organism") || vertex.label().equals("organism::animal"));
+            assertTrue(vertex.label().equals("animal::organism"));
             assertEquals(2, vertex.labels().size());
             assertTrue(vertex.labels().contains("animal"));
             assertTrue(vertex.labels().contains("organism"));
@@ -715,7 +710,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         vertex.addLabel("organism"); // repeat add
         vertex.removeLabel("person"); // repeat remove
         tryCommit(g, g -> {
-            assertTrue(vertex.label().equals("animal::organism") || vertex.label().equals("organism::animal"));
+            assertTrue(vertex.label().equals("animal::organism"));
             assertEquals(2, vertex.labels().size());
             assertTrue(vertex.labels().contains("animal"));
             assertTrue(vertex.labels().contains("organism"));

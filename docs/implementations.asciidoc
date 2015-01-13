@@ -570,7 +570,7 @@ An example use case is presented below.
 [source,java]
 ----
 Neo4jVertex v = (Neo4jVertex) g.addVertex("human::animal");
-assertEquals("human::animal",v.label()) // standard Vertex.label() method
+assertEquals("animal::human",v.label()) // standard Vertex.label() method (note that labels are alphabetically sorted)
 assertEquals(2, v.labels().size()) // specific Neo4jVertex.labels() method
 assertTrue(v.labels().contains("human"))
 assertTrue(v.labels().contains("animal"))
@@ -587,8 +587,6 @@ assertEquals(2, v.labels().size()) // specific Neo4jVertex.labels() method
 assertTrue(v.labels().contains("animal"))
 assertTrue(v.labels().contains("organism"))
 ----
-
-CAUTION: While the example above demonstrates `assertEquals("human::animal",v.label())` (2nd line), it is important to note that the order of the labels is not guaranteed and the result could be `"animal::human"`.
 
 [[hadoop-gremlin]]
 Hadoop-Gremlin
