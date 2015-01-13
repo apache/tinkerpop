@@ -1358,13 +1358,13 @@ gremlin> g.V().repeat(__.timeLimit(2).both().groupCount('m')).times(16).cap('m')
 ==>v[1]=648473
 ==>v[3]=647510
 ==>v[4]=647499
+==>v[2]=647421
 ==>v[5]=268540
 ==>v[6]=268533
-==>v[2]=267941
 gremlin> clock(1){g.V().repeat(__.timeLimit(2).both().groupCount('m')).times(16).cap('m').next().sort{-it.value}}
 ==>2.214000
 
-In essence, the relative order is respected, even through the number traversers at each vertex is not. The primary benefit being that the calculation is guaranteed to complete at the specified time limit (in milliseconds). Finally, note that the internal clock of `timeLimit()`-step starts when the first traverser enters it. When the time limit is reached, any `next()` evaluation of the step will yield a `NoSuchElementException` and any `hasNext()` evaluation will yield `false`.
+In essence, the relative order is respected, even through the number of traversers at each vertex is not. The primary benefit being that the calculation is guaranteed to complete at the specified time limit (in milliseconds). Finally, note that the internal clock of `timeLimit()`-step starts when the first traverser enters it. When the time limit is reached, any `next()` evaluation of the step will yield a `NoSuchElementException` and any `hasNext()` evaluation will yield `false`.
 
 [[tree-step]]
 Tree Step
