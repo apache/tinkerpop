@@ -3,18 +3,20 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
-import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.MutablePath;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer, FunctionHolder<Object, Object> {
+public final class PathStep<S> extends MapStep<S, Path> implements FunctionHolder<Object, Object> {
 
     private FunctionRing<Object, Object> functionRing;
 
@@ -51,6 +53,11 @@ public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer,
     @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.functionRing);
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.PATH);
     }
 
     /////////////////////////

@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import org.javatuples.Pair;
 
@@ -21,6 +22,11 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class DedupStep<S> extends FilterStep<S> implements Reversible, Reducing, FunctionHolder<S, Object> {
+
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+            TraverserRequirement.BULK,
+            TraverserRequirement.OBJECT
+    ));
 
     private Function<S, Object> uniqueFunction = null;
     private Set<Object> duplicateSet = new HashSet<>();
@@ -70,6 +76,11 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.uniqueFunction);
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return REQUIREMENTS;
     }
 
     /////////////////////////

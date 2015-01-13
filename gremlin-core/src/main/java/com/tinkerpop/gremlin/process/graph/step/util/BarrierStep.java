@@ -3,10 +3,13 @@ package com.tinkerpop.gremlin.process.graph.step.util;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Barrier;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -22,6 +25,11 @@ public abstract class BarrierStep<S> extends AbstractStep<S, S> implements Barri
 
     public void setConsumer(final Consumer<TraverserSet<S>> barrierConsumer) {
         this.barrierConsumer = barrierConsumer;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.BULK);
     }
 
     @Override

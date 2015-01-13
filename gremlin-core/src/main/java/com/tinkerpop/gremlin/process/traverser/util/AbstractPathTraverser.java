@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.traverser;
+package com.tinkerpop.gremlin.process.traverser.util;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Step;

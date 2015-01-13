@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupMapReduce;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
@@ -17,8 +18,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -26,6 +29,11 @@ import java.util.function.Function;
  */
 public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, FunctionHolder<Object, Object>, Reversible, EngineDependent, MapReducer<Object, Collection, Object, Object, Map> {
 
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+            TraverserRequirement.BULK,
+            TraverserRequirement.OBJECT,
+            TraverserRequirement.SIDE_EFFECTS
+    ));
 
     private char state = 'k';
     private Function<S, K> keyFunction = s -> (K) s;
@@ -119,4 +127,10 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
             return Arrays.asList((Function) this.keyFunction, (Function) this.valueFunction, (Function) this.reduceFunction);
         }
     }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return REQUIREMENTS;
+    }
+
 }

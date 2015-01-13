@@ -4,19 +4,28 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.EmptyTraverser;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.util.function.CloneableFunction;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent {
+
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+            TraverserRequirement.BULK,
+            TraverserRequirement.OBJECT
+    ));
 
     private Function<Traverser<S>, Collection<String>> branchFunction;
     private boolean onGraphComputer = false;
@@ -25,6 +34,11 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
     public BranchStep(final Traversal traversal) {
         super(traversal);
         this.futureSetByChild = true;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return REQUIREMENTS;
     }
 
     @Override
@@ -106,18 +120,4 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
         }
     }
 
-    /*public static class GoToLabelsWithPredicate<S> implements Function<Traverser<S>, Collection<String>> {
-
-        private final Collection<String> stepLabels;
-        private final Predicate<Traverser<S>> goToPredicate;
-
-        public GoToLabelsWithPredicate(final Collection<String> stepLabels, final Predicate<Traverser<S>> goToPredicate) {
-            this.stepLabels = stepLabels;
-            this.goToPredicate = goToPredicate;
-        }
-
-        public Collection<String> apply(final Traverser<S> traverser) {
-            return this.goToPredicate.test(traverser) ? this.stepLabels : Collections.emptyList();
-        }
-    }*/
 }

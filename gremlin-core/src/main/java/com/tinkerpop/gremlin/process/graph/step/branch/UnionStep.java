@@ -3,12 +3,15 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalRing;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -37,6 +40,7 @@ public final class UnionStep<S, E> extends AbstractStep<S, E> implements Travers
         }
     }
 
+    @Override
     public Collection<Traversal<S, E>> getTraversals() {
         return this.traversalRing.getTraversals();
     }
@@ -57,5 +61,16 @@ public final class UnionStep<S, E> extends AbstractStep<S, E> implements Travers
     public void reset() {
         super.reset();
         this.traversalRing.reset();
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        final Set<TraverserRequirement> requirements = new HashSet<>();
+        for (final Traversal<?, ?> unionTraversal : this.traversalRing.getTraversals()) {
+            requirements.addAll(TraversalHelper.getRequirements(unionTraversal));
+        }
+        if (requirements.contains(TraverserRequirement.SINGLE_LOOP))
+            requirements.add(TraverserRequirement.NESTED_LOOP);
+        return requirements;
     }
 }

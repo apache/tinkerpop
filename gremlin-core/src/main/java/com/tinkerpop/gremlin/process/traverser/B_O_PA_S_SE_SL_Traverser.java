@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.traverser.util.AbstractPathTraverser;
 import com.tinkerpop.gremlin.process.util.SparsePath;
 import com.tinkerpop.gremlin.structure.Vertex;
 

@@ -7,18 +7,28 @@ import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class RepeatStep<S> extends AbstractStep<S, S> implements TraversalHolder<S, S> {
+
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+            TraverserRequirement.SINGLE_LOOP,
+            TraverserRequirement.BULK
+    ));
+
 
     private Traversal<S, S> repeatTraversal = null;
     private Predicate<Traverser<S>> untilPredicate = null;
@@ -29,6 +39,15 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
 
     public RepeatStep(final Traversal traversal) {
         super(traversal);
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        final Set<TraverserRequirement> requirements = TraversalHelper.getRequirements(this.repeatTraversal);
+        if (requirements.contains(TraverserRequirement.SINGLE_LOOP))
+            requirements.add(TraverserRequirement.NESTED_LOOP);
+        requirements.addAll(REQUIREMENTS);
+        return requirements;
     }
 
     public void setRepeatTraversal(final Traversal<S, S> repeatTraversal) {
@@ -141,11 +160,6 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
 
     private final String emitString() {
         return null == this.emitPredicate ? "emit(false)" : "emit(" + this.emitFirst + ")";
-    }
-
-    @Override
-    public boolean requiresPaths() {
-        return TraversalHelper.trackPaths(this.repeatTraversal);
     }
 
     /////////////////////////

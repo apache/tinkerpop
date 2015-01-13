@@ -13,9 +13,9 @@ import java.util.Set;
  */
 public class B_O_TraverserGenerator implements TraverserGenerator {
 
-    private static final Set<TraverserRequirements> REQUIREMENTS = new HashSet<>(Arrays.asList(
-            TraverserRequirements.OBJECT,
-            TraverserRequirements.BULK));
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+            TraverserRequirement.OBJECT,
+            TraverserRequirement.BULK));
 
     private static final B_O_TraverserGenerator INSTANCE = new B_O_TraverserGenerator();
 
@@ -28,7 +28,7 @@ public class B_O_TraverserGenerator implements TraverserGenerator {
     }
 
     @Override
-    public Set<TraverserRequirements> requirements() {
+    public Set<TraverserRequirement> requirements() {
         return REQUIREMENTS;
     }
 

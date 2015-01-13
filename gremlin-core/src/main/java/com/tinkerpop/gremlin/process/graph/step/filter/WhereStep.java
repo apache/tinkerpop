@@ -3,11 +3,14 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiPredicate;
 
 /**
@@ -60,6 +63,18 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         if (null != this.constraint) clone.constraint = this.constraint.clone();
         WhereStep.generatePredicate(clone);
         return clone;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        if (null == this.constraint) {
+            return Collections.singleton(TraverserRequirement.OBJECT);
+        } else {
+            final Set<TraverserRequirement> requirements = new HashSet<>();
+            requirements.add(TraverserRequirement.OBJECT);
+            requirements.addAll(TraversalHelper.getRequirements(this.constraint));
+            return requirements;
+        }
     }
 
     /////////////////////////

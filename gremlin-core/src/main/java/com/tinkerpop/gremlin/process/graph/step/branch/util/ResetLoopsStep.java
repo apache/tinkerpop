@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph.step.util;
+package com.tinkerpop.gremlin.process.graph.step.branch.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
@@ -10,15 +10,15 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PathIdentityStep<S> extends SideEffectStep<S> {
+public final class ResetLoopsStep<S> extends SideEffectStep<S> {
 
-    public PathIdentityStep(final Traversal traversal) {
+    public ResetLoopsStep(final Traversal traversal) {
         super(traversal);
+        this.setConsumer(traverser -> traverser.asAdmin().resetLoops());
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.PATH);
+        return Collections.singleton(TraverserRequirement.SINGLE_LOOP);
     }
-
 }

@@ -3,11 +3,13 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -39,6 +41,11 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements Traversa
     @Override
     public Collection<Traversal<S, E>> getTraversals() {
         return Collections.singletonList(this.localTraversal);
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return TraversalHelper.getRequirements(this.localTraversal);
     }
 
     ////////////////

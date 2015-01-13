@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public class O_TraverserGenerator implements TraverserGenerator {
 
-    private static final Set<TraverserRequirements> REQUIREMENTS = Collections.singleton(TraverserRequirements.OBJECT);
+    private static final Set<TraverserRequirement> REQUIREMENTS = Collections.singleton(TraverserRequirement.OBJECT);
     private static final O_TraverserGenerator INSTANCE = new O_TraverserGenerator();
 
     private O_TraverserGenerator() {
@@ -24,7 +24,7 @@ public class O_TraverserGenerator implements TraverserGenerator {
     }
 
     @Override
-    public Set<TraverserRequirements> requirements() {
+    public Set<TraverserRequirement> requirements() {
         return REQUIREMENTS;
     }
 

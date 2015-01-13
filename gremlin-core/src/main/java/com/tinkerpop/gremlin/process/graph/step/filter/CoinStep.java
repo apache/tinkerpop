@@ -2,9 +2,12 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.Collections;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -29,7 +32,13 @@ public final class CoinStep<S> extends FilterStep<S> implements Reversible {
         });
     }
 
+    @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.probability);
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.BULK);
     }
 }

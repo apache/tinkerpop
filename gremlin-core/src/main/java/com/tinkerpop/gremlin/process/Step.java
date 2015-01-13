@@ -1,6 +1,10 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * A {@link Step} denotes a unit of computation within a {@link Traversal}.
@@ -104,4 +108,14 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
      * @param label the label for this step
      */
     public void setLabel(final String label);
+
+    /**
+     * Provide the necessary {@link com.tinkerpop.gremlin.process.traverser.TraverserRequirement} that must be met by the traverser in order for the step to function properly.
+     * The provided default implements returns an empty set.
+     *
+     * @return the set of requirements
+     */
+    public default Set<TraverserRequirement> getRequirements() {
+        return Collections.emptySet();
+    }
 }

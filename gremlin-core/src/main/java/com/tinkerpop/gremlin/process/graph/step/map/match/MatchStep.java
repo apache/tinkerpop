@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -63,6 +64,15 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
             this.traversals.add(tl);
         }
         checkSolvability();
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        final Set<TraverserRequirement> requirements = new HashSet<>();
+        for (final Traversal<?, ?> matchTraversal : this.traversals) {
+            requirements.addAll(TraversalHelper.getRequirements(matchTraversal));
+        }
+        return requirements;
     }
 
     @Override

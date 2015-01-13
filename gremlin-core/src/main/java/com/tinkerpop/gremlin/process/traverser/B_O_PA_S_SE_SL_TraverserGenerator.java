@@ -15,13 +15,13 @@ public class B_O_PA_S_SE_SL_TraverserGenerator implements TraverserGenerator {
 
     private static final B_O_PA_S_SE_SL_TraverserGenerator INSTANCE = new B_O_PA_S_SE_SL_TraverserGenerator();
 
-    private static final Set<TraverserRequirements> REQUIREMENTS = new HashSet<>(Arrays.asList(
-            TraverserRequirements.OBJECT,
-            TraverserRequirements.BULK,
-            TraverserRequirements.SINGLE_LOOP,
-            TraverserRequirements.PATH_ACCESS,
-            TraverserRequirements.SACK,
-            TraverserRequirements.SIDE_EFFECTS));
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+            TraverserRequirement.OBJECT,
+            TraverserRequirement.BULK,
+            TraverserRequirement.SINGLE_LOOP,
+            TraverserRequirement.PATH_ACCESS,
+            TraverserRequirement.SACK,
+            TraverserRequirement.SIDE_EFFECTS));
 
 
     private B_O_PA_S_SE_SL_TraverserGenerator() {
@@ -35,7 +35,7 @@ public class B_O_PA_S_SE_SL_TraverserGenerator implements TraverserGenerator {
     }
 
     @Override
-    public Set<TraverserRequirements> requirements() {
+    public Set<TraverserRequirement> requirements() {
         return REQUIREMENTS;
     }
 

@@ -2,9 +2,9 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.ArrayList;
@@ -239,7 +239,7 @@ public class TraversalHelper {
 
     public static boolean trackPaths(final Traversal<?, ?> traversal) {
         return traversal.asAdmin().getSteps().stream()
-                .filter(step -> step instanceof PathConsumer && ((PathConsumer) step).requiresPaths())
+                .filter(step -> step.getRequirements().contains(TraverserRequirement.PATH))
                 .findAny()
                 .isPresent();
     }
@@ -361,5 +361,11 @@ public class TraversalHelper {
         if (name.length() > maxLength)
             return name.substring(0, maxLength - 3) + "...";
         return name;
+    }
+
+    public static Set<TraverserRequirement> getRequirements(final Traversal<?, ?> traversal) {
+        return traversal.asAdmin().getSteps().stream()
+                .flatMap(step -> ((Step<?, ?>) step).getRequirements().stream())
+                .collect(Collectors.toSet());
     }
 }

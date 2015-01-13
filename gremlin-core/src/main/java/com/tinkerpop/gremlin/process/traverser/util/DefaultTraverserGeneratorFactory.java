@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_TraverserGenerat
 import com.tinkerpop.gremlin.process.traverser.B_O_TraverserGenerator;
 import com.tinkerpop.gremlin.process.traverser.O_TraverserGenerator;
 import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirements;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Set;
 
@@ -27,7 +27,7 @@ public class DefaultTraverserGeneratorFactory implements TraverserGeneratorFacto
 
     @Override
     public TraverserGenerator getTraverserGenerator(final Traversal traversal) {
-        final Set<TraverserRequirements> requirements = this.getRequirements(traversal);
+        final Set<TraverserRequirement> requirements = this.getRequirements(traversal);
 
         if (O_TraverserGenerator.instance().requirements().containsAll(requirements))
             return O_TraverserGenerator.instance();

@@ -5,21 +5,29 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
-import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.TreeMapReduce;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathConsumer, SideEffectCapable, FunctionHolder<Object, Object>, MapReducer<Object, Tree, Object, Tree, Tree> {
+public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, SideEffectCapable, FunctionHolder<Object, Object>, MapReducer<Object, Tree, Object, Tree, Tree> {
+
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+            TraverserRequirement.PATH,
+            TraverserRequirement.SIDE_EFFECTS
+    ));
 
     private FunctionRing<Object, Object> functionRing;
     private final String sideEffectKey;
@@ -70,6 +78,11 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
     @Override
     public List<Function<Object, Object>> getFunctions() {
         return this.functionRing.getFunctions();
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return REQUIREMENTS;
     }
 
     /////////////////////////

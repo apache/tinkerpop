@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.traverser;
+package com.tinkerpop.gremlin.process.traverser.util;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.TraversalSideEffects;
@@ -106,6 +106,7 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
     @Override
     public TraversalSideEffects getSideEffects() {
         return EmptyTraversalSideEffects.instance();
+        //throw new UnsupportedOperationException("This traverser does not support sideEffects: " + this.getClass().getCanonicalName());
     }
 
     @Override
@@ -130,7 +131,7 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
 
     @Override
     public int loops() {
-        return 0;
+        throw new UnsupportedOperationException("This traverser does not support loops: " + this.getClass().getCanonicalName());
     }
 
     @Override

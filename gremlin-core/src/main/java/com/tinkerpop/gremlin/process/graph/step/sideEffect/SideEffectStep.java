@@ -3,9 +3,12 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -30,5 +33,10 @@ public class SideEffectStep<S> extends AbstractStep<S, S> implements Reversible 
         if (null != this.consumer) this.consumer.accept(traverser);
         if (PROFILING_ENABLED) TraversalMetrics.finish(this, traverser);
         return traverser;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.SIDE_EFFECTS);
     }
 }

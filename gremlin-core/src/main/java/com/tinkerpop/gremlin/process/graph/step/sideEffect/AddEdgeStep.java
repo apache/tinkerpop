@@ -1,16 +1,25 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AddEdgeStep extends SideEffectStep<Vertex> implements PathConsumer, Reversible {
+public final class AddEdgeStep extends SideEffectStep<Vertex> implements Reversible {
+
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+            TraverserRequirement.PATH,
+            TraverserRequirement.OBJECT
+    ));
 
     // TODO: Weight key based on Traverser.getCount() ?
 
@@ -37,5 +46,10 @@ public final class AddEdgeStep extends SideEffectStep<Vertex> implements PathCon
 
     public String toString() {
         return TraversalHelper.makeStepString(this, this.direction.name(), this.edgeLabel, this.stepLabel);
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return REQUIREMENTS;
     }
 }

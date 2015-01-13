@@ -7,7 +7,8 @@ import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
+import com.tinkerpop.gremlin.process.graph.step.branch.util.IncrLoopsStep;
+import com.tinkerpop.gremlin.process.graph.step.branch.util.ResetLoopsStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.CloneableFunction;
 
@@ -47,8 +48,7 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
             final Step firstStep = currentStep;
             TraversalHelper.removeStep(repeatStep, traversal);
             currentStep = TraversalHelper.insertTraversal(repeatStep.getTraversals().get(0), currentStep, traversal);
-            final SideEffectStep<?> incrLoopStep = new SideEffectStep<>(traversal);
-            incrLoopStep.setConsumer(traverser -> traverser.asAdmin().incrLoops());
+            final IncrLoopsStep<?> incrLoopStep = new IncrLoopsStep<>(traversal);
             TraversalHelper.insertAfterStep(incrLoopStep, currentStep, traversal);
             /////////
             final BranchStep<?> leftBranchStep = new BranchStep<>(traversal);
@@ -56,8 +56,7 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
             TraversalHelper.insertAfterStep(leftBranchStep, firstStep, traversal);
             TraversalHelper.insertAfterStep(rightBranchStep, incrLoopStep, traversal);
             /////////
-            final SideEffectStep<?> resetLoopStep = new SideEffectStep<>(traversal);
-            resetLoopStep.setConsumer(traverser -> traverser.asAdmin().resetLoops());
+            final ResetLoopsStep<?> resetLoopStep = new ResetLoopsStep<>(traversal);
             TraversalHelper.insertAfterStep(resetLoopStep, rightBranchStep, traversal);
 
             leftBranchStep.setFunction((Function) new RepeatBranchFunction<>(repeatStep, step -> traverser -> {

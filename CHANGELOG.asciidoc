@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed `PathConsumer` in favor of `TraverserRequirement.PATH`-model via `Step.getRequirements()`.
+* `Step.getRequirements()` returns a `Set<TraverserRequirement>` which is what is required of the `Traverser` by the `Step`.
 * `Traverser` now extends `Cloneable` and `Traverser.clone()` is used to good effect in `Traverser.split()`.
 * Added `AbstractTraverser` for which all traversers extend.
 * Added `TraverserSerializer` for a generic way to detach and serialize a traverser.

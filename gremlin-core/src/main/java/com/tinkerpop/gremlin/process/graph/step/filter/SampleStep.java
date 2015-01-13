@@ -5,18 +5,26 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class SampleStep<S> extends BarrierStep<S> implements Reversible, FunctionHolder<S, Number> {
+
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+            TraverserRequirement.BULK,
+            TraverserRequirement.OBJECT
+    ));
 
     private Function<S, Number> probabilityFunction = s -> 1.0d;
     private final int amountToSample;
@@ -80,5 +88,10 @@ public class SampleStep<S> extends BarrierStep<S> implements Reversible, Functio
     @Override
     public List<Function<S, Number>> getFunctions() {
         return Arrays.asList(this.probabilityFunction);
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return REQUIREMENTS;
     }
 }

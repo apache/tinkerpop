@@ -5,18 +5,26 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
-import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements EngineDependent {
+
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+            TraverserRequirement.SIDE_EFFECTS,
+            TraverserRequirement.OBJECT
+    ));
 
     private boolean done = false;
     private boolean onGraphComputer = false;
@@ -34,7 +42,7 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
 
     private Traverser<E> standardAlgorithm() {
         if (!this.done) {
-            Traverser.Admin<E> traverser = new B_O_PA_S_SE_SL_Traverser<>(null, (Step<E, ?>) this);
+            Traverser.Admin<E> traverser = this.getTraversal().asAdmin().getTraverserGenerator().generate(null, (Step) this, 1l);
             try {
                 while (true) {
                     traverser = (Traverser.Admin<E>) this.starts.next();
@@ -76,5 +84,10 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
 
     public String getSideEffectKey() {
         return this.sideEffectKey;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return REQUIREMENTS;
     }
 }

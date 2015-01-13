@@ -7,20 +7,22 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
-import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements PathConsumer, FunctionHolder<Object, Object>, EngineDependent {
+public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements FunctionHolder<Object, Object>, EngineDependent {
 
     protected FunctionRing<Object, Object> functionRing;
     private final List<String> selectLabels;
@@ -44,11 +46,6 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
 
     public boolean hasStepFunctions() {
         return !this.functionRing.isEmpty();
-    }
-
-    @Override
-    public boolean requiresPaths() {
-        return this.requiresPaths;
     }
 
     @Override
@@ -82,6 +79,15 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
     @Override
     public List<Function<Object, Object>> getFunctions() {
         return this.functionRing.getFunctions();
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        final Set<TraverserRequirement> requirements = new HashSet<>();
+        if (this.requiresPaths)
+            requirements.add(TraverserRequirement.PATH);
+        requirements.add(TraverserRequirement.OBJECT);
+        return requirements;
     }
 
     //////////////////////
