@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect
 
+import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
@@ -30,7 +31,7 @@ public abstract class GroovyGroupTest {
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_byXitX_byXsizeXX_timesX2X_capXaX() {
-            g.V.repeat(__.out.group('a').by('name').by { it }.by { it.size() }).times(2).cap('a')
+            g.V.repeat(__.out.group('a').by('name').by(T.self).by { it.size() }).times(2).cap('a')
         }
     }
 
@@ -53,7 +54,7 @@ public abstract class GroovyGroupTest {
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_byXitX_byXsizeXX_timesX2X_capXaX() {
-            ComputerTestHelper.compute("g.V.repeat(__.out.group('a').by('name').by { it }.by { it.size() }).times(2).cap('a')", g)
+            ComputerTestHelper.compute("g.V.repeat(__.out.group('a').by('name').by(T.self).by { it.size() }).times(2).cap('a')", g)
         }
     }
 }

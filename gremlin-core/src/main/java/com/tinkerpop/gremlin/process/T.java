@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -70,12 +69,27 @@ public enum T implements Function<Element, Object> {
         public Object apply(final Element element) {
             return ((VertexProperty) element).value();
         }
+    },
+    /**
+     * Self (representing Element.this)
+     */
+    self {
+        @Override
+        public String getAccessor() {
+            return SELF;
+        }
+
+        @Override
+        public Object apply(final Element element) {
+            return element;
+        }
     };
 
     private static final String LABEL = Graph.Hidden.hide("label");
     private static final String ID = Graph.Hidden.hide("id");
     private static final String KEY = Graph.Hidden.hide("key");
     private static final String VALUE = Graph.Hidden.hide("value");
+    private static final String SELF = Graph.Hidden.hide("self");
 
     public abstract String getAccessor();
 
@@ -91,23 +105,9 @@ public enum T implements Function<Element, Object> {
             return key;
         else if (accessor.equals(VALUE))
             return value;
+        else if (accessor.equals(SELF))
+            return self;
         else
             throw new IllegalArgumentException("The following token string is unknown: " + accessor);
     }
-
-    public static Optional<T> asToken(final Function<Element, Object> function) {
-        if (function.equals(T.id)) {
-            return Optional.of(T.id);
-        } else if (function.equals(T.label)) {
-            return Optional.of(T.label);
-        } else if (function.equals(T.key)) {
-            return Optional.of(T.key);
-        } else if (function.equals(T.value)) {
-            return Optional.of(T.value);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-
 }

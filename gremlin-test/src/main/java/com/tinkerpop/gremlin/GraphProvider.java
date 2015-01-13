@@ -7,6 +7,8 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
 import com.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser;
+import com.tinkerpop.gremlin.process.traverser.B_O_Traverser;
+import com.tinkerpop.gremlin.process.traverser.O_Traverser;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -48,6 +50,8 @@ public interface GraphProvider {
         add(DefaultGraphTraversal.class);
         add(B_O_PA_S_SE_SL_Traverser.class);
         add(B_O_P_PA_S_SE_SL_Traverser.class);
+        add(B_O_Traverser.class);
+        add(O_Traverser.class);
     }};
 
     /**

@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -128,7 +129,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX() {
-            return g.V().repeat(__.out()).times(2).path().by(Function.identity()).by("name").by("lang");
+            return g.V().repeat(__.out()).times(2).path().by(T.self).by("name").by("lang");
         }
 
         @Override
@@ -161,7 +162,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX() {
             // TODO: Detached elements do not store properties (attach)
-            return g.V().repeat(__.out()).times(2).path().by(Function.identity()).by("name").by("lang");
+            return g.V().repeat(__.out()).times(2).path().by(T.self).by("name").by("lang");
         }
 
         @Override
