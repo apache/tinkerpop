@@ -439,7 +439,7 @@ There is one person that is 32, one person that is 35, one person that is 27, an
 
 	"Iteratively walk the graph and count the number of times you see the second letter of each name."
 
-image::groupcount-step.png[width=500]
+image::groupcount-step.png[width=420]
 
 [source,groovy]
 gremlin> g.V().repeat(__.both().groupCount('m').by{it.value('name')[1]}).times(10).cap('m')
