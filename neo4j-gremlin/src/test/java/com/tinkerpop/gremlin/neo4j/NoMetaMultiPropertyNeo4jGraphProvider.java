@@ -18,6 +18,7 @@ public class NoMetaMultiPropertyNeo4jGraphProvider extends AbstractNeo4jGraphPro
             put(Neo4jGraph.CONFIG_DIRECTORY, getWorkingDirectory() + File.separator + TestHelper.cleanPathSegment(graphName) + File.separator + TestHelper.cleanPathSegment(testMethodName));
             put(Neo4jGraph.CONFIG_META_PROPERTIES, false);
             put(Neo4jGraph.CONFIG_MULTI_PROPERTIES, false);
+            put(Neo4jGraph.CONFIG_CHECK_ELEMENTS_IN_TRANSACTION, true);
         }};
     }
 }
