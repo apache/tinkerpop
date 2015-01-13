@@ -152,8 +152,6 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
 
     @Override
     public boolean equals(final Object object) {
-        return object instanceof AbstractTraverser
-                && ((AbstractTraverser) object).get().equals(this.t)
-                && ((AbstractTraverser) object).getFuture().equals(this.getFuture());
+        return object instanceof AbstractTraverser && ((AbstractTraverser) object).get().equals(this.t);
     }
 }

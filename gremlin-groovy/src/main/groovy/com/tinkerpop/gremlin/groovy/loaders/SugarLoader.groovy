@@ -40,7 +40,7 @@ class SugarLoader {
 
     public static class TraverserCategory {
         public static final get(final Traverser traverser, final String key) {
-            return traverser.asAdmin().getSideEffects().exists(key) ? traverser.sideEffects(key) : traverser.get()."$key";
+            return traverser.get()."$key";
         }
     }
 

@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class B_O_Traverser<T> extends AbstractTraverser<T> {
+public class B_O_Traverser<T> extends O_Traverser<T> {
 
     protected long bulk = 1l;
     protected String future = HALT;
@@ -43,5 +43,10 @@ public class B_O_Traverser<T> extends AbstractTraverser<T> {
         this.future = label;
     }
 
-
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof B_O_Traverser &&
+                ((B_O_Traverser) object).get().equals(this.t) &&
+                ((B_O_Traverser) object).getFuture().equals(this.future);
+    }
 }
