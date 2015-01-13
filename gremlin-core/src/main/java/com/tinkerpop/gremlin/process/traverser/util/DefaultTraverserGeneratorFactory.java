@@ -13,8 +13,8 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 public class DefaultTraverserGeneratorFactory implements TraverserGeneratorFactory {
 
     private static DefaultTraverserGeneratorFactory INSTANCE = new DefaultTraverserGeneratorFactory();
-    private static final PathTraverserGenerator PATH_TRAVERSER_GENERATOR = new PathTraverserGenerator();
-    private static final SimpleTraverserGenerator SIMPLE_TRAVERSER_GENERATOR = new SimpleTraverserGenerator();
+    private static final PathTraverserGenerator PATH_TRAVERSER_GENERATOR = PathTraverserGenerator.instance();
+    private static final SimpleTraverserGenerator SIMPLE_TRAVERSER_GENERATOR = SimpleTraverserGenerator.instance();
 
     public static DefaultTraverserGeneratorFactory instance() {
         return INSTANCE;

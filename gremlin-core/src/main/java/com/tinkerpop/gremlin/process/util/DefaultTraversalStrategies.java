@@ -69,7 +69,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
         final DefaultTraversalStrategies clone = (DefaultTraversalStrategies) super.clone();
         clone.traversalStrategies = new ArrayList<>();
         clone.traversalStrategies.addAll(this.traversalStrategies);
-        TraversalStrategies.sortStrategies(clone.traversalStrategies);
+        // TraversalStrategies.sortStrategies(clone.traversalStrategies);
         return clone;
     }
 
