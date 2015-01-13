@@ -5,6 +5,7 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -118,6 +119,27 @@ class GraphSerializer {
         @Override
         public Path read(final Kryo kryo, final Input input, final Class<Path> pathClass) {
             return (Path) kryo.readClassAndObject(input);
+        }
+
+    }
+
+    /**
+     * Serializes any {@link Traverser} implementation encountered via pre-processing with {@link Traverser.Admin#detach()}.
+     *
+     * @author Marko A. Rodriguez (http://markorodriguez.com)
+     */
+    static class TraverserSerializer extends Serializer<Traverser> {
+        public TraverserSerializer() {
+        }
+
+        @Override
+        public void write(final Kryo kryo, final Output output, final Traverser traverser) {
+            kryo.writeClassAndObject(output, traverser.asAdmin().detach());
+        }
+
+        @Override
+        public Traverser read(final Kryo kryo, final Input input, final Class<Traverser> traverser) {
+            return (Traverser) kryo.readClassAndObject(input);
         }
 
     }

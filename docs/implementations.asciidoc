@@ -696,7 +696,7 @@ CAUTION: OLTP operations on `HadoopGraph` are not efficient. They require linear
 gremlin> hdfs.copyFromLocal('data/tinkerpop-modern-vertices.gio', 'tinkerpop-modern-vertices.gio')
 ==>null
 gremlin> hdfs.ls()
-==>rw-r--r-- marko supergroup 891 tinkerpop-modern-vertices.gio
+==>rw-r--r-- marko supergroup 1439 tinkerpop-modern-vertices.gio
 gremlin> g = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-kryo.properties')
 ==>hadoopgraph[kryoinputformat->kryooutputformat]
 gremlin> g.V().count()
@@ -814,14 +814,17 @@ The distributed file system of Hadoop is called link:http://en.wikipedia.org/wik
 [source,text]
 gremlin> hdfs.ls()
 ==>rwxr-xr-x marko supergroup 0 (D) output
-==>rw-r--r-- marko supergroup 891 tinkerpop-modern-vertices.gio
+==>rw-r--r-- marko supergroup 1439 tinkerpop-modern-vertices.gio
 gremlin> hdfs.ls('output')
 ==>rwxr-xr-x marko supergroup 0 (D) a
 ==>rwxr-xr-x marko supergroup 0 (D) ~g
 gremlin> hdfs.ls('output/a')
 ==>rw-r--r-- marko supergroup 0 _SUCCESS
 ==>rwxr-xr-x marko supergroup 0 (D) _logs
-==>rw-r--r-- marko supergroup 332 part-r-00000
+==>rw-r--r-- marko supergroup 140 part-r-00000
+==>rw-r--r-- marko supergroup 1109 part-r-00001
+==>rw-r--r-- marko supergroup 140 part-r-00002
+==>rw-r--r-- marko supergroup 468 part-r-00003
 gremlin> hdfs.head('output/a',ObjectWritable.class)
 ==>a	{marko=1, vadas=1}
 ==>e	{peter=1}
@@ -841,8 +844,8 @@ A list of the HDFS methods available are itemized below. Note that these methods
 |hdfs.copyToLocal(String from, String to)| Copy the specified HDFS path to the specified local path.
 |hdfs.copyFromLocal(String from, String to)| Copy the specified local path to the specified HDFS path.
 |hdfs.mergeToLocal(String from, String to)| Merge the files in path to the specified local path.
-|hdfs.head(String path)| Text display the data in the path.
-|hdfs.head(String path, long lineCount)| Text display only the first `totalKeyValues` in the path.
+|hdfs.head(String path)| Display the data in the path as text.
+|hdfs.head(String path, long lineCount)| Text display only the first `lineCount`-number of lines in the path.
 |hdfs.head(String path, long totalKeyValues, Class<Writable> writableClass)| Display the path interpreting the key values as respective writable.
 |=========================================================
 
@@ -933,34 +936,102 @@ $ hadoop jar target/hadoop-gremlin-x.y.z-job.jar com.tinkerpop.gremlin.hadoop.pr
 14/07/29 12:08:54 INFO mapred.JobClient:   File Output Format Counters
 14/07/29 12:08:54 INFO mapred.JobClient:     Bytes Written=0
 $ hadoop fs -cat output/~g/*
-{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":3.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.15000000000000002,"properties":{}}],"name":[{"id":0,"label":"name","value":"marko","properties":{}}],"age":[{"id":1,"label":"age","value":29,"properties":{}}]}}
-{"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.23181250000000003,"properties":{}}],"name":[{"id":8,"label":"name","value":"ripple","properties":{}}],"lang":[{"id":9,"label":"lang","value":"java","properties":{}}]}}
-{"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.4018125,"properties":{}}],"name":[{"id":4,"label":"name","value":"lop","properties":{}}],"lang":[{"id":5,"label":"lang","value":"java","properties":{}}]}}
-{"inE":[{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}}],"id":4,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":2.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.19250000000000003,"properties":{}}],"name":[{"id":6,"label":"name","value":"josh","properties":{}}],"age":[{"id":7,"label":"age","value":32,"properties":{}}]}}
-{"inE":[{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.19250000000000003,"properties":{}}],"name":[{"id":2,"label":"name","value":"vadas","properties":{}}],"age":[{"id":3,"label":"age","value":27,"properties":{}}]}}
-{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"id":6,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":1.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.15000000000000002,"properties":{}}],"name":[{"id":10,"label":"name","value":"peter","properties":{}}],"age":[{"id":11,"label":"age","value":35,"properties":{}}]}}
-
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"person","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"person","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"person","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"id":1,"label":"person","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.15000000000000002,"properties":{}}],"name":[{"id":0,"label":"name","value":"marko","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":3.0,"properties":{}}],"age":[{"id":1,"label":"age","value":29,"properties":{}}]}}
+{"inE":[{"inV":5,"inVLabel":"software","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"software","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.23181250000000003,"properties":{}}],"name":[{"id":8,"label":"name","value":"ripple","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"lang":[{"id":9,"label":"lang","value":"java","properties":{}}]}}
+{"inE":[{"inV":3,"inVLabel":"software","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"software","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"software","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"software","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.4018125,"properties":{}}],"name":[{"id":4,"label":"name","value":"lop","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"lang":[{"id":5,"label":"lang","value":"java","properties":{}}]}}
+{"inE":[{"inV":4,"inVLabel":"person","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"person","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"person","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}}],"id":4,"label":"person","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.19250000000000003,"properties":{}}],"name":[{"id":6,"label":"name","value":"josh","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":2.0,"properties":{}}],"age":[{"id":7,"label":"age","value":32,"properties":{}}]}}
+{"inE":[{"inV":2,"inVLabel":"person","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"person","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.19250000000000003,"properties":{}}],"name":[{"id":2,"label":"name","value":"vadas","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"age":[{"id":3,"label":"age","value":27,"properties":{}}]}}
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"person","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"id":6,"label":"person","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.15000000000000002,"properties":{}}],"name":[{"id":10,"label":"name","value":"peter","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":1.0,"properties":{}}],"age":[{"id":11,"label":"age","value":35,"properties":{}}]}}
 Vertex 4 ("josh") is isolated below:
 
 [source,js]
+----
 {
-  "inE":[
-    {"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}
-  ],
-  "outE":[
-    {"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}},
-    {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}}
-  ],
-  "id":4,
-  "label":"vertex",
-  "type":"vertex",
-  "properties":
+  "inE": [
     {
-     "~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":2.0,"properties":{}}],
-     "~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.19250000000000003,"properties":{}}],
-     "name":[{"id":6,"label":"name","value":"josh","properties":{}}],
-     "age":[{"id":7,"label":"age","value":32,"properties":{}}]
+      "inV": 4,
+      "inVLabel": "person",
+      "outVLabel": "vertex",
+      "id": 8,
+      "label": "knows",
+      "type": "edge",
+      "outV": 1,
+      "properties": {
+        "weight": 1
+      }
     }
+  ],
+  "outE": [
+    {
+      "inV": 5,
+      "inVLabel": "vertex",
+      "outVLabel": "person",
+      "id": 10,
+      "label": "created",
+      "type": "edge",
+      "outV": 4,
+      "properties": {
+        "weight": 1
+      }
+    },
+    {
+      "inV": 3,
+      "inVLabel": "vertex",
+      "outVLabel": "person",
+      "id": 11,
+      "label": "created",
+      "type": "edge",
+      "outV": 4,
+      "properties": {
+        "weight": 0.4
+      }
+    }
+  ],
+  "id": 4,
+  "label": "person",
+  "type": "vertex",
+  "properties": {
+    "gremlin.pageRankVertexProgram.pageRank": [
+      {
+        "id": 30,
+        "label": "gremlin.pageRankVertexProgram.pageRank",
+        "value": 0.1925,
+        "properties": {
+
+        }
+      }
+    ],
+    "name": [
+      {
+        "id": 6,
+        "label": "name",
+        "value": "josh",
+        "properties": {
+
+        }
+      }
+    ],
+    "gremlin.pageRankVertexProgram.edgeCount": [
+      {
+        "id": 1,
+        "label": "gremlin.pageRankVertexProgram.edgeCount",
+        "value": 2,
+        "properties": {
+
+        }
+      }
+    ],
+    "age": [
+      {
+        "id": 7,
+        "label": "age",
+        "value": 32,
+        "properties": {
+
+        }
+      }
+    ]
   }
 }
+----
 

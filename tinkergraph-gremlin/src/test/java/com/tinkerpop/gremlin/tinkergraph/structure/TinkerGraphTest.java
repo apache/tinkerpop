@@ -185,8 +185,17 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernVerticesAsKryo() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-vertices.gio");
-        final TinkerGraph g = TinkerFactory.createModern();
-        KryoWriter.build().create().writeVertices(os, g.V(), Direction.BOTH);
+        KryoWriter.build().create().writeVertices(os, TinkerFactory.createModern().V(), Direction.BOTH);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteModernVerticesAsGraphSON() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-vertices.ldjson");
+        GraphSONWriter.build().create().writeVertices(os, TinkerFactory.createModern().V(), Direction.BOTH);
         os.close();
     }
 
@@ -196,8 +205,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteCrewVerticesAsKryo() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-vertices.gio");
-        final TinkerGraph g = TinkerFactory.createTheCrew();
-        KryoWriter.build().create().writeVertices(os, g.V(), Direction.BOTH);
+        KryoWriter.build().create().writeVertices(os, TinkerFactory.createTheCrew().V(), Direction.BOTH);
         os.close();
     }
 
@@ -267,7 +275,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernGraphNormalizedAsGraphSON() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-normalized.json");
-        GraphSONWriter.build().mapper(GraphSONMapper.build().normalize(true).create()).create().writeGraph(os, TinkerFactory.createClassic());
+        GraphSONWriter.build().mapper(GraphSONMapper.build().normalize(true).create()).create().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
 
