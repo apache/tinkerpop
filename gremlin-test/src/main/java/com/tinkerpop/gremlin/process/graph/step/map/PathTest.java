@@ -3,14 +3,12 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Path;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Function;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
@@ -26,7 +24,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_VX1X_out_path_byXageX_byXnameX(final Object v1Id);
 
-    public abstract Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX();
+    public abstract Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX();
 
     public abstract Traversal<Vertex, Path> get_g_V_out_out_path_byXnameX_byXageX();
 
@@ -66,7 +64,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX() {
-        final Traversal<Vertex, Path> traversal = get_g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX();
+        final Traversal<Vertex, Path> traversal = get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -128,8 +126,8 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX() {
-            return g.V().repeat(__.out()).times(2).path().by(T.self).by("name").by("lang");
+        public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX() {
+            return g.V().repeat(__.out()).times(2).path().by().by("name").by("lang");
         }
 
         @Override
@@ -160,9 +158,9 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX() {
+        public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX() {
             // TODO: Detached elements do not store properties (attach)
-            return g.V().repeat(__.out()).times(2).path().by(T.self).by("name").by("lang");
+            return g.V().repeat(__.out()).times(2).path().by().by("name").by("lang");
         }
 
         @Override

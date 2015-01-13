@@ -571,6 +571,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
+    public default GraphTraversal<S, E> by() {
+        ((FunctionHolder) TraversalHelper.getEnd(this)).addFunction(Function.identity());
+        return this;
+    }
+
     public default <V> GraphTraversal<S, E> by(final Function<V, Object> functionProjection) {
         ((FunctionHolder<V, Object>) TraversalHelper.getEnd(this)).addFunction(functionProjection);
         return this;

@@ -9,9 +9,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Added `T.self` which is simply the identity function on `Element`.
 * `Traverser` now extends `Cloneable` and `Traverser.clone()` is used to good effect in `Traverser.split()`.
-* Added `AbstractTraverser` for which `SimpleTraverser` and `PathTraverser` now extend.
+* Added `AbstractTraverser` for which all traversers extend.
+* Added `TraverserSerializer` for a generic way to detach and serialize a traverser.
 * Moved `Traversal.SideEffects` to `TraversalSideEffects` as sideEffects are not necessarily tied to the traversal.
 * Removed `Graph.of()` for generating anonymous graph traversals -- replaced by `__`-model.
 * Removed `Graph` being stored in `Traversal.SideEffects`. Too dangerous when moving between OLTP and OLAP and its limited uses were worked around easily.
