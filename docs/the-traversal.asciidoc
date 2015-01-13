@@ -1338,7 +1338,7 @@ In many situations, a graph traversal is not about getting an exact answer as it
 
 NOTE: The method `clock(int runs, Closure code)` is a utility preloaded in the <<gremlin-console,Gremlin Console>> that can be used to time execution of a body of code.
 
-image::timelimit-step.png[width=500]
+image::timelimit-step.png[width=400]
 
 [source,groovy]
 gremlin> :plugin use tinkerpop.utilities
