@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -205,6 +206,7 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
         strategy.removeReadPartition("B");
 
         assertEquals(new Long(1), g.V().count().next());
+        System.out.println(g.E().toString() + "!!!!!!!!!!!!!!!");
         // two edges are in the "C" partition, but one each of their incident vertices are not
         assertEquals(new Long(0), g.E().count().next());
 

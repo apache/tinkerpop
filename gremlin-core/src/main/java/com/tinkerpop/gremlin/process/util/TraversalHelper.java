@@ -137,12 +137,21 @@ public class TraversalHelper {
     }
 
     public static Step<?, ?> insertTraversal(final Traversal<?, ?> insertTraversal, final int insertIndex, final Traversal<?, ?> traversal) {
-        Step currentStep = traversal.asAdmin().getSteps().get(insertIndex);
-        for (final Step insertStep : insertTraversal.asAdmin().getSteps()) {
-            TraversalHelper.insertAfterStep(insertStep, currentStep, traversal);
-            currentStep = insertStep;
+        if (0 == traversal.asAdmin().getSteps().size()) {
+            for (final Step insertStep : insertTraversal.asAdmin().getSteps()) {
+                traversal.asAdmin().addStep(insertStep);
+            }
+            reLabelSteps(traversal);
+            reLinkSteps(traversal);
+            return TraversalHelper.getEnd(traversal);
+        } else {
+            Step currentStep = traversal.asAdmin().getSteps().get(insertIndex);
+            for (final Step insertStep : insertTraversal.asAdmin().getSteps()) {
+                TraversalHelper.insertAfterStep(insertStep, currentStep, traversal);
+                currentStep = insertStep;
+            }
+            return currentStep;
         }
-        return currentStep;
     }
 
     public static Step<?, ?> insertTraversal(final Traversal insertTraversal, final Step<?, ?> afterStep, final Traversal<?, ?> traversal) {

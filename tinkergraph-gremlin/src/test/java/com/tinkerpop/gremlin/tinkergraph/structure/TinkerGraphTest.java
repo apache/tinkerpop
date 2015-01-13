@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -13,6 +14,7 @@ import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import com.tinkerpop.gremlin.structure.strategy.PartitionStrategy;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.io.FileUtils;
 import org.junit.BeforeClass;
@@ -111,11 +113,12 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        System.out.println(__.out().getClass());
-        while (true) {
-            g.V(1).emit(__.has(T.label, "person")).repeat(__.out()).<String>values("name").submit(g.compute()).forEachRemaining(System.out::println);
-            System.out.println("good");
-        }
+        g = g.strategy(PartitionStrategy.build().partitionKey("name").create());
+        GraphTraversal t = g.V().out();
+        System.out.println(t.toString());
+        t.iterate();
+        System.out.println(t.toString());
+
     }
 
     /**
