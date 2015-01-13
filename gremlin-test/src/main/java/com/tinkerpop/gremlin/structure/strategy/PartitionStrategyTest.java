@@ -206,7 +206,6 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
         strategy.removeReadPartition("B");
 
         assertEquals(new Long(1), g.V().count().next());
-        System.out.println(g.E().toString() + "!!!!!!!!!!!!!!!");
         // two edges are in the "C" partition, but one each of their incident vertices are not
         assertEquals(new Long(0), g.E().count().next());
 
