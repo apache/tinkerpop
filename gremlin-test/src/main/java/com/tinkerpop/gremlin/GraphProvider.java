@@ -5,8 +5,8 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.process.traverser.PathTraverser;
-import com.tinkerpop.gremlin.process.traverser.SimpleTraverser;
+import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
+import com.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -46,8 +46,8 @@ public interface GraphProvider {
     public static final Set<Class> CORE_IMPLEMENTATIONS = new HashSet<Class>() {{
         add(AnonymousGraphTraversal.Tokens.class);
         add(DefaultGraphTraversal.class);
-        add(SimpleTraverser.class);
-        add(PathTraverser.class);
+        add(B_O_PA_S_SE_SL_Traverser.class);
+        add(B_O_P_PA_S_SE_SL_Traverser.class);
     }};
 
     /**
@@ -204,9 +204,9 @@ public interface GraphProvider {
      * <li>{@link Graph.Variables}</li>
      * <li>{@link Graph.Iterators}</li>
      * <li>{@link GraphTraversal}</li>
-     * <li>{@link com.tinkerpop.gremlin.process.traverser.PathTraverser}</li>
+     * <li>{@link com.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser}</li>
      * <li>{@link Property}</li>
-     * <li>{@link com.tinkerpop.gremlin.process.traverser.SimpleTraverser}</li>
+     * <li>{@link com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser}</li>
      * <li>{@link Traversal}</li>
      * <li>{@link Traverser}</li>
      * <li>{@link Vertex}</li>

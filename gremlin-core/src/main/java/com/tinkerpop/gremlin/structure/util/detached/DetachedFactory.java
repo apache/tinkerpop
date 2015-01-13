@@ -41,4 +41,16 @@ public class DetachedFactory {
         else
             throw new IllegalArgumentException("The provided argument is an unknown element: " + element + ":" + element.getClass());
     }
+
+    public static <D> D detach(final Object object, final boolean withProperties) {
+        if (object instanceof Element) {
+            return (D) DetachedFactory.detach((Element) object, withProperties);
+        } else if (object instanceof Property) {
+            return (D) DetachedFactory.detach((Property) object);
+        } else if (object instanceof Path) {
+            return (D) DetachedFactory.detach((Path) object, withProperties);
+        } else {
+            return (D) object;
+        }
+    }
 }

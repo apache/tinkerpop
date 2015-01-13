@@ -20,8 +20,8 @@ import java.util.Optional;
 public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
-    private static final TraversalSideEffects SIDE_EFFECTS = new DefaultTraversalSideEffects();
-    private static final TraversalStrategies STRATEGIES = new DefaultTraversalStrategies();
+    private static final TraversalSideEffects SIDE_EFFECTS = EmptyTraversalSideEffects.instance();
+    private static final TraversalStrategies STRATEGIES = EmptyTraversalStrategies.instance();
 
     public static <A, B> EmptyTraversal<A, B> instance() {
         return INSTANCE;

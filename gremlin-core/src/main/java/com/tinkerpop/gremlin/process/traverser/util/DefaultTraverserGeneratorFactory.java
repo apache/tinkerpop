@@ -2,12 +2,13 @@ package com.tinkerpop.gremlin.process.traverser.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
-import com.tinkerpop.gremlin.process.traverser.PathTraverserGenerator;
-import com.tinkerpop.gremlin.process.traverser.SimpleTraverserGenerator;
+import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_TraverserGenerator;
+import com.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_TraverserGenerator;
+import com.tinkerpop.gremlin.process.traverser.B_O_TraverserGenerator;
+import com.tinkerpop.gremlin.process.traverser.O_TraverserGenerator;
 import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirements;
 
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -16,8 +17,6 @@ import java.util.Set;
 public class DefaultTraverserGeneratorFactory implements TraverserGeneratorFactory {
 
     private static DefaultTraverserGeneratorFactory INSTANCE = new DefaultTraverserGeneratorFactory();
-    private static final PathTraverserGenerator PATH_TRAVERSER_GENERATOR = PathTraverserGenerator.instance();
-    private static final SimpleTraverserGenerator SIMPLE_TRAVERSER_GENERATOR = SimpleTraverserGenerator.instance();
 
     public static DefaultTraverserGeneratorFactory instance() {
         return INSTANCE;
@@ -26,15 +25,27 @@ public class DefaultTraverserGeneratorFactory implements TraverserGeneratorFacto
     private DefaultTraverserGeneratorFactory() {
     }
 
+    @Override
     public TraverserGenerator getTraverserGenerator(final Traversal traversal) {
-        return this.getRequirements(traversal).contains(TraverserRequirements.UNIQUE_PATH) ?
-                PATH_TRAVERSER_GENERATOR :
-                SIMPLE_TRAVERSER_GENERATOR;
+        final Set<TraverserRequirements> requirements = this.getRequirements(traversal);
+
+        if (O_TraverserGenerator.instance().requirements().containsAll(requirements))
+            return O_TraverserGenerator.instance();
+
+        if (B_O_TraverserGenerator.instance().requirements().containsAll(requirements))
+            return B_O_TraverserGenerator.instance();
+
+        if (B_O_PA_S_SE_SL_TraverserGenerator.instance().requirements().containsAll(requirements))
+            return B_O_PA_S_SE_SL_TraverserGenerator.instance();
+
+        if (B_O_P_PA_S_SE_SL_TraverserGenerator.instance().requirements().containsAll(requirements))
+            return B_O_P_PA_S_SE_SL_TraverserGenerator.instance();
+
+        throw new IllegalStateException("The provided traverser generator factory does not support the requirements of the traversal: " + this.getClass().getCanonicalName() + "::" + requirements);
     }
 
+    /*@Override
     public Set<TraverserRequirements> getRequirements(final Traversal traversal) {
-        return TraversalHelper.trackPaths(traversal) ?
-                Collections.singleton(TraverserRequirements.UNIQUE_PATH) :
-                Collections.emptySet();
-    }
+        return Collections.emptySet();
+    }*/
 }

@@ -2,12 +2,15 @@ package com.tinkerpop.gremlin.process.graph.step.map.match;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traverser.SimpleTraverser;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,7 +28,7 @@ import java.util.function.Function;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
+public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> implements TraversalHolder {
 
     static final BiConsumer<String, Object> TRIVIAL_CONSUMER = (s, t) -> {
     };
@@ -37,6 +40,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
     private final String startLabel;
     private final Map<String, List<TraversalWrapper<S, S>>> traversalsByStartAs;
+    private final List<Traversal> traversals = new ArrayList<>();
 
     private int startsPerOptimize = DEFAULT_STARTS_PER_OPTIMIZE;
     private int optimizeCounter = -1;
@@ -52,10 +56,11 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         super(traversal);
         this.startLabel = startLabel;
         this.traversalsByStartAs = new HashMap<>();
-        this.currentStart = new SimpleTraverser<>(null, this);
+        this.currentStart = new B_O_PA_S_SE_SL_Traverser<>(null, this);
         for (final Traversal tl : traversals) {
             tl.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());
             addTraversalPrivate(tl);
+            this.traversals.add(tl);
         }
         checkSolvability();
     }
@@ -75,6 +80,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
      */
     public void addTraversal(final Traversal<S, S> traversal) {
         addTraversalPrivate(traversal);
+        this.traversals.add(traversal);
         checkSolvability();
     }
 
@@ -359,6 +365,11 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
     private void updateOrderingFactor(final TraversalWrapper<S, S> w) {
         w.orderingFactor = ((w.findBranchFactor() - 1) / findCost(w));
+    }
+
+    @Override
+    public Collection<Traversal> getTraversals() {
+        return this.traversals;
     }
 
     /**

@@ -2,15 +2,18 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.BiPredicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WhereStep<E> extends FilterStep<Map<String, E>> {
+public final class WhereStep<E> extends FilterStep<Map<String, E>> implements TraversalHolder {
 
     private final String firstKey;
     private final String secondKey;
@@ -42,8 +45,8 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> {
         return null != this.biPredicate;
     }
 
-    public Traversal getConstraint() {
-        return this.constraint;
+    public Collection<Traversal> getTraversals() {
+        return null == this.constraint ? Collections.emptyList() : Collections.singleton(this.constraint);
     }
 
     @Override

@@ -63,6 +63,10 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
         return this.traverserGeneratorFactory.getTraverserGenerator(traversal);
     }
 
+    @Override
+    public void setTraverserGeneratorFactory(final TraverserGeneratorFactory traverserGeneratorFactory) {
+        this.traverserGeneratorFactory = traverserGeneratorFactory;
+    }
 
     @Override
     public DefaultTraversalStrategies clone() throws CloneNotSupportedException {

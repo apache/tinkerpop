@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Path;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,7 +14,7 @@ import java.util.Set;
  */
 public class ImmutablePath implements Path, Serializable, Cloneable {
 
-    private Path previousPath = EmptyPath.instance();
+    private Path previousPath = HeadPath.instance();
     private Set<String> currentLabels = new HashSet<>();
     private Object currentObject;
 
@@ -22,7 +23,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
     }
 
     public static Path make() {
-        return EmptyPath.instance();
+        return HeadPath.instance();
     }
 
     public ImmutablePath clone() throws CloneNotSupportedException {
@@ -30,11 +31,11 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
     }
 
     public ImmutablePath(final String currentLabel, final Object currentObject) {
-        this(EmptyPath.instance(), currentLabel, currentObject);
+        this(HeadPath.instance(), currentLabel, currentObject);
     }
 
     public ImmutablePath(final Set<String> currentLabels, final Object currentObject) {
-        this(EmptyPath.instance(), currentLabels, currentObject);
+        this(HeadPath.instance(), currentLabels, currentObject);
     }
 
     private ImmutablePath(final Path previousPath, final String currentLabel, final Object currentObject) {
@@ -94,5 +95,77 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
 
     public String toString() {
         return this.objects().toString();
+    }
+
+    private static class HeadPath implements Path {
+        private static final HeadPath INSTANCE = new HeadPath();
+
+        private HeadPath() {
+
+        }
+
+        @Override
+        public int size() {
+            return 0;
+        }
+
+        @Override
+        public Path extend(final String label, final Object object) {
+            return new ImmutablePath(label, object);
+        }
+
+        @Override
+        public Path extend(final Set<String> labels, final Object object) {
+            return new ImmutablePath(labels, object);
+        }
+
+        @Override
+        public <A> A get(final String label) {
+            throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
+        }
+
+        @Override
+        public <A> A get(final int index) {
+            return (A) Collections.emptyList().get(index);
+        }
+
+        @Override
+        public boolean hasLabel(final String label) {
+            return false;
+        }
+
+        @Override
+        public void addLabel(final String label) {
+            throw new UnsupportedOperationException("A head path can not have labels added to it");
+        }
+
+        @Override
+        public List<Object> objects() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<Set<String>> labels() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean isSimple() {
+            return true;
+        }
+
+        @Override
+        public HeadPath clone() {
+            return this;
+        }
+
+        public static Path instance() {
+            return INSTANCE;
+        }
+
+        @Override
+        public boolean equals(final Object object) {
+            return object instanceof HeadPath;
+        }
     }
 }

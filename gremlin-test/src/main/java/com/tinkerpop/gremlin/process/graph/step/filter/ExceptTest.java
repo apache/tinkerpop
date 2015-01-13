@@ -115,7 +115,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_exceptXaX_name() {
+    public void g_VX1X_asXaX_outXcreatedX_inXcreatedX_exceptXaX_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_exceptXaX_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList("peter", "josh"), traversal);

@@ -14,12 +14,12 @@ import java.util.WeakHashMap;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SimpleTraverser<T> extends AbstractTraverser<T> {
+public class B_O_PA_S_SE_SL_Traverser<T> extends AbstractPathTraverser<T> {
 
-    protected SimpleTraverser() {
+    protected B_O_PA_S_SE_SL_Traverser() {
     }
 
-    public SimpleTraverser(final T t, final Step<T, ?> step) {
+    public B_O_PA_S_SE_SL_Traverser(final T t, final Step<T, ?> step) {
         super(t, step);
         this.path = getOrCreateFromCache(this.sideEffects).extend(step.getLabel(), t);
     }
@@ -31,10 +31,10 @@ public class SimpleTraverser<T> extends AbstractTraverser<T> {
 
     @Override
     public boolean equals(final Object object) {
-        return object instanceof SimpleTraverser
-                && ((SimpleTraverser) object).get().equals(this.t)
-                && ((SimpleTraverser) object).getFuture().equals(this.getFuture())
-                && ((SimpleTraverser) object).loops() == this.loops()
+        return object instanceof B_O_PA_S_SE_SL_Traverser
+                && ((B_O_PA_S_SE_SL_Traverser) object).get().equals(this.t)
+                && ((B_O_PA_S_SE_SL_Traverser) object).getFuture().equals(this.getFuture())
+                && ((B_O_PA_S_SE_SL_Traverser) object).loops() == this.loops()
                 && (null == this.sack);
     }
 

@@ -1,17 +1,14 @@
 package com.tinkerpop.gremlin.process.traverser;
 
 import com.tinkerpop.gremlin.process.Path;
-import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.process.util.EmptyPath;
+import com.tinkerpop.gremlin.process.util.EmptyTraversalSideEffects;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
-
-import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -19,152 +16,27 @@ import java.util.function.UnaryOperator;
 public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
 
     protected T t;
-    protected Object sack = null;
-    protected String future = HALT;
-    protected short loops = 0;  // an optimization hack to use a short internally to save bits :)
-    protected transient TraversalSideEffects sideEffects;
-    protected long bulk = 1l;
-    protected Path path;
 
     protected AbstractTraverser() {
 
     }
 
-    public AbstractTraverser(final T t, final Step<T, ?> step) {
-        this.t = t;
-        this.sideEffects = step.getTraversal().asAdmin().getSideEffects();
-        this.sideEffects.getSackInitialValue().ifPresent(supplier -> this.sack = supplier.get());
-    }
-
-    /////////////////
-
-    @Override
-    public T get() {
-        return this.t;
-    }
-
-    @Override
-    public void set(final T t) {
+    public AbstractTraverser(final T t) {
         this.t = t;
     }
 
-    /////////////////
+    /////////////
 
     @Override
-    public Path path() {
-        return this.path;
-    }
-
-    /////////////////
-
-    @Override
-    public <S> S sack() {
-        return (S) this.sack;
+    public void merge(final Admin<?> other) {
+        throw new UnsupportedOperationException("This traverser does not support merging: " + this.getClass().getCanonicalName());
     }
 
     @Override
-    public <S> void sack(final S object) {
-        this.sack = object;
-    }
-
-    /////////////////
-
-    @Override
-    public void setBulk(final long count) {
-        this.bulk = count;
-    }
-
-    @Override
-    public long bulk() {
-        return this.bulk;
-    }
-
-    /////////////////
-
-    @Override
-    public int loops() {
-        return this.loops;
-    }
-
-    @Override
-    public void incrLoops() {
-        this.loops++;
-    }
-
-    @Override
-    public void resetLoops() {
-        this.loops = 0;
-    }
-
-    /////////////////
-
-    @Override
-    public String getFuture() {
-        return this.future;
-    }
-
-    @Override
-    public void setFuture(final String label) {
-        this.future = label;
-    }
-
-    /////////////////
-
-    @Override
-    public TraversalSideEffects getSideEffects() {
-        return this.sideEffects;
-    }
-
-
-    @Override
-    public void setSideEffects(final TraversalSideEffects sideEffects) {
-        this.sideEffects = sideEffects;
-    }
-
-    /////////////////
-
-    @Override
-    public Traverser.Admin<T> detach() {
-        try {
-            if (this.t instanceof Element) {
-                this.t = (T) DetachedFactory.detach((Element) this.t, false);
-            } else if (this.t instanceof Property) {
-                this.t = (T) DetachedFactory.detach((Property) this.t);
-            } else if (this.t instanceof Path) {
-                this.t = (T) DetachedFactory.detach((Path) this.t, false);
-            }
-            this.path = DetachedFactory.detach(this.path.clone(), true);
-            return this;
-        } catch (final CloneNotSupportedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public Traverser.Admin<T> attach(final Vertex vertex) {
-        if (this.t instanceof DetachedElement) {
-            this.t = (T) ((DetachedElement) this.t).attach(vertex);
-        } else if (this.t instanceof DetachedProperty) {
-            this.t = (T) ((DetachedProperty) this.t).attach(vertex);
-        }
-        // you do not want to attach a path because it will reference graph objects not at the current vertex
-        return this;
-    }
-
-    /////////////////
-
-    @Override
-    public void merge(final Traverser.Admin<?> other) {
-        this.bulk = this.bulk + other.bulk();
-    }
-
-    @Override
-    public <R> Traverser.Admin<R> split(final String label, final R r) {
+    public <R> Admin<R> split(final String label, final R r) {
         try {
             final AbstractTraverser<R> clone = (AbstractTraverser<R>) super.clone();
             clone.t = r;
-            clone.path = clone.path.clone().extend(label, r);
-            clone.sack = null == clone.sack ? null : clone.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(clone.sack);
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -172,7 +44,7 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
     }
 
     @Override
-    public Traverser.Admin<T> split() {
+    public Admin<T> split() {
         try {
             return (AbstractTraverser<T>) super.clone();
         } catch (final CloneNotSupportedException e) {
@@ -180,20 +52,108 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
         }
     }
 
-    /////////////////
+    @Override
+    public void set(final T t) {
+        this.t = t;
+    }
+
+    @Override
+    public void incrLoops() {
+
+    }
+
+    @Override
+    public void resetLoops() {
+
+    }
+
+    @Override
+    public String getFuture() {
+        throw new UnsupportedOperationException("This traverser does not support futures: " + this.getClass().getCanonicalName());
+    }
+
+    @Override
+    public void setFuture(final String label) {
+
+    }
+
+    @Override
+    public void setBulk(final long count) {
+        throw new UnsupportedOperationException("This traverser does not support bulking: " + this.getClass().getCanonicalName());
+    }
+
+    @Override
+    public Admin<T> detach() {
+        this.t = DetachedFactory.detach(this.t, false);
+        return this;
+    }
+
+    @Override
+    public Admin<T> attach(final Vertex hostVertex) {
+        if (this.t instanceof DetachedElement)
+            this.t = (T) ((DetachedElement) this.t).attach(hostVertex);
+        else if (this.t instanceof DetachedProperty)
+            this.t = (T) ((DetachedProperty) this.t).attach(hostVertex);
+        // you do not want to attach a path because it will reference graph objects not at the current vertex
+        return this;
+    }
+
+    @Override
+    public void setSideEffects(final TraversalSideEffects sideEffects) {
+
+    }
+
+    @Override
+    public TraversalSideEffects getSideEffects() {
+        return EmptyTraversalSideEffects.instance();
+    }
+
+    @Override
+    public T get() {
+        return this.t;
+    }
+
+    @Override
+    public <S> S sack() {
+        throw new UnsupportedOperationException("This traverser does not support sacks: " + this.getClass().getCanonicalName());
+    }
+
+    @Override
+    public <S> void sack(final S object) {
+
+    }
+
+    @Override
+    public Path path() {
+        return EmptyPath.instance();
+    }
+
+    @Override
+    public int loops() {
+        return 0;
+    }
+
+    @Override
+    public long bulk() {
+        return 1;
+    }
 
     @Override
     public AbstractTraverser<T> clone() throws CloneNotSupportedException {
         return (AbstractTraverser<T>) super.clone();
     }
 
+    ///////////
+
     @Override
     public int hashCode() {
-        return this.t.hashCode() + this.future.hashCode() + this.loops;
+        return this.t.hashCode();
     }
 
     @Override
-    public String toString() {
-        return this.t.toString();
+    public boolean equals(final Object object) {
+        return object instanceof AbstractTraverser
+                && ((AbstractTraverser) object).get().equals(this.t)
+                && ((AbstractTraverser) object).getFuture().equals(this.getFuture());
     }
 }

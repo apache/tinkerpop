@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.graph.strategy.ReducingStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.RepeatLinearStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.UnionLinearStrategy;
+import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -78,6 +79,12 @@ public interface TraversalStrategies extends Cloneable {
      */
     public TraverserGenerator getTraverserGenerator(final Traversal traversal);
 
+    /**
+     * Set the {@link TraverserGeneratorFactory} to use for determining which {@link Traverser} type to generate for the {@link Traversal}.
+     *
+     * @param traverserGeneratorFactory the factory to use
+     */
+    public void setTraverserGeneratorFactory(final TraverserGeneratorFactory traverserGeneratorFactory);
 
     /**
      * Sorts the list of provided strategies such that the {@link com.tinkerpop.gremlin.process.TraversalStrategy#applyPost()}
@@ -150,7 +157,7 @@ public interface TraversalStrategies extends Cloneable {
                     ReducingStrategy.instance(),
                     LabeledEndStepStrategy.instance(),
                     EngineDependentStrategy.instance());
-            //UnrollJumpStrategy.instance());
+
             try {
                 CACHE.put(Graph.class, coreStrategies.clone());
                 CACHE.put(Vertex.class, coreStrategies.clone());
@@ -170,7 +177,7 @@ public interface TraversalStrategies extends Cloneable {
             final TraversalStrategies traversalStrategies = CACHE.get(emanatingClass);
             if (null == traversalStrategies) {
                 if (AnonymousGraphTraversal.class.isAssignableFrom(emanatingClass))
-                    return CACHE.get(Graph.class);
+                    return CACHE.get(AnonymousGraphTraversal.class);
                 else if (Graph.class.isAssignableFrom(emanatingClass))
                     return CACHE.get(Graph.class);
                 else if (Vertex.class.isAssignableFrom(emanatingClass))

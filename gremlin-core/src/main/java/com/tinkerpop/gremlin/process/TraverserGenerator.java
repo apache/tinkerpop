@@ -1,11 +1,16 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirements;
+
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface TraverserGenerator {
+
+    public Set<TraverserRequirements> requirements();
 
     public <S> Traverser.Admin<S> generate(final S start, final Step<S, ?> startStep, final long initialBulk);
 

@@ -12,8 +12,8 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.util.MapMemory;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
-import com.tinkerpop.gremlin.process.traverser.PathTraverser;
-import com.tinkerpop.gremlin.process.traverser.SimpleTraverser;
+import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
+import com.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.StepTimer;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
@@ -273,8 +273,8 @@ public final class KryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexProperty.class, kryo -> new GraphSerializer.VertexPropertySerializer(), 68));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Path.class, kryo -> new GraphSerializer.PathSerializer(), 59));
 
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(SimpleTraverser.class, null, 55));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(PathTraverser.class, null, 56));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_PA_S_SE_SL_Traverser.class, null, 55));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_P_PA_S_SE_SL_Traverser.class, null, 56));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraverserSet.class, null, 58));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Tree.class, null, 61));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashSet.class, null, 62));

@@ -11,7 +11,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.match.Enumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.InnerJoinEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.IteratorEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
-import com.tinkerpop.gremlin.process.traverser.SimpleTraverser;
+import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -863,7 +863,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     private void assertBranchFactor(final double branchFactor,
                                     final Traversal t,
                                     final Iterator inputs) {
-        Traverser start = new SimpleTraverser(null, null);
+        Traverser start = new B_O_PA_S_SE_SL_Traverser(null, null);
         MatchStep.TraversalWrapper w = new MatchStep.TraversalWrapper(t, "a", "b");
         MatchStep.TraversalUpdater updater = new MatchStep.TraversalUpdater<>(w, inputs, start, "x");
         while (updater.hasNext()) {

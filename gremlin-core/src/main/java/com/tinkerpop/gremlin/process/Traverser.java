@@ -254,6 +254,5 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * @return the traversal sideEffects of the traverser
          */
         public TraversalSideEffects getSideEffects();
-
     }
 }

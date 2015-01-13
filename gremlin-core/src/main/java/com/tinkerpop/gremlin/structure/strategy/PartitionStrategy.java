@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.HasContainer;
+import com.tinkerpop.gremlin.process.traverser.util.DefaultTraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -104,6 +105,7 @@ public final class PartitionStrategy implements GraphStrategy {
     public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
         return (f) -> ids -> {
             final GraphTraversal<Vertex, Vertex> traversal = this.generateTraversal(ctx.getStrategyGraph().getBaseGraph().getClass());
+            traversal.asAdmin().getStrategies().setTraverserGeneratorFactory(DefaultTraverserGeneratorFactory.instance());
             TraversalHelper.insertTraversal(f.apply(ids).has(getPartitionKey(), Contains.within, getReadPartitions()), 0, traversal);
             return traversal.filter(vertex -> testVertex(vertex.get()));
         };
@@ -113,6 +115,7 @@ public final class PartitionStrategy implements GraphStrategy {
     public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
         return (f) -> ids -> {
             final GraphTraversal<Edge, Edge> traversal = this.generateTraversal(ctx.getStrategyGraph().getBaseGraph().getClass());
+            traversal.asAdmin().getStrategies().setTraverserGeneratorFactory(DefaultTraverserGeneratorFactory.instance());
             TraversalHelper.insertTraversal(f.apply(ids).has(getPartitionKey(), Contains.within, getReadPartitions()), 0, traversal);
             return traversal.filter(edge -> testEdge(edge.get()));
         };

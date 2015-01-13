@@ -121,6 +121,14 @@ public class TinkerGraphTest {
 
     }
 
+    @Test
+    @Ignore
+    public void testPlay4() throws Exception {
+        Graph g = TinkerFactory.createModern();
+        g.V().outE().inV().outE().inV().forEachRemaining(System.out::println);
+
+    }
+
     /**
      * No assertions.  Just write out the graph for convenience.
      */
