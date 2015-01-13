@@ -28,13 +28,13 @@ gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> result = g.compute().program(PageRankVertexProgram.build().create()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],memory[size:0]]
-gremlin> result.graph().V().map{[it.get().value('name'), it.get().value(PageRankVertexProgram.PAGE_RANK)]}
-==>[marko, 0.15000000000000002]
-==>[vadas, 0.19250000000000003]
-==>[lop, 0.4018125]
-==>[josh, 0.19250000000000003]
-==>[ripple, 0.23181250000000003]
-==>[peter, 0.15000000000000002]
+gremlin> result.graph().V().valueMap('name',PageRankVertexProgram.PAGE_RANK)
+==>[gremlin.pageRankVertexProgram.pageRank:[0.15000000000000002], name:[marko]]
+==>[gremlin.pageRankVertexProgram.pageRank:[0.19250000000000003], name:[vadas]]
+==>[gremlin.pageRankVertexProgram.pageRank:[0.4018125], name:[lop]]
+==>[gremlin.pageRankVertexProgram.pageRank:[0.19250000000000003], name:[josh]]
+==>[gremlin.pageRankVertexProgram.pageRank:[0.23181250000000003], name:[ripple]]
+==>[gremlin.pageRankVertexProgram.pageRank:[0.15000000000000002], name:[peter]]
 gremlin> result.memory().runtime
 ==>35
 
@@ -64,12 +64,12 @@ public interface MapReduce<MK, MV, RK, RV, R> {
 
 image::mapreduce.png[width=650]
 
-The `MapReduce` extension to GraphComputer is made explicit when examining the <<peerpressurevertexprogram,`PeerPressureVertexProgram`>> and corresponding `ClusterPopulationMapReduce`. In the code below, the GraphComputer result returns the computed on `Graph` as well as the `Memory` of the computation (`ComputerResult`). The memory maintain the results of any MapReduce jobs. The cluster population MapReduce result states that there are 5 vertices in cluster 1 and 1 vertex in cluster 6. This can be verified (in a serial manner) by looking at the `PeerPressureVertexProgram.CLUSTER` property of the resultant graph. In essence, the serial process of the final Gremlin traversal is done in a parallel MapReduce fashion using `ClusterPopulationMapReduce`.
+The `MapReduce` extension to GraphComputer is made explicit when examining the <<peerpressurevertexprogram,`PeerPressureVertexProgram`>> and corresponding `ClusterPopulationMapReduce`. In the code below, the GraphComputer result returns the computed on `Graph` as well as the `Memory` of the computation (`ComputerResult`). The memory maintain the results of any MapReduce jobs. The cluster population MapReduce result states that there are 5 vertices in cluster 1 and 1 vertex in cluster 6. This can be verified (in a serial manner) by looking at the `PeerPressureVertexProgram.CLUSTER` property of the resultant graph. Notice that the property is "hidden" unless it is directly accessed via name.
 
 [source,groovy]
 gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> result = g.compute().program(PeerPressureVertexProgram.build().create()).mapReduce(new ClusterPopulationMapReduce()).submit().get()
+gremlin> result = g.compute().program(PeerPressureVertexProgram.build().create()).mapReduce(ClusterPopulationMapReduce.build().create()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],memory[size:2]]
 gremlin> result.memory().get('clusterPopulation')
 ==>1=5
@@ -77,6 +77,20 @@ gremlin> result.memory().get('clusterPopulation')
 gremlin> result.graph().V().values(PeerPressureVertexProgram.CLUSTER).groupCount().next()
 ==>1=5
 ==>6=1
+gremlin> result.graph().V().valueMap()
+==>[name:[marko], age:[29]]
+==>[name:[vadas], age:[27]]
+==>[name:[lop], lang:[java]]
+==>[name:[josh], age:[32]]
+==>[name:[ripple], lang:[java]]
+==>[name:[peter], age:[35]]
+gremlin> result.graph().V().valueMap(true,PeerPressureVertexProgram.CLUSTER)
+==>[gremlin.peerPressureVertexProgram.cluster:[1], label:person, id:1]
+==>[gremlin.peerPressureVertexProgram.cluster:[1], label:person, id:2]
+==>[gremlin.peerPressureVertexProgram.cluster:[1], label:software, id:3]
+==>[gremlin.peerPressureVertexProgram.cluster:[1], label:person, id:4]
+==>[gremlin.peerPressureVertexProgram.cluster:[1], label:software, id:5]
+==>[gremlin.peerPressureVertexProgram.cluster:[6], label:person, id:6]
 
 If there are numerous statistics desired, then its possible to register as many MapReduce jobs as needed. For instance, the `ClusterCountMapReduce` determines how many unique clusters were created by the peer pressure algorithm. Below both `ClusterCountMapReduce` and `ClusterPopulationMapReduce` are computed over the resultant graph.
 
@@ -84,8 +98,8 @@ If there are numerous statistics desired, then its possible to register as many 
 gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> result = g.compute().program(PeerPressureVertexProgram.build().create()).
- mapReduce(new ClusterPopulationMapReduce()).
- mapReduce(new ClusterCountMapReduce()).submit().get()
+ mapReduce(ClusterPopulationMapReduce.build().create()).
+ mapReduce(ClusterCountMapReduce.build().create()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],memory[size:3]]
 gremlin> result.memory().clusterPopulation
 ==>1=5
@@ -176,7 +190,7 @@ image:gremlin-pagerank.png[width=400,float=right] link:http://en.wikipedia.org/w
 ----
 public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 
-    private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(new OutETraversalSupplier()); <2>
+    private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(__::outE); <2>
     private MessageScope.Local<Double> countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
 
     public static final String PAGE_RANK = "gremlin.pageRankVertexProgram.pageRank"; <3>
@@ -267,14 +281,6 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
     @Override
     public String toString() {
         return StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ",iterations=" + this.totalIterations);
-    }
-
-    ...
-
-    public static class OutETraversalSupplier implements Supplier<CountTraversal<Vertex, Edge>> {
-        public CountTraversal<Vertex, Edge> get() {
-            return GraphTraversal.<Vertex>of().outE();
-        }
     }
 }
 ----

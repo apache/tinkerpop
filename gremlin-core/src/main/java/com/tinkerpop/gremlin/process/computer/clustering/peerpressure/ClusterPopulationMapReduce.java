@@ -17,27 +17,27 @@ import java.util.Map;
  */
 public class ClusterPopulationMapReduce extends StaticMapReduce<Serializable, Long, Serializable, Long, Map<Serializable, Long>> {
 
-    public static final String CLUSTER_POPULATION_SIDE_EFFECT_KEY = "gremlin.clusterPopulationMapReduce.sideEffectKey";
-    public static final String DEFAULT_SIDE_EFFECT_KEY = "clusterPopulation";
+    public static final String CLUSTER_POPULATION_MEMORY_KEY = "gremlin.clusterPopulationMapReduce.memoryKey";
+    public static final String DEFAULT_MEMORY_KEY = "clusterPopulation";
 
-    private String sideEffectKey = DEFAULT_SIDE_EFFECT_KEY;
+    private String memoryKey = DEFAULT_MEMORY_KEY;
 
-    public ClusterPopulationMapReduce() {
+    private ClusterPopulationMapReduce() {
     }
 
-    public ClusterPopulationMapReduce(final String sideEffectKey) {
-        this.sideEffectKey = sideEffectKey;
+    private ClusterPopulationMapReduce(final String memoryKey) {
+        this.memoryKey = memoryKey;
     }
 
     @Override
     public void storeState(final Configuration configuration) {
         super.storeState(configuration);
-        configuration.setProperty(CLUSTER_POPULATION_SIDE_EFFECT_KEY, this.sideEffectKey);
+        configuration.setProperty(CLUSTER_POPULATION_MEMORY_KEY, this.memoryKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.sideEffectKey = configuration.getString(CLUSTER_POPULATION_SIDE_EFFECT_KEY, DEFAULT_SIDE_EFFECT_KEY);
+        this.memoryKey = configuration.getString(CLUSTER_POPULATION_MEMORY_KEY, DEFAULT_MEMORY_KEY);
     }
 
     @Override
@@ -76,11 +76,36 @@ public class ClusterPopulationMapReduce extends StaticMapReduce<Serializable, Lo
 
     @Override
     public String getMemoryKey() {
-        return this.sideEffectKey;
+        return this.memoryKey;
     }
 
     @Override
     public String toString() {
-        return StringFactory.mapReduceString(this, this.sideEffectKey);
+        return StringFactory.mapReduceString(this, this.memoryKey);
+    }
+
+    //////////////////////////////
+
+    public static Builder build() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private String memoryKey = DEFAULT_MEMORY_KEY;
+
+        private Builder() {
+
+        }
+
+        public Builder memoryKey(final String memoryKey) {
+            this.memoryKey = memoryKey;
+            return this;
+        }
+
+        public ClusterPopulationMapReduce create() {
+            return new ClusterPopulationMapReduce(this.memoryKey);
+        }
+
     }
 }

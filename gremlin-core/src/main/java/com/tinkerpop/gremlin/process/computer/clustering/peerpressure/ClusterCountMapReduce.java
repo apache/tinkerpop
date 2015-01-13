@@ -18,29 +18,29 @@ import java.util.Set;
  */
 public class ClusterCountMapReduce extends StaticMapReduce<MapReduce.NullObject, Serializable, MapReduce.NullObject, Integer, Integer> {
 
-    public static final String CLUSTER_COUNT_SIDE_EFFECT_KEY = "gremlin.clusterCountMapReduce.sideEffectKey";
-    public static final String DEFAULT_SIDE_EFFECT_KEY = "clusterCount";
+    public static final String CLUSTER_COUNT_MEMORY_KEY = "gremlin.clusterCountMapReduce.memoryKey";
+    public static final String DEFAULT_MEMORY_KEY = "clusterCount";
 
-    private String sideEffectKey = DEFAULT_SIDE_EFFECT_KEY;
+    private String memoryKey = DEFAULT_MEMORY_KEY;
 
 
-    public ClusterCountMapReduce() {
+    private ClusterCountMapReduce() {
 
     }
 
-    public ClusterCountMapReduce(final String sideEffectKey) {
-        this.sideEffectKey = sideEffectKey;
+    private ClusterCountMapReduce(final String memoryKey) {
+        this.memoryKey = memoryKey;
     }
 
     @Override
     public void storeState(final Configuration configuration) {
         super.storeState(configuration);
-        configuration.setProperty(CLUSTER_COUNT_SIDE_EFFECT_KEY, this.sideEffectKey);
+        configuration.setProperty(CLUSTER_COUNT_MEMORY_KEY, this.memoryKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.sideEffectKey = configuration.getString(CLUSTER_COUNT_SIDE_EFFECT_KEY, DEFAULT_SIDE_EFFECT_KEY);
+        this.memoryKey = configuration.getString(CLUSTER_COUNT_MEMORY_KEY, DEFAULT_MEMORY_KEY);
     }
 
     @Override
@@ -76,11 +76,35 @@ public class ClusterCountMapReduce extends StaticMapReduce<MapReduce.NullObject,
 
     @Override
     public String getMemoryKey() {
-        return this.sideEffectKey;
+        return this.memoryKey;
     }
 
     @Override
     public String toString() {
-        return StringFactory.mapReduceString(this, this.sideEffectKey);
+        return StringFactory.mapReduceString(this, this.memoryKey);
+    }
+
+    //////////////////////////////
+
+    public static Builder build() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private String memoryKey = DEFAULT_MEMORY_KEY;
+
+        private Builder() {
+
+        }
+
+        public Builder memoryKey(final String memoryKey) {
+            this.memoryKey = memoryKey;
+            return this;
+        }
+
+        public ClusterCountMapReduce create() {
+            return new ClusterCountMapReduce(this.memoryKey);
+        }
     }
 }
