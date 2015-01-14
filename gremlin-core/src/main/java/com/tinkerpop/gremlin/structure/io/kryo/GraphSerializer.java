@@ -128,18 +128,18 @@ class GraphSerializer {
      *
      * @author Marko A. Rodriguez (http://markorodriguez.com)
      */
-    static class TraverserSerializer extends Serializer<Traverser> {
+    static class TraverserSerializer extends Serializer<Traverser.Admin> {
         public TraverserSerializer() {
         }
 
         @Override
-        public void write(final Kryo kryo, final Output output, final Traverser traverser) {
+        public void write(final Kryo kryo, final Output output, final Traverser.Admin traverser) {
             kryo.writeClassAndObject(output, traverser.asAdmin().detach());
         }
 
         @Override
-        public Traverser read(final Kryo kryo, final Input input, final Class<Traverser> traverser) {
-            return (Traverser) kryo.readClassAndObject(input);
+        public Traverser.Admin read(final Kryo kryo, final Input input, final Class<Traverser.Admin> traverser) {
+            return (Traverser.Admin) kryo.readClassAndObject(input);
         }
 
     }
