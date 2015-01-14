@@ -3,14 +3,16 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -18,9 +20,6 @@ import java.util.Collections;
 public class UnionLinearStrategy extends AbstractTraversalStrategy {
 
     private static final UnionLinearStrategy INSTANCE = new UnionLinearStrategy();
-
-    private static final String UNION = "gremlin.union.";
-    private static final String UNION_END = "gremlin.union.end.";
 
     private UnionLinearStrategy() {
     }
@@ -31,37 +30,34 @@ public class UnionLinearStrategy extends AbstractTraversalStrategy {
         if (engine.equals(TraversalEngine.STANDARD) || !TraversalHelper.hasStepOfClass(UnionStep.class, traversal))
             return;
 
-        int unionStepCounter = 0;
         for (final UnionStep<?, ?> unionStep : TraversalHelper.getStepsOfClass(UnionStep.class, traversal)) {
-            final String endLabel = UNION_END + unionStepCounter;
-            final Collection<String> branchLabels = new ArrayList<>();
-            for (int i = 0; i < unionStep.getTraversals().size(); i++) {
-                branchLabels.add(UNION + unionStepCounter + "." + i);
-            }
+            final IdentityStep finalStep = new IdentityStep(traversal);
+            TraversalHelper.insertAfterStep(finalStep, unionStep, traversal);
 
+            final Set<String> branchLabels = new HashSet<>();
             BranchStep branchStep = new BranchStep<>(traversal);
             branchStep.setFunction(new BranchStep.GoToLabels<>(branchLabels));
             TraversalHelper.replaceStep(unionStep, branchStep, traversal);
 
             Step currentStep = branchStep;
-            int c = 0;
-            for (final Traversal unionTraversal : unionStep.getTraversals()) {
-                currentStep.setLabel(UNION + unionStepCounter + "." + c++);
+            final Iterator<Traversal> unionTraversals = (Iterator) unionStep.getTraversals().iterator();
+            while (unionTraversals.hasNext()) {
+                final Traversal unionTraversal = unionTraversals.next();
+                branchLabels.add(currentStep.getLabel());
                 currentStep = TraversalHelper.insertTraversal(unionTraversal, currentStep, traversal);
-                if (c == unionStep.getTraversals().size()) {
-                    final IdentityStep finalStep = new IdentityStep(traversal);
-                    finalStep.setLabel(endLabel);
-                    TraversalHelper.insertAfterStep(finalStep, currentStep, traversal);
-                    break;
-                } else {
+                if (unionTraversals.hasNext()) {
                     branchStep = new BranchStep(traversal);
-                    branchStep.setFunction(new BranchStep.GoToLabels(Collections.singletonList(endLabel)));
+                    branchStep.setFunction(new BranchStep.GoToLabels(Collections.singletonList(finalStep.getLabel())));
                     TraversalHelper.insertAfterStep(branchStep, currentStep, traversal);
                     currentStep = branchStep;
                 }
             }
-            unionStepCounter++;
         }
+    }
+
+    @Override
+    public Set<Class<? extends TraversalStrategy>> applyPost() {
+        return Collections.singleton(EngineDependentStrategy.class);
     }
 
     public static UnionLinearStrategy instance() {

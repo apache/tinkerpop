@@ -344,7 +344,7 @@ public class TraversalHelper {
 
     public static String generateHiddenStepLabel(final Traversal<?, ?> traversal) {
         while (true) {
-            final String stepLabel = Graph.Hidden.hide(RandomString.nextString(5));
+            final String stepLabel = Graph.Hidden.hide(RandomString.nextString(5));  // should be 6 or more? (conflict between traversal too (internal)
             if (!TraversalHelper.hasLabel(stepLabel, traversal))
                 return stepLabel;
         }

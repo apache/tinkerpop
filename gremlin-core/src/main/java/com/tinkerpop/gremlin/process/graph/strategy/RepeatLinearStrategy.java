@@ -15,6 +15,7 @@ import com.tinkerpop.gremlin.util.function.CloneableFunction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,14 +28,8 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
 
     private static final RepeatLinearStrategy INSTANCE = new RepeatLinearStrategy();
 
-    private static final Set<Class<? extends TraversalStrategy>> POSTS = new HashSet<>(Arrays.asList(
-            ChooseLinearStrategy.class,
-            UnionLinearStrategy.class,
-            EngineDependentStrategy.class));
-
     private RepeatLinearStrategy() {
     }
-
 
     public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
         if (engine.equals(TraversalEngine.STANDARD) || !TraversalHelper.hasStepOfClass(RepeatStep.class, traversal))
@@ -109,7 +104,7 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
 
     @Override
     public Set<Class<? extends TraversalStrategy>> applyPost() {
-        return POSTS;
+        return Collections.singleton(EngineDependentStrategy.class);
     }
 
     public static class RepeatBranchFunction<S> implements CloneableFunction<Traverser<S>, Collection<String>> {

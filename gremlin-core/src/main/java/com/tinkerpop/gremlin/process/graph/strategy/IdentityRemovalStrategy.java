@@ -19,6 +19,7 @@ public class IdentityRemovalStrategy extends AbstractTraversalStrategy {
     public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
         if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
             return;
+
         TraversalHelper.getStepsOfClass(IdentityStep.class, traversal).stream()
                 .filter(step -> !TraversalHelper.isLabeled(step))
                 .forEach(step -> TraversalHelper.removeStep(step, traversal));

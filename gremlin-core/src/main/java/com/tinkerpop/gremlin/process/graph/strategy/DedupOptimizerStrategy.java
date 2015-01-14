@@ -25,7 +25,6 @@ public class DedupOptimizerStrategy extends AbstractTraversalStrategy {
     private static final List<Class<? extends Step>> BIJECTIVE_PIPES = new ArrayList<>(
             Arrays.asList(
                     IdentityStep.class,
-                    OrderStep.class,
                     OrderStep.class
             ));
 
