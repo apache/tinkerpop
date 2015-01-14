@@ -148,7 +148,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
     }
 
     private final String untilString() {
-        return null == this.untilPredicate ? "until(true)" : "until(" + this.untilPredicate + ")";
+        return null == this.untilPredicate ? "until(false)" : "until(" + this.untilPredicate + ")";
     }
 
     private final String emitString() {
