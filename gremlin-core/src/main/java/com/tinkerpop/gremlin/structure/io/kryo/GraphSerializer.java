@@ -128,7 +128,7 @@ class GraphSerializer {
      *
      * @author Marko A. Rodriguez (http://markorodriguez.com)
      */
-    static class TraverserSerializer extends Serializer<Traverser.Admin> {
+    /*static class TraverserSerializer extends Serializer<Traverser.Admin> {
         public TraverserSerializer() {
         }
 
@@ -142,5 +142,5 @@ class GraphSerializer {
             return (Traverser.Admin) kryo.readClassAndObject(input);
         }
 
-    }
+    }*/
 }
