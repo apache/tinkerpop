@@ -237,13 +237,6 @@ public class TraversalHelper {
         return temp.toString();
     }
 
-    public static boolean trackPaths(final Traversal<?, ?> traversal) {
-        return traversal.asAdmin().getSteps().stream()
-                .filter(step -> step.getRequirements().contains(TraverserRequirement.PATH))
-                .findAny()
-                .isPresent();
-    }
-
     public static List<Step> isolateSteps(final Step<?, ?> from, final Step<?, ?> to) {
         final List<Step> steps = new ArrayList<>();
         Step step = from.getNextStep();
@@ -364,8 +357,13 @@ public class TraversalHelper {
     }
 
     public static Set<TraverserRequirement> getRequirements(final Traversal<?, ?> traversal) {
-        return traversal.asAdmin().getSteps().stream()
+        final Set<TraverserRequirement> requirements = traversal.asAdmin().getSteps().stream()
                 .flatMap(step -> ((Step<?, ?>) step).getRequirements().stream())
                 .collect(Collectors.toSet());
+        if (traversal.asAdmin().getSideEffects().keys().size() > 0)
+            requirements.add(TraverserRequirement.SIDE_EFFECTS);
+        if (traversal.asAdmin().getSideEffects().getSackInitialValue().isPresent())
+            requirements.add(TraverserRequirement.SACK);
+        return requirements;
     }
 }

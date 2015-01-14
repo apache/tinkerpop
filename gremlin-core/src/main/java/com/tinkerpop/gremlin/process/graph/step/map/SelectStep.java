@@ -87,6 +87,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Func
         if (this.requiresPaths)
             requirements.add(TraverserRequirement.PATH);
         requirements.add(TraverserRequirement.OBJECT);
+        requirements.add(TraverserRequirement.PATH_ACCESS);
         return requirements;
     }
 

@@ -43,9 +43,4 @@ public class DefaultTraverserGeneratorFactory implements TraverserGeneratorFacto
 
         throw new IllegalStateException("The provided traverser generator factory does not support the requirements of the traversal: " + this.getClass().getCanonicalName() + "::" + requirements);
     }
-
-    /*@Override
-    public Set<TraverserRequirements> getRequirements(final Traversal traversal) {
-        return Collections.emptySet();
-    }*/
 }
