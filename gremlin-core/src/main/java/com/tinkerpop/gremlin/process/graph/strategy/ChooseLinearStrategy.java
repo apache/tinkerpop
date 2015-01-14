@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -17,12 +18,7 @@ import java.util.Map;
  */
 public class ChooseLinearStrategy extends AbstractTraversalStrategy {
 
-    // TODO: recursively linearlize as a branch could have a choose() step (so forth and so on)
-
     private static final ChooseLinearStrategy INSTANCE = new ChooseLinearStrategy();
-
-    private static final String CHOOSE_PREFIX = "gremlin.choose.";
-    private static final String CHOOSE_PREFIX_END = "gremlin.choose.end.";
 
     private ChooseLinearStrategy() {
     }
@@ -33,43 +29,40 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy {
         if (engine.equals(TraversalEngine.STANDARD) || !TraversalHelper.hasStepOfClass(ChooseStep.class, traversal))
             return;
 
-        int chooseStepCounter = 0;
         for (final ChooseStep chooseStep : TraversalHelper.getStepsOfClass(ChooseStep.class, traversal)) {
-            final int currentStepCounter = chooseStepCounter;
-            final String endLabel = CHOOSE_PREFIX_END + chooseStepCounter;
-            BranchStep<?> branchStep = new BranchStep<>(traversal);
-            branchStep.setFunction(traverser -> {
-                final String goTo = objectToString(currentStepCounter, chooseStep.getMapFunction().apply(traverser.get()));
-                return TraversalHelper.hasLabel(goTo, traversal) ? Collections.singletonList(goTo) : Collections.emptyList();
-            });
-            TraversalHelper.replaceStep(chooseStep, branchStep, traversal);
 
-            Step currentStep = branchStep;
+            final IdentityStep finalStep = new IdentityStep(traversal);
+            TraversalHelper.insertAfterStep(finalStep, chooseStep, traversal);
+
+            final Map<Object, String> chooseBranchLabels = new HashMap<>();
+
             final Iterator<Map.Entry<?, Traversal<?, ?>>> traversalIterator = chooseStep.getChoices().entrySet().iterator();
+            BranchStep<?> branchStep = new BranchStep<>(traversal);
+            TraversalHelper.replaceStep(chooseStep, branchStep, traversal);
+            Step currentStep = branchStep;
             while (traversalIterator.hasNext()) {
                 final Map.Entry<?, Traversal<?, ?>> entry = traversalIterator.next();
-                currentStep.setLabel(objectToString(currentStepCounter, entry.getKey()));
+                chooseBranchLabels.put(entry.getKey(), currentStep.getLabel());
                 currentStep = TraversalHelper.insertTraversal(entry.getValue(), currentStep, traversal);
                 if (traversalIterator.hasNext()) {
-                    branchStep = new BranchStep(traversal);
-                    branchStep.setFunction(new BranchStep.GoToLabels(Collections.singletonList(endLabel)));
-                    TraversalHelper.insertAfterStep(branchStep, currentStep, traversal);
-                    currentStep = branchStep;
-                } else {
-                    final IdentityStep finalStep = new IdentityStep(traversal);
-                    finalStep.setLabel(endLabel);
-                    TraversalHelper.insertAfterStep(finalStep, currentStep, traversal);
-                    break;
+                    final BranchStep chooseBreakBranchStep = new BranchStep(traversal);
+                    chooseBreakBranchStep.setFunction(new BranchStep.GoToLabels(Collections.singleton(finalStep.getLabel())));
+                    TraversalHelper.insertAfterStep(chooseBreakBranchStep, currentStep, traversal);
+                    currentStep = chooseBreakBranchStep;
                 }
             }
 
-            chooseStepCounter++;
+            branchStep.setFunction(traverser -> {
+                final String goTo = chooseBranchLabels.get(chooseStep.getMapFunction().apply(traverser.get()));
+                return null != goTo && TraversalHelper.hasLabel(goTo, traversal) ? Collections.singletonList(goTo) : Collections.emptyList();
+            });
+
         }
     }
 
-    private static final String objectToString(final int chooseStepCounter, final Object object) {
+    /*private static final String objectToString(final int chooseStepCounter, final Object object) {
         return CHOOSE_PREFIX + chooseStepCounter + "." + object.toString() + ":" + object.getClass().getCanonicalName();
-    }
+    }*/
 
     public static ChooseLinearStrategy instance() {
         return INSTANCE;
