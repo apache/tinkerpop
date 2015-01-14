@@ -6,9 +6,9 @@ import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
@@ -48,8 +48,8 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         return null != this.biPredicate;
     }
 
-    public Collection<Traversal> getTraversals() {
-        return null == this.constraint ? Collections.emptyList() : Collections.singleton(this.constraint);
+    public List<Traversal> getTraversals() {
+        return null == this.constraint ? Collections.emptyList() : Collections.singletonList(this.constraint);
     }
 
     @Override

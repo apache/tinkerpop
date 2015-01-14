@@ -9,8 +9,8 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalRing;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -41,7 +41,7 @@ public final class UnionStep<S, E> extends AbstractStep<S, E> implements Travers
     }
 
     @Override
-    public Collection<Traversal<S, E>> getTraversals() {
+    public List<Traversal<S, E>> getTraversals() {
         return this.traversalRing.getTraversals();
     }
 

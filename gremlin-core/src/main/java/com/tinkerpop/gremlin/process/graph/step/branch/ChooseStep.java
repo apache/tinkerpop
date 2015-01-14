@@ -6,10 +6,11 @@ import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -61,8 +62,8 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements Trav
     }
 
     @Override
-    public Collection<Traversal<S, E>> getTraversals() {
-        return this.choices.values();
+    public List<Traversal<S, E>> getTraversals() {
+        return new ArrayList<>(this.choices.values());
     }
 
     @Override

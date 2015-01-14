@@ -262,12 +262,6 @@ public class TraversalHelper {
             if (step.getClass().equals(stepClass)) {
                 return true;
             }
-            if (step instanceof TraversalHolder) {
-                for (final Traversal temp : ((TraversalHolder<?, ?>) step).getTraversals()) {
-                    if (TraversalHelper.hasStepOfClass(stepClass, temp))
-                        return true;
-                }
-            }
         }
         return false;
     }
@@ -276,12 +270,6 @@ public class TraversalHelper {
         for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
             if (superClass.isAssignableFrom(step.getClass())) {
                 return true;
-            }
-            if (step instanceof TraversalHolder) {
-                for (final Traversal temp : ((TraversalHolder<?, ?>) step).getTraversals()) {
-                    if (TraversalHelper.hasStepOfAssignableClass(superClass, temp))
-                        return true;
-                }
             }
         }
         return false;

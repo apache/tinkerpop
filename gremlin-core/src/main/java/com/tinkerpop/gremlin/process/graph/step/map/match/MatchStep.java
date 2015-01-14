@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -378,7 +377,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     }
 
     @Override
-    public Collection<Traversal> getTraversals() {
+    public List<Traversal> getTraversals() {
         return this.traversals;
     }
 
