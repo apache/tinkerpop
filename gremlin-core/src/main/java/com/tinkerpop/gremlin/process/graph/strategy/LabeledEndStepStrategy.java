@@ -17,9 +17,9 @@ public class LabeledEndStepStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
         if (TraversalHelper.isLabeled(TraversalHelper.getEnd(traversal)))
-            traversal.asAdmin().addStep(new MarkerIdentityStep<>(traversal));
+            traversal.addStep(new MarkerIdentityStep<>(traversal));
     }
 
     public static LabeledEndStepStrategy instance() {

@@ -25,7 +25,7 @@ public class HadoopElementStepStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
         if (engine.equals(TraversalEngine.STANDARD))
             return;
 
@@ -33,13 +33,13 @@ public class HadoopElementStepStrategy extends AbstractTraversalStrategy {
         if (startStep.startAssignableTo(Vertex.class, Edge.class)) {
             final HadoopElement element = ((StartStep<?>) startStep).getStart();
             final String label = TraversalHelper.getStart(traversal).getLabel();
-            TraversalHelper.removeStep(TraversalHelper.getStart(traversal), traversal);
+            traversal.removeStep(0);
             if (TraversalHelper.isLabeled(label)) {
                 final Step identityStep = new IdentityStep(traversal);
                 identityStep.setLabel(label);
-                TraversalHelper.insertStep(identityStep, 0, traversal);
+                traversal.addStep(0, identityStep);
             }
-            TraversalHelper.insertStep(new GraphStep<>(traversal, EmptyGraph.instance(), element.getClass(), element.id()), 0, traversal);
+            traversal.addStep(0, new GraphStep<>(traversal, EmptyGraph.instance(), element.getClass(), element.id()));
         }
     }
 

@@ -26,7 +26,7 @@ public class UnionLinearStrategy extends AbstractTraversalStrategy {
 
     // x.union(a,b).y
     // x.branch(t->a,t->b).a.branch(end).as(z).b.as(end).y
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
         if (engine.equals(TraversalEngine.STANDARD) || !TraversalHelper.hasStepOfClass(UnionStep.class, traversal))
             return;
 
@@ -44,7 +44,7 @@ public class UnionLinearStrategy extends AbstractTraversalStrategy {
             while (unionTraversals.hasNext()) {
                 final Traversal unionTraversal = unionTraversals.next();
                 branchLabels.add(currentStep.getLabel());
-                currentStep = TraversalHelper.insertTraversal(unionTraversal, currentStep, traversal);
+                currentStep = TraversalHelper.insertTraversal(currentStep, unionTraversal, traversal);
                 if (unionTraversals.hasNext()) {
                     branchStep = new BranchStep(traversal);
                     branchStep.setFunction(new BranchStep.GoToLabels(Collections.singletonList(finalStep.getLabel())));

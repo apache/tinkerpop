@@ -29,7 +29,7 @@ public class DedupOptimizerStrategy extends AbstractTraversalStrategy {
             ));
 
     @Override
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
         if (engine.equals(TraversalEngine.COMPUTER) || !TraversalHelper.hasStepOfClass(DedupStep.class, traversal))
             return;
 
@@ -42,8 +42,8 @@ public class DedupOptimizerStrategy extends AbstractTraversalStrategy {
                     for (int j = i; j >= 0; j--) {
                         final Step step2 = traversal.asAdmin().getSteps().get(j);
                         if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(step2.getClass())).findAny().isPresent()) {
-                            TraversalHelper.removeStep(step1, traversal);
-                            TraversalHelper.insertStep(step1, j, traversal);
+                            traversal.removeStep(step1);
+                            traversal.addStep(j, step1);
                             done = false;
                             break;
                         }

@@ -16,13 +16,13 @@ public class IdentityRemovalStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
         if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
             return;
 
         TraversalHelper.getStepsOfClass(IdentityStep.class, traversal).stream()
                 .filter(step -> !TraversalHelper.isLabeled(step))
-                .forEach(step -> TraversalHelper.removeStep(step, traversal));
+                .forEach(step -> traversal.removeStep(step));
     }
 
     public static IdentityRemovalStrategy instance() {

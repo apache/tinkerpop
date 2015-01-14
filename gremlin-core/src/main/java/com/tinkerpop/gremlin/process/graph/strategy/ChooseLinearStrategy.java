@@ -27,7 +27,7 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy {
 
     // x.choose(t -> M){a}{b}.y
     // x.branch(mapFunction.next().toString()).a.branch(end).as(z).b.as(end).y
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
         if (engine.equals(TraversalEngine.STANDARD) || !TraversalHelper.hasStepOfClass(ChooseStep.class, traversal))
             return;
 
@@ -47,8 +47,9 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy {
             final Iterator<Map.Entry<?, Traversal<?, ?>>> traversalIterator = chooseStep.getChoices().entrySet().iterator();
             while (traversalIterator.hasNext()) {
                 final Map.Entry<?, Traversal<?, ?>> entry = traversalIterator.next();
-                chooseBranchLabels.put(entry.getKey(), currentStep.getLabel());
-                currentStep = TraversalHelper.insertTraversal(entry.getValue(), currentStep, traversal);
+                final Step lastStep = currentStep;
+                currentStep = TraversalHelper.insertTraversal(currentStep, entry.getValue(), traversal);
+                chooseBranchLabels.put(entry.getKey(), lastStep.getLabel());
                 if (traversalIterator.hasNext()) {
                     final BranchStep chooseBreakBranchStep = new BranchStep(traversal);
                     chooseBreakBranchStep.setFunction(new BranchStep.GoToLabels(Collections.singleton(finalStep.getLabel())));

@@ -74,7 +74,7 @@ public class TinkerMessenger<M> implements Messenger<M> {
 
     private static <T extends Traversal<Vertex, Edge>> T setVertexStart(final Traversal<Vertex, Edge> incidentTraversal, final Vertex vertex) {
         final Traversal<Vertex, Edge> traversal = incidentTraversal;
-        TraversalHelper.insertStep(new StartStep<>(traversal, vertex), 0, traversal);
+        traversal.asAdmin().addStep(0,new StartStep<>(traversal, vertex));
         return (T) traversal;
     }
 

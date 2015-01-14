@@ -13,10 +13,8 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.CloneableFunction;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -31,7 +29,7 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
     private RepeatLinearStrategy() {
     }
 
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
         if (engine.equals(TraversalEngine.STANDARD) || !TraversalHelper.hasStepOfClass(RepeatStep.class, traversal))
             return;
 
@@ -41,8 +39,8 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
 
             Step currentStep = repeatStep.getPreviousStep();
             final Step firstStep = currentStep;
-            TraversalHelper.removeStep(repeatStep, traversal);
-            currentStep = TraversalHelper.insertTraversal(repeatStep.getTraversals().get(0), currentStep, traversal);
+            traversal.removeStep(repeatStep);
+            currentStep = TraversalHelper.insertTraversal(currentStep, repeatStep.getTraversals().get(0), traversal);
             final IncrLoopsStep<?> incrLoopStep = new IncrLoopsStep<>(traversal);
             TraversalHelper.insertAfterStep(incrLoopStep, currentStep, traversal);
             /////////

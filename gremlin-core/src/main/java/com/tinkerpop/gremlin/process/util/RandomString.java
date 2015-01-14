@@ -7,7 +7,7 @@ import java.util.Random;
  */
 public class RandomString {
 
-    private static final Random RANDOM = new Random();
+    private final Random random;
     private static final char[] SYMBOLS;
     private static final char[] ALPHA_SYMBOLS;
 
@@ -24,12 +24,16 @@ public class RandomString {
         ALPHA_SYMBOLS = alphaSymbols.toString().toCharArray();
     }
 
-    public static String nextString(int length) {
+    public RandomString(final int seed) {
+        this.random = new Random(seed);
+    }
+
+    public String nextString(int length) {
         if (length < 1) throw new IllegalArgumentException("The string length must be 1 or greater");
         final StringBuilder builder = new StringBuilder();
-        builder.append(ALPHA_SYMBOLS[RANDOM.nextInt(ALPHA_SYMBOLS.length)]); // always prefix with character (for directory purposes)
+        builder.append(ALPHA_SYMBOLS[random.nextInt(ALPHA_SYMBOLS.length)]); // always prefix with character (for directory purposes)
         for (int i = 0; i < length - 1; i++) {
-            builder.append(SYMBOLS[RANDOM.nextInt(SYMBOLS.length)]);
+            builder.append(SYMBOLS[random.nextInt(SYMBOLS.length)]);
         }
         return builder.toString();
     }

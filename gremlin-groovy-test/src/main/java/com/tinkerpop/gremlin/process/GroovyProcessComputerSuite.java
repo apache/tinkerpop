@@ -114,8 +114,6 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
 
             // compliance
             GraphTraversalCoverageTest.class
-
-
     };
 
     public GroovyProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {

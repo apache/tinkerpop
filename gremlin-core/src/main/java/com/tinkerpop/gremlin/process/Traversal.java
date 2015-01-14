@@ -229,8 +229,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         public List<Step> getSteps();
 
         /**
-         * Add a {@link Step} to the end of the traversal.
-         * This method should automatically link the step accordingly. For example, see {@link TraversalHelper#insertStep}.
+         * Add a {@link Step} to the end of the traversal. This method should automatically re-link the step accordingly (see {@link TraversalHelper#reLinkSteps}).
          * If the {@link TraversalStrategies} have already been applied, then an {@link IllegalStateException} is throw stating the traversal is locked.
          *
          * @param step the step to add
@@ -238,10 +237,16 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @return the updated traversal
          */
         public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) throws IllegalStateException {
-            if (this.getTraversalEngine().isPresent()) throw Exceptions.traversalIsLocked();
-            TraversalHelper.insertStep(step, this);
-            return (Traversal) this;
+            return this.addStep(this.getSteps().size(), step);
         }
+
+        public <S2, E2> Traversal<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException;
+
+        public default <S2, E2> Traversal<S2, E2> removeStep(final Step<?, ?> step) throws IllegalStateException {
+            return this.removeStep(this.getSteps().indexOf(step));
+        }
+
+        public <S2, E2> Traversal<S2, E2> removeStep(final int index) throws IllegalStateException;
 
         /**
          * Apply the registered {@link TraversalStrategies} to the traversal.

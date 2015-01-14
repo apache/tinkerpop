@@ -17,7 +17,7 @@ public class ComparatorHolderRemovalStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
         if (engine.equals(TraversalEngine.STANDARD))
             return;
 
@@ -26,7 +26,7 @@ public class ComparatorHolderRemovalStrategy extends AbstractTraversalStrategy {
             TraversalHelper.getStepsOfAssignableClass(ComparatorHolder.class, traversal)
                     .stream()
                     .filter(step -> step != endStep)
-                    .forEach(step -> TraversalHelper.removeStep(step, traversal));
+                    .forEach(step -> traversal.removeStep(step));
         }
     }
 

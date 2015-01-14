@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Redesigned the hidden step labeling mechanism so its consistent across a cluster, easier for rewrite strategies, and will enable nested OLAP traversals.
 * `Traverser.incrLoops()` now takes a string step label to enable nested looping constructs (i.e. loop stacks).
 * Added `Traversal.tryNext()` which returns an `Optional`, where the provided default method should be sufficient for all vendors.
 * Removed `PathConsumer` in favor of `TraverserRequirement.PATH`-model via `Step.getRequirements()`.

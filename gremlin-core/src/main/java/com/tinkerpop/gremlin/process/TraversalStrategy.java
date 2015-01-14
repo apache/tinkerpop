@@ -19,7 +19,7 @@ public interface TraversalStrategy {
     // Make use of a singleton instance() object to reduce object creation on the JVM
     // Moreover they are stateless objects.
 
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine traversalEngine);
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine traversalEngine);
 
     public default Set<Class<? extends TraversalStrategy>> applyPrior() {
         return Collections.emptySet();

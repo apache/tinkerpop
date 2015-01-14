@@ -163,7 +163,7 @@ public class TraversalStrategiesTest {
     private static class DummyStrategy extends AbstractTraversalStrategy {
 
         @Override
-        public void apply(Traversal<?, ?> traversal, TraversalEngine traversalEngine) {
+        public void apply(Traversal.Admin<?, ?> traversal, TraversalEngine traversalEngine) {
             //Do nothing
         }
     }

@@ -6,8 +6,10 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
     protected Optional<TraversalEngine> traversalEngine = Optional.empty();
 
+    private int hiddenStepLabelCounter = 0;
 
     public DefaultTraversal(final Class emanatingClass) {
         this.strategies = TraversalStrategies.GlobalCache.getStrategies(emanatingClass);
@@ -54,7 +57,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
 
     @Override
     public List<Step> getSteps() {
-        return this.steps;
+        return Collections.unmodifiableList(this.steps);
     }
 
     @Override
@@ -112,11 +115,12 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
         clone.lastEndCount = 0l;
         //clone.traversalEngine = Optional.empty();
         //clone.locked = false;
-        for (int i = this.steps.size() - 1; i >= 0; i--) {
-            final Step<?, ?> clonedStep = this.steps.get(i).clone();
+        for (final Step<?, ?> step : this.steps) {
+            final Step<?, ?> clonedStep = step.clone();
             clonedStep.setTraversal(clone);
-            TraversalHelper.insertStep(clonedStep, 0, clone);
+            clone.steps.add(clonedStep);
         }
+        TraversalHelper.reLinkSteps(clone);
         return clone;
     }
 
@@ -139,4 +143,27 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     public TraversalStrategies getStrategies() {
         return this.strategies;
     }
+
+    @Override
+    public <S2, E2> Traversal<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
+        if (this.getTraversalEngine().isPresent()) throw Exceptions.traversalIsLocked();
+        if (!TraversalHelper.isLabeled(step))
+            step.setLabel(Graph.Hidden.hide(Integer.toString(this.hiddenStepLabelCounter++)));
+        if (this.steps.size() == 0 && index == 0) {
+            this.steps.add(step);
+        } else {
+            this.steps.add(index, step);
+        }
+        TraversalHelper.reLinkSteps(this);
+        return (Traversal) this;
+    }
+
+    @Override
+    public <S2, E2> Traversal<S2, E2> removeStep(final int index) throws IllegalStateException {
+        if (this.getTraversalEngine().isPresent()) throw Exceptions.traversalIsLocked();
+        this.steps.remove(index);
+        TraversalHelper.reLinkSteps(this);
+        return (Traversal) this;
+    }
+
 }

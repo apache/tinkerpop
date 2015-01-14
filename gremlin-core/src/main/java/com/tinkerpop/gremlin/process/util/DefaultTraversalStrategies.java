@@ -57,7 +57,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
 
     @Override
     public void applyStrategies(final Traversal traversal, final TraversalEngine engine) {
-        this.traversalStrategies.forEach(ts -> ts.apply(traversal, engine));
+        this.traversalStrategies.forEach(ts -> ts.apply(traversal.asAdmin(), engine));
     }
 
     @Override

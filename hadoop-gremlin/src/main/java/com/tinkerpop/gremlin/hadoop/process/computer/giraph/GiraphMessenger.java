@@ -49,9 +49,8 @@ public class GiraphMessenger<M> implements Messenger<M> {
     }
 
     private static <T extends Traversal<Vertex, Edge>> T setVertexStart(final Traversal<Vertex, Edge> incidentTraversal, final Vertex vertex) {
-        final Traversal<Vertex, Edge> traversal = incidentTraversal;
-        TraversalHelper.insertStep(new StartStep<>(traversal, vertex), 0, traversal);
-        return (T) traversal;
+        incidentTraversal.asAdmin().addStep(0, new StartStep<>(incidentTraversal, vertex));
+        return (T) incidentTraversal;
     }
 
     private static Direction getOppositeDirection(final Traversal<Vertex, Edge> incidentTraversal) {

@@ -21,7 +21,7 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
         if (engine.equals(TraversalEngine.COMPUTER))
             return;
 
@@ -40,7 +40,7 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
                         identityStep.setLabel(currentStep.getLabel());
                         TraversalHelper.insertAfterStep(identityStep, currentStep, traversal);
                     }
-                    TraversalHelper.removeStep(currentStep, traversal);
+                    traversal.removeStep(currentStep);
                 } else if (currentStep instanceof IdentityStep) {
                     // do nothing
                 } else {

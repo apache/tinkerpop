@@ -48,37 +48,37 @@ public class TraversalHelperTest {
     }
 
     @Test
-    public void shouldInsertCorrectly() {
+    public void shouldAddStepsCorrectly() {
         Traversal traversal = new DefaultTraversal<>(Object.class);
-        TraversalHelper.insertStep(new FilterStep(traversal), 0, traversal);
-        TraversalHelper.insertStep(new HasStep(traversal, null), 0, traversal);
-        TraversalHelper.insertStep(new IdentityStep(traversal), 0, traversal);
+        traversal.asAdmin().addStep(0,new FilterStep(traversal));
+        traversal.asAdmin().addStep(0,new HasStep(traversal, null));
+        traversal.asAdmin().addStep(0,new IdentityStep(traversal));
         validateToyTraversal(traversal);
 
         traversal = new DefaultTraversal<>(Object.class);
-        TraversalHelper.insertStep(new IdentityStep(traversal), 0, traversal);
-        TraversalHelper.insertStep(new HasStep(traversal, null), 1, traversal);
-        TraversalHelper.insertStep(new FilterStep(traversal), 2, traversal);
+        traversal.asAdmin().addStep(0,new IdentityStep(traversal));
+        traversal.asAdmin().addStep(1,new HasStep(traversal, null));
+        traversal.asAdmin().addStep(2,new FilterStep(traversal));
         validateToyTraversal(traversal);
     }
 
     @Test
-    public void shouldRemovesCorrectly() {
+    public void shouldRemoveStepsCorrectly() {
         Traversal traversal = new DefaultTraversal<>(Object.class);
         traversal.asAdmin().addStep(new IdentityStep(traversal));
         traversal.asAdmin().addStep(new HasStep(traversal, null));
         traversal.asAdmin().addStep(new FilterStep(traversal));
 
         traversal.asAdmin().addStep(new PropertiesStep(traversal, PropertyType.VALUE, "marko"));
-        TraversalHelper.removeStep(3, traversal);
+        traversal.asAdmin().removeStep(3);
         validateToyTraversal(traversal);
 
-        TraversalHelper.insertStep(new PropertiesStep(traversal, PropertyType.PROPERTY, "marko"), 0, traversal);
-        TraversalHelper.removeStep(0, traversal);
+        traversal.asAdmin().addStep(0,new PropertiesStep(traversal, PropertyType.PROPERTY, "marko"));
+        traversal.asAdmin().removeStep(0);
         validateToyTraversal(traversal);
 
-        TraversalHelper.removeStep(1, traversal);
-        TraversalHelper.insertStep(new HasStep(traversal, null), 1, traversal);
+        traversal.asAdmin().removeStep(1);
+        traversal.asAdmin().addStep(1,new HasStep(traversal, null));
         validateToyTraversal(traversal);
     }
 

@@ -109,4 +109,16 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     public void setStrategies(final TraversalStrategies traversalStrategies) {
 
     }
+
+    @Override
+    public <S2, E2> Traversal<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
+        return (Traversal) this;
+    }
+
+    @Override
+    public <S2, E2> Traversal<S2, E2> removeStep(final int index) throws IllegalStateException {
+        return (Traversal) this;
+    }
+
+
 }

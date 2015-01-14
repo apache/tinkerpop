@@ -30,7 +30,7 @@ public class MatchWhereStrategy extends AbstractTraversalStrategy implements Tra
     }
 
     @Override
-    public void apply(final Traversal<?, ?> traversal, TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal, TraversalEngine engine) {
         if (!TraversalHelper.hasStepOfClass(MatchStep.class, traversal))
             return;
 
@@ -42,7 +42,7 @@ public class MatchWhereStrategy extends AbstractTraversalStrategy implements Tra
                 if (currentStep instanceof WhereStep) {
                     if (!((WhereStep) currentStep).hasBiPredicate()) {
                         matchStep.addTraversal(((WhereStep<?>) currentStep).getTraversals().get(0));
-                        TraversalHelper.removeStep(currentStep, traversal);
+                        traversal.removeStep(currentStep);
                     } else {
                         foundWhereWithNoTraversal = true;
                     }
@@ -58,11 +58,6 @@ public class MatchWhereStrategy extends AbstractTraversalStrategy implements Tra
     public static MatchWhereStrategy instance() {
         return INSTANCE;
     }
-
-
-    /*public int compareTo(final TraversalStrategy traversalStrategy) {
-        return traversalStrategy instanceof IdentityRemovalStrategy ? 1 : 0;
-    }*/
 
     @Override
     public Set<Class<? extends TraversalStrategy>> applyPrior() {

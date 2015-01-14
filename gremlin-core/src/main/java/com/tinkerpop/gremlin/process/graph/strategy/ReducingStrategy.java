@@ -23,14 +23,14 @@ public class ReducingStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
         if (engine.equals(TraversalEngine.STANDARD))
             return;
 
         final Step endStep = TraversalHelper.getEnd(traversal);
         if (endStep instanceof Reducing) {
             TraversalHelper.insertAfterStep(new ReducingIdentity(traversal, ((Reducing) endStep).getReducer()), endStep, traversal);
-            TraversalHelper.removeStep(endStep, traversal);
+            traversal.removeStep(endStep);
         }
     }
 
