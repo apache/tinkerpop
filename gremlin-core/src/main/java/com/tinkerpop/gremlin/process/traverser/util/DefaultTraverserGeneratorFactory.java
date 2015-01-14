@@ -41,6 +41,6 @@ public class DefaultTraverserGeneratorFactory implements TraverserGeneratorFacto
         if (B_O_P_PA_S_SE_SL_TraverserGenerator.instance().requirements().containsAll(requirements))
             return B_O_P_PA_S_SE_SL_TraverserGenerator.instance();
 
-        throw new IllegalStateException("The provided traverser generator factory does not support the requirements of the traversal: " + this.getClass().getCanonicalName() + "::" + requirements);
+        throw new IllegalStateException("The provided traverser generator factory does not support the requirements of the traversal: " + this.getClass().getCanonicalName() + requirements);
     }
 }
