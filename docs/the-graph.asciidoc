@@ -898,7 +898,7 @@ For example, in Gremlin-Java:
 
 [source,java]
 ----
-Graph g = TinkerFactory.createClassic();
+Graph g = TinkerFactory.createModern();
 
 Predicate<Vertex> vertexCriterion = vertex -> true;
 Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
@@ -917,7 +917,7 @@ The same example is presented below but using Gremlin-Groovy.
 
 [source,groovy]
 ----
-g = TinkerFactory.createClassic()
+g = TinkerFactory.createModern()
 
 vertexCriterion = { true }
 edgeCriterion = { it.id() >= 8 && it.id() <= 10 }
