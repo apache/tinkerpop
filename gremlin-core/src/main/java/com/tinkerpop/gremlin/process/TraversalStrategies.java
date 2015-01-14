@@ -65,6 +65,7 @@ public interface TraversalStrategies extends Cloneable {
      * @param strategyClasses the traversal strategies to remove by their class
      * @return the newly updated/sorted traversal strategies collection
      */
+    @SuppressWarnings("unchecked")
     public TraversalStrategies removeStrategies(final Class<? extends TraversalStrategy>... strategyClasses);
 
     /**

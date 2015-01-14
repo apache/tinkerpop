@@ -27,4 +27,9 @@ public class GComparator<A> implements Comparator<A> {
         }
         return comparators;
     }
+
+    @Override
+    public String toString() {
+        return "comparator";
+    }
 }

@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
@@ -99,7 +100,7 @@ public class TinkerGraphTest {
     public void testPlay2() throws Exception {
         Graph g = TinkerGraph.open();
         g.io().readGraphML("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
-        while (true) {
+        for (int i = 0; i < 100; i++) {
             final long t = System.currentTimeMillis();
             g.V().outE().inV().outE().inV().outE().inV().iterate();
             System.out.println(System.currentTimeMillis() - t);
@@ -125,8 +126,10 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay4() throws Exception {
         Graph g = TinkerFactory.createModern();
-        g.V().outE().inV().outE().inV().forEachRemaining(System.out::println);
-
+        final GraphTraversal<Vertex, Map<Vertex, Long>> traversal = g.V().out().in().as("a").groupCount().<Map<Vertex, Long>>cap().as("c");
+        traversal.forEachRemaining(System.out::println);
+        System.out.println("------------");
+        traversal.asAdmin().getSteps().forEach(step -> System.out.println(step + "\t" + step.getLabel()));
     }
 
     /**

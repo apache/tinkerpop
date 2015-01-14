@@ -43,11 +43,10 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
         return requirements;
     }
 
+    @SuppressWarnings("unchecked")
     public void setRepeatTraversal(final Traversal<S, S> repeatTraversal) {
         try {
             this.repeatTraversal = repeatTraversal; // .clone();
-            // this.getTraversal().asAdmin().getSideEffects().mergeInto(this.repeatTraversal.asAdmin().getSideEffects());
-            //
             final TraversalSideEffects parentSideEffects = this.getTraversal().asAdmin().getSideEffects();
             this.repeatTraversal.asAdmin().getSideEffects().mergeInto(parentSideEffects);
             this.repeatTraversal.asAdmin().setSideEffects(parentSideEffects);

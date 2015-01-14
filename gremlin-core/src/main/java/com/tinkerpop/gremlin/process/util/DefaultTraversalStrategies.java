@@ -35,6 +35,8 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
         return this;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
     public TraversalStrategies removeStrategies(final Class<? extends TraversalStrategy>... strategyClasses) {
         boolean removed = false;
         for (final Class<? extends TraversalStrategy> strategyClass : strategyClasses) {

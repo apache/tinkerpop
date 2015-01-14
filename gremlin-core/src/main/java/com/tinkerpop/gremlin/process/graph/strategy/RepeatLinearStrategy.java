@@ -137,10 +137,10 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
             return clone;
         }
 
-        /*@Override
+        @Override
         public String toString() {
-            return this.repeatStep.toString();
-        }*/
+            return "repeatFunction";
+        }
     }
 
 

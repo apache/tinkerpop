@@ -27,4 +27,9 @@ public class GFunction<A, B> implements Function<A, B> {
         }
         return functions;
     }
+
+    @Override
+    public String toString() {
+        return "lambda";
+    }
 }

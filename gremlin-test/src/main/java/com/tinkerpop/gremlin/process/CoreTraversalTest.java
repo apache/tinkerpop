@@ -84,7 +84,6 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         assertFalse(intTraversal.tryNext().isPresent());
     }
 
-
     @Test
     @LoadGraphWith(MODERN)
     public void shouldHavePropertyForEachRemainingBehaviorEvenWithStrategyRewrite() {

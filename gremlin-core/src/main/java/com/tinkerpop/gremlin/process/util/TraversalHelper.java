@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 
@@ -122,7 +121,6 @@ public class TraversalHelper {
     public static int removeStep(final Step<?, ?> step, final Traversal<?, ?> traversal) {
         final int stepIndex = traversal.asAdmin().getSteps().indexOf(step);
         traversal.asAdmin().getSteps().remove(step);
-        reLabelSteps(traversal);
         reLinkSteps(traversal);
         return stepIndex;
     }
@@ -133,13 +131,11 @@ public class TraversalHelper {
 
     public static void insertStep(final Step step, final int index, final Traversal<?, ?> traversal) {
         traversal.asAdmin().getSteps().add(index, step);
-        reLabelSteps(traversal);
         reLinkSteps(traversal);
     }
 
     public static void insertStep(final Step step, final Traversal<?, ?> traversal) {
         traversal.asAdmin().getSteps().add(step);
-        reLabelSteps(traversal);
         reLinkSteps(traversal);
     }
 
@@ -148,7 +144,6 @@ public class TraversalHelper {
             for (final Step insertStep : insertTraversal.asAdmin().getSteps()) {
                 traversal.asAdmin().addStep(insertStep);
             }
-            reLabelSteps(traversal);
             reLinkSteps(traversal);
             return TraversalHelper.getEnd(traversal);
         } else {
@@ -176,14 +171,6 @@ public class TraversalHelper {
     public static void replaceStep(final Step<?, ?> removeStep, final Step<?, ?> insertStep, final Traversal<?, ?> traversal) {
         int index = TraversalHelper.removeStep(removeStep, traversal);
         TraversalHelper.insertStep(insertStep, index, traversal);
-    }
-
-    private static void reLabelSteps(final Traversal<?, ?> traversal) {
-        final List<Step> steps = traversal.asAdmin().getSteps();
-        for (int i = 0; i < steps.size(); i++) {
-            if (!TraversalHelper.isLabeled(steps.get(i)))
-                steps.get(i).setLabel(Graph.Hidden.hide(Integer.toString(i)));
-        }
     }
 
     private static void reLinkSteps(final Traversal<?, ?> traversal) {
@@ -214,7 +201,7 @@ public class TraversalHelper {
                 })
                 .map(o -> {
                     final String string = o.toString();
-                    return string.contains("$Lambda$") ? "lambda" : string;
+                    return string.contains("$") ? "lambda" : string;
                 }).filter(o -> !Graph.Hidden.isHidden(o))
                 .collect(Collectors.toList());
         if (strings.size() > 0) {
@@ -353,5 +340,13 @@ public class TraversalHelper {
         if (traversal.asAdmin().getSideEffects().getSackInitialValue().isPresent())
             requirements.add(TraverserRequirement.SACK);
         return requirements;
+    }
+
+    public static String generateHiddenStepLabel(final Traversal<?, ?> traversal) {
+        while (true) {
+            final String stepLabel = Graph.Hidden.hide(RandomString.nextString(5));
+            if (!TraversalHelper.hasLabel(stepLabel, traversal))
+                return stepLabel;
+        }
     }
 }
