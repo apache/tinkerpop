@@ -156,7 +156,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public void mergeSideEffects(final TraversalSideEffects sideEffects) {
+    public void mergeInto(final TraversalSideEffects sideEffects) {
         this.objectMap.forEach(sideEffects::set);
         this.supplierMap.forEach(sideEffects::registerSupplierIfAbsent);
         // TODO: add sack information?

@@ -39,8 +39,8 @@ public class B_O_Traverser<T> extends O_Traverser<T> {
     }
 
     @Override
-    public void setFuture(final String label) {
-        this.future = label;
+    public void setFuture(final String stepLabel) {
+        this.future = stepLabel;
     }
 
     @Override

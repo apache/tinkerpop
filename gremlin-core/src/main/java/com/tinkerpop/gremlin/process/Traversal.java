@@ -288,13 +288,9 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         }
 
         /**
-         * Add the current traversal's {@link TraversalSideEffects} data and suppliers to the provided {@link TraversalSideEffects}.
-         * This is typically done by simply calling {@link TraversalSideEffects#mergeSideEffects}.
-         * Then set the current traversal's sideEffects to the provided sideEffects.
-         * This that this traversals sideEffects are equivalent (the same variable frame) as the provided sideEffects.
-         * This method is typically used by steps that maintain internal traversals but do not want sideEffect isolation.
+         * Set the {@link TraversalSideEffects} of this traversal.
          *
-         * @param sideEffects the sideEffects to add this traversal's sideEffect data to.
+         * @param sideEffects the sideEffects to set for this traversal.
          */
         public void setSideEffects(final TraversalSideEffects sideEffects);
 

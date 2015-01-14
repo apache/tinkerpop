@@ -46,10 +46,10 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
     public void setRepeatTraversal(final Traversal<S, S> repeatTraversal) {
         try {
             this.repeatTraversal = repeatTraversal; // .clone();
-            // this.getTraversal().asAdmin().getSideEffects().mergeSideEffects(this.repeatTraversal.asAdmin().getSideEffects());
+            // this.getTraversal().asAdmin().getSideEffects().mergeInto(this.repeatTraversal.asAdmin().getSideEffects());
             //
             final TraversalSideEffects parentSideEffects = this.getTraversal().asAdmin().getSideEffects();
-            this.repeatTraversal.asAdmin().getSideEffects().mergeSideEffects(parentSideEffects);
+            this.repeatTraversal.asAdmin().getSideEffects().mergeInto(parentSideEffects);
             this.repeatTraversal.asAdmin().setSideEffects(parentSideEffects);
             //
             final TraversalStrategies strategies = this.getTraversal().asAdmin().getStrategies().clone();
@@ -106,7 +106,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
         while (true) {
             if (this.repeatTraversal.hasNext()) {
                 final Traverser.Admin<S> s = this.endStep.next().asAdmin();
-                s.incrLoops();
+                s.incrLoops(this.getLabel());
                 if (doUntil(s)) {
                     s.resetLoops();
                     return s;

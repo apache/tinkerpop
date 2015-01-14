@@ -58,7 +58,7 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
     }
 
     @Override
-    public void incrLoops() {
+    public void incrLoops(final String stepLabel) {
 
     }
 
@@ -73,7 +73,7 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
     }
 
     @Override
-    public void setFuture(final String label) {
+    public void setFuture(final String stepLabel) {
 
     }
 

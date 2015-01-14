@@ -14,7 +14,7 @@ public final class IncrLoopsStep<S> extends SideEffectStep<S> {
 
     public IncrLoopsStep(final Traversal traversal) {
         super(traversal);
-        this.setConsumer(traverser -> traverser.asAdmin().incrLoops());
+        this.setConsumer(traverser -> traverser.asAdmin().incrLoops(this.getLabel()));
     }
 
     @Override

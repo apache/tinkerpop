@@ -178,7 +178,7 @@ public interface TraversalSideEffects extends Cloneable {
      *
      * @param sideEffects the sideEffects to add this traversal's sideEffect data to.
      */
-    public void mergeSideEffects(final TraversalSideEffects sideEffects);
+    public void mergeInto(final TraversalSideEffects sideEffects);
 
     public static class Exceptions {
 

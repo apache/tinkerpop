@@ -110,8 +110,9 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
     }
 
     /**
-     * Typecast the traverser to a "system traverser" so {@link com.tinkerpop.gremlin.process.Traverser.Admin} methods can be accessed.
-     * Used as a helper method to avoid the awkwardness of <code>((Traverser.Administrative)traverser)</code>.
+     * Typecast the traverser to a "system traverser" so {@link Traverser.Admin} methods can be accessed.
+     * This is used as a helper method to avoid the awkwardness of <code>((Traverser.Administrative)traverser)</code>.
+     * The default implementation simply returns "this" type casted to {@link Traverser.Admin}.
      *
      * @return The type-casted traverser
      */
@@ -120,7 +121,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
     }
 
     /**
-     * {@inheritDoc}
+     * Traverser cloning is important when splitting a traverser at a bifurcation point in a traversal.
      */
     public Traverser<T> clone() throws CloneNotSupportedException;
 
@@ -169,12 +170,18 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
 
         /**
          * Increment the number of times the traverser has gone through a looping section of traversal.
+         * The step label is important to create a stack of loop counters when within a nested context.
+         * If the provided label is not the same as the current label on the stack, add a new loop counter.
+         * If the provided label is the same as the current label on the stack, increment the loop counter.
+         *
+         * @param stepLabel the label of the step that is doing the incrementing
          */
-        public void incrLoops();
+        public void incrLoops(final String stepLabel);
 
         /**
          * Set the number of times the traverser has gone through a loop back to 0.
          * When a traverser exits a looping construct, this method should be called.
+         * In a nested loop context, the highest stack loop counter should be removed.
          */
         public void resetLoops();
 
@@ -191,16 +198,9 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * Set the future of the traverser as signified by the step's label.
          * If the future is {@link Traverser.Admin#HALT}, then {@link Traverser.Admin#isHalted()} is true.
          *
-         * @param label The future labeled step of the traverser
+         * @param stepLabel The future labeled step of the traverser
          */
-        public void setFuture(final String label);
-
-        /**
-         * Set the number of traversers represented by this traverser.
-         *
-         * @param count the number of traversers
-         */
-        public void setBulk(final long count);
+        public void setFuture(final String stepLabel);
 
         /**
          * If the traverser has "no future" then it is done with its lifecycle.
@@ -211,6 +211,13 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
         public default boolean isHalted() {
             return getFuture().equals(HALT);
         }
+
+        /**
+         * Set the number of traversers represented by this traverser.
+         *
+         * @param count the number of traversers
+         */
+        public void setBulk(final long count);
 
         /**
          * Prepare the traverser for migration across a JVM boundary.

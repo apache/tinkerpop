@@ -76,7 +76,7 @@ public class EmptyTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public void mergeSideEffects(final TraversalSideEffects sideEffects) {
+    public void mergeInto(final TraversalSideEffects sideEffects) {
 
     }
 

@@ -26,7 +26,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public void incrLoops() {
+    public void incrLoops(final String stepLabel) {
 
     }
 
@@ -41,7 +41,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public void setFuture(final String label) {
+    public void setFuture(final String stepLabel) {
 
     }
 

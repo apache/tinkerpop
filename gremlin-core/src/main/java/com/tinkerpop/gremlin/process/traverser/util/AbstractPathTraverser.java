@@ -85,7 +85,7 @@ public abstract class AbstractPathTraverser<T> implements Traverser<T>, Traverse
     }
 
     @Override
-    public void incrLoops() {
+    public void incrLoops(final String stepLabel) {
         this.loops++;
     }
 
@@ -102,8 +102,8 @@ public abstract class AbstractPathTraverser<T> implements Traverser<T>, Traverse
     }
 
     @Override
-    public void setFuture(final String label) {
-        this.future = label;
+    public void setFuture(final String stepLabel) {
+        this.future = stepLabel;
     }
 
     /////////////////
