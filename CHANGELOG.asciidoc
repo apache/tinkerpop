@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `Traversal.tryNext()` which returns an `Optional`, where the provided default method should be sufficient for all vendors.
 * Removed `PathConsumer` in favor of `TraverserRequirement.PATH`-model via `Step.getRequirements()`.
 * `Step.getRequirements()` returns a `Set<TraverserRequirement>` which is what is required of the `Traverser` by the `Step`.
 * `Traverser` now extends `Cloneable` and `Traverser.clone()` is used to good effect in `Traverser.split()`.

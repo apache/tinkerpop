@@ -69,6 +69,16 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     }
 
     /**
+     * Return an {@link Optional} of the next E object in the traversal.
+     * If the traversal is empty, then an {@link Optional#empty()} is returned.
+     *
+     * @return an optional of the next object in the traversal
+     */
+    public default Optional<E> tryNext() {
+        return this.hasNext() ? Optional.of(this.next()) : Optional.empty();
+    }
+
+    /**
      * Get the next n-number of results from the traversal.
      *
      * @param amount the number of results to get

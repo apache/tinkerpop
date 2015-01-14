@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
@@ -12,8 +13,10 @@ import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
@@ -27,6 +30,60 @@ import static org.junit.Assert.*;
         "traversalIsLocked"
 })
 public class CoreTraversalTest extends AbstractGremlinProcessTest {
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldHaveNextAndToCollectionWorkProperly() {
+        final Traversal<Vertex, Vertex> traversal = g.V();
+        assertTrue(traversal.next() instanceof Vertex);
+        assertEquals(4, traversal.next(4).size());
+        assertTrue(traversal.hasNext());
+        assertTrue(traversal.tryNext().isPresent());
+        assertFalse(traversal.hasNext());
+        assertFalse(traversal.tryNext().isPresent());
+        assertFalse(traversal.hasNext());
+
+        Traversal<Integer, Integer> intTraversal = __.inject(7, 7, 2, 3, 6);
+        assertTrue(intTraversal.hasNext());
+        final List<Integer> list = intTraversal.toList();
+        assertFalse(intTraversal.hasNext());
+        assertEquals(5, list.size());
+        assertEquals(7, list.get(0).intValue());
+        assertEquals(7, list.get(1).intValue());
+        assertEquals(2, list.get(2).intValue());
+        assertEquals(3, list.get(3).intValue());
+        assertEquals(6, list.get(4).intValue());
+        assertFalse(intTraversal.hasNext());
+        assertFalse(intTraversal.tryNext().isPresent());
+
+        intTraversal = __.inject(7, 7, 2, 3, 6);
+        assertTrue(intTraversal.hasNext());
+        final Set<Integer> set = intTraversal.toSet();
+        assertFalse(intTraversal.hasNext());
+        assertEquals(4, set.size());
+        assertTrue(set.contains(7));
+        assertTrue(set.contains(2));
+        assertTrue(set.contains(3));
+        assertTrue(set.contains(6));
+        assertFalse(intTraversal.hasNext());
+        assertFalse(intTraversal.tryNext().isPresent());
+
+        intTraversal = __.inject(7, 7, 2, 3, 6);
+        assertTrue(intTraversal.hasNext());
+        final BulkSet<Integer> bulkSet = intTraversal.toBulkSet();
+        assertFalse(intTraversal.hasNext());
+        assertEquals(4, bulkSet.uniqueSize());
+        assertEquals(5, bulkSet.longSize());
+        assertEquals(5, bulkSet.size());
+        assertTrue(bulkSet.contains(7));
+        assertTrue(bulkSet.contains(2));
+        assertTrue(bulkSet.contains(3));
+        assertTrue(bulkSet.contains(6));
+        assertEquals(2, bulkSet.get(7));
+        assertFalse(intTraversal.hasNext());
+        assertFalse(intTraversal.tryNext().isPresent());
+    }
+
 
     @Test
     @LoadGraphWith(MODERN)
