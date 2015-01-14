@@ -60,6 +60,7 @@ public final class FoldStep<S, E> extends MapStep<S, E> implements Reducing<E, S
 
     /////////
 
+    // TODO: should implement AbstractStep so it can set the bulk to 1
     public static <S, E> void generateFunction(final FoldStep<S, E> foldStep) {
         foldStep.setFunction(traverser -> {
             E mutatingSeed = foldStep.seed.get();

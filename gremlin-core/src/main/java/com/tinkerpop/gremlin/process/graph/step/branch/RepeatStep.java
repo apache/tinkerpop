@@ -11,9 +11,7 @@ import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -23,12 +21,6 @@ import java.util.function.Predicate;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class RepeatStep<S> extends AbstractStep<S, S> implements TraversalHolder<S, S> {
-
-    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
-            TraverserRequirement.SINGLE_LOOP,
-            TraverserRequirement.BULK
-    ));
-
 
     private Traversal<S, S> repeatTraversal = null;
     private Predicate<Traverser<S>> untilPredicate = null;
@@ -46,7 +38,8 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
         final Set<TraverserRequirement> requirements = TraversalHelper.getRequirements(this.repeatTraversal);
         if (requirements.contains(TraverserRequirement.SINGLE_LOOP))
             requirements.add(TraverserRequirement.NESTED_LOOP);
-        requirements.addAll(REQUIREMENTS);
+        requirements.add(TraverserRequirement.SINGLE_LOOP);
+        requirements.add(TraverserRequirement.BULK);
         return requirements;
     }
 

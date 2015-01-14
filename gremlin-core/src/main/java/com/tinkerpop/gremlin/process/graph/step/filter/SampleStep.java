@@ -19,7 +19,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SampleStep<S> extends BarrierStep<S> implements Reversible, FunctionHolder<S, Number> {
+public final class SampleStep<S> extends BarrierStep<S> implements Reversible, FunctionHolder<S, Number> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
             TraverserRequirement.BULK,

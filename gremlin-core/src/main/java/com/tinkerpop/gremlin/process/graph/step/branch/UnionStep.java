@@ -69,8 +69,6 @@ public final class UnionStep<S, E> extends AbstractStep<S, E> implements Travers
         for (final Traversal<?, ?> unionTraversal : this.traversalRing.getTraversals()) {
             requirements.addAll(TraversalHelper.getRequirements(unionTraversal));
         }
-        if (requirements.contains(TraverserRequirement.SINGLE_LOOP))
-            requirements.add(TraverserRequirement.NESTED_LOOP);
         return requirements;
     }
 }
