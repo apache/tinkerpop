@@ -540,7 +540,7 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
 }
 ----
 
-The vertex properly serializes to valid JSON but note that a consuming application will not automatically know how to interpret the numeric values.  In coercing those Java values to JSON, such information is lost.  For example, it is no longer clear if the `weight` value on the edges should be read as a `Double` or a `Float`.
+The vertex properly serializes to valid JSON but note that a consuming application will not automatically know how to interpret the numeric values.  In coercing those Java values to JSON, such information is lost.
 
 With a minor change to the construction of the `GraphSONWriter` the lossy nature of GraphSON can be avoided:
 
@@ -659,7 +659,7 @@ In the above code, the `embedTypes` option is set to `true` and the output below
 }
 ----
 
-The ambiguity of components of the GraphSON is now removed by the `@class` property, which contains Java class information for the data it is associated with.  While the output is more verbose, it comes with the security of not losing type information.  While non-JVM languages won't be able to consume this information automatically, at least there is a hint as to how the values should be coerced back into the correct types in the target language.
+The ambiguity of components of the GraphSON is now removed by the `@class` property, which contains Java class information for the data it is associated with.  The `@class` property is used for all non-final types, with the exception of a small number of "natural" types (String, Boolean, Integer, and Double) which can be correctly inferred from JSON typing.  While the output is more verbose, it comes with the security of not losing type information.  While non-JVM languages won't be able to consume this information automatically, at least there is a hint as to how the values should be coerced back into the correct types in the target language.
 
 [[gremlin-kryo]]
 Kryo Reader/Writer
