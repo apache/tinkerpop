@@ -9,7 +9,6 @@ import com.esotericsoftware.kryo.util.DefaultStreamFactory;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.util.MapMemory;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
@@ -277,10 +276,10 @@ public final class KryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Path.class, kryo -> new GraphSerializer.PathSerializer(), 59));
             // HACK!
             //add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Traverser.Admin.class, kryo -> new GraphSerializer.TraverserSerializer(), 55));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_Traverser.class, kryo -> new GraphSerializer.TraverserSerializer(), 75));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(O_Traverser.class, kryo -> new GraphSerializer.TraverserSerializer(), 76));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_P_PA_S_SE_SL_Traverser.class, kryo -> new GraphSerializer.TraverserSerializer(), 77));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_PA_S_SE_SL_Traverser.class, kryo -> new GraphSerializer.TraverserSerializer(), 78));   // ***LAST ID***
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_Traverser.class, null, 75));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(O_Traverser.class, null, 76));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_P_PA_S_SE_SL_Traverser.class, null, 77));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_PA_S_SE_SL_Traverser.class, null, 78));   // ***LAST ID***
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraverserSet.class, null, 58));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Tree.class, null, 61));
