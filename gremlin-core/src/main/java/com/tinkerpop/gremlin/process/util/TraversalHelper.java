@@ -326,4 +326,11 @@ public class TraversalHelper {
                 step.setLabel(stepPosition.nextXLabel());
         }
     }
+
+    public static Traversal<?,?> getRootTraversal(Traversal<?,?> traversal) {
+        while (!((traversal.asAdmin().getTraversalHolder()) instanceof EmptyStep)) {
+            traversal = traversal.asAdmin().getTraversalHolder().asStep().getTraversal();
+        }
+        return traversal;
+    }
 }

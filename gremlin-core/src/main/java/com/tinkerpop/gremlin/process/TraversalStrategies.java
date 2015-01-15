@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
-import com.tinkerpop.gremlin.process.graph.strategy.ChooseLinearStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.ComparatorHolderRemovalStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.DedupOptimizerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.EngineDependentStrategy;
@@ -151,7 +150,6 @@ public interface TraversalStrategies extends Cloneable {
                     IdentityRemovalStrategy.instance(),
                     SideEffectCapStrategy.instance(),
                     MatchWhereStrategy.instance(),
-                    ChooseLinearStrategy.instance(),
                     ComparatorHolderRemovalStrategy.instance(),
                     ReducingStrategy.instance(),
                     LabeledEndStepStrategy.instance(),
