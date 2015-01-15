@@ -674,11 +674,10 @@ public class TransactionTest extends AbstractGremlinTest {
         })).retry();
 
         assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, tries.get());
+        assertFalse(g.tx().isOpen());
+        g.tx().open();
         assertVertexEdgeCounts(1, 0);
-
-        // make sure a commit happened and a new tx started
         g.tx().rollback();
-        assertVertexEdgeCounts(1, 0);
     }
 
     @Test
