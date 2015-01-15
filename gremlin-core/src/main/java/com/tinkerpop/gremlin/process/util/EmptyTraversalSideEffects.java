@@ -12,7 +12,7 @@ import java.util.function.UnaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyTraversalSideEffects implements TraversalSideEffects {
+public final class EmptyTraversalSideEffects implements TraversalSideEffects {
 
     private static final EmptyTraversalSideEffects INSTANCE = new EmptyTraversalSideEffects();
 

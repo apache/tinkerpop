@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -106,6 +107,16 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
+    public void setTraversalHolder(final TraversalHolder<?, ?> step) {
+
+    }
+
+    @Override
+    public TraversalHolder<?, ?> getTraversalHolder() {
+        return (TraversalHolder) EmptyStep.instance();
+    }
+
+    @Override
     public void setStrategies(final TraversalStrategies traversalStrategies) {
 
     }
@@ -118,6 +129,11 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public <S2, E2> Traversal<S2, E2> removeStep(final int index) throws IllegalStateException {
         return (Traversal) this;
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof EmptyTraversal;
     }
 
 

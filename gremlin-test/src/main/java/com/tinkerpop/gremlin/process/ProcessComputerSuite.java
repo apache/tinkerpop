@@ -84,9 +84,9 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // branch
             BranchTest.ComputerTest.class,
-            //ChooseTest.ComputerTest.class,
-            //RepeatTest.ComputerTest.class,
-            //UnionTest.ComputerTest.class,
+            ChooseTest.ComputerTest.class,
+            RepeatTest.ComputerTest.class,
+            UnionTest.ComputerTest.class,
 
             // filter
             BetweenTest.ComputerTest.class,

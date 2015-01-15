@@ -6,7 +6,8 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.graph.step.map.LocalStep;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +30,9 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
     protected Optional<TraversalEngine> traversalEngine = Optional.empty();
 
-    private int hiddenStepLabelCounter = 0;
+    private final StepPosition stepPosition = StepPosition.of();
+
+    protected TraversalHolder<?, ?> traversalHolder = (TraversalHolder) EmptyStep.instance();
 
     public DefaultTraversal(final Class emanatingClass) {
         this.strategies = TraversalStrategies.GlobalCache.getStrategies(emanatingClass);
@@ -43,7 +46,15 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     @Override
     public void applyStrategies(final TraversalEngine engine) {
         if (!this.locked) {
+            TraversalHelper.reLabelSteps(this.stepPosition, this);
             this.strategies.applyStrategies(this, engine);
+            for (final Step<?, ?> step : this.getSteps()) {
+                if (step instanceof TraversalHolder && !(step instanceof LocalStep)) { // TODO: why no LocalStep?
+                    for (final Traversal<?, ?> nested : ((TraversalHolder<?, ?>) step).getTraversals()) {
+                        nested.asAdmin().applyStrategies(engine);
+                    }
+                }
+            }
             this.traversalEngine = Optional.of(engine);
             this.locked = true;
             this.finalEndStep = TraversalHelper.getEnd(this);
@@ -148,13 +159,14 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     public <S2, E2> Traversal<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
         if (this.getTraversalEngine().isPresent()) throw Exceptions.traversalIsLocked();
         if (!TraversalHelper.isLabeled(step))
-            step.setLabel(Graph.Hidden.hide(Integer.toString(this.hiddenStepLabelCounter++)));
-        if (this.steps.size() == 0 && index == 0) {
+            step.setLabel(this.stepPosition.nextXLabel());
+
+        if (this.steps.size() == 0 && index == 0)
             this.steps.add(step);
-        } else {
+        else
             this.steps.add(index, step);
-        }
-        TraversalHelper.reLinkSteps(this);
+
+        TraversalHelper.reLinkSteps(this); // TODO: this could be faster
         return (Traversal) this;
     }
 
@@ -162,8 +174,18 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     public <S2, E2> Traversal<S2, E2> removeStep(final int index) throws IllegalStateException {
         if (this.getTraversalEngine().isPresent()) throw Exceptions.traversalIsLocked();
         this.steps.remove(index);
-        TraversalHelper.reLinkSteps(this);
+        TraversalHelper.reLinkSteps(this); // TODO: this could be faster
         return (Traversal) this;
+    }
+
+    @Override
+    public void setTraversalHolder(final TraversalHolder<?, ?> step) {
+        this.traversalHolder = step;
+    }
+
+    @Override
+    public TraversalHolder<?, ?> getTraversalHolder() {
+        return this.traversalHolder;
     }
 
 }

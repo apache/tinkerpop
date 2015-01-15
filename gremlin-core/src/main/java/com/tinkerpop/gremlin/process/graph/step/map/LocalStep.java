@@ -28,6 +28,7 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements Traversa
     public LocalStep<S, E> clone() throws CloneNotSupportedException {
         final LocalStep<S, E> clone = (LocalStep<S, E>) super.clone();
         clone.localTraversal = this.localTraversal.clone();
+        clone.localTraversal.asAdmin().setTraversalHolder(clone);
         LocalStep.generateFunction(clone);
         return clone;
     }
@@ -53,7 +54,7 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements Traversa
         localStep.setFunction(traverser -> {
             // TODO: traverser.asAdmin().setSideEffects(localStep.localTraversal.sideEffects());
             localStep.localTraversal.asAdmin().reset();
-            TraversalHelper.getStart(localStep.localTraversal).addStart(traverser);
+            localStep.localTraversal.asAdmin().addStart(traverser);
             return localStep.localTraversal;
         });
     }

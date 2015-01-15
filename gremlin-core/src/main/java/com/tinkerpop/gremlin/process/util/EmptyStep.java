@@ -3,13 +3,16 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EmptyStep<S, E> implements Step<S, E> {
+public final class EmptyStep<S, E> implements Step<S, E>, TraversalHolder<S, E> {
 
     private static final EmptyStep INSTANCE = new EmptyStep<>();
 
@@ -98,5 +101,10 @@ public final class EmptyStep<S, E> implements Step<S, E> {
     @Override
     public boolean equals(final Object object) {
         return object instanceof EmptyStep;
+    }
+
+    @Override
+    public List<Traversal<S, E>> getTraversals() {
+        return Collections.emptyList();
     }
 }

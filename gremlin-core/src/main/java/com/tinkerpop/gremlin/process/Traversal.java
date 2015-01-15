@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -319,6 +320,10 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @return the strategies associated with this traversal
          */
         public TraversalStrategies getStrategies();
+
+        public void setTraversalHolder(final TraversalHolder<?,?> step);
+
+        public TraversalHolder<?,?> getTraversalHolder();
 
     }
 

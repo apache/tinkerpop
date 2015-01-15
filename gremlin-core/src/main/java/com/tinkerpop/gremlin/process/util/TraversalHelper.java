@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 
@@ -279,5 +280,35 @@ public class TraversalHelper {
         if (traversal.asAdmin().getSideEffects().getSackInitialValue().isPresent())
             requirements.add(TraverserRequirement.SACK);
         return requirements;
+    }
+
+    private static int[] getTraversalDepthAndBreadth(final Traversal<?, ?> traversal) {
+        int depth = -1;
+        int breadth = -1;
+        Traversal current = traversal;
+        while (!(current instanceof EmptyTraversal)) {
+            depth++;
+            final TraversalHolder<?, ?> holder = current.asAdmin().getTraversalHolder();
+            if (breadth == -1) {
+                for (int i = 0; i < holder.getTraversals().size(); i++) {
+                    if (holder.getTraversals().get(i) == current) {
+                        breadth = i;
+                    }
+                }
+            }
+            current = holder.asStep().getTraversal();
+        }
+        return new int[]{depth, breadth == -1 ? 0 : breadth};
+    }
+
+    public static void reLabelSteps(final StepPosition stepPosition, final Traversal<?, ?> traversal) {
+        stepPosition.reset();
+        final int[] depthBreadth = TraversalHelper.getTraversalDepthAndBreadth(traversal);
+        stepPosition.y = depthBreadth[0];
+        stepPosition.z = depthBreadth[1];
+        for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
+            if (!TraversalHelper.isLabeled(step))
+                step.setLabel(stepPosition.nextXLabel());
+        }
     }
 }
