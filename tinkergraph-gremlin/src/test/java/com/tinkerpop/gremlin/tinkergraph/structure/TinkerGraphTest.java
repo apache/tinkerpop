@@ -129,7 +129,7 @@ public class TinkerGraphTest {
         Graph g = TinkerFactory.createModern();
         g.V().choose(v -> v.label().equals("person"),
                 __.union(__.out().<String>values("lang"), __.out().<String>values("name")),
-                __.in().label()).count().submit(g.compute()).forEachRemaining(System.out::println);
+                __.in().label()).map(s -> s.get() + "^^").submit(g.compute()).forEachRemaining(System.out::println);
     }
 
     /**
