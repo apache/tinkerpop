@@ -194,7 +194,7 @@ public class SerializationTest {
 
             assertEquals(GraphSONTokens.VERTEX, m.get(GraphSONTokens.TYPE));
             assertEquals(v.label(), m.get(GraphSONTokens.LABEL));
-            assertEquals(Long.parseLong(v.id().toString()), Long.parseLong(m.get(GraphSONTokens.ID).toString()));
+            assertNotNull(m.get(GraphSONTokens.ID));
             assertEquals(v.value("name").toString(), ((Map) ((List) ((Map) m.get(GraphSONTokens.PROPERTIES)).get("name")).get(0)).get(GraphSONTokens.VALUE));
             assertEquals((Integer) v.value("age"), ((Map) ((List) ((Map) m.get(GraphSONTokens.PROPERTIES)).get("age")).get(0)).get(GraphSONTokens.VALUE));
         }
@@ -209,7 +209,7 @@ public class SerializationTest {
 
             assertEquals(GraphSONTokens.EDGE, m.get(GraphSONTokens.TYPE));
             assertEquals(e.label(), m.get(GraphSONTokens.LABEL));
-            assertEquals(Long.parseLong(e.id().toString()), Long.parseLong(m.get(GraphSONTokens.ID).toString()));
+            assertNotNull(m.get(GraphSONTokens.ID));
             assertEquals((Double) e.value("weight"), ((Map) m.get(GraphSONTokens.PROPERTIES)).get("weight"));
         }
 
@@ -235,7 +235,7 @@ public class SerializationTest {
 
             // todo: should we have "type" here too?
             assertEquals(vp.label(), m.get(GraphSONTokens.LABEL));
-            assertEquals(vp.id(), Long.parseLong(m.get(GraphSONTokens.ID).toString()));
+            assertNotNull(m.get(GraphSONTokens.ID));
             assertEquals(vp.value(), m.get(GraphSONTokens.VALUE));
         }
 
@@ -249,7 +249,7 @@ public class SerializationTest {
 
             // todo: should we have "type" here too?
             assertEquals(vp.label(), m.get(GraphSONTokens.LABEL));
-            assertEquals(vp.id(), Long.parseLong(m.get(GraphSONTokens.ID).toString()));
+            assertNotNull(m.get(GraphSONTokens.ID));
             assertEquals(vp.value(), m.get(GraphSONTokens.VALUE));
             assertEquals(vp.iterators().propertyIterator("startTime").next().value(), ((Map) m.get(GraphSONTokens.PROPERTIES)).get("startTime"));
             assertEquals(vp.iterators().propertyIterator("endTime").next().value(), ((Map) m.get(GraphSONTokens.PROPERTIES)).get("endTime"));
@@ -262,6 +262,8 @@ public class SerializationTest {
             final Path p = g.V(convertToVertexId("marko")).as("a").outE().as("b").inV().as("c").path().next();
             final String json = mapper.writeValueAsString(p);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
+
+            // todo: path is not asserted yet...
 
             /*
             assertEquals(p.labels().size(), detached.labels().size());
