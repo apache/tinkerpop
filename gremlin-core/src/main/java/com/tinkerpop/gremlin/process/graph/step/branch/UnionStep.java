@@ -77,8 +77,7 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
         final UnionStep<S, E> clone = (UnionStep<S, E>) super.clone();
         clone.traversals = new ArrayList<>();
         for (final Traversal<S, E> union : this.traversals) {
-            final Traversal<S, E> unionClone = union.clone();
-            clone.traversals.add(unionClone);
+            clone.traversals.add(union.clone());
         }
         this.executeTraversalOperations(NEST_OPERATIONS);
         return clone;

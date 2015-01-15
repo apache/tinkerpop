@@ -94,8 +94,7 @@ public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implement
         final ChooseStep<S, E, M> clone = (ChooseStep<S, E, M>) super.clone();
         clone.choices = new HashMap<>();
         for (final Map.Entry<M, Traversal<S, E>> entry : this.choices.entrySet()) {
-            final Traversal<S, E> choiceClone = entry.getValue().clone();
-            clone.choices.put(entry.getKey(), choiceClone);
+            clone.choices.put(entry.getKey(), entry.getValue().clone());
         }
         clone.executeTraversalOperations(NEST_OPERATIONS);
         return clone;

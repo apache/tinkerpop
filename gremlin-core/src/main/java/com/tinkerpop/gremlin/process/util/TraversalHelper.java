@@ -89,11 +89,11 @@ public class TraversalHelper {
     }
 
     public static <S, E> Step<S, ?> getStart(final Traversal<S, E> traversal) {
-        return traversal.asAdmin().getSteps().get(0);
+        return traversal.asAdmin().getSteps().size() == 0 ? EmptyStep.instance() : traversal.asAdmin().getSteps().get(0);
     }
 
     public static <S, E> Step<?, E> getEnd(final Traversal<S, E> traversal) {
-        return traversal.asAdmin().getSteps().get(traversal.asAdmin().getSteps().size() - 1);
+        return traversal.asAdmin().getSteps().size() == 0 ? EmptyStep.instance() : traversal.asAdmin().getSteps().get(traversal.asAdmin().getSteps().size() - 1);
     }
 
     public static boolean areEqual(final Iterator a, final Iterator b) {
@@ -327,7 +327,7 @@ public class TraversalHelper {
         }
     }
 
-    public static Traversal<?,?> getRootTraversal(Traversal<?,?> traversal) {
+    public static Traversal<?, ?> getRootTraversal(Traversal<?, ?> traversal) {
         while (!((traversal.asAdmin().getTraversalHolder()) instanceof EmptyStep)) {
             traversal = traversal.asAdmin().getTraversalHolder().asStep().getTraversal();
         }
