@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyTraversalStrategies implements TraversalStrategies {
+public final class EmptyTraversalStrategies implements TraversalStrategies {
 
     private static final EmptyTraversalStrategies INSTANCE = new EmptyTraversalStrategies();
 

@@ -50,6 +50,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
             final TraversalSideEffects parentSideEffects = this.getTraversal().asAdmin().getSideEffects();
             this.repeatTraversal.asAdmin().getSideEffects().mergeInto(parentSideEffects);
             this.repeatTraversal.asAdmin().setSideEffects(parentSideEffects);
+            this.repeatTraversal.asAdmin().setTraversalHolder(this);
             //
             final TraversalStrategies strategies = this.getTraversal().asAdmin().getStrategies().clone();
             strategies.removeStrategies(SideEffectCapStrategy.class); // no auto cap()
@@ -159,12 +160,15 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
     @Override
     public RepeatStep<S> clone() throws CloneNotSupportedException {
         final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
-        if (this.untilPredicate instanceof TraversalPredicate) {
+        final Traversal<S, S> repeatClone = this.repeatTraversal.clone();
+        repeatClone.asAdmin().setTraversalHolder(clone);
+
+        if (this.untilPredicate instanceof TraversalPredicate)
             clone.untilPredicate = ((TraversalPredicate<S>) this.untilPredicate).clone();
-        }
-        if (this.emitPredicate instanceof TraversalPredicate) {
+
+        if (this.emitPredicate instanceof TraversalPredicate)
             clone.emitPredicate = ((TraversalPredicate<S>) this.emitPredicate).clone();
-        }
+
         return clone;
     }
 

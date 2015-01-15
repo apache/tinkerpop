@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 
@@ -43,6 +44,21 @@ public class TraversalHelper {
                 .filter(step -> label.equals(step.getLabel()))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("The provided step label does not exist: " + label));
+    }
+
+    public static <S, E> Optional<Step<S, E>> getStepRecurssively(final String label, final Traversal<?, ?> traversal) {
+        for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
+            if (step.getLabel().equals(label))
+                return Optional.of((Step) step);
+            else if (step instanceof TraversalHolder) {
+                for (final Traversal<?, ?> nest : ((TraversalHolder<?, ?>) step).getTraversals()) {
+                    final Optional<Step<S, E>> optional = TraversalHelper.getStepRecurssively(label, nest);
+                    if (optional.isPresent())
+                        return optional;
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     public static boolean hasLabel(final String label, final Traversal<?, ?> traversal) {
@@ -279,5 +295,35 @@ public class TraversalHelper {
         if (traversal.asAdmin().getSideEffects().getSackInitialValue().isPresent())
             requirements.add(TraverserRequirement.SACK);
         return requirements;
+    }
+
+    private static int[] getTraversalDepthAndBreadth(final Traversal<?, ?> traversal) {
+        int depth = -1;
+        int breadth = -1;
+        Traversal current = traversal;
+        while (!(current instanceof EmptyTraversal)) {
+            depth++;
+            final TraversalHolder<?, ?> holder = current.asAdmin().getTraversalHolder();
+            if (breadth == -1) {
+                for (int i = 0; i < holder.getTraversals().size(); i++) {
+                    if (holder.getTraversals().get(i) == current) {
+                        breadth = i;
+                    }
+                }
+            }
+            current = holder.asStep().getTraversal();
+        }
+        return new int[]{depth, breadth == -1 ? 0 : breadth};
+    }
+
+    public static void reLabelSteps(final StepPosition stepPosition, final Traversal<?, ?> traversal) {
+        stepPosition.reset();
+        final int[] depthBreadth = TraversalHelper.getTraversalDepthAndBreadth(traversal);
+        stepPosition.y = depthBreadth[0];
+        stepPosition.z = depthBreadth[1];
+        for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
+            if (!TraversalHelper.isLabeled(step))
+                step.setLabel(stepPosition.nextXLabel());
+        }
     }
 }

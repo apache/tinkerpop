@@ -40,7 +40,10 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements Trav
         super(traversal);
         this.mapFunction = mapFunction;
         this.choices = choices;
-        this.choices.values().forEach(choice -> choice.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies()));
+        this.choices.values().forEach(choice -> {
+            choice.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());
+            choice.asAdmin().setTraversalHolder(this);
+        });
         ChooseStep.generateFunction(this);
     }
 
@@ -71,7 +74,9 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements Trav
         final ChooseStep<S, E, M> clone = (ChooseStep<S, E, M>) super.clone();
         clone.choices = new HashMap<>();
         for (final Map.Entry<M, Traversal<S, E>> entry : this.choices.entrySet()) {
-            clone.choices.put(entry.getKey(), entry.getValue());
+            final Traversal<S, E> choiceClone = entry.getValue().clone();
+            clone.choices.put(entry.getKey(), choiceClone);
+            choiceClone.asAdmin().setTraversalHolder(clone);
         }
         ChooseStep.generateFunction(clone);
         return clone;

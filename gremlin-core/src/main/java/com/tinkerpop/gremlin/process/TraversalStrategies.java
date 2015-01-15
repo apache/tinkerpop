@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.process.graph.strategy.MatchWhereStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.ReducingStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.RepeatLinearStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.UnionLinearStrategy;
 import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -153,7 +152,6 @@ public interface TraversalStrategies extends Cloneable {
                     SideEffectCapStrategy.instance(),
                     MatchWhereStrategy.instance(),
                     ChooseLinearStrategy.instance(),
-                    UnionLinearStrategy.instance(),
                     ComparatorHolderRemovalStrategy.instance(),
                     ReducingStrategy.instance(),
                     LabeledEndStepStrategy.instance(),
