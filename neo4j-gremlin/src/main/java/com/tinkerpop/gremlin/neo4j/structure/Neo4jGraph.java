@@ -385,8 +385,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
 
         @Override
         public void commit() {
-            if (!isOpen())
-                return;
+            readWriteConsumer.accept(this);
 
             try {
                 threadLocalTx.get().success();
@@ -398,8 +397,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
 
         @Override
         public void rollback() {
-            if (!isOpen())
-                return;
+            readWriteConsumer.accept(this);
 
             try {
                 javax.transaction.Transaction t = transactionManager.getTransaction();
@@ -432,23 +430,23 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
 
         @Override
         public void readWrite() {
-            this.readWriteConsumer.accept(this);
+            readWriteConsumer.accept(this);
         }
 
         @Override
         public void close() {
-            this.closeConsumer.accept(this);
+            closeConsumer.accept(this);
         }
 
         @Override
         public Transaction onReadWrite(final Consumer<Transaction> consumer) {
-            this.readWriteConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull);
+            readWriteConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull);
             return this;
         }
 
         @Override
         public Transaction onClose(final Consumer<Transaction> consumer) {
-            this.closeConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onCloseBehaviorCannotBeNull);
+            closeConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onCloseBehaviorCannotBeNull);
             return this;
         }
     }

@@ -82,6 +82,50 @@ public class TransactionTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldHaveExceptionConsistencyWhenUsingManualTransactionOnCommit() {
+        g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
+
+        try {
+            g.tx().commit();
+            fail("An exception should be thrown when read/write behavior is manual and no transaction is opened");
+        } catch (Exception ex) {
+            validateException(Transaction.Exceptions.transactionMustBeOpenToReadWrite(), ex);
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldHaveExceptionConsistencyWhenUsingManualTransactionOnRollback() {
+        g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
+
+        try {
+            g.tx().rollback();
+            fail("An exception should be thrown when read/write behavior is manual and no transaction is opened");
+        } catch (Exception ex) {
+            validateException(Transaction.Exceptions.transactionMustBeOpenToReadWrite(), ex);
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldAllowJustCommitOnlyWithAutoTransaction() {
+        // not expecting any exceptions here
+        g.tx().commit();
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldAllowJustRollbackOnlyWithAutoTransaction() {
+        // not expecting any exceptions here
+        g.tx().rollback();
+    }
+
+    @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     public void shouldHaveExceptionConsistencyWhenOnCloseToNull() {
         try {
