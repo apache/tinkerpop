@@ -46,6 +46,21 @@ public class TraversalHelper {
                 .orElseThrow(() -> new IllegalArgumentException("The provided step label does not exist: " + label));
     }
 
+    public static <S, E> Optional<Step<S, E>> getStepRecurssively(final String label, final Traversal<?, ?> traversal) {
+        for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
+            if (step.getLabel().equals(label))
+                return Optional.of((Step) step);
+            else if (step instanceof TraversalHolder) {
+                for (final Traversal<?, ?> nest : ((TraversalHolder<?, ?>) step).getTraversals()) {
+                    final Optional<Step<S, E>> optional = TraversalHelper.getStepRecurssively(label, nest);
+                    if (optional.isPresent())
+                        return optional;
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
     public static boolean hasLabel(final String label, final Traversal<?, ?> traversal) {
         return traversal.asAdmin().getSteps().stream()
                 .filter(step -> label.equals(step.getLabel()))
