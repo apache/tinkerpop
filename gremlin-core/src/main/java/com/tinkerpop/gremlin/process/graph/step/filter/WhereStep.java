@@ -41,6 +41,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         this.biPredicate = null;
         this.constraint = constraint;
         this.constraint.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());
+        this.constraint.asAdmin().setTraversalHolder(this);
         WhereStep.generatePredicate(this);
     }
 
@@ -60,7 +61,11 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
     @Override
     public WhereStep<E> clone() throws CloneNotSupportedException {
         final WhereStep<E> clone = (WhereStep<E>) super.clone();
-        if (null != this.constraint) clone.constraint = this.constraint.clone();
+        if (null != this.constraint) {
+            clone.constraint = this.constraint.clone();
+            clone.constraint.asAdmin().setTraversalHolder(clone);
+        }
+
         WhereStep.generatePredicate(clone);
         return clone;
     }

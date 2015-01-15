@@ -90,6 +90,7 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
     @Override
     public void reset() {
         super.reset();
+        // TODO: reset children?
     }
 
     @Override
