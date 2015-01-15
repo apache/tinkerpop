@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
@@ -22,6 +21,9 @@ import java.util.function.Predicate;
  */
 public final class RepeatStep<S> extends AbstractStep<S, S> implements TraversalHolder<S, S> {
 
+    private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.MERGE_IN_SIDE_EFFECTS, Nest.SET_SIDE_EFFECTS};
+
+
     private Traversal<S, S> repeatTraversal = null;
     private Predicate<Traverser<S>> untilPredicate = null;
     private Predicate<Traverser<S>> emitPredicate = null;
@@ -35,7 +37,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = TraversalHelper.getRequirements(this.repeatTraversal);
+        final Set<TraverserRequirement> requirements = this.getTraversalRequirements();
         if (requirements.contains(TraverserRequirement.SINGLE_LOOP))
             requirements.add(TraverserRequirement.NESTED_LOOP);
         requirements.add(TraverserRequirement.SINGLE_LOOP);
@@ -47,10 +49,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
     public void setRepeatTraversal(final Traversal<S, S> repeatTraversal) {
         try {
             this.repeatTraversal = repeatTraversal; // .clone();
-            final TraversalSideEffects parentSideEffects = this.getTraversal().asAdmin().getSideEffects();
-            this.repeatTraversal.asAdmin().getSideEffects().mergeInto(parentSideEffects);
-            this.repeatTraversal.asAdmin().setSideEffects(parentSideEffects);
-            this.repeatTraversal.asAdmin().setTraversalHolder(this);
+            this.executeTraversalOperations(NEST_OPERATIONS);
             //
             final TraversalStrategies strategies = this.getTraversal().asAdmin().getStrategies().clone();
             strategies.removeStrategies(SideEffectCapStrategy.class); // no auto cap()
@@ -160,8 +159,8 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
     @Override
     public RepeatStep<S> clone() throws CloneNotSupportedException {
         final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
-        final Traversal<S, S> repeatClone = this.repeatTraversal.clone();
-        repeatClone.asAdmin().setTraversalHolder(clone);
+        clone.repeatTraversal = this.repeatTraversal.clone();
+        clone.executeTraversalOperations(NEST_OPERATIONS);
 
         if (this.untilPredicate instanceof TraversalPredicate)
             clone.untilPredicate = ((TraversalPredicate<S>) this.untilPredicate).clone();

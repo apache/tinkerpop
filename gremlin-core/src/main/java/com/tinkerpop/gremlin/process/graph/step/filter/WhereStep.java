@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +16,8 @@ import java.util.function.BiPredicate;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class WhereStep<E> extends FilterStep<Map<String, E>> implements TraversalHolder {
+
+    private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.SET_STRATEGIES};
 
     private final String firstKey;
     private final String secondKey;
@@ -41,7 +42,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         this.biPredicate = null;
         this.constraint = constraint;
         this.constraint.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());
-        this.constraint.asAdmin().setTraversalHolder(this);
+        this.executeTraversalOperations(NEST_OPERATIONS);
         WhereStep.generatePredicate(this);
     }
 
@@ -63,23 +64,21 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         final WhereStep<E> clone = (WhereStep<E>) super.clone();
         if (null != this.constraint) {
             clone.constraint = this.constraint.clone();
-            clone.constraint.asAdmin().setTraversalHolder(clone);
+            clone.executeTraversalOperations(NEST_OPERATIONS);
         }
-
         WhereStep.generatePredicate(clone);
         return clone;
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        if (null == this.constraint) {
-            return Collections.singleton(TraverserRequirement.OBJECT);
-        } else {
-            final Set<TraverserRequirement> requirements = new HashSet<>();
-            requirements.add(TraverserRequirement.OBJECT);
-            requirements.addAll(TraversalHelper.getRequirements(this.constraint));
-            return requirements;
-        }
+        return null == this.constraint ? Collections.singleton(TraverserRequirement.OBJECT) : this.getTraversalRequirements(TraverserRequirement.OBJECT);
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.resetTraversals();
     }
 
     /////////////////////////

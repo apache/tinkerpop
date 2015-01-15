@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +24,8 @@ import java.util.function.Predicate;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implements TraversalHolder<S, E> {
+
+    private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.MERGE_IN_SIDE_EFFECTS, Nest.SET_SIDE_EFFECTS, Nest.SET_STRATEGIES};
 
     private final Function<S, M> mapFunction;
     private Map<M, Traversal<S, E>> choices;
@@ -43,27 +44,12 @@ public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implement
         super(traversal);
         this.mapFunction = mapFunction;
         this.choices = choices;
-        this.choices.values().forEach(choice -> {
-            choice.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());
-            choice.asAdmin().setTraversalHolder(this);
-        });
-    }
-
-    public Function<S, M> getMapFunction() {
-        return this.mapFunction;
-    }
-
-    public Map<M, Traversal<S, E>> getChoices() {
-        return this.choices;
+        this.executeTraversalOperations(NEST_OPERATIONS);
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = new HashSet<>();
-        for (final Traversal<S, E> choiceTraversal : this.choices.values()) {
-            requirements.addAll(TraversalHelper.getRequirements(choiceTraversal));
-        }
-        return requirements;
+        return this.getTraversalRequirements();
     }
 
     @Override
@@ -110,13 +96,19 @@ public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implement
         for (final Map.Entry<M, Traversal<S, E>> entry : this.choices.entrySet()) {
             final Traversal<S, E> choiceClone = entry.getValue().clone();
             clone.choices.put(entry.getKey(), choiceClone);
-            choiceClone.asAdmin().setTraversalHolder(clone);
         }
+        clone.executeTraversalOperations(NEST_OPERATIONS);
         return clone;
     }
 
     @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.choices.toString());
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.resetTraversals();
     }
 }

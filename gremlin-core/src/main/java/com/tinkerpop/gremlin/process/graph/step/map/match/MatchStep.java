@@ -30,6 +30,8 @@ import java.util.function.Function;
  */
 public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> implements TraversalHolder {
 
+    private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.SET_STRATEGIES}; // TODO: Nest.SET/MERGE_SIDE_EFFECTS?
+
     static final BiConsumer<String, Object> TRIVIAL_CONSUMER = (s, t) -> {
     };
 
@@ -58,21 +60,16 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
         this.traversalsByStartAs = new HashMap<>();
         this.currentStart = new B_O_PA_S_SE_SL_Traverser<>(null, this);
         for (final Traversal tl : traversals) {
-            tl.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());
             addTraversalPrivate(tl);
-            tl.asAdmin().setTraversalHolder(this);
             this.traversals.add(tl);
         }
         checkSolvability();
+        this.executeTraversalOperations(NEST_OPERATIONS);
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = new HashSet<>();
-        for (final Traversal<?, ?> matchTraversal : this.traversals) {
-            requirements.addAll(TraversalHelper.getRequirements(matchTraversal));
-        }
-        return requirements;
+        return this.getTraversalRequirements();
     }
 
     @Override
@@ -90,9 +87,10 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
      */
     public void addTraversal(final Traversal<S, S> traversal) {
         addTraversalPrivate(traversal);
-        traversal.asAdmin().setTraversalHolder(this);
         this.traversals.add(traversal);
         checkSolvability();
+        this.executeTraversalOperations(NEST_OPERATIONS);
+
     }
 
     public void setStartsPerOptimize(final int startsPerOptimize) {

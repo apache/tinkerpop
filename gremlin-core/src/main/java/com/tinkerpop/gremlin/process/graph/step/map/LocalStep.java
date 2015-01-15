@@ -15,12 +15,14 @@ import java.util.Set;
  */
 public final class LocalStep<S, E> extends FlatMapStep<S, E> implements TraversalHolder<S, E> {
 
+    private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.SET_STRATEGIES}; // TODO: Nest.SET/MERGE_SIDE_EFFECTS?
+
     private Traversal<S, E> localTraversal;
 
     public LocalStep(final Traversal traversal, final Traversal<S, E> localTraversal) {
         super(traversal);
         this.localTraversal = localTraversal;
-        this.localTraversal.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());
+        this.executeTraversalOperations(NEST_OPERATIONS);
         LocalStep.generateFunction(this);
     }
 
@@ -28,7 +30,7 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements Traversa
     public LocalStep<S, E> clone() throws CloneNotSupportedException {
         final LocalStep<S, E> clone = (LocalStep<S, E>) super.clone();
         clone.localTraversal = this.localTraversal.clone();
-        clone.localTraversal.asAdmin().setTraversalHolder(clone);
+        clone.executeTraversalOperations(NEST_OPERATIONS);
         LocalStep.generateFunction(clone);
         return clone;
     }
@@ -45,14 +47,13 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements Traversa
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return TraversalHelper.getRequirements(this.localTraversal);
+        return this.getTraversalRequirements();
     }
 
     ////////////////
 
     private static final <S, E> void generateFunction(final LocalStep<S, E> localStep) {
         localStep.setFunction(traverser -> {
-            // TODO: traverser.asAdmin().setSideEffects(localStep.localTraversal.sideEffects());
             localStep.localTraversal.asAdmin().reset();
             localStep.localTraversal.asAdmin().addStart(traverser);
             return localStep.localTraversal;

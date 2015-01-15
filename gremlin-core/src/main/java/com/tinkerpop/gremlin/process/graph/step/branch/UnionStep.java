@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -20,18 +19,16 @@ import java.util.Set;
  */
 public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements TraversalHolder<S, E> {
 
-    private List<Traversal<S, E>> traversals;
+    private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.MERGE_IN_SIDE_EFFECTS, Nest.SET_SIDE_EFFECTS, Nest.SET_STRATEGIES};
 
+    private List<Traversal<S, E>> traversals;
     private boolean first = true;
 
     @SafeVarargs
     public UnionStep(final Traversal traversal, final Traversal<S, E>... unionTraversals) {
         super(traversal);
         this.traversals = Arrays.asList(unionTraversals);
-        this.traversals.forEach(union -> {
-            union.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());
-            union.asAdmin().setTraversalHolder(this);
-        });
+        this.executeTraversalOperations(NEST_OPERATIONS);
     }
 
     @Override
@@ -82,24 +79,20 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
         for (final Traversal<S, E> union : this.traversals) {
             final Traversal<S, E> unionClone = union.clone();
             clone.traversals.add(unionClone);
-            unionClone.asAdmin().setTraversalHolder(clone);
         }
+        this.executeTraversalOperations(NEST_OPERATIONS);
         return clone;
     }
 
     @Override
     public void reset() {
         super.reset();
-        // TODO: reset children?
+        this.resetTraversals();
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = new HashSet<>();
-        for (final Traversal<S, E> union : this.traversals) {
-            requirements.addAll(TraversalHelper.getRequirements(union));
-        }
-        return requirements;
+        return this.getTraversalRequirements();
     }
 
 
