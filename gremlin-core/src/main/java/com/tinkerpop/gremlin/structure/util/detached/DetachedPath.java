@@ -17,7 +17,7 @@ public class DetachedPath extends MutablePath implements Attachable<Path> {
     }
 
     protected DetachedPath(final Path path, final boolean withProperties) {
-        path.forEach((labels, object) -> {
+        path.forEach((object,labels) -> {
             if (object instanceof DetachedElement || object instanceof DetachedProperty || object instanceof DetachedPath) {
                 this.labels.add(labels);
                 this.objects.add(object);
@@ -52,11 +52,11 @@ public class DetachedPath extends MutablePath implements Attachable<Path> {
         return path;*/
 
         final Path path = MutablePath.make();
-        this.forEach((labels, object) -> {
+        this.forEach((object,labels) -> {
             if (object instanceof Attachable) {
-                path.extend(labels, ((Attachable) object).attach(hostGraph));
+                path.extend(((Attachable) object).attach(hostGraph), labels.toArray(new String[labels.size()]));
             } else {
-                path.extend(labels, object);
+                path.extend(object, labels.toArray(new String[labels.size()]));
             }
         });
         return path;
@@ -76,11 +76,11 @@ public class DetachedPath extends MutablePath implements Attachable<Path> {
         }
         return path;*/
         final Path path = MutablePath.make();
-        this.forEach((labels, object) -> {
+        this.forEach((object,labels) -> {
             if (object instanceof Attachable) {
-                path.extend(labels, ((Attachable) object).attach(hostVertex));
+                path.extend(((Attachable) object).attach(hostVertex), labels.toArray(new String[labels.size()]));
             } else {
-                path.extend(labels, object);
+                path.extend(object, labels.toArray(new String[labels.size()]));
             }
         });
         return path;

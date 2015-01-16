@@ -22,14 +22,6 @@ import java.util.stream.Stream;
  */
 public class TraversalHelper {
 
-    public static boolean isLabeled(final Step<?, ?> step) {
-        return !Graph.Hidden.isHidden(step.getLabel());
-    }
-
-    public static boolean isLabeled(final String label) {
-        return !Graph.Hidden.isHidden(label);
-    }
-
     public static boolean isReversible(final Traversal<?, ?> traversal) {
         return !traversal.asAdmin().getSteps().stream().filter(step -> !(step instanceof Reversible)).findAny().isPresent();
     }
@@ -41,18 +33,27 @@ public class TraversalHelper {
 
     public static <S, E> Step<S, E> getStep(final String label, final Traversal<?, ?> traversal) {
         return traversal.asAdmin().getSteps().stream()
-                .filter(step -> label.equals(step.getLabel()))
+                .filter(step -> step.getLabel().isPresent())
+                .filter(step -> label.equals(step.getLabel().get()))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("The provided step label does not exist: " + label));
     }
 
-    public static <S, E> Optional<Step<S, E>> getStepRecurssively(final String label, final Traversal<?, ?> traversal) {
+    public static <S, E> Step<S, E> getStepById(final String id, final Traversal<?, ?> traversal) {
+        return traversal.asAdmin().getSteps().stream()
+                .filter(step -> id.equals(step.getId()))
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("The provided step id does not exist: " + id));
+    }
+
+
+    public static <S, E> Optional<Step<S, E>> getStepRecurssively(final String id, final Traversal<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
-            if (step.getLabel().equals(label))
+            if (step.getId().equals(id))
                 return Optional.of((Step) step);
             else if (step instanceof TraversalHolder) {
                 for (final Traversal<?, ?> nest : ((TraversalHolder<?, ?>) step).getTraversals()) {
-                    final Optional<Step<S, E>> optional = TraversalHelper.getStepRecurssively(label, nest);
+                    final Optional<Step<S, E>> optional = TraversalHelper.getStepRecurssively(id, nest);
                     if (optional.isPresent())
                         return optional;
                 }
@@ -63,18 +64,16 @@ public class TraversalHelper {
 
     public static boolean hasLabel(final String label, final Traversal<?, ?> traversal) {
         return traversal.asAdmin().getSteps().stream()
-                .filter(step -> label.equals(step.getLabel()))
+                .filter(step -> step.getLabel().isPresent())
+                .filter(step -> label.equals(step.getLabel().get()))
                 .findAny().isPresent();
     }
 
     public static List<String> getLabelsUpTo(final Step<?, ?> step, final Traversal<?, ?> traversal) {
         final List<String> labels = new ArrayList<>();
-        for (final Step temp : traversal.asAdmin().getSteps()) {
+        for (final Step<?, ?> temp : traversal.asAdmin().getSteps()) {
             if (temp == step) break;
-            final String label = temp.getLabel();
-            if (isLabeled(label)) {
-                labels.add(label);
-            }
+            temp.getLabel().ifPresent(labels::add);
         }
         return labels;
     }
@@ -175,8 +174,7 @@ public class TraversalHelper {
             builder.append(String.join(",", strings));
             builder.append(")");
         }
-        if (TraversalHelper.isLabeled(step))
-            builder.append("@").append(step.getLabel());
+        step.getLabel().ifPresent(label -> builder.append("@").append(label));
         return builder.toString();
     }
 
@@ -316,14 +314,13 @@ public class TraversalHelper {
         return new int[]{depth, breadth == -1 ? 0 : breadth};
     }
 
-    public static void reLabelSteps(final StepPosition stepPosition, final Traversal<?, ?> traversal) {
+    public static void reIdSteps(final StepPosition stepPosition, final Traversal<?, ?> traversal) {
         stepPosition.reset();
         final int[] depthBreadth = TraversalHelper.getTraversalDepthAndBreadth(traversal);
         stepPosition.y = depthBreadth[0];
         stepPosition.z = depthBreadth[1];
         for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
-            if (!TraversalHelper.isLabeled(step))
-                step.setLabel(stepPosition.nextXLabel());
+            step.setId(stepPosition.nextXId());
         }
     }
 

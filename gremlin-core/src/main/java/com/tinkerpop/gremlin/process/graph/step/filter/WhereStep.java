@@ -94,23 +94,23 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
                 return whereStep.biPredicate.test(map.get(whereStep.firstKey), map.get(whereStep.secondKey));
             });
         } else {
-            final Step startStep = TraversalHelper.getStart(whereStep.constraint);
-            final Step endStep = TraversalHelper.getEnd(whereStep.constraint);
+            final Step<?, ?> startStep = TraversalHelper.getStart(whereStep.constraint);
+            final Step<?, ?> endStep = TraversalHelper.getEnd(whereStep.constraint);
             whereStep.setPredicate(traverser -> {
                 final Map<String, E> map = traverser.get();
-                if (!map.containsKey(startStep.getLabel()))
-                    throw new IllegalArgumentException("The provided key is not in the current map: " + startStep.getLabel());
-                final Object startObject = map.get(startStep.getLabel());
+                if (!map.containsKey(startStep.getLabel().get()))
+                    throw new IllegalArgumentException("The provided key is not in the current map: " + startStep.getLabel().get());
+                final Object startObject = map.get(startStep.getLabel().get());
                 final Object endObject;
-                if (TraversalHelper.isLabeled(endStep)) {
-                    if (!map.containsKey(endStep.getLabel()))
-                        throw new IllegalArgumentException("The provided key is not in the current map: " + endStep.getLabel());
-                    endObject = map.get(endStep.getLabel());
+                if (endStep.getLabel().isPresent()) {
+                    if (!map.containsKey(endStep.getLabel().get()))
+                        throw new IllegalArgumentException("The provided key is not in the current map: " + endStep.getLabel().get());
+                    endObject = map.get(endStep.getLabel().get());
                 } else
                     endObject = null;
 
                 // TODO: Can we add LocalStep here?
-                startStep.addStart(whereStep.getTraversal().asAdmin().getTraverserGenerator().generate(startObject, startStep, traverser.bulk()));
+                startStep.addStart(whereStep.getTraversal().asAdmin().getTraverserGenerator().generate(startObject, (Step) startStep, traverser.bulk()));
                 if (null == endObject) {
                     if (whereStep.constraint.hasNext()) {
                         whereStep.constraint.asAdmin().reset();

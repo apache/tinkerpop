@@ -53,7 +53,17 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
             final Traverser<S> traverser = this.starts.next();
             for (final String stepLabel : this.branchFunction.apply(traverser)) {
                 final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                sibling.setFuture(stepLabel.isEmpty() ? this.getNextStep().getLabel() : TraversalHelper.getStep(stepLabel, this.getTraversal()).getNextStep().getLabel());
+                String future;
+                if (stepLabel.isEmpty()) {
+                    future = this.getNextStep().getId();
+                } else {
+                    try {
+                        future = TraversalHelper.getStep(stepLabel, this.getTraversal()).getNextStep().getId();
+                    } catch (IllegalArgumentException e) {
+                        future = TraversalHelper.getStepById(stepLabel, this.getTraversal()).getNextStep().getId();
+                    }
+                }
+                sibling.setFutureId(future);
                 this.graphComputerQueue.add(sibling);
             }
         }
@@ -64,10 +74,10 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
         for (final String stepLabel : this.branchFunction.apply(traverser)) {
             final Traverser.Admin<S> sibling = traverser.asAdmin().split();
             if (stepLabel.isEmpty()) {
-                sibling.setFuture(this.getNextStep().getLabel());
+                sibling.setFutureId(this.getNextStep().getId());
                 this.getNextStep().addStart(sibling);
             } else {
-                sibling.setFuture(stepLabel);
+                sibling.setFutureId(stepLabel);
                 TraversalHelper.<S, Object>getStep(stepLabel, this.getTraversal()).getNextStep().addStart((Traverser) sibling);
             }
         }

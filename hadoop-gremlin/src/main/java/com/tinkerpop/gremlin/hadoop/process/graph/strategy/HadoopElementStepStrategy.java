@@ -32,13 +32,12 @@ public class HadoopElementStepStrategy extends AbstractTraversalStrategy {
         final StartStep<Element> startStep = (StartStep) TraversalHelper.getStart(traversal);
         if (startStep.startAssignableTo(Vertex.class, Edge.class)) {
             final HadoopElement element = ((StartStep<?>) startStep).getStart();
-            final String label = TraversalHelper.getStart(traversal).getLabel();
             traversal.removeStep(0);
-            if (TraversalHelper.isLabeled(label)) {
+            TraversalHelper.getStart(traversal).getLabel().ifPresent(label -> {
                 final Step identityStep = new IdentityStep(traversal);
                 identityStep.setLabel(label);
                 traversal.addStep(0, identityStep);
-            }
+            });
             traversal.addStep(0, new GraphStep<>(traversal, EmptyGraph.instance(), element.getClass(), element.id()));
         }
     }

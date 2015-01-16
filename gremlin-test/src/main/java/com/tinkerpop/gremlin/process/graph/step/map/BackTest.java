@@ -11,9 +11,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.*;
 
 /**
@@ -37,6 +39,8 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_backXhereX(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_backXhereX();
+
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_backXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_backXprojectXX_groupCount_byXnameX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -120,11 +124,28 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_asXhereXout_name_backXhereX() {
         Traversal<Vertex, Vertex> traversal = get_g_V_asXhereXout_name_backXhereX();
+        printTraversalForm(traversal);
         super.checkResults(new HashMap<Vertex, Long>() {{
             put(convertToVertex(g, "marko"), 3l);
             put(convertToVertex(g, "josh"), 2l);
             put(convertToVertex(g, "peter"), 1l);
         }}, traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_backXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_backXprojectXX_groupCount_byXnameX() {
+        List<Traversal<Vertex, Map<String, Long>>> traversals = Arrays.asList(get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_backXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_backXprojectXX_groupCount_byXnameX());
+        traversals.forEach(traversal -> {
+            printTraversalForm(traversal);
+            assertTrue(traversal.hasNext());
+            final Map<String, Long> map = traversal.next();
+            System.out.println(map);
+            assertFalse(traversal.hasNext());
+            assertEquals(2, map.size());
+            assertEquals(1l, map.get("ripple").longValue());
+            assertEquals(6l, map.get("lop").longValue());
+        });
     }
 
     public static class StandardTest extends BackTest {
@@ -171,6 +192,13 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_backXhereX() {
             return g.V().as("here").out().values("name").back("here");
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_backXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_backXprojectXX_groupCount_byXnameX() {
+            return (Traversal) g.V().out("created")
+                    .union(__.as("project").in("created").has("name", "marko").back("project"),
+                            __.as("project").in("created").in("knows").has("name", "marko").back("project")).groupCount().by("name");
+        }
     }
 
     public static class ComputerTest extends BackTest {
@@ -216,6 +244,13 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_backXhereX() {
             return g.V().as("here").out().values("name").<Vertex>back("here").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_backXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_backXprojectXX_groupCount_byXnameX() {
+            return (Traversal) g.V().out("created")
+                    .union(__.as("project").in("created").has("name", "marko").back("project"),
+                            __.as("project").in("created").in("knows").has("name", "marko").back("project")).groupCount().by("name").submit(g.compute());
         }
     }
 }

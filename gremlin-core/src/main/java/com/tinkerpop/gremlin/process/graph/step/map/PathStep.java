@@ -69,7 +69,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements FunctionHolde
                 path = traverser.path();
             else {
                 path = MutablePath.make();
-                traverser.path().forEach((labels, object) -> path.extend(labels, pathStep.functionRing.next().apply(object)));
+                traverser.path().forEach((object,labels) -> path.extend(pathStep.functionRing.next().apply(object), labels.toArray(new String[labels.size()])));
             }
             pathStep.functionRing.reset();
             return path;

@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.util.SparsePath;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.WeakHashMap;
 
 /**
@@ -22,7 +23,10 @@ public class B_O_PA_S_SE_SL_Traverser<T> extends AbstractPathTraverser<T> {
 
     public B_O_PA_S_SE_SL_Traverser(final T t, final Step<T, ?> step) {
         super(t, step);
-        this.path = getOrCreateFromCache(this.sideEffects).extend(step.getLabel(), t);
+        final Optional<String> stepLabel = step.getLabel();
+        this.path = stepLabel.isPresent() ?
+                getOrCreateFromCache(this.sideEffects).extend(t, stepLabel.get()) :
+                getOrCreateFromCache(this.sideEffects).extend(t);
     }
 
     @Override
@@ -34,7 +38,7 @@ public class B_O_PA_S_SE_SL_Traverser<T> extends AbstractPathTraverser<T> {
     public boolean equals(final Object object) {
         return object instanceof B_O_PA_S_SE_SL_Traverser
                 && ((B_O_PA_S_SE_SL_Traverser) object).get().equals(this.t)
-                && ((B_O_PA_S_SE_SL_Traverser) object).getFuture().equals(this.getFuture())
+                && ((B_O_PA_S_SE_SL_Traverser) object).getFutureId().equals(this.getFutureId())
                 && ((B_O_PA_S_SE_SL_Traverser) object).loops() == this.loops()
                 && (null == this.sack);
     }
@@ -43,7 +47,7 @@ public class B_O_PA_S_SE_SL_Traverser<T> extends AbstractPathTraverser<T> {
     public Traverser.Admin<T> attach(final Vertex vertex) {
         super.attach(vertex);
         final Path newSparsePath = getOrCreateFromCache(this.sideEffects);
-        this.path.forEach((k, v) -> newSparsePath.extend(k, v));
+        this.path.forEach((object, labels) -> newSparsePath.extend(object, labels.toArray(new String[labels.size()])));
         this.path = newSparsePath;
         return this;
     }

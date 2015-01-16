@@ -56,18 +56,18 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
                 final List<String> stepLabels = new ArrayList<>(2);
                 if (step.isUntilFirst()) {    // left until
                     if (step.doUntil((Traverser) traverser)) {
-                        stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
+                        stepLabels.add(resetLoopStep.getPreviousStep().getId());
                         return stepLabels;
                     } else {
                         stepLabels.add("");
                         if (step.isEmitFirst() && step.doEmit((Traverser) traverser))
-                            stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
+                            stepLabels.add(resetLoopStep.getPreviousStep().getId());
                         return stepLabels;
                     }
                 } else {  // right until
                     stepLabels.add("");
                     if (step.isEmitFirst() && step.doEmit((Traverser) traverser))
-                        stepLabels.add(resetLoopStep.getPreviousStep().getLabel());
+                        stepLabels.add(resetLoopStep.getPreviousStep().getId());
                     return stepLabels;
                 }
             }));
@@ -79,14 +79,14 @@ public class RepeatLinearStrategy extends AbstractTraversalStrategy {
                         stepLabels.add("");
                         return stepLabels;
                     } else {
-                        stepLabels.add(leftBranchStep.getPreviousStep().getLabel());
+                        stepLabels.add(leftBranchStep.getPreviousStep().getId());
                         if (!step.isEmitFirst() && step.doEmit((Traverser) traverser))
                             stepLabels.add("");
                         return stepLabels;
                     }
 
                 } else { // left until
-                    stepLabels.add(leftBranchStep.getPreviousStep().getLabel());
+                    stepLabels.add(leftBranchStep.getPreviousStep().getId());
                     if (!step.isEmitFirst() && step.doEmit((Traverser) traverser)) {
                         stepLabels.add("");
                     }

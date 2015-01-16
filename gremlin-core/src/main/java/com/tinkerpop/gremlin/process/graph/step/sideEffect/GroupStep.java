@@ -45,7 +45,7 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
 
     public GroupStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
-        this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
+        this.sideEffectKey = null == sideEffectKey ? this.getLabel().orElse(this.getId()) : sideEffectKey;
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMap<K, Collection<V>>::new);
         this.setConsumer(traverser -> {

@@ -34,7 +34,7 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
 
     public TreeStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
-        this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
+        this.sideEffectKey = null == sideEffectKey ? this.getLabel().orElse(this.getId()) : sideEffectKey;
         this.functionRing = new FunctionRing<>();
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, Tree::new);

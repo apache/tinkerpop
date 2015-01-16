@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,24 +43,9 @@ public class MutablePath implements Path, Serializable, Cloneable {
     }
 
     @Override
-    public Path extend(final String label, final Object object) {
+    public Path extend(final Object object, final String... labels) {
         this.objects.add(object);
-        final HashSet<String> temp = new HashSet<>();
-        if (TraversalHelper.isLabeled(label))
-            temp.add(label);
-        this.labels.add(temp);
-        return this;
-    }
-
-    @Override
-    public Path extend(final Set<String> labels, final Object object) {
-        this.objects.add(object);
-        final HashSet<String> temp = new HashSet<>();
-        for (final String label : labels) {
-            if (TraversalHelper.isLabeled(label))
-                temp.add(label);
-        }
-        this.labels.add(temp);
+        this.labels.add(Stream.of(labels).collect(Collectors.toSet()));
         return this;
     }
 

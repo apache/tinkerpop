@@ -36,7 +36,7 @@ public final class AggregateStep<S> extends BarrierStep<S> implements SideEffect
 
     public AggregateStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
-        this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
+        this.sideEffectKey = null == sideEffectKey ? this.getLabel().orElse(this.getId()) : sideEffectKey;
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.getTraversal());
         this.getTraversal().asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSet::new);
         this.setConsumer(traverserSet ->

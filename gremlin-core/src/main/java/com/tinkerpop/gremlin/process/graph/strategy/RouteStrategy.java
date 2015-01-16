@@ -27,8 +27,8 @@ public class RouteStrategy extends AbstractTraversalStrategy {
                 .forEach(step -> {
                     for (final Traversal<?, ?> t : ((UnionStep<?, ?>) step).getTraversals()) {
                         final RouteStep routeStep = new RouteStep(t, step.getNextStep() instanceof EmptyStep ?
-                                step.getTraversal().asAdmin().getTraversalHolder().asStep().getNextStep().getLabel() :
-                                step.getNextStep().getLabel());   // TODO: walk indefinately?
+                                step.getTraversal().asAdmin().getTraversalHolder().asStep().getNextStep().getId() :
+                                step.getNextStep().getId());   // TODO: walk indefinately?
                         t.asAdmin().addStep(routeStep);
                     }
                 });
@@ -37,8 +37,8 @@ public class RouteStrategy extends AbstractTraversalStrategy {
                 .forEach(step -> {
                     for (final Traversal<?, ?> t : ((ChooseStep<?, ?, ?>) step).getTraversals()) {
                         final RouteStep routeStep = new RouteStep(t, step.getNextStep() instanceof EmptyStep ?
-                                step.getTraversal().asAdmin().getTraversalHolder().asStep().getNextStep().getLabel() :
-                                step.getNextStep().getLabel());   // TODO: walk indefinately?
+                                step.getTraversal().asAdmin().getTraversalHolder().asStep().getNextStep().getId() :
+                                step.getNextStep().getId());   // TODO: walk indefinately?
                         t.asAdmin().addStep(routeStep);
                     }
                 });

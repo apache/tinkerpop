@@ -52,7 +52,7 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
                         final Map<Object, Vertex> idVertexMap,
                         final Predicate<Edge> includeEdge) {
         super(traversal);
-        this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
+        this.sideEffectKey = null == sideEffectKey ? this.getLabel().orElse(this.getId()) : sideEffectKey;
         this.edgeIdsAdded = null == edgeIdHolder ? new HashSet<>() : edgeIdHolder;
         this.idVertexMap = null == idVertexMap ? new HashMap<>() : idVertexMap;
         this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));

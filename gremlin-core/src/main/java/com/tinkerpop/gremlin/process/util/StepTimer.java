@@ -21,13 +21,13 @@ public class StepTimer implements StepMetrics, Serializable {
     private StepTimer() {
     }
 
-    public StepTimer(final Step step) {
-        this.label = step.getLabel();
+    public StepTimer(final Step<?,?> step) {
+        this.label = step.getLabel().orElse(step.getId());
         this.name = step.toString();
 
     }
 
-    public StepTimer(String name, String label) {
+    public StepTimer(final String name, final String label) {
         this.label = label;
         this.name = name;
     }

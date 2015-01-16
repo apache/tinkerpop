@@ -46,7 +46,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     @Override
     public void applyStrategies(final TraversalEngine engine) {
         if (!this.locked) {
-            TraversalHelper.reLabelSteps(this.stepPosition, this);
+            TraversalHelper.reIdSteps(this.stepPosition, this);
             this.strategies.applyStrategies(this, engine);
             for (final Step<?, ?> step : this.getSteps()) {
                 if (step instanceof TraversalHolder && !(step instanceof LocalStep)) { // TODO: why no LocalStep?
@@ -158,8 +158,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     @Override
     public <S2, E2> Traversal<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
         if (this.getTraversalEngine().isPresent()) throw Exceptions.traversalIsLocked();
-        if (!TraversalHelper.isLabeled(step))
-            step.setLabel(this.stepPosition.nextXLabel());
+        step.setId(this.stepPosition.nextXId());
 
         if (this.steps.size() == 0 && index == 0)
             this.steps.add(step);

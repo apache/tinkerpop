@@ -18,7 +18,7 @@ import java.util.WeakHashMap;
 public final class TraversalMetrics implements Serializable {
     public static final String PROFILING_ENABLED = "tinkerpop.profiling";
     private static final String[] HEADERS = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
-    private static final WeakHashMap<Traversal, Boolean> PROFILING_CACHE = new WeakHashMap<Traversal, Boolean>();
+    private static final WeakHashMap<Traversal, Boolean> PROFILING_CACHE = new WeakHashMap<>();
 
     private long totalStepDuration;
 
@@ -62,20 +62,20 @@ public final class TraversalMetrics implements Serializable {
     }
 
     private void startInternal(final Step<?, ?> step) {
-        StepTimer stepMetrics = this.stepTimers.get(step.getLabel());
+        StepTimer stepMetrics = this.stepTimers.get(step.getLabel().orElse(step.getId()));
         if (null == stepMetrics) {
             stepMetrics = new StepTimer(step);
-            this.stepTimers.put(step.getLabel(), stepMetrics);
+            this.stepTimers.put(step.getLabel().orElse(step.getId()), stepMetrics);
         }
         stepMetrics.start();
     }
 
     private void stopInternal(final Step<?, ?> step) {
-        this.stepTimers.get(step.getLabel()).stop();
+        this.stepTimers.get(step.getLabel().orElse(step.getId())).stop();
     }
 
     private void finishInternal(final Step<?, ?> step, final Traverser.Admin<?> traverser) {
-        this.stepTimers.get(step.getLabel()).finish(traverser);
+        this.stepTimers.get(step.getLabel().orElse(step.getId())).finish(traverser);
     }
 
     @Override

@@ -17,7 +17,6 @@ import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -125,14 +124,14 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
             final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.asAdmin().getSteps().get(0);   // TODO: make this generic to Traversal
             final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(Graph.class).getTraverserGenerator(this.traversal);
-            final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.HALT : startStep.getNextStep().getLabel();
+            final String future = startStep.getNextStep().getId();
             boolean voteToHalt = true;
             final Iterator<? extends Element> starts = startStep.returnsVertices() ? IteratorUtils.of(vertex) : vertex.iterators().edgeIterator(Direction.OUT);
             while (starts.hasNext()) {
                 final Element start = starts.next();
                 if (ElementHelper.idExists(start.id(), startStep.getIds())) {
                     final Traverser.Admin<Element> traverser = traverserGenerator.generate(start, startStep, 1l);
-                    traverser.setFuture(future);
+                    traverser.setFutureId(future);
                     traverser.detach();
                     if (traverser.isHalted())
                         haltedTraversers.add((Traverser.Admin) traverser);

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.traverser.util;
 
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.EmptyPath;
@@ -33,7 +34,7 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
     }
 
     @Override
-    public <R> Admin<R> split(final String label, final R r) {
+    public <R> Admin<R> split(final R r, final Step<T, R> step) {
         try {
             final AbstractTraverser<R> clone = (AbstractTraverser<R>) super.clone();
             clone.t = r;
@@ -68,12 +69,12 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
     }
 
     @Override
-    public String getFuture() {
+    public String getFutureId() {
         throw new UnsupportedOperationException("This traverser does not support futures: " + this.getClass().getCanonicalName());
     }
 
     @Override
-    public void setFuture(final String stepLabel) {
+    public void setFutureId(final String stepId) {
 
     }
 

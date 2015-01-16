@@ -3,17 +3,18 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class AbstractStep<S, E> implements Step<S, E> {
 
-    protected String label = Graph.Hidden.hide("hidden");
+    protected String label = null;
+    protected String id = Traverser.Admin.HALT;
     protected Traversal traversal;
     protected ExpandableStepIterator<S> starts;
     protected Traverser<E> nextEnd = null;
@@ -26,6 +27,16 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     public AbstractStep(final Traversal traversal) {
         this.traversal = traversal;
         this.starts = new ExpandableStepIterator<S>((Step) this);
+    }
+
+    @Override
+    public void setId(final String id) {
+        this.id = id;
+    }
+
+    @Override
+    public String getId() {
+        return this.id;
     }
 
     @Override
@@ -70,8 +81,8 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public String getLabel() {
-        return this.label;
+    public Optional<String> getLabel() {
+        return Optional.ofNullable(this.label);
     }
 
     @Override
@@ -138,8 +149,8 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     private final Traverser<E> prepareTraversalForNextStep(final Traverser<E> traverser) {
-        if (!this.futureSetByChild) ((Traverser.Admin<E>) traverser).setFuture(this.nextStep.getLabel());
-        if (TraversalHelper.isLabeled(this.label)) traverser.path().addLabel(this.label);
+        if (!this.futureSetByChild) ((Traverser.Admin<E>) traverser).setFutureId(this.nextStep.getId());
+        if (null != this.label) traverser.path().addLabel(this.label);
         return traverser;
     }
 

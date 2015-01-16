@@ -18,7 +18,7 @@ public class StepPosition {
         this.z = z;
     }
 
-    public String nextXLabel() {
+    public String nextXId() {
         return Graph.Hidden.hide(this.x++ + ":" + this.y + ":" + this.z);
     }
 

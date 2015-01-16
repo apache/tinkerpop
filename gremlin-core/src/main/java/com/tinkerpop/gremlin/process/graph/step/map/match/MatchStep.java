@@ -104,7 +104,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     @Override
     protected Traverser<Map<String, E>> processNextStart() throws NoSuchElementException {
         final Map<String, E> map = new HashMap<>();
-        final Traverser<Map<String, E>> result = this.currentStart.split(this.getLabel(), map);
+        final Traverser<Map<String, E>> result = this.currentStart.split(map, this);
         final BiConsumer<String, S> resultSetter = (name, value) -> map.put(name, (E) value);
 
         while (true) { // break out when the current solution is exhausted and there are no more starts
@@ -166,12 +166,9 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     }
 
     private void addTraversalPrivate(final Traversal<S, S> traversal) {
-        String startAs = TraversalHelper.getStart(traversal).getLabel();
-        String endAs = TraversalHelper.getEnd(traversal).getLabel();
-        if (!TraversalHelper.isLabeled(startAs)) {
-            throw new IllegalArgumentException("All match traversals must have their start step labeled with as()");
-        }
-        endAs = TraversalHelper.isLabeled(endAs) ? endAs : null;
+
+        String startAs = TraversalHelper.getStart(traversal).getLabel().orElseThrow(() -> new IllegalArgumentException("All match traversals must have their start step labeled with as()"));
+        String endAs = TraversalHelper.getEnd(traversal).getLabel().orElse(null);
         checkAs(startAs);
         if (null == endAs) {
             endAs = createAnonymousAs();
@@ -266,7 +263,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
 
                 for (TraversalWrapper<S, S> w : outs) {
                     TraversalUpdater<S, S> updater
-                            = new TraversalUpdater<>(w, IteratorUtils.of(o), currentStart, this.getLabel());
+                            = new TraversalUpdater<>(w, IteratorUtils.of(o), currentStart, this.getId());
 
                     Set<String> rightLabels = new HashSet<>();
                     addVariables(w.endLabel, rightLabels);
@@ -460,7 +457,11 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
                 outputs = 0;
             });
             Iterator<Traverser<A>> starts = new MapIterator<>(seIter,
-                    o -> ((Traverser.Admin<A>) start).split(as, o));
+                    o -> {
+                        final Traverser.Admin<A> traverser = ((Traverser.Admin<A>) start).split();
+                        traverser.set((A) o);
+                        return traverser;
+                    });
 
             w.reset();
 

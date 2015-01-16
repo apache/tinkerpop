@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -26,28 +27,15 @@ public class SparsePath implements Path {
     }
 
     @Override
-    public Path extend(final String label, final Object object) {
+    public Path extend(final Object object, final String... labels) {
         this.currentObject = object;
-        if (TraversalHelper.isLabeled(label))
-            this.map.put(label, object);
-        return this;
-
-    }
-
-    @Override
-    public Path extend(final Set<String> labels, final Object object) {
-        this.currentObject = object;
-        for (final String label : labels) {
-            if (TraversalHelper.isLabeled(label))
-                this.map.put(label, object);
-        }
+        Stream.of(labels).forEach(label -> this.map.put(label, object));
         return this;
     }
 
     @Override
     public void addLabel(final String label) {
-        if (TraversalHelper.isLabeled(label))
-            this.map.put(label, this.currentObject);
+        this.map.put(label, this.currentObject);
     }
 
     @Override

@@ -24,12 +24,7 @@ public final class EmptyPath implements Path, Serializable {
     }
 
     @Override
-    public Path extend(final String label, final Object object) {
-        return this;
-    }
-
-    @Override
-    public Path extend(final Set<String> labels, final Object object) {
+    public Path extend(final Object object, final String... labels) {
         return this;
     }
 

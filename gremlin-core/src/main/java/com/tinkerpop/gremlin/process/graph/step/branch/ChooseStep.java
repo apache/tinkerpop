@@ -75,7 +75,7 @@ public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implement
             final Traverser<S> start = this.starts.next();
             final Traversal<S, E> choice = this.choices.get(this.mapFunction.apply(start.get()));
             if (null != choice) {
-                start.asAdmin().setFuture(TraversalHelper.getStart(choice).getLabel());
+                start.asAdmin().setFutureId(TraversalHelper.getStart(choice).getId());
                 return IteratorUtils.of((Traverser) start);
             }
         }

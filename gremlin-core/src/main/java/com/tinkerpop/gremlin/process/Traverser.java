@@ -147,12 +147,12 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * The child has the path history, future, and loop information of the parent.
          * The child extends that path history with the current as and provided R-object.
          *
-         * @param label The current label of the child
-         * @param r     The current object of the child
-         * @param <R>   The current object type of the child
+         * @param r    The current object of the child
+         * @param step The step yielding the split
+         * @param <R>  The current object type of the child
          * @return The split traverser
          */
-        public <R> Admin<R> split(final String label, final R r);
+        public <R> Admin<R> split(final R r, final Step<T, R> step);
 
         /**
          * Generate a sibling traverser of the current traverser with a full copy of all state within the sibling.
@@ -186,21 +186,21 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
         public void resetLoops();
 
         /**
-         * Return the future step of the traverser as signified by the steps as-label.
+         * Return the future step of the traverser as signified by the step's unique id.
          * This is typically used in multi-machine systems that require the movement of
          * traversers between different traversal instances.
          *
          * @return The future step for the traverser
          */
-        public String getFuture();
+        public String getFutureId();
 
         /**
-         * Set the future of the traverser as signified by the step's label.
+         * Set the future of the traverser as signified by the step's id.
          * If the future is {@link Traverser.Admin#HALT}, then {@link Traverser.Admin#isHalted()} is true.
          *
-         * @param stepLabel The future labeled step of the traverser
+         * @param stepId The future labeled step of the traverser
          */
-        public void setFuture(final String stepLabel);
+        public void setFutureId(final String stepId);
 
         /**
          * If the traverser has "no future" then it is done with its lifecycle.
@@ -209,7 +209,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * @return Whether the traverser is done executing or not
          */
         public default boolean isHalted() {
-            return getFuture().equals(HALT);
+            return getFutureId().equals(HALT);
         }
 
         /**

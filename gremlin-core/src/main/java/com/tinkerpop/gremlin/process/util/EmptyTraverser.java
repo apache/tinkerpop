@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -36,12 +37,12 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public String getFuture() {
+    public String getFutureId() {
         return HALT;
     }
 
     @Override
-    public void setFuture(final String stepLabel) {
+    public void setFutureId(final String stepId) {
 
     }
 
@@ -51,7 +52,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public <R> Admin<R> split(final String label, final R r) {
+    public <R> Admin<R> split(final R r, final Step<T, R> step) {
         return INSTANCE;
     }
 

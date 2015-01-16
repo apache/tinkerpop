@@ -17,11 +17,13 @@ public interface TraverserGeneratorFactory {
 
     public default Set<TraverserRequirement> getRequirements(final Traversal<?, ?> traversal) {
         final Set<TraverserRequirement> requirements = new HashSet<>();
-        traversal.asAdmin().getTraversalEngine().ifPresent(engine -> {
-            if (engine.equals(TraversalEngine.COMPUTER))
-                requirements.add(TraverserRequirement.BULK);
-        });
         requirements.addAll(TraversalHelper.getRequirements(traversal));
+        traversal.asAdmin().getTraversalEngine().ifPresent(engine -> {
+            if (engine.equals(TraversalEngine.COMPUTER)) {
+                requirements.add(TraverserRequirement.BULK);
+            }
+        });
+
         return requirements;
     }
 }

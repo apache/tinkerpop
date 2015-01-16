@@ -27,7 +27,7 @@ public class MapStep<S, E> extends AbstractStep<S, E> {
             final Traverser.Admin<S> traverser = this.starts.next();
             if (PROFILING_ENABLED) TraversalMetrics.start(this);
             final E end = this.function.apply(traverser);
-            final Traverser.Admin<E> endTraverser = traverser.split(this.label, end);
+            final Traverser.Admin<E> endTraverser =  traverser.split(end, this);
             if (PROFILING_ENABLED) TraversalMetrics.finish(this, endTraverser);
             return endTraverser;
         }

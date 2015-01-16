@@ -105,7 +105,7 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
         while (true) {
             if (this.repeatTraversal.hasNext()) {
                 final Traverser.Admin<S> s = this.endStep.next().asAdmin();
-                s.incrLoops(this.getLabel());
+                s.incrLoops(this.getId());
                 if (doUntil(s)) {
                     s.resetLoops();
                     return s;

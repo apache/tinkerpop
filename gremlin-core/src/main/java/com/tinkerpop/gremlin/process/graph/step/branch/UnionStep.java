@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
-import com.tinkerpop.gremlin.process.graph.step.branch.util.RouteStep;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -49,7 +48,7 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
             final Traverser.Admin<S> start = this.starts.next();
             for (final Traversal<S, E> union : this.traversals) {
                 final Traverser.Admin<S> unionSplit = start.split();
-                unionSplit.setFuture(TraversalHelper.getStart(union).getLabel());
+                unionSplit.setFutureId(TraversalHelper.getStart(union).getId());
                 ends.add((Traverser) unionSplit);
             }
         }

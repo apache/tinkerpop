@@ -34,19 +34,19 @@ public class B_O_Traverser<T> extends O_Traverser<T> {
     }
 
     @Override
-    public String getFuture() {
+    public String getFutureId() {
         return this.future;
     }
 
     @Override
-    public void setFuture(final String stepLabel) {
-        this.future = stepLabel;
+    public void setFutureId(final String stepId) {
+        this.future = stepId;
     }
 
     @Override
     public boolean equals(final Object object) {
         return object instanceof B_O_Traverser &&
                 ((B_O_Traverser) object).get().equals(this.t) &&
-                ((B_O_Traverser) object).getFuture().equals(this.future);
+                ((B_O_Traverser) object).getFutureId().equals(this.future);
     }
 }

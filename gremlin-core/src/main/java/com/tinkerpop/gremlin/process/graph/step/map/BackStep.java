@@ -20,7 +20,6 @@ public final class BackStep<S, E> extends MapStep<S, E> implements EngineDepende
     public BackStep(final Traversal traversal, final String stepLabel) {
         super(traversal);
         this.stepLabel = stepLabel;
-        TraversalHelper.getStep(this.stepLabel, this.traversal);
         this.setFunction(traverser -> traverser.path(this.stepLabel));
     }
 
@@ -31,7 +30,8 @@ public final class BackStep<S, E> extends MapStep<S, E> implements EngineDepende
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.requiresPaths ? Collections.singleton(TraverserRequirement.PATH) : Collections.singleton(TraverserRequirement.PATH_ACCESS);
+        // TODO: return this.requiresPaths ? Collections.singleton(TraverserRequirement.PATH) : Collections.singleton(TraverserRequirement.PATH_ACCESS);
+        return Collections.singleton(TraverserRequirement.PATH);
     }
 
     @Override

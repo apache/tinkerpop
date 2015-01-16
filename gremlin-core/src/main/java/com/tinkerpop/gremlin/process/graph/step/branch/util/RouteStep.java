@@ -23,7 +23,7 @@ public class RouteStep<S> extends AbstractStep<S, S> {
     @Override
     protected Traverser<S> processNextStart() throws NoSuchElementException {
         final Traverser<S> start = this.starts.next();
-        start.asAdmin().setFuture(this.routeTo);
+        start.asAdmin().setFutureId(this.routeTo);
         return start;
     }
 

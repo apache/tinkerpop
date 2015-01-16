@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 /**
@@ -97,13 +98,13 @@ public abstract class AbstractPathTraverser<T> implements Traverser<T>, Traverse
     /////////////////
 
     @Override
-    public String getFuture() {
+    public String getFutureId() {
         return this.future;
     }
 
     @Override
-    public void setFuture(final String stepLabel) {
-        this.future = stepLabel;
+    public void setFutureId(final String stepId) {
+        this.future = stepId;
     }
 
     /////////////////
@@ -146,11 +147,12 @@ public abstract class AbstractPathTraverser<T> implements Traverser<T>, Traverse
     }
 
     @Override
-    public <R> Traverser.Admin<R> split(final String label, final R r) {
+    public <R> Traverser.Admin<R> split(final R r, final Step<T, R> step) {
         try {
             final AbstractPathTraverser<R> clone = (AbstractPathTraverser<R>) super.clone();
             clone.t = r;
-            clone.path = clone.path.clone().extend(label, r);
+            final Optional<String> stepLabel = step.getLabel();
+            clone.path = stepLabel.isPresent() ? clone.path.clone().extend(r, stepLabel.get()) : clone.path.clone().extend(r);
             clone.sack = null == clone.sack ? null : clone.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(clone.sack);
             return clone;
         } catch (final CloneNotSupportedException e) {
@@ -161,7 +163,9 @@ public abstract class AbstractPathTraverser<T> implements Traverser<T>, Traverse
     @Override
     public Traverser.Admin<T> split() {
         try {
-            return (AbstractPathTraverser<T>) super.clone();
+            final AbstractPathTraverser<T> clone = (AbstractPathTraverser<T>) super.clone();
+            clone.sack = null == clone.sack ? null : clone.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(clone.sack);
+            return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

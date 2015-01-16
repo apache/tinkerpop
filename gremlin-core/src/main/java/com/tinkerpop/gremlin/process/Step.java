@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -97,10 +98,11 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
 
     /**
      * Get the label of this step.
+     * If the step is  not labeled, then an {@link Optional#empty} is returned.
      *
-     * @return the label of the step
+     * @return the optional label of the step
      */
-    public String getLabel();
+    public Optional<String> getLabel();
 
     /**
      * Set the label of this step.
@@ -108,6 +110,22 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
      * @param label the label for this step
      */
     public void setLabel(final String label);
+
+    /**
+     * Get the unique id of the step.
+     * These ids can change when strategies are applied and anonymous traversals are embedded in the parent traversal.
+     * A developer should typically not need to call this method.
+     *
+     * @param id the unique id of the step
+     */
+    public void setId(final String id);
+
+    /**
+     * Get the unique id of this step.
+     *
+     * @return the unique id of the step
+     */
+    public String getId();
 
     /**
      * Provide the necessary {@link com.tinkerpop.gremlin.process.traverser.TraverserRequirement} that must be met by the traverser in order for the step to function properly.

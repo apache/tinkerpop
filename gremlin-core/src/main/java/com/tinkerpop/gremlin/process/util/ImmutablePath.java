@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,40 +31,23 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         return this;
     }
 
-    public ImmutablePath(final String currentLabel, final Object currentObject) {
-        this(HeadPath.instance(), currentLabel, currentObject);
+    public ImmutablePath(final Object currentObject, final String... currentLabels) {
+        this(HeadPath.instance(), currentObject, currentLabels);
     }
 
-    public ImmutablePath(final Set<String> currentLabels, final Object currentObject) {
-        this(HeadPath.instance(), currentLabels, currentObject);
-    }
-
-    private ImmutablePath(final Path previousPath, final String currentLabel, final Object currentObject) {
+    private ImmutablePath(final Path previousPath, final Object currentObject, final String... currentLabels) {
         this.previousPath = previousPath;
-        if (TraversalHelper.isLabeled(currentLabel))
-            this.currentLabels.add(currentLabel);
+        Stream.of(currentLabels).forEach(this.currentLabels::add);
         this.currentObject = currentObject;
     }
 
-    private ImmutablePath(final Path previousPath, final Set<String> currentLabels, final Object currentObject) {
-        this.previousPath = previousPath;
-        for (final String currentLabel : currentLabels) {
-            if (TraversalHelper.isLabeled(currentLabel))
-                this.currentLabels.add(currentLabel);
-        }
-        this.currentObject = currentObject;
-    }
 
     public int size() {
         return this.previousPath.size() + 1;
     }
 
-    public Path extend(final String label, final Object object) {
-        return new ImmutablePath(this, label, object);
-    }
-
-    public Path extend(final Set<String> labels, final Object object) {
-        return new ImmutablePath(this, labels, object);
+    public Path extend(final Object object, final String... labels) {
+        return new ImmutablePath(this, object, labels);
     }
 
     public <A> A get(final int index) {
@@ -75,8 +59,8 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
     }
 
     public void addLabel(final String label) {
-        if (TraversalHelper.isLabeled(label))
-            this.currentLabels.add(label);
+
+        this.currentLabels.add(label);
     }
 
     public List<Object> objects() {
@@ -110,13 +94,8 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         }
 
         @Override
-        public Path extend(final String label, final Object object) {
-            return new ImmutablePath(label, object);
-        }
-
-        @Override
-        public Path extend(final Set<String> labels, final Object object) {
-            return new ImmutablePath(labels, object);
+        public Path extend(final Object object, final String... labels) {
+            return new ImmutablePath(object, labels);
         }
 
         @Override
