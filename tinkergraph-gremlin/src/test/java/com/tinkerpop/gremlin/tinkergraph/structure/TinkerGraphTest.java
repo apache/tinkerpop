@@ -27,9 +27,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.assertEquals;
@@ -99,17 +100,26 @@ public class TinkerGraphTest {
 
     @Test
     @Ignore
-    public void testPlay2() throws Exception {
+    public void benchmarkStandardTraversals() throws Exception {
         Graph g = TinkerGraph.open();
         g.io().readGraphML("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
-        for (int i = 0; i < 100; i++) {
-            final long t = System.currentTimeMillis();
-            g.V().outE().inV().outE().inV().outE().inV().iterate();
-            System.out.println(System.currentTimeMillis() - t);
-        }
-        // System.out.println(t);
-        // t.forEachRemaining(System.out::println);
-        // System.out.println(t);
+        final List<Supplier<Traversal>> traversals = Arrays.asList(
+                () -> g.V().outE().inV().outE().inV().outE().inV(),
+                () -> g.V().out().out().out(),
+                () -> g.V().out().out().out().path(),
+                () -> g.V().repeat(__.out()).times(2),
+                () -> g.V().repeat(__.out()).times(3),
+                () -> g.V().map(v -> v.get().out().out().values("name").toList()),
+                () -> g.V().out().map(v -> v.get().out().out().values("name").toList())
+        );
+        traversals.forEach(traversal -> {
+            System.out.println("TESTING: " + traversal.get());
+            for (int i = 0; i < 5; i++) {
+                final long t = System.currentTimeMillis();
+                traversal.get().iterate();
+                System.out.println(System.currentTimeMillis() - t);
+            }
+        });
     }
 
     @Test

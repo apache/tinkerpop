@@ -92,7 +92,7 @@ public interface Path extends Cloneable {
     }
 
     /**
-     * Add a label to the current head of the path.
+     * Add label to the current head of the path.
      *
      * @param label the label to add to the head of the path
      */

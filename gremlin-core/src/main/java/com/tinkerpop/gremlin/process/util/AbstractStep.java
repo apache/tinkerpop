@@ -2,10 +2,12 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -13,12 +15,14 @@ import java.util.Optional;
  */
 public abstract class AbstractStep<S, E> implements Step<S, E> {
 
-    protected String label = null;
+    protected Optional<String> label = Optional.empty();
+    private boolean hasLabel = false;
     protected String id = Traverser.Admin.HALT;
     protected Traversal traversal;
     protected ExpandableStepIterator<S> starts;
     protected Traverser<E> nextEnd = null;
     protected boolean futureSetByChild = false;
+    private Boolean onGraphComputer;
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
@@ -31,12 +35,24 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     @Override
     public void setId(final String id) {
+        Objects.nonNull(id);
         this.id = id;
     }
 
     @Override
     public String getId() {
         return this.id;
+    }
+
+    @Override
+    public void setLabel(final String label) {
+        this.label = Optional.of(label);
+        this.hasLabel = true;
+    }
+
+    @Override
+    public Optional<String> getLabel() {
+        return this.label;
     }
 
     @Override
@@ -73,16 +89,6 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     @Override
     public Step<E, ?> getNextStep() {
         return this.nextStep;
-    }
-
-    @Override
-    public void setLabel(final String label) {
-        this.label = label;
-    }
-
-    @Override
-    public Optional<String> getLabel() {
-        return Optional.ofNullable(this.label);
     }
 
     @Override
@@ -149,8 +155,11 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     private final Traverser<E> prepareTraversalForNextStep(final Traverser<E> traverser) {
-        if (!this.futureSetByChild) ((Traverser.Admin<E>) traverser).setFutureId(this.nextStep.getId());
-        if (null != this.label) traverser.path().addLabel(this.label);
+        if (null == this.onGraphComputer)
+            this.onGraphComputer = this.getTraversal().asAdmin().getTraversalEngine().orElse(TraversalEngine.STANDARD).equals(TraversalEngine.COMPUTER);
+        if (!this.futureSetByChild)
+            ((Traverser.Admin<E>) traverser).setFutureId(this.nextStep.getId());
+        if (this.hasLabel) traverser.path().addLabel(this.label.get());
         return traverser;
     }
 

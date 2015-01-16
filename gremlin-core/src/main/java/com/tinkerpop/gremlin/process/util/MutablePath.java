@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Path;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +29,9 @@ public class MutablePath implements Path, Serializable, Cloneable {
 
     @Override
     public MutablePath clone() throws CloneNotSupportedException {
-        final MutablePath clone = new MutablePath();
+        final MutablePath clone = (MutablePath) super.clone();
+        clone.objects = new ArrayList<>();
+        clone.labels = new ArrayList<>();
         for (int i = 0; i < this.objects.size(); i++) {
             clone.objects.add(this.objects.get(i));
             clone.labels.add(new HashSet<>(this.labels.get(i)));
@@ -66,17 +69,12 @@ public class MutablePath implements Path, Serializable, Cloneable {
 
     @Override
     public List<Object> objects() {
-        return this.objects;
+        return Collections.unmodifiableList(this.objects);
     }
 
     @Override
     public List<Set<String>> labels() {
-        return this.labels;
-    }
-
-    @Override
-    public boolean isSimple() {
-        return new HashSet<>(this.objects).size() == this.objects.size();
+        return Collections.unmodifiableList(this.labels);
     }
 
     @Override

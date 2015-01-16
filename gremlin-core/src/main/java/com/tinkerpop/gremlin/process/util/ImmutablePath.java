@@ -37,46 +37,53 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
 
     private ImmutablePath(final Path previousPath, final Object currentObject, final String... currentLabels) {
         this.previousPath = previousPath;
-        Stream.of(currentLabels).forEach(this.currentLabels::add);
+        if (currentLabels.length > 0)
+            Stream.of(currentLabels).forEach(this.currentLabels::add);
         this.currentObject = currentObject;
     }
 
-
+    @Override
     public int size() {
         return this.previousPath.size() + 1;
     }
 
+    @Override
     public Path extend(final Object object, final String... labels) {
         return new ImmutablePath(this, object, labels);
     }
 
+    @Override
     public <A> A get(final int index) {
         return (this.size() - 1) == index ? (A) this.currentObject : this.previousPath.get(index);
     }
 
+    @Override
     public boolean hasLabel(final String label) {
         return this.currentLabels.contains(label) || this.previousPath.hasLabel(label);
     }
 
+    @Override
     public void addLabel(final String label) {
-
         this.currentLabels.add(label);
     }
 
+    @Override
     public List<Object> objects() {
         final List<Object> objectPath = new ArrayList<>();
         objectPath.addAll(this.previousPath.objects());
         objectPath.add(this.currentObject);
-        return objectPath;
+        return Collections.unmodifiableList(objectPath);
     }
 
+    @Override
     public List<Set<String>> labels() {
         final List<Set<String>> labelPath = new ArrayList<>();
         labelPath.addAll(this.previousPath.labels());
         labelPath.add(this.currentLabels);
-        return labelPath;
+        return Collections.unmodifiableList(labelPath);
     }
 
+    @Override
     public String toString() {
         return this.objects().toString();
     }
@@ -145,6 +152,11 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         @Override
         public boolean equals(final Object object) {
             return object instanceof HeadPath;
+        }
+
+        @Override
+        public String toString() {
+            return Collections.emptyList().toString();
         }
     }
 }

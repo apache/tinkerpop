@@ -5,12 +5,14 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -19,7 +21,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RepeatStep<S> extends AbstractStep<S, S> implements TraversalHolder<S, S> {
+public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements TraversalHolder<S, S> {
 
     private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.MERGE_IN_SIDE_EFFECTS, Nest.SET_SIDE_EFFECTS};
 
@@ -97,42 +99,6 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
         return null != this.emitPredicate && this.emitPredicate.test(traverser);
     }
 
-
-    @Override
-    protected Traverser<S> processNextStart() throws NoSuchElementException {
-        if (null == this.endStep) this.endStep = TraversalHelper.getEnd(this.repeatTraversal);
-        ////
-        while (true) {
-            if (this.repeatTraversal.hasNext()) {
-                final Traverser.Admin<S> s = this.endStep.next().asAdmin();
-                s.incrLoops(this.getId());
-                if (doUntil(s)) {
-                    s.resetLoops();
-                    return s;
-                } else {
-                    this.repeatTraversal.asAdmin().addStart(s);
-                    if (doEmit(s)) {
-                        final Traverser.Admin<S> emitSplit = s.split();
-                        emitSplit.resetLoops();
-                        return emitSplit;
-                    }
-                }
-            } else {
-                final Traverser.Admin<S> s = this.starts.next();
-                if (this.untilFirst && doUntil(s)) {
-                    s.resetLoops();
-                    return s;
-                }
-                this.repeatTraversal.asAdmin().addStart(s);
-                if (this.emitFirst && doEmit(s)) {
-                    final Traverser.Admin<S> emitSplit = s.split();
-                    emitSplit.resetLoops();
-                    return emitSplit;
-                }
-            }
-        }
-    }
-
     @Override
     public String toString() {
         if (this.emitFirst && this.untilFirst) {
@@ -169,6 +135,46 @@ public final class RepeatStep<S> extends AbstractStep<S, S> implements Traversal
             clone.emitPredicate = ((TraversalPredicate<S>) this.emitPredicate).clone();
 
         return clone;
+    }
+
+    @Override
+    protected Iterator<Traverser<S>> standardAlgorithm() throws NoSuchElementException {
+        if (null == this.endStep) this.endStep = TraversalHelper.getEnd(this.repeatTraversal);
+        ////
+        while (true) {
+            if (this.repeatTraversal.hasNext()) {
+                final Traverser.Admin<S> s = this.endStep.next().asAdmin();
+                s.incrLoops(this.getId());
+                if (doUntil(s)) {
+                    s.resetLoops();
+                    return IteratorUtils.of(s);
+                } else {
+                    this.repeatTraversal.asAdmin().addStart(s);
+                    if (doEmit(s)) {
+                        final Traverser.Admin<S> emitSplit = s.split();
+                        emitSplit.resetLoops();
+                        return IteratorUtils.of(emitSplit);
+                    }
+                }
+            } else {
+                final Traverser.Admin<S> s = this.starts.next();
+                if (this.untilFirst && doUntil(s)) {
+                    s.resetLoops();
+                    return IteratorUtils.of(s);
+                }
+                this.repeatTraversal.asAdmin().addStart(s);
+                if (this.emitFirst && doEmit(s)) {
+                    final Traverser.Admin<S> emitSplit = s.split();
+                    emitSplit.resetLoops();
+                    return IteratorUtils.of(emitSplit);
+                }
+            }
+        }
+    }
+
+    @Override
+    protected Iterator<Traverser<S>> computerAlgorithm() throws NoSuchElementException {
+        return null;
     }
 
     /////////////////////////

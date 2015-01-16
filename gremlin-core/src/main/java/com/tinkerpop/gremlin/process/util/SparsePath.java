@@ -29,7 +29,8 @@ public class SparsePath implements Path {
     @Override
     public Path extend(final Object object, final String... labels) {
         this.currentObject = object;
-        Stream.of(labels).forEach(label -> this.map.put(label, object));
+        if (labels.length > 0)
+            Stream.of(labels).forEach(label -> this.map.put(label, object));
         return this;
     }
 
@@ -40,14 +41,14 @@ public class SparsePath implements Path {
 
     @Override
     public List<Object> objects() {
-        return new ArrayList<>(this.map.values());
+        return Collections.unmodifiableList(new ArrayList<>(this.map.values()));
     }
 
     @Override
     public List<Set<String>> labels() {
         final List<Set<String>> labels = new ArrayList<>();
         this.map.forEach((k, v) -> labels.add(Collections.singleton(k)));
-        return labels;
+        return Collections.unmodifiableList(labels);
     }
 
 

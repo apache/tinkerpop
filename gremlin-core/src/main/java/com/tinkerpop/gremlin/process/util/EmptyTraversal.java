@@ -136,5 +136,8 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
         return object instanceof EmptyTraversal;
     }
 
-
+    @Override
+    public int hashCode() {
+        return -343564565;
+    }
 }
