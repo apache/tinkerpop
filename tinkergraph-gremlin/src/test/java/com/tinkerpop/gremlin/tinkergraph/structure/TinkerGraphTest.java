@@ -138,12 +138,17 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay4() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().repeat(__.out().groupCount("a")).times(2).repeat(__.in().groupCount("b")).times(2).values("name").cap("a");
-        //Traversal t = g.V().repeat(__.out()).times(2).values("name");
+        Traversal t = g.V().union(
+                __.repeat(__.union(
+                        __.out("created"),
+                        __.in("created"))).times(2),
+                __.repeat(__.union(
+                        __.in("created"),
+                        __.out("created"))).times(2)).label().groupCount().submit(g.compute());
 
-        t.submit(g.compute()).forEachRemaining(System.out::println);
+
+        t.forEachRemaining(System.out::println);
         System.out.println(t);
-
     }
 
     /**

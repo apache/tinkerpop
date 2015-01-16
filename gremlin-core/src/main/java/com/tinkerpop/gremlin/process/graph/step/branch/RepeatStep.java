@@ -23,7 +23,7 @@ import java.util.function.Predicate;
  */
 public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements TraversalHolder<S, S> {
 
-    private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.MERGE_IN_SIDE_EFFECTS, Nest.SET_SIDE_EFFECTS};
+    private static final Child[] CHILD_OPERATIONs = new Child[]{Child.SET_HOLDER, Child.SET_STRATEGIES, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS};
 
     private Traversal<S, S> repeatTraversal = null;
     private Predicate<Traverser<S>> untilPredicate = null;
@@ -46,18 +46,15 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         return requirements;
     }
 
+    @Override
+    public TraversalStrategies getChildStrategies() {
+        return TraversalHolder.super.getChildStrategies().removeStrategies(SideEffectCapStrategy.class); // no auto cap();
+    }
+
     @SuppressWarnings("unchecked")
     public void setRepeatTraversal(final Traversal<S, S> repeatTraversal) {
-        try {
-            this.repeatTraversal = repeatTraversal; // .clone();
-            this.executeTraversalOperations(NEST_OPERATIONS);
-            //
-            final TraversalStrategies strategies = this.getTraversal().asAdmin().getStrategies().clone();
-            strategies.removeStrategies(SideEffectCapStrategy.class); // no auto cap()
-            this.repeatTraversal.asAdmin().setStrategies(strategies);
-        } catch (final CloneNotSupportedException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
+        this.repeatTraversal = repeatTraversal; // .clone();
+        this.executeTraversalOperations(CHILD_OPERATIONs);
     }
 
     public void setUntilPredicate(final Predicate<Traverser<S>> untilPredicate) {
@@ -125,7 +122,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     public RepeatStep<S> clone() throws CloneNotSupportedException {
         final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
         clone.repeatTraversal = this.repeatTraversal.clone();
-        clone.executeTraversalOperations(NEST_OPERATIONS);
+        clone.executeTraversalOperations(CHILD_OPERATIONs);
 
         if (this.untilPredicate instanceof TraversalPredicate)
             clone.untilPredicate = ((TraversalPredicate<S>) this.untilPredicate).clone();

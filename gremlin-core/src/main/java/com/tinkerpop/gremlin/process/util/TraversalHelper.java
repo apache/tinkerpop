@@ -176,6 +176,7 @@ public class TraversalHelper {
             builder.append(")");
         }
         step.getLabel().ifPresent(label -> builder.append("@").append(label));
+        //builder.append("^").append(step.getId());
         return builder.toString();
     }
 
@@ -211,7 +212,7 @@ public class TraversalHelper {
 
     public static <S extends Step> List<S> getStepsOfAssignableClassRecurssively(final Class stepClass, final Traversal<?, ?> traversal) {
         final List<S> list = new ArrayList<>();
-        for (final Step<?,?> step : traversal.asAdmin().getSteps()) {
+        for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
             if (stepClass.isAssignableFrom(step.getClass()))
                 list.add((S) step);
             if (step instanceof TraversalHolder) {
@@ -310,16 +311,20 @@ public class TraversalHelper {
         return requirements;
     }
 
-    private static int[] getYZParentX(final Traversal<?, ?> traversal) {
+    private static int[] getYZParentXParentZ(final Traversal<?, ?> traversal) {
         int y = -1;
         int z = -1;
-        int parentX = 0;
+        int parentX = -1;
+        int parentZ = -1;
         Traversal current = traversal;
         while (!(current instanceof EmptyTraversal)) {
             y++;
             final TraversalHolder<?, ?> holder = current.asAdmin().getTraversalHolder();
-            if (!(holder instanceof EmptyStep)) {
+            if (parentX == -1 && !(holder instanceof EmptyStep)) {
                 parentX = getParentX(holder.asStep().getId()) + 1;
+            }
+            if (parentZ == -1 && !(holder instanceof EmptyStep)) {
+                parentZ = getParentZ(holder.asStep().getId()) + 1;
             }
             if (z == -1) {
                 for (int i = 0; i < holder.getTraversals().size(); i++) {
@@ -330,20 +335,25 @@ public class TraversalHelper {
             }
             current = holder.asStep().getTraversal();
         }
-        return new int[]{y, z == -1 ? 0 : z, parentX};
+        return new int[]{y, z == -1 ? 0 : z, parentX == -1 ? 0 : parentX, parentZ == -1 ? 0 : parentZ};
     }
 
     private static final Integer getParentX(final String id) {
         return id.equals(Traverser.Admin.HALT) ? -1 : Integer.valueOf(id.split(":")[0]);
     }
 
+    private static final Integer getParentZ(final String id) {
+        return id.equals(Traverser.Admin.HALT) ? -1 : Integer.valueOf(id.split(":")[2]);
+    }
+
 
     public static void reIdSteps(final StepPosition stepPosition, final Traversal<?, ?> traversal) {
         stepPosition.reset();
-        final int[] yzParentX = TraversalHelper.getYZParentX(traversal);
-        stepPosition.y = yzParentX[0];
-        stepPosition.z = yzParentX[1];
-        stepPosition.parentX = yzParentX[2];
+        final int[] yzParentXParentZ = TraversalHelper.getYZParentXParentZ(traversal);
+        stepPosition.y = yzParentXParentZ[0];
+        stepPosition.z = yzParentXParentZ[1];
+        stepPosition.parentX = yzParentXParentZ[2];
+        stepPosition.parentZ = yzParentXParentZ[3];
         for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
             step.setId(stepPosition.nextXId());
         }

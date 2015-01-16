@@ -1,9 +1,11 @@
 package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
+import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
@@ -19,15 +21,19 @@ import java.util.Set;
  */
 public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements TraversalHolder<S, E> {
 
-    private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.MERGE_IN_SIDE_EFFECTS, Nest.SET_SIDE_EFFECTS, Nest.SET_STRATEGIES};
+    private static final Child[] CHILD_OPERATIONS = new Child[]{Child.SET_HOLDER, Child.SET_STRATEGIES, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS};
 
     private List<Traversal<S, E>> traversals;
 
-    @SafeVarargs
     public UnionStep(final Traversal traversal, final Traversal<S, E>... unionTraversals) {
         super(traversal);
         this.traversals = Arrays.asList(unionTraversals);
-        this.executeTraversalOperations(NEST_OPERATIONS);
+        this.executeTraversalOperations(CHILD_OPERATIONS);
+    }
+
+    @Override
+    public TraversalStrategies getChildStrategies() {
+        return TraversalHolder.super.getChildStrategies().removeStrategies(SideEffectCapStrategy.class); // no auto cap();
     }
 
     @Override
@@ -72,7 +78,7 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
         for (final Traversal<S, E> union : this.traversals) {
             clone.traversals.add(union.clone());
         }
-        clone.executeTraversalOperations(NEST_OPERATIONS);
+        clone.executeTraversalOperations(CHILD_OPERATIONS);
         return clone;
     }
 

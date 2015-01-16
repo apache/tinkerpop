@@ -17,7 +17,7 @@ import java.util.function.BiPredicate;
  */
 public final class WhereStep<E> extends FilterStep<Map<String, E>> implements TraversalHolder {
 
-    private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.SET_STRATEGIES};
+    private static final Child[] CHILD_OPERATIONs = new Child[]{Child.SET_HOLDER, Child.SET_STRATEGIES};
 
     private final String firstKey;
     private final String secondKey;
@@ -42,7 +42,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         this.biPredicate = null;
         this.constraint = constraint;
         this.constraint.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());
-        this.executeTraversalOperations(NEST_OPERATIONS);
+        this.executeTraversalOperations(CHILD_OPERATIONs);
         WhereStep.generatePredicate(this);
     }
 
@@ -64,7 +64,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         final WhereStep<E> clone = (WhereStep<E>) super.clone();
         if (null != this.constraint) {
             clone.constraint = this.constraint.clone();
-            clone.executeTraversalOperations(NEST_OPERATIONS);
+            clone.executeTraversalOperations(CHILD_OPERATIONs);
         }
         WhereStep.generatePredicate(clone);
         return clone;

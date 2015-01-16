@@ -30,7 +30,7 @@ import java.util.function.Function;
  */
 public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> implements TraversalHolder {
 
-    private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.SET_STRATEGIES}; // TODO: Nest.SET/MERGE_SIDE_EFFECTS?
+    private static final Child[] CHILD_OPERATIONs = new Child[]{Child.SET_HOLDER, Child.SET_STRATEGIES}; // TODO: Nest.SET/MERGE_SIDE_EFFECTS?
 
     static final BiConsumer<String, Object> TRIVIAL_CONSUMER = (s, t) -> {
     };
@@ -64,7 +64,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
             this.traversals.add(tl);
         }
         checkSolvability();
-        this.executeTraversalOperations(NEST_OPERATIONS);
+        this.executeTraversalOperations(CHILD_OPERATIONs);
     }
 
     @Override
@@ -89,7 +89,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
         addTraversalPrivate(traversal);
         this.traversals.add(traversal);
         checkSolvability();
-        this.executeTraversalOperations(NEST_OPERATIONS);
+        this.executeTraversalOperations(CHILD_OPERATIONs);
 
     }
 

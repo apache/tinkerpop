@@ -15,14 +15,14 @@ import java.util.Set;
  */
 public final class LocalStep<S, E> extends FlatMapStep<S, E> implements TraversalHolder<S, E> {
 
-    private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.SET_STRATEGIES}; // TODO: Nest.SET/MERGE_SIDE_EFFECTS?
+    private static final Child[] CHILD_OPERATIONs = new Child[]{Child.SET_HOLDER, Child.SET_STRATEGIES}; // TODO: Nest.SET/MERGE_SIDE_EFFECTS?
 
     private Traversal<S, E> localTraversal;
 
     public LocalStep(final Traversal traversal, final Traversal<S, E> localTraversal) {
         super(traversal);
         this.localTraversal = localTraversal;
-        this.executeTraversalOperations(NEST_OPERATIONS);
+        this.executeTraversalOperations(CHILD_OPERATIONs);
         LocalStep.generateFunction(this);
     }
 
@@ -30,7 +30,7 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements Traversa
     public LocalStep<S, E> clone() throws CloneNotSupportedException {
         final LocalStep<S, E> clone = (LocalStep<S, E>) super.clone();
         clone.localTraversal = this.localTraversal.clone();
-        clone.executeTraversalOperations(NEST_OPERATIONS);
+        clone.executeTraversalOperations(CHILD_OPERATIONs);
         LocalStep.generateFunction(clone);
         return clone;
     }

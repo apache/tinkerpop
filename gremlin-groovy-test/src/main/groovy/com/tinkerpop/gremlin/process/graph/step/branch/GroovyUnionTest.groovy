@@ -28,6 +28,17 @@ public abstract class GroovyUnionTest {
         public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
             g.V.choose({ it.label() == 'person' }, __.union(__.out.lang, __.out.name), __.in.label).groupCount
         }
+
+        public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount() {
+            g.V.union(
+                    __.repeat(__.union(
+                            __.out('created'),
+                            __.in('created'))).times(2),
+                    __.repeat(__.union(
+                            __.in('created'),
+                            __.out('created'))).times(2)).label.groupCount()
+        }
+
     }
 
     public static class ComputerTest extends UnionTest {
@@ -45,7 +56,20 @@ public abstract class GroovyUnionTest {
         }
 
         public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
-            ComputerTestHelper.compute(" g.V.choose({ it.label() == 'person' }, __.union(__.out.lang, __.out.name), __.in.label).groupCount", g)
+            ComputerTestHelper.compute("g.V.choose({ it.label() == 'person' }, __.union(__.out.lang, __.out.name), __.in.label).groupCount", g)
+        }
+
+
+        public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount() {
+            ComputerTestHelper.compute("""
+            g.V.union(
+                    __.repeat(__.union(
+                            __.out('created'),
+                            __.in('created'))).times(2),
+                    __.repeat(__.union(
+                            __.in('created'),
+                            __.out('created'))).times(2)).label.groupCount()
+           """, g)
         }
     }
 }

@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -27,6 +26,8 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX();
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount();
+
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -88,6 +89,19 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount();
+        printTraversalForm(traversal);
+        final Map<String, Long> groupCount = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(12l, groupCount.get("software").longValue());
+        assertEquals(20l, groupCount.get("person").longValue());
+        assertEquals(2, groupCount.size());
+
+    }
+
     public static class StandardTest extends UnionTest {
 
         public StandardTest() {
@@ -108,6 +122,16 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
             return (Traversal) g.V().choose(v -> v.label().equals("person"), __.union(__.out().values("lang"), __.out().values("name")), __.in().label()).groupCount();
+        }
+
+        public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount() {
+            return (Traversal) g.V().union(
+                    __.repeat(__.union(
+                            __.out("created"),
+                            __.in("created"))).times(2),
+                    __.repeat(__.union(
+                            __.in("created"),
+                            __.out("created"))).times(2)).label().groupCount();
         }
     }
 
@@ -131,6 +155,16 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
             return (Traversal) g.V().choose(v -> v.label().equals("person"), __.union(__.out().values("lang"), __.out().values("name")), __.in().label()).groupCount().submit(g.compute());
+        }
+
+        public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount() {
+            return (Traversal) g.V().union(
+                    __.repeat(__.union(
+                            __.out("created"),
+                            __.in("created"))).times(2),
+                    __.repeat(__.union(
+                            __.in("created"),
+                            __.out("created"))).times(2)).label().groupCount().submit(g.compute());
         }
     }
 }

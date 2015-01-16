@@ -1,9 +1,11 @@
 package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
+import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -26,7 +28,7 @@ import java.util.function.Predicate;
  */
 public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implements TraversalHolder<S, E> {
 
-    private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.MERGE_IN_SIDE_EFFECTS, Nest.SET_SIDE_EFFECTS, Nest.SET_STRATEGIES};
+    private static final Child[] CHILD_OPERATIONS = new Child[]{Child.SET_HOLDER, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS, Child.SET_STRATEGIES};
 
     private final Function<S, M> mapFunction;
     private Map<M, Traversal<S, E>> choices;
@@ -44,7 +46,12 @@ public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implement
         super(traversal);
         this.mapFunction = mapFunction;
         this.choices = choices;
-        this.executeTraversalOperations(NEST_OPERATIONS);
+        this.executeTraversalOperations(CHILD_OPERATIONS);
+    }
+
+    @Override
+    public TraversalStrategies getChildStrategies() {
+        return TraversalHolder.super.getChildStrategies().removeStrategies(SideEffectCapStrategy.class); // no auto cap();
     }
 
     @Override
@@ -88,7 +95,7 @@ public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implement
         for (final Map.Entry<M, Traversal<S, E>> entry : this.choices.entrySet()) {
             clone.choices.put(entry.getKey(), entry.getValue().clone());
         }
-        clone.executeTraversalOperations(NEST_OPERATIONS);
+        clone.executeTraversalOperations(CHILD_OPERATIONS);
         return clone;
     }
 
