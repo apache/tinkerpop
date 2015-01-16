@@ -937,6 +937,8 @@ gremlin> g.V().repeat(__.both()).times(1000000).emit().range(6,10)
 Repeat Step
 ~~~~~~~~~~~
 
+image::gremlin-fade.png[width=350]
+
 The `repeat()`-step (*branch*) is used for looping over a traversal given some break predicate. Below are some examples of `repeat()`-step in action.
 
 [source,groovy]
