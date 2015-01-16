@@ -24,6 +24,10 @@ public abstract class GroovyUnionTest {
         public Traversal<Vertex, String> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX() {
             g.V.choose({ it.label() == 'person' }, __.union(__.out.lang, __.out.name), __.in.label)
         }
+
+        public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
+            g.V.choose({ it.label() == 'person' }, __.union(__.out.lang, __.out.name), __.in.label).groupCount
+        }
     }
 
     public static class ComputerTest extends UnionTest {
@@ -38,6 +42,10 @@ public abstract class GroovyUnionTest {
 
         public Traversal<Vertex, String> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX() {
             ComputerTestHelper.compute("g.V.choose({ it.label() == 'person' }, __.union(__.out.lang, __.out.name), __.in.label)", g)
+        }
+
+        public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
+            ComputerTestHelper.compute(" g.V.choose({ it.label() == 'person' }, __.union(__.out.lang, __.out.name), __.in.label).groupCount", g)
         }
     }
 }

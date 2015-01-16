@@ -29,7 +29,6 @@ public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implement
 
     private final Function<S, M> mapFunction;
     private Map<M, Traversal<S, E>> choices;
-    private boolean first = true;
 
     public ChooseStep(final Traversal traversal, final Predicate<S> predicate, final Traversal<S, E> trueChoice, final Traversal<S, E> falseChoice) {
         this(traversal,
@@ -71,12 +70,6 @@ public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implement
 
     @Override
     protected Iterator<Traverser<E>> computerAlgorithm() {
-        if (this.first) {
-            this.first = false;
-            for (final Traversal<S, E> choice : this.choices.values()) {
-                TraversalHelper.getEnd(choice).setNextStep(this.getNextStep());
-            }
-        }
         final List<Traverser<E>> ends = new ArrayList<>();
         while (ends.isEmpty()) {
             final Traverser<S> start = this.starts.next();

@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.graph.step.branch.util.RouteStep;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -22,7 +23,6 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
     private static final Nest[] NEST_OPERATIONS = new Nest[]{Nest.SET_HOLDER, Nest.MERGE_IN_SIDE_EFFECTS, Nest.SET_SIDE_EFFECTS, Nest.SET_STRATEGIES};
 
     private List<Traversal<S, E>> traversals;
-    private boolean first = true;
 
     @SafeVarargs
     public UnionStep(final Traversal traversal, final Traversal<S, E>... unionTraversals) {
@@ -44,12 +44,6 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
 
     @Override
     protected Iterator<Traverser<E>> computerAlgorithm() {
-        if (this.first) {
-            this.first = false;
-            for (final Traversal<S, E> union : this.traversals) {
-                TraversalHelper.getEnd(union).setNextStep(this.getNextStep());
-            }
-        }
         final List<Traverser<E>> ends = new ArrayList<>();
         while (ends.isEmpty()) {
             final Traverser.Admin<S> start = this.starts.next();

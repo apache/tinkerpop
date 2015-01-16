@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -127,9 +128,12 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay4() throws Exception {
         Graph g = TinkerFactory.createModern();
-        g.V().choose(v -> v.label().equals("person"),
+        Traversal t = g.V().choose(v -> v.label().equals("person"),
                 __.union(__.out().<String>values("lang"), __.out().<String>values("name")),
-                __.in().label()).map(s -> s.get() + "^^").submit(g.compute()).forEachRemaining(System.out::println);
+                __.in().label()).groupCount();
+        t.submit(g.compute()).forEachRemaining(System.out::println);
+        System.out.println(t);
+
     }
 
     /**

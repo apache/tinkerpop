@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.branch.util.RouteStep;
 import com.tinkerpop.gremlin.process.graph.strategy.ComparatorHolderRemovalStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.DedupOptimizerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.EngineDependentStrategy;
@@ -9,6 +10,7 @@ import com.tinkerpop.gremlin.process.graph.strategy.LabeledEndStepStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.MatchWhereStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.ReducingStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.RepeatLinearStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.RouteStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
@@ -153,7 +155,8 @@ public interface TraversalStrategies extends Cloneable {
                     ComparatorHolderRemovalStrategy.instance(),
                     ReducingStrategy.instance(),
                     LabeledEndStepStrategy.instance(),
-                    EngineDependentStrategy.instance());
+                    EngineDependentStrategy.instance(),
+                    RouteStrategy.instance());
 
             try {
                 CACHE.put(Graph.class, coreStrategies.clone());
