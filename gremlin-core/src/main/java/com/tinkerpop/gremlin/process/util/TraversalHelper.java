@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -47,13 +48,13 @@ public class TraversalHelper {
     }
 
 
-    public static <S, E> Optional<Step<S, E>> getStepRecurssively(final String id, final Traversal<?, ?> traversal) {
+    public static <S, E> Optional<Step<S, E>> getStepByIdRecurssively(final String id, final Traversal<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
             if (step.getId().equals(id))
                 return Optional.of((Step) step);
             else if (step instanceof TraversalHolder) {
                 for (final Traversal<?, ?> nest : ((TraversalHolder<?, ?>) step).getTraversals()) {
-                    final Optional<Step<S, E>> optional = TraversalHelper.getStepRecurssively(id, nest);
+                    final Optional<Step<S, E>> optional = TraversalHelper.getStepByIdRecurssively(id, nest);
                     if (optional.isPresent())
                         return optional;
                 }
@@ -208,6 +209,20 @@ public class TraversalHelper {
         return (List) traversal.asAdmin().getSteps().stream().filter(step -> stepClass.isAssignableFrom(step.getClass())).collect(Collectors.toList());
     }
 
+    public static <S extends Step> List<S> getStepsOfAssignableClassRecurssively(final Class stepClass, final Traversal<?, ?> traversal) {
+        final List<S> list = new ArrayList<>();
+        for (final Step<?,?> step : traversal.asAdmin().getSteps()) {
+            if (stepClass.isAssignableFrom(step.getClass()))
+                list.add((S) step);
+            if (step instanceof TraversalHolder) {
+                for (final Traversal<?, ?> nest : ((TraversalHolder<?, ?>) step).getTraversals()) {
+                    list.addAll(TraversalHelper.getStepsOfAssignableClassRecurssively(stepClass, nest));
+                }
+            }
+        }
+        return list;
+    }
+
     public static boolean hasStepOfClass(final Class<? extends Step> stepClass, final Traversal<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
             if (step.getClass().equals(stepClass)) {
@@ -295,30 +310,40 @@ public class TraversalHelper {
         return requirements;
     }
 
-    private static int[] getTraversalDepthAndBreadth(final Traversal<?, ?> traversal) {
-        int depth = -1;
-        int breadth = -1;
+    private static int[] getYZParentX(final Traversal<?, ?> traversal) {
+        int y = -1;
+        int z = -1;
+        int parentX = 0;
         Traversal current = traversal;
         while (!(current instanceof EmptyTraversal)) {
-            depth++;
+            y++;
             final TraversalHolder<?, ?> holder = current.asAdmin().getTraversalHolder();
-            if (breadth == -1) {
+            if (!(holder instanceof EmptyStep)) {
+                parentX = getParentX(holder.asStep().getId()) + 1;
+            }
+            if (z == -1) {
                 for (int i = 0; i < holder.getTraversals().size(); i++) {
                     if (holder.getTraversals().get(i) == current) {
-                        breadth = i;
+                        z = i;
                     }
                 }
             }
             current = holder.asStep().getTraversal();
         }
-        return new int[]{depth, breadth == -1 ? 0 : breadth};
+        return new int[]{y, z == -1 ? 0 : z, parentX};
     }
+
+    private static final Integer getParentX(final String id) {
+        return id.equals(Traverser.Admin.HALT) ? -1 : Integer.valueOf(id.split(":")[0]);
+    }
+
 
     public static void reIdSteps(final StepPosition stepPosition, final Traversal<?, ?> traversal) {
         stepPosition.reset();
-        final int[] depthBreadth = TraversalHelper.getTraversalDepthAndBreadth(traversal);
-        stepPosition.y = depthBreadth[0];
-        stepPosition.z = depthBreadth[1];
+        final int[] yzParentX = TraversalHelper.getYZParentX(traversal);
+        stepPosition.y = yzParentX[0];
+        stepPosition.z = yzParentX[1];
+        stepPosition.parentX = yzParentX[2];
         for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
             step.setId(stepPosition.nextXId());
         }

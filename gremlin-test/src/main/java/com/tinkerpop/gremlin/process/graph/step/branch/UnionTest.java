@@ -44,7 +44,6 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore("Need to de-linearize RepeatStep")
     @LoadGraphWith(MODERN)
     public void g_VX1X_unionXrepeatXoutX_timesX2X__outX_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_unionXrepeatXoutX_timesX2X__outX_name(convertToVertexId("marko"));

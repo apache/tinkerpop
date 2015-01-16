@@ -106,13 +106,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         traversals.add(get_g_V_repeatXoutX_timesX2X_repeatXinX_timesX2X_name());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
-            int count = 0;
-            while (traversal.hasNext()) {
-                assertEquals("marko", traversal.next());
-                count++;
-            }
-            assertEquals(2, count);
-            assertFalse(traversal.hasNext());
+            checkResults(Arrays.asList("marko","marko"),traversal);
         });
     }
 

@@ -138,9 +138,9 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay4() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().choose(v -> v.label().equals("person"),
-                __.union(__.out().<String>values("lang"), __.out().<String>values("name")),
-                __.in().label()).groupCount();
+        Traversal t = g.V().repeat(__.out().groupCount("a")).times(2).repeat(__.in().groupCount("b")).times(2).values("name").cap("a");
+        //Traversal t = g.V().repeat(__.out()).times(2).values("name");
+
         t.submit(g.compute()).forEachRemaining(System.out::println);
         System.out.println(t);
 

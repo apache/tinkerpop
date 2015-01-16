@@ -131,7 +131,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
      */
     public interface Admin<T> extends Traverser<T>, Attachable<Admin<T>> {
 
-        public static final String HALT = Graph.Hidden.hide("halt");
+        public static final String HALT = "halt";
 
         /**
          * When two traversers are {@link Traverser#equals} to each other, then they can be merged.

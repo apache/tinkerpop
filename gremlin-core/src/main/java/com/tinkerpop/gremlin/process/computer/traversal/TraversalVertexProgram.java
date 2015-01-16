@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
@@ -88,10 +89,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             throw new IllegalArgumentException("The configuration does not have a traversal supplier");
         }
         this.traversal = this.traversalSupplier.get().get();
-        this.traversal.asAdmin().getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
-            final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
-            this.mapReducers.add(mapReduce);
-        });
+        for (final Step<?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecurssively(MapReducer.class, this.traversal)) {
+            this.mapReducers.add(((MapReducer) mapReducer).getMapReduce());
+        }
         if (!(TraversalHelper.getEnd(this.traversal) instanceof SideEffectCapStep))
             this.mapReducers.add(new TraverserMapReduce(TraversalHelper.getEnd(this.traversal)));
     }
