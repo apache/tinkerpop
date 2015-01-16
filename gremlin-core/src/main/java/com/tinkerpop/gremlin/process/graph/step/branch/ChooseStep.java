@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,16 +71,14 @@ public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implement
 
     @Override
     protected Iterator<Traverser<E>> computerAlgorithm() {
-        final List<Traverser<E>> ends = new ArrayList<>();
-        while (ends.isEmpty()) {
+        while (true) {
             final Traverser<S> start = this.starts.next();
             final Traversal<S, E> choice = this.choices.get(this.mapFunction.apply(start.get()));
             if (null != choice) {
                 start.asAdmin().setFuture(TraversalHelper.getStart(choice).getLabel());
-                ends.add((Traverser) start);
+                return IteratorUtils.of((Traverser) start);
             }
         }
-        return ends.iterator();
     }
 
     @Override
