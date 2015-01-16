@@ -21,7 +21,7 @@ public class IdentityRemovalStrategy extends AbstractTraversalStrategy {
             return;
 
         TraversalHelper.getStepsOfClass(IdentityStep.class, traversal).stream()
-                .filter(step -> step.getLabel().isPresent())
+                .filter(step -> !step.getLabel().isPresent())
                 .forEach(traversal::removeStep);
     }
 
