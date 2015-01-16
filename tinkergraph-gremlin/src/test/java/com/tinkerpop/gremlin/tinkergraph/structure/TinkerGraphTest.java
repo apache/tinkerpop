@@ -113,11 +113,11 @@ public class TinkerGraphTest {
                 () -> g.V().out().map(v -> v.get().out().out().values("name").toList())
         );
         traversals.forEach(traversal -> {
-            System.out.println("TESTING: " + traversal.get());
-            for (int i = 0; i < 5; i++) {
+            System.out.println("\nTESTING: " + traversal.get());
+            for (int i = 0; i < 7; i++) {
                 final long t = System.currentTimeMillis();
                 traversal.get().iterate();
-                System.out.println(System.currentTimeMillis() - t);
+                System.out.print("   " + (System.currentTimeMillis() - t));
             }
         });
     }
