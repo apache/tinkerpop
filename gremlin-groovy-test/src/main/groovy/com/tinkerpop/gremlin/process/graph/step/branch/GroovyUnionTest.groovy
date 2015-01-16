@@ -37,7 +37,7 @@ public abstract class GroovyUnionTest {
         }
 
         public Traversal<Vertex, String> get_g_VX1X_unionXrepeatXoutX_timesX2X__outX_name(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(v1Id).union(__.repeat(__.out).times(2), __.out).name", g)
+            ComputerTestHelper.compute("g.V(${v1Id}).union(__.repeat(__.out).times(2), __.out).name", g)
         }
 
         public Traversal<Vertex, String> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX() {
