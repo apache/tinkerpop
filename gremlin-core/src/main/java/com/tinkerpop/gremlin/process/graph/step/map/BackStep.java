@@ -30,8 +30,8 @@ public final class BackStep<S, E> extends MapStep<S, E> implements EngineDepende
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        // TODO: return this.requiresPaths ? Collections.singleton(TraverserRequirement.PATH) : Collections.singleton(TraverserRequirement.PATH_ACCESS);
-        return Collections.singleton(TraverserRequirement.PATH);
+        //return this.requiresPaths ? Collections.singleton(TraverserRequirement.PATH) : Collections.singleton(TraverserRequirement.PATH_ACCESS);
+        return Collections.singleton(TraverserRequirement.PATH); // TODO: if the traversal isn't nested, path access works
     }
 
     @Override
