@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 
 import java.util.Iterator;
@@ -22,7 +21,6 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected ExpandableStepIterator<S> starts;
     protected Traverser<E> nextEnd = null;
     protected boolean futureSetByChild = false;
-    private Boolean onGraphComputer;
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
@@ -155,10 +153,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     private final Traverser<E> prepareTraversalForNextStep(final Traverser<E> traverser) {
-        if (null == this.onGraphComputer)
-            this.onGraphComputer = this.getTraversal().asAdmin().getTraversalEngine().orElse(TraversalEngine.STANDARD).equals(TraversalEngine.COMPUTER);
-        if (!this.futureSetByChild)
-            ((Traverser.Admin<E>) traverser).setFutureId(this.nextStep.getId());
+        if (!this.futureSetByChild) ((Traverser.Admin<E>) traverser).setFutureId(this.nextStep.getId());
         if (this.hasLabel) traverser.path().addLabel(this.label.get());
         return traverser;
     }
