@@ -54,7 +54,7 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
             final Traverser.Admin<S> start = this.starts.next();
             for (final Traversal<S, E> union : this.traversals) {
                 final Traverser.Admin<S> unionSplit = start.split();
-                unionSplit.setFutureId(TraversalHelper.getStart(union.asAdmin()).getId());
+                unionSplit.setStepId(TraversalHelper.getStart(union.asAdmin()).getId());
                 ends.add((Traverser) unionSplit);
             }
         }

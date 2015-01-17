@@ -37,12 +37,12 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public String getFutureId() {
+    public String getStepId() {
         return HALT;
     }
 
     @Override
-    public void setFutureId(final String stepId) {
+    public void setStepId(final String stepId) {
 
     }
 

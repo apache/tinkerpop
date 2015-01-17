@@ -186,30 +186,30 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
         public void resetLoops();
 
         /**
-         * Return the future step of the traverser as signified by the step's unique id.
+         * Get the step id of where the traverser is located.
          * This is typically used in multi-machine systems that require the movement of
          * traversers between different traversal instances.
          *
          * @return The future step for the traverser
          */
-        public String getFutureId();
+        public String getStepId();
 
         /**
-         * Set the future of the traverser as signified by the step's id.
+         * Set the step id of where the traverser is located.
          * If the future is {@link Traverser.Admin#HALT}, then {@link Traverser.Admin#isHalted()} is true.
          *
          * @param stepId The future labeled step of the traverser
          */
-        public void setFutureId(final String stepId);
+        public void setStepId(final String stepId);
 
         /**
          * If the traverser has "no future" then it is done with its lifecycle.
-         * This does not mean that the traverser is "dead," only that it has successfully passed through the {@link Traversal}.
+         * This does not mean that the traverser is "dead," only that it has successfully passed through a {@link Traversal}.
          *
          * @return Whether the traverser is done executing or not
          */
         public default boolean isHalted() {
-            return getFutureId().equals(HALT);
+            return getStepId().equals(HALT);
         }
 
         /**

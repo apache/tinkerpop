@@ -32,7 +32,7 @@ public class B_O_P_PA_S_SE_SL_Traverser<T> extends AbstractPathTraverser<T> {
         return (object instanceof B_O_P_PA_S_SE_SL_Traverser)
                 && ((B_O_P_PA_S_SE_SL_Traverser) object).path().equals(this.path) // TODO: path equality
                 && ((B_O_P_PA_S_SE_SL_Traverser) object).get().equals(this.t)
-                && ((B_O_P_PA_S_SE_SL_Traverser) object).getFutureId().equals(this.getFutureId())
+                && ((B_O_P_PA_S_SE_SL_Traverser) object).getStepId().equals(this.getStepId())
                 && ((B_O_P_PA_S_SE_SL_Traverser) object).loops() == this.loops()
                 && (null == this.sack);
     }

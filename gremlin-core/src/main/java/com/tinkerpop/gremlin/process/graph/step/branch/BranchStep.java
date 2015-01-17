@@ -33,7 +33,7 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
 
     public BranchStep(final Traversal traversal) {
         super(traversal);
-        this.futureSetByChild = true;
+        this.traverserStepIdSetByChild = true;
     }
 
     @Override
@@ -63,7 +63,7 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
                         future = TraversalHelper.getStepById(stepLabel, this.getTraversal().asAdmin()).getNextStep().getId();
                     }
                 }
-                sibling.setFutureId(future);
+                sibling.setStepId(future);
                 this.graphComputerQueue.add(sibling);
             }
         }
@@ -74,10 +74,10 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
         for (final String stepLabel : this.branchFunction.apply(traverser)) {
             final Traverser.Admin<S> sibling = traverser.asAdmin().split();
             if (stepLabel.isEmpty()) {
-                sibling.setFutureId(this.getNextStep().getId());
+                sibling.setStepId(this.getNextStep().getId());
                 this.getNextStep().addStart(sibling);
             } else {
-                sibling.setFutureId(stepLabel);
+                sibling.setStepId(stepLabel);
                 TraversalHelper.<S, Object>getStepByLabel(stepLabel, this.getTraversal().asAdmin()).getNextStep().addStart((Traverser) sibling);
             }
         }

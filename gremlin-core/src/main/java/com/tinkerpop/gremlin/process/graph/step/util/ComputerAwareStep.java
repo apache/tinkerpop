@@ -35,7 +35,7 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
     public void onEngine(final TraversalEngine engine) {
         if (engine.equals(TraversalEngine.COMPUTER)) {
             this.onGraphComputer = true;
-            this.futureSetByChild = true;
+            this.traverserStepIdSetByChild = true;
         }
     }
 

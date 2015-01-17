@@ -134,7 +134,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 final Element start = starts.next();
                 if (ElementHelper.idExists(start.id(), startStep.getIds())) {
                     final Traverser.Admin<Element> traverser = traverserGenerator.generate(start, startStep, 1l);
-                    traverser.setFutureId(future);
+                    traverser.setStepId(future);
                     traverser.detach();
                     if (traverser.isHalted())
                         haltedTraversers.add((Traverser.Admin) traverser);

@@ -98,12 +98,12 @@ public abstract class AbstractPathTraverser<T> implements Traverser<T>, Traverse
     /////////////////
 
     @Override
-    public String getFutureId() {
+    public String getStepId() {
         return this.future;
     }
 
     @Override
-    public void setFutureId(final String stepId) {
+    public void setStepId(final String stepId) {
         this.future = stepId;
     }
 

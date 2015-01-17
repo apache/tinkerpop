@@ -173,14 +173,14 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         final Traverser.Admin<S> start = this.starts.next();
         if (this.untilFirst && doUntil(start)) {
             start.resetLoops();
-            start.setFutureId(this.getNextStep().getId());
+            start.setStepId(this.getNextStep().getId());
             return IteratorUtils.of(start);
         } else {
-            start.setFutureId(TraversalHelper.getStart(this.repeatTraversal.asAdmin()).getId());
+            start.setStepId(TraversalHelper.getStart(this.repeatTraversal.asAdmin()).getId());
             if (this.emitFirst && doEmit(start)) {
                 final Traverser.Admin<S> emitSplit = start.split();
                 emitSplit.resetLoops();
-                emitSplit.setFutureId(this.getNextStep().getId());
+                emitSplit.setStepId(this.getNextStep().getId());
                 return IteratorUtils.of(start, emitSplit);
             } else {
                 return IteratorUtils.of(start);

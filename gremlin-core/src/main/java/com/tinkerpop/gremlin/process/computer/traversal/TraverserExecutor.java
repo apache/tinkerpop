@@ -58,7 +58,7 @@ public final class TraverserExecutor {
             // process local traversers and if alive, repeat, else halt.
             aliveTraversers.clear();
             toProcessTraversers.forEach(start -> {
-                final Step<?, ?> step = traversalMatrix.getStepById(start.getFutureId());
+                final Step<?, ?> step = traversalMatrix.getStepById(start.getStepId());
                 step.addStart((Traverser.Admin) start);
                 step.forEachRemaining(end -> {
                     if (end.asAdmin().isHalted()) {

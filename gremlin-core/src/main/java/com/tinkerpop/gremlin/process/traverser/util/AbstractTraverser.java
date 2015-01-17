@@ -69,12 +69,12 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
     }
 
     @Override
-    public String getFutureId() {
+    public String getStepId() {
         throw new UnsupportedOperationException("This traverser does not support futures: " + this.getClass().getCanonicalName());
     }
 
     @Override
-    public void setFutureId(final String stepId) {
+    public void setStepId(final String stepId) {
 
     }
 

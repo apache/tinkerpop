@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Renamed `Traverser.Admin.setFuture()` and `Traverser.Admin.getFuture()` to `setStepId()` and `getStepId()`, respectively.
+* Added `TraversalMatrix` for random access to steps in a traversal by their id. Used by `TraversalVertexProgram`.
 * Added unique identifies to `Step` that are not the user provided labels. `Step.getLabel()` now returns an `Optional<String>`.
 * Removed `UnionLinearStrategy`, `ChooseLinearStrategy`, and `RepeatLinearStrategy` as nested traversals are now natively supported in OLAP.
 * Fixed `Neo4jGraph` around manual transaction behavior on `commit` and `rollback` such that they would throw exceptions if a transaction was not open.
@@ -19,7 +21,6 @@ TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 * `Step.getRequirements()` returns a `Set<TraverserRequirement>` which is what is required of the `Traverser` by the `Step`.
 * `Traverser` now extends `Cloneable` and `Traverser.clone()` is used to good effect in `Traverser.split()`.
 * Added `AbstractTraverser` for which all traversers extend.
-* Added `TraverserSerializer` for a generic way to detach and serialize a traverser.
 * Moved `Traversal.SideEffects` to `TraversalSideEffects` as sideEffects are not necessarily tied to the traversal.
 * Removed `Graph.of()` for generating anonymous graph traversals -- replaced by `__`-model.
 * Removed `Graph` being stored in `Traversal.SideEffects`. Too dangerous when moving between OLTP and OLAP and its limited uses were worked around easily.

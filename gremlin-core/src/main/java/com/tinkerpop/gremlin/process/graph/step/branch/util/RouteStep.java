@@ -24,14 +24,14 @@ public class RouteStep<S> extends AbstractStep<S, S> {
         super(traversal);
         this.routeTo = routeTo;
         this.repeatStep = null;
-        this.futureSetByChild = true;
+        this.traverserStepIdSetByChild = true;
     }
 
     public RouteStep(final Traversal traversal, final RepeatStep<S> repeatStep, final String routeTo) {
         super(traversal);
         this.routeTo = routeTo;
         this.repeatStep = repeatStep;
-        this.futureSetByChild = true;
+        this.traverserStepIdSetByChild = true;
     }
 
     @Override
@@ -41,20 +41,20 @@ public class RouteStep<S> extends AbstractStep<S, S> {
         /////
         final Traverser.Admin<S> start = this.starts.next();
         if (null == this.repeatStep) {
-            start.setFutureId(this.routeTo);
+            start.setStepId(this.routeTo);
             return start;
         } else {
             start.incrLoops(this.repeatStep.getId());
             if (!this.repeatStep.isUntilFirst() && this.repeatStep.doUntil(start)) {
                 start.resetLoops();
-                start.setFutureId(this.routeTo);
+                start.setStepId(this.routeTo);
                 return start;
             } else {
-                start.setFutureId(this.repeatStep.getId());
+                start.setStepId(this.repeatStep.getId());
                 if (!this.repeatStep.isEmitFirst() && this.repeatStep.doEmit(start)) {
                     final Traverser.Admin<S> emitSplit = start.split();
                     emitSplit.resetLoops();
-                    emitSplit.setFutureId(this.routeTo);
+                    emitSplit.setStepId(this.routeTo);
                     this.iterator = IteratorUtils.of(start);
                     return emitSplit;
                 }

@@ -20,7 +20,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected Traversal traversal;
     protected ExpandableStepIterator<S> starts;
     protected Traverser<E> nextEnd = null;
-    protected boolean futureSetByChild = false;
+    protected boolean traverserStepIdSetByChild = false; // TODO: Step.teleport(traverser, step)
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
@@ -153,7 +153,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     private final Traverser<E> prepareTraversalForNextStep(final Traverser<E> traverser) {
-        if (!this.futureSetByChild) ((Traverser.Admin<E>) traverser).setFutureId(this.nextStep.getId());
+        if (!this.traverserStepIdSetByChild) ((Traverser.Admin<E>) traverser).setStepId(this.nextStep.getId());
         if (this.hasLabel) traverser.path().addLabel(this.label.get());
         return traverser;
     }
