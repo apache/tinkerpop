@@ -58,9 +58,9 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
                     future = this.getNextStep().getId();
                 } else {
                     try {
-                        future = TraversalHelper.getStep(stepLabel, this.getTraversal()).getNextStep().getId();
+                        future = TraversalHelper.getStepByLabel(stepLabel, this.getTraversal().asAdmin()).getNextStep().getId();
                     } catch (IllegalArgumentException e) {
-                        future = TraversalHelper.getStepById(stepLabel, this.getTraversal()).getNextStep().getId();
+                        future = TraversalHelper.getStepById(stepLabel, this.getTraversal().asAdmin()).getNextStep().getId();
                     }
                 }
                 sibling.setFutureId(future);
@@ -78,7 +78,7 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
                 this.getNextStep().addStart(sibling);
             } else {
                 sibling.setFutureId(stepLabel);
-                TraversalHelper.<S, Object>getStep(stepLabel, this.getTraversal()).getNextStep().addStart((Traverser) sibling);
+                TraversalHelper.<S, Object>getStepByLabel(stepLabel, this.getTraversal().asAdmin()).getNextStep().addStart((Traverser) sibling);
             }
         }
         return EmptyTraverser.instance();

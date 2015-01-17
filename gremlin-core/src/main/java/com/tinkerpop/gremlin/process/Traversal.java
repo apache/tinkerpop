@@ -132,7 +132,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         try {
             this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
-            final Step<?, E> endStep = TraversalHelper.getEnd(this);
+            final Step<?, E> endStep = TraversalHelper.getEnd(this.asAdmin());
             while (true) {
                 final Traverser<E> traverser = endStep.next();
                 TraversalHelper.addToCollection(collection, traverser.get(), traverser.bulk());
@@ -149,17 +149,17 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      *
      * @return the fully drained traversal
      */
-    public default Traversal iterate() {
+    public default <A, B> Traversal<A, B> iterate() {
         try {
             this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
-            final Step<?, E> endStep = TraversalHelper.getEnd(this);
+            final Step<?, E> endStep = TraversalHelper.getEnd(this.asAdmin());
             while (true) {
                 endStep.next();
             }
         } catch (final NoSuchElementException ignored) {
         }
-        return this;
+        return (Traversal<A, B>) this;
     }
 
     /**
@@ -321,9 +321,9 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          */
         public TraversalStrategies getStrategies();
 
-        public void setTraversalHolder(final TraversalHolder<?,?> step);
+        public void setTraversalHolder(final TraversalHolder<?, ?> step);
 
-        public TraversalHolder<?,?> getTraversalHolder();
+        public TraversalHolder<?, ?> getTraversalHolder();
 
     }
 

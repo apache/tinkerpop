@@ -29,7 +29,7 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
         if (startStep instanceof GraphStep) {
             final GraphStep<?> originalGraphStep = (GraphStep) startStep;
             final TinkerGraphStep<?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
-            TraversalHelper.replaceStep(startStep, tinkerGraphStep, traversal);
+            TraversalHelper.replaceStep(startStep, (Step)tinkerGraphStep, traversal);
 
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
             while (true) {

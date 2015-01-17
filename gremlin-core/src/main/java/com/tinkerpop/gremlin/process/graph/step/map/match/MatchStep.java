@@ -167,8 +167,8 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
 
     private void addTraversalPrivate(final Traversal<S, S> traversal) {
 
-        String startAs = TraversalHelper.getStart(traversal).getLabel().orElseThrow(() -> new IllegalArgumentException("All match traversals must have their start step labeled with as()"));
-        String endAs = TraversalHelper.getEnd(traversal).getLabel().orElse(null);
+        String startAs = TraversalHelper.getStart(traversal.asAdmin()).getLabel().orElseThrow(() -> new IllegalArgumentException("All match traversals must have their start step labeled with as()"));
+        String endAs = TraversalHelper.getEnd(traversal.asAdmin()).getLabel().orElse(null);
         checkAs(startAs);
         if (null == endAs) {
             endAs = createAnonymousAs();

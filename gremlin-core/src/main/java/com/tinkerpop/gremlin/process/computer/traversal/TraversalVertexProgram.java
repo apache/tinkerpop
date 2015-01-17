@@ -59,8 +59,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     private static final Set<String> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, TraversalSideEffects.SIDE_EFFECTS));
     private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VOTE_TO_HALT));
 
-    private LambdaHolder<Supplier<Traversal>> traversalSupplier;
-    private Traversal<?, ?> traversal;
+    private LambdaHolder<Supplier<Traversal.Admin<?,?>>> traversalSupplier;
+    private Traversal.Admin<?, ?> traversal;
 
     private final Set<MapReduce> mapReducers = new HashSet<>();
 
@@ -74,11 +74,11 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
      * @param configuration The configuration containing the public static TRAVERSAL_SUPPLIER key.
      * @return the traversal supplier in the configuration
      */
-    public static Supplier<Traversal> getTraversalSupplier(final Configuration configuration) {
-        return LambdaHolder.<Supplier<Traversal>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get();
+    public static Supplier<Traversal.Admin<?,?>> getTraversalSupplier(final Configuration configuration) {
+        return LambdaHolder.<Supplier<Traversal.Admin<?,?>>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get();
     }
 
-    public Traversal getTraversal() {
+    public Traversal.Admin<?,?> getTraversal() {
         return this.traversal;
     }
 
@@ -181,7 +181,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     @Override
     public TraversalVertexProgram clone() throws CloneNotSupportedException {
         final TraversalVertexProgram clone = (TraversalVertexProgram) super.clone();
-        clone.traversal = this.traversal.clone();
+        clone.traversal = this.traversal.clone().asAdmin();
         return clone;
     }
 

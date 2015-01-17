@@ -37,7 +37,7 @@ public class TinkerMessenger<M> implements Messenger<M> {
     public Iterable<M> receiveMessages(final MessageScope messageScope) {
         if (messageScope instanceof MessageScope.Local) {
             final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
-            final Traversal<Vertex, Edge> incidentTraversal = TinkerMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get(), this.vertex);
+            final Traversal.Admin<Vertex, Edge> incidentTraversal = TinkerMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get().asAdmin(), this.vertex);
             final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
             final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
             return StreamFactory.iterable(StreamFactory.stream(incidentTraversal.asAdmin().reverse())
@@ -72,14 +72,14 @@ public class TinkerMessenger<M> implements Messenger<M> {
 
     ///////////
 
-    private static <T extends Traversal<Vertex, Edge>> T setVertexStart(final Traversal<Vertex, Edge> incidentTraversal, final Vertex vertex) {
-        final Traversal<Vertex, Edge> traversal = incidentTraversal;
-        traversal.asAdmin().addStep(0,new StartStep<>(traversal, vertex));
+    private static <T extends Traversal.Admin<Vertex, Edge>> T setVertexStart(final Traversal.Admin<Vertex, Edge> incidentTraversal, final Vertex vertex) {
+        final Traversal.Admin<Vertex, Edge> traversal = incidentTraversal;
+        traversal.addStep(0,new StartStep<>(traversal, vertex));
         return (T) traversal;
     }
 
-    private static Direction getDirection(final Traversal<Vertex, Edge> incidentTraversal) {
-        final VertexStep step = TraversalHelper.getLastStep(incidentTraversal, VertexStep.class).get();
+    private static Direction getDirection(final Traversal.Admin<Vertex, Edge> incidentTraversal) {
+        final VertexStep step = TraversalHelper.getLastStepOfAssignableClass(VertexStep.class, incidentTraversal).get();
         return step.getDirection();
     }
 }

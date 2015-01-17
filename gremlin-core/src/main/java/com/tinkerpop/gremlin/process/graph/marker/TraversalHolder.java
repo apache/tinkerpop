@@ -65,7 +65,7 @@ public interface TraversalHolder<S, E> {
             requirements.add(requirement);
         }
         for (final Traversal<S, E> traversals : this.getTraversals()) {
-            requirements.addAll(TraversalHelper.getRequirements(traversals));
+            requirements.addAll(TraversalHelper.getRequirements(traversals.asAdmin()));
         }
         return requirements;
     }

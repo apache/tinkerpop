@@ -135,7 +135,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     @Override
     protected Iterator<Traverser<S>> standardAlgorithm() throws NoSuchElementException {
-        if (null == this.endStep) this.endStep = TraversalHelper.getEnd(this.repeatTraversal);
+        if (null == this.endStep) this.endStep = TraversalHelper.getEnd(this.repeatTraversal.asAdmin());
         ////
         while (true) {
             if (this.repeatTraversal.hasNext()) {
@@ -176,7 +176,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             start.setFutureId(this.getNextStep().getId());
             return IteratorUtils.of(start);
         } else {
-            start.setFutureId(TraversalHelper.getStart(this.repeatTraversal).getId());
+            start.setFutureId(TraversalHelper.getStart(this.repeatTraversal.asAdmin()).getId());
             if (this.emitFirst && doEmit(start)) {
                 final Traverser.Admin<S> emitSplit = start.split();
                 emitSplit.resetLoops();
@@ -191,7 +191,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     /////////////////////////
 
     public static <A, B, C extends Traversal<A, B>> C addRepeatToTraversal(final C traversal, final Traversal<B, B> repeatTraversal) {
-        final Step<?, B> step = TraversalHelper.getEnd(traversal);
+        final Step<?, B> step = TraversalHelper.getEnd(traversal.asAdmin());
         if (step instanceof RepeatStep && ((RepeatStep) step).getTraversals().isEmpty()) {
             ((RepeatStep<B>) step).setRepeatTraversal(repeatTraversal);
         } else {
@@ -203,7 +203,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     }
 
     public static <A, B, C extends Traversal<A, B>> C addUntilToTraversal(final C traversal, final Predicate<Traverser<B>> untilPredicate) {
-        final Step<?, B> step = TraversalHelper.getEnd(traversal);
+        final Step<?, B> step = TraversalHelper.getEnd(traversal.asAdmin());
         if (step instanceof RepeatStep && null == ((RepeatStep) step).getUntilPredicate()) {
             ((RepeatStep<B>) step).setUntilPredicate(untilPredicate);
         } else {
@@ -215,7 +215,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     }
 
     public static <A, B, C extends Traversal<A, B>> C addEmitToTraversal(final C traversal, final Predicate<Traverser<B>> emitPredicate) {
-        final Step<?, B> step = TraversalHelper.getEnd(traversal);
+        final Step<?, B> step = TraversalHelper.getEnd(traversal.asAdmin());
         if (step instanceof RepeatStep && null == ((RepeatStep) step).getEmitPredicate()) {
             ((RepeatStep<B>) step).setEmitPredicate(emitPredicate);
         } else {

@@ -56,12 +56,12 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public void applyStrategies(final Traversal traversal, final TraversalEngine engine) {
+    public void applyStrategies(final Traversal.Admin<?,?> traversal, final TraversalEngine engine) {
         this.traversalStrategies.forEach(ts -> ts.apply(traversal.asAdmin(), engine));
     }
 
     @Override
-    public TraverserGenerator getTraverserGenerator(final Traversal traversal) {
+    public TraverserGenerator getTraverserGenerator(final Traversal.Admin<?,?> traversal) {
         return this.traverserGeneratorFactory.getTraverserGenerator(traversal);
     }
 

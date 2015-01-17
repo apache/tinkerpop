@@ -35,7 +35,7 @@ public class GiraphMessenger<M> implements Messenger<M> {
     public void sendMessage(final MessageScope messageScope, final M message) {
         if (messageScope instanceof MessageScope.Local) {
             final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
-            final Traversal<Vertex, Edge> incidentTraversal = GiraphMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get(), this.giraphComputeVertex.getBaseVertex());
+            final Traversal.Admin<Vertex, Edge> incidentTraversal = GiraphMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get(), this.giraphComputeVertex.getBaseVertex());
             final Direction direction = GiraphMessenger.getOppositeDirection(incidentTraversal);
             incidentTraversal.forEachRemaining(edge ->
                     this.giraphComputeVertex.sendMessage(
@@ -48,13 +48,13 @@ public class GiraphMessenger<M> implements Messenger<M> {
         }
     }
 
-    private static <T extends Traversal<Vertex, Edge>> T setVertexStart(final Traversal<Vertex, Edge> incidentTraversal, final Vertex vertex) {
+    private static <T extends Traversal.Admin<Vertex, Edge>> T setVertexStart(final Traversal<Vertex, Edge> incidentTraversal, final Vertex vertex) {
         incidentTraversal.asAdmin().addStep(0, new StartStep<>(incidentTraversal, vertex));
         return (T) incidentTraversal;
     }
 
-    private static Direction getOppositeDirection(final Traversal<Vertex, Edge> incidentTraversal) {
-        final VertexStep step = TraversalHelper.getLastStep(incidentTraversal, VertexStep.class).get();
+    private static Direction getOppositeDirection(final Traversal.Admin<Vertex, Edge> incidentTraversal) {
+        final VertexStep step = TraversalHelper.getLastStepOfAssignableClass(VertexStep.class, incidentTraversal).get();
         return step.getDirection().opposite();
     }
 }

@@ -140,7 +140,6 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
             printTraversalForm(traversal);
             assertTrue(traversal.hasNext());
             final Map<String, Long> map = traversal.next();
-            System.out.println(map);
             assertFalse(traversal.hasNext());
             assertEquals(2, map.size());
             assertEquals(1l, map.get("ripple").longValue());

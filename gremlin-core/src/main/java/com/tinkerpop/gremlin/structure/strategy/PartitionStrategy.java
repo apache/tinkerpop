@@ -106,7 +106,7 @@ public final class PartitionStrategy implements GraphStrategy {
         return (f) -> ids -> {
             final GraphTraversal<Vertex, Vertex> traversal = this.generateTraversal(ctx.getStrategyGraph().getBaseGraph().getClass());
             traversal.asAdmin().getStrategies().setTraverserGeneratorFactory(DefaultTraverserGeneratorFactory.instance());
-            TraversalHelper.insertTraversal(0, f.apply(ids).has(getPartitionKey(), Contains.within, getReadPartitions()), traversal);
+            TraversalHelper.insertTraversal(0, f.apply(ids).has(getPartitionKey(), Contains.within, getReadPartitions()).asAdmin(), traversal.asAdmin());
             return traversal.filter(vertex -> testVertex(vertex.get()));
         };
     }
@@ -116,7 +116,7 @@ public final class PartitionStrategy implements GraphStrategy {
         return (f) -> ids -> {
             final GraphTraversal<Edge, Edge> traversal = this.generateTraversal(ctx.getStrategyGraph().getBaseGraph().getClass());
             traversal.asAdmin().getStrategies().setTraverserGeneratorFactory(DefaultTraverserGeneratorFactory.instance());
-            TraversalHelper.insertTraversal(0, f.apply(ids).has(getPartitionKey(), Contains.within, getReadPartitions()), traversal);
+            TraversalHelper.insertTraversal(0, f.apply(ids).has(getPartitionKey(), Contains.within, getReadPartitions()).asAdmin(), traversal.asAdmin());
             return traversal.filter(edge -> testEdge(edge.get()));
         };
     }

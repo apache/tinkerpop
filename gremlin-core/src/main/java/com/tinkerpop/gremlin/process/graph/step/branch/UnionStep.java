@@ -40,7 +40,7 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
     protected Iterator<Traverser<E>> standardAlgorithm() {
         while (true) {
             for (final Traversal<S, E> union : this.traversals) {
-                if (union.hasNext()) return TraversalHelper.getEnd(union);
+                if (union.hasNext()) return TraversalHelper.getEnd(union.asAdmin());
             }
             final Traverser.Admin<S> start = this.starts.next();
             this.traversals.forEach(union -> union.asAdmin().addStart(start.split()));
@@ -54,7 +54,7 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
             final Traverser.Admin<S> start = this.starts.next();
             for (final Traversal<S, E> union : this.traversals) {
                 final Traverser.Admin<S> unionSplit = start.split();
-                unionSplit.setFutureId(TraversalHelper.getStart(union).getId());
+                unionSplit.setFutureId(TraversalHelper.getStart(union.asAdmin()).getId());
                 ends.add((Traverser) unionSplit);
             }
         }

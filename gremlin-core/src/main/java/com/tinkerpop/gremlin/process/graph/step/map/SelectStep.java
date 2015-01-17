@@ -34,7 +34,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Func
         super(traversal);
         this.functionRing = new FunctionRing<>();
         this.wasEmpty = selectLabels.length == 0;
-        this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal) : Arrays.asList(selectLabels);
+        this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal.asAdmin()) : Arrays.asList(selectLabels);
         SelectStep.generateFunction(this);
     }
 
@@ -51,10 +51,10 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Func
     @Override
     public void onEngine(final TraversalEngine traversalEngine) {
         this.requiresPaths = traversalEngine.equals(TraversalEngine.COMPUTER) ?
-                TraversalHelper.getLabelsUpTo(this, this.traversal).stream().filter(this.selectLabels::contains).findAny().isPresent() :
-                TraversalHelper.getStepsUpTo(this, this.traversal).stream()
+                TraversalHelper.getLabelsUpTo(this, this.traversal.asAdmin()).stream().filter(this.selectLabels::contains).findAny().isPresent() :
+                TraversalHelper.getStepsUpTo(this, this.traversal.asAdmin()).stream()
                         .filter(step -> step instanceof Barrier)
-                        .filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal).stream().filter(this.selectLabels::contains).findAny().isPresent())
+                        .filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal.asAdmin()).stream().filter(this.selectLabels::contains).findAny().isPresent())
                         .findAny().isPresent();
     }
 

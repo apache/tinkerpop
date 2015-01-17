@@ -59,7 +59,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     public void loadState(final Configuration configuration) {
         this.traversalSupplier = LambdaHolder.loadState(configuration, INCIDENT_TRAVERSAL_SUPPLIER);
         if (null != this.traversalSupplier) {
-            VertexProgramHelper.verifyReversibility(this.traversalSupplier.get().get());
+            VertexProgramHelper.verifyReversibility(this.traversalSupplier.get().get().asAdmin());
             this.voteScope = MessageScope.Local.of(this.traversalSupplier.get());
             this.countScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.voteScope));
         }

@@ -54,7 +54,7 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
     public void loadState(final Configuration configuration) {
         this.traversalSupplier = LambdaHolder.loadState(configuration, INCIDENT_TRAVERSAL_SUPPLIER);
         if (null != this.traversalSupplier) {
-            VertexProgramHelper.verifyReversibility(this.traversalSupplier.get().get());
+            VertexProgramHelper.verifyReversibility(this.traversalSupplier.get().get().asAdmin());
             this.incidentMessageScope = MessageScope.Local.of(this.traversalSupplier.get());
             this.countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
         }

@@ -26,7 +26,7 @@ public class DefaultTraverserGeneratorFactory implements TraverserGeneratorFacto
     }
 
     @Override
-    public TraverserGenerator getTraverserGenerator(final Traversal traversal) {
+    public TraverserGenerator getTraverserGenerator(final Traversal.Admin<?,?> traversal) {
         final Set<TraverserRequirement> requirements = this.getRequirements(traversal);
 
         if (O_TraverserGenerator.instance().requirements().containsAll(requirements))

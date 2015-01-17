@@ -56,7 +56,7 @@ public final class TraversalMetrics implements Serializable {
         Boolean profiling;
         if ((profiling = PROFILING_CACHE.get(traversal)) != null)
             return profiling;
-        profiling = TraversalHelper.hasStepOfClass(ProfileStep.class, traversal);
+        profiling = TraversalHelper.hasStepOfClass(ProfileStep.class, traversal.asAdmin());
         PROFILING_CACHE.put(traversal, profiling);
         return profiling;
     }

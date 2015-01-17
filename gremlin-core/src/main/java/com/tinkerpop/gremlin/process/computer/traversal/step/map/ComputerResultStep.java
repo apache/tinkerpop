@@ -27,7 +27,7 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
     private final Iterator<Traverser.Admin<S>> traversers;
     private final Graph graph;
     private final Memory memory;
-    private final Traversal computerTraversal;
+    private final Traversal.Admin<?,?> computerTraversal;
     private final boolean attachElements; // should be part of graph computer with "propagate properties"
 
     public ComputerResultStep(final Traversal traversal, final ComputerResult result, final TraversalVertexProgram traversalVertexProgram, final boolean attachElements) {

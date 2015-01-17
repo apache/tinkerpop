@@ -27,7 +27,7 @@ public final class EmptyTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public void applyStrategies(final Traversal traversal, final TraversalEngine engine) {
+    public void applyStrategies(final Traversal.Admin<?,?> traversal, final TraversalEngine engine) {
 
     }
 
@@ -47,7 +47,7 @@ public final class EmptyTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public TraverserGenerator getTraverserGenerator(final Traversal traversal) {
+    public TraverserGenerator getTraverserGenerator(final Traversal.Admin<?,?> traversal) {
         return DefaultTraverserGeneratorFactory.instance().getTraverserGenerator(traversal);
     }
 

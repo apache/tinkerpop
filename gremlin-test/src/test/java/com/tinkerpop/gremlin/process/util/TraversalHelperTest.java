@@ -27,14 +27,14 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldCorrectlyTestIfReversible() {
-        assertTrue(TraversalHelper.isReversible(__.out()));
-        assertTrue(TraversalHelper.isReversible(__.outE().inV()));
-        assertTrue(TraversalHelper.isReversible(__.in().in()));
-        assertTrue(TraversalHelper.isReversible(__.inE().outV().outE().inV()));
-        assertTrue(TraversalHelper.isReversible(__.outE().has("since").inV()));
-        assertTrue(TraversalHelper.isReversible(__.outE().as("x")));
+        assertTrue(TraversalHelper.isReversible(__.out().asAdmin()));
+        assertTrue(TraversalHelper.isReversible(__.outE().inV().asAdmin()));
+        assertTrue(TraversalHelper.isReversible(__.in().in().asAdmin()));
+        assertTrue(TraversalHelper.isReversible(__.inE().outV().outE().inV().asAdmin()));
+        assertTrue(TraversalHelper.isReversible(__.outE().has("since").inV().asAdmin()));
+        assertTrue(TraversalHelper.isReversible(__.outE().as("x").asAdmin()));
 
-        assertFalse(TraversalHelper.isReversible(__.identity().as("a").outE().back("a")));
+        assertFalse(TraversalHelper.isReversible(__.identity().as("a").outE().back("a").asAdmin()));
 
     }
 
@@ -80,53 +80,6 @@ public class TraversalHelperTest {
         traversal.asAdmin().removeStep(1);
         traversal.asAdmin().addStep(1,new HasStep(traversal, null));
         validateToyTraversal(traversal);
-    }
-
-    @Test
-    public void shouldIsolateSteps() {
-        Traversal traversal = new DefaultTraversal<>(Object.class);
-        Step step1 = new IdentityStep(traversal);
-        Step step2 = new TimeLimitStep<>(traversal, 100);
-        Step step3 = new CoinStep<>(traversal, 0.5);
-        Step step4 = new PropertyMapStep(traversal, false, PropertyType.PROPERTY, "name");
-        Step step5 = new ShuffleStep<>(traversal);
-        traversal.asAdmin().addStep(step1);
-        traversal.asAdmin().addStep(step2);
-        traversal.asAdmin().addStep(step3);
-        traversal.asAdmin().addStep(step4);
-        traversal.asAdmin().addStep(step5);
-
-        List<Step> steps;
-
-        steps = TraversalHelper.isolateSteps(step1, step5);
-        assertEquals(3, steps.size());
-        assertTrue(steps.contains(step2));
-        assertTrue(steps.contains(step3));
-        assertTrue(steps.contains(step4));
-
-        steps = TraversalHelper.isolateSteps(step2, step5);
-        assertEquals(2, steps.size());
-        assertTrue(steps.contains(step3));
-        assertTrue(steps.contains(step4));
-
-        steps = TraversalHelper.isolateSteps(step3, step5);
-        assertEquals(1, steps.size());
-        assertTrue(steps.contains(step4));
-
-        steps = TraversalHelper.isolateSteps(step4, step5);
-        assertEquals(0, steps.size());
-
-        steps = TraversalHelper.isolateSteps(step5, step5);
-        assertEquals(0, steps.size());
-
-        steps = TraversalHelper.isolateSteps(step5, step1);
-        assertEquals(0, steps.size());
-
-        steps = TraversalHelper.isolateSteps(step4, step1);
-        assertEquals(0, steps.size());
-
-        steps = TraversalHelper.isolateSteps(step4, step2);
-        assertEquals(0, steps.size());
     }
 
     private static void validateToyTraversal(final Traversal traversal) {

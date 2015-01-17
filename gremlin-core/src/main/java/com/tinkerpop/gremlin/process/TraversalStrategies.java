@@ -45,7 +45,7 @@ public interface TraversalStrategies extends Cloneable {
      * @param traversal the traversal to apply the strategies to
      * @param engine    the engine that the traversal is going to be executed on
      */
-    public void applyStrategies(final Traversal traversal, final TraversalEngine engine);
+    public void applyStrategies(final Traversal.Admin<?,?> traversal, final TraversalEngine engine);
 
     /**
      * Add all the provided {@link TraversalStrategy} instances to the current collection.
@@ -76,7 +76,7 @@ public interface TraversalStrategies extends Cloneable {
      *
      * @param traversal the traversal that will have traversers generated for it
      */
-    public TraverserGenerator getTraverserGenerator(final Traversal traversal);
+    public TraverserGenerator getTraverserGenerator(final Traversal.Admin<?,?> traversal);
 
     /**
      * Set the {@link TraverserGeneratorFactory} to use for determining which {@link Traverser} type to generate for the {@link Traversal}.

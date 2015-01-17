@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class TraverserExecutor {
 
-    public static boolean execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final Traversal traversal) {
+    public static boolean execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final Traversal.Admin<?,?> traversal) {
 
         final TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);

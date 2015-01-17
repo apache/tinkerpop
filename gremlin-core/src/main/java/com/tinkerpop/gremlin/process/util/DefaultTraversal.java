@@ -30,7 +30,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
     protected Optional<TraversalEngine> traversalEngine = Optional.empty();
 
-    private final StepPosition stepPosition = StepPosition.of();
+    private final StepPosition stepPosition = new StepPosition();
 
     protected TraversalHolder<?, ?> traversalHolder = (TraversalHolder) EmptyStep.instance();
 

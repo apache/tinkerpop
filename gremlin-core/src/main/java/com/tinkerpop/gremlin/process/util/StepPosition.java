@@ -17,29 +17,16 @@ public class StepPosition {
         this.parentId = parentId;
     }
 
-    public String nextXId() {
-        return this.x++ + "." + this.y + "." + this.z + "[" + this.parentId + "]";
+    public StepPosition() {
+        this(0, 0, 0, "");
     }
 
-    public void reset() {
-        this.x = 0;
-        this.y = 0;
-        this.z = 0;
-        this.parentId = "";
+    public String nextXId() {
+        return this.x++ + "." + this.y + "." + this.z + "[" + this.parentId + "]";
     }
 
     @Override
     public String toString() {
         return this.x + "." + this.y + "." + this.z + "[" + this.parentId + "]";
     }
-
-    public static StepPosition of(final int x, final int y, final int z, final String parentId) {
-        return new StepPosition(x, y, z, parentId);
-    }
-
-    public static StepPosition of() {
-        return new StepPosition(0, 0, 0, "");
-    }
-
-
 }

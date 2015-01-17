@@ -41,7 +41,7 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Revers
     @Override
     public void reverse() {
         // TODO: only works if its element->property ... how do we do dynamic reversibility?
-        TraversalHelper.replaceStep(this, new PropertyElementStep(this.traversal), this.traversal);
+        TraversalHelper.replaceStep(this, new PropertyElementStep(this.traversal), this.traversal.asAdmin());
     }
 
     @Override
