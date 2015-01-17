@@ -2,11 +2,11 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
+import org.javatuples.Triplet;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -311,20 +311,16 @@ public class TraversalHelper {
         return requirements;
     }
 
-    private static int[] getYZParentXParentZ(final Traversal<?, ?> traversal) {
+    private static Triplet<Integer, Integer, String> getYZParentId(final Traversal<?, ?> traversal) {
         int y = -1;
         int z = -1;
-        int parentX = -1;
-        int parentZ = -1;
+        String parentId = null;
         Traversal current = traversal;
         while (!(current instanceof EmptyTraversal)) {
             y++;
             final TraversalHolder<?, ?> holder = current.asAdmin().getTraversalHolder();
-            if (parentX == -1 && !(holder instanceof EmptyStep)) {
-                parentX = getParentX(holder.asStep().getId()) + 1;
-            }
-            if (parentZ == -1 && !(holder instanceof EmptyStep)) {
-                parentZ = getParentZ(holder.asStep().getId()) + 1;
+            if (null == parentId && !(holder instanceof EmptyStep)) {
+                parentId = holder.asStep().getId();
             }
             if (z == -1) {
                 for (int i = 0; i < holder.getTraversals().size(); i++) {
@@ -335,25 +331,15 @@ public class TraversalHelper {
             }
             current = holder.asStep().getTraversal();
         }
-        return new int[]{y, z == -1 ? 0 : z, parentX == -1 ? 0 : parentX, parentZ == -1 ? 0 : parentZ};
+        return Triplet.with(y, z == -1 ? 0 : z, null == parentId ? "" : parentId);
     }
-
-    private static final Integer getParentX(final String id) {
-        return id.equals(Traverser.Admin.HALT) ? -1 : Integer.valueOf(id.split(":")[0]);
-    }
-
-    private static final Integer getParentZ(final String id) {
-        return id.equals(Traverser.Admin.HALT) ? -1 : Integer.valueOf(id.split(":")[2]);
-    }
-
 
     public static void reIdSteps(final StepPosition stepPosition, final Traversal<?, ?> traversal) {
         stepPosition.reset();
-        final int[] yzParentXParentZ = TraversalHelper.getYZParentXParentZ(traversal);
-        stepPosition.y = yzParentXParentZ[0];
-        stepPosition.z = yzParentXParentZ[1];
-        stepPosition.parentX = yzParentXParentZ[2];
-        stepPosition.parentZ = yzParentXParentZ[3];
+        final Triplet<Integer, Integer, String> yzParentId = TraversalHelper.getYZParentId(traversal);
+        stepPosition.y = yzParentId.getValue0();
+        stepPosition.z = yzParentId.getValue1();
+        stepPosition.parentId = yzParentId.getValue2();
         for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
             step.setId(stepPosition.nextXId());
         }
