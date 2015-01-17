@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.StoreMapReduce;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
@@ -22,7 +23,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, FunctionHolder<S, Object>, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
+public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable, SideEffectRegistrar, Reversible, FunctionHolder<S, Object>, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
             TraverserRequirement.BULK,
@@ -31,15 +32,19 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     ));
 
     private Function<S, Object> preStoreFunction = s -> s;
-    private final String sideEffectKey;
+    private String sideEffectKey;
 
     public StoreStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
-        this.sideEffectKey = null == sideEffectKey ? this.getLabel().orElse(this.getId()) : sideEffectKey;
-        TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal.asAdmin());
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSet::new);
+        this.sideEffectKey = sideEffectKey;
         this.setConsumer(traverser -> TraversalHelper.addToCollection(traverser.sideEffects(this.sideEffectKey),
                 null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser.get()), traverser.bulk()));
+    }
+
+    @Override
+    public void registerSideEffects() {
+        if (null == this.sideEffectKey) this.sideEffectKey = this.getId();
+        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSet::new);
     }
 
     @Override

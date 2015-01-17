@@ -23,7 +23,6 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffec
             throw new IllegalStateException("The profile()-step can only be used when profiling is enabled via " +
                     "'gremlin.sh -p' or directly via -Dtinkerpop.profiling=true");
         }
-        TraversalHelper.verifySideEffectKeyIsNotAStepLabel(METRICS_KEY, this.traversal.asAdmin());
     }
 
     @Override

@@ -26,7 +26,7 @@ public class ComparatorHolderRemovalStrategy extends AbstractTraversalStrategy {
             TraversalHelper.getStepsOfAssignableClass(ComparatorHolder.class, traversal)
                     .stream()
                     .filter(step -> step != endStep)
-                    .forEach(step -> traversal.removeStep(step));
+                    .forEach(step -> traversal.removeStep((Step)step));
         }
     }
 

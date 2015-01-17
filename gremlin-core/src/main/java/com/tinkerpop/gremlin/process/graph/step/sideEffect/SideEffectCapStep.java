@@ -5,6 +5,8 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
@@ -19,7 +21,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements EngineDependent {
+public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements EngineDependent, SideEffectRegistrar {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
             TraverserRequirement.SIDE_EFFECTS,
@@ -28,11 +30,17 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
 
     private boolean done = false;
     private boolean onGraphComputer = false;
-    private final String sideEffectKey;
+    private String sideEffectKey;
 
     public SideEffectCapStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
+    }
+
+    @Override
+    public void registerSideEffects() {
+        if (null == this.sideEffectKey)
+            this.sideEffectKey = ((SideEffectCapable) this.getPreviousStep()).getSideEffectKey();
     }
 
     @Override

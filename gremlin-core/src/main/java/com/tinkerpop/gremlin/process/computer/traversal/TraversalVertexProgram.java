@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
-import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
@@ -62,7 +61,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     private LambdaHolder<Supplier<Traversal.Admin<?, ?>>> traversalSupplier;
     private Traversal.Admin<?, ?> traversal;
-    private TraversalMatrix<?,?> traversalMatrix;
+    private TraversalMatrix<?, ?> traversalMatrix;
 
     private final Set<MapReduce> mapReducers = new HashSet<>();
 
@@ -92,8 +91,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         }
         this.traversal = this.traversalSupplier.get().get();
         this.traversalMatrix = new TraversalMatrix<>(this.traversal);
-        for (final Step<?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecurssively(MapReducer.class, this.traversal)) {
-            this.mapReducers.add(((MapReducer) mapReducer).getMapReduce());
+        for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecurssively(MapReducer.class, this.traversal)) {
+            this.mapReducers.add(mapReducer.getMapReduce());
         }
         if (!(TraversalHelper.getEnd(this.traversal) instanceof SideEffectCapStep))
             this.mapReducers.add(new TraverserMapReduce(TraversalHelper.getEnd(this.traversal)));

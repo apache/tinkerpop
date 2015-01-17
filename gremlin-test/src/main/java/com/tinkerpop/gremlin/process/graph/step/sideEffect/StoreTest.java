@@ -22,8 +22,6 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Collection> get_g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_out_storeXaX();
-
     public abstract Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX();
 
     @Test
@@ -54,21 +52,6 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         assertTrue(names.contains("vadas"));
         assertTrue(names.contains("lop"));
         assertFalse(traversal.hasNext());
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_asXaX_out_storeXaX() {
-        try {
-            get_g_V_asXaX_out_storeXaX();
-            fail("Should throw an illegal argument exception");
-        } catch (IllegalArgumentException e) {
-
-        } catch (Exception e) {
-            //System.out.print(e);
-            //assertEquals(IllegalArgumentException.class, e.getCause().getClass());
-            //fail("Should throw an illegal argument exception: " + e);
-        }
     }
 
     @Test
@@ -105,11 +88,6 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_asXaX_out_storeXaX() {
-            return g.V().as("a").out().store("a");
-        }
-
-        @Override
         public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX() {
             return (Traversal) g.V().withSideEffect("a", HashSet::new).both().<String>values("name").store("a");
         }
@@ -128,11 +106,6 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Collection> get_g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(final Object v1Id) {
             return g.V(v1Id).store("a").by("name").out().store("a").by("name").values("name").<Collection>cap("a").submit(g.compute());
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_asXaX_out_storeXaX() {
-            return g.V().as("a").out().store("a").submit(g.compute());
         }
 
         @Override

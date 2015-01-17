@@ -252,6 +252,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         /**
          * Apply the registered {@link TraversalStrategies} to the traversal.
          * Once the strategies are applied, the traversal is "locked" and can no longer have steps added to it.
+         * The order of operations for strategy applications should be: globally id steps, apply strategies to root traversal, then to nested traversals.
          *
          * @param engine the engine that will ultimately execute the traversal.
          */

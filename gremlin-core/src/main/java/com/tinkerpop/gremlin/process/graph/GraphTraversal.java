@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatStep;
@@ -329,7 +328,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final T accessor, final BiPredicate predicate, final Object value) {
-        return this.asAdmin().addStep(new HasStep<>(this, new HasContainer(accessor.getAccessor(), predicate, value)));
+        return this.has(accessor.getAccessor(), predicate, value);
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final Object value) {
@@ -337,7 +336,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final BiPredicate predicate, final Object value) {
-        return this.has(T.label, label).asAdmin().addStep(new HasStep<>(this, new HasContainer(key, predicate, value)));
+        return this.has(T.label, label).has(key, predicate, value);
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> hasNot(final String key) {
@@ -397,7 +396,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> cap() {
-        return this.cap(((SideEffectCapable) TraversalHelper.getEnd(this.asAdmin())).getSideEffectKey());
+        return this.cap(null);
     }
 
     public default GraphTraversal<S, Long> count() {
@@ -562,10 +561,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PathIdentityStep<>(this));
     }
 
-    public default GraphTraversal<S, E> as(final String label) {
-        TraversalHelper.verifyStepLabelIsNotASideEffectKey(label, this.asAdmin());
+    public default GraphTraversal<S, E> as(final String stepLabel) {
         if (this.asAdmin().getSteps().size() == 0) this.asAdmin().addStep(new StartStep<>(this));
-        TraversalHelper.getEnd(this.asAdmin()).setLabel(label);
+        TraversalHelper.getEnd(this.asAdmin()).setLabel(stepLabel);
         return this;
     }
 

@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.graph.strategy.MatchWhereStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.ReducingStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.RouteStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.SideEffectRegistrationStrategy;
 import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -154,7 +155,8 @@ public interface TraversalStrategies extends Cloneable {
                     ReducingStrategy.instance(),
                     LabeledEndStepStrategy.instance(),
                     EngineDependentStrategy.instance(),
-                    RouteStrategy.instance());
+                    RouteStrategy.instance(),
+                    SideEffectRegistrationStrategy.instance());
 
             try {
                 CACHE.put(Graph.class, coreStrategies.clone());

@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `SideEffectRegistrar` interface and `SideEffectRegistrationStrategy` for allowing steps to register sideEffects at strategy application time.
 * Renamed `Traverser.Admin.setFuture()` and `Traverser.Admin.getFuture()` to `setStepId()` and `getStepId()`, respectively.
 * Added `TraversalMatrix` for random access to steps in a traversal by their step id. Used by `TraversalVertexProgram`.
 * Added unique identifies to `Step` that are not the user provided labels. `Step.getLabel()` now returns an `Optional<String>`.
