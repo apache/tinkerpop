@@ -19,6 +19,7 @@ import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.TraversalMatrix;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Element;
@@ -59,8 +60,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     private static final Set<String> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, TraversalSideEffects.SIDE_EFFECTS));
     private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VOTE_TO_HALT));
 
-    private LambdaHolder<Supplier<Traversal.Admin<?,?>>> traversalSupplier;
+    private LambdaHolder<Supplier<Traversal.Admin<?, ?>>> traversalSupplier;
     private Traversal.Admin<?, ?> traversal;
+    private TraversalMatrix<?,?> traversalMatrix;
 
     private final Set<MapReduce> mapReducers = new HashSet<>();
 
@@ -74,11 +76,11 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
      * @param configuration The configuration containing the public static TRAVERSAL_SUPPLIER key.
      * @return the traversal supplier in the configuration
      */
-    public static Supplier<Traversal.Admin<?,?>> getTraversalSupplier(final Configuration configuration) {
-        return LambdaHolder.<Supplier<Traversal.Admin<?,?>>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get();
+    public static Supplier<Traversal.Admin<?, ?>> getTraversalSupplier(final Configuration configuration) {
+        return LambdaHolder.<Supplier<Traversal.Admin<?, ?>>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get();
     }
 
-    public Traversal.Admin<?,?> getTraversal() {
+    public Traversal.Admin<?, ?> getTraversal() {
         return this.traversal;
     }
 
@@ -89,6 +91,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             throw new IllegalArgumentException("The configuration does not have a traversal supplier");
         }
         this.traversal = this.traversalSupplier.get().get();
+        this.traversalMatrix = new TraversalMatrix<>(this.traversal);
         for (final Step<?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecurssively(MapReducer.class, this.traversal)) {
             this.mapReducers.add(((MapReducer) mapReducer).getMapReduce());
         }
@@ -114,15 +117,15 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public void execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final Memory memory) {
-        this.traversal.asAdmin().getSideEffects().setLocalVertex(vertex);
+        this.traversal.getSideEffects().setLocalVertex(vertex);
         if (memory.isInitialIteration()) {
             final TraverserSet<Object> haltedTraversers = new TraverserSet<>();
             vertex.property(HALTED_TRAVERSERS, haltedTraversers);
 
-            if (!(this.traversal.asAdmin().getSteps().get(0) instanceof GraphStep))
+            if (!(TraversalHelper.getStart(this.traversal) instanceof GraphStep))
                 throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
 
-            final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.asAdmin().getSteps().get(0);   // TODO: make this generic to Traversal
+            final GraphStep<Element> startStep = (GraphStep<Element>) TraversalHelper.getStart(this.traversal);   // TODO: make this generic to Traversal
             final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(Graph.class).getTraverserGenerator(this.traversal);
             final String future = startStep.getNextStep().getId();
             boolean voteToHalt = true;
@@ -143,7 +146,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             }
             memory.and(VOTE_TO_HALT, voteToHalt);
         } else {
-            memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversal));
+            memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversalMatrix));
         }
     }
 
@@ -182,6 +185,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public TraversalVertexProgram clone() throws CloneNotSupportedException {
         final TraversalVertexProgram clone = (TraversalVertexProgram) super.clone();
         clone.traversal = this.traversal.clone().asAdmin();
+        clone.traversalMatrix = new TraversalMatrix<>(clone.traversal);
         return clone;
     }
 

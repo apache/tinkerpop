@@ -49,9 +49,9 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
             TraversalHelper.reIdSteps(this.stepPosition, this);
             this.strategies.applyStrategies(this, engine);
             for (final Step<?, ?> step : this.getSteps()) {
-                if (step instanceof TraversalHolder && !(step instanceof LocalStep)) { // TODO: why no LocalStep?
+                if (step instanceof TraversalHolder) {
                     for (final Traversal<?, ?> nested : ((TraversalHolder<?, ?>) step).getTraversals()) {
-                        nested.asAdmin().applyStrategies(engine);
+                        nested.asAdmin().applyStrategies(step instanceof LocalStep ? TraversalEngine.STANDARD : engine);
                     }
                 }
             }

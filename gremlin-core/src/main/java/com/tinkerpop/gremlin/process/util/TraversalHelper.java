@@ -122,12 +122,12 @@ public class TraversalHelper {
         return TraversalHelper.insertTraversal(traversal.getSteps().indexOf(previousStep), insertTraversal, traversal);
     }
 
-    public static <S, E> void insertBeforeStep(final Step<S, E> step, final Step<?, S> afterStep, final Traversal.Admin<?, ?> traversal) {
-        traversal.addStep(traversal.getSteps().indexOf(afterStep), step);
+    public static <S, E> void insertBeforeStep(final Step<S, E> insertStep, final Step<E, ?> afterStep, final Traversal.Admin<?, ?> traversal) {
+        traversal.addStep(traversal.getSteps().indexOf(afterStep), insertStep);
     }
 
-    public static <S, E> void insertAfterStep(final Step<S, E> step, final Step<?, E> beforeStep, final Traversal.Admin<?, ?> traversal) {
-        traversal.addStep(traversal.getSteps().indexOf(beforeStep) + 1, step);
+    public static <S, E> void insertAfterStep(final Step<S, E> insertStep, final Step<?, S> beforeStep, final Traversal.Admin<?, ?> traversal) {
+        traversal.addStep(traversal.getSteps().indexOf(beforeStep) + 1, insertStep);
     }
 
     public static <S, E> void replaceStep(final Step<S, E> removeStep, final Step<S, E> insertStep, final Traversal.Admin<?, ?> traversal) {
@@ -194,8 +194,8 @@ public class TraversalHelper {
         return (List) traversal.getSteps().stream().filter(step -> stepClass.isAssignableFrom(step.getClass())).collect(Collectors.toList());
     }
 
-    public static <C extends Step> Optional<C> getLastStepOfAssignableClass(final Class<C> classToGet, final Traversal.Admin<?, ?> traversal) {
-        final List<C> steps = (List) traversal.getSteps().stream().filter(step -> classToGet.isAssignableFrom(step.getClass())).collect(Collectors.toList());
+    public static <S extends Step> Optional<S> getLastStepOfAssignableClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
+        final List<S> steps = TraversalHelper.getStepsOfAssignableClass(stepClass, traversal);
         return steps.size() == 0 ? Optional.empty() : Optional.of(steps.get(steps.size() - 1));
     }
 
