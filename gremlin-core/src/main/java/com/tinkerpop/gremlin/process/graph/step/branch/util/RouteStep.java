@@ -17,7 +17,7 @@ import java.util.NoSuchElementException;
 public class RouteStep<S> extends AbstractStep<S, S> {
 
     private final String routeTo;   // TODO: This is just BranchWithGoToPredicate
-    private final RepeatStep<S> repeatStep;
+    private final RepeatStep<S> repeatStep;   // TODO: cloning is necessary ..... ????
     private Iterator<Traverser<S>> iterator = Collections.emptyIterator();
 
     public RouteStep(final Traversal traversal, final String routeTo) {
