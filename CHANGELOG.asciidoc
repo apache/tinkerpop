@@ -10,7 +10,7 @@ TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Renamed `Traverser.Admin.setFuture()` and `Traverser.Admin.getFuture()` to `setStepId()` and `getStepId()`, respectively.
-* Added `TraversalMatrix` for random access to steps in a traversal by their id. Used by `TraversalVertexProgram`.
+* Added `TraversalMatrix` for random access to steps in a traversal by their step id. Used by `TraversalVertexProgram`.
 * Added unique identifies to `Step` that are not the user provided labels. `Step.getLabel()` now returns an `Optional<String>`.
 * Removed `UnionLinearStrategy`, `ChooseLinearStrategy`, and `RepeatLinearStrategy` as nested traversals are now natively supported in OLAP.
 * Fixed `Neo4jGraph` around manual transaction behavior on `commit` and `rollback` such that they would throw exceptions if a transaction was not open.
