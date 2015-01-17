@@ -30,7 +30,7 @@ public class MutablePath implements Path, Serializable {
     @Override
     public MutablePath clone() throws CloneNotSupportedException {
         final MutablePath clone = new MutablePath();
-        /*final MutablePath clone = (MutablePath) super.clone(); // TODO: Why is this not working?
+        /*final MutablePath clone = (MutablePath) super.clone(); // TODO: Why is this not working Hadoop serialization-wise?... Its cause DetachedPath's clone needs to detach on clone.
         clone.objects = new ArrayList<>();
         clone.labels = new ArrayList<>();*/
         for (int i = 0; i < this.objects.size(); i++) {
