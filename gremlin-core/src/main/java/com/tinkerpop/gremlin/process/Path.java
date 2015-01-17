@@ -138,18 +138,18 @@ public interface Path extends Cloneable {
         this.objects().forEach(consumer);
     }
 
-    public default void forEach(final BiConsumer<Object,Set<String>> consumer) {
-        final List<Set<String>> labels = this.labels();
+    public default void forEach(final BiConsumer<Object, Set<String>> consumer) {
         final List<Object> objects = this.objects();
+        final List<Set<String>> labels = this.labels();
         for (int i = 0; i < objects.size(); i++) {
-            consumer.accept(objects.get(i),labels.get(i));
+            consumer.accept(objects.get(i), labels.get(i));
         }
     }
 
-    public default Stream<Pair<Set<String>, Object>> stream() {
+    public default Stream<Pair<Object, Set<String>>> stream() {
         final List<Set<String>> labels = this.labels();
         final List<Object> objects = this.objects();
-        return IntStream.range(0, this.size()).mapToObj(i -> Pair.with(labels.get(i), objects.get(i)));
+        return IntStream.range(0, this.size()).mapToObj(i -> Pair.with(objects.get(i), labels.get(i)));
     }
 
     public static class Exceptions {

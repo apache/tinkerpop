@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MutablePath implements Path, Serializable, Cloneable {
+public class MutablePath implements Path, Serializable {
 
     protected List<Object> objects = new ArrayList<>();
     protected List<Set<String>> labels = new ArrayList<>();
@@ -29,9 +29,10 @@ public class MutablePath implements Path, Serializable, Cloneable {
 
     @Override
     public MutablePath clone() throws CloneNotSupportedException {
-        final MutablePath clone = (MutablePath) super.clone();
+        final MutablePath clone = new MutablePath();
+        /*final MutablePath clone = (MutablePath) super.clone(); // TODO: Why is this not working?
         clone.objects = new ArrayList<>();
-        clone.labels = new ArrayList<>();
+        clone.labels = new ArrayList<>();*/
         for (int i = 0; i < this.objects.size(); i++) {
             clone.objects.add(this.objects.get(i));
             clone.labels.add(new HashSet<>(this.labels.get(i)));

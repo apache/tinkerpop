@@ -16,8 +16,8 @@ import java.util.stream.Stream;
 public class ImmutablePath implements Path, Serializable, Cloneable {
 
     private Path previousPath = HeadPath.instance();
-    private Set<String> currentLabels = new HashSet<>();
     private Object currentObject;
+    private Set<String> currentLabels = new HashSet<>();
 
     protected ImmutablePath() {
 
@@ -37,9 +37,9 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
 
     private ImmutablePath(final Path previousPath, final Object currentObject, final String... currentLabels) {
         this.previousPath = previousPath;
+        this.currentObject = currentObject;
         if (currentLabels.length > 0)
             Stream.of(currentLabels).forEach(this.currentLabels::add);
-        this.currentObject = currentObject;
     }
 
     @Override

@@ -61,7 +61,7 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
                 this.subgraph = traverser.asAdmin().getSideEffects().get(this.sideEffectKey);
                 this.subgraphSupportsUserIds = this.subgraph.features().vertex().supportsUserSuppliedIds();
             }
-            traverser.path().stream().map(Pair::getValue1)
+            traverser.path().stream().map(Pair::getValue0)
                     .filter(i -> i instanceof Edge)
                     .map(e -> (Edge) e)
                     .filter(e -> !this.edgeIdsAdded.contains(e.id()))

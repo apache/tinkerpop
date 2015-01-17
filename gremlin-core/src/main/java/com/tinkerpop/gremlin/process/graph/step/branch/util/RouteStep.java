@@ -65,6 +65,6 @@ public class RouteStep<S> extends AbstractStep<S, S> {
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.routeTo);
+        return TraversalHelper.makeStepString(this);
     }
 }
