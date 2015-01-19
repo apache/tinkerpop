@@ -18,8 +18,8 @@ public class B_O_P_PA_S_SE_SL_Traverser<T> extends AbstractPathTraverser<T> {
         super(t, step);
         final Optional<String> stepLabel = step.getLabel();
         this.path = stepLabel.isPresent() ?
-                new ImmutablePath(t, stepLabel.get()) :
-                new ImmutablePath(t);
+                ImmutablePath.make().extend(t, stepLabel.get()) :
+                ImmutablePath.make().extend(t);
     }
 
     @Override

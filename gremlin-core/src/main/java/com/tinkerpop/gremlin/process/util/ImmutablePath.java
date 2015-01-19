@@ -31,7 +31,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         return this;
     }
 
-    public ImmutablePath(final Object currentObject, final String... currentLabels) {
+    private ImmutablePath(final Object currentObject, final String... currentLabels) {
         this(HeadPath.instance(), currentObject, currentLabels);
     }
 
