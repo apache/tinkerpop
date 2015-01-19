@@ -408,9 +408,9 @@ As traversers propagate across a graph as defined by a traversal, sideEffect com
 [source,groovy]
 gremlin> g.V().group().by{it.value('name')[1]}   // group the vertices by the second letter of their name
 ==>[a:[v[1], v[2]], e:[v[6]], i:[v[5]], o:[v[3], v[4]]]
-gremlin> g.V().group().by{it.value('name')[1]}.by{it.value('name')}   // for each vertex in the group, get their name (now the name[1] is apparent)
+gremlin> g.V().group().by{it.value('name')[1]}.by('name')   // for each vertex in the group, get their name (now the name[1] is apparent)
 ==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
-gremlin> g.V().group().by{it.value('name')[1]}.by{it.value('name')}.by{it.size()}   // for each grouping, what is it's size?
+gremlin> g.V().group().by{it.value('name')[1]}.by('name')).by{it.size()}   // for each grouping, what is it's size?
 ==>[a:2, e:1, i:1, o:2]
 
 The three projection parameters available to `group()` via `by()` are:
@@ -536,12 +536,12 @@ gremlin> g = TinkerFactory.createTheCrew()
 ==>tinkergraph[vertices:6 edges:14]
 gremlin> g.V().as('person').
            properties('location').order().by('startTime',incr).limit(2).
-           value().as('location').select().by('name').by{it} <1>
+           value().as('location').select().by('name').by() <1>
 ==>[person:daniel, location:spremberg]
 ==>[person:stephen, location:centreville]
 gremlin> g.V().as('person').
            local(__.properties('location').order().by('startTime',incr).limit(2)).
-           value().as('location').select().by('name').by{it} <2>
+           value().as('location').select().by('name').by() <2>
 ==>[person:marko, location:san diego]
 ==>[person:marko, location:santa cruz]
 ==>[person:stephen, location:centreville]
@@ -1092,7 +1092,7 @@ gremlin> g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(
 gremlin> g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2).sack()
 ==>1.0
 ==>0.4
-gremlin> g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2).path().by{it}.by('weight')
+gremlin> g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2).path().by().by('weight')
 ==>[v[1], 1.0, v[4], 1.0, v[5]]   // 1.0 * 1.0 * 1.0 = 1.0
 ==>[v[1], 1.0, v[4], 0.4, v[3]]   // 1.0 * 1.0 * 0.4 = 0.4
 
