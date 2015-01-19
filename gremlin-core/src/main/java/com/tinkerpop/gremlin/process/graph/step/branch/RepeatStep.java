@@ -60,11 +60,15 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     public void setUntilPredicate(final Predicate<Traverser<S>> untilPredicate) {
         if (null == this.repeatTraversal) this.untilFirst = true;
         this.untilPredicate = untilPredicate;
+        if (this.untilPredicate instanceof TraversalPredicate)
+            ((TraversalPredicate) this.untilPredicate).traversal.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());  // TODO: make this part of internal traversals
     }
 
     public void setEmitPredicate(final Predicate<Traverser<S>> emitPredicate) {
         if (null == this.repeatTraversal) this.emitFirst = true;
         this.emitPredicate = emitPredicate;
+        if (this.emitPredicate instanceof TraversalPredicate)
+            ((TraversalPredicate) this.emitPredicate).traversal.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());   // TODO: make this part of internal traversals
     }
 
     public List<Traversal<S, S>> getTraversals() {
