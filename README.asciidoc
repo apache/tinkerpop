@@ -6,9 +6,9 @@ image:https://raw.githubusercontent.com/tinkerpop/tinkerpop3/master/docs/static/
 Documentation
 ~~~~~~~~~~~~~
 
-* link:http://tinkerpop.com/docs/3.0.0.M7/[user documentation]
-* link:http://tinkerpop.com/javadocs/3.0.0.M7/core/[core javadoc]
-* link:http://tinkerpop.com/javadocs/3.0.0.M7/full/[full javadoc]
+* link:http://tinkerpop.com/docs/3.0.0-SNAPSHOT/[user documentation]
+* link:http://tinkerpop.com/javadocs/3.0.0-SNAPSHOT/core/[core javadoc]
+* link:http://tinkerpop.com/javadocs/3.0.0-SNAPSHOT/full/[full javadoc]
 
 Building and Testing
 ~~~~~~~~~~~~~~~~~~~~
