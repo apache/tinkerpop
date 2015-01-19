@@ -7,7 +7,7 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 
 TinkerPop 3.0.0.M7 (Release Date: January 19, 2015)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Added `SideEffectRegistrar` interface and `SideEffectRegistrationStrategy` for allowing steps to register sideEffects at strategy application time.
 * Renamed `Traverser.Admin.setFuture()` and `Traverser.Admin.getFuture()` to `setStepId()` and `getStepId()`, respectively.
