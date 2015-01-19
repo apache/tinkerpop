@@ -154,7 +154,7 @@ gremlin> g.variables().get('creator').get()
 gremlin> g.V().has('name',g.variables().get('creator').get()).
            properties('location').as('a').
            valueMap().as('b').
-             select('a','b').by(value).by{it} // get the creator's vertex and for each location, get the associated properties
+             select('a','b').by(value).by() // get the creator's vertex and for each location, get the associated properties
 ==>[a:san diego, b:[startTime:1997, endTime:2001]]
 ==>[a:santa cruz, b:[startTime:2001, endTime:2004]]
 ==>[a:brussels, b:[startTime:2004, endTime:2005]]
@@ -465,10 +465,11 @@ gremlin> g.io().graphSONWriter().create().writeVertex(f, g.V(1).next(), BOTH)
 ==>null
 gremlin> f.close()
 ==>null
+----
 
 The following GraphSON example shows the output of `GraphSonWriter.writeVertex()` with associated edges:
 
-[source,js]
+[source,json]
 ----
 {
   "inE": [
@@ -556,10 +557,11 @@ gremlin> g.io().graphSONWriter().mapper(mapper).create().writeVertex(f, g.V(1).n
 ==>null
 gremlin> f.close()
 ==>null
+----
 
 In the above code, the `embedTypes` option is set to `true` and the output below shows the difference in the output:
 
-[source,js]
+[source,json]
 ----
 {
   "@class": "java.util.HashMap",
