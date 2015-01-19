@@ -54,7 +54,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Func
                 TraversalHelper.getLabelsUpTo(this, this.traversal.asAdmin()).stream().filter(this.selectLabels::contains).findAny().isPresent() :
                 TraversalHelper.getStepsUpTo(this, this.traversal.asAdmin()).stream()
                         .filter(step -> step instanceof Barrier)
-                        .filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal.asAdmin()).stream().filter(this.selectLabels::contains).findAny().isPresent())
+                        //.filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal.asAdmin()).stream().filter(this.selectLabels::contains).findAny().isPresent())
                         .findAny().isPresent();
     }
 

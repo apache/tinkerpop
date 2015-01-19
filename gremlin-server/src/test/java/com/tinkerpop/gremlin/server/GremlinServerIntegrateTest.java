@@ -158,7 +158,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final CountDownLatch latch = new CountDownLatch(2);
             client.submit(request, r -> latch.countDown());
 
-            assertTrue(latch.await(500, TimeUnit.MILLISECONDS));
+            assertTrue(latch.await(1000, TimeUnit.MILLISECONDS));
         }
     }
 

@@ -472,9 +472,7 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
 [source,json]
 ----
 {
-  "inE": [
-
-  ],
+  "inE": [],
   "outE": [
     {
       "inV": 3,

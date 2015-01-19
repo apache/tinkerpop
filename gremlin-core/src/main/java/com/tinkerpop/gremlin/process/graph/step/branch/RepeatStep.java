@@ -23,7 +23,7 @@ import java.util.function.Predicate;
  */
 public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements TraversalHolder<S, S> {
 
-    private static final Child[] CHILD_OPERATIONs = new Child[]{Child.SET_HOLDER, Child.SET_STRATEGIES, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS};
+    private static final Child[] CHILD_OPERATIONS = new Child[]{Child.SET_HOLDER, Child.SET_STRATEGIES, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS};
 
     private Traversal<S, S> repeatTraversal = null;
     private Predicate<Traverser<S>> untilPredicate = null;
@@ -54,17 +54,21 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     @SuppressWarnings("unchecked")
     public void setRepeatTraversal(final Traversal<S, S> repeatTraversal) {
         this.repeatTraversal = repeatTraversal; // .clone();
-        this.executeTraversalOperations(CHILD_OPERATIONs);
+        this.executeTraversalOperations(CHILD_OPERATIONS);
     }
 
     public void setUntilPredicate(final Predicate<Traverser<S>> untilPredicate) {
         if (null == this.repeatTraversal) this.untilFirst = true;
         this.untilPredicate = untilPredicate;
+        if (this.untilPredicate instanceof TraversalPredicate)
+            ((TraversalPredicate) this.untilPredicate).traversal.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());  // TODO: make this part of internal traversals
     }
 
     public void setEmitPredicate(final Predicate<Traverser<S>> emitPredicate) {
         if (null == this.repeatTraversal) this.emitFirst = true;
         this.emitPredicate = emitPredicate;
+        if (this.emitPredicate instanceof TraversalPredicate)
+            ((TraversalPredicate) this.emitPredicate).traversal.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());   // TODO: make this part of internal traversals
     }
 
     public List<Traversal<S, S>> getTraversals() {
@@ -122,7 +126,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     public RepeatStep<S> clone() throws CloneNotSupportedException {
         final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
         clone.repeatTraversal = this.repeatTraversal.clone();
-        clone.executeTraversalOperations(CHILD_OPERATIONs);
+        clone.executeTraversalOperations(CHILD_OPERATIONS);
 
         if (this.untilPredicate instanceof TraversalPredicate)
             clone.untilPredicate = ((TraversalPredicate<S>) this.untilPredicate).clone();
@@ -245,7 +249,6 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         }
     }
 
-    // TODO: linearize this for OLAP!!
     public static class TraversalPredicate<S> implements Predicate<Traverser<S>>, Cloneable {
 
         private Traversal<S, ?> traversal;

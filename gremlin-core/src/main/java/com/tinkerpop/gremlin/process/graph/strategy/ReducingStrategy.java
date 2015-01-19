@@ -28,10 +28,8 @@ public class ReducingStrategy extends AbstractTraversalStrategy {
             return;
 
         final Step endStep = TraversalHelper.getEnd(traversal);
-        if (endStep instanceof Reducing) {
-            TraversalHelper.insertAfterStep(new ReducingIdentity(traversal, ((Reducing) endStep).getReducer()), endStep, traversal);
-            traversal.removeStep(endStep);
-        }
+        if (endStep instanceof Reducing)
+            TraversalHelper.replaceStep(endStep, new ReducingIdentity(traversal, ((Reducing) endStep).getReducer()), traversal);
     }
 
     public static ReducingStrategy instance() {
