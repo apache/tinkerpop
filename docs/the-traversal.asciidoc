@@ -410,7 +410,7 @@ gremlin> g.V().group().by{it.value('name')[1]}   // group the vertices by the se
 ==>[a:[v[1], v[2]], e:[v[6]], i:[v[5]], o:[v[3], v[4]]]
 gremlin> g.V().group().by{it.value('name')[1]}.by('name')   // for each vertex in the group, get their name (now the name[1] is apparent)
 ==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
-gremlin> g.V().group().by{it.value('name')[1]}.by('name')).by{it.size()}   // for each grouping, what is it's size?
+gremlin> g.V().group().by{it.value('name')[1]}.by('name').by{it.size()}   // for each grouping, what is it's size?
 ==>[a:2, e:1, i:1, o:2]
 
 The three projection parameters available to `group()` via `by()` are:
