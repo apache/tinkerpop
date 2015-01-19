@@ -25,6 +25,11 @@ public abstract class GroovyLocalTest {
             g.V.local(__.outE.count());
         }
 
+        @Override
+        public Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlabel_personX_localXoutXcreatedX_group_byXlangX_byXnameX() {
+            g.V.has(T.label, 'person').local(__.out('created').group.by('lang').by('name'))
+        }
+
         /*@Override
         public Traversal<Vertex, Map<Double, Long>> get_g_V_localXoutE_weight_groupCountX() {
             return g.V().local((Traversal) __.outE().values("weight").groupCount());
@@ -41,6 +46,11 @@ public abstract class GroovyLocalTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_localXoutE_countX() {
             ComputerTestHelper.compute("g.V.local(__.outE.count())", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlabel_personX_localXoutXcreatedX_group_byXlangX_byXnameX() {
+            ComputerTestHelper.compute("g.V.has(T.label, 'person').local(__.out('created').group.by('lang').by('name'))", g);
         }
 
         /*@Override

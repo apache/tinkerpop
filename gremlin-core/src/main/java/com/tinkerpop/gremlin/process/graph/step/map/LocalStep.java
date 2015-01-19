@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -68,8 +69,10 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements Traversa
 
     private static final <S, E> void generateFunction(final LocalStep<S, E> localStep) {
         localStep.setFunction(traverser -> {
+            final Traverser<S> localSplit = traverser.asAdmin().split();
             localStep.localTraversal.asAdmin().reset();
-            localStep.localTraversal.asAdmin().addStart(traverser);
+            localSplit.asAdmin().setSideEffects(localStep.localTraversal.asAdmin().getSideEffects()); // set to the local traversals sideEffects
+            localStep.localTraversal.asAdmin().addStart(localSplit);
             return localStep.onGraphComputer ? localStep.localTraversal.toList().iterator() : localStep.localTraversal;
             // TODO: This sucks. Why do I need to create a list on GraphComputer?
         });
