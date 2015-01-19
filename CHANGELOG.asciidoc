@@ -6,7 +6,7 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 
-TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
+TinkerPop 3.0.0.M7 (Release Date: January 19, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Added `SideEffectRegistrar` interface and `SideEffectRegistrationStrategy` for allowing steps to register sideEffects at strategy application time.
@@ -47,8 +47,6 @@ TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 * `Traverser.get(stepLabel/sideEffectKey)` no longer exists. There now exists: `Traverser.path(stepLabel)` and `Traverser.sideEffects(sideEffectKey)`.
 * `SimpleTraverser` now supports "path" but in a very loose, global cache way. Added `SparsePath` as a `Map`-backed `Path` implementation.
 * Provided Neo4j multi-label support in Neo4j-Gremlin. Added three `Neo4jVertex`-specific methods: `addLabel()`, `removeLabel()`, `labels()`.
-* Removed `TraverserSourceStrategy` as it is no longer required.
-* `TraverserSource` is now only a marker interface with "on first" within the `TraverserSource` step are traversers generated.
 * Bumped to Groovy 2.3.9.
 * Added `Graph.Io` interface which allows for simplified helper methods for end users and a way for vendors to override `GraphReader` and `GraphWriter` initial construction when custom serializers are needed.
 * Removed methods from `GraphProvider` related to customizing serializers in `IoTest` from the test suite as the new `Graph.Io` interface now serves that purpose.
