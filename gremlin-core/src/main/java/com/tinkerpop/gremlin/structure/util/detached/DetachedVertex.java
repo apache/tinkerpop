@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, Vertex.Iterators {
 
     private static final String ID = "id";
-    private static final String LABEL = "label";
     private static final String VALUE = "value";
     private static final String PROPERTIES = "properties";
 
