@@ -2,18 +2,19 @@
 
 pushd "$(dirname $0)/.." > /dev/null
 
-#for doc in $(find docs/src/ -name "the-traversal.asciidoc")
-for doc in $(find docs/src/ -name "*.asciidoc")
+for input in $(find docs/src/ -name "*.asciidoc")
 do
-  name=`basename $doc`
+  name=`basename $input`
   output="docs/${name}"
-  echo "${doc} > ${output}"
-  bin/gremlin.sh -e docs/preprocessor/processor.groovy $doc > $output
-  # TODO: exit in case of an error doesn't work as expected yet
-  ec=$?
-  if [ $ec -ne 0 ]; then
-    popd >/dev/null
-    exit $ec
+  echo "${input} > ${output}"
+  if [ $(grep -c '^\[gremlin' $input) -gt 0 ]; then
+    bin/gremlin.sh -e docs/preprocessor/processor.groovy $input > $output
+    # TODO: exit in case of an error doesn't work as expected yet
+    ec=$?
+    if [ $ec -ne 0 ]; then
+      popd >/dev/null
+      exit $ec
+    fi
   fi
 done
 
