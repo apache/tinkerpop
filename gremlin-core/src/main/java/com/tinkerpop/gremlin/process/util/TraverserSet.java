@@ -32,8 +32,7 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
 
     @Override
     public Iterator<Traverser.Admin<S>> iterator() {
-        //return IteratorUtils.map(this.map.entrySet().iterator(), Map.Entry::getKey);
-        return this.map.keySet().iterator();
+        return this.map.values().iterator();
     }
 
     public Traverser.Admin<S> get(final Traverser.Admin<S> traverser) {
@@ -78,7 +77,7 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
 
     @Override
     public Traverser.Admin<S> remove() {  // pop, exception if empty
-        return this.map.remove(this.iterator().next());
+        return this.map.remove(this.map.values().iterator().next());
     }
 
     @Override
@@ -108,16 +107,16 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
 
     @Override
     public Spliterator<Traverser.Admin<S>> spliterator() {
-        return this.map.keySet().spliterator();
+        return this.map.values().spliterator();
     }
 
     @Override
     public String toString() {
-        return this.map.keySet().toString();
+        return this.map.values().toString();
     }
 
     public void sort(final Comparator<Traverser<S>> comparator) {
-        final List<Traverser.Admin<S>> list = new ArrayList<>(this.map.keySet());
+        final List<Traverser.Admin<S>> list = new ArrayList<>(this.map.values());
         Collections.sort(list, comparator);
         this.map.clear();
         list.forEach(traverser -> this.map.put(traverser, traverser));

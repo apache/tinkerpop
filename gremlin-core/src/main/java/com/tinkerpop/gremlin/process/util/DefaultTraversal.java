@@ -129,9 +129,11 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
         for (final Step<?, ?> step : this.steps) {
             final Step<?, ?> clonedStep = step.clone();
             clonedStep.setTraversal(clone);
+            final Step previousStep = clone.steps.isEmpty() ? EmptyStep.instance() : clone.steps.get(clone.steps.size()-1);
+            clonedStep.setPreviousStep(previousStep);
+            previousStep.setNextStep(clonedStep);
             clone.steps.add(clonedStep);
         }
-        TraversalHelper.reLinkSteps(clone);
         return clone;
     }
 
@@ -157,24 +159,27 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
 
     @Override
     public <S2, E2> Traversal<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
-        if (this.getTraversalEngine().isPresent()) throw Exceptions.traversalIsLocked();
+        if (this.locked) throw Exceptions.traversalIsLocked();
         step.setId(this.stepPosition.nextXId());
-
-        if (this.steps.size() == 0 && index == 0)
-            this.steps.add(step);
-        else
-            this.steps.add(index, step);
-
-        TraversalHelper.reLinkSteps(this); // TODO: this could be faster
-        return (Traversal) this;
+        this.steps.add(index, step);
+        final Step previousStep = this.steps.size() > 0 && index != 0 ? steps.get(index - 1) : null;
+        final Step nextStep = this.steps.size() > index + 1 ? steps.get(index + 1) : null;
+        step.setPreviousStep(null != previousStep ? previousStep : EmptyStep.instance());
+        step.setNextStep(null != nextStep ? nextStep : EmptyStep.instance());
+        if (null != previousStep) previousStep.setNextStep(step);
+        if (null != nextStep) nextStep.setPreviousStep(step);
+        return (Traversal<S2, E2>) this;
     }
 
     @Override
     public <S2, E2> Traversal<S2, E2> removeStep(final int index) throws IllegalStateException {
-        if (this.getTraversalEngine().isPresent()) throw Exceptions.traversalIsLocked();
-        this.steps.remove(index);
-        TraversalHelper.reLinkSteps(this); // TODO: this could be faster
-        return (Traversal) this;
+        if (this.locked) throw Exceptions.traversalIsLocked();
+        final Step<?, ?> removedStep = this.steps.remove(index);
+        final Step previousStep = removedStep.getPreviousStep();
+        final Step nextStep = removedStep.getNextStep();
+        previousStep.setNextStep(nextStep);
+        nextStep.setPreviousStep(previousStep);
+        return (Traversal<S2, E2>) this;
     }
 
     @Override

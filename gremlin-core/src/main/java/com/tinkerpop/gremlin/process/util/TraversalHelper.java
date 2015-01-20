@@ -118,17 +118,6 @@ public class TraversalHelper {
         traversal.removeStep(removeStep);
     }
 
-    public static void reLinkSteps(final Traversal.Admin<?, ?> traversal) {
-        final List<Step> steps = traversal.getSteps();
-        for (int i = 0; i < steps.size(); i++) {
-            final Step previousStep = i > 0 ? steps.get(i - 1) : null;
-            final Step currentStep = steps.get(i);
-            final Step nextStep = i < steps.size() - 1 ? steps.get(i + 1) : null;
-            currentStep.setPreviousStep(null != previousStep ? previousStep : EmptyStep.instance());
-            currentStep.setNextStep(null != nextStep ? nextStep : EmptyStep.instance());
-        }
-    }
-
     public static String makeStepString(final Step<?, ?> step, final Object... arguments) {
         final StringBuilder builder = new StringBuilder(step.getClass().getSimpleName());
         final List<String> strings = Stream.of(arguments)
