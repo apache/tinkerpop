@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `RepeatStep.RepeatEndStep` in order to reduce the complexity of the code on OLAP when the predicates are not at the start of `RepeatStep`.
+
 TinkerPop 3.0.0.M7 (Release Date: January 19, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

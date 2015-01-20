@@ -57,7 +57,7 @@ public class RouteStrategy extends AbstractTraversalStrategy {
         TraversalHelper.getStepsOfClass(RepeatStep.class, traversal).stream()
                 .forEach(step -> {
                     for (final Traversal<?, ?> t : ((RepeatStep<?>) step).getTraversals()) {
-                        final RouteStep<?> routeStep = new RouteStep(t, step, getNextStepIdRecurssively(step));
+                        final RouteStep<?> routeStep = new RouteStep(t, getNextStepIdRecurssively(step));
                         t.asAdmin().addStep(routeStep);
                     }
                 });
