@@ -54,7 +54,13 @@ new File(this.args[0]).withReader { reader ->
                 if (line.startsWith("import")) {
                     println "..."
                 } else {
-                    if (res instanceof Traversal) {
+                    if (res instanceof Map) {
+                        res = res.entrySet()
+                    }
+                    if (res instanceof Iterable) {
+                        res = res.iterator()
+                    }
+                    if (res instanceof Iterator) {
                         while (res.hasNext()) {
                             def current = res.next()
                             println "==>" + current
