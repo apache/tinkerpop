@@ -34,11 +34,11 @@ gremlin> g.features()
 
 A common pattern for using features is to check their support prior to performing an operation:
 
-[source,groovy]
-gremlin> g.features().graph().supportsTransactions()
-==>false
-gremlin> g.features().graph().supportsTransactions() ? g.tx().commit() : "no tx"
-==>no tx
+[gremlin]
+----
+g.features().graph().supportsTransactions()
+g.features().graph().supportsTransactions() ? g.tx().commit() : "no tx"
+----
 
 TIP: To ensure vendor agnostic code, always check feature support prior to usage of a particular function.  In that way, the application can behave gracefully in case a particular implementation is provided at runtime that does not support a function being accessed.
 
@@ -128,37 +128,22 @@ TIP: A toy graph demonstrating all of the new TinkerPop3 graph structure feature
 .TinkerPop Crew
 image::the-crew-graph.png[width=685]
 
-[source,groovy]
-gremlin> g = TinkerFactory.createTheCrew()
-==>tinkergraph[vertices:6 edges:14]
-gremlin> g.V().as('a').properties('location').hasNot('endTime').as('b').
-           select().by('name').by{it.value() + '(' + it.value('startTime') + ')'} // determine the current location of each person
-==>[a:marko, b:santa fe(2005)]
-==>[a:stephen, b:purcellville(2006)]
-==>[a:matthias, b:seattle(2014)]
-==>[a:daniel, b:aachen(2009)]
-gremlin> g.V().has('name','gremlin').inE('uses').
-           order().by('skill',incr).as('a').
-           outV().as('b').
-             select().by('skill').by('name') // rank the users of gremlin by their skill level
-==>[a:3, b:matthias]
-==>[a:4, b:marko]
-==>[a:5, b:stephen]
-==>[a:5, b:daniel]
-gremlin> g.variables() // access the global graph variables
-==>variables[size:3]
-gremlin> g.variables().get('creator')
-==>Optional[marko]
-gremlin> g.variables().get('creator').get()
-==>marko
-gremlin> g.V().has('name',g.variables().get('creator').get()).
-           properties('location').as('a').
-           valueMap().as('b').
-             select('a','b').by(value).by() // get the creator's vertex and for each location, get the associated properties
-==>[a:san diego, b:[startTime:1997, endTime:2001]]
-==>[a:santa cruz, b:[startTime:2001, endTime:2004]]
-==>[a:brussels, b:[startTime:2004, endTime:2005]]
-==>[a:santa fe, b:[startTime:2005]]
+[gremlin,theCrew]
+----
+g.V().as('a').properties('location').hasNot('endTime').as('b').
+  select().by('name').by{it.value() + '(' + it.value('startTime') + ')'} // determine the current location of each person
+g.V().has('name','gremlin').inE('uses').
+  order().by('skill',incr).as('a').
+  outV().as('b').
+    select().by('skill').by('name') // rank the users of gremlin by their skill level
+g.variables() // access the global graph variables
+g.variables().get('creator')
+g.variables().get('creator').get()
+g.V().has('name',g.variables().get('creator').get()).
+  properties('location').as('a').
+  valueMap().as('b').
+    select('a','b').by(value).by() // get the creator's vertex and for each location, get the associated properties
+----
 
 Graph Variables
 ---------------
@@ -171,28 +156,18 @@ TinkerPop3 introduces the concept of `Graph.Variables`. Variables are key/value 
 
 An example of graph variables in use is presented below in Gremlin-Groovy:
 
-[source,groovy]
-gremlin> g = TinkerGraph.open()
-==>tinkergraph[vertices:0 edges:0]
-gremlin> g.variables()
-==>variables[size:0]
-gremlin> g.variables().set('systemAdmins',['stephen','peter','pavel'])
-==>null
-gremlin> g.variables().set('systemUsers',['matthias','marko','josh'])
-==>null
-gremlin> g.variables().keys()
-==>systemAdmins
-==>systemUsers
-gremlin> g.variables().get('systemUsers')
-==>Optional[[matthias, marko, josh]]
-gremlin> g.variables().get('systemUsers').get()
-==>matthias
-==>marko
-==>josh
-gremlin> g.variables().remove('systemAdmins')
-==>null
-gremlin> g.variables().keys()
-==>systemUsers
+[gremlin]
+----
+g = TinkerGraph.open()
+g.variables()
+g.variables().set('systemAdmins',['stephen','peter','pavel'])
+g.variables().set('systemUsers',['matthias','marko','josh'])
+g.variables().keys()
+g.variables().get('systemUsers')
+g.variables().get('systemUsers').get()
+g.variables().remove('systemAdmins')
+g.variables().keys()
+----
 
 [[transactions]]
 Graph Transactions
@@ -761,34 +736,26 @@ NOTE: TinkerPop2 had the notion of "Graph Wrappers" which decorated standard `Gr
 
 To use a `GraphStrategy` instance, use the `Graph.strategy()` method to instantiate the `StrategyGraph` as follows:
 
-[source,groovy]
+[gremlin]
 ----
-gremlin> g = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> sg = g.strategy(IdentityStrategy.instance())
-==>identitystrategy[tinkergraph[vertices:6 edges:6]]
+g = TinkerFactory.createModern()
+sg = g.strategy(IdentityStrategy.instance())
+sg.getBaseGraph()
 ----
 
 The above code specifies the creation of a `TinkerGraph` with the use of `IdentityStrategy`.  Note that the `strategy` method returns a `StrategyGraph`, which implements the `Graph` interface. It can be used in the same manner as `TinkerGraph` or any other implementation.  At any point, the `GraphStrategy` can be bypassed by getting the underlying `TinkerGraph`.
-
-[source,groovy]
-----
-gremlin> sg.getBaseGraph()
-==>tinkergraph[vertices:6 edges:6]
-----
 
 IdStrategy
 ~~~~~~~~~~
 
 `IdStrategy` which affords complete control over element identifiers. Some `Graph` implementations, such as `TinkerGraph`, allow specification of custom identifiers when creating elements:
 
-[source,groovy]
-gremlin> g = TinkerGraph.open()
-==>tinkergraph[vertices:0 edges:0]
-gremlin> v = g.addVertex(id, "42a")
-==>v[42a]
-gremlin> g.V("42a")
-==>v[42a]
+[gremlin]
+----
+g = TinkerGraph.open()
+v = g.addVertex(id, "42a")
+g.V("42a")
+----
 
 Other `Graph` implementations, however, generate element identifiers automatically and cannot be assigned:
 
@@ -820,45 +787,30 @@ PartitionStrategy
 
 `PartitionStrategy` is a `SubgraphStrategy` which creates logical subgraphs through the use of designated properties.  When each element is written to the `Graph`, it is marked with a property value indicating the current write-partition.  As elements are read from the graph, they are matched against the current set of read-partitions.  The read-partitions thereby define the union of a set of vertices and edges. For example:
 
-[source,groovy]
-gremlin> g = TinkerGraph.open()
-==>tinkergraph[vertices:0 edges:0]
-gremlin> partitionStrategy = PartitionStrategy.build().partitionKey("com.example.partition").startPartition("A").create()
-==>partitionstrategy
-gremlin> sg = g.strategy(partitionStrategy)
-==>partitionstrategy[tinkergraph[vertices:0 edges:0]]
+[gremlin]
+----
+g = TinkerGraph.open()
+strategy = PartitionStrategy.build().partitionKey("com.example.partition").startPartition("A").create()
+sg = g.strategy(strategy)
 
-Add vertices and edges first in one partition, then another:
+// Add vertices and edges first in one partition, then another:
 
-[source,groovy]
-gremlin> v1 = sg.addVertex("name", "one")
-==>v[0]*
-gremlin> v2 = sg.addVertex("name", "two")
-==>v[3]*
-gremlin> v1.addEdge("knows", v2)
-==>e[6][0-knows->3]*
-gremlin> partitionStrategy.setWritePartition("B")
-==>null
-gremlin> v3 = sg.addVertex("name", "three")
-==>v[7]*
-gremlin> v1.addEdge("knows", v3)
-==>e[10][0-knows->7]*
+v1 = sg.addVertex("name", "one")
+v2 = sg.addVertex("name", "two")
+v1.addEdge("knows", v2)
+strategy.setWritePartition("B")
+v3 = sg.addVertex("name", "three")
+v1.addEdge("knows", v3)
 
-Define sets of partitions which provide access to different subgraphs, or slices of the data:
+// Define sets of partitions which provide access to different subgraphs, or slices of the data:
 
-[source,groovy]
-gremlin> "in A: " + sg.V().count().next() + ", " + sg.E().count().next()
-==>in A: 2, 1
-gremlin> strategy.addReadPartition("B")
-==>null
-gremlin> "in A+B: " + sg.V().count().next() + ", " + sg.E().count().next()
-==>in A+B: 3, 2
-gremlin> strategy.clearReadPartitions()
-==>null
-gremlin> strategy.addReadPartition("B")
-==>null
-gremlin> "in B: " + sg.V().count().next() + ", " + sg.E().count().next()
-==>in B: 1, 0
+"in A: " + sg.V().count().next() + ", " + sg.E().count().next()
+strategy.addReadPartition("B")
+"in A+B: " + sg.V().count().next() + ", " + sg.E().count().next()
+strategy.clearReadPartitions()
+strategy.addReadPartition("B")
+"in B: " + sg.V().count().next() + ", " + sg.E().count().next()
+----
 
 Note that there are no edges in the set B, as the only edge added to partition B is incident on a vertex of A.
 

@@ -7,6 +7,14 @@ def STATEMENT_PREFIX = "gremlin> "
 def STATEMENT_CONTINUATION_PREFIX = "         "
 
 def header = """
+    import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterCountMapReduce
+    import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterPopulationMapReduce
+    import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram
+    import com.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce
+    import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram
+    import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram
+    import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
+    import com.tinkerpop.gremlin.structure.strategy.*
     import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
     import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
     import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
@@ -50,7 +58,13 @@ new File(this.args[0]).withReader { reader ->
                         println STATEMENT_CONTINUATION_PREFIX + line
                     }
                 }
-                def res = shell.evaluate(script.toString())
+                def res
+                try {
+                   res = shell.evaluate(script.toString())
+                } catch (e) {
+                   e.printStackTrace()
+                   System.exit(1)
+                }
                 if (line.startsWith("import")) {
                     println "..."
                 } else {
@@ -65,7 +79,7 @@ new File(this.args[0]).withReader { reader ->
                             def current = res.next()
                             println "==>" + current
                         }
-                    } else {
+                    } else if (!line.isEmpty() && !line.startsWith("//")) {
                         println "==>" + (res ?: "null")
                     }
                 }
@@ -80,7 +94,9 @@ new File(this.args[0]).withReader { reader ->
                 def parts = line.split(/,/, 2)
                 def graph = parts.size() == 2 ? parts[1].capitalize().replaceAll(/\s*\]\s*$/, "") : ""
                 def binding = new Binding()
-                binding.setProperty("g", graph.isEmpty() ? TinkerGraph.open() : TinkerFactory."create${graph}"())
+                def g = graph.isEmpty() ? TinkerGraph.open() : TinkerFactory."create${graph}"()
+                binding.setProperty("g", g)
+                if (graph == "Modern") binding.setProperty("marko", g.V().has("name", "marko").next())
                 shell = new GroovyShell(this.class.classLoader, binding)
                 reader.readLine()
                 inCodeSection = true

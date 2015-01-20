@@ -419,7 +419,7 @@ g.V().as('person').
 <1> Get the first two people and their respective location according to the most historic location start time.
 <2> For every person, get their two most historic locations.
 
-The two traversals above look nearly identical save the inclusion of `local()` which wraps a section of the traversal in a object-local traversal. As such, the `orderBy()` and the `limit()` refer to a particular object, not to the stream as a whole.
+The two traversals above look nearly identical save the inclusion of `local()` which wraps a section of the traversal in a object-local traversal. As such, the `order().by()` and the `limit()` refer to a particular object, not to the stream as a whole.
 
 [[match-step]]
 Match Step
@@ -1029,14 +1029,6 @@ gremlin> g.V().repeat(__.timeLimit(2).both().groupCount('m')).times(16).cap('m')
 ==>v[6]=268533
 gremlin> clock(1){g.V().repeat(__.timeLimit(2).both().groupCount('m')).times(16).cap('m').next().sort{-it.value}}
 ==>2.214000
-
-TODO: // how to load plugins using standard groovy methods? [gremlin,modern]
-----
-g.V().repeat(__.both().groupCount('m')).times(16).cap('m').next().sort{-it.value}
-clock(1){g.V().repeat(__.both().groupCount('m')).times(16).cap('m').next().sort{-it.value}}
-g.V().repeat(__.timeLimit(2).both().groupCount('m')).times(16).cap('m').next().sort{-it.value}
-clock(1){g.V().repeat(__.timeLimit(2).both().groupCount('m')).times(16).cap('m').next().sort{-it.value}}
-----
 
 In essence, the relative order is respected, even through the number of traversers at each vertex is not. The primary benefit being that the calculation is guaranteed to complete at the specified time limit (in milliseconds). Finally, note that the internal clock of `timeLimit()`-step starts when the first traverser enters it. When the time limit is reached, any `next()` evaluation of the step will yield a `NoSuchElementException` and any `hasNext()` evaluation will yield `false`.
 

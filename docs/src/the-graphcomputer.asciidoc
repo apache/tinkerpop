@@ -23,20 +23,13 @@ image::graphcomputer.png[width=500]
 
 The example below demonstrates how to submit a VertexProgram to a graph's GraphComputer. `GraphComputer.submit()` yields a `Future<ComputerResult>`. The `ComputerResult` has the resultant computed graph which can be a full copy of the original graph (see <<hadoop-gremlin,Hadoop-Gremlin>>) or a view over the original graph (see <<tinkergraph,TinkerGraph>>). The ComputerResult also provides access to computational side-effects called `Memory` (which includes, for example, runtime, number of iterations, results of MapReduce jobs, and VertexProgram-specific memory manipulations).
 
-[source,groovy]
-gremlin> g = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> result = g.compute().program(PageRankVertexProgram.build().create()).submit().get()
-==>result[tinkergraph[vertices:6 edges:6],memory[size:0]]
-gremlin> result.graph().V().valueMap('name',PageRankVertexProgram.PAGE_RANK)
-==>[gremlin.pageRankVertexProgram.pageRank:[0.15000000000000002], name:[marko]]
-==>[gremlin.pageRankVertexProgram.pageRank:[0.19250000000000003], name:[vadas]]
-==>[gremlin.pageRankVertexProgram.pageRank:[0.4018125], name:[lop]]
-==>[gremlin.pageRankVertexProgram.pageRank:[0.19250000000000003], name:[josh]]
-==>[gremlin.pageRankVertexProgram.pageRank:[0.23181250000000003], name:[ripple]]
-==>[gremlin.pageRankVertexProgram.pageRank:[0.15000000000000002], name:[peter]]
-gremlin> result.memory().runtime
-==>35
+[gremlin]
+----
+g = TinkerFactory.createModern()
+result = g.compute().program(PageRankVertexProgram.build().create()).submit().get()
+result.graph().V().valueMap('name',PageRankVertexProgram.PAGE_RANK)
+result.memory().runtime
+----
 
 NOTE: This model of "vertex-centric graph computing" was made popular by Google's link:http://googleresearch.blogspot.com/2009/06/large-scale-graph-computing-at-google.html[Pregel] graph engine. In the open source world, this model is found in OLAP graph computing systems such as link:https://giraph.apache.org/[Giraph], link:https://hama.apache.org/[Hama], and link:http://faunus.thinkaurelius.com[Faunus]. TinkerPop3 extends the popularized model with integrated post-processing <<mapreduce,MapReduce>> jobs over the vertex set.
 
@@ -66,46 +59,27 @@ image::mapreduce.png[width=650]
 
 The `MapReduce` extension to GraphComputer is made explicit when examining the <<peerpressurevertexprogram,`PeerPressureVertexProgram`>> and corresponding `ClusterPopulationMapReduce`. In the code below, the GraphComputer result returns the computed on `Graph` as well as the `Memory` of the computation (`ComputerResult`). The memory maintain the results of any MapReduce jobs. The cluster population MapReduce result states that there are 5 vertices in cluster 1 and 1 vertex in cluster 6. This can be verified (in a serial manner) by looking at the `PeerPressureVertexProgram.CLUSTER` property of the resultant graph. Notice that the property is "hidden" unless it is directly accessed via name.
 
-[source,groovy]
-gremlin> g = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> result = g.compute().program(PeerPressureVertexProgram.build().create()).mapReduce(ClusterPopulationMapReduce.build().create()).submit().get()
-==>result[tinkergraph[vertices:6 edges:6],memory[size:2]]
-gremlin> result.memory().get('clusterPopulation')
-==>1=5
-==>6=1
-gremlin> result.graph().V().values(PeerPressureVertexProgram.CLUSTER).groupCount().next()
-==>1=5
-==>6=1
-gremlin> result.graph().V().valueMap()
-==>[name:[marko], age:[29]]
-==>[name:[vadas], age:[27]]
-==>[name:[lop], lang:[java]]
-==>[name:[josh], age:[32]]
-==>[name:[ripple], lang:[java]]
-==>[name:[peter], age:[35]]
-gremlin> result.graph().V().valueMap(true,PeerPressureVertexProgram.CLUSTER)
-==>[gremlin.peerPressureVertexProgram.cluster:[1], label:person, id:1]
-==>[gremlin.peerPressureVertexProgram.cluster:[1], label:person, id:2]
-==>[gremlin.peerPressureVertexProgram.cluster:[1], label:software, id:3]
-==>[gremlin.peerPressureVertexProgram.cluster:[1], label:person, id:4]
-==>[gremlin.peerPressureVertexProgram.cluster:[1], label:software, id:5]
-==>[gremlin.peerPressureVertexProgram.cluster:[6], label:person, id:6]
+[gremlin,modern]
+----
+g = TinkerFactory.createModern()
+result = g.compute().program(PeerPressureVertexProgram.build().create()).mapReduce(ClusterPopulationMapReduce.build().create()).submit().get()
+result.memory().get('clusterPopulation')
+result.graph().V().values(PeerPressureVertexProgram.CLUSTER).groupCount().next()
+result.graph().V().valueMap()
+result.graph().V().valueMap(true,PeerPressureVertexProgram.CLUSTER)
+----
 
 If there are numerous statistics desired, then its possible to register as many MapReduce jobs as needed. For instance, the `ClusterCountMapReduce` determines how many unique clusters were created by the peer pressure algorithm. Below both `ClusterCountMapReduce` and `ClusterPopulationMapReduce` are computed over the resultant graph.
 
-[source,groovy]
-gremlin> g = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> result = g.compute().program(PeerPressureVertexProgram.build().create()).
+[gremlin]
+----
+g = TinkerFactory.createModern()
+result = g.compute().program(PeerPressureVertexProgram.build().create()).
  mapReduce(ClusterPopulationMapReduce.build().create()).
  mapReduce(ClusterCountMapReduce.build().create()).submit().get()
-==>result[tinkergraph[vertices:6 edges:6],memory[size:3]]
-gremlin> result.memory().clusterPopulation
-==>1=5
-==>6=1
-gremlin> result.memory().clusterCount
-==>2
+result.memory().clusterPopulation
+result.memory().clusterCount
+----
 
 IMPORTANT: The MapReduce model of TinkerPop3 does not support MapReduce chaining. Thus, the order in which the MapReduce jobs are executed is irrelevant. This is made apparent when realizing that the `map()`-stage takes a `Vertex` as its input and the `reduce()`-stage yields key/value pairs. Thus, the results of reduce can not feed back into map.
 
@@ -126,19 +100,14 @@ image:lambda-vertex-program.png[width=200,float=left] `LambdaVertexProgram` is t
 * Submitting a "one off" vertex program without having to build a class and distribute jars
 * Testing for vendors of `GraphComputer` implementations
 
-[source,groovy]
-gremlin> result = g.compute().program(LambdaVertexProgram.build().
-                      execute("a.singleProperty('counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
-                      terminate('a.iteration > 9').
-                      elementComputeKeys('counter').create()).submit().get()
-==>result[tinkergraph[vertices:6 edges:6],memory[size:0]]
-gremlin> result.graph().V().values('counter')
-==>10
-==>10
-==>10
-==>10
-==>10
-==>10
+[gremlin,modern]
+----
+result = g.compute().program(LambdaVertexProgram.build().
+             execute("a.singleProperty('counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
+             terminate('a.iteration > 9').
+             elementComputeKeys('counter').create()).submit().get()
+result.graph().V().values('counter')
+----
 
 NOTE: If a single string is provided to the LambdaVertexProgram's builder methods, then it is assumed to be a Gremlin-Groovy script. It is possible to use other Gremlin `ScriptEngine` implementations (e.g. Gremlin-Scala, Gremlin-JavaScript, etc.) by ensuring 1.) the script engine is registered in the `META-INF/services` of the application and 2.) it is declared as such `build().execute('gremlin-scala','a.singleProperty…')`.
 
@@ -161,20 +130,20 @@ WARNING: Java8 lambdas are not serializable unless they are static classes. As s
 
 Finally, there also exists `LambdaMapReduce` to compliment `LambdaVertexProgram`. In essence, the `map`, `combine`, `reduce`, etc. methods of <<mapreduce,MapReduce>> can be described by lambdas. An example is provided below in Gremlin-Groovy that expands on the example previous that simply sums up all the counters on the vertices and stores them into a graph computer memory called `counter`.
 
-[source,groovy]
-gremlin> result = g.compute().
-                      program(LambdaVertexProgram.build().
-                        execute("a.singleProperty('counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
-                        terminate('a.iteration > 9').
-                        elementComputeKeys('counter').create()).
-                      mapReduce(LambdaMapReduce.build().
-                        map("b.emit(a.value('counter'))").
-                        reduce("c.emit(a,b.sum())").
-                        memory('a.next()').
-                        memoryKey('sum').create()).submit().get()
-==>result[tinkergraph[vertices:6 edges:6],memory[size:1]]
-gremlin> result.memory().sum
-==>60
+[gremlin,modern]
+----
+result = g.compute().
+             program(LambdaVertexProgram.build().
+               execute("a.singleProperty('counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
+               terminate('a.iteration > 9').
+               elementComputeKeys('counter').create()).
+             mapReduce(LambdaMapReduce.build().
+               map("b.emit(a.value('counter'))").
+               reduce("c.emit(a,b.sum())").
+               memory('a.next()').
+               memoryKey('sum').create()).submit().get()
+result.memory().sum
+----
 
 TIP: In the last example, the `map()` emits a single value with no key. `MapEmitter.emit(value)` is a default method that assumes the key is the `MapReduce.NullObject` singleton. This method is useful when all values need to be aggregated to a single key -- e.g., when a global sum is needed.
 
@@ -317,19 +286,12 @@ image:traversal-vertex-program.png[width=250,float=left] The `TraversalVertexPro
 
 NOTE: This model of graph traversal in a BSP system was first implemented by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics engine and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
 
-[source,groovy]
-gremlin> g = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V().both().has(label,'person').values('age').groupCount().next() // OLTP
-==>32=3
-==>35=1
-==>27=1
-==>29=3
-gremlin> g.V().both().has(label,'person').values('age').groupCount().submit(g.compute()).next() // OLAP
-==>32=3
-==>35=1
-==>27=1
-==>29=3
+[gremlin]
+----
+g = TinkerFactory.createModern()
+g.V().both().has(label,'person').values('age').groupCount().next() // OLTP
+g.V().both().has(label,'person').values('age').groupCount().submit(g.compute()).next() // OLAP
+----
 
 In the OLAP example above, a `TraversalVertexProgram` is (logically) sent to each vertex in the graph. Each instance evaluation requires (logically) 5 BSP iterations and each iteration is interpreted as such:
 
@@ -345,18 +307,13 @@ When the computation is complete a <<mapreduce,MapReduce>> job executes which ag
 
 The same OLAP traversal can be executed using the standard `g.compute()` model, though at the expense of verbosity. `TraversalVertexProgram` provides a fluent `Builder` for constructing a `TraversalVertexProgram`. The specified `traversal()` can be either a `Supplier<Traversal>` object, a `Supplier<Traversal>` class, or a link:http://en.wikipedia.org/wiki/Scripting_for_the_Java_Platform[JSR-223] script that will generate (i.e. supply) a `Traversal`. If `traversal()` is supplied a single string, it is assumed that "gremlin-groovy" is the `ScriptEngine` to use. If two strings are supplied, then the first string denotes the `ScriptEngine` to evaluate the second string script with in order to generate (i.e. supply) the `Traversal`.
 
-[source,groovy]
-gremlin> result = g.compute().program(TraversalVertexProgram.build().traversal("com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.open().V().both().has(label,'person').values('age').groupCount('a')").create()).submit().get()
-==>result[tinkergraph[vertices:6 edges:6],memory[size:3]]
-gremlin> result.memory().a
-==>32=3
-==>35=1
-==>27=1
-==>29=3
-gremlin> result.memory().iteration
-==>2
-gremlin> result.memory().runtime
-==>7
+[gremlin,modern]
+----
+result = g.compute().program(TraversalVertexProgram.build().traversal("com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.open().V().both().has(label,'person').values('age').groupCount('a')").create()).submit().get()
+result.memory().a
+result.memory().iteration
+result.memory().runtime
+----
 
 [[distributed-gremlin-gotchas]]
 Distributed Gremlin Gotchas
