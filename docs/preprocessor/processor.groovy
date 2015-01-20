@@ -1,6 +1,11 @@
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
 
+def BLOCK_DELIMITER = "----"
+def STATEMENT_CONTINUATION_CHARACTERS = [".", ",", "{", "("]
+def STATEMENT_PREFIX = "gremlin> "
+def STATEMENT_CONTINUATION_PREFIX = "         "
+
 def header = """
     import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
     import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
@@ -19,32 +24,36 @@ def skipNextRead = false
 def inCodeSection = false
 def shell
 
+sanitize = { def codeLine ->
+    codeLine.replaceAll(/\s*(\<\d+\>,\s*)*\<\d+\>\s*$/, "").replaceAll(/\s*\/\/.*$/, "").trim()
+}
+
 new File(this.args[0]).withReader { reader ->
     while (skipNextRead || (line = reader.readLine()) != null) {
         skipNextRead = false
         if (inCodeSection) {
-            if (line.equals("----")) inCodeSection = false
+            inCodeSection = !line.equals(BLOCK_DELIMITER)
             if (inCodeSection) {
                 def script = new StringBuilder(header)
-                def lineNoRef = line.replaceAll(/\s*(\<\d+\>,\s*)*\<\d+\>\s*$/, "")
-                def lineNoComment = lineNoRef.replaceAll(/\s*\/\/.*$/, "")
-                script.append(lineNoComment)
-                println "gremlin> " + line
-                if (!line.isEmpty() && lineNoComment.toList().last() in [".", ",", "{", "("]) {
+                def sanitizedLine = sanitize(line)
+                script.append(sanitizedLine)
+                println STATEMENT_PREFIX + line
+                if (!sanitizedLine.isEmpty() && sanitizedLine[-1] in STATEMENT_CONTINUATION_CHARACTERS) {
                     while (true) {
                         line = reader.readLine()
                         if (!line.startsWith(" ") && !line.startsWith("}") && !line.startsWith(")")) {
                             skipNextRead = true
                             break
                         }
-                        lineNoRef = line.replaceAll(/\s*(\<\d+\>,\s*)*\<\d+\>\s*$/, "")
-                        lineNoComment = lineNoRef.replaceAll(/\s*\/\/.*$/, "")
-                        script.append(lineNoComment.trim())
-                        println "         " + line // it should be "gremlin> ", but spaces make it copy/paste-friendly
+                        sanitizedLine = sanitize(line)
+                        script.append(sanitizedLine)
+                        println STATEMENT_CONTINUATION_PREFIX + line
                     }
                 }
                 def res = shell.evaluate(script.toString())
-                if (!line.startsWith("import")) {
+                if (line.startsWith("import")) {
+                    println "..."
+                } else {
                     if (res instanceof Traversal) {
                         while (res.hasNext()) {
                             def current = res.next()
@@ -53,25 +62,24 @@ new File(this.args[0]).withReader { reader ->
                     } else {
                         println "==>" + (res ?: "null")
                     }
-                } else {
-                    println "..."
                 }
-                if (line.equals("----")) {
+                if (line.equals(BLOCK_DELIMITER)) {
                     skipNextRead = false
                     inCodeSection = false
                 }
             }
-            if (!inCodeSection) println line
+            if (!inCodeSection) println BLOCK_DELIMITER
         } else {
             if (line.startsWith("[gremlin")) {
                 def parts = line.split(/,/, 2)
                 def graph = parts.size() == 2 ? parts[1].capitalize().replaceAll(/\s*\]\s*$/, "") : ""
                 def binding = new Binding()
                 binding.setProperty("g", graph.isEmpty() ? TinkerGraph.open() : TinkerFactory."create${graph}"())
-                shell = new GroovyShell(binding)
+                shell = new GroovyShell(this.class.classLoader, binding)
                 reader.readLine()
                 inCodeSection = true
-                println "[source,groovy]\n----"
+                println "[source,groovy]"
+                println BLOCK_DELIMITER
             } else println line
         }
     }
