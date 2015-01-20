@@ -25,7 +25,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     private static final Child[] CHILD_OPERATIONS = new Child[]{Child.SET_HOLDER, Child.SET_STRATEGIES, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS};
 
-    private Traversal<S, S> repeatTraversal = null;
+    private Traversal.Admin<S, S> repeatTraversal = null;
     private Predicate<Traverser<S>> untilPredicate = null;
     private Predicate<Traverser<S>> emitPredicate = null;
     public boolean untilFirst = false;
@@ -54,7 +54,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     @SuppressWarnings("unchecked")
     public void setRepeatTraversal(final Traversal<S, S> repeatTraversal) {
-        this.repeatTraversal = repeatTraversal; // .clone();
+        this.repeatTraversal = repeatTraversal.asAdmin(); // .clone();
         this.repeatTraversal.asAdmin().addStep(new RepeatEndStep(this.repeatTraversal));
         this.executeTraversalOperations(CHILD_OPERATIONS);
     }
@@ -112,7 +112,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     @Override
     public RepeatStep<S> clone() throws CloneNotSupportedException {
         final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
-        clone.repeatTraversal = this.repeatTraversal.clone();
+        clone.repeatTraversal = this.repeatTraversal.clone().asAdmin();
         clone.executeTraversalOperations(CHILD_OPERATIONS);
 
         if (this.untilPredicate instanceof TraversalPredicate)
@@ -225,7 +225,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
                     return IteratorUtils.of(start);
                 } else {
                     if (!RepeatStep.this.untilFirst && !RepeatStep.this.emitFirst)
-                        RepeatStep.this.traversal.asAdmin().addStart(start);
+                        RepeatStep.this.repeatTraversal.addStart(start);
                     else
                         RepeatStep.this.addStart(start);
                     if (doEmit(start, false)) {

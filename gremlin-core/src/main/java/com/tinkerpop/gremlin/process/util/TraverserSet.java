@@ -32,6 +32,7 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
 
     @Override
     public Iterator<Traverser.Admin<S>> iterator() {
+        //return IteratorUtils.map(this.map.entrySet().iterator(), Map.Entry::getKey);
         return this.map.keySet().iterator();
     }
 
