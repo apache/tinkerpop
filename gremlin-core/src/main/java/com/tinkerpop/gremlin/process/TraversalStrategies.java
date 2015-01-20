@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.process.graph.strategy.IdentityRemovalStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.LabeledEndStepStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.MatchWhereStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.ReducingStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.RouteStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectRegistrationStrategy;
 import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
@@ -46,7 +45,7 @@ public interface TraversalStrategies extends Cloneable {
      * @param traversal the traversal to apply the strategies to
      * @param engine    the engine that the traversal is going to be executed on
      */
-    public void applyStrategies(final Traversal.Admin<?,?> traversal, final TraversalEngine engine);
+    public void applyStrategies(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine);
 
     /**
      * Add all the provided {@link TraversalStrategy} instances to the current collection.
@@ -77,7 +76,7 @@ public interface TraversalStrategies extends Cloneable {
      *
      * @param traversal the traversal that will have traversers generated for it
      */
-    public TraverserGenerator getTraverserGenerator(final Traversal.Admin<?,?> traversal);
+    public TraverserGenerator getTraverserGenerator(final Traversal.Admin<?, ?> traversal);
 
     /**
      * Set the {@link TraverserGeneratorFactory} to use for determining which {@link Traverser} type to generate for the {@link Traversal}.
@@ -155,7 +154,6 @@ public interface TraversalStrategies extends Cloneable {
                     ReducingStrategy.instance(),
                     LabeledEndStepStrategy.instance(),
                     EngineDependentStrategy.instance(),
-                    RouteStrategy.instance(),
                     SideEffectRegistrationStrategy.instance());
 
             try {

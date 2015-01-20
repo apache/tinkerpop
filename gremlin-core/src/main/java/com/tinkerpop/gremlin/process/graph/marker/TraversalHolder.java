@@ -6,72 +6,61 @@ import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversalHolder<S, E> {
+public interface TraversalHolder {
 
     public enum Child {
         SET_HOLDER,
         SET_SIDE_EFFECTS,
         MERGE_IN_SIDE_EFFECTS,
-        SET_STRATEGIES
     }
 
-    public List<Traversal<S, E>> getTraversals();
-
-    public default TraversalStrategies getChildStrategies() {
-        try {
-            return this.asStep().getTraversal().asAdmin().getStrategies().clone();
-        } catch (final CloneNotSupportedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+    public default <S, E> List<Traversal<S, E>> getGlobalTraversals() {
+        return Collections.emptyList();
     }
 
-    public default void executeTraversalOperations(final Child... operations) {
-        final List<Traversal<S, E>> traversals = this.getTraversals();
+    public default <S, E> List<Traversal<S, E>> getLocalTraversals() {
+        return Collections.emptyList();
+    }
+
+    public default void setStrategies(final TraversalStrategies strategies) {
+        this.getGlobalTraversals().forEach(traversal -> traversal.asAdmin().setStrategies(strategies));
+        this.getLocalTraversals().forEach(traversal -> traversal.asAdmin().setStrategies(strategies));
+    }
+
+    public default void executeTraversalOperations(final Traversal<?, ?> traversal, final Child... operations) {
         for (final Child operation : operations) {
-            for (final Traversal<S, E> traversal : traversals) {
-                switch (operation) {
-                    case SET_HOLDER:
-                        traversal.asAdmin().setTraversalHolder(this);
-                        break;
-                    case MERGE_IN_SIDE_EFFECTS:
-                        traversal.asAdmin().getSideEffects().mergeInto(this.asStep().getTraversal().asAdmin().getSideEffects());
-                        break;
-                    case SET_SIDE_EFFECTS:
-                        traversal.asAdmin().setSideEffects(this.asStep().getTraversal().asAdmin().getSideEffects());
-                        break;
-                    case SET_STRATEGIES:
-                        traversal.asAdmin().setStrategies(this.getChildStrategies());
-                        for (final Step<?, ?> step : traversal.asAdmin().getSteps()) {
-                            if (step instanceof TraversalHolder)
-                                ((TraversalHolder) step).executeTraversalOperations(Child.SET_STRATEGIES);
-                        }
-                        break;
-                }
+            switch (operation) {
+                case SET_HOLDER:
+                    traversal.asAdmin().setTraversalHolder(this);
+                    break;
+                case MERGE_IN_SIDE_EFFECTS:
+                    traversal.asAdmin().getSideEffects().mergeInto(this.asStep().getTraversal().asAdmin().getSideEffects());
+                    break;
+                case SET_SIDE_EFFECTS:
+                    traversal.asAdmin().setSideEffects(this.asStep().getTraversal().asAdmin().getSideEffects());
+                    break;
             }
         }
     }
 
-
-    public default Set<TraverserRequirement> getTraversalRequirements(final TraverserRequirement... localRequirements) {
-        final Set<TraverserRequirement> requirements = new HashSet<>();
-        for (final TraverserRequirement requirement : localRequirements) {
-            requirements.add(requirement);
-        }
-        for (final Traversal<S, E> traversals : this.getTraversals()) {
-            requirements.addAll(TraversalHelper.getRequirements(traversals.asAdmin()));
-        }
-        return requirements;
+    public default Set<TraverserRequirement> getRequirements() {
+        return Stream.concat(this.getLocalTraversals().stream(), this.getGlobalTraversals().stream())
+                .flatMap(t -> TraversalHelper.getRequirements(t.asAdmin()).stream())
+                .collect(Collectors.toSet());
     }
 
     public default void resetTraversals() {
-        this.getTraversals().forEach(traversal -> traversal.asAdmin().reset());
+        this.getGlobalTraversals().forEach(traversal -> traversal.asAdmin().reset());
+        this.getLocalTraversals().forEach(traversal -> traversal.asAdmin().reset());
     }
 
     public default Step<?, ?> asStep() {

@@ -2,15 +2,14 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
-import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -21,9 +20,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements TraversalHolder<S, S> {
-
-    private static final Child[] CHILD_OPERATIONS = new Child[]{Child.SET_HOLDER, Child.SET_STRATEGIES, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS};
+public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements TraversalHolder {
 
     private Traversal.Admin<S, S> repeatTraversal = null;
     private Predicate<Traverser<S>> untilPredicate = null;
@@ -39,7 +36,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = this.getTraversalRequirements();
+        final Set<TraverserRequirement> requirements = TraversalHolder.super.getRequirements();
         if (requirements.contains(TraverserRequirement.SINGLE_LOOP))
             requirements.add(TraverserRequirement.NESTED_LOOP);
         requirements.add(TraverserRequirement.SINGLE_LOOP);
@@ -47,36 +44,38 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         return requirements;
     }
 
-    @Override
-    public TraversalStrategies getChildStrategies() {
-        return TraversalHolder.super.getChildStrategies().removeStrategies(SideEffectCapStrategy.class); // no auto cap();
-    }
-
     @SuppressWarnings("unchecked")
     public void setRepeatTraversal(final Traversal<S, S> repeatTraversal) {
         this.repeatTraversal = repeatTraversal.asAdmin(); // .clone();
         this.repeatTraversal.asAdmin().addStep(new RepeatEndStep(this.repeatTraversal));
-        this.executeTraversalOperations(CHILD_OPERATIONS);
+        this.executeTraversalOperations(this.repeatTraversal, Child.SET_HOLDER, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS);
     }
 
     public void setUntilPredicate(final Predicate<Traverser<S>> untilPredicate) {
-        if (this.untilPredicate instanceof TraversalPredicate)
-            ((TraversalPredicate) this.untilPredicate).traversal.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());  // TODO: make this part of internal traversals
-        if (null == this.repeatTraversal)
-            this.untilFirst = true;
+        if (null == this.repeatTraversal) this.untilFirst = true;
         this.untilPredicate = untilPredicate;
+        if (this.untilPredicate instanceof TraversalPredicate)
+            this.executeTraversalOperations(((TraversalPredicate) this.untilPredicate).traversal, Child.SET_HOLDER);
     }
 
     public void setEmitPredicate(final Predicate<Traverser<S>> emitPredicate) {
-        if (this.emitPredicate instanceof TraversalPredicate)
-            ((TraversalPredicate) this.emitPredicate).traversal.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());  // TODO: make this part of internal traversals
-        if (null == this.repeatTraversal)
-            this.emitFirst = true;
+        if (null == this.repeatTraversal) this.emitFirst = true;
         this.emitPredicate = emitPredicate;
+        if (this.emitPredicate instanceof TraversalPredicate)
+            this.executeTraversalOperations(((TraversalPredicate) this.emitPredicate).traversal, Child.SET_HOLDER);
     }
 
-    public List<Traversal<S, S>> getTraversals() {
+    public List<Traversal<S, S>> getGlobalTraversals() {
         return null == this.repeatTraversal ? Collections.emptyList() : Collections.singletonList(this.repeatTraversal);
+    }
+
+    public List<Traversal<S, ?>> getLocalTraversals() {
+        final List<Traversal<S, ?>> list = new ArrayList<>();
+        if (this.untilPredicate instanceof TraversalPredicate)
+            list.add(((TraversalPredicate) this.untilPredicate).traversal);
+        if (this.emitPredicate instanceof TraversalPredicate)
+            list.add(((TraversalPredicate) this.emitPredicate).traversal);
+        return list;
     }
 
     public final boolean doUntil(final Traverser<S> traverser, boolean utilFirst) {
@@ -113,14 +112,12 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     public RepeatStep<S> clone() throws CloneNotSupportedException {
         final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
         clone.repeatTraversal = this.repeatTraversal.clone().asAdmin();
-        clone.executeTraversalOperations(CHILD_OPERATIONS);
-
         if (this.untilPredicate instanceof TraversalPredicate)
             clone.untilPredicate = ((TraversalPredicate<S>) this.untilPredicate).clone();
-
         if (this.emitPredicate instanceof TraversalPredicate)
             clone.emitPredicate = ((TraversalPredicate<S>) this.emitPredicate).clone();
-
+        clone.getGlobalTraversals().forEach(global -> clone.executeTraversalOperations(global, Child.SET_HOLDER, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS));
+        clone.getLocalTraversals().forEach(local -> clone.executeTraversalOperations(local, Child.SET_HOLDER));
         return clone;
     }
 
@@ -183,7 +180,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     public static <A, B, C extends Traversal<A, B>> C addUntilToTraversal(final C traversal, final Predicate<Traverser<B>> untilPredicate) {
         final Step<?, B> step = TraversalHelper.getEnd(traversal.asAdmin());
-        if (step instanceof RepeatStep) {
+        if (step instanceof RepeatStep && null == ((RepeatStep) step).untilPredicate) {
             ((RepeatStep) step).setUntilPredicate(untilPredicate);
         } else {
             final RepeatStep<B> repeatStep = new RepeatStep<>(traversal);
@@ -195,7 +192,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     public static <A, B, C extends Traversal<A, B>> C addEmitToTraversal(final C traversal, final Predicate<Traverser<B>> emitPredicate) {
         final Step<?, B> step = TraversalHelper.getEnd(traversal.asAdmin());
-        if (step instanceof RepeatStep) {
+        if (step instanceof RepeatStep && null == ((RepeatStep) step).emitPredicate) {
             ((RepeatStep) step).setEmitPredicate(emitPredicate);
         } else {
             final RepeatStep<B> repeatStep = new RepeatStep<>(traversal);
@@ -212,8 +209,6 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         public RepeatEndStep(final Traversal traversal) {
             super(traversal);
         }
-
-        // TODO: Empty toString() ?
 
         @Override
         protected Iterator<Traverser<S>> standardAlgorithm() throws NoSuchElementException {
@@ -288,8 +283,10 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
         @Override
         public boolean test(final Traverser<S> traverser) {
+            final Traverser.Admin<S> split = traverser.asAdmin().split();
+            split.setSideEffects(this.traversal.asAdmin().getSideEffects());
             this.traversal.asAdmin().reset();
-            this.traversal.asAdmin().addStart(traverser.asAdmin().split());
+            this.traversal.asAdmin().addStart(split);
             return this.traversal.hasNext();
         }
 

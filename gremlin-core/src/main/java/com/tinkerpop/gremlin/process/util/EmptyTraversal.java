@@ -107,12 +107,12 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void setTraversalHolder(final TraversalHolder<?, ?> step) {
+    public void setTraversalHolder(final TraversalHolder step) {
 
     }
 
     @Override
-    public TraversalHolder<?, ?> getTraversalHolder() {
+    public TraversalHolder getTraversalHolder() {
         return (TraversalHolder) EmptyStep.instance();
     }
 

@@ -322,9 +322,9 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          */
         public TraversalStrategies getStrategies();
 
-        public void setTraversalHolder(final TraversalHolder<?, ?> step);
+        public void setTraversalHolder(final TraversalHolder step);
 
-        public TraversalHolder<?, ?> getTraversalHolder();
+        public TraversalHolder getTraversalHolder();
 
     }
 

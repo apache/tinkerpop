@@ -32,7 +32,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
 
     private final StepPosition stepPosition = new StepPosition();
 
-    protected TraversalHolder<?, ?> traversalHolder = (TraversalHolder) EmptyStep.instance();
+    protected TraversalHolder traversalHolder = (TraversalHolder) EmptyStep.instance();
 
     public DefaultTraversal(final Class emanatingClass) {
         this.strategies = TraversalStrategies.GlobalCache.getStrategies(emanatingClass);
@@ -50,8 +50,9 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
             this.strategies.applyStrategies(this, engine);
             for (final Step<?, ?> step : this.getSteps()) {
                 if (step instanceof TraversalHolder) {
-                    for (final Traversal<?, ?> nested : ((TraversalHolder<?, ?>) step).getTraversals()) {
-                        nested.asAdmin().applyStrategies(step instanceof LocalStep ? TraversalEngine.STANDARD : engine);
+                    ((TraversalHolder) step).setStrategies(this.strategies); // TODO: should we clone?
+                    for (final Traversal<?, ?> nested : ((TraversalHolder) step).getGlobalTraversals()) {
+                        nested.asAdmin().applyStrategies(engine);
                     }
                 }
             }
@@ -129,7 +130,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
         for (final Step<?, ?> step : this.steps) {
             final Step<?, ?> clonedStep = step.clone();
             clonedStep.setTraversal(clone);
-            final Step previousStep = clone.steps.isEmpty() ? EmptyStep.instance() : clone.steps.get(clone.steps.size()-1);
+            final Step previousStep = clone.steps.isEmpty() ? EmptyStep.instance() : clone.steps.get(clone.steps.size() - 1);
             clonedStep.setPreviousStep(previousStep);
             previousStep.setNextStep(clonedStep);
             clone.steps.add(clonedStep);
@@ -183,12 +184,12 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     }
 
     @Override
-    public void setTraversalHolder(final TraversalHolder<?, ?> step) {
+    public void setTraversalHolder(final TraversalHolder step) {
         this.traversalHolder = step;
     }
 
     @Override
-    public TraversalHolder<?, ?> getTraversalHolder() {
+    public TraversalHolder getTraversalHolder() {
         return this.traversalHolder;
     }
 
