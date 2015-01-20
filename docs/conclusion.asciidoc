@@ -1,6 +1,0 @@
-[[conclusion]]
-Conclusion
-==========
-
-image:tinkerpop-character.png[width=100,float=left] The world that we know, you and me, is but a subset of the world that Gremlin has weaved within The TinkerPop. Gremlin has constructed a fully connected graph and only the subset that makes logical sense to our traversing thoughts is the fragment we have come to know and have come to see one another within. But there are many more out there, within other webs of logics unfathomed. From any thought, every other thought, we come to realize that which is -- The TinkerPop.
-

@@ -1,7 +1,0 @@
-[[acknowledgements]]
-Acknowledgements
-================
-
-image:yourkit-logo.png[width=200,float=left] YourKit supports the TinkerPop open source project with its full-featured Java Profiler. YourKit, LLC is the creator of innovative and intelligent tools for profiling Java and .NET applications. YourKit's leading software products: link:http://www.yourkit.com/java/profiler/index.jsp[YourKit Java Profiler] and link:http://www.yourkit.com/.net/profiler/index.jsp[YourKit .NET Profiler]
-
-...in the beginning. 
