@@ -226,11 +226,6 @@ public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
     }
 
     @Override
-    public <S> GraphTraversal<S, S> of() {
-        throw retrievalNotSupported();
-    }
-
-    @Override
     public <T extends Traversal<S, S>, S> T of(final Class<T> traversalClass) {
         throw retrievalNotSupported();
     }
@@ -448,12 +443,6 @@ public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
             return getCachedVertex(externalID).value(key);
         }
 
-
-        @Override
-        public GraphTraversal<Vertex, Vertex> start() {
-            throw retrievalNotSupported();
-        }
-
         @Override
         public Vertex.Iterators iterators() {
             return this;
@@ -476,6 +465,7 @@ public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
     }
 
     private class BatchEdge implements Edge, Edge.Iterators {
+
 
         @Override
         public Graph graph() {

@@ -112,7 +112,9 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>../gremlin-test/src/main/resources/com/tinkerpop/gremlin/structure/io/kryo</outputDirectory>
+                                    <outputDirectory>
+                                        ../gremlin-test/src/main/resources/com/tinkerpop/gremlin/structure/io/kryo
+                                    </outputDirectory>
                                     <resources>
                                         <resource>
                                             <directory>${io.tmp.dir}</directory>
@@ -134,7 +136,9 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>../gremlin-test/src/main/resources/com/tinkerpop/gremlin/structure/io/graphson</outputDirectory>
+                                    <outputDirectory>
+                                        ../gremlin-test/src/main/resources/com/tinkerpop/gremlin/structure/io/graphson
+                                    </outputDirectory>
                                     <resources>
                                         <resource>
                                             <directory>${io.tmp.dir}</directory>
@@ -153,7 +157,9 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>../gremlin-test/src/main/resources/com/tinkerpop/gremlin/structure/io/graphml</outputDirectory>
+                                    <outputDirectory>
+                                        ../gremlin-test/src/main/resources/com/tinkerpop/gremlin/structure/io/graphml
+                                    </outputDirectory>
                                     <resources>
                                         <resource>
                                             <directory>${io.tmp.dir}</directory>

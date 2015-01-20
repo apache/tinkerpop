@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -28,7 +29,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_repeatXbothX_untilX3X_rangeX5_11X();
+    public abstract Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -114,8 +115,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_repeatXbothX_untilX3X_rangeX5_11X() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_repeatXbothX_untilX3X_rangeX5_11X();
+    public void g_V_repeatXbothX_timesX3X_rangeX5_11X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_repeatXbothX_timesX3X_rangeX5_11X();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -137,7 +138,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_localXoutE_limitX1X_inVX_limitX3X() {
-            return g.V().local(g.of().outE().limit(1)).inV().limit(3);
+            return g.V().local(__.outE().limit(1)).inV().limit(3);
         }
 
         @Override
@@ -161,8 +162,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_untilX3X_rangeX5_11X() {
-            return g.V().repeat(g.of().both()).until(3).range(5, 11);
+        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X() {
+            return g.V().repeat(__.both()).times(3).range(5, 11);
         }
     }
 }

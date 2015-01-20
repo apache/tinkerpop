@@ -287,11 +287,11 @@ public class JsonMessageSerializerV1d0Test {
     public void serializeFullResponseMessage() throws Exception {
         final UUID id = UUID.randomUUID();
 
-        final Map<String,Object> metaData = new HashMap<>();
+        final Map<String, Object> metaData = new HashMap<>();
         metaData.put("test", "this");
         metaData.put("one", 1);
 
-        final Map<String,Object> attributes = new HashMap<>();
+        final Map<String, Object> attributes = new HashMap<>();
         attributes.put("test", "that");
         attributes.put("two", 2);
 

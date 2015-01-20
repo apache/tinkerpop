@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
@@ -24,15 +23,13 @@ public class ReducingStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
         if (engine.equals(TraversalEngine.STANDARD))
             return;
 
         final Step endStep = TraversalHelper.getEnd(traversal);
-        if (endStep instanceof Reducing) {
-            TraversalHelper.insertAfterStep(new ReducingIdentity(traversal, ((Reducing) endStep).getReducer()), endStep, traversal);
-            TraversalHelper.removeStep(endStep, traversal);
-        }
+        if (endStep instanceof Reducing)
+            TraversalHelper.replaceStep(endStep, new ReducingIdentity(traversal, ((Reducing) endStep).getReducer()), traversal);
     }
 
     public static ReducingStrategy instance() {

@@ -21,7 +21,7 @@ public class ArrayIterator<T> implements Iterator<T> {
     }
 
     public T next() {
-        if(this.hasNext()) {
+        if (this.hasNext()) {
             this.current++;
             return this.array[this.current - 1];
         } else {

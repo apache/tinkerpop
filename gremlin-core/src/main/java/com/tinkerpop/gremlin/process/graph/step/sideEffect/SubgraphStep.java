@@ -1,9 +1,10 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -12,6 +13,7 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.javatuples.Pair;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,13 +27,21 @@ import java.util.function.Predicate;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapable, PathConsumer, Reversible {
+public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapable, SideEffectRegistrar, Reversible {
+
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+            TraverserRequirement.OBJECT,
+            TraverserRequirement.SIDE_EFFECTS,
+            TraverserRequirement.PATH
+    ));
+
+
     private Graph subgraph;
     private Boolean subgraphSupportsUserIds;
 
     private final Map<Object, Vertex> idVertexMap;
     private final Set<Object> edgeIdsAdded;
-    private final String sideEffectKey;
+    private String sideEffectKey;
     private static final Map<String, Object> DEFAULT_CONFIGURATION = new HashMap<String, Object>() {{
         put("gremlin.graph", "com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph");
     }};
@@ -43,16 +53,15 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
                         final Map<Object, Vertex> idVertexMap,
                         final Predicate<Edge> includeEdge) {
         super(traversal);
-        this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
+        this.sideEffectKey = sideEffectKey;
         this.edgeIdsAdded = null == edgeIdHolder ? new HashSet<>() : edgeIdHolder;
         this.idVertexMap = null == idVertexMap ? new HashMap<>() : idVertexMap;
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
         this.setConsumer(traverser -> {
             if (null == this.subgraph) {
-                this.subgraph = traverser.sideEffects().get(this.sideEffectKey);
+                this.subgraph = traverser.asAdmin().getSideEffects().get(this.sideEffectKey);
                 this.subgraphSupportsUserIds = this.subgraph.features().vertex().supportsUserSuppliedIds();
             }
-            traverser.path().stream().map(Pair::getValue1)
+            traverser.path().stream().map(Pair::getValue0)
                     .filter(i -> i instanceof Edge)
                     .map(e -> (Edge) e)
                     .filter(e -> !this.edgeIdsAdded.contains(e.id()))
@@ -65,6 +74,12 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
                         this.edgeIdsAdded.add(e.id());
                     });
         });
+    }
+
+    @Override
+    public void registerSideEffects() {
+        if (null == this.sideEffectKey) this.sideEffectKey = this.getId();
+        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
     }
 
     @Override
@@ -95,5 +110,10 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
     @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.sideEffectKey);
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return REQUIREMENTS;
     }
 }

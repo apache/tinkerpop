@@ -13,11 +13,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -125,7 +125,7 @@ public class DistributionGeneratorTest {
         protected Iterable<Vertex> verticesByOid(final Graph graph) {
             List<Vertex> vertices = graph.V().toList();
             Collections.sort(vertices,
-                (v1, v2) -> ((Integer)v1.value("oid")).compareTo((Integer)v2.value("oid")));
+                    (v1, v2) -> ((Integer) v1.value("oid")).compareTo((Integer) v2.value("oid")));
             return vertices;
         }
 

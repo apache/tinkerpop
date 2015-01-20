@@ -10,7 +10,7 @@ public class ResponseStatus {
     private final String message;
     private final Map<String, Object> attributes;
 
-    public ResponseStatus(final ResponseStatusCode code, final String message, final Map<String,Object> attributes){
+    public ResponseStatus(final ResponseStatusCode code, final String message, final Map<String, Object> attributes) {
         this.code = code;
         this.message = message;
         this.attributes = attributes;

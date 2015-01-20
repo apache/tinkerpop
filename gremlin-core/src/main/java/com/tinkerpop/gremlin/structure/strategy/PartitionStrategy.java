@@ -1,10 +1,15 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.util.HasContainer;
+import com.tinkerpop.gremlin.process.traverser.util.DefaultTraverserGeneratorFactory;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
@@ -20,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -43,11 +49,6 @@ public final class PartitionStrategy implements GraphStrategy {
         this.writePartition = partition;
         this.addReadPartition(partition);
         this.partitionKey = partitionKey;
-    }
-
-    private boolean testElement(final Element e) {
-        final Property<String> p = e.property(this.partitionKey);
-        return p.isPresent() && this.readPartitions.contains(p.value());
     }
 
     public String getWritePartition() {
@@ -84,8 +85,7 @@ public final class PartitionStrategy implements GraphStrategy {
         return (f) -> (direction, labels) -> StreamFactory
                 .stream(ctx.getCurrent().getBaseVertex().iterators().edgeIterator(direction, labels))
                 .filter(this::testEdge)
-                .map(edge -> otherVertex(direction, ctx.getCurrent(), edge))
-                .filter(this::testVertex).iterator();
+                .map(edge -> otherVertex(direction, ctx.getCurrent(), edge)).iterator();
         // TODO: Note that we are not doing f.apply() like the other methods. Is this bad?
         // by not calling f.apply() to get the iterator, we're possibly bypassing strategy methods that
         // could have been sequenced
@@ -103,12 +103,29 @@ public final class PartitionStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
-        return (f) -> ids -> f.apply(ids).filter(t -> this.testVertex(t.get())); // TODO: we should make sure index hits go first.
+        return (f) -> ids -> {
+            final GraphTraversal<Vertex, Vertex> traversal = this.generateTraversal(ctx.getStrategyGraph().getBaseGraph().getClass());
+            traversal.asAdmin().getStrategies().setTraverserGeneratorFactory(DefaultTraverserGeneratorFactory.instance());
+            TraversalHelper.insertTraversal(0, f.apply(ids).has(getPartitionKey(), Contains.within, getReadPartitions()).asAdmin(), traversal.asAdmin());
+            return traversal.filter(vertex -> testVertex(vertex.get()));
+        };
     }
 
     @Override
     public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
-        return (f) -> ids -> f.apply(ids).filter(t -> this.testEdge(t.get()));  // TODO: we should make sure index hits go first.
+        return (f) -> ids -> {
+            final GraphTraversal<Edge, Edge> traversal = this.generateTraversal(ctx.getStrategyGraph().getBaseGraph().getClass());
+            traversal.asAdmin().getStrategies().setTraverserGeneratorFactory(DefaultTraverserGeneratorFactory.instance());
+            TraversalHelper.insertTraversal(0, f.apply(ids).has(getPartitionKey(), Contains.within, getReadPartitions()).asAdmin(), traversal.asAdmin());
+            return traversal.filter(edge -> testEdge(edge.get()));
+        };
+    }
+
+    private boolean testElement(final Element element) {
+        final Property<String> property = element instanceof StrategyElement ?
+                ((StrategyElement) element).getBaseElement().property(this.partitionKey) :
+                element.property(this.partitionKey);
+        return property.isPresent() && this.readPartitions.contains(property.value());
     }
 
     private boolean testVertex(final Vertex vertex) {
@@ -120,8 +137,8 @@ public final class PartitionStrategy implements GraphStrategy {
         // inV() and/or outV() will be empty if they do not.  it is sometimes the case that an edge is unwrapped
         // in which case it may not be filtered.  in such cases, the vertices on such edges should be tested.
         return testElement(edge)
-                && (edge instanceof StrategyWrapped ? edge.inV().hasNext() && edge.outV().hasNext()
-                : testVertex(edge.inV().next()) && testVertex(edge.outV().next()));
+                && (edge instanceof StrategyWrapped ? edge.iterators().vertexIterator(Direction.IN).hasNext() && edge.iterators().vertexIterator(Direction.OUT).hasNext()
+                : testVertex(edge.iterators().vertexIterator(Direction.IN).next()) && testVertex(edge.iterators().vertexIterator(Direction.OUT).next()));
     }
 
     private static final Vertex otherVertex(final Direction direction, final Vertex start, final Edge edge) {
@@ -134,11 +151,46 @@ public final class PartitionStrategy implements GraphStrategy {
             return edge.iterators().vertexIterator(direction.opposite()).next();
         }
     }
+
+    private final <S, E> GraphTraversal<S, E> generateTraversal(final Class emanatingClass) {
+        return new DefaultGraphTraversal<S, E>(emanatingClass) {
+            @Override
+            public GraphTraversal<S, Vertex> to(final Direction direction, final String... edgeLabels) {
+                return direction.equals(Direction.BOTH) ?
+                        this.toE(direction, edgeLabels).otherV() :
+                        this.toE(direction, edgeLabels).toV(direction.opposite());
+            }
+
+            @Override
+            public GraphTraversal<S, Edge> toE(final Direction direction, final String... edgeLabels) {
+                return super.toE(direction, edgeLabels).<Edge>has(getPartitionKey(), Contains.within, getReadPartitions()).filter(edge -> testEdge(edge.get()));
+            }
+
+            @Override
+            public GraphTraversal<S, Vertex> toV(final Direction direction) {
+                return super.toV(direction).<Vertex>has(getPartitionKey(), Contains.within, getReadPartitions());
+            }
+
+            @Override
+            public GraphTraversal<S, Vertex> otherV() {
+                return super.otherV().<Vertex>has(getPartitionKey(), Contains.within, getReadPartitions());
+            }
+
+            @Override
+            public <E2 extends Element> GraphTraversal<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
+                final HasContainer hasContainer = new HasContainer(key, predicate, value);
+                final HasStep<E2> hasStep = new HasStep<>(this, hasContainer);
+                hasStep.setPredicate(element -> hasContainer.test(((StrategyElement) element.get()).getBaseElement()));
+                return this.asAdmin().addStep(hasStep);
+            }
+        };
+    }
+
     ///////////////////////////
 
     @Override
     public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
-        return (f) -> (keys) -> IteratorUtils.filter(f.apply(keys), property -> !partitionKey.equals(property.key()));
+        return (f) -> (keys) -> IteratorUtils.filter(f.apply(keys), property -> !getPartitionKey().equals(property.key()));
     }
 
     @Override
@@ -148,22 +200,22 @@ public final class PartitionStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
-        return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !partitionKey.equals(key)), new HashSet<>());
+        return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !getPartitionKey().equals(key)), new HashSet<>());
     }
 
     @Override
     public <V> UnaryOperator<Function<String, VertexProperty<V>>> getVertexGetPropertyStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
-        return (f) -> k -> k.equals(partitionKey) ? VertexProperty.<V>empty() : f.apply(k);
+        return (f) -> k -> k.equals(getPartitionKey()) ? VertexProperty.<V>empty() : f.apply(k);
     }
 
     @Override
     public <V> UnaryOperator<Function<String, Property<V>>> getEdgeGetPropertyStrategy(StrategyContext<StrategyEdge> ctx, GraphStrategy composingStrategy) {
-        return (f) -> k -> k.equals(partitionKey) ? Property.<V>empty() : f.apply(k);
+        return (f) -> k -> k.equals(getPartitionKey()) ? Property.<V>empty() : f.apply(k);
     }
 
     @Override
     public <V> UnaryOperator<Function<String[], Iterator<Property<V>>>> getEdgeIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
-        return (f) -> (keys) -> IteratorUtils.filter(f.apply(keys), property -> !partitionKey.equals(property.key()));
+        return (f) -> (keys) -> IteratorUtils.filter(f.apply(keys), property -> !getPartitionKey().equals(property.key()));
     }
 
     @Override
@@ -173,7 +225,7 @@ public final class PartitionStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Supplier<Set<String>>> getEdgeKeysStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
-        return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !partitionKey.equals(key)), new HashSet<>());
+        return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !getPartitionKey().equals(key)), new HashSet<>());
     }
 
     @Override
@@ -204,9 +256,10 @@ public final class PartitionStrategy implements GraphStrategy {
 
     public static class Builder {
         private String startPartition = "default";
-        private String partitionKey = "_partition" ;
+        private String partitionKey = "_partition";
 
-        private Builder() {}
+        private Builder() {
+        }
 
         /**
          * The initial partition to filter by. If this value is not set, it will be defaulted to "default".

@@ -3,21 +3,24 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class AbstractStep<S, E> implements Step<S, E> {
 
-    protected String label;
+    protected Optional<String> label = Optional.empty();
+    private boolean hasLabel = false;
+    protected String id = Traverser.Admin.HALT;
     protected Traversal traversal;
     protected ExpandableStepIterator<S> starts;
     protected Traverser<E> nextEnd = null;
-    protected boolean futureSetByChild = false;
+    protected boolean traverserStepIdSetByChild = false; // TODO: Step.teleport(traverser, step)
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
@@ -25,7 +28,28 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     public AbstractStep(final Traversal traversal) {
         this.traversal = traversal;
         this.starts = new ExpandableStepIterator<S>((Step) this);
-        this.label = Graph.Hidden.hide(Integer.toString(this.traversal.asAdmin().getSteps().size()));
+    }
+
+    @Override
+    public void setId(final String id) {
+        Objects.nonNull(id);
+        this.id = id;
+    }
+
+    @Override
+    public String getId() {
+        return this.id;
+    }
+
+    @Override
+    public void setLabel(final String label) {
+        this.label = Optional.of(label);
+        this.hasLabel = true;
+    }
+
+    @Override
+    public Optional<String> getLabel() {
+        return this.label;
     }
 
     @Override
@@ -62,16 +86,6 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     @Override
     public Step<E, ?> getNextStep() {
         return this.nextStep;
-    }
-
-    @Override
-    public void setLabel(final String label) {
-        this.label = label;
-    }
-
-    @Override
-    public String getLabel() {
-        return this.label;
     }
 
     @Override
@@ -138,8 +152,8 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     private final Traverser<E> prepareTraversalForNextStep(final Traverser<E> traverser) {
-        if (!this.futureSetByChild) ((Traverser.Admin<E>) traverser).setFuture(this.nextStep.getLabel());
-        traverser.path().addLabel(this.getLabel());
+        if (!this.traverserStepIdSetByChild) ((Traverser.Admin<E>) traverser).setStepId(this.nextStep.getId());
+        if (this.hasLabel) traverser.path().addLabel(this.label.get());
         return traverser;
     }
 

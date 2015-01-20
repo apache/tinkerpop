@@ -24,13 +24,8 @@ public final class EmptyPath implements Path, Serializable {
     }
 
     @Override
-    public Path extend(final String label, final Object object) {
-        return new ImmutablePath(label, object);
-    }
-
-    @Override
-    public Path extend(final Set<String> labels, final Object object) {
-        return new ImmutablePath(labels, object);
+    public Path extend(final Object object, final String... labels) {
+        return this;
     }
 
     @Override
@@ -50,7 +45,7 @@ public final class EmptyPath implements Path, Serializable {
 
     @Override
     public void addLabel(final String label) {
-        throw new IllegalStateException("Empty path can not have labels added to it");
+
     }
 
     @Override
@@ -86,6 +81,4 @@ public final class EmptyPath implements Path, Serializable {
     public boolean equals(final Object object) {
         return object instanceof EmptyPath;
     }
-
-
 }

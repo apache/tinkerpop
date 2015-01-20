@@ -1,15 +1,22 @@
 package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
-import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
+import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
+import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -19,14 +26,16 @@ import java.util.function.Predicate;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements TraversalHolder<S, E> {
+public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implements TraversalHolder<S, E> {
+
+    private static final Child[] CHILD_OPERATIONS = new Child[]{Child.SET_HOLDER, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS, Child.SET_STRATEGIES};
 
     private final Function<S, M> mapFunction;
     private Map<M, Traversal<S, E>> choices;
 
     public ChooseStep(final Traversal traversal, final Predicate<S> predicate, final Traversal<S, E> trueChoice, final Traversal<S, E> falseChoice) {
         this(traversal,
-                (Function) s -> predicate.test((S)s),
+                (Function) s -> predicate.test((S) s),
                 new HashMap() {{
                     put(Boolean.TRUE, trueChoice);
                     put(Boolean.FALSE, falseChoice);
@@ -37,20 +46,46 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements Trav
         super(traversal);
         this.mapFunction = mapFunction;
         this.choices = choices;
-        ChooseStep.generateFunction(this);
-    }
-
-    public Function<S, M> getMapFunction() {
-        return this.mapFunction;
-    }
-
-    public Map<M, Traversal<S, E>> getChoices() {
-        return this.choices;
+        this.executeTraversalOperations(CHILD_OPERATIONS);
     }
 
     @Override
-    public Collection<Traversal<S, E>> getTraversals() {
-        return this.choices.values();
+    public TraversalStrategies getChildStrategies() {
+        return TraversalHolder.super.getChildStrategies().removeStrategies(SideEffectCapStrategy.class); // no auto cap();
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return this.getTraversalRequirements();
+    }
+
+    @Override
+    public List<Traversal<S, E>> getTraversals() {
+        return Collections.unmodifiableList(new ArrayList<>(this.choices.values()));
+    }
+
+    @Override
+    protected Iterator<Traverser<E>> standardAlgorithm() {
+        while (true) {
+            final Traverser<S> start = this.starts.next();
+            final Traversal<S, E> choice = this.choices.get(this.mapFunction.apply(start.get()));
+            if (null != choice) {
+                choice.asAdmin().addStart(start);
+                return TraversalHelper.getEnd(choice.asAdmin());
+            }
+        }
+    }
+
+    @Override
+    protected Iterator<Traverser<E>> computerAlgorithm() {
+        while (true) {
+            final Traverser<S> start = this.starts.next();
+            final Traversal<S, E> choice = this.choices.get(this.mapFunction.apply(start.get()));
+            if (null != choice) {
+                start.asAdmin().setStepId(TraversalHelper.getStart(choice.asAdmin()).getId());
+                return IteratorUtils.of((Traverser) start);
+            }
+        }
     }
 
     @Override
@@ -58,9 +93,9 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements Trav
         final ChooseStep<S, E, M> clone = (ChooseStep<S, E, M>) super.clone();
         clone.choices = new HashMap<>();
         for (final Map.Entry<M, Traversal<S, E>> entry : this.choices.entrySet()) {
-            clone.choices.put(entry.getKey(), entry.getValue());
+            clone.choices.put(entry.getKey(), entry.getValue().clone());
         }
-        ChooseStep.generateFunction(clone);
+        clone.executeTraversalOperations(CHILD_OPERATIONS);
         return clone;
     }
 
@@ -69,17 +104,9 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements Trav
         return TraversalHelper.makeStepString(this, this.choices.toString());
     }
 
-    ////////////////////////
-
-    private static final <S, E, M> void generateFunction(final ChooseStep<S, E, M> chooseStep) {
-        chooseStep.setFunction(traverser -> {
-            final Traversal<S, E> branch = chooseStep.choices.get(chooseStep.mapFunction.apply(traverser.get()));
-            if (null == branch) {
-                return Collections.emptyIterator();
-            } else {
-                branch.asAdmin().addStart(traverser);
-                return branch;
-            }
-        });
+    @Override
+    public void reset() {
+        super.reset();
+        this.resetTraversals();
     }
 }

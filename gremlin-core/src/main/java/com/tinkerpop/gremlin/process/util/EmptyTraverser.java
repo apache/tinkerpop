@@ -1,7 +1,8 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Path;
-import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Step;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -26,7 +27,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public void incrLoops() {
+    public void incrLoops(final String stepLabel) {
 
     }
 
@@ -36,12 +37,12 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public String getFuture() {
+    public String getStepId() {
         return HALT;
     }
 
     @Override
-    public void setFuture(final String label) {
+    public void setStepId(final String stepId) {
 
     }
 
@@ -51,7 +52,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public <R> Admin<R> split(final String label, final R r) {
+    public <R> Admin<R> split(final R r, final Step<T, R> step) {
         return INSTANCE;
     }
 
@@ -71,7 +72,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public void setSideEffects(final Traversal.SideEffects sideEffects) {
+    public void setSideEffects(final TraversalSideEffects sideEffects) {
 
     }
 
@@ -101,7 +102,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public short loops() {
+    public int loops() {
         return 0;
     }
 
@@ -111,7 +112,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public Traversal.SideEffects sideEffects() {
+    public TraversalSideEffects getSideEffects() {
         return null;
     }
 
@@ -123,5 +124,10 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     @Override
     public boolean equals(final Object object) {
         return object instanceof EmptyTraverser;
+    }
+
+    @Override
+    public EmptyTraverser<T> clone() throws CloneNotSupportedException {
+        return this;
     }
 }

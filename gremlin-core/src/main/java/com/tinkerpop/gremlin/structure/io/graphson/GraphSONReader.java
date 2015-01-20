@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -37,7 +36,7 @@ import java.util.function.Function;
  * float will become a double, element IDs may not be retrieved in the format they were serialized, etc.).
  * {@link Edge} and {@link Vertex} objects are serialized to {@code Map} instances.  If an
  * {@link com.tinkerpop.gremlin.structure.Element} is used as a key, it is coerced to its identifier.  Other complex
- * objects are converted via {@link Object#toString()} unless there is a custom serializer supplied.
+ * objects are converted via {@link Object#toString()} unless there is a mapper serializer supplied.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -50,9 +49,9 @@ public class GraphSONReader implements GraphReader {
     final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {
     };
 
-    public GraphSONReader(final ObjectMapper mapper, final long batchSize,
+    public GraphSONReader(final GraphSONMapper mapper, final long batchSize,
                           final String vertexIdKey, final String edgeIdKey) {
-        this.mapper = mapper;
+        this.mapper = mapper.createMapper();
         this.batchSize = batchSize;
         this.vertexIdKey = vertexIdKey;
         this.edgeIdKey = edgeIdKey;
@@ -194,12 +193,11 @@ public class GraphSONReader implements GraphReader {
     }
 
     public static class Builder {
-        private boolean loadCustomModules = false;
-        private List<SimpleModule> customModules = new ArrayList<>();
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
-        private boolean embedTypes = false;
         private String vertexIdKey = T.id.getAccessor();
         private String edgeIdKey = T.id.getAccessor();
+
+        private GraphSONMapper mapper = GraphSONMapper.build().create();
 
         private Builder() {
         }
@@ -225,32 +223,6 @@ public class GraphSONReader implements GraphReader {
         }
 
         /**
-         * Supply a custom module for serialization/deserialization.
-         */
-        public Builder addCustomModule(final SimpleModule custom) {
-            this.customModules.add(custom);
-            return this;
-        }
-
-        /**
-         * Try to load {@code SimpleModule} instances from the current classpath.  These are loaded in addition to
-         * the one supplied to the {@link #addCustomModule(com.fasterxml.jackson.databind.module.SimpleModule)};
-         */
-        public Builder loadCustomModules(final boolean loadCustomModules) {
-            this.loadCustomModules = loadCustomModules;
-            return this;
-        }
-
-        /**
-         * If data types of objects were embedded into the JSON that is to be read, then this value must be set to
-         * true.
-         */
-        public Builder embedTypes(final boolean embedTypes) {
-            this.embedTypes = embedTypes;
-            return this;
-        }
-
-        /**
          * Number of mutations to perform before a commit is executed.
          */
         public Builder batchSize(final long batchSize) {
@@ -258,11 +230,17 @@ public class GraphSONReader implements GraphReader {
             return this;
         }
 
+        /**
+         * Override all of the {@link GraphSONMapper} builder
+         * options with this mapper.  If this value is set to something other than null then that value will be
+         * used to construct the writer.
+         */
+        public Builder mapper(final GraphSONMapper mapper) {
+            this.mapper = mapper;
+            return this;
+        }
+
         public GraphSONReader create() {
-            final GraphSONObjectMapper.Builder builder = GraphSONObjectMapper.build();
-            customModules.forEach(builder::addCustomModule);
-            final ObjectMapper mapper = builder.embedTypes(embedTypes)
-                    .loadCustomModules(loadCustomModules).create();
             return new GraphSONReader(mapper, batchSize, vertexIdKey, edgeIdKey);
         }
     }

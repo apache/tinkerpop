@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -33,9 +32,8 @@ public abstract interface ElementTraversal<A extends Element> {
 
     //////////////////////////////////////////////////////////////////////
 
-    public default GraphTraversal<A, A> start() {
-        final GraphTraversal<A, A> traversal = GraphTraversal.of();
-        return traversal.asAdmin().addStep(new StartStep<>(traversal, this));
+    default GraphTraversal<A, A> start() {
+        throw new UnsupportedOperationException("This method must be implemented by the element");
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -408,16 +406,24 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().emit(emitPredicate);
     }
 
-    public default GraphTraversal<A, A> until(final Predicate<Traverser<A>> untilPredicate) {
-        return this.start().until(untilPredicate);
-    }
-
-    public default GraphTraversal<A, A> until(final int maxLoops) {
-        return this.start().until(maxLoops);
+    public default GraphTraversal<A, A> emit(final Traversal<?, ?> emitTraversal) {
+        return this.start().emit(emitTraversal);
     }
 
     public default GraphTraversal<A, A> emit() {
         return this.start().emit();
+    }
+
+    public default GraphTraversal<A, A> until(final Predicate<Traverser<A>> untilPredicate) {
+        return this.start().until(untilPredicate);
+    }
+
+    public default GraphTraversal<A, A> until(final Traversal<?, ?> untilTraversal) {
+        return this.start().until(untilTraversal);
+    }
+
+    public default GraphTraversal<A, A> times(final int maxLoops) {
+        return this.start().times(maxLoops);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

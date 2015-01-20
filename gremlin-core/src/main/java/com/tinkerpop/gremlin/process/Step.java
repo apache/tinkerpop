@@ -1,13 +1,18 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * A {@link Step} denotes a unit of computation within a {@link Traversal}.
  * A step takes an incoming object and yields an outgoing object.
  * Steps are chained together in a {@link Traversal} to yield a lazy function chain of computation.
  * <p/>
- * In the constructor of a Step, never store explicit sideEffect objects in {@link com.tinkerpop.gremlin.process.Traversal.SideEffects}.
+ * In the constructor of a Step, never store explicit sideEffect objects in {@link TraversalSideEffects}.
  * If a sideEffect needs to be registered with the {@link Traversal}, use SideEffects.registerSupplier().
  *
  * @param <S> The incoming object type of the step
@@ -93,10 +98,11 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
 
     /**
      * Get the label of this step.
+     * If the step is  not labeled, then an {@link Optional#empty} is returned.
      *
-     * @return the label of the step
+     * @return the optional label of the step
      */
-    public String getLabel();
+    public Optional<String> getLabel();
 
     /**
      * Set the label of this step.
@@ -104,4 +110,30 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
      * @param label the label for this step
      */
     public void setLabel(final String label);
+
+    /**
+     * Get the unique id of the step.
+     * These ids can change when strategies are applied and anonymous traversals are embedded in the parent traversal.
+     * A developer should typically not need to call this method.
+     *
+     * @param id the unique id of the step
+     */
+    public void setId(final String id);
+
+    /**
+     * Get the unique id of this step.
+     *
+     * @return the unique id of the step
+     */
+    public String getId();
+
+    /**
+     * Provide the necessary {@link com.tinkerpop.gremlin.process.traverser.TraverserRequirement} that must be met by the traverser in order for the step to function properly.
+     * The provided default implements returns an empty set.
+     *
+     * @return the set of requirements
+     */
+    public default Set<TraverserRequirement> getRequirements() {
+        return Collections.emptySet();
+    }
 }

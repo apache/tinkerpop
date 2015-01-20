@@ -22,7 +22,8 @@ import java.util.Map;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -270,7 +271,7 @@ public class PropertyTest {
      */
     @RunWith(Parameterized.class)
     public static class PropertyFeatureSupportTest extends AbstractGremlinTest {
-        private static final Map<String,Object> testMap = new HashMap<>();
+        private static final Map<String, Object> testMap = new HashMap<>();
 
         private static final ArrayList<Object> mixedList = new ArrayList<>();
 

@@ -3,9 +3,12 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -18,7 +21,8 @@ import java.util.Optional;
 public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
-    private static final SideEffects SIDE_EFFECTS = new DefaultTraversalSideEffects();
+    private static final TraversalSideEffects SIDE_EFFECTS = EmptyTraversalSideEffects.instance();
+    private static final TraversalStrategies STRATEGIES = EmptyTraversalStrategies.instance();
 
     public static <A, B> EmptyTraversal<A, B> instance() {
         return INSTANCE;
@@ -44,7 +48,7 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public SideEffects getSideEffects() {
+    public TraversalSideEffects getSideEffects() {
         return SIDE_EFFECTS;
     }
 
@@ -94,6 +98,46 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void mergeSideEffects(final SideEffects sideEffects) {
+    public void setSideEffects(final TraversalSideEffects sideEffects) {
+    }
+
+    @Override
+    public TraversalStrategies getStrategies() {
+        return STRATEGIES;
+    }
+
+    @Override
+    public void setTraversalHolder(final TraversalHolder<?, ?> step) {
+
+    }
+
+    @Override
+    public TraversalHolder<?, ?> getTraversalHolder() {
+        return (TraversalHolder) EmptyStep.instance();
+    }
+
+    @Override
+    public void setStrategies(final TraversalStrategies traversalStrategies) {
+
+    }
+
+    @Override
+    public <S2, E2> Traversal<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
+        return (Traversal) this;
+    }
+
+    @Override
+    public <S2, E2> Traversal<S2, E2> removeStep(final int index) throws IllegalStateException {
+        return (Traversal) this;
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof EmptyTraversal;
+    }
+
+    @Override
+    public int hashCode() {
+        return -343564565;
     }
 }

@@ -89,7 +89,7 @@ public enum MetricManager {
 
     /**
      * Create a {@link CsvReporter} attached to the Titan Metrics registry.
-     * <p>
+     * <p/>
      * The {@code output} argument must be non-null but need not exist. If it
      * doesn't already exist, this method attempts to create it by calling
      * {@link File#mkdirs()}.
@@ -136,10 +136,10 @@ public enum MetricManager {
 
     /**
      * Create a {@link JmxReporter} attached to the Titan Metrics registry.
-     * <p>
+     * <p/>
      * If {@code domain} or {@code agentId} is null, then Metrics's uses its own
      * internal default value(s).
-     * <p>
+     * <p/>
      * If {@code agentId} is non-null, then
      * MBeanServerFactory#findMBeanServer(agentId) must return exactly
      * one {@code MBeanServer}. The reporter will register with that server. If
@@ -193,7 +193,7 @@ public enum MetricManager {
 
     /**
      * Create a {@link Slf4jReporter} attached to the Titan Metrics registry.
-     * <p>
+     * <p/>
      * If {@code loggerName} is null, or if it is non-null but
      * LoggerFactory.getLogger(loggerName) returns null, then Metrics's
      * default Slf4j logger name is used instead.
@@ -240,7 +240,7 @@ public enum MetricManager {
 
     /**
      * Create a {@link GangliaReporter} attached to the Titan Metrics registry.
-     * <p>
+     * <p/>
      * {@code groupOrHost} and {@code addressingMode} must be non-null. The
      * remaining non-primitive arguments may be null. If {@code protocol31} is
      * null, then true is assumed. Null values of {@code hostUUID} or
@@ -304,7 +304,7 @@ public enum MetricManager {
 
     /**
      * Create a {@link GraphiteReporter} attached to the Titan Metrics registry.
-     * <p>
+     * <p/>
      * If {@code prefix} is null, then Metrics's internal default prefix is used
      * (empty string at the time this comment was written).
      *

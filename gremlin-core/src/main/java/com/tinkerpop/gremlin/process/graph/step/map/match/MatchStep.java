@@ -2,12 +2,15 @@ package com.tinkerpop.gremlin.process.graph.step.map.match;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traverser.SimpleTraverser;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,7 +28,9 @@ import java.util.function.Function;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
+public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> implements TraversalHolder {
+
+    private static final Child[] CHILD_OPERATIONs = new Child[]{Child.SET_HOLDER, Child.SET_STRATEGIES}; // TODO: Nest.SET/MERGE_SIDE_EFFECTS?
 
     static final BiConsumer<String, Object> TRIVIAL_CONSUMER = (s, t) -> {
     };
@@ -37,6 +42,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
     private final String startLabel;
     private final Map<String, List<TraversalWrapper<S, S>>> traversalsByStartAs;
+    private final List<Traversal> traversals = new ArrayList<>();
 
     private int startsPerOptimize = DEFAULT_STARTS_PER_OPTIMIZE;
     private int optimizeCounter = -1;
@@ -52,11 +58,18 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         super(traversal);
         this.startLabel = startLabel;
         this.traversalsByStartAs = new HashMap<>();
-        this.currentStart = new SimpleTraverser<>(null, this);
+        this.currentStart = new B_O_PA_S_SE_SL_Traverser<>(null, this);
         for (final Traversal tl : traversals) {
             addTraversalPrivate(tl);
+            this.traversals.add(tl);
         }
         checkSolvability();
+        this.executeTraversalOperations(CHILD_OPERATIONs);
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return this.getTraversalRequirements();
     }
 
     @Override
@@ -74,7 +87,10 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
      */
     public void addTraversal(final Traversal<S, S> traversal) {
         addTraversalPrivate(traversal);
+        this.traversals.add(traversal);
         checkSolvability();
+        this.executeTraversalOperations(CHILD_OPERATIONs);
+
     }
 
     public void setStartsPerOptimize(final int startsPerOptimize) {
@@ -88,7 +104,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     @Override
     protected Traverser<Map<String, E>> processNextStart() throws NoSuchElementException {
         final Map<String, E> map = new HashMap<>();
-        final Traverser<Map<String, E>> result = this.currentStart.split(this.getLabel(), map);
+        final Traverser<Map<String, E>> result = this.currentStart.split(map, this);
         final BiConsumer<String, S> resultSetter = (name, value) -> map.put(name, (E) value);
 
         while (true) { // break out when the current solution is exhausted and there are no more starts
@@ -150,12 +166,9 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     }
 
     private void addTraversalPrivate(final Traversal<S, S> traversal) {
-        String startAs = TraversalHelper.getStart(traversal).getLabel();
-        String endAs = TraversalHelper.getEnd(traversal).getLabel();
-        if (!TraversalHelper.isLabeled(startAs)) {
-            throw new IllegalArgumentException("All match traversals must have their start step labeled with as()");
-        }
-        endAs = TraversalHelper.isLabeled(endAs) ? endAs : null;
+
+        String startAs = TraversalHelper.getStart(traversal.asAdmin()).getLabel().orElseThrow(() -> new IllegalArgumentException("All match traversals must have their start step labeled with as()"));
+        String endAs = TraversalHelper.getEnd(traversal.asAdmin()).getLabel().orElse(null);
         checkAs(startAs);
         if (null == endAs) {
             endAs = createAnonymousAs();
@@ -250,7 +263,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
                 for (TraversalWrapper<S, S> w : outs) {
                     TraversalUpdater<S, S> updater
-                            = new TraversalUpdater<>(w, IteratorUtils.of(o), currentStart, this.getLabel());
+                            = new TraversalUpdater<>(w, IteratorUtils.of(o), currentStart, this.getId());
 
                     Set<String> rightLabels = new HashSet<>();
                     addVariables(w.endLabel, rightLabels);
@@ -360,6 +373,11 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         w.orderingFactor = ((w.findBranchFactor() - 1) / findCost(w));
     }
 
+    @Override
+    public List<Traversal> getTraversals() {
+        return this.traversals;
+    }
+
     /**
      * A wrapper for a traversal in a query which maintains statistics about the traversal as
      * it consumes inputs and produces outputs.
@@ -439,7 +457,11 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
                 outputs = 0;
             });
             Iterator<Traverser<A>> starts = new MapIterator<>(seIter,
-                    o -> ((Traverser.Admin<A>) start).split(as, o));
+                    o -> {
+                        final Traverser.Admin<A> traverser = ((Traverser.Admin<A>) start).split();
+                        traverser.set((A) o);
+                        return traverser;
+                    });
 
             w.reset();
 

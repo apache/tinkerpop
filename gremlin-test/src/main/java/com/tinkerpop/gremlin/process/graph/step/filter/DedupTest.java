@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -22,7 +23,7 @@ public abstract class DedupTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, String> get_g_V_both_dedup_name();
 
-    public abstract Traversal<Vertex, String> get_g_V_both_dedup_byXlangX_name();
+    public abstract Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name();
 
     public abstract Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value();
 
@@ -44,12 +45,11 @@ public abstract class DedupTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_both_dedup_byXlangX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_both_dedup_byXlangX_name();
+    public void g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name();
         printTraversalForm(traversal);
         final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
-        assertEquals(2, names.size());
-        assertTrue(names.contains("marko") || names.contains("peter") || names.contains("josh") || names.contains("vadas"));
+        assertEquals(1, names.size());
         assertTrue(names.contains("lop") || names.contains("ripple"));
         assertFalse(traversal.hasNext());
     }
@@ -78,8 +78,8 @@ public abstract class DedupTest extends AbstractGremlinTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_both_dedup_byXlangX_name() {
-            return g.V().both().dedup().<Vertex>by(v -> v.property("lang").orElse(null)).values("name");
+        public Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
+            return g.V().both().has(T.label, "software").dedup().by("lang").values("name");
         }
 
         @Override

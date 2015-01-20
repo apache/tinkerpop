@@ -81,7 +81,7 @@ The "toy" graph provides a way to get started with Gremlin quickly.
 
 [source,groovy]
 ----
-gremlin> g = TinkerFactory.createClassic()
+gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> g.V()
 ==>v[1]
@@ -194,26 +194,26 @@ The most direct way to get started with Gremlin Server is to issue it some remot
 
 [source,text]
 ----
-$ bin/gremlin-server.sh conf/gremlin-server-classic.yaml
+$ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] GremlinServer -
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----
 
-[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-classic.yaml
+[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern.yaml
 [INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=com.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
 [INFO] GremlinServer$WebSocketServerInitializer - Configured application/vnd.gremlin-v1.0+kryo with com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
 [INFO] GremlinServer$WebSocketServerInitializer - Configured application/vnd.gremlin-v1.0+kryo-stringd with com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
 [INFO] Graphs - Graph [g] was successfully configured via [config/tinkergraph-empty.properties].
 [INFO] GremlinExecutor - Getting dependencies for [[org.apache.commons, commons-math3, 3.2]]
-[INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-classic.groovy
+[INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
 [INFO] GremlinServer$WebSocketServerInitializer - Initialized GremlinExecutor and configured ScriptEngines.
 [INFO] GremlinServer$WebSocketServerInitializer - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
 [INFO] GremlinServer - Gremlin Server configured with worker thread pool of 1 and boss thread pool of 1
 [INFO] GremlinServer - Channel started at port 8182.
 ----
 
-Gremlin Server is configured by the provided link:http://www.yaml.org/[YAML] file `conf/gremlin-server-classic.yaml`.  That file tells Gremlin Server many things such as:
+Gremlin Server is configured by the provided link:http://www.yaml.org/[YAML] file `conf/gremlin-server-modern.yaml`.  That file tells Gremlin Server many things such as:
 
 * The host and port to serve on
 * Thread pool sizes
@@ -222,14 +222,14 @@ Gremlin Server is configured by the provided link:http://www.yaml.org/[YAML] fil
 * The Gremlin `ScriptEngine` instances to expose and external dependencies to inject into them
 * `Graph` instances to expose
 
-The log messages that printed above show a number of things, but most importantly, there is a `Graph` instance named `g` that is exposed in Gremlin Server.  This graph is an in-memory TinkerGraph and was empty at the start of the server.  An initialization script at `scripts/generate-classic.groovy` was executed during startup.  It's contents are as follows:
+The log messages that printed above show a number of things, but most importantly, there is a `Graph` instance named `g` that is exposed in Gremlin Server.  This graph is an in-memory TinkerGraph and was empty at the start of the server.  An initialization script at `scripts/generate-modern.groovy` was executed during startup.  It's contents are as follows:
 
 [source,groovy]
 ----
-include::{basedir}/gremlin-server/scripts/generate-classic.groovy[]
+include::{basedir}/gremlin-server/scripts/generate-modern.groovy[]
 ----
 
-This script loads the "classic" graph into the empty TinkerGraph instance, preparing it for use.  With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
+This script loads the "modern" graph into the empty TinkerGraph instance, preparing it for use.  With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
 
 [source,text]
 ----
@@ -367,10 +367,10 @@ Gremlin Server provides for a single REST endpoint - a Gremlin evaluator - which
 [source,yaml]
 channelizer: com.tinkerpop.gremlin.server.channel.HttpChannelizer
 
-This setting is already configured in the `gremlin-server-rest-classic.yaml` file that is packaged with the Gremlin Server distribution.  To utilize it, start Gremlin Server as follows:
+This setting is already configured in the `gremlin-server-rest-modern.yaml` file that is packaged with the Gremlin Server distribution.  To utilize it, start Gremlin Server as follows:
 
 [source,text]
-bin/gremlin-server.sh conf/gremlin-server-rest-classic.yaml
+bin/gremlin-server.sh conf/gremlin-server-rest-modern.yaml
 
 Once the server has started, issue a request.  Here's an example with link:http://curl.haxx.se/[cURL]:
 
@@ -720,14 +720,14 @@ Start the xref:gremlin-console[Gremlin Console] and activate the Gephi plugin:
 [source,groovy]
 gremlin> :plugin use tinkerpop.gephi
 ==>tinkerpop.gephi activated
-gremlin> g = TinkerFactory.createClassic()
+gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> :remote connect tinkerpop.gephi
 ==>Connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 1.0, 0.5], colorToFade:g, colorFadeRate:0.7
 gremlin> :> g
 ==>tinkergraph[vertices:6 edges:6]
 
-The above Gremlin session activates the Gephi plugin, creates the classic `TinkerGraph`, uses the `:remote` command to setup a connection to the Graph Streaming server in Gephi (with default parameters that will be explained below), and then uses `:submit` which sends the vertices and edges of the graph to the Gephi Streaming Server. The resulting graph appears in Gephi as displayed in the left image below.
+The above Gremlin session activates the Gephi plugin, creates the "modern" `TinkerGraph`, uses the `:remote` command to setup a connection to the Graph Streaming server in Gephi (with default parameters that will be explained below), and then uses `:submit` which sends the vertices and edges of the graph to the Gephi Streaming Server. The resulting graph appears in Gephi as displayed in the left image below.
 
 image::gephi-graph-submit.png[width=800]
 
@@ -868,7 +868,7 @@ The `clock` function provides a simple way to time how long it takes to execute 
 ----
 gremlin> :plugin use tinkerpop.utilities
 ==>tinkerpop.utilities activated
-gremlin> g = TinkerFactory.createClassic()
+gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> clock{g.V().both().both().both().iterate()}
 ==>0.6182899999999999

@@ -26,11 +26,11 @@ import java.util.function.Supplier;
 public final class GroupMapReduce implements MapReduce<Object, Collection, Object, Object, Map> {
 
     public static final String GROUP_BY_STEP_SIDE_EFFECT_KEY = "gremlin.groupStep.sideEffectKey";
-    public static final String GROUP_BY_STEP_STEP_LABEL = "gremlin.groupStep.stepLabel";
+    public static final String GROUP_BY_STEP_STEP_ID = "gremlin.groupStep.stepId";
 
     private String sideEffectKey;
     private Traversal<?, ?> traversal;
-    private String groupStepKey;
+    private String groupStepId;
     private Function reduceFunction;
     private Supplier<Map> mapSupplier;
 
@@ -39,7 +39,7 @@ public final class GroupMapReduce implements MapReduce<Object, Collection, Objec
     }
 
     public GroupMapReduce(final GroupStep step) {
-        this.groupStepKey = step.getLabel();
+        this.groupStepId= step.getId();
         this.sideEffectKey = step.getSideEffectKey();
         this.reduceFunction = step.getReduceFunction();
         this.traversal = step.getTraversal();
@@ -50,16 +50,16 @@ public final class GroupMapReduce implements MapReduce<Object, Collection, Objec
     public void storeState(final Configuration configuration) {
         MapReduce.super.storeState(configuration);
         configuration.setProperty(GROUP_BY_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
-        configuration.setProperty(GROUP_BY_STEP_STEP_LABEL, this.groupStepKey);
+        configuration.setProperty(GROUP_BY_STEP_STEP_ID, this.groupStepId);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(GROUP_BY_STEP_SIDE_EFFECT_KEY);
-        this.groupStepKey = configuration.getString(GROUP_BY_STEP_STEP_LABEL);
+        this.groupStepId = configuration.getString(GROUP_BY_STEP_STEP_ID);
         this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
         final GroupStep groupStep = (GroupStep) traversal.asAdmin().getSteps().stream()
-                .filter(step -> step.getLabel().equals(this.groupStepKey))
+                .filter(step -> step.getId().equals(this.groupStepId))
                 .findAny().get();
         this.reduceFunction = groupStep.getReduceFunction();
         this.mapSupplier = traversal.asAdmin().getSideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);

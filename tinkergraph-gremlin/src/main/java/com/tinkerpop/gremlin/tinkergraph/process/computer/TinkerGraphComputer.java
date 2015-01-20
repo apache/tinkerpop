@@ -31,7 +31,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private TinkerMemory memory;
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
-    private final Set<MapReduce> mapReduces = new HashSet<>();
+    private final Set<MapReduce> mapReducers = new HashSet<>();
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -51,7 +51,7 @@ public class TinkerGraphComputer implements GraphComputer {
 
     @Override
     public GraphComputer mapReduce(final MapReduce mapReduce) {
-        this.mapReduces.add(mapReduce);
+        this.mapReducers.add(mapReduce);
         return this;
     }
 
@@ -63,18 +63,18 @@ public class TinkerGraphComputer implements GraphComputer {
             this.executed = true;
 
         // it is not possible execute a computer if it has no vertex program nor mapreducers
-        if (null == this.vertexProgram && this.mapReduces.isEmpty())
+        if (null == this.vertexProgram && this.mapReducers.isEmpty())
             throw GraphComputer.Exceptions.computerHasNoVertexProgramNorMapReducers();
         // it is possible to run mapreducers without a vertex program
         if (null != this.vertexProgram) {
             GraphComputerHelper.validateProgramOnComputer(this, this.vertexProgram);
-            this.mapReduces.addAll(this.vertexProgram.getMapReducers());
+            this.mapReducers.addAll(this.vertexProgram.getMapReducers());
         }
 
-        final Graph sg = null == this.vertexProgram ? graph :
-                graph.strategy(new ComputerDataStrategy(this.vertexProgram.getElementComputeKeys()));
+        final Graph sg = null == this.vertexProgram ? this.graph :
+                this.graph.strategy(new ComputerDataStrategy(this.vertexProgram.getElementComputeKeys()));
 
-        this.memory = new TinkerMemory(this.vertexProgram, this.mapReduces);
+        this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
             if (null != this.vertexProgram) {
@@ -109,7 +109,7 @@ public class TinkerGraphComputer implements GraphComputer {
             }
 
             // execute mapreduce jobs
-            for (final MapReduce mapReduce : this.mapReduces) {
+            for (final MapReduce mapReduce : this.mapReducers) {
                 final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), mapReduce);
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                     final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));

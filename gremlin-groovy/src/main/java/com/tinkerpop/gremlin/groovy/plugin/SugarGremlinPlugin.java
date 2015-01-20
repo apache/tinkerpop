@@ -1,11 +1,6 @@
 package com.tinkerpop.gremlin.groovy.plugin;
 
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
-import com.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
-import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
-import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
-import com.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
-import org.codehaus.groovy.tools.shell.IO;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

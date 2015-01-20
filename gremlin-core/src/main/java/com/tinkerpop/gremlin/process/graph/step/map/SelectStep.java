@@ -7,20 +7,22 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
-import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements PathConsumer, FunctionHolder<Object, Object>, EngineDependent {
+public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements FunctionHolder<Object, Object>, EngineDependent {
 
     protected FunctionRing<Object, Object> functionRing;
     private final List<String> selectLabels;
@@ -32,7 +34,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
         super(traversal);
         this.functionRing = new FunctionRing<>();
         this.wasEmpty = selectLabels.length == 0;
-        this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal) : Arrays.asList(selectLabels);
+        this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal.asAdmin()) : Arrays.asList(selectLabels);
         SelectStep.generateFunction(this);
     }
 
@@ -43,21 +45,17 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
     }
 
     public boolean hasStepFunctions() {
-        return this.functionRing.hasFunctions();
-    }
-
-    @Override
-    public boolean requiresPaths() {
-        return this.requiresPaths;
+        return !this.functionRing.isEmpty();
     }
 
     @Override
     public void onEngine(final TraversalEngine traversalEngine) {
         this.requiresPaths = traversalEngine.equals(TraversalEngine.COMPUTER) ?
-                TraversalHelper.getLabelsUpTo(this, this.traversal).stream().filter(this.selectLabels::contains).findAny().isPresent() :
-                TraversalHelper.getStepsUpTo(this, this.traversal).stream()
+                TraversalHelper.getLabelsUpTo(this, this.traversal.asAdmin()).stream().filter(this.selectLabels::contains).findAny().isPresent() :
+                TraversalHelper.getStepsUpTo(this, this.traversal.asAdmin()).stream()
                         .filter(step -> step instanceof Barrier)
-                        .filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal).stream().filter(this.selectLabels::contains).findAny().isPresent())
+                        .filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal.asAdmin()).stream().filter(this.selectLabels::contains).findAny().isPresent()
+                                || (step.getLabel().isPresent() && this.selectLabels.contains(step.getLabel().get()))) // TODO: get rid of this (there is a test case to check it)
                         .findAny().isPresent();
     }
 
@@ -82,6 +80,16 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
     @Override
     public List<Function<Object, Object>> getFunctions() {
         return this.functionRing.getFunctions();
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        final Set<TraverserRequirement> requirements = new HashSet<>();
+        if (this.requiresPaths)
+            requirements.add(TraverserRequirement.PATH);
+        requirements.add(TraverserRequirement.OBJECT);
+        requirements.add(TraverserRequirement.PATH_ACCESS);
+        return requirements;
     }
 
     //////////////////////

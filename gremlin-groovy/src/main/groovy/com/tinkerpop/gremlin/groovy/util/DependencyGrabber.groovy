@@ -2,15 +2,11 @@ package com.tinkerpop.gremlin.groovy.util
 
 import com.tinkerpop.gremlin.groovy.plugin.Artifact
 import groovy.grape.Grape
+import org.apache.commons.lang3.SystemUtils
 
-import java.nio.file.DirectoryStream
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.StandardCopyOption
+import java.nio.file.*
 import java.util.jar.JarFile
 import java.util.jar.Manifest
-import org.apache.commons.lang3.SystemUtils
 
 /**
  * This class is a rough copy of the {@code InstallCommand} in Gremlin Console.  There are far more detailed
@@ -59,20 +55,24 @@ class DependencyGrabber {
 
         // if windows then the path contains a starting forward slash that prevents it from being
         // recognized by FileSystem - strip it off
-        dependencyLocations.collect{
-          def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
-          return fs.getPath(p)
+        dependencyLocations.collect {
+            def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
+            return fs.getPath(p)
         }
-                .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
-                .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}.each {
+        .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
+                .findAll {
+            !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
+        }.each {
             def copying = target.resolve(it.fileName)
             Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
             println "Copying - $copying"
         }
 
-        getAdditionalDependencies(target, artifact).collect{fs.getPath(it.path)}
-                .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
-                .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}.each {
+        getAdditionalDependencies(target, artifact).collect { fs.getPath(it.path) }
+                .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
+                .findAll {
+            !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
+        }.each {
             def copying = target.resolve(it.fileName)
             Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
             println "Copying - $copying"
@@ -138,10 +138,10 @@ class DependencyGrabber {
         return map
     }
 
-    private static void getFileNames(final List fileNames, final Path dir){
+    private static void getFileNames(final List fileNames, final Path dir) {
         final DirectoryStream<Path> stream = Files.newDirectoryStream(dir)
         for (Path path : stream) {
-            if(path.toFile().isDirectory()) getFileNames(fileNames, path)
+            if (path.toFile().isDirectory()) getFileNames(fileNames, path)
             else {
                 fileNames.add(path.toAbsolutePath())
             }

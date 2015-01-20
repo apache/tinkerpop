@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -14,9 +15,8 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.process.graph.util.HasContainer;
-import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicLabel;
@@ -50,14 +50,20 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private Iterator<? extends Edge> edges() {
         this.graph.tx().readWrite();
+        // ids are present, filter on them first
+        if (this.ids != null && this.ids.length > 0)
+            return IteratorUtils.filter(this.graph.iterators().edgeIterator(this.ids), edge -> HasContainer.testAll((Edge) edge, this.hasContainers));
         final HasContainer hasContainer = this.getHasContainerForAutomaticIndex(Edge.class);
         return (null == hasContainer) ?
-                IteratorUtils.filter(this.graph.iterators().edgeIterator(this.ids), edge -> HasContainer.testAll((Edge) edge, this.hasContainers)) :
+                IteratorUtils.filter(this.graph.iterators().edgeIterator(), edge -> HasContainer.testAll((Edge) edge, this.hasContainers)) :
                 getEdgesUsingAutomaticIndex(hasContainer).filter(edge -> HasContainer.testAll((Edge) edge, this.hasContainers)).iterator();
     }
 
     private Iterator<? extends Vertex> vertices() {
         this.graph.tx().readWrite();
+        // ids are present, filter on them first
+        if (this.ids != null && this.ids.length > 0)
+            return IteratorUtils.filter(this.graph.iterators().vertexIterator(this.ids), vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers));
         // a label and a property
         final Pair<String, HasContainer> labelHasPair = this.getHasContainerForLabelIndex();
         if (null != labelHasPair)
@@ -73,7 +79,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         if (null != labels)
             return this.getVerticesUsingOnlyLabels(labels).filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
         // linear scan
-        return IteratorUtils.filter(this.graph.iterators().vertexIterator(this.ids), vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers));
+        return IteratorUtils.filter(this.graph.iterators().vertexIterator(), vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers));
     }
 
 

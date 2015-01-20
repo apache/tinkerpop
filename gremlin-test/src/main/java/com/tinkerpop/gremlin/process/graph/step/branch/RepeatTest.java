@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.*;
 
 /**
@@ -32,29 +34,40 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_V_repeatXoutX_untilXloops_gte_2X_emit_path();
 
-    public abstract Traversal<Vertex, Path> get_g_V_repeatXoutX_untilX2X_emit_path();
+    public abstract Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_emit_path();
 
     public abstract Traversal<Vertex, String> get_g_V_repeatXoutX_untilXloops_gte_2X_repeatXinX_untilXloops_gte_2X_name();
 
-    public abstract Traversal<Vertex, String> get_g_V_repeatXoutX_untilX2X_repeatXinX_untilX2X_name();
+    public abstract Traversal<Vertex, String> get_g_V_repeatXoutX_timesX2X_repeatXinX_timesX2X_name();
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilX2X();
+    public abstract Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X();
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilX2X_emit();
+    public abstract Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X_emit();
 
     // WHILE/DO
 
     public abstract Traversal<Vertex, String> get_g_VX1X_untilXloops_gte_2X_repeatXoutX_name(final Object v1Id);
 
-    public abstract Traversal<Vertex, String> get_g_VX1X_untilX2X_repeatXoutX_name(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_VX1X_timesX2X_repeatXoutX_name(final Object v1Id);
 
-    public abstract Traversal<Vertex, Path> get_g_V_emit_untilX2X_repeatXoutX_path();
+    public abstract Traversal<Vertex, Path> get_g_V_emit_timesX2X_repeatXoutX_path();
 
-    public abstract Traversal<Vertex, Path> get_g_V_emit_repeatXoutX_untilX2X_path();
+    public abstract Traversal<Vertex, Path> get_g_V_emit_repeatXoutX_timesX2X_path();
+
+    public abstract Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id);
 
     // SIDE-EFFECTS
 
-    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_untilX2X_capXmX();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX();
+
+    // TODO:
+    /*
+    gremlin> g.V(1).repeat(__.out()).until(__.outE().count().cap().filter{it.get() == 0}).path().by('name') (3)
+    ==>[marko, lop]
+    ==>[marko, vadas]
+    ==>[marko, josh, ripple]
+    ==>[marko, josh, lop]
+     */
 
     @Test
     @LoadGraphWith(MODERN)
@@ -75,10 +88,10 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_repeatXoutX_untilX2X_emit_path() {
+    public void g_V_repeatXoutX_timesX2X_emit_path() {
         final List<Traversal<Vertex, Path>> traversals = new ArrayList<>();
         traversals.add(get_g_V_repeatXoutX_untilXloops_gte_2X_emit_path());
-        traversals.add(get_g_V_repeatXoutX_untilX2X_emit_path());
+        traversals.add(get_g_V_repeatXoutX_timesX2X_emit_path());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             final Map<Integer, Long> pathLengths = new HashMap<>();
@@ -96,27 +109,21 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_repeatXoutX_untilX2X_repeatXinX_untilX2X_name() {
+    public void g_V_repeatXoutX_timesX2X_repeatXinX_timesX2X_name() {
         final List<Traversal<Vertex, String>> traversals = new ArrayList<>();
         traversals.add(get_g_V_repeatXoutX_untilXloops_gte_2X_repeatXinX_untilXloops_gte_2X_name());
-        traversals.add(get_g_V_repeatXoutX_untilX2X_repeatXinX_untilX2X_name());
+        traversals.add(get_g_V_repeatXoutX_timesX2X_repeatXinX_timesX2X_name());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
-            int count = 0;
-            while (traversal.hasNext()) {
-                assertEquals("marko", traversal.next());
-                count++;
-            }
-            assertEquals(2, count);
-            assertFalse(traversal.hasNext());
+            checkResults(Arrays.asList("marko", "marko"), traversal);
         });
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_repeatXoutX_untilXloops_gte_2X() {
+    public void g_V_repeatXoutX_timesX2X() {
         final List<Traversal<Vertex, Vertex>> traversals = new ArrayList<>();
-        traversals.add(get_g_V_repeatXoutX_untilX2X());
+        traversals.add(get_g_V_repeatXoutX_timesX2X());
         traversals.add(get_g_V_repeatXoutX_untilXloops_gte_2X());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
@@ -133,9 +140,9 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_repeatXoutX_untilX2X_emit() {
+    public void g_V_repeatXoutX_timesX2X_emit() {
         final List<Traversal<Vertex, Vertex>> traversals = new ArrayList<>();
-        traversals.add(get_g_V_repeatXoutX_untilX2X_emit());
+        traversals.add(get_g_V_repeatXoutX_timesX2X_emit());
         traversals.add(get_g_V_repeatXoutX_untilXloops_gte_2X_emit());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
@@ -158,10 +165,10 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_VX1X_untilX2X_repeatXoutX_name() {
+    public void g_VX1X_timesX2X_repeatXoutX_name() {
         final List<Traversal<Vertex, String>> traversals = Arrays.asList(
                 get_g_VX1X_untilXloops_gte_2X_repeatXoutX_name(convertToVertexId("marko")),
-                get_g_VX1X_untilX2X_repeatXoutX_name(convertToVertexId("marko")));
+                get_g_VX1X_timesX2X_repeatXoutX_name(convertToVertexId("marko")));
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             checkResults(Arrays.asList("lop", "ripple"), traversal);
@@ -170,10 +177,10 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_emit_untilX2X_repeatXoutX_path() {
+    public void g_V_emit_timesX2X_repeatXoutX_path() {
         final List<Traversal<Vertex, Path>> traversals = Arrays.asList(
-                get_g_V_emit_untilX2X_repeatXoutX_path(),
-                get_g_V_emit_repeatXoutX_untilX2X_path());
+                get_g_V_emit_timesX2X_repeatXoutX_path(),
+                get_g_V_emit_repeatXoutX_timesX2X_path());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             int path1 = 0;
@@ -199,11 +206,21 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_repeatXgroupCountXmX_byXnameX_outX_untilX2X_capXmX() {
-        final List<Traversal<Vertex, Map<String, Long>>> traversals = Arrays.asList(get_g_V_repeatXgroupCountXmX_byXnameX_outX_untilX2X_capXmX());
+    public void g_V_emitXhasXlabel_personXX_repeatXoutX_name() {
+        final List<Traversal<Vertex, String>> traversals = Arrays.asList(get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(convertToVertexId("marko")));
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
-            final Map<String,Long> map = traversal.next();
+            checkResults(Arrays.asList("marko", "josh", "vadas"), traversal);
+        });
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
+        final List<Traversal<Vertex, Map<String, Long>>> traversals = Arrays.asList(get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX());
+        traversals.forEach(traversal -> {
+            printTraversalForm(traversal);
+            final Map<String, Long> map = traversal.next();
             assertFalse(traversal.hasNext());
             //[ripple:2, peter:1, vadas:2, josh:2, lop:4, marko:1]
             assertEquals(6, map.size());
@@ -223,72 +240,77 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_repeatXoutX_untilXloops_gte_2X_name(final Object v1Id) {
-            return g.V(v1Id).repeat(g.of().out()).until(t -> t.loops() >= 2).values("name");
+            return g.V(v1Id).repeat(__.out()).until(t -> t.loops() >= 2).values("name");
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilXloops_gte_2X() {
-            return g.V().repeat(g.of().out()).until(t -> t.loops() >= 2);
+            return g.V().repeat(__.out()).until(t -> t.loops() >= 2);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilXloops_gte_2X_emit() {
-            return g.V().repeat(g.of().out()).until(t -> t.loops() >= 2).emit();
+            return g.V().repeat(__.out()).until(t -> t.loops() >= 2).emit();
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_untilXloops_gte_2X_emit_path() {
-            return g.V().repeat(g.of().out()).until(t -> t.loops() >= 2).emit().path();
+            return g.V().repeat(__.out()).until(t -> t.loops() >= 2).emit().path();
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXoutX_untilX2X_emit_path() {
-            return g.V().repeat(g.of().out()).until(2).emit().path();
+        public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_emit_path() {
+            return g.V().repeat(__.out()).times(2).emit().path();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_repeatXoutX_untilXloops_gte_2X_repeatXinX_untilXloops_gte_2X_name() {
-            return g.V().repeat(g.of().out()).until(t -> t.loops() >= 2).repeat(g.of().in()).until(t -> t.loops() >= 2).values("name");
+            return g.V().repeat(__.out()).until(t -> t.loops() >= 2).repeat(__.in()).until(t -> t.loops() >= 2).values("name");
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_repeatXoutX_untilX2X_repeatXinX_untilX2X_name() {
-            return g.V().repeat(g.of().out()).until(2).repeat(g.of().in()).until(2).values("name");
+        public Traversal<Vertex, String> get_g_V_repeatXoutX_timesX2X_repeatXinX_timesX2X_name() {
+            return g.V().repeat(__.out()).times(2).repeat(__.in()).times(2).values("name");
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilX2X() {
-            return g.V().repeat(g.of().out()).until(2);
+        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X() {
+            return g.V().repeat(__.out()).times(2);
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilX2X_emit() {
-            return g.V().repeat(g.of().out()).until(2).emit();
+        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X_emit() {
+            return g.V().repeat(__.out()).times(2).emit();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_untilXloops_gte_2X_repeatXoutX_name(Object v1Id) {
-            return g.V(v1Id).until(t -> t.loops() >= 2).repeat(g.of().out()).values("name");
+            return g.V(v1Id).until(t -> t.loops() >= 2).repeat(__.out()).values("name");
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_untilX2X_repeatXoutX_name(Object v1Id) {
-            return g.V(v1Id).until(2).repeat(g.of().out()).values("name");
+        public Traversal<Vertex, String> get_g_VX1X_timesX2X_repeatXoutX_name(Object v1Id) {
+            return g.V(v1Id).times(2).repeat(__.out()).values("name");
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_emit_repeatXoutX_untilX2X_path() {
-            return g.V().emit().repeat(g.of().out()).until(2).path();
+        public Traversal<Vertex, Path> get_g_V_emit_repeatXoutX_timesX2X_path() {
+            return g.V().emit().repeat(__.out()).times(2).path();
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_emit_untilX2X_repeatXoutX_path() {
-            return g.V().emit().until(2).repeat(g.of().out()).path();
+        public Traversal<Vertex, Path> get_g_V_emit_timesX2X_repeatXoutX_path() {
+            return g.V().emit().times(2).repeat(__.out()).path();
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_untilX2X_capXmX() {
-            return g.V().repeat(g.of().groupCount("m").by("name").out()).until(2).cap("m");
+        public Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
+            return g.V(v1Id).emit(__.has(T.label, "person")).repeat(__.out()).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
+            return g.V().repeat(__.groupCount("m").by("name").out()).times(2).cap("m");
         }
     }
 
@@ -299,72 +321,77 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_repeatXoutX_untilXloops_gte_2X_name(final Object v1Id) {
-            return g.V(v1Id).repeat(g.of().out()).until(t -> t.loops() >= 2).<String>values("name").submit(g.compute());
+            return g.V(v1Id).repeat(__.out()).until(t -> t.loops() >= 2).<String>values("name").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilXloops_gte_2X() {
-            return g.V().repeat(g.of().out()).until(t -> t.loops() >= 2).submit(g.compute());
+            return g.V().repeat(__.out()).until(t -> t.loops() >= 2).submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilXloops_gte_2X_emit() {
-            return g.V().repeat(g.of().out()).until(t -> t.loops() >= 2).emit().submit(g.compute());
+            return g.V().repeat(__.out()).until(t -> t.loops() >= 2).emit().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_untilXloops_gte_2X_emit_path() {
-            return g.V().repeat(g.of().out()).until(t -> t.loops() >= 2).emit().path().submit(g.compute());
+            return g.V().repeat(__.out()).until(t -> t.loops() >= 2).emit().path().submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXoutX_untilX2X_emit_path() {
-            return g.V().repeat(g.of().out()).until(2).emit().path().submit(g.compute());
+        public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_emit_path() {
+            return g.V().repeat(__.out()).times(2).emit().path().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_repeatXoutX_untilXloops_gte_2X_repeatXinX_untilXloops_gte_2X_name() {
-            return g.V().repeat(g.of().out()).until(t -> t.loops() >= 2).repeat(g.of().in()).until(t -> t.loops() >= 2).<String>values("name").submit(g.compute());
+            return g.V().repeat(__.out()).until(t -> t.loops() >= 2).repeat(__.in()).until(t -> t.loops() >= 2).<String>values("name").submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_repeatXoutX_untilX2X_repeatXinX_untilX2X_name() {
-            return g.V().repeat(g.of().out()).until(2).repeat(g.of().in()).until(2).<String>values("name").submit(g.compute());
+        public Traversal<Vertex, String> get_g_V_repeatXoutX_timesX2X_repeatXinX_timesX2X_name() {
+            return g.V().repeat(__.out()).times(2).repeat(__.in()).times(2).<String>values("name").submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilX2X() {
-            return g.V().repeat(g.of().out()).until(2).submit(g.compute());
+        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X() {
+            return g.V().repeat(__.out()).times(2).submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilX2X_emit() {
-            return g.V().repeat(g.of().out()).until(2).emit().submit(g.compute());
+        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X_emit() {
+            return g.V().repeat(__.out()).times(2).emit().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_untilXloops_gte_2X_repeatXoutX_name(Object v1Id) {
-            return g.V(v1Id).until(t -> t.loops() >= 2).repeat(g.of().out()).<String>values("name").submit(g.compute());
+            return g.V(v1Id).until(t -> t.loops() >= 2).repeat(__.out()).<String>values("name").submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_untilX2X_repeatXoutX_name(Object v1Id) {
-            return g.V(v1Id).until(2).repeat(g.of().out()).<String>values("name").submit(g.compute());
+        public Traversal<Vertex, String> get_g_VX1X_timesX2X_repeatXoutX_name(Object v1Id) {
+            return g.V(v1Id).times(2).repeat(__.out()).<String>values("name").submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_emit_repeatXoutX_untilX2X_path() {
-            return g.V().emit().repeat(g.of().out()).until(2).path().submit(g.compute());
+        public Traversal<Vertex, Path> get_g_V_emit_repeatXoutX_timesX2X_path() {
+            return g.V().emit().repeat(__.out()).times(2).path().submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_emit_untilX2X_repeatXoutX_path() {
-            return g.V().emit().until(2).repeat(g.of().out()).path().submit(g.compute());
+        public Traversal<Vertex, Path> get_g_V_emit_timesX2X_repeatXoutX_path() {
+            return g.V().emit().times(2).repeat(__.out()).path().submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_untilX2X_capXmX() {
-            return g.V().repeat(g.of().groupCount("m").by("name").out()).until(2).<Map<String, Long>>cap("m").submit(g.compute());
+        public Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
+            return g.V(v1Id).emit(__.has(T.label, "person")).repeat(__.out()).<String>values("name").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
+            return g.V().repeat(__.groupCount("m").by("name").out()).times(2).<Map<String, Long>>cap("m").submit(g.compute());
         }
     }
 }

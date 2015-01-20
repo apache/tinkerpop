@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -22,9 +23,9 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_both_both_count();
 
-    public abstract Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX3X_count();
+    public abstract Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX3X_count();
 
-    public abstract Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX8X_count();
+    public abstract Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX8X_count();
 
     public abstract Traversal<Vertex, Long> get_g_V_filterXfalseX_count();
 
@@ -57,8 +58,8 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(GRATEFUL)
-    public void g_V_repeatXoutX_untilX3X_count() {
-        final Traversal<Vertex, Long> traversal = get_g_V_repeatXoutX_untilX3X_count();
+    public void g_V_repeatXoutX_timesX3X_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_repeatXoutX_timesX3X_count();
         printTraversalForm(traversal);
         assertEquals(new Long(14465066L), traversal.next());
         assertFalse(traversal.hasNext());
@@ -66,8 +67,8 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(GRATEFUL)
-    public void g_V_repeatXoutX_untilX8X_count() {
-        final Traversal<Vertex, Long> traversal = get_g_V_repeatXoutX_untilX8X_count();
+    public void g_V_repeatXoutX_timesX8X_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_repeatXoutX_timesX8X_count();
         printTraversalForm(traversal);
         assertEquals(new Long(2505037961767380L), traversal.next());
         assertFalse(traversal.hasNext());
@@ -100,13 +101,13 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX3X_count() {
-            return g.V().repeat(g.of().out()).until(3).count();
+        public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX3X_count() {
+            return g.V().repeat(__.out()).times(3).count();
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX8X_count() {
-            return g.V().repeat(g.of().out()).until(8).count();
+        public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX8X_count() {
+            return g.V().repeat(__.out()).times(8).count();
         }
 
         @Override
@@ -137,13 +138,13 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX3X_count() {
-            return g.V().repeat(g.<Vertex>of().out()).until(3).count().submit(g.compute());
+        public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX3X_count() {
+            return g.V().repeat(__.out()).times(3).count().submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_repeatXoutX_untilX8X_count() {
-            return g.V().repeat(g.of().out()).until(8).count().submit(g.compute());
+        public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX8X_count() {
+            return g.V().repeat(__.out()).times(8).count().submit(g.compute());
         }
 
         @Override

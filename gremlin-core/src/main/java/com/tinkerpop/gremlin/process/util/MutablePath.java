@@ -4,14 +4,17 @@ import com.tinkerpop.gremlin.process.Path;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MutablePath implements Path, Serializable, Cloneable {
+public class MutablePath implements Path, Serializable {
 
     protected List<Object> objects = new ArrayList<>();
     protected List<Set<String>> labels = new ArrayList<>();
@@ -25,8 +28,12 @@ public class MutablePath implements Path, Serializable, Cloneable {
     }
 
     @Override
-    public MutablePath clone() {
+    public MutablePath clone() throws CloneNotSupportedException {
         final MutablePath clone = new MutablePath();
+        // TODO: Why is this not working Hadoop serialization-wise?... Its cause DetachedPath's clone needs to detach on clone.
+        /*final MutablePath clone = (MutablePath) super.clone();
+        clone.objects = new ArrayList<>();
+        clone.labels = new ArrayList<>();*/
         for (int i = 0; i < this.objects.size(); i++) {
             clone.objects.add(this.objects.get(i));
             clone.labels.add(new HashSet<>(this.labels.get(i)));
@@ -41,24 +48,9 @@ public class MutablePath implements Path, Serializable, Cloneable {
     }
 
     @Override
-    public Path extend(final String label, final Object object) {
+    public Path extend(final Object object, final String... labels) {
         this.objects.add(object);
-        final HashSet<String> temp = new HashSet<>();
-        if (TraversalHelper.isLabeled(label))
-            temp.add(label);
-        this.labels.add(temp);
-        return this;
-    }
-
-    @Override
-    public Path extend(final Set<String> labels, final Object object) {
-        this.objects.add(object);
-        final HashSet<String> temp = new HashSet<>();
-        for (final String label : labels) {
-            if (TraversalHelper.isLabeled(label))
-                temp.add(label);
-        }
-        this.labels.add(temp);
+        this.labels.add(Stream.of(labels).collect(Collectors.toSet()));
         return this;
     }
 
@@ -79,17 +71,12 @@ public class MutablePath implements Path, Serializable, Cloneable {
 
     @Override
     public List<Object> objects() {
-        return this.objects;
+        return Collections.unmodifiableList(this.objects);
     }
 
     @Override
     public List<Set<String>> labels() {
-        return this.labels;
-    }
-
-    @Override
-    public boolean isSimple() {
-        return new HashSet<>(this.objects).size() == this.objects.size();
+        return Collections.unmodifiableList(this.labels);
     }
 
     @Override

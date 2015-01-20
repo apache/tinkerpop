@@ -9,9 +9,10 @@ import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.io.DefaultIo;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
-import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
@@ -120,7 +121,7 @@ public interface Graph extends AutoCloseable {
      * @return a graph traversal over the vertices of the graph
      */
     public default GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this.getClass());
         return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Vertex.class, vertexIds));
     }
 
@@ -132,7 +133,7 @@ public interface Graph extends AutoCloseable {
      * @return a graph traversal over the edges of the graph
      */
     public default GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
+        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this.getClass());
         return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Edge.class, edgeIds));
     }
 
@@ -147,16 +148,6 @@ public interface Graph extends AutoCloseable {
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-    }
-
-    /**
-     * Constructs a new {@link GraphTraversal} for this graph.
-     *
-     * @param <S> The start class of the GraphTraversal
-     * @return The newly constructed GraphTraversal bound to this graph
-     */
-    public default <S> GraphTraversal<S, S> of() {
-        return GraphTraversal.of(this);
     }
 
     /**
@@ -241,29 +232,29 @@ public interface Graph extends AutoCloseable {
 
     /**
      * Provides access to functions related to reading and writing graph data.  Implementers can override these
-     * methods to provider custom configurations to the default {@link com.tinkerpop.gremlin.structure.io.GraphReader}
-     * and {@link com.tinkerpop.gremlin.structure.io.GraphWriter} implementations (i.e. to register custom
+     * methods to provider mapper configurations to the default {@link com.tinkerpop.gremlin.structure.io.GraphReader}
+     * and {@link com.tinkerpop.gremlin.structure.io.GraphWriter} implementations (i.e. to register mapper
      * serialization classes).
      */
     public interface Io {
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for Kryo serializations. This
-         * method calls the {@link Io#gremlinKryoSerializer} method to supply to
-         * {@link com.tinkerpop.gremlin.structure.io.kryo.KryoReader.Builder#custom} which means that implementers
-         * should usually just override {@link Io#gremlinKryoSerializer} to append in their custom classes.
+         * method calls the {@link Io#kryoMapper} method to supply to
+         * {@link com.tinkerpop.gremlin.structure.io.kryo.KryoReader.Builder#mapper} which means that implementers
+         * should usually just override {@link Io#kryoMapper} to append in their mapper classes.
          */
         public default KryoReader.Builder kryoReader() {
-            return KryoReader.build().custom(gremlinKryoSerializer());
+            return KryoReader.build().mapper(kryoMapper().create());
         }
 
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphWriter} builder for Kryo serializations. This
-         * method calls the {@link Io#gremlinKryoSerializer} method to supply to
-         * {@link com.tinkerpop.gremlin.structure.io.kryo.KryoWriter.Builder#custom} which means that implementers
-         * should usually just override {@link Io#gremlinKryoSerializer} to append in their custom classes.
+         * method calls the {@link Io#kryoMapper} method to supply to
+         * {@link com.tinkerpop.gremlin.structure.io.kryo.KryoWriter.Builder#mapper} which means that implementers
+         * should usually just override {@link Io#kryoMapper} to append in their mapper classes.
          */
         public default KryoWriter.Builder kryoWriter() {
-            return KryoWriter.build().custom(gremlinKryoSerializer());
+            return KryoWriter.build().mapper(kryoMapper().create());
         }
 
         /**
@@ -277,29 +268,29 @@ public interface Graph extends AutoCloseable {
         public void readKryo(final String file) throws IOException;
 
         /**
-         * By default, this method creates an instance of the most current version of {@link GremlinKryo} which is
-         * used to serialize data to and from the graph.   Implementers with custom classes (e.g. a non-primitive
+         * By default, this method creates an instance of the most current version of {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} which is
+         * used to serialize data to and from the graph.   Implementers with mapper classes (e.g. a non-primitive
          * class returned from {@link Element#id}) should override this method with those classes automatically
-         * registered to the returned {@link GremlinKryo}.
+         * registered to the returned {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper}.
          * <br/>
          * Implementers should respect versions.  Once a class is registered, the order of its registration should be
          * maintained. Note that registering such classes will reduce the portability of the graph data as data
-         * written with {@link GremlinKryo} will not be readable without this serializer configuration.  It is
-         * considered reasonable practice to make serialization classes generally available so that users may
-         * register these classes themselves if necessary when building up a custom {@link GremlinKryo}
+         * written with {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} will not be readable without this serializer configuration.  It is
+         * considered good practice to make serialization classes generally available so that users may
+         * register these classes themselves if necessary when building up a mapper {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper}
          * instance.
          * <br/>
          * Note that this method is meant to return current versions for serialization operations.  Users wishing
-         * to use an "older" version should construct their readers and writers manually.
+         * to use an "older" version should construct this instance as well as their readers and writers manually.
          */
-        public default GremlinKryo gremlinKryoSerializer() {
-            return GremlinKryo.build().create();
+        public default KryoMapper.Builder kryoMapper() {
+            return KryoMapper.build();
         }
 
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for GraphML serializations. GraphML
          * is the most portable of all the formats, but comes at the price of the least flexibility.
-         * {@code Graph} implementations that have custom classes that need to be serialized will not be able
+         * {@code Graph} implementations that have mapper classes that need to be serialized will not be able
          * to properly use this format effectively.
          */
         public default GraphMLReader.Builder graphMLReader() {
@@ -309,7 +300,7 @@ public interface Graph extends AutoCloseable {
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphWriter} builder for GraphML serializations. GraphML
          * is the most portable of all the formats, but comes at the price of the least flexibility.
-         * {@code Graph} implementations that have custom classes that need to be serialized will not be able
+         * {@code Graph} implementations that have mapper classes that need to be serialized will not be able
          * to properly use this format effectively.
          */
         public default GraphMLWriter.Builder graphMLWriter() {
@@ -329,21 +320,25 @@ public interface Graph extends AutoCloseable {
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for GraphSON serializations.
          * GraphSON is forgiving for implementers and will typically do a "reasonable" job in serializing most
-         * custom classes.  However, for a nicer representation is desired then this method should be overridden
-         * to include the addition of a Jackson {@code SimpleModule} implementation.
+         * mapper classes.  This method by default uses the {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper} created by
+         * {@link #graphSONMapper}.  That method enables implementers to register mapper serialization
+         * modules for classes that do not serialize nicely by the default JSON serializers or completely
+         * fail to do so.
          */
         public default GraphSONReader.Builder graphSONReader() {
-            return GraphSONReader.build();
+            return GraphSONReader.build().mapper(graphSONMapper().create());
         }
 
         /**
          * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphWriter} builder for GraphML serializations.
          * GraphSON is forgiving for implementers and will typically do a "reasonable" job in serializing most
-         * custom classes.  However, for a nicer representation is desired then this method should be overridden
-         * to include the addition of a Jackson {@code SimpleModule} implementation.
+         * mapper classes.  This method by default uses the {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper} created by
+         * {@link #graphSONMapper}. That method enables implementers to register mapper serialization
+         * modules for classes that do not serialize nicely by the default JSON serializers or completely
+         * fail to do so.
          */
         public default GraphSONWriter.Builder graphSONWriter() {
-            return GraphSONWriter.build();
+            return GraphSONWriter.build().mapper(graphSONMapper().create());
         }
 
         /**
@@ -355,22 +350,57 @@ public interface Graph extends AutoCloseable {
          * Read a GraphSON file using the default configuration of the {@link GraphSONReader}.
          */
         public void readGraphSON(final String file) throws IOException;
+
+        /**
+         * By default, this method creates an instance of the most current version of
+         * {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper.Builder} which is can produce a
+         * {@link com.tinkerpop.gremlin.structure.io.Mapper} implementation for GraphSON to
+         * serialize data to and from the graph.   Implementers with custom classes (e.g. a
+         * non-primitive class returned from {@link Element#id}) should override this method with serialization
+         * modules added.
+         * <br/>
+         * It is considered good practice to make serialization classes generally available so that users may
+         * register these classes themselves if necessary when building up a mapper {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper}
+         * instance.
+         * <br/>
+         * Note that this method is meant to return a {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper.Builder} with default configuration
+         * for the current {@link Graph}.  Users can adjust and override such settings by altering the builder
+         * settings.
+         */
+        public default GraphSONMapper.Builder graphSONMapper() {
+            return GraphSONMapper.build();
+        }
     }
 
     /**
-     * Graph variables are a set of key/value pairs associated with the graph.
-     * The keys are String and the values are Objects.
+     * Graph variables are a set of key/value pairs associated with the graph.The keys are String and the values
+     * are Objects.
      */
     public interface Variables {
 
+        /**
+         * Keys set for the available variables.
+         */
         public Set<String> keys();
 
+        /**
+         * Gets a variable.
+         */
         public <R> Optional<R> get(final String key);
 
+        /**
+         * Sets a variable.
+         */
         public void set(final String key, Object value);
 
+        /**
+         * Removes a variable.
+         */
         public void remove(final String key);
 
+        /**
+         * Gets the variables of the {@link Graph} as a {@code Map}.
+         */
         @Graph.Helper
         public default Map<String, Object> asMap() {
             final Map<String, Object> map = keys().stream()
@@ -644,7 +674,7 @@ public interface Graph extends AutoCloseable {
             }
 
             /**
-             * Determines if an {@link Element} has custom identifiers where "custom" refers to an implementation
+             * Determines if an {@link Element} has mapper identifiers where "mapper" refers to an implementation
              * defined object.
              */
             @FeatureDescriptor(name = FEATURE_CUSTOM_IDS)
@@ -723,7 +753,7 @@ public interface Graph extends AutoCloseable {
             }
 
             /**
-             * Determines if an {@link VertexProperty} has custom identifiers where "custom" refers to an implementation
+             * Determines if an {@link VertexProperty} has mapper identifiers where "mapper" refers to an implementation
              * defined object.
              */
             @FeatureDescriptor(name = FEATURE_CUSTOM_IDS)

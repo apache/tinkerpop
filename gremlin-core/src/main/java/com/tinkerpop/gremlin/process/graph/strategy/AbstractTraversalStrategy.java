@@ -2,11 +2,6 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.commons.lang.ArrayUtils;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

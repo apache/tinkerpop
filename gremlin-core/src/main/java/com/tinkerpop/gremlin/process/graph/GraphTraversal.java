@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatStep;
@@ -66,7 +65,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.util.ElementFunctionComparator;
 import com.tinkerpop.gremlin.process.util.ElementValueComparator;
@@ -77,7 +75,6 @@ import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -109,16 +106,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) Traversal.super.<S, E>submit(computer);
     }
 
-    public static <S> GraphTraversal<S, S> of(final Graph graph) {
-        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
-        traversal.asAdmin().getSideEffects().setGraph(graph);
-        return traversal;
-    }
-
-    public static <S> GraphTraversal<S, S> of() {
-        return new DefaultGraphTraversal<>();
-    }
-
+    @Override
     public GraphTraversal.Admin<S, E> asAdmin();
 
     public interface Admin<S, E> extends Traversal.Admin<S, E> {
@@ -340,7 +328,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final T accessor, final BiPredicate predicate, final Object value) {
-        return this.asAdmin().addStep(new HasStep<>(this, new HasContainer(accessor.getAccessor(), predicate, value)));
+        return this.has(accessor.getAccessor(), predicate, value);
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final Object value) {
@@ -348,7 +336,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final BiPredicate predicate, final Object value) {
-        return this.has(T.label, label).asAdmin().addStep(new HasStep<>(this, new HasContainer(key, predicate, value)));
+        return this.has(T.label, label).has(key, predicate, value);
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> hasNot(final String key) {
@@ -408,7 +396,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> cap() {
-        return this.cap(((SideEffectCapable) TraversalHelper.getEnd(this)).getSideEffectKey());
+        return this.cap(null);
     }
 
     public default GraphTraversal<S, Long> count() {
@@ -531,17 +519,26 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return RepeatStep.addEmitToTraversal(this, emitPredicate);
     }
 
-    public default GraphTraversal<S, E> until(final Predicate<Traverser<E>> untilPredicate) {
-        return RepeatStep.addUntilToTraversal(this, untilPredicate);
-    }
-
-    public default GraphTraversal<S, E> until(final int maxLoops) {
-        return this.until(new RepeatStep.LoopPredicate<>(maxLoops));
+    public default GraphTraversal<S, E> emit(final Traversal<?, ?> emitTraversal) {
+        return this.emit(new RepeatStep.TraversalPredicate<>((Traversal<E, ?>) emitTraversal));
     }
 
     public default GraphTraversal<S, E> emit() {
         return this.emit(t -> true);
     }
+
+    public default GraphTraversal<S, E> until(final Predicate<Traverser<E>> untilPredicate) {
+        return RepeatStep.addUntilToTraversal(this, untilPredicate);
+    }
+
+    public default GraphTraversal<S, E> until(final Traversal<?, ?> untilTraversal) {
+        return this.until(new RepeatStep.TraversalPredicate<>((Traversal<E, ?>) untilTraversal));
+    }
+
+    public default GraphTraversal<S, E> times(final int maxLoops) {
+        return this.until(new RepeatStep.LoopPredicate<>(maxLoops));
+    }
+
 
     ///////////////////// UTILITY STEPS /////////////////////
 
@@ -564,49 +561,51 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PathIdentityStep<>(this));
     }
 
-    public default GraphTraversal<S, E> as(final String label) {
-        TraversalHelper.verifyStepLabelIsNotHidden(label);
-        TraversalHelper.verifyStepLabelIsNotAlreadyAStepLabel(label, this);
-        TraversalHelper.verifyStepLabelIsNotASideEffectKey(label, this);
+    public default GraphTraversal<S, E> as(final String stepLabel) {
         if (this.asAdmin().getSteps().size() == 0) this.asAdmin().addStep(new StartStep<>(this));
-        TraversalHelper.getEnd(this).setLabel(label);
+        TraversalHelper.getEnd(this.asAdmin()).setLabel(stepLabel);
+        return this;
+    }
+
+    public default GraphTraversal<S, E> by() {
+        ((FunctionHolder) TraversalHelper.getEnd(this.asAdmin())).addFunction(Function.identity());
         return this;
     }
 
     public default <V> GraphTraversal<S, E> by(final Function<V, Object> functionProjection) {
-        ((FunctionHolder<V, Object>) TraversalHelper.getEnd(this)).addFunction(functionProjection);
+        ((FunctionHolder<V, Object>) TraversalHelper.getEnd(this.asAdmin())).addFunction(functionProjection);
         return this;
     }
 
     public default GraphTraversal<S, E> by(final T tokenProjection) {
-        ((FunctionHolder<Element, Object>) TraversalHelper.getEnd(this)).addFunction(tokenProjection);
+        ((FunctionHolder<Element, Object>) TraversalHelper.getEnd(this.asAdmin())).addFunction(tokenProjection);
         return this;
     }
 
     public default GraphTraversal<S, E> by(final String elementPropertyProjection) {
-        ((FunctionHolder<Element, ?>) TraversalHelper.getEnd(this)).addFunction(new ElementValueFunction<>(elementPropertyProjection));
+        ((FunctionHolder<Element, ?>) TraversalHelper.getEnd(this.asAdmin())).addFunction(new ElementValueFunction<>(elementPropertyProjection));
         return this;
     }
 
     ////
 
     public default GraphTraversal<S, E> by(final Comparator<E> comparator) {
-        ((ComparatorHolder<E>) TraversalHelper.getEnd(this)).addComparator(comparator);
+        ((ComparatorHolder<E>) TraversalHelper.getEnd(this.asAdmin())).addComparator(comparator);
         return this;
     }
 
     public default <V> GraphTraversal<S, E> by(final Function<Element, V> elementFunctionProjection, final Comparator<V> elementFunctionValueComparator) {
-        ((ComparatorHolder<Element>) TraversalHelper.getEnd(this)).addComparator(new ElementFunctionComparator<>(elementFunctionProjection, elementFunctionValueComparator));
+        ((ComparatorHolder<Element>) TraversalHelper.getEnd(this.asAdmin())).addComparator(new ElementFunctionComparator<>(elementFunctionProjection, elementFunctionValueComparator));
         return this;
     }
 
     public default <V> GraphTraversal<S, E> by(final T tokenProjection, final Comparator<V> tokenValueComparator) {
-        ((ComparatorHolder<Element>) TraversalHelper.getEnd(this)).addComparator(new ElementFunctionComparator<>(tokenProjection, (Comparator) tokenValueComparator));
+        ((ComparatorHolder<Element>) TraversalHelper.getEnd(this.asAdmin())).addComparator(new ElementFunctionComparator<>(tokenProjection, (Comparator) tokenValueComparator));
         return this;
     }
 
     public default <V> GraphTraversal<S, E> by(final String elementPropertyProjection, final Comparator<V> propertyValueComparator) {
-        ((ComparatorHolder<Element>) TraversalHelper.getEnd(this)).addComparator(new ElementValueComparator<>(elementPropertyProjection, propertyValueComparator));
+        ((ComparatorHolder<Element>) TraversalHelper.getEnd(this.asAdmin())).addComparator(new ElementValueComparator<>(elementPropertyProjection, propertyValueComparator));
         return this;
     }
 
@@ -618,7 +617,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default void remove() {
         try {
             this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
-            final Step<?, E> endStep = TraversalHelper.getEnd(this);
+            final Step<?, E> endStep = TraversalHelper.getEnd(this.asAdmin());
             while (true) {
                 final Object object = endStep.next().get();
                 if (object instanceof Element)

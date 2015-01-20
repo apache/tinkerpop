@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.process.graph;
 
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 
@@ -11,6 +13,13 @@ import java.util.Map;
  */
 public interface VertexTraversal extends ElementTraversal<Vertex> {
 
+    @Override
+    default GraphTraversal<Vertex, Vertex> start() {
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this.getClass());
+        return traversal.asAdmin().addStep(new StartStep<>(traversal, this));
+    }
+
+    @Override
     public default <E2> GraphTraversal<Vertex, VertexProperty<E2>> properties(final String... propertyKeys) {
         return (GraphTraversal) this.start().properties(propertyKeys);
     }
@@ -31,4 +40,5 @@ public interface VertexTraversal extends ElementTraversal<Vertex> {
     public default <E2> GraphTraversal<Vertex, E2> value() {
         return this.start().value();
     }
+
 }

@@ -41,7 +41,7 @@ import java.util.function.Function;
  */
 public class KryoReader implements GraphReader {
     private final Kryo kryo;
-    private final GremlinKryo.HeaderReader headerReader;
+    private final KryoMapper.HeaderReader headerReader;
 
     private final long batchSize;
     private final String vertexIdKey;
@@ -53,9 +53,9 @@ public class KryoReader implements GraphReader {
 
     private KryoReader(final File tempFile, final long batchSize,
                        final String vertexIdKey, final String edgeIdKey,
-                       final GremlinKryo gremlinKryo) {
-        this.kryo = gremlinKryo.createKryo();
-        this.headerReader = gremlinKryo.getHeaderReader();
+                       final KryoMapper kryoMapper) {
+        this.kryo = kryoMapper.createMapper();
+        this.headerReader = kryoMapper.getHeaderReader();
         this.vertexIdKey = vertexIdKey;
         this.edgeIdKey = edgeIdKey;
         this.tempFile = tempFile;
@@ -331,7 +331,7 @@ public class KryoReader implements GraphReader {
         /**
          * Always use the most recent kryo version by default
          */
-        private GremlinKryo gremlinKryo = GremlinKryo.build().create();
+        private KryoMapper kryoMapper = KryoMapper.build().create();
 
         private Builder() {
             this.tempFile = new File(UUID.randomUUID() + ".tmp");
@@ -347,10 +347,10 @@ public class KryoReader implements GraphReader {
         }
 
         /**
-         * Supply a custom {@link GremlinKryo} instance to use as the serializer for the {@code KryoWriter}.
+         * Supply a mapper {@link KryoMapper} instance to use as the serializer for the {@code KryoWriter}.
          */
-        public Builder custom(final GremlinKryo gremlinKryo) {
-            this.gremlinKryo = gremlinKryo;
+        public Builder mapper(final KryoMapper kryoMapper) {
+            this.kryoMapper = kryoMapper;
             return this;
         }
 
@@ -388,7 +388,7 @@ public class KryoReader implements GraphReader {
         }
 
         public KryoReader create() {
-            return new KryoReader(tempFile, batchSize, this.vertexIdKey, this.edgeIdKey, this.gremlinKryo);
+            return new KryoReader(tempFile, batchSize, this.vertexIdKey, this.edgeIdKey, this.kryoMapper);
         }
     }
 }

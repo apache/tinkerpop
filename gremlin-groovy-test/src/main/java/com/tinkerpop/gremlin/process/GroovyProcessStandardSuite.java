@@ -111,7 +111,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyTreeTest.StandardTest.class,
 
             // compliance
-            TraversalCoverageTest.class,
+            GraphTraversalCoverageTest.class,
             CoreTraversalTest.class,
     };
 

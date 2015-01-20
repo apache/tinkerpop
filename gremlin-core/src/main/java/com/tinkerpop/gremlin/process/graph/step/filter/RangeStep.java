@@ -2,11 +2,13 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Ranging;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Predicate;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -53,6 +55,11 @@ public final class RangeStep<S> extends FilterStep<S> implements Ranging {
         clone.counter = new AtomicLong(0l);
         RangeStep.generatePredicate(clone);
         return clone;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.BULK);
     }
 
     /////////////////////////////

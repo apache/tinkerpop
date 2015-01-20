@@ -133,7 +133,7 @@ public class LegacyGraphSONReader implements GraphReader {
         }
 
         /**
-         * Supply a custom module for serialization/deserialization.
+         * Supply a mapper module for serialization/deserialization.
          */
         public Builder addCustomModule(final SimpleModule custom) {
             this.customModules.add(custom);
@@ -158,11 +158,11 @@ public class LegacyGraphSONReader implements GraphReader {
         }
 
         public LegacyGraphSONReader create() {
-            final GraphSONObjectMapper.Builder builder = GraphSONObjectMapper.build();
+            final GraphSONMapper.Builder builder = GraphSONMapper.build();
             customModules.forEach(builder::addCustomModule);
-            final ObjectMapper mapper = builder.embedTypes(embedTypes)
+            final GraphSONMapper mapper = builder.embedTypes(embedTypes)
                     .loadCustomModules(loadCustomModules).create();
-            return new LegacyGraphSONReader(mapper, batchSize);
+            return new LegacyGraphSONReader(mapper.createMapper(), batchSize);
         }
     }
 

@@ -3,14 +3,15 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -33,7 +34,9 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -116,7 +119,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX() {
         Arrays.asList(
-                get_g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX()).forEach(traversal -> {
+                get_g_V_asXaX_name_order_asXbX_select_byXnameX_by()).forEach(traversal -> {
             printTraversalForm(traversal);
             final List<Map<String, String>> expected = makeMapList(2,
                     "a", "marko", "b", "marko",
@@ -129,6 +132,18 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @Test
+    @LoadGraphWith(CREW)
+    public void g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX();
+        printTraversalForm(traversal);
+        final List<Map<String, Object>> expected = makeMapList(2,
+                "a", 3, "b", "matthias",
+                "a", 4, "b", "marko",
+                "a", 5, "b", "stephen",
+                "a", 5, "b", "daniel");
+        checkResults(expected, traversal);
+    }
 
     public static class StandardTest extends SelectTest {
         public StandardTest() {
@@ -166,11 +181,14 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX() {
-            return g.V().as("a").values("name").order().as("b").<String>select().by("name").by(Function.identity());
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by() {
+            return g.V().as("a").values("name").order().as("b").<String>select().by("name").by();
         }
 
-
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
+            return g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.incr).as("a").outV().as("b").select().by("skill").by("name");
+        }
     }
 
     public static class ComputerTest extends SelectTest {
@@ -213,9 +231,15 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by() {
             // TODO: Micro elements do not store properties
-            return g.V().as("a").values("name").order().as("b").<String>select().by("name").by(Function.identity());
+            return g.V().as("a").values("name").order().as("b").<String>select().by("name").by();
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
+            // TODO: Micro elements do not store properties
+            return g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.incr).as("a").outV().as("b").select().by("skill").by("name");
         }
     }
 }

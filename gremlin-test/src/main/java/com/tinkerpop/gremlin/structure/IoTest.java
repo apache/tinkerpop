@@ -24,11 +24,12 @@ import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader;
-import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.VertexByteArrayInputStream;
@@ -179,7 +180,8 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldWriteNormalizedGraphSON() throws Exception {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            final GraphSONWriter w = g.io().graphSONWriter().normalize(true).create();
+            final GraphSONMapper mapper = g.io().graphSONMapper().normalize(true).create();
+            final GraphSONWriter w = g.io().graphSONWriter().mapper(mapper).create();
             w.writeGraph(bos, g);
 
             final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "tinkerpop-classic-normalized.json"));
@@ -244,9 +246,8 @@ public class IoTest extends AbstractGremlinTest {
         final SimpleModule module = new SimpleModule();
         module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
         module.addDeserializer(CustomId.class, new CustomId.CustomIdJacksonDeserializer());
-        final GraphWriter writer = g.io().graphSONWriter()
-                .addCustomModule(module)
-                .embedTypes(true).create();
+        final GraphWriter writer = g.io().graphSONWriter().mapper(
+                g.io().graphSONMapper().addCustomModule(module).embedTypes(true).create()).create();
 
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             writer.writeGraph(baos, g);
@@ -267,8 +268,7 @@ public class IoTest extends AbstractGremlinTest {
 
             try (final InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
                 final GraphReader reader = g.io().graphSONReader()
-                        .embedTypes(true)
-                        .addCustomModule(module).create();
+                        .mapper(g.io().graphSONMapper().embedTypes(true).addCustomModule(module).create()).create();
                 reader.readGraph(is, g2);
             }
 
@@ -288,10 +288,10 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
     public void shouldProperlySerializeCustomIdWithKryo() throws Exception {
         g.addVertex(T.id, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
-        final GremlinKryo kryo = GremlinKryo.build().addCustom(CustomId.class).create();
+        final KryoMapper kryo = KryoMapper.build().addCustom(CustomId.class).create();
 
-        final KryoWriter writer = KryoWriter.build().custom(kryo).create();
-        final KryoReader reader = KryoReader.build().custom(kryo).create();
+        final KryoWriter writer = KryoWriter.build().mapper(kryo).create();
+        final KryoReader reader = KryoReader.build().mapper(kryo).create();
 
         final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
         graphProvider.clear(configuration);
@@ -418,7 +418,7 @@ public class IoTest extends AbstractGremlinTest {
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final KryoReader reader = KryoReader.build()
-                    .custom(g.io().gremlinKryoSerializer())
+                    .mapper(g.io().kryoMapper().create())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readGraph(bais, g1);
@@ -811,11 +811,11 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, "acl", "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = g.io().graphSONWriter().embedTypes(true).create();
+            final GraphSONWriter writer = g.io().graphSONWriter().mapper(g.io().graphSONMapper().embedTypes(true).create()).create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = g.io().graphSONReader().embedTypes(true).create();
+            final GraphSONReader reader = g.io().graphSONReader().mapper(g.io().graphSONMapper().embedTypes(true).create()).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
@@ -847,11 +847,11 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friend", v2, "uuid", id);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = g.io().graphSONWriter().embedTypes(true).create();
+            final GraphSONWriter writer = g.io().graphSONWriter().mapper(g.io().graphSONMapper().embedTypes(true).create()).create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = g.io().graphSONReader().embedTypes(true).create();
+            final GraphSONReader reader = g.io().graphSONReader().mapper(g.io().graphSONMapper().embedTypes(true).create()).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), graphProvider.reconstituteGraphSONIdentifier(Edge.class, detachedEdge.id()));
@@ -1627,14 +1627,14 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = g.io().graphSONWriter().embedTypes(true).create();
+            final GraphSONWriter writer = g.io().graphSONWriter().mapper(g.io().graphSONMapper().embedTypes(true).create()).create();
             writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edge1Called = new AtomicBoolean(false);
             final AtomicBoolean edge2Called = new AtomicBoolean(false);
 
-            final GraphSONReader reader = g.io().graphSONReader().embedTypes(true).create();
+            final GraphSONReader reader = g.io().graphSONReader().mapper(g.io().graphSONMapper().embedTypes(true).create()).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.BOTH, detachedVertex -> {
                     assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedVertex.id()));

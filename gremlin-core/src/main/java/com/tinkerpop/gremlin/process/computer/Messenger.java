@@ -23,7 +23,7 @@ public interface Messenger<M> {
      * The currently executing vertex can send a message with provided {@link MessageScope}.
      *
      * @param messageScope the message scope of the message being sent
-     * @param message     the message to send
+     * @param message      the message to send
      */
     public void sendMessage(final MessageScope messageScope, final M message);
 

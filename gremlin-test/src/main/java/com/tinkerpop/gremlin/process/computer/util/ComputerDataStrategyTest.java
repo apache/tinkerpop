@@ -11,9 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -32,7 +30,7 @@ public class ComputerDataStrategyTest extends AbstractGremlinTest {
         assertFalse(props.hasNext());
 
         final Iterator<String> values = v.iterators().valueIterator();
-        assertEquals("Y",values.next());
+        assertEquals("Y", values.next());
         assertFalse(values.hasNext());
     }
 
@@ -48,7 +46,7 @@ public class ComputerDataStrategyTest extends AbstractGremlinTest {
         assertFalse(props.hasNext());
 
         final Iterator<String> values = v.iterators().valueIterator("***hidden-guy");
-        assertEquals("X",values.next());
+        assertEquals("X", values.next());
         assertFalse(values.hasNext());
     }
 

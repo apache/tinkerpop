@@ -54,7 +54,7 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasXageX_foldX0_plusX() {
+    public void g_V_age_foldX0_plusX() {
         final Traversal<Vertex, Integer> traversal = get_g_V_age_foldX0_plusX();
         printTraversalForm(traversal);
         final Integer ageSum = traversal.next();

@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.*;
 
 /**
@@ -37,6 +38,8 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_exceptXX();
 
     public abstract Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(final Object v1Id);
+
+    public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_exceptXaX_name(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -97,7 +100,6 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore
     @LoadGraphWith(MODERN)
     public void g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path() {
         Traversal<Vertex, Path> traversal = get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(convertToVertexId("marko"));
@@ -108,6 +110,14 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
         assertEquals(2, paths.stream().filter(path -> path.size() == 5).count());
         assertEquals(1, paths.stream().filter(path -> path.size() == 7).count());
         assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_asXaX_outXcreatedX_inXcreatedX_exceptXaX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_exceptXaX_name(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("peter", "josh"), traversal);
     }
 
     public static class StandardTest extends ExceptTest {
@@ -139,8 +149,12 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(final Object v1Id) {
-            return g.V(v1Id).repeat(g.of().bothE("created").except("e").aggregate("e").otherV()).emit().path();
-            //g.V(v1Id).as('x').bothE("created").except('e').aggregate('e').otherV.jump('x') { true } { true }.path
+            return g.V(v1Id).repeat(__.bothE("created").except("e").aggregate("e").otherV()).emit().path();
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_exceptXaX_name(final Object v1Id) {
+            return g.V(v1Id).as("a").out("created").in("created").except("a").values("name");
         }
     }
 
@@ -177,7 +191,12 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(final Object v1Id) {
-            return g.V(v1Id).repeat(g.of().bothE("created").except("e").aggregate("e").otherV()).emit().path().submit(g.compute());
+            return g.V(v1Id).repeat(__.bothE("created").except("e").aggregate("e").otherV()).emit().path().submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_exceptXaX_name(final Object v1Id) {
+            return g.V(v1Id).as("a").out("created").in("created").except("a").<String>values("name").submit(g.compute());
         }
     }
 }

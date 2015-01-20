@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.map
 
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
+import com.tinkerpop.gremlin.structure.Order
 import com.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -17,7 +18,8 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(final Object v1Id) {
+        public Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(
+                final Object v1Id) {
             g.V(v1Id).as('a').out('knows').as('b').select.by('name')
         }
 
@@ -43,8 +45,13 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX() {
-            g.V().as('a').name.order().as('b').select.by('name').by { it }
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by() {
+            g.V().as('a').name.order().as('b').select.by('name').by
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
+            g.V.has('name', 'gremlin').inE('uses').order.by('skill', Order.incr).as('a').outV.as('b').select.by('skill').by('name')
         }
     }
 
@@ -56,7 +63,8 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(final Object v1Id) {
+        public Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(
+                final Object v1Id) {
             g.V(v1Id).as('a').out('knows').as('b').select.by('name')
             // TODO
         }
@@ -84,8 +92,14 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX() {
-            g.V().as('a').name.order().as('b').select.by('name').by { it } // TODO: computer
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by() {
+            g.V().as('a').name.order().as('b').select.by('name').by // TODO: computer
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
+            g.V.has('name', 'gremlin').inE('uses').order.by('skill', Order.incr).as('a').outV.as('b').select.by('skill').by('name')
+            // TODO: computer
         }
     }
 }

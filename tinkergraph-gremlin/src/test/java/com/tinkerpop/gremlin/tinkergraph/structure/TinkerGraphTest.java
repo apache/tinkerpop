@@ -3,17 +3,20 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Operator;
+import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import com.tinkerpop.gremlin.structure.strategy.PartitionStrategy;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.io.FileUtils;
 import org.junit.BeforeClass;
@@ -25,8 +28,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -80,7 +87,7 @@ public class TinkerGraphTest {
         v7.addEdge("link", v9, "weight", 1f);
         v8.addEdge("link", v9, "weight", 7f);
 
-        v1.withSack(() -> Float.MIN_VALUE).repeat(g.of().outE().sack(Operator.max, "weight").inV()).until(5).sack().submit(g.compute()).forEachRemaining(System.out::println);
+        v1.withSack(() -> Float.MIN_VALUE).repeat(__.outE().sack(Operator.max, "weight").inV()).times(5).sack().submit(g.compute()).forEachRemaining(System.out::println);
     }
 
     @Test
@@ -94,9 +101,46 @@ public class TinkerGraphTest {
 
     @Test
     @Ignore
-    public void testPlay2() throws Exception {
-        Graph g = TinkerFactory.createClassic();
-        Traversal t = g.V(1).repeat(g.<Vertex>of().bothE("created").except("e").aggregate("e").otherV()).emit().path();
+    public void benchmarkStandardTraversals() throws Exception {
+        Graph g = TinkerGraph.open();
+        g.io().readGraphML("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
+        final List<Supplier<Traversal>> traversals = Arrays.asList(
+                () -> g.V().outE().inV().outE().inV().outE().inV(),
+                () -> g.V().out().out().out(),
+                () -> g.V().out().out().out().path(),
+                () -> g.V().repeat(__.out()).times(2),
+                () -> g.V().repeat(__.out()).times(3),
+                () -> g.V().map(v -> v.get().out().out().values("name").toList()),
+                () -> g.V().out().map(v -> v.get().out().out().values("name").toList())
+        );
+        traversals.forEach(traversal -> {
+            System.out.println("\nTESTING: " + traversal.get());
+            for (int i = 0; i < 7; i++) {
+                final long t = System.currentTimeMillis();
+                traversal.get().iterate();
+                System.out.print("   " + (System.currentTimeMillis() - t));
+            }
+        });
+    }
+
+    @Test
+    @Ignore
+    public void testPlay3() throws Exception {
+        Graph g = TinkerFactory.createModern();
+        g = g.strategy(PartitionStrategy.build().partitionKey("name").create());
+        GraphTraversal t = g.V().out();
+        System.out.println(t.toString());
+        t.iterate();
+        System.out.println(t.toString());
+
+    }
+
+    @Test
+    @Ignore
+    public void testPlay4() throws Exception {
+        Graph g = TinkerFactory.createModern();
+        Traversal t = g.V().order().by("name", Order.incr).dedup().values("name");
+
         System.out.println(t);
         t.forEachRemaining(System.out::println);
         System.out.println(t);
@@ -158,8 +202,17 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernVerticesAsKryo() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-vertices.gio");
-        final TinkerGraph g = TinkerFactory.createModern();
-        KryoWriter.build().create().writeVertices(os, g.V(), Direction.BOTH);
+        KryoWriter.build().create().writeVertices(os, TinkerFactory.createModern().V(), Direction.BOTH);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteModernVerticesAsGraphSON() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-vertices.ldjson");
+        GraphSONWriter.build().create().writeVertices(os, TinkerFactory.createModern().V(), Direction.BOTH);
         os.close();
     }
 
@@ -169,8 +222,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteCrewVerticesAsKryo() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-vertices.gio");
-        final TinkerGraph g = TinkerFactory.createTheCrew();
-        KryoWriter.build().create().writeVertices(os, g.V(), Direction.BOTH);
+        KryoWriter.build().create().writeVertices(os, TinkerFactory.createTheCrew().V(), Direction.BOTH);
         os.close();
     }
 
@@ -230,7 +282,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteClassicGraphNormalizedAsGraphSON() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-normalized.json");
-        GraphSONWriter.build().normalize(true).create().writeGraph(os, TinkerFactory.createClassic());
+        GraphSONWriter.build().mapper(GraphSONMapper.build().normalize(true).create()).create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
 
@@ -240,7 +292,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernGraphNormalizedAsGraphSON() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-normalized.json");
-        GraphSONWriter.build().normalize(true).create().writeGraph(os, TinkerFactory.createClassic());
+        GraphSONWriter.build().mapper(GraphSONMapper.build().normalize(true).create()).create().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
 
@@ -250,7 +302,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteClassicGraphAsGraphSONWithTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-typed.json");
-        GraphSONWriter.build().embedTypes(true)
+        GraphSONWriter.build().mapper(GraphSONMapper.build().embedTypes(true).create())
                 .create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
@@ -261,7 +313,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernGraphAsGraphSONWithTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-typed.json");
-        GraphSONWriter.build().embedTypes(true)
+        GraphSONWriter.build().mapper(GraphSONMapper.build().embedTypes(true).create())
                 .create().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
@@ -272,7 +324,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteCrewGraphAsGraphSONWithTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-typed.json");
-        GraphSONWriter.build().embedTypes(true)
+        GraphSONWriter.build().mapper(GraphSONMapper.build().embedTypes(true).create())
                 .create().writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
     }
@@ -556,7 +608,7 @@ public class TinkerGraphTest {
         os.close();
 
         final OutputStream os2 = new FileOutputStream(tempPath + "grateful-dead.json");
-        GraphSONWriter.build().embedTypes(true).create().writeGraph(os2, g);
+        GraphSONWriter.build().mapper(GraphSONMapper.build().embedTypes(true).create()).create().writeGraph(os2, g);
         os2.close();
 
         final OutputStream os3 = new FileOutputStream(tempPath + "grateful-dead.xml");

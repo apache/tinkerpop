@@ -266,11 +266,6 @@ public final class SequenceStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Supplier<GraphTraversal>> getGraphOfStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
-        return this.composeStrategyUnaryOperator(s -> s.getGraphOfStrategy(ctx, this));
-    }
-
-    @Override
     public <V> UnaryOperator<Supplier<V>> getVertexPropertyValueStrategy(final StrategyContext<StrategyVertexProperty<V>> ctx, final GraphStrategy composingStrategy) {
         return this.composeStrategyUnaryOperator(s -> s.getVertexPropertyValueStrategy(ctx, this));
     }

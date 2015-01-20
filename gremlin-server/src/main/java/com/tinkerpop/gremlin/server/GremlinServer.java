@@ -12,8 +12,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.FutureListener;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -24,7 +22,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -173,7 +170,7 @@ public class GremlinServer {
         }
 
         // channel is shutdown as are the thread pools - time to kill graphs as nothing else should be acting on them
-        graphs.ifPresent(gs -> gs.getGraphs().forEach((k,v) -> {
+        graphs.ifPresent(gs -> gs.getGraphs().forEach((k, v) -> {
             logger.debug("Closing Graph instance [{}]", k);
             try {
                 v.close();

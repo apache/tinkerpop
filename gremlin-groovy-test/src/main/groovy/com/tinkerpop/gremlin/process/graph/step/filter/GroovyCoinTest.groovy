@@ -26,12 +26,12 @@ public abstract class GroovyCoinTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX1X() {
-            ComputerTestHelper.compute("g.V.coin(1.0f)",g);
+            ComputerTestHelper.compute("g.V.coin(1.0f)", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX0X() {
-            ComputerTestHelper.compute("g.V.coin(0.0f)",g);
+            ComputerTestHelper.compute("g.V.coin(0.0f)", g);
         }
     }
 }

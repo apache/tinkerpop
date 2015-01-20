@@ -9,13 +9,13 @@ import java.io.Serializable;
 /**
  * A {@link Traverser} represents the current state of an object flowing through a {@link Traversal}.
  * A traverser maintains a reference to the current object, a traverser-local "sack", a traversal-global sideEffect, a bulk count, and a path history.
- *
+ * <p/>
  * Different types of traverser can exist depending on the semantics of the traversal and the desire for
  * space/time optimizations of the developer.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
+public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cloneable {
 
     /**
      * Get the object that the traverser is current at.
@@ -63,7 +63,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      *
      * @return The number of times the traverser has gone through a loop
      */
-    public short loops();
+    public int loops();
 
     /**
      * A traverser may represent a grouping of traversers to allow for more efficient data propagation.
@@ -73,13 +73,6 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
     public long bulk();
 
     /**
-     * Get the sideEffects associated with the traversal of the traverser.
-     *
-     * @return the traversal sideEffects of the traverser
-     */
-    public Traversal.SideEffects sideEffects();
-
-    /**
      * Get a particular value from the sideEffects of the traverser.
      *
      * @param sideEffectKey the key of the value to get from the sideEffects
@@ -87,7 +80,17 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      * @return the object in the sideEffects of the respective key
      */
     public default <A> A sideEffects(final String sideEffectKey) {
-        return this.sideEffects().get(sideEffectKey);
+        return this.asAdmin().getSideEffects().get(sideEffectKey);
+    }
+
+    /**
+     * Set a particular value in the sideEffects of the traverser.
+     *
+     * @param sideEffectKey   the key of the value to set int the sideEffects
+     * @param sideEffectValue the value to set for the sideEffect key
+     */
+    public default void sideEffects(final String sideEffectKey, final Object sideEffectValue) {
+        this.asAdmin().getSideEffects().set(sideEffectKey, sideEffectValue);
     }
 
     /**
@@ -107,8 +110,9 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
     }
 
     /**
-     * Typecast the traverser to a "system traverser" so {@link com.tinkerpop.gremlin.process.Traverser.Admin} methods can be accessed.
-     * Used as a helper method to avoid the awkwardness of <code>((Traverser.Administrative)traverser)</code>.
+     * Typecast the traverser to a "system traverser" so {@link Traverser.Admin} methods can be accessed.
+     * This is used as a helper method to avoid the awkwardness of <code>((Traverser.Administrative)traverser)</code>.
+     * The default implementation simply returns "this" type casted to {@link Traverser.Admin}.
      *
      * @return The type-casted traverser
      */
@@ -117,12 +121,17 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
     }
 
     /**
+     * Traverser cloning is important when splitting a traverser at a bifurcation point in a traversal.
+     */
+    public Traverser<T> clone() throws CloneNotSupportedException;
+
+    /**
      * The methods in System.Traverser are useful to underlying Step and Traversal implementations.
      * They should not be accessed by the user during lambda-based manipulations.
      */
     public interface Admin<T> extends Traverser<T>, Attachable<Admin<T>> {
 
-        public static final String HALT = Graph.Hidden.hide("halt");
+        public static final String HALT = "halt";
 
         /**
          * When two traversers are {@link Traverser#equals} to each other, then they can be merged.
@@ -138,12 +147,12 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          * The child has the path history, future, and loop information of the parent.
          * The child extends that path history with the current as and provided R-object.
          *
-         * @param label The current label of the child
-         * @param r     The current object of the child
-         * @param <R>   The current object type of the child
+         * @param r    The current object of the child
+         * @param step The step yielding the split
+         * @param <R>  The current object type of the child
          * @return The split traverser
          */
-        public <R> Admin<R> split(final String label, final R r);
+        public <R> Admin<R> split(final R r, final Step<T, R> step);
 
         /**
          * Generate a sibling traverser of the current traverser with a full copy of all state within the sibling.
@@ -151,7 +160,6 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          * @return The split traverser
          */
         public Admin<T> split();
-
 
         /**
          * Set the current object location of the traverser.
@@ -162,31 +170,47 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
 
         /**
          * Increment the number of times the traverser has gone through a looping section of traversal.
+         * The step label is important to create a stack of loop counters when within a nested context.
+         * If the provided label is not the same as the current label on the stack, add a new loop counter.
+         * If the provided label is the same as the current label on the stack, increment the loop counter.
+         *
+         * @param stepLabel the label of the step that is doing the incrementing
          */
-        public void incrLoops();
+        public void incrLoops(final String stepLabel);
 
         /**
          * Set the number of times the traverser has gone through a loop back to 0.
          * When a traverser exits a looping construct, this method should be called.
+         * In a nested loop context, the highest stack loop counter should be removed.
          */
         public void resetLoops();
 
         /**
-         * Return the future step of the traverser as signified by the steps as-label.
+         * Get the step id of where the traverser is located.
          * This is typically used in multi-machine systems that require the movement of
          * traversers between different traversal instances.
          *
          * @return The future step for the traverser
          */
-        public String getFuture();
+        public String getStepId();
 
         /**
-         * Set the future of the traverser as signified by the step's label.
+         * Set the step id of where the traverser is located.
          * If the future is {@link Traverser.Admin#HALT}, then {@link Traverser.Admin#isHalted()} is true.
          *
-         * @param label The future labeled step of the traverser
+         * @param stepId The future labeled step of the traverser
          */
-        public void setFuture(final String label);
+        public void setStepId(final String stepId);
+
+        /**
+         * If the traverser has "no future" then it is done with its lifecycle.
+         * This does not mean that the traverser is "dead," only that it has successfully passed through a {@link Traversal}.
+         *
+         * @return Whether the traverser is done executing or not
+         */
+        public default boolean isHalted() {
+            return getStepId().equals(HALT);
+        }
 
         /**
          * Set the number of traversers represented by this traverser.
@@ -194,22 +218,6 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          * @param count the number of traversers
          */
         public void setBulk(final long count);
-
-        /**
-         * If the traverser has "no future" then it is done with its lifecycle.
-         * This does not mean that the traverser is "dead," only that it has successfully passed through the {@link Traversal}.
-         *
-         * @return Whether the traverser is done executing or not
-         */
-        public default boolean isHalted() {
-            return getFuture().equals(HALT);
-        }
-
-        /*
-          A helper that sets the future of the traverser to {@link Traverser.Admin#HALT}.
-        public default void halt() {
-            this.setFuture(HALT);
-        } */
 
         /**
          * Prepare the traverser for migration across a JVM boundary.
@@ -236,7 +244,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          */
         @Override
         public default Admin<T> attach(final Graph graph) throws UnsupportedOperationException {
-            throw new UnsupportedOperationException("A traverser can only exist a vertices, not the graph");
+            throw new UnsupportedOperationException("A traverser can only exist at the vertices of the graph, not the graph itself");
         }
 
         /**
@@ -245,7 +253,13 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          *
          * @param sideEffects the sideEffects of the traversal.
          */
-        public void setSideEffects(final Traversal.SideEffects sideEffects);
+        public void setSideEffects(final TraversalSideEffects sideEffects);
 
+        /**
+         * Get the sideEffects associated with the traversal of the traverser.
+         *
+         * @return the traversal sideEffects of the traverser
+         */
+        public TraversalSideEffects getSideEffects();
     }
 }

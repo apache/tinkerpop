@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.hadoop.structure;
 
-import com.tinkerpop.gremlin.hadoop.process.graph.util.DefaultHadoopElementTraversal;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -23,11 +21,6 @@ public class HadoopVertexProperty<V> implements VertexProperty<V>, VertexPropert
     public HadoopVertexProperty(final VertexProperty<V> baseVertexProperty, final HadoopVertex hadoopVertex) {
         this.baseVertexProperty = baseVertexProperty;
         this.hadoopVertex = hadoopVertex;
-    }
-
-    @Override
-    public GraphTraversal<VertexProperty, VertexProperty> start() {
-        return new DefaultHadoopElementTraversal<>(this, this.hadoopVertex.graph);
     }
 
     @Override
@@ -97,6 +90,6 @@ public class HadoopVertexProperty<V> implements VertexProperty<V>, VertexPropert
 
     @Override
     public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
-        return IteratorUtils.<Property<U>,Property<U>>map(this.getBaseVertexProperty().iterators().propertyIterator(propertyKeys), property -> new HadoopProperty<>(property, HadoopVertexProperty.this));
+        return IteratorUtils.<Property<U>, Property<U>>map(this.getBaseVertexProperty().iterators().propertyIterator(propertyKeys), property -> new HadoopProperty<>(property, HadoopVertexProperty.this));
     }
 }

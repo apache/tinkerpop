@@ -51,9 +51,9 @@ class Host {
         // only do a connection re-attempt if one is not already in progress
         reconnectionAttempt.compareAndSet(null,
                 this.cluster.executor().scheduleAtFixedRate(() -> {
-                    logger.debug("Trying to reconnect to dead host at {}", this);
-                    if (reconnect.apply(this)) reconnected();
-                }, cluster.connectionPoolSettings().reconnectInitialDelay,
+                            logger.debug("Trying to reconnect to dead host at {}", this);
+                            if (reconnect.apply(this)) reconnected();
+                        }, cluster.connectionPoolSettings().reconnectInitialDelay,
                         cluster.connectionPoolSettings().reconnectInterval, TimeUnit.MILLISECONDS));
     }
 

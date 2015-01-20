@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.hadoop.structure.util;
 
-import com.tinkerpop.gremlin.hadoop.Constants;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 

@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
-import com.tinkerpop.gremlin.process.traverser.SimpleTraverser;
+import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
@@ -67,9 +67,9 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
         Object mutatingSeed = this.reducer.get().getValue0().get();
         final BiFunction function = this.reducer.get().getValue1();
         while (values.hasNext()) {
-            mutatingSeed = function.apply(mutatingSeed, ((Traverser)values.next()).get());
+            mutatingSeed = function.apply(mutatingSeed, ((Traverser) values.next()).get());
         }
-        emitter.emit(key, new SimpleTraverser(mutatingSeed, EmptyStep.instance()));
+        emitter.emit(key, new B_O_PA_S_SE_SL_Traverser(mutatingSeed, EmptyStep.instance()));
     }
 
     @Override

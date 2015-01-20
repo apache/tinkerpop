@@ -105,8 +105,8 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
             final Map<String, Object> responseData = obtainMapper().readValue(payload, mapTypeReference);
-            final Map<String, Object> status = (Map<String,Object>) responseData.get(SerTokens.TOKEN_STATUS);
-            final Map<String, Object> result = (Map<String,Object>) responseData.get(SerTokens.TOKEN_RESULT);
+            final Map<String, Object> status = (Map<String, Object>) responseData.get(SerTokens.TOKEN_STATUS);
+            final Map<String, Object> result = (Map<String, Object>) responseData.get(SerTokens.TOKEN_RESULT);
             return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                     .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
                     .statusMessage(status.get(SerTokens.TOKEN_MESSAGE).toString())

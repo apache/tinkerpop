@@ -13,7 +13,7 @@ import java.io.OutputStream;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class DefaultIo implements Graph.Io {
+public class DefaultIo implements Graph.Io {
     private final Graph g;
 
     public DefaultIo(final Graph g) {

@@ -1,12 +1,10 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyElementTraversal;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -104,11 +102,6 @@ public class StrategyVertex extends StrategyElement implements Vertex, StrategyW
         return new StrategyVertexProperty<>(this.strategyGraph.compose(
                 s -> s.<V>getVertexGetPropertyStrategy(this.strategyContext, strategy),
                 this.getBaseVertex()::property).apply(key), this.strategyGraph);
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> start() {
-        return new StrategyElementTraversal<>(this, strategyGraph);
     }
 
     @Override

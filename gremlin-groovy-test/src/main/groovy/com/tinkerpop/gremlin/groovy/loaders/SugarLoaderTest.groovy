@@ -5,14 +5,13 @@ import com.tinkerpop.gremlin.LoadGraphWith
 import com.tinkerpop.gremlin.groovy.util.SugarTestHelper
 import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.Vertex
+import org.junit.Test
 
 /*import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex*/
-import org.junit.Test
-
 import static org.junit.Assert.*
 
 /**

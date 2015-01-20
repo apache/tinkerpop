@@ -24,7 +24,7 @@ describeGraph = { Class<? extends com.tinkerpop.gremlin.structure.Graph> c ->
     def testsOptedOut = optOuts != null && optOuts.size() > 0 ? optOuts.collect {
         "> " + it.test() + "#" + it.method() + "${lf}\t\"" + it.reason() + "\""
     }.join(lf) : "> none"
-"""
+    """
 IMPLEMENTATION - ${c.getCanonicalName()}
 TINKERPOP TEST SUITE
 - Compliant with ($optInCount of 8 suites)

@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -10,7 +11,6 @@ import org.junit.Test;
 import java.util.NoSuchElementException;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -187,6 +187,12 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
         assertEquals(eAtoAA.id(), g.V(vA.id()).outE().next().id());
         assertEquals(new Long(1), g.V(vA.id()).out().count().next());
         assertEquals(vAA.id(), g.V(vA.id()).out().next().id());
+
+        final Vertex vA1 = g.V(vA.id()).next();
+        assertEquals(new Long(1), vA1.outE().count().next());
+        assertEquals(eAtoAA.id(), vA1.outE().next().id());
+        assertEquals(new Long(1), vA1.out().count().next());
+        assertEquals(vAA.id(), vA1.out().next().id());
 
         strategy.addReadPartition("B");
         assertEquals(new Long(3), g.V().count().next());

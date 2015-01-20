@@ -17,11 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -239,14 +235,6 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         final Vertex v = g.addVertex();
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
         detachedVertex.remove();
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldNotTraverse() {
-        final Vertex v = g.addVertex();
-        final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
-        detachedVertex.start();
     }
 
     @Test(expected = IllegalStateException.class)

@@ -91,18 +91,20 @@ public class TinkerHelper {
         return element.properties;
     }
 
-    public static Iterator<TinkerEdge> getEdges(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {
+    public static final Iterator<TinkerEdge> getEdges(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {
         Stream<Edge> edgeStream = null;
         if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
-            edgeStream = vertex.outEdges.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), edgeLabels)).flatMap(entry -> entry.getValue().stream());
+            edgeStream = (edgeLabels.length == 0 ? vertex.outEdges.keySet().stream() : Stream.of(edgeLabels)).filter(label -> !Graph.Hidden.isHidden(label)).map(vertex.outEdges::get).filter(edges -> null != edges).flatMap(list -> list.stream());
         if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
-            edgeStream = Stream.concat(null == edgeStream ? Stream.empty() : edgeStream, vertex.inEdges.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), edgeLabels)).flatMap(entry -> entry.getValue().stream()));
+            edgeStream = Stream.concat(null == edgeStream ? Stream.empty() : edgeStream, (edgeLabels.length == 0 ? vertex.inEdges.keySet().stream() : Stream.of(edgeLabels)).filter(label -> !Graph.Hidden.isHidden(label)).map(vertex.inEdges::get).filter(edges -> null != edges).flatMap(list -> list.stream()));
         return (Iterator) edgeStream.collect(Collectors.toList()).iterator();
+
+
     }
 
-    public static Iterator<TinkerVertex> getVertices(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {
+    public static final Iterator<TinkerVertex> getVertices(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {
         if (direction != Direction.BOTH) {
-            return IteratorUtils.map(TinkerHelper.getEdges(vertex, direction, edgeLabels), edge -> (TinkerVertex) (direction.equals(Direction.IN) ? edge.outVertex : edge.inVertex));
+            return IteratorUtils.map(TinkerHelper.getEdges(vertex, direction, edgeLabels), direction.equals(Direction.IN) ? edge -> (TinkerVertex) edge.outVertex : edge -> (TinkerVertex) edge.inVertex);
         } else {
             return IteratorUtils.<TinkerVertex>concat(
                     IteratorUtils.map(TinkerHelper.getEdges(vertex, Direction.OUT, edgeLabels), edge -> (TinkerVertex) edge.inVertex),

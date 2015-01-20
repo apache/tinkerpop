@@ -9,14 +9,12 @@ import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.config.YamlConfiguration;
 import groovy.lang.Closure;
 import groovy.lang.Script;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 import org.kohsuke.groovy.sandbox.GroovyValueFilter;
@@ -35,12 +33,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -554,7 +547,9 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
     }
 
     public static class DenyAll extends GroovyValueFilter {
-        public Object filter(final Object o) { throw new SecurityException("Denied!"); }
+        public Object filter(final Object o) {
+            throw new SecurityException("Denied!");
+        }
     }
 
     public static class AllowSome extends GroovyValueFilter {

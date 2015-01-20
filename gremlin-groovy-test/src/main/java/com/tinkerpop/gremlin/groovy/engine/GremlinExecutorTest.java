@@ -24,10 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -286,7 +283,7 @@ public class GremlinExecutorTest {
     @Test
     public void shouldSecureAll() throws Exception {
         GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
-        final Map<String,Object> config = new HashMap<>();
+        final Map<String, Object> config = new HashMap<>();
         config.put("sandbox", GremlinGroovyScriptEngineTest.DenyAll.class.getName());
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",
@@ -308,7 +305,7 @@ public class GremlinExecutorTest {
     @Test
     public void shouldSecureSome() throws Exception {
         GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
-        final Map<String,Object> config = new HashMap<>();
+        final Map<String, Object> config = new HashMap<>();
         config.put("sandbox", GremlinGroovyScriptEngineTest.AllowSome.class.getName());
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",

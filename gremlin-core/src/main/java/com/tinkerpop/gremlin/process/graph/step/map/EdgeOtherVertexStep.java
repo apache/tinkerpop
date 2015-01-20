@@ -1,18 +1,20 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EdgeOtherVertexStep extends MapStep<Edge, Vertex> implements PathConsumer {
+public final class EdgeOtherVertexStep extends MapStep<Edge, Vertex> {
 
     public EdgeOtherVertexStep(final Traversal traversal) {
         super(traversal);
@@ -27,5 +29,10 @@ public final class EdgeOtherVertexStep extends MapStep<Edge, Vertex> implements 
             }
             throw new IllegalStateException("The path history of the traverser does not contain a previous vertex: " + traverser.path());
         });
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.PATH);
     }
 }

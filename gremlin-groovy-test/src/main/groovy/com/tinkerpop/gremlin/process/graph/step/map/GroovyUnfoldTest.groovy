@@ -27,12 +27,12 @@ class GroovyUnfoldTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {
-            ComputerTestHelper.compute("g.V.map { it.outE }.unfold",g)
+            ComputerTestHelper.compute("g.V.map { it.outE }.unfold", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX() {
-            ComputerTestHelper.compute("g.V.valueMap.unfold.map { it.key }",g)
+            ComputerTestHelper.compute("g.V.valueMap.unfold.map { it.key }", g)
         }
     }
 

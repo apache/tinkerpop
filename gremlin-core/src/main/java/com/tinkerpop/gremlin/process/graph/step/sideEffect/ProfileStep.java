@@ -21,7 +21,6 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffec
 
     public ProfileStep(final Traversal traversal) {
         super(traversal);
-        TraversalHelper.verifySideEffectKeyIsNotAStepLabel(TraversalMetrics.METRICS_KEY, this.traversal);
         this.name = null;
     }
 
@@ -49,15 +48,15 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffec
         StandardTraversalMetrics traversalMetrics = getTraversalMetricsUtil();
 
         Traverser<?> ret = null;
-        traversalMetrics.start(this.getLabel());
+        traversalMetrics.start(this.getId());
         try {
             ret = super.next();
             return ret;
         } finally {
             if (ret != null)
-                traversalMetrics.finish(this.getLabel(), ret.asAdmin().bulk());
+                traversalMetrics.finish(this.getId(), ret.asAdmin().bulk());
             else
-                traversalMetrics.stop(this.getLabel());
+                traversalMetrics.stop(this.getId());
         }
     }
 
@@ -66,15 +65,15 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffec
         // Wrap SideEffectStep's hasNext() with timer.
         StandardTraversalMetrics traversalMetrics = getTraversalMetricsUtil();
 
-        traversalMetrics.start(this.getLabel());
+        traversalMetrics.start(this.getId());
         boolean ret = super.hasNext();
-        traversalMetrics.stop(this.getLabel());
+        traversalMetrics.stop(this.getId());
         return ret;
     }
 
     private StandardTraversalMetrics getTraversalMetricsUtil() {
         StandardTraversalMetrics traversalMetrics = this.getTraversal().asAdmin().getSideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, StandardTraversalMetrics::new);
-        traversalMetrics.initializeIfNecessary(this.getLabel(), this.traversal.asAdmin().getSteps().indexOf(this), name);
+        traversalMetrics.initializeIfNecessary(this.getId(), this.traversal.asAdmin().getSteps().indexOf(this), name);
         return traversalMetrics;
     }
 

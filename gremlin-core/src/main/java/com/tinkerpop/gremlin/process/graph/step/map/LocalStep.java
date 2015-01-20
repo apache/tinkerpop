@@ -2,24 +2,31 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
+import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LocalStep<S, E> extends FlatMapStep<S, E> implements PathConsumer, TraversalHolder<S, E> {
+public final class LocalStep<S, E> extends FlatMapStep<S, E> implements TraversalHolder<S, E>, EngineDependent {
+
+    private static final Child[] CHILD_OPERATIONS = new Child[]{Child.SET_HOLDER, Child.SET_STRATEGIES}; // TODO: Nest.SET/MERGE_SIDE_EFFECTS?
 
     private Traversal<S, E> localTraversal;
+    private boolean onGraphComputer = false;
 
     public LocalStep(final Traversal traversal, final Traversal<S, E> localTraversal) {
         super(traversal);
         this.localTraversal = localTraversal;
+        this.executeTraversalOperations(CHILD_OPERATIONS);
         LocalStep.generateFunction(this);
     }
 
@@ -27,8 +34,14 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements PathCons
     public LocalStep<S, E> clone() throws CloneNotSupportedException {
         final LocalStep<S, E> clone = (LocalStep<S, E>) super.clone();
         clone.localTraversal = this.localTraversal.clone();
+        clone.executeTraversalOperations(CHILD_OPERATIONS);
         LocalStep.generateFunction(clone);
         return clone;
+    }
+
+    @Override
+    public void onEngine(final TraversalEngine engine) {
+        this.onGraphComputer = engine.equals(TraversalEngine.COMPUTER);
     }
 
     @Override
@@ -37,23 +50,31 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements PathCons
     }
 
     @Override
-    public Collection<Traversal<S, E>> getTraversals() {
+    public List<Traversal<S, E>> getTraversals() {
         return Collections.singletonList(this.localTraversal);
     }
 
     @Override
-    public boolean requiresPaths() {
-        return TraversalHelper.trackPaths(this.localTraversal);
+    public Set<TraverserRequirement> getRequirements() {
+        return this.getTraversalRequirements();
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.resetTraversals();
     }
 
     ////////////////
 
     private static final <S, E> void generateFunction(final LocalStep<S, E> localStep) {
         localStep.setFunction(traverser -> {
-            // TODO: traverser.asAdmin().mergeSideEffects(localStep.localTraversal.sideEffects());
+            final Traverser<S> localSplit = traverser.asAdmin().split();
             localStep.localTraversal.asAdmin().reset();
-            TraversalHelper.getStart(localStep.localTraversal).addStart(traverser);
-            return localStep.localTraversal;
+            localSplit.asAdmin().setSideEffects(localStep.localTraversal.asAdmin().getSideEffects()); // set to the local traversals sideEffects
+            localStep.localTraversal.asAdmin().addStart(localSplit);
+            return localStep.onGraphComputer ? localStep.localTraversal.toList().iterator() : localStep.localTraversal;
+            // TODO: This sucks. Why do I need to create a list on GraphComputer?
         });
     }
 

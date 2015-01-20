@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.filter
 
-import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader
-import com.tinkerpop.gremlin.groovy.loaders.SugarLoader
+import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
@@ -19,8 +18,8 @@ public abstract class GroovyDedupTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_both_dedup_byXlangX_name() {
-            g.V.both.dedup.by { it.property('lang').orElse(null) }.name
+        public Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
+            g.V.both.has(T.label, 'software').dedup.by('lang').name
         }
 
         @Override
@@ -36,8 +35,8 @@ public abstract class GroovyDedupTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_both_dedup_byXlangX_name() {
-            ComputerTestHelper.compute("g.V.both.dedup.by{it.property('lang').orElse(null)}.name", g);
+        public Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
+            ComputerTestHelper.compute("g.V.both.has(T.label,'software').dedup.by('lang').name", g);
         }
 
         @Override

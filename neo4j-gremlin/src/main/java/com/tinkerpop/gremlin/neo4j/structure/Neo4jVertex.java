@@ -25,9 +25,9 @@ import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 
 /**
@@ -176,7 +176,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
 
     @Override
     public Neo4jGraphTraversal<Vertex, Vertex> start() {
-        final Neo4jGraphTraversal<Vertex, Vertex> traversal = new DefaultNeo4jGraphTraversal<>(this.graph);
+        final Neo4jGraphTraversal<Vertex, Vertex> traversal = new DefaultNeo4jGraphTraversal<>(this.getClass(), this.graph);
         return traversal.addStep(new StartStep<>(traversal, this));
     }
 
@@ -194,13 +194,12 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     /////////////// Neo4jVertex Specific Methods for Multi-Label Support ///////////////
     public Set<String> labels() {
         this.graph.tx().readWrite();
-        // TODO: make an immutable set
-        final Set<String> set = new HashSet<>();
+        final Set<String> labels = new TreeSet<>();
         final Iterator<String> itty = IteratorUtils.map(this.getBaseVertex().getLabels().iterator(), Label::name);
         while (itty.hasNext()) {
-            set.add(itty.next());
+            labels.add(itty.next());
         }
-        return Collections.unmodifiableSet(set);
+        return Collections.unmodifiableSet(labels);
     }
 
     public void addLabel(final String label) {

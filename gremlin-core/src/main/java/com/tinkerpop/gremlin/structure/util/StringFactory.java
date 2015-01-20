@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure.util;
 
-import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -89,7 +89,7 @@ public class StringFactory {
     /**
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Graph}.
      *
-     * @param internalString a custom {@link String} that appends to the end of the standard representation
+     * @param internalString a mapper {@link String} that appends to the end of the standard representation
      */
     public static String graphString(final Graph graph, final String internalString) {
         return graph.getClass().getSimpleName().toLowerCase() + L_BRACKET + internalString + R_BRACKET;
@@ -152,7 +152,7 @@ public class StringFactory {
         return sb.toString();
     }
 
-    public static String traversalSideEffectsString(final Traversal.SideEffects traversalSideEffects) {
+    public static String traversalSideEffectsString(final TraversalSideEffects traversalSideEffects) {
         return "sideEffects" + L_BRACKET + "size:" + traversalSideEffects.keys().size() + R_BRACKET;
     }
 

@@ -55,7 +55,7 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
 
     /**
      * Gets the {@link VertexProperty.Iterators} set.
-     *
+     * <p/>
      * {@inheritDoc}
      */
     @Override

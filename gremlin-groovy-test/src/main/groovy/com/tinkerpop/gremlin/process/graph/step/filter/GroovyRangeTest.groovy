@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
 
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -18,7 +20,7 @@ public abstract class GroovyRangeTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_localXoutE_limitX1X_inVX_limitX3X() {
-            g.V.local(g.of().outE.limit(3)).inV.limit(3)
+            g.V.local(__.outE.limit(3)).inV.limit(3)
         }
 
         @Override
@@ -42,8 +44,8 @@ public abstract class GroovyRangeTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_untilX3X_rangeX5_11X() {
-            g.V().repeat(g.of().both).until(3)[5..11];
+        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X() {
+            g.V().repeat(__.both).times(3)[5..11];
         }
     }
 
@@ -56,7 +58,7 @@ public abstract class GroovyRangeTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_localXoutE_limitX1X_inVX_limitX3X() {
-            ComputerTestHelper.compute("g.V.local(g.of().outE.limit(3)).inV.limit(3)", g);
+            ComputerTestHelper.compute("g.V.local(__.outE.limit(3)).inV.limit(3)", g);
         }
 
         @Override
@@ -80,8 +82,8 @@ public abstract class GroovyRangeTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_untilX3X_rangeX5_11X() {
-            ComputerTestHelper.compute("g.V().repeat(g.of().both).until(3)[5..11]", g);
+        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X() {
+            ComputerTestHelper.compute("g.V().repeat(__.both).times(3)[5..11]", g);
         }
     }
 }

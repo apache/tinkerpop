@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.ReferenceCountUtil;
@@ -31,11 +31,11 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class KryoMessageSerializerV1d0 implements MessageSerializer {
-    private GremlinKryo gremlinKryo;
+    private KryoMapper kryoMapper;
     private ThreadLocal<Kryo> kryoThreadLocal = new ThreadLocal<Kryo>() {
         @Override
         protected Kryo initialValue() {
-            return gremlinKryo.createKryo();
+            return kryoMapper.createMapper();
         }
     };
 
@@ -51,32 +51,32 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
     private boolean serializeToString;
 
     /**
-     * Creates an instance with a standard {@link GremlinKryo} instance. Note that this instance
+     * Creates an instance with a standard {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} instance. Note that this instance
      * will be overriden by {@link #configure} is called.
      */
     public KryoMessageSerializerV1d0() {
-        gremlinKryo = GremlinKryo.build(GremlinKryo.Version.V_1_0_0).create();
+        kryoMapper = KryoMapper.build(KryoMapper.Version.V_1_0_0).create();
     }
 
     /**
-     * Creates an instance with a provided custom configured {@link GremlinKryo} instance. Note that this instance
+     * Creates an instance with a provided mapper configured {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} instance. Note that this instance
      * will be overriden by {@link #configure} is called.
      */
-    public KryoMessageSerializerV1d0(final GremlinKryo kryo) {
-        this.gremlinKryo = kryo;
+    public KryoMessageSerializerV1d0(final KryoMapper kryo) {
+        this.kryoMapper = kryo;
     }
 
     @Override
     public void configure(final Map<String, Object> config) {
         final byte extendedVersion;
         try {
-            extendedVersion = Byte.parseByte(config.getOrDefault(TOKEN_EXTENDED_VERSION, GremlinKryo.DEFAULT_EXTENDED_VERSION).toString());
+            extendedVersion = Byte.parseByte(config.getOrDefault(TOKEN_EXTENDED_VERSION, KryoMapper.DEFAULT_EXTENDED_VERSION).toString());
         } catch (Exception ex) {
             throw new IllegalStateException(String.format("Invalid configuration value of [%s] for [%s] setting on %s serialization configuration",
                     config.getOrDefault(TOKEN_EXTENDED_VERSION, ""), TOKEN_EXTENDED_VERSION, this.getClass().getName()), ex);
         }
 
-        final GremlinKryo.Builder builder = GremlinKryo.build(GremlinKryo.Version.V_1_0_0).extendedVersion(extendedVersion);
+        final KryoMapper.Builder builder = KryoMapper.build(KryoMapper.Version.V_1_0_0).extendedVersion(extendedVersion);
 
         final List<String> classNameList;
         try {
@@ -87,7 +87,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
         }
 
         if (!classNameList.isEmpty()) {
-            final List<Pair<Class, Function<Kryo,Serializer>>> classList = classNameList.stream().map(serializerDefinition -> {
+            final List<Pair<Class, Function<Kryo, Serializer>>> classList = classNameList.stream().map(serializerDefinition -> {
                 String className;
                 Optional<String> serializerName;
                 if (serializerDefinition.contains(";")) {
@@ -111,7 +111,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                     } else
                         serializer = null;
 
-                    return Pair.<Class, Function<Kryo,Serializer>>with(clazz, kryo -> serializer);
+                    return Pair.<Class, Function<Kryo, Serializer>>with(clazz, kryo -> serializer);
                 } catch (Exception ex) {
                     throw new IllegalStateException("Class could not be found", ex);
                 }
@@ -122,7 +122,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
 
         this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());
 
-        this.gremlinKryo = builder.create();
+        this.kryoMapper = builder.create();
     }
 
     @Override
@@ -138,12 +138,12 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
                 final Map<String, Object> responseData = (Map<String, Object>) kryo.readClassAndObject(input);
-                final Map<String, Object> status = (Map<String,Object>) responseData.get(SerTokens.TOKEN_STATUS);
-                final Map<String, Object> result = (Map<String,Object>) responseData.get(SerTokens.TOKEN_RESULT);
+                final Map<String, Object> status = (Map<String, Object>) responseData.get(SerTokens.TOKEN_STATUS);
+                final Map<String, Object> result = (Map<String, Object>) responseData.get(SerTokens.TOKEN_RESULT);
                 return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                         .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
                         .statusMessage(Optional.ofNullable((String) status.get(SerTokens.TOKEN_MESSAGE)).orElse(""))
-                        .statusAttributes((Map<String,Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
+                        .statusAttributes((Map<String, Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
                         .result(result.get(SerTokens.TOKEN_DATA))
                         .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))
                         .create();

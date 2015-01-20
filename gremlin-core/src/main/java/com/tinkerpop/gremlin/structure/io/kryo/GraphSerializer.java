@@ -5,16 +5,17 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 
 /**
  * Class used to serialize graph-based objects such as vertices, edges, properties, and paths.
@@ -121,4 +122,25 @@ class GraphSerializer {
         }
 
     }
+
+    /**
+     * Serializes any {@link Traverser} implementation encountered via pre-processing with {@link Traverser.Admin#detach()}.
+     *
+     * @author Marko A. Rodriguez (http://markorodriguez.com)
+     */
+    /*static class TraverserSerializer extends Serializer<Traverser.Admin> {
+        public TraverserSerializer() {
+        }
+
+        @Override
+        public void write(final Kryo kryo, final Output output, final Traverser.Admin traverser) {
+            kryo.writeClassAndObject(output, traverser.asAdmin().detach());
+        }
+
+        @Override
+        public Traverser.Admin read(final Kryo kryo, final Input input, final Class<Traverser.Admin> traverser) {
+            return (Traverser.Admin) kryo.readClassAndObject(input);
+        }
+
+    }*/
 }

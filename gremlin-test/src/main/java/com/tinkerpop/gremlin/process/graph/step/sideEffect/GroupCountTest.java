@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -21,22 +22,25 @@ import static org.junit.Assert.assertFalse;
  */
 public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCount_byXnameX();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX();
 
-    public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount();
 
-    public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCountXaX();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX();
 
     public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_filterXfalseX_groupCount();
 
-    public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_untilX2X_capXaX();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX();
+
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX();
+
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_groupCount_byXnameX() {
-        final Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_outXcreatedX_groupCount_byXnameX();
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_outXcreatedX_groupCount_byXnameX();
         printTraversalForm(traversal);
-        final Map<Object, Long> map = traversal.next();
+        final Map<String, Long> map = traversal.next();
         assertEquals(map.size(), 2);
         assertEquals(Long.valueOf(3l), map.get("lop"));
         assertEquals(Long.valueOf(1l), map.get("ripple"));
@@ -48,7 +52,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
     public void g_V_outXcreatedX_name_groupCount() {
         Arrays.asList(get_g_V_outXcreatedX_name_groupCount(), get_g_V_outXcreatedX_name_groupCountXaX()).forEach(traversal -> {
             printTraversalForm(traversal);
-            final Map<Object, Long> map = traversal.next();
+            final Map<String, Long> map = traversal.next();
             assertEquals(map.size(), 2);
             assertEquals(3l, map.get("lop").longValue());
             assertEquals(1l, map.get("ripple").longValue());
@@ -68,14 +72,14 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_repeatXout_groupCountXaX_byXnameXX_untilX2X_capXaX() {
-        List<Traversal<Vertex, Map<Object, Long>>> traversals = new ArrayList<>();
-        traversals.add(get_g_V_repeatXout_groupCountXaX_byXnameXX_untilX2X_capXaX());
+    public void g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX() {
+        List<Traversal<Vertex, Map<String, Long>>> traversals = new ArrayList<>();
+        traversals.add(get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
-            final Map<Object, Long> map = traversal.next();
+            final Map<String, Long> map = traversal.next();
             assertFalse(traversal.hasNext());
-            assertEquals(4, map.size(), 4);
+            assertEquals(4, map.size());
             assertEquals(4l, map.get("lop").longValue());
             assertEquals(2l, map.get("ripple").longValue());
             assertEquals(1l, map.get("josh").longValue());
@@ -83,20 +87,35 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX() {
+        List<Traversal<Vertex, Map<String, Long>>> traversals = new ArrayList<>();
+        traversals.add(get_g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX());
+        traversals.forEach(traversal -> {
+            printTraversalForm(traversal);
+            final Map<String, Long> map = traversal.next();
+            assertFalse(traversal.hasNext());
+            assertEquals(2, map.size());
+            assertEquals(2, map.get("marko").longValue());
+            assertEquals(2, map.get("java").longValue());
+        });
+    }
+
     public static class StandardTest extends GroupCountTest {
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
             return (Traversal) g.V().out("created").groupCount().by("name");
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount() {
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount() {
             return (Traversal) g.V().out("created").values("name").groupCount();
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
             return (Traversal) g.V().out("created").values("name").groupCount("a");
         }
 
@@ -106,8 +125,15 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_untilX2X_capXaX() {
-            return g.V().repeat(g.of().out().groupCount("a").by("name")).until(2).cap("a");
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX() {
+            return g.V().repeat(__.out().groupCount("a").by("name")).times(2).cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX() {
+            return g.V().union(
+                    __.repeat(__.out()).times(2).groupCount("m").by("lang"),
+                    __.repeat(__.in()).times(2).groupCount("m").by("name")).cap("m");
         }
     }
 
@@ -117,17 +143,17 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
             return (Traversal) g.V().out("created").groupCount().by("name").submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount() {
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount() {
             return (Traversal) g.V().out("created").values("name").groupCount().submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
             return (Traversal) g.V().out("created").values("name").groupCount("a").submit(g.compute());
         }
 
@@ -137,8 +163,15 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_untilX2X_capXaX() {
-            return g.V().repeat(g.<Vertex>of().out().groupCount("a").by("name")).until(2).<Map<Object, Long>>cap("a").submit(g.compute());
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX() {
+            return g.V().repeat(__.out().groupCount("a").by("name")).times(2).<Map<String, Long>>cap("a").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX() {
+            return g.V().union(
+                    __.repeat(__.out()).times(2).groupCount("m").by("lang"),
+                    __.repeat(__.in()).times(2).groupCount("m").by("name")).<Map<String, Long>>cap("m").submit(g.compute());
         }
     }
 }

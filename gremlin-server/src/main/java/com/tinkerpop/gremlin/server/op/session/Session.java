@@ -45,9 +45,9 @@ public class Session {
      */
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    private final ConcurrentHashMap<String,Session> sessions;
+    private final ConcurrentHashMap<String, Session> sessions;
 
-    public Session(final String session, final Context context, final ConcurrentHashMap<String,Session> sessions) {
+    public Session(final String session, final Context context, final ConcurrentHashMap<String, Session> sessions) {
         logger.info("New session established for {}", session);
         this.session = session;
         this.bindings = new SimpleBindings();
@@ -61,7 +61,7 @@ public class Session {
                 .findAny().orElse(SessionOpProcessor.DEFAULT_SETTINGS);
         this.configuredSessionTimeout = Long.parseLong(processorSettings.config.get(SessionOpProcessor.CONFIG_SESSION_TIMEOUT).toString());
 
-        this.gremlinExecutor =  initializeGremlinExecutor().create();
+        this.gremlinExecutor = initializeGremlinExecutor().create();
     }
 
     public GremlinExecutor getGremlinExecutor() {

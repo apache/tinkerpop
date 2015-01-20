@@ -6,12 +6,40 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 
-TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
+TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in `DedupStep` that made itself apparent in `DedupOptimizerStrategy`.
+* Added `RepeatStep.RepeatEndStep` in order to reduce the complexity of the code on OLAP when the predicates are not at the start of `RepeatStep`.
+
+TinkerPop 3.0.0.M7 (Release Date: January 19, 2015)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Added `SideEffectRegistrar` interface and `SideEffectRegistrationStrategy` for allowing steps to register sideEffects at strategy application time.
+* Renamed `Traverser.Admin.setFuture()` and `Traverser.Admin.getFuture()` to `setStepId()` and `getStepId()`, respectively.
+* Added `TraversalMatrix` for random access to steps in a traversal by their step id. Used by `TraversalVertexProgram`.
+* Added unique identifies to `Step` that are not the user provided labels. `Step.getLabel()` now returns an `Optional<String>`.
+* Removed `UnionLinearStrategy`, `ChooseLinearStrategy`, and `RepeatLinearStrategy` as nested traversals are now natively supported in OLAP.
+* Fixed `Neo4jGraph` around manual transaction behavior on `commit` and `rollback` such that they would throw exceptions if a transaction was not open.
+* Redesigned the hidden step labeling mechanism so its consistent across a cluster, easier for rewrite strategies, and will enable nested OLAP traversals.
+* `Traverser.incrLoops()` now takes a string step label to enable nested looping constructs (i.e. loop stacks).
+* Added `Traversal.tryNext()` which returns an `Optional`, where the provided default method should be sufficient for all vendors.
+* Removed `PathConsumer` in favor of `TraverserRequirement.PATH`-model via `Step.getRequirements()`.
+* `Step.getRequirements()` returns a `Set<TraverserRequirement>` which is what is required of the `Traverser` by the `Step`.
+* `Traverser` now extends `Cloneable` and `Traverser.clone()` is used to good effect in `Traverser.split()`.
+* Added `AbstractTraverser` for which all traversers extend.
+* Moved `Traversal.SideEffects` to `TraversalSideEffects` as sideEffects are not necessarily tied to the traversal.
+* Removed `Graph.of()` for generating anonymous graph traversals -- replaced by `__`-model.
+* Removed `Graph` being stored in `Traversal.SideEffects`. Too dangerous when moving between OLTP and OLAP and its limited uses were worked around easily.
+* No need for `DefaultXXXGraphTraversal` unless the vendor is extending with new methods (e.g. `DefaultNeo4jGraphTraversal`).
+* Reworked `TraversalStrategies` such that the are "emanating object class"-dependant, not `Traversal` dependent.
+* Moved `Traverser.sideEffects()` to `Traverser.asAdmin().getSideEffects()`. Users should use `Traverser.sideEffects(key)` and `Traverser.sideEffects(key,value)`.
+* Added `SerializationTest` to the `StructureStandardSuite` in `gremlin-test` which validates serialization at a lower level than `IoTest`.
+* Removed `IntervalStep` and renamed `interval()` to `between()` which is simply an alias to a `has().has()` chain.
+* Added `AnonymousGraphTraversal.Tokens.__` which allows for `__.out().out()`-style construction of anonymous traversals (instead of `g.of()`).
 * The only `GraphTraversal` steps that operate on `Traverser` are the base lambdas and `repeat()` (i.e. `emit()` and `until()`).
 * Removed dependency on the `reflections` library in `gremlin-test` which removed the default implementation of `GraphProvider.getImplementations()` - vendors now need to implement this method themselves.
-* Relaxed the typing requirements for `g.of()` when applied to `choose()`, `repeat()`, `union()`, etc.
+* Relaxed the `<S>` typing requirement for anonymous traversals when applied to `choose()`, `repeat()`, `union()`, etc.
 * Removed `LoopStep` and `UntilStep` in favor of the new `RepeatStep` model of looping in Gremlin3.
 * `BranchStep` is now exposed in `GraphTraversal` via `branch(function)`.
 * `UnionStep` now implements `TraversalHolder`.
@@ -25,8 +53,6 @@ TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 * `Traverser.get(stepLabel/sideEffectKey)` no longer exists. There now exists: `Traverser.path(stepLabel)` and `Traverser.sideEffects(sideEffectKey)`.
 * `SimpleTraverser` now supports "path" but in a very loose, global cache way. Added `SparsePath` as a `Map`-backed `Path` implementation.
 * Provided Neo4j multi-label support in Neo4j-Gremlin. Added three `Neo4jVertex`-specific methods: `addLabel()`, `removeLabel()`, `labels()`.
-* Removed `TraverserSourceStrategy` as it is no longer required.
-* `TraverserSource` is now only a marker interface with "on first" within the `TraverserSource` step are traversers generated.
 * Bumped to Groovy 2.3.9.
 * Added `Graph.Io` interface which allows for simplified helper methods for end users and a way for vendors to override `GraphReader` and `GraphWriter` initial construction when custom serializers are needed.
 * Removed methods from `GraphProvider` related to customizing serializers in `IoTest` from the test suite as the new `Graph.Io` interface now serves that purpose.

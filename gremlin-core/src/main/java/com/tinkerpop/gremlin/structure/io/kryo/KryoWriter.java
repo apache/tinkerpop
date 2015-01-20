@@ -26,7 +26,7 @@ import java.util.UUID;
  */
 public class KryoWriter implements GraphWriter {
     private Kryo kryo;
-    private final GremlinKryo.HeaderWriter headerWriter;
+    private final KryoMapper.HeaderWriter headerWriter;
     private static final UUID delimiter = UUID.fromString("2DEE3ABF-9963-4546-A578-C1C48690D7F7");
     public static final byte[] DELIMITER = new byte[16];
 
@@ -36,10 +36,9 @@ public class KryoWriter implements GraphWriter {
         bb.putLong(delimiter.getLeastSignificantBits());
     }
 
-    private KryoWriter(final GremlinKryo gremlinKryo) {
-        this.kryo = gremlinKryo.createKryo();
-        this.headerWriter = gremlinKryo.getHeaderWriter();
-
+    private KryoWriter(final KryoMapper kryoMapper) {
+        this.kryo = kryoMapper.createMapper();
+        this.headerWriter = kryoMapper.getHeaderWriter();
     }
 
     @Override
@@ -140,26 +139,24 @@ public class KryoWriter implements GraphWriter {
         /**
          * Always creates the most current version available.
          */
-        private GremlinKryo gremlinKryo = GremlinKryo.build().create();
+        private KryoMapper kryoMapper = KryoMapper.build().create();
 
         private Builder() {
         }
 
         /**
-         * Supply a custom {@link GremlinKryo} instance to use as the serializer for the {@code KryoWriter}.
+         * Supply a mapper {@link KryoMapper} instance to use as the serializer for the {@code KryoWriter}.
          */
-        public Builder custom(final GremlinKryo gremlinKryo) {
-            this.gremlinKryo = gremlinKryo;
+        public Builder mapper(final KryoMapper kryoMapper) {
+            this.kryoMapper = kryoMapper;
             return this;
         }
 
         /**
          * Create the {@code KryoWriter}.
-         *
-         * @return
          */
         public KryoWriter create() {
-            return new KryoWriter(this.gremlinKryo);
+            return new KryoWriter(this.kryoMapper);
         }
     }
 }

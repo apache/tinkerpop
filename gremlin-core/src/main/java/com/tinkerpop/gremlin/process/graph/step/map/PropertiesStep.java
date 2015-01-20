@@ -2,12 +2,15 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.PropertyType;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -38,11 +41,16 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Revers
     @Override
     public void reverse() {
         // TODO: only works if its element->property ... how do we do dynamic reversibility?
-        TraversalHelper.replaceStep(this, new PropertyElementStep(this.traversal), this.traversal);
+        TraversalHelper.replaceStep(this, new PropertyElementStep(this.traversal), this.traversal.asAdmin());
     }
 
     @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, Arrays.asList(this.propertyKeys), this.returnType.name().toLowerCase());
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.OBJECT);
     }
 }

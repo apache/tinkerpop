@@ -9,9 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author Matthias Broecheler (me@matthiasb.com)
@@ -39,26 +37,26 @@ public class TraversalStrategiesTest {
         s = Stream.of(b, a)
                 .collect(Collectors.toList());
         TraversalStrategies.sortStrategies(s);
-        assertEquals(2,s.size());
-        assertEquals(a,s.get(0));
-        assertEquals(b,s.get(1));
+        assertEquals(2, s.size());
+        assertEquals(a, s.get(0));
+        assertEquals(b, s.get(1));
 
         //No dependency
         s = Stream.of(c, a)
                 .collect(Collectors.toList());
         TraversalStrategies.sortStrategies(s);
-        assertEquals(2,s.size());
-        assertEquals(c,s.get(0));
-        assertEquals(a,s.get(1));
+        assertEquals(2, s.size());
+        assertEquals(c, s.get(0));
+        assertEquals(a, s.get(1));
 
         //Dependency well defined
-        s = Stream.of(c ,a, b)
+        s = Stream.of(c, a, b)
                 .collect(Collectors.toList());
         TraversalStrategies.sortStrategies(s);
         assertEquals(3, s.size());
         assertEquals(a, s.get(0));
-        assertEquals(b,s.get(1));
-        assertEquals(c,s.get(2));
+        assertEquals(b, s.get(1));
+        assertEquals(c, s.get(2));
 
         //Circular dependency => throws exception
         s = Stream.of(c, k, a, b)
@@ -165,7 +163,7 @@ public class TraversalStrategiesTest {
     private static class DummyStrategy extends AbstractTraversalStrategy {
 
         @Override
-        public void apply(Traversal<?, ?> traversal, TraversalEngine traversalEngine) {
+        public void apply(Traversal.Admin<?, ?> traversal, TraversalEngine traversalEngine) {
             //Do nothing
         }
     }

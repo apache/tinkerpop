@@ -29,7 +29,7 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
     protected Traverser<E> processNextStart() {
         while (true) {
             if (this.iterator.hasNext()) {
-                return this.head.split(this.label, this.iterator.next());
+                return this.head.split(this.iterator.next(), this);
             } else {
                 this.head = this.starts.next();
                 this.iterator = this.function.apply(this.head);

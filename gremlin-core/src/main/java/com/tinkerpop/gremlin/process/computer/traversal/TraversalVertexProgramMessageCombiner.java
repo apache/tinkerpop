@@ -12,6 +12,10 @@ public final class TraversalVertexProgramMessageCombiner implements MessageCombi
 
     private static final Optional<TraversalVertexProgramMessageCombiner> INSTANCE = Optional.of(new TraversalVertexProgramMessageCombiner());
 
+    private TraversalVertexProgramMessageCombiner() {
+
+    }
+
     public TraverserSet<?> combine(final TraverserSet<?> messageA, final TraverserSet<?> messageB) {
         messageA.addAll((TraverserSet) messageB);
         return messageA;

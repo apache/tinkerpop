@@ -14,7 +14,7 @@ public class NormalDistribution implements Distribution {
 
     /**
      * Constructs a NormalDistribution with the given standard deviation.
-     * <p>
+     * <p/>
      * Setting the standard deviation to 0 makes this a constant distribution.
      *
      * @param stdDeviation Simple deviation of the distribution. Must be non-negative.

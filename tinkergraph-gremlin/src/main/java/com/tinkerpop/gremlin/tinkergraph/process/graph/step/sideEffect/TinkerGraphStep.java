@@ -1,15 +1,12 @@
 package com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
@@ -27,27 +24,37 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 
     public final List<HasContainer> hasContainers = new ArrayList<>();
 
-    public TinkerGraphStep(final Traversal traversal, final Graph graph, final Class<E> returnClass, final Object... ids) {
-        super(traversal, graph, returnClass, ids);
+    public TinkerGraphStep(final GraphStep<E> originalGraphStep) {
+        super(originalGraphStep.getTraversal(), originalGraphStep.getGraph(TinkerGraph.class), originalGraphStep.getReturnClass(), originalGraphStep.getIds());
+        if (originalGraphStep.getLabel().isPresent())
+            this.setLabel(originalGraphStep.getLabel().get());
         this.setIteratorSupplier(() -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
     }
 
     private Iterator<? extends Edge> edges() {
         final HasContainer indexedContainer = getIndexKey(Edge.class);
-        return null == indexedContainer ?
-                this.iteratorList(this.getGraph(TinkerGraph.class).iterators().edgeIterator(this.ids)) :
-                TinkerHelper.queryEdgeIndex(this.getGraph(TinkerGraph.class), indexedContainer.key, indexedContainer.value).stream()
-                        .filter(edge -> ElementHelper.idExists(edge.id(), this.ids) && HasContainer.testAll(edge, this.hasContainers))
-                        .collect(Collectors.<Edge>toList()).iterator();
+        // ids are present, filter on them first
+        if (this.ids != null && this.ids.length > 0)
+            return this.iteratorList(this.getGraph(TinkerGraph.class).iterators().edgeIterator(this.ids));
+        else
+            return null == indexedContainer ?
+                    this.iteratorList(this.getGraph(TinkerGraph.class).iterators().edgeIterator()) :
+                    TinkerHelper.queryEdgeIndex(this.getGraph(TinkerGraph.class), indexedContainer.key, indexedContainer.value).stream()
+                            .filter(edge -> HasContainer.testAll(edge, this.hasContainers))
+                            .collect(Collectors.<Edge>toList()).iterator();
     }
 
     private Iterator<? extends Vertex> vertices() {
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
-        return null == indexedContainer ?
-                this.iteratorList(this.getGraph(TinkerGraph.class).iterators().vertexIterator(this.ids)) :
-                TinkerHelper.queryVertexIndex(this.getGraph(TinkerGraph.class), indexedContainer.key, indexedContainer.value).stream()
-                        .filter(vertex -> ElementHelper.idExists(vertex.id(), this.ids) && HasContainer.testAll(vertex, this.hasContainers))
-                        .collect(Collectors.<Vertex>toList()).iterator();
+        // ids are present, filter on them first
+        if (this.ids != null && this.ids.length > 0)
+            return this.iteratorList(this.getGraph(TinkerGraph.class).iterators().vertexIterator(this.ids));
+        else
+            return null == indexedContainer ?
+                    this.iteratorList(this.getGraph(TinkerGraph.class).iterators().vertexIterator()) :
+                    TinkerHelper.queryVertexIndex(this.getGraph(TinkerGraph.class), indexedContainer.key, indexedContainer.value).stream()
+                            .filter(vertex -> HasContainer.testAll(vertex, this.hasContainers))
+                            .collect(Collectors.<Vertex>toList()).iterator();
     }
 
     private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {

@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.hadoop.process.computer;
 
 import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
-import com.tinkerpop.gremlin.hadoop.process.computer.util.MapReduceHelper;
 import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.process.computer.MapReduce;

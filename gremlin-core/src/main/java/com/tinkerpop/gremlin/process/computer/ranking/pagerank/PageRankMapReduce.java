@@ -14,28 +14,28 @@ import java.util.Iterator;
  */
 public class PageRankMapReduce extends StaticMapReduce<Object, Double, Object, Double, Iterator<KeyValue<Object, Double>>> {
 
-    public static final String PAGE_RANK_SIDE_EFFECT_KEY = "gremlin.pageRankMapReduce.sideEffectKey";
-    public static final String DEFAULT_SIDE_EFFECT_KEY = "pageRank";
+    public static final String PAGE_RANK_MEMORY_KEY = "gremlin.pageRankMapReduce.memoryKey";
+    public static final String DEFAULT_MEMORY_KEY = "pageRank";
 
-    private String sideEffectKey = DEFAULT_SIDE_EFFECT_KEY;
+    private String memoryKey = DEFAULT_MEMORY_KEY;
 
-    public PageRankMapReduce() {
+    private PageRankMapReduce() {
 
     }
 
-    public PageRankMapReduce(final String sideEffectKey) {
-        this.sideEffectKey = sideEffectKey;
+    private PageRankMapReduce(final String memoryKey) {
+        this.memoryKey = memoryKey;
     }
 
     @Override
     public void storeState(final Configuration configuration) {
         super.storeState(configuration);
-        configuration.setProperty(PAGE_RANK_SIDE_EFFECT_KEY, this.sideEffectKey);
+        configuration.setProperty(PAGE_RANK_MEMORY_KEY, this.memoryKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.sideEffectKey = configuration.getString(PAGE_RANK_SIDE_EFFECT_KEY, DEFAULT_SIDE_EFFECT_KEY);
+        this.memoryKey = configuration.getString(PAGE_RANK_MEMORY_KEY, DEFAULT_MEMORY_KEY);
     }
 
     @Override
@@ -58,11 +58,36 @@ public class PageRankMapReduce extends StaticMapReduce<Object, Double, Object, D
 
     @Override
     public String getMemoryKey() {
-        return this.sideEffectKey;
+        return this.memoryKey;
     }
 
     @Override
     public String toString() {
-        return StringFactory.mapReduceString(this, this.sideEffectKey);
+        return StringFactory.mapReduceString(this, this.memoryKey);
+    }
+
+    //////////////////////////////
+
+    public static Builder build() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private String memoryKey = DEFAULT_MEMORY_KEY;
+
+        private Builder() {
+
+        }
+
+        public Builder memoryKey(final String memoryKey) {
+            this.memoryKey = memoryKey;
+            return this;
+        }
+
+        public PageRankMapReduce create() {
+            return new PageRankMapReduce(this.memoryKey);
+        }
+
     }
 }

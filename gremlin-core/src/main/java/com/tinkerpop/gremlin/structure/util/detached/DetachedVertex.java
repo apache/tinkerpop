@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, Vertex.Iterators {
 
     private static final String ID = "id";
-    private static final String LABEL = "label";
     private static final String VALUE = "value";
     private static final String PROPERTIES = "properties";
 
@@ -57,8 +56,8 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
             this.properties = new HashMap<>();
             properties.entrySet().stream().forEach(
                     entry -> this.properties.put(entry.getKey(), ((List<Map<String, Object>>) entry.getValue()).stream()
-                    .map(m -> (Property) new DetachedVertexProperty<>(m.get(ID), entry.getKey(), m.get(VALUE), (Map<String, Object>) m.getOrDefault(PROPERTIES, new HashMap<>()), this))
-                    .collect(Collectors.toList())));
+                            .map(m -> (Property) new DetachedVertexProperty<>(m.get(ID), entry.getKey(), m.get(VALUE), (Map<String, Object>) m.getOrDefault(PROPERTIES, new HashMap<>()), this))
+                            .collect(Collectors.toList())));
         }
     }
 
@@ -87,11 +86,6 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
     @Override
     public String toString() {
         return StringFactory.vertexString(this);
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> start() {
-        throw new UnsupportedOperationException("Detached vertices cannot be traversed: " + this);
     }
 
     @Override

@@ -22,7 +22,8 @@ public abstract class GroovyAddEdgeTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(
+                final Object v1Id) {
             g.V(v1Id).as('a').out('created').addOutE('createdBy', 'a', 'weight', 2)
         }
     }

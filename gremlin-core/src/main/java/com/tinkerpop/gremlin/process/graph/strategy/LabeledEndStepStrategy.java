@@ -1,9 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.step.util.MarkerIdentityStep;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.graph.step.util.MarkerIdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -18,9 +17,9 @@ public class LabeledEndStepStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
-        if (TraversalHelper.isLabeled(TraversalHelper.getEnd(traversal)))
-            traversal.asAdmin().addStep(new MarkerIdentityStep<>(traversal));
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
+        if (TraversalHelper.getEnd(traversal).getLabel().isPresent())
+            traversal.addStep(new MarkerIdentityStep<>(traversal));
     }
 
     public static LabeledEndStepStrategy instance() {

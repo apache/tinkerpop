@@ -10,6 +10,7 @@ import org.junit.Test;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.*;
 
 /**
@@ -125,12 +126,12 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXb_hasXname_markoXX() {
-            return g.V().has("age").as("a").out().in().has("age").as("b").select().where(g.of().as("b").has("name", "marko"));
+            return g.V().has("age").as("a").out().in().has("age").as("b").select().where(__.as("b").has("name", "marko"));
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_outXknowsX_bX() {
-            return g.V().has("age").as("a").out().in().has("age").as("b").select().where(g.of().as("a").out("knows").as("b"));
+            return g.V().has("age").as("a").out().in().has("age").as("b").select().where(__.as("a").out("knows").as("b"));
         }
 
 
@@ -153,12 +154,12 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXb_hasXname_markoXX() {
-            return g.V().has("age").as("a").out().in().has("age").as("b").select().where(g.of().as("b").has("name", "marko")); // TODO: internal traversals
+            return g.V().has("age").as("a").out().in().has("age").as("b").select().where(__.as("b").has("name", "marko")); // TODO: internal traversals
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_outXknowsX_bX() {
-            return g.V().has("age").as("a").out().in().has("age").as("b").select().where(g.of().as("a").out("knows").as("b")); // TODO: internal traversals
+            return g.V().has("age").as("a").out().in().has("age").as("b").select().where(__.as("a").out("knows").as("b")); // TODO: internal traversals
         }
     }
 }

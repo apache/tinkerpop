@@ -7,7 +7,6 @@ public final class GraphSONTokens {
     public static final String CLASS = "@class";
     public static final String ID = "id";
     public static final String TYPE = "type";
-    public static final String HIDDENS = "hiddens";
     public static final String VALUE = "value";
     public static final String PROPERTIES = "properties";
     public static final String VARIABLES = "variables";

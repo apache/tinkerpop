@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -9,7 +8,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.util.DefaultTinkerElementTraversal;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
@@ -68,11 +66,6 @@ public class TinkerEdge extends TinkerElement implements Edge, Edge.Iterators {
         this.graph.edges.remove(this.id());
         this.properties.clear();
         this.removed = true;
-    }
-
-    @Override
-    public GraphTraversal<Edge, Edge> start() {
-        return new DefaultTinkerElementTraversal<>(this, this.graph);
     }
 
     @Override

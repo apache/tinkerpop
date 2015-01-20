@@ -20,6 +20,8 @@ public abstract class RetainTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_retainXxX(final Object v1Id);
 
+    public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_retainXaX_name(final Object v1Id);
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_retainXg_v2X() {
@@ -38,6 +40,15 @@ public abstract class RetainTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_retainXaX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_retainXaX_name(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        assertEquals("marko", traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
     public static class StandardTest extends RetainTest {
 
         @Override
@@ -48,6 +59,11 @@ public abstract class RetainTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_retainXxX(final Object v1Id) {
             return g.V(v1Id).out().aggregate("x").out().retain("x");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_retainXaX_name(final Object v1Id) {
+            return g.V(v1Id).as("a").out("created").in("created").retain("a").values("name");
         }
     }
 
@@ -64,6 +80,11 @@ public abstract class RetainTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_retainXxX(final Object v1Id) {
             return g.V(v1Id).out().aggregate("x").out().retain("x").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_retainXaX_name(final Object v1Id) {
+            return g.V(v1Id).as("a").out("created").in("created").retain("a").<String>values("name").submit(g.compute());
         }
     }
 }

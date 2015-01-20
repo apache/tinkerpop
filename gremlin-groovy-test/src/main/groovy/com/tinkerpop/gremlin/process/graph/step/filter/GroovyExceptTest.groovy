@@ -4,7 +4,8 @@ import com.tinkerpop.gremlin.process.Path
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
-import org.junit.Ignore
+
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -42,7 +43,12 @@ public abstract class GroovyExceptTest {
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(
                 final Object v1Id) {
-            g.V(v1Id).as('x').bothE("created").except('e').aggregate('e').otherV.jump('x') { true } { true }.path
+            g.V(v1Id).repeat(__.bothE('created').except('e').aggregate('e').otherV).emit.path
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_exceptXaX_name(final Object v1Id) {
+            g.V(v1Id).as('a').out('created').in('created').except('a').name
         }
     }
 
@@ -76,7 +82,12 @@ public abstract class GroovyExceptTest {
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(
                 final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).as('x').bothE('created').except('e').aggregate('e').otherV.jump('x') { true } { true }.path", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).repeat(__.bothE('created').except('e').aggregate('e').otherV).emit.path", g);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_exceptXaX_name(final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).as('a').out('created').in('created').except('a').name", g);
         }
     }
 }

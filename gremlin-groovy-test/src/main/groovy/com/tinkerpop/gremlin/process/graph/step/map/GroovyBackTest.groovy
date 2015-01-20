@@ -5,6 +5,8 @@ import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Edge
 import com.tinkerpop.gremlin.structure.Vertex
 
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -55,6 +57,14 @@ public abstract class GroovyBackTest {
         public Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_backXhereX() {
             g.V().as("here").out.name.back("here");
         }
+
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_backXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_backXprojectXX_groupCount_byXnameX() {
+            g.V.out('created')
+                    .union(__.as('project').in('created').has('name', 'marko').back('project'),
+                    __.as('project').in('created').in('knows').has('name', 'marko').back('project')).groupCount().by('name');
+        }
     }
 
     public static class ComputerTest extends BackTest {
@@ -101,6 +111,15 @@ public abstract class GroovyBackTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_backXhereX() {
             ComputerTestHelper.compute("g.V().as('here').out.name.back('here')", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_backXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_backXprojectXX_groupCount_byXnameX() {
+            ComputerTestHelper.compute("""
+            g.V.out('created')
+                    .union(__.as('project').in('created').has('name', 'marko').back('project'),
+                    __.as('project').in('created').in('knows').has('name', 'marko').back('project')).groupCount().by('name');
+            """, g)
         }
     }
 }

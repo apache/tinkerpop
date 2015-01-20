@@ -9,6 +9,7 @@ import java.io.IOException;
  */
 public final class Gremlin {
     private static String version;
+
     static {
         version = Manifests.read("version");
     }

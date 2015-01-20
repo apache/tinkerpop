@@ -17,7 +17,8 @@ class Mediator {
 
     private static String FILE_SEP = System.getProperty("file.separator")
     private static String LINE_SEP = System.getProperty("line.separator")
-    private static final String PLUGIN_CONFIG_FILE = System.getProperty("user.dir") + FILE_SEP + "ext" + FILE_SEP + "plugins.txt"
+    private static
+    final String PLUGIN_CONFIG_FILE = System.getProperty("user.dir") + FILE_SEP + "ext" + FILE_SEP + "plugins.txt"
 
     public Mediator(final Console console) {
         this.console = console
@@ -65,7 +66,7 @@ class Mediator {
             file.delete()
 
         new File(PLUGIN_CONFIG_FILE).withWriter { out ->
-            availablePlugins.findAll{it.value.activated}.each{ k, v -> out << (k + LINE_SEP)}
+            availablePlugins.findAll { it.value.activated }.each { k, v -> out << (k + LINE_SEP) }
         }
     }
 

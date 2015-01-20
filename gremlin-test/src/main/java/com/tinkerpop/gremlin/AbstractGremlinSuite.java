@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -30,9 +31,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 /**
  * Base Gremlin test suite from which different classes of tests can be exposed to implementers.
  *
@@ -40,6 +38,7 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class AbstractGremlinSuite extends Suite {
 
+    // todo: perhaps there is a test that validates against the implementations to be sure that the Graph constructed matches what's defined???
     private static final Set<Class> STRUCTURE_INTERFACES = new HashSet<Class>() {{
         add(Edge.class);
         add(Edge.Iterators.class);
@@ -117,10 +116,22 @@ public abstract class AbstractGremlinSuite extends Suite {
      * Need to validate that structure interfaces are implemented so that checks to {@link Graph.Helper} can be
      * properly enforced.
      */
-    private void validateStructureInterfacesRegistered(final GraphProvider graphProvider) {
+    private void validateStructureInterfacesRegistered(final GraphProvider graphProvider) throws Exception {
         final Set<Class> implementations = graphProvider.getImplementations();
         final Set<Class> noImplementationRegistered = new HashSet<>();
-        final boolean missingImplementations = STRUCTURE_INTERFACES.stream().anyMatch(iface -> {
+
+        final Configuration conf = graphProvider.newGraphConfiguration("prototype", AbstractGremlinSuite.class, "validateStructureInterfacesRegistered");
+        final Graph g = graphProvider.openTestGraph(conf);
+        final Set<Class> structureInterfaces = new HashSet<>(STRUCTURE_INTERFACES);
+
+        // not all graphs implement all features and therefore may not have implementations of certain "core" interfaces
+        if (!g.features().graph().variables().supportsVariables()) structureInterfaces.remove(Graph.Variables.class);
+        if (!g.features().vertex().supportsMultiProperties())
+            structureInterfaces.remove(VertexProperty.Iterators.class);
+
+        graphProvider.clear(g, conf);
+
+        final boolean missingImplementations = structureInterfaces.stream().anyMatch(iface -> {
             final boolean noneMatch = implementations.stream().noneMatch(c -> iface.isAssignableFrom(c));
             if (noneMatch) noImplementationRegistered.add(iface);
             return noneMatch;
@@ -135,15 +146,15 @@ public abstract class AbstractGremlinSuite extends Suite {
     private void validateHelpersNotImplemented(final GraphProvider graphProvider) {
         final List<String> overridenMethods = new ArrayList<>();
         graphProvider.getImplementations().forEach(clazz ->
-            Stream.of(clazz.getDeclaredMethods())
-                    .filter(AbstractGremlinSuite::isHelperMethodOverriden)
-                    .map(m -> m.getDeclaringClass().getName() + "." + m.getName())
-                    .forEach(overridenMethods::add)
+                        Stream.of(clazz.getDeclaredMethods())
+                                .filter(AbstractGremlinSuite::isHelperMethodOverriden)
+                                .map(m -> m.getDeclaringClass().getName() + "." + m.getName())
+                                .forEach(overridenMethods::add)
         );
 
         if (overridenMethods.size() > 0)
             throw new RuntimeException(String.format(
-                "Implementations cannot override methods marked by @Helper annotation - check the following methods [%s]",
+                    "Implementations cannot override methods marked by @Helper annotation - check the following methods [%s]",
                     String.join(",", overridenMethods)));
     }
 
@@ -195,7 +206,7 @@ public abstract class AbstractGremlinSuite extends Suite {
         return false;
     }
 
-    public static Pair<Class<? extends GraphProvider>,Class<? extends Graph>> getGraphProviderClass(final Class<?> klass) throws InitializationError {
+    public static Pair<Class<? extends GraphProvider>, Class<? extends Graph>> getGraphProviderClass(final Class<?> klass) throws InitializationError {
         final GraphProviderClass annotation = klass.getAnnotation(GraphProviderClass.class);
         if (null == annotation)
             throw new InitializationError(String.format("class '%s' must have a GraphProviderClass annotation", klass.getName()));
@@ -206,7 +217,7 @@ public abstract class AbstractGremlinSuite extends Suite {
         // sometimes test names change and since they are String representations they can easily break if a test
         // is renamed. this test will validate such things.  it is not possible to @OptOut of this test.
         final Graph.OptOut[] optOuts = klass.getAnnotationsByType(Graph.OptOut.class);
-        for(Graph.OptOut optOut : optOuts) {
+        for (Graph.OptOut optOut : optOuts) {
             final Class testClass;
             try {
                 testClass = Class.forName(optOut.test());
@@ -221,7 +232,8 @@ public abstract class AbstractGremlinSuite extends Suite {
 
     @Override
     protected void runChild(final Runner runner, final RunNotifier notifier) {
-        if (beforeTestExecution((Class<? extends AbstractGremlinTest>) runner.getDescription().getTestClass())) super.runChild(runner, notifier);
+        if (beforeTestExecution((Class<? extends AbstractGremlinTest>) runner.getDescription().getTestClass()))
+            super.runChild(runner, notifier);
         afterTestExecution((Class<? extends AbstractGremlinTest>) runner.getDescription().getTestClass());
     }
 
@@ -229,12 +241,15 @@ public abstract class AbstractGremlinSuite extends Suite {
      * Called just prior to test class execution.  Return false to ignore test class. By default this always returns
      * true.
      */
-    public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) { return true; }
+    public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
+        return true;
+    }
 
     /**
      * Called just after test class execution.
      */
-    public void afterTestExecution(final Class<? extends AbstractGremlinTest> testClass) {}
+    public void afterTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
+    }
 
     /**
      * Filter for tests in the suite which is controlled by the {@link Graph.OptOut} annotation.

@@ -2,9 +2,9 @@ package com.tinkerpop.gremlin.process.computer.lambda;
 
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
+import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.function.TriConsumer;
@@ -37,7 +37,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> extends StaticMapReduce<MK, MV, 
     private LambdaHolder<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>> reduceLambdaHolder;
     private LambdaHolder<Supplier<Comparator<RK>>> reduceKeySortLambdaHolder;
     private LambdaHolder<Function<Iterator<KeyValue<RK, RV>>, R>> memoryLambdaHolder;
-    private String sideEffectKey;
+    private String memoryKey;
 
     private LambdaMapReduce() {
 
@@ -51,7 +51,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> extends StaticMapReduce<MK, MV, 
         this.reduceLambdaHolder = LambdaHolder.loadState(configuration, REDUCE_LAMBDA);
         this.reduceKeySortLambdaHolder = LambdaHolder.loadState(configuration, REDUCE_KEY_SORT);
         this.memoryLambdaHolder = LambdaHolder.loadState(configuration, MEMORY_LAMBDA);
-        this.sideEffectKey = configuration.getString(MEMORY_KEY, null);
+        this.memoryKey = configuration.getString(MEMORY_KEY, null);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> extends StaticMapReduce<MK, MV, 
             this.reduceKeySortLambdaHolder.storeState(configuration);
         if (null != this.memoryLambdaHolder)
             this.memoryLambdaHolder.storeState(configuration);
-        configuration.setProperty(MEMORY_KEY, this.sideEffectKey);
+        configuration.setProperty(MEMORY_KEY, this.memoryKey);
     }
 
     @Override
@@ -114,12 +114,12 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> extends StaticMapReduce<MK, MV, 
 
     @Override
     public String getMemoryKey() {
-        return this.sideEffectKey;
+        return this.memoryKey;
     }
 
     @Override
     public String toString() {
-        return StringFactory.mapReduceString(this, this.sideEffectKey);
+        return StringFactory.mapReduceString(this, this.memoryKey);
     }
 
     //////////////////

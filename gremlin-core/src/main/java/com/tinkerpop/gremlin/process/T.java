@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -94,20 +93,4 @@ public enum T implements Function<Element, Object> {
         else
             throw new IllegalArgumentException("The following token string is unknown: " + accessor);
     }
-
-    public static Optional<T> asToken(final Function<Element, Object> function) {
-        if (function.equals(T.id)) {
-            return Optional.of(T.id);
-        } else if (function.equals(T.label)) {
-            return Optional.of(T.label);
-        } else if (function.equals(T.key)) {
-            return Optional.of(T.key);
-        } else if (function.equals(T.value)) {
-            return Optional.of(T.value);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-
 }

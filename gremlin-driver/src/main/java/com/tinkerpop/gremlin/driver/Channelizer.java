@@ -35,7 +35,10 @@ public interface Channelizer extends ChannelHandler {
      * Called after the channel connects. The {@code Channelizer} may need to perform some functions, such as a
      * handshake.
      */
-    public default void connected() {};
+    public default void connected() {
+    }
+
+    ;
 
     abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
         protected Connection connection;
@@ -49,6 +52,7 @@ public interface Channelizer extends ChannelHandler {
         }
 
         public abstract void configure(final ChannelPipeline pipeline);
+
         public void finalize(final ChannelPipeline pipeline) {
             // do nothing
         }

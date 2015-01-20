@@ -77,20 +77,19 @@ public abstract class AbstractGremlinServerIntegrationTest {
     }
 
     public static boolean deleteDirectory(final File directory) {
-        if(directory.exists()){
+        if (directory.exists()) {
             final File[] files = directory.listFiles();
-            if(null != files){
-                for(int i=0; i<files.length; i++) {
-                    if(files[i].isDirectory()) {
+            if (null != files) {
+                for (int i = 0; i < files.length; i++) {
+                    if (files[i].isDirectory()) {
                         deleteDirectory(files[i]);
-                    }
-                    else {
+                    } else {
                         files[i].delete();
                     }
                 }
             }
         }
 
-        return(directory.delete());
+        return (directory.delete());
     }
 }

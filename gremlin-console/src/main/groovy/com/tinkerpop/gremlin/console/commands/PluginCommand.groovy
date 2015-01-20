@@ -1,17 +1,8 @@
 package com.tinkerpop.gremlin.console.commands
 
 import com.tinkerpop.gremlin.console.Mediator
-import com.tinkerpop.gremlin.console.plugin.ConsolePluginAcceptor
-import com.tinkerpop.gremlin.console.plugin.PluggedIn
-import com.tinkerpop.gremlin.groovy.plugin.Artifact
-import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
-import groovy.grape.Grape
 import org.codehaus.groovy.tools.shell.ComplexCommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
-
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 
 /**
  * Activate a plugin.
@@ -30,11 +21,11 @@ class PluginCommand extends ComplexCommandSupport {
         final pluginName = arguments.size() == 1 ? arguments[0] : null
         if (pluginName == null || pluginName.isEmpty()) return "Specify the name of the plugin to use"
 
-        if (!mediator.availablePlugins.values().any{it.plugin.name==pluginName})
+        if (!mediator.availablePlugins.values().any { it.plugin.name == pluginName })
             return "$pluginName could not be found - use ':plugin list' to see available plugins"
 
         mediator.showShellEvaluationOutput(false)
-        mediator.availablePlugins.values().find{it.plugin.name==pluginName}.activate()
+        mediator.availablePlugins.values().find { it.plugin.name == pluginName }.activate()
         mediator.showShellEvaluationOutput(true)
         mediator.writePluginState()
 
@@ -45,10 +36,10 @@ class PluginCommand extends ComplexCommandSupport {
         final pluginName = arguments.size() == 1 ? arguments[0] : null
         if (pluginName == null || pluginName.isEmpty()) return "Specify the name of the plugin to deactivate"
 
-        if (!mediator.availablePlugins.values().any{it.plugin.name==pluginName})
+        if (!mediator.availablePlugins.values().any { it.plugin.name == pluginName })
             return "$pluginName could not be found - use ':plugin list' to see available plugins"
 
-        mediator.availablePlugins.values().find{it.plugin.name==pluginName}.deactivate()
+        mediator.availablePlugins.values().find { it.plugin.name == pluginName }.deactivate()
         mediator.writePluginState()
 
         return "$pluginName deactivated - restart your console for this to take effect"

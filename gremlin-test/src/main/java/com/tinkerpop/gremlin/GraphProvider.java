@@ -2,8 +2,13 @@ package com.tinkerpop.gremlin;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
+import com.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser;
+import com.tinkerpop.gremlin.process.traverser.B_O_Traverser;
+import com.tinkerpop.gremlin.process.traverser.O_Traverser;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -16,6 +21,7 @@ import org.apache.commons.configuration.Configuration;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,6 +39,20 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphProvider {
+
+    /**
+     * Implementations from {@code gremlin-core} that need to be part of the clear process.  This does not exempt
+     * vendors from having to register their extensions to any of these classes, but does prevent them from
+     * having to register them in addition to their own.
+     */
+    public static final Set<Class> CORE_IMPLEMENTATIONS = new HashSet<Class>() {{
+        add(AnonymousGraphTraversal.Tokens.class);
+        add(DefaultGraphTraversal.class);
+        add(B_O_PA_S_SE_SL_Traverser.class);
+        add(B_O_P_PA_S_SE_SL_Traverser.class);
+        add(B_O_Traverser.class);
+        add(O_Traverser.class);
+    }};
 
     /**
      * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance using the default
@@ -116,9 +136,9 @@ public interface GraphProvider {
      * "gremlin.graph" setting which should be defined by the implementer. It should provide a
      * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
      *
-     * @param graphName a unique test graph name
-     * @param test the test class
-     * @param testMethodName the name of the test
+     * @param graphName              a unique test graph name
+     * @param test                   the test class
+     * @param testMethodName         the name of the test
      * @param configurationOverrides settings to override defaults with.
      */
     public Configuration newGraphConfiguration(final String graphName,
@@ -131,8 +151,8 @@ public interface GraphProvider {
      * "gremlin.graph" setting which should be defined by the implementer. It should provide a
      * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
      *
-     * @param graphName a unique test graph name
-     * @param test the test class
+     * @param graphName      a unique test graph name
+     * @param test           the test class
      * @param testMethodName the name of the test
      */
     default public Configuration newGraphConfiguration(final String graphName,
@@ -158,7 +178,7 @@ public interface GraphProvider {
 
     /**
      * Converts the GraphSON representation of an identifier to the implementation's representation of an identifier.
-     * When serializing a custom identifier type to GraphSON an implementer will typically specify a custom serializer
+     * When serializing a mapper identifier type to GraphSON an implementer will typically specify a mapper serializer
      * in {@link com.tinkerpop.gremlin.structure.Graph.Io}.  That will serialize the identifier to a GraphSON representation.
      * When the GraphSON is deserialized, the identifier is written to an
      * {@link com.tinkerpop.gremlin.structure.util.detached.Attachable} object where it is passed to a user supplied
@@ -167,8 +187,8 @@ public interface GraphProvider {
      * providing the mechanism that a test can use to do the conversion.
      *
      * @param clazz The {@link Element} class that represents the identifier.
-     * @param id The identifier to convert.
-     * @param <ID> The type of the identifier.
+     * @param id    The identifier to convert.
+     * @param <ID>  The type of the identifier.
      * @return The reconstituted identifier.
      */
     public default <ID> ID reconstituteGraphSONIdentifier(final Class<? extends Element> clazz, final Object id) {
@@ -179,41 +199,49 @@ public interface GraphProvider {
      * Get the set of concrete implementations of certain classes and interfaces utilized by the test suite. This
      * method should return any implementations or extensions of the following interfaces or classes:
      * <ul>
-     *     <li>{@link Edge}</li>
-     *     <li>{@link Edge.Iterators}</li>
-     *     <li>{@link Element}</li>
-     *     <li>{@link Element.Iterators}</li>
-     *     <li>{@link DefaultGraphTraversal}</li>
-     *     <li>{@link Graph}</li>
-     *     <li>{@link Graph.Variables}</li>
-     *     <li>{@link GraphTraversal}</li>
-     *     <li>{@link Property}</li>
-     *     <li>{@link Traversal}</li>
-     *     <li>{@link Traverser}</li>
-     *     <li>{@link Vertex}</li>
-     *     <li>{@link Vertex.Iterators}</li>
-     *     <li>{@link VertexProperty}</li>
-     *     <li>{@link VertexProperty.Iterators}</li>
+     * <li>{@link Edge}</li>
+     * <li>{@link Edge.Iterators}</li>
+     * <li>{@link Element}</li>
+     * <li>{@link Element.Iterators}</li>
+     * <li>{@link DefaultGraphTraversal}</li>
+     * <li>{@link Graph}</li>
+     * <li>{@link Graph.Variables}</li>
+     * <li>{@link Graph.Iterators}</li>
+     * <li>{@link GraphTraversal}</li>
+     * <li>{@link com.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser}</li>
+     * <li>{@link Property}</li>
+     * <li>{@link com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser}</li>
+     * <li>{@link Traversal}</li>
+     * <li>{@link Traverser}</li>
+     * <li>{@link Vertex}</li>
+     * <li>{@link Vertex.Iterators}</li>
+     * <li>{@link VertexProperty}</li>
+     * <li>{@link VertexProperty.Iterators}</li>
      * </ul>
      * <br/>
      * The test suite only enforces registration of the following core structure interfaces (i.e. these classes must
      * be registered or the tests will fail to execute):
      * <ul>
-     *     <li>{@link Edge}</li>
-     *     <li>{@link Edge.Iterators}</li>
-     *     <li>{@link Element}</li>
-     *     <li>{@link Element.Iterators}</li>
-     *     <li>{@link Graph}</li>
-     *     <li>{@link Graph.Variables}</li>
-     *     <li>{@link Property}</li>
-     *     <li>{@link Vertex}</li>
-     *     <li>{@link Vertex.Iterators}</li>
-     *     <li>{@link VertexProperty}</li>
-     *     <li>{@link VertexProperty.Iterators}</li>
+     * <li>{@link Edge}</li>
+     * <li>{@link Edge.Iterators}</li>
+     * <li>{@link Element}</li>
+     * <li>{@link Element.Iterators}</li>
+     * <li>{@link Graph}</li>
+     * <li>{@link Graph.Variables}</li>
+     * <li>{@link Graph.Iterators}</li>
+     * <li>{@link Property}</li>
+     * <li>{@link Vertex}</li>
+     * <li>{@link Vertex.Iterators}</li>
+     * <li>{@link VertexProperty}</li>
+     * <li>{@link VertexProperty.Iterators}</li>
      * </ul>
      * <br/>
      * The remaining interfaces and classes should be registered however as failure to do so, might cause failures
      * in the Groovy environment testing suite.
+     * <br/>
+     * Internally speaking, tests that make use of this method should bind in {@link #CORE_IMPLEMENTATIONS} to the
+     * {@link Set} because these represent {@code gremlin-core} implementations that are likely not registered
+     * by the vendor implementations.
      */
     public Set<Class> getImplementations();
 }

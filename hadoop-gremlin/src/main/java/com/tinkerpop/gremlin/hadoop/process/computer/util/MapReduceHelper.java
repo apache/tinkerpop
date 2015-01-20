@@ -27,7 +27,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.Comparator;
 import java.util.Optional;
 

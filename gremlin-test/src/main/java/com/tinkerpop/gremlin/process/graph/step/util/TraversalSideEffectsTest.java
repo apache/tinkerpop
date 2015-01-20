@@ -2,31 +2,29 @@ package com.tinkerpop.gremlin.process.graph.step.util;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class TraversalSideEffectsTest extends AbstractGremlinProcessTest {
-    public abstract Traversal.SideEffects get_g_V_sideEffects();
+    public abstract TraversalSideEffects get_g_V_asAdmin_getSideEffects();
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_sideEffects() {
-        final Traversal.SideEffects sideEffects = get_g_V_sideEffects();
+        final TraversalSideEffects sideEffects = get_g_V_asAdmin_getSideEffects();
         try {
             assertFalse(sideEffects.get("a"));
         } catch (IllegalArgumentException e) {
-            assertEquals(Traversal.SideEffects.Exceptions.sideEffectDoesNotExist("a").getMessage(), e.getMessage());
+            assertEquals(TraversalSideEffects.Exceptions.sideEffectDoesNotExist("a").getMessage(), e.getMessage());
         }
-        assertEquals(sideEffects.get(Graph.Hidden.hide("g")), sideEffects.getGraph());
-        assertTrue(Graph.class.isAssignableFrom(sideEffects.getGraph().getClass()));
         assertEquals(StringFactory.traversalSideEffectsString(sideEffects), sideEffects.toString());
     }
 
@@ -36,7 +34,7 @@ public abstract class TraversalSideEffectsTest extends AbstractGremlinProcessTes
         }
 
         @Override
-        public Traversal.SideEffects get_g_V_sideEffects() {
+        public TraversalSideEffects get_g_V_asAdmin_getSideEffects() {
             return g.V().asAdmin().getSideEffects();
         }
     }

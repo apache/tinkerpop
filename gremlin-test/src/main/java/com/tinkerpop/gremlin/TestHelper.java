@@ -67,7 +67,8 @@ public final class TestHelper {
      */
     public static String cleanPathSegment(final String toClean) {
         final String cleaned = toClean.replaceAll("[.\\\\/:*?\"<>|\\[\\]\\(\\)]", "");
-        if(cleaned.length() == 0) throw new IllegalStateException("Path segment " + toClean + " has not valid characters and is thus empty");
+        if (cleaned.length() == 0)
+            throw new IllegalStateException("Path segment " + toClean + " has not valid characters and is thus empty");
         return cleaned;
     }
 }

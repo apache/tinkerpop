@@ -88,7 +88,8 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     @Override
     public VertexProperty<V> attach(final Vertex hostVertex) {
         final Iterator<VertexProperty<V>> vertexPropertyIterator = IteratorUtils.filter(hostVertex.iterators().propertyIterator(this.label), vp -> ElementHelper.areEqual(this, vp));
-        if (!vertexPropertyIterator.hasNext()) throw new IllegalStateException("The detached vertex property could not be be found at the provided vertex: " + this);
+        if (!vertexPropertyIterator.hasNext())
+            throw new IllegalStateException("The detached vertex property could not be be found at the provided vertex: " + this);
         return vertexPropertyIterator.next();
     }
 

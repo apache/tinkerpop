@@ -12,8 +12,8 @@ import io.netty.util.ReferenceCountUtil;
 import java.util.List;
 
 /**
-* @author Stephen Mallette (http://stephen.genoprime.com)
-*/
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
 public class WebSocketGremlinResponseDecoder extends MessageToMessageDecoder<WebSocketFrame> {
     private final MessageSerializer serializer;
 

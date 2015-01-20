@@ -8,7 +8,6 @@ import groovyx.gbench.Benchmark;
 import groovyx.gbench.BenchmarkStaticExtension;
 import groovyx.gprof.ProfileStaticExtension;
 import groovyx.gprof.Profiler;
-import org.codehaus.groovy.tools.shell.IO;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

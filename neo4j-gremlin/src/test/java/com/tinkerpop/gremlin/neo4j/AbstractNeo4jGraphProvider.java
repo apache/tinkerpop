@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jEdgeTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jElementTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jGraphTraversal;
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jGraphTraversalStub;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jVertexPropertyTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jVertexTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jGraphTraversal;
@@ -29,13 +28,12 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
-    private static final Set<Class> TP_IMPLEMENTATIONS = new HashSet<Class>() {{
+    private static final Set<Class> IMPLEMENTATIONS = new HashSet<Class>() {{
         add(Neo4jEdge.class);
         add(Neo4jElement.class);
         add(Neo4jEdgeTraversal.class);
         add(Neo4jElementTraversal.class);
         add(Neo4jGraphTraversal.class);
-        add(Neo4jGraphTraversalStub.class);
         add(Neo4jVertexPropertyTraversal.class);
         add(DefaultNeo4jGraphTraversal.class);
         add(Neo4jVertexTraversal.class);
@@ -49,7 +47,7 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
     @Override
     public void clear(final Graph g, final Configuration configuration) throws Exception {
         if (null != g) {
-            if (g.features().graph().supportsTransactions())
+            if (g.features().graph().supportsTransactions() && g.tx().isOpen())
                 g.tx().rollback();
             g.close();
         }
@@ -147,6 +145,6 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
 
     @Override
     public Set<Class> getImplementations() {
-        return TP_IMPLEMENTATIONS;
+        return IMPLEMENTATIONS;
     }
 }

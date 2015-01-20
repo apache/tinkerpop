@@ -57,42 +57,42 @@ public abstract class GroovyFilterTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
-            ComputerTestHelper.compute("g.V.filter { false }",g);
+            ComputerTestHelper.compute("g.V.filter { false }", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXtrueX() {
-            ComputerTestHelper.compute("g.V.filter { true }",g);
+            ComputerTestHelper.compute("g.V.filter { true }", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX() {
-            ComputerTestHelper.compute("g.V.filter { it.property('lang').orElse('none') == 'java' }",g);
+            ComputerTestHelper.compute("g.V.filter { it.property('lang').orElse('none') == 'java' }", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_filterXage_gt_30X(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).filter { it.age > 30 }",g);
+            ComputerTestHelper.compute("g.V(${v1Id}).filter { it.age > 30 }", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_filterXage_gt_30X(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).out.filter { it.property('age').orElse(0) > 30 }",g);
+            ComputerTestHelper.compute("g.V(${v1Id}).out.filter { it.property('age').orElse(0) > 30 }", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
-            ComputerTestHelper.compute("g.V.filter { it.name.startsWith('m') || it.name.startsWith('p') }",g);
+            ComputerTestHelper.compute("g.V.filter { it.name.startsWith('m') || it.name.startsWith('p') }", g);
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_filterXfalseX() {
-            ComputerTestHelper.compute("g.E.filter { false }",g);
+            ComputerTestHelper.compute("g.E.filter { false }", g);
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_filterXtrueX() {
-            ComputerTestHelper.compute("g.E.filter { true }",g);
+            ComputerTestHelper.compute("g.E.filter { true }", g);
         }
     }
 }

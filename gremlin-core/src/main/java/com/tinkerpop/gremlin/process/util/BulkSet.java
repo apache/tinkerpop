@@ -15,7 +15,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
- * BulkSet is a weighted set. Objects are added along with a bulk counter the denotes how many times the object was added to the set.
+ * BulkSet is a weighted set (i.e. a multi-set). Objects are added along with a bulk counter the denotes how many times the object was added to the set.
  * Given that count-based compression (vs. enumeration) can yield large sets, methods exist that are long-based (2^64).
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -25,16 +25,20 @@ public class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializable {
 
     @Override
     public int size() {
-        return this.map.values().stream().collect(Collectors.summingLong(Long::longValue)).intValue();
+        return (int) this.longSize();
+    }
+
+    public int uniqueSize() {
+        return this.map.size();
+    }
+
+    public long longSize() {
+        return this.map.values().stream().collect(Collectors.summingLong(Long::longValue));
     }
 
     @Override
     public boolean isEmpty() {
         return this.map.isEmpty();
-    }
-
-    public long longSize() {
-        return this.map.values().stream().collect(Collectors.summingLong(Long::longValue));
     }
 
     @Override
@@ -57,7 +61,7 @@ public class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializable {
         return true;
     }
 
-    public void forEach(final BiConsumer<S,Long> consumer) {
+    public void forEach(final BiConsumer<S, Long> consumer) {
         this.map.forEach(consumer);
     }
 

@@ -95,7 +95,7 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         if (!workingDirectory.exists()) workingDirectory.mkdirs();
         final GraphReader reader = KryoReader.build()
                 .workingDirectory(workingDirectory.getAbsolutePath())
-                .custom(g.io().gremlinKryoSerializer())
+                .mapper(g.io().kryoMapper().create())
                 .create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
             reader.readGraph(stream, g);

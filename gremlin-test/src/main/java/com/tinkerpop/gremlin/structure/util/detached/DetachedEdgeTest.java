@@ -16,10 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -164,14 +161,5 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         final Edge e = v.addEdge("test", v);
         final DetachedEdge detachedEdge = DetachedFactory.detach(e, false);
         detachedEdge.remove();
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    public void shouldNotTraverse() {
-        final Vertex v = g.addVertex();
-        final Edge e = v.addEdge("test", v);
-        final DetachedEdge detachedEdge = DetachedFactory.detach(e, false);
-        detachedEdge.start();
     }
 }

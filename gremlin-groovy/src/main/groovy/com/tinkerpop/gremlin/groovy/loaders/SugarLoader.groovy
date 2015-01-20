@@ -1,8 +1,7 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.gremlin.process.traverser.PathTraverser
-import com.tinkerpop.gremlin.process.traverser.SimpleTraverser
 import com.tinkerpop.gremlin.process.Traverser
+import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
 import com.tinkerpop.gremlin.process.util.TraversalHelper
 import com.tinkerpop.gremlin.structure.*
@@ -16,7 +15,7 @@ class SugarLoader {
 
         GremlinLoader.load();
 
-        [Traverser, PathTraverser, SimpleTraverser].forEach {
+        [Traverser].forEach {
             it.metaClass.getProperty = { final String key ->
                 TraverserCategory.get((Traverser) delegate, key);
             }
@@ -32,6 +31,7 @@ class SugarLoader {
 
         Traverser.metaClass.mixin(TraverserCategory.class);
         GraphTraversal.metaClass.mixin(GraphTraversalCategory.class);
+        AnonymousGraphTraversal.Tokens.metaClass.mixin(AnonymousGraphTraversalTokensCategory.class);
         Graph.metaClass.mixin(GraphCategory.class);
         Vertex.metaClass.mixin(VertexCategory.class);
         Edge.metaClass.mixin(ElementCategory.class);
@@ -40,12 +40,13 @@ class SugarLoader {
 
     public static class TraverserCategory {
         public static final get(final Traverser traverser, final String key) {
-            return traverser.sideEffects().exists(key) ? traverser.sideEffects().get(key) : traverser.get()."$key";
+            return traverser.get()."$key";
         }
     }
 
     public static class ElementCategory {
-        public static final get(final Element element, final String key) {
+        public static final Object get(final Element element, final String key) {
+            // TODO: Weird:::: return element.property(key).orElseGet{vertex."$key"()};
             final Property property = element.property(key);
             if (property.isPresent())
                 return property.value();
@@ -59,7 +60,8 @@ class SugarLoader {
     }
 
     public static class VertexCategory {
-        public static final get(final Vertex vertex, final String key) {
+        public static final Object get(final Vertex vertex, final String key) {
+            // TODO: Weird:::: return vertex.property(key).orElseGet{vertex."$key"()};
             final Property property = vertex.property(key);
             if (property.isPresent())
                 return property.value();
@@ -93,16 +95,34 @@ class SugarLoader {
     public static class GraphTraversalCategory {
 
         public static final get(final GraphTraversal graphTraversal, final String key) {
-            // GraphTraversal.metaClass.getMetaMethod(key) ? graphTraversal."$key"() : graphTraversal.value(key);
             graphTraversal."$key"()
         }
 
         public static final getAt(final GraphTraversal graphTraversal, final Integer index) {
-            graphTraversal.range(index, index+1);
+            graphTraversal.range(index, index + 1);
         }
 
         public static final getAt(final GraphTraversal graphTraversal, final Range range) {
             graphTraversal.range(range.getFrom() as Integer, range.getTo() as Integer);
+        }
+
+        public String toString() {
+            return TraversalHelper.makeTraversalString(this.metaClass.owner);
+        }
+    }
+
+    public static class AnonymousGraphTraversalTokensCategory {
+
+        public static final get(final AnonymousGraphTraversal.Tokens token, final String key) {
+            token."$key"()
+        }
+
+        public static final getAt(final AnonymousGraphTraversal.Tokens token, final Integer index) {
+            token.range(index, index + 1);
+        }
+
+        public static final getAt(final AnonymousGraphTraversal.Tokens token, final Range range) {
+            token.range(range.getFrom() as Integer, range.getTo() as Integer);
         }
 
         public String toString() {

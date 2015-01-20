@@ -31,7 +31,7 @@ public class SugarGremlinPluginTest {
 
         final Groovysh groovysh = new Groovysh();
 
-        final Map<String,Object> env = new HashMap<>();
+        final Map<String, Object> env = new HashMap<>();
         env.put("ConsolePluginAcceptor.io", new IO());
         env.put("ConsolePluginAcceptor.shell", groovysh);
 

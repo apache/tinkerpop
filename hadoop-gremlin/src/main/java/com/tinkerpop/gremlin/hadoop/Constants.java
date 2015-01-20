@@ -6,9 +6,6 @@ import com.tinkerpop.gremlin.structure.Graph;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class Constants {
-
-    //public static final Kryo KRYO = GremlinKryo.build().create().createKryo();
-
     public static final String GREMLIN_HADOOP_INPUT_LOCATION = "gremlin.hadoop.inputLocation";
     public static final String GREMLIN_HADOOP_OUTPUT_LOCATION = "gremlin.hadoop.outputLocation";
     public static final String GREMLIN_HADOOP_GRAPH_INPUT_FORMAT = "gremlin.hadoop.graphInputFormat";

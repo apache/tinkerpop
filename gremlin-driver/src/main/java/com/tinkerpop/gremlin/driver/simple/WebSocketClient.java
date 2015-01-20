@@ -60,19 +60,19 @@ public class WebSocketClient implements SimpleClient {
                                     uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders()));
             final MessageSerializer serializer = new KryoMessageSerializerV1d0();
             b.channel(NioSocketChannel.class)
-             .handler(new ChannelInitializer<SocketChannel>() {
-                 @Override
-                 protected void initChannel(final SocketChannel ch) {
-                     final ChannelPipeline p = ch.pipeline();
-                     p.addLast(
-                             new HttpClientCodec(),
-                             new HttpObjectAggregator(8192),
-                             wsHandler,
-                             new WebSocketGremlinRequestEncoder(true, serializer),
-                             new WebSocketGremlinResponseDecoder(serializer),
-                             callbackResponseHandler);
-                 }
-             });
+                    .handler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(final SocketChannel ch) {
+                            final ChannelPipeline p = ch.pipeline();
+                            p.addLast(
+                                    new HttpClientCodec(),
+                                    new HttpObjectAggregator(8192),
+                                    wsHandler,
+                                    new WebSocketGremlinRequestEncoder(true, serializer),
+                                    new WebSocketGremlinResponseDecoder(serializer),
+                                    callbackResponseHandler);
+                        }
+                    });
 
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
             wsHandler.handshakeFuture().sync();
