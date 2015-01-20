@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Operator;
+import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
@@ -138,16 +139,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay4() throws Exception {
         Graph g = TinkerFactory.createModern();
-        /*Traversal t = g.V().union(
-                __.repeat(__.union(
-                        __.out("created"),
-                        __.in("created"))).times(2),
-                __.repeat(__.union(
-                        __.in("created"),
-                        __.out("created"))).times(2)).label().groupCount().submit(g.compute());*/
-        //Traversal t = g.V().out("created").union(__.as("project").in("created").has("name","marko").back("project"), __.as("project").in("created").in("knows").has("name","marko").back("project")).groupCount().by("name");
-
-        Traversal t = g.V().emit().repeat(__.out()).times(2).values("name").submit(g.compute());
+        Traversal t = g.V().order().by("name", Order.incr).dedup().values("name");
 
         System.out.println(t);
         t.forEachRemaining(System.out::println);
