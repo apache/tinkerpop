@@ -705,7 +705,7 @@ gremlin> g.V().values('name').order()
 ==>peter
 ==>ripple
 ==>vadas
-gremlin> g.V().values('name').order(decr)
+gremlin> g.V().values('name').order().by(decr)
 ==>vadas
 ==>ripple
 ==>peter
