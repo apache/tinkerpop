@@ -1,8 +1,9 @@
-package com.tinkerpop.gremlin.process.graph.step.map
+package com.tinkerpop.gremlin.process.graph.step.branch
 
 import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
+import com.tinkerpop.gremlin.process.graph.step.branch.LocalTest
 import com.tinkerpop.gremlin.structure.Order
 import com.tinkerpop.gremlin.structure.Vertex
 
@@ -25,6 +26,11 @@ public abstract class GroovyLocalTest {
             g.V.has(T.label, 'person').as('a').local(__.out('created').as('b')).select('a', 'b').by('name').by(T.id)
         }
 
+        @Override
+        public Traversal<Vertex, Long> get_g_V_localXoutE_countX() {
+            g.V.local(__.outE.count());
+        }
+
         /*@Override
         public Traversal<Vertex, Map<Double, Long>> get_g_V_localXoutE_weight_groupCountX() {
             return g.V().local((Traversal) __.outE().values("weight").groupCount());
@@ -41,6 +47,11 @@ public abstract class GroovyLocalTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXlabel_personX_asXaX_localXoutXcreatedX_asXbXX_selectXa_bX_byXnameX_byXidX() {
             ComputerTestHelper.compute("g.V.has(T.label, 'person').as('a').local(__.out('created').as('b')).select('a', 'b').by('name').by(T.id)", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_localXoutE_countX() {
+            ComputerTestHelper.compute("g.V.local(__.outE.count())", g);
         }
 
         /*@Override

@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class GroovyMapTest {
+public abstract class GroovyMapTest {
 
     public static class StandardTest extends MapTest {
 

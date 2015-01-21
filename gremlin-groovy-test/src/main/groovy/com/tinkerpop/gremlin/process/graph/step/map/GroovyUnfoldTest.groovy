@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyUnfoldTest {
+public abstract class GroovyUnfoldTest {
 
     public static class StandardTest extends UnfoldTest {
 

@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph.step.map;
+package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
@@ -25,6 +25,8 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value();
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXlabel_personX_asXaX_localXoutXcreatedX_asXbXX_selectXa_bX_byXnameX_byXidX();
+
+    public abstract Traversal<Vertex, Long> get_g_V_localXoutE_countX();
 
     @Test
     @LoadGraphWith(CREW)
@@ -56,6 +58,15 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
             }
         }
         assertEquals(4, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_localXoutE_countX() {
+        final Traversal<Vertex, Long> traversal = get_g_V_localXoutE_countX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(3l, 0l, 0l, 0l, 1l, 2l), traversal);
+
     }
 
     /*@Test
@@ -90,6 +101,11 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
             return g.V().has(T.label, "person").as("a").local(__.out("created").as("b")).select("a", "b").by("name").by(T.id);
         }
 
+        @Override
+        public Traversal<Vertex, Long> get_g_V_localXoutE_countX() {
+            return g.V().local(__.outE().count());
+        }
+
         /*@Override
         public Traversal<Vertex, Map<Double, Long>> get_g_V_localXoutE_weight_groupCountX() {
             return g.V().local((Traversal) __.outE().values("weight").groupCount());
@@ -110,6 +126,11 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXlabel_personX_asXaX_localXoutXcreatedX_asXbXX_selectXa_bX_byXnameX_byXidX() {
             return g.V().has(T.label, "person").as("a").local(__.out("created").as("b")).select("a", "b").by("name").by(T.id).submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_localXoutE_countX() {
+            return g.V().local(__.outE().count()).submit(g.compute());
         }
 
         /*@Override

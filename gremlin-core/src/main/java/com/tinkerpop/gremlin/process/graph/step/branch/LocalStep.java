@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
+import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collections;
@@ -20,6 +21,7 @@ import java.util.Set;
 public final class LocalStep<S, E> extends AbstractStep<S, E> implements TraversalHolder {
 
     private Traversal.Admin<S, E> localTraversal;
+    private boolean first = true;
 
     public LocalStep(final Traversal traversal, final Traversal<S, E> localTraversal) {
         super(traversal);
@@ -31,6 +33,7 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
     public LocalStep<S, E> clone() throws CloneNotSupportedException {
         final LocalStep<S, E> clone = (LocalStep<S, E>) super.clone();
         clone.localTraversal = this.localTraversal.clone().asAdmin();
+        clone.first = true;
         clone.executeTraversalOperations(clone.localTraversal, Child.SET_HOLDER, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS);
         return clone;
     }
@@ -58,12 +61,18 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
 
     @Override
     protected Traverser<E> processNextStart() throws NoSuchElementException {
+        if (this.first) {
+            this.first = false;
+            this.localTraversal.addStart(this.starts.next());
+        }
         while (true) {
             if (this.localTraversal.hasNext())
                 return TraversalHelper.getEnd(this.localTraversal).next();
-            else {
+            else if(this.starts.hasNext()) {
                 this.localTraversal.reset();
                 this.localTraversal.addStart(this.starts.next());
+            } else {
+                throw FastNoSuchElementException.instance();
             }
         }
     }

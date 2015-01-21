@@ -59,6 +59,13 @@ public abstract class LazyBarrierStep<S, E> extends AbstractStep<S, E> implement
 
     }
 
+    @Override
+    public LazyBarrierStep<S, E> clone() throws CloneNotSupportedException {
+        final LazyBarrierStep<S, E> clone = (LazyBarrierStep<S, E>) super.clone();
+        clone.done = false;
+        return clone;
+    }
+
     ///////
 
     public static class ObjectBiFunction<S, E> implements BiFunction<E, Traverser<S>, E> {
