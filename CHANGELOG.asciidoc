@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Refactored `profile()` to use injected steps. `ProfileStep` can now be used without any special JVM command line parameters.
 * Added `LazyBarrierStep` which acts like `BarrierStep` but operates on a seed with a bi-function.
 * Added a preprocessor for AsciiDocs. Documentation code examples are executed and the results are dynamically inserted into the doc file.
 * `LocalStep` traversal is treated as a branch, not an isolated traversal. Moreover, moved to `branch/`.
