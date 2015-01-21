@@ -12,4 +12,5 @@ build_output.txt
 .settings
 _bsp/
 doc/out
+docs/*.asciidoc
 ext/

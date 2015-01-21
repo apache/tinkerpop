@@ -176,7 +176,7 @@ public class TraversalHelper {
             if (stepClass.isAssignableFrom(step.getClass()))
                 list.add((S) step);
             if (step instanceof TraversalHolder) {
-                for (final Traversal<?, ?> nest : ((TraversalHolder<?, ?>) step).getTraversals()) {
+                for (final Traversal<?, ?> nest : ((TraversalHolder) step).getGlobalTraversals()) {
                     list.addAll(TraversalHelper.getStepsOfAssignableClassRecurssively(stepClass, nest.asAdmin()));
                 }
             }
@@ -259,12 +259,12 @@ public class TraversalHelper {
         Traversal.Admin<?, ?> current = traversal;
         while (!(current instanceof EmptyTraversal)) {
             stepPosition.y++;
-            final TraversalHolder<?, ?> holder = current.getTraversalHolder();
+            final TraversalHolder holder = current.getTraversalHolder();
             if (null == stepPosition.parentId && !(holder instanceof EmptyStep))
                 stepPosition.parentId = holder.asStep().getId();
             if (-1 == stepPosition.z) {
-                for (int i = 0; i < holder.getTraversals().size(); i++) {
-                    if (holder.getTraversals().get(i) == current) {
+                for (int i = 0; i < holder.getGlobalTraversals().size(); i++) {
+                    if (holder.getGlobalTraversals().get(i) == current) {
                         stepPosition.z = i;
                     }
                 }

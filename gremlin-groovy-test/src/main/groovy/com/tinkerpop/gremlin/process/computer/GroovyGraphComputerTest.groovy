@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.computer
 
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -170,6 +171,13 @@ public abstract class GroovyGraphComputerTest {
                         list
                     """)
                     .create());
+        }
+
+        @Override
+        public GraphComputer get_g_compute_programXTraversalVertexProgram_build_traversalXg_V_both_hasXlabel_personX_age_groupCountXaXX_create() {
+            return g.compute().program(TraversalVertexProgram.build().
+                    traversal("GraphFactory.open(['gremlin.graph':'${g.metaClass.theClass.getCanonicalName()}']).V().both().has(label,'person').values('age').groupCount('a')").
+                    create());
         }
     }
 }

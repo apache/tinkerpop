@@ -1,11 +1,9 @@
 package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
-import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -19,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * A step which offers a choice of two or more Traversals to take.
@@ -26,9 +25,9 @@ import java.util.function.Predicate;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implements TraversalHolder<S, E> {
+public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implements TraversalHolder {
 
-    private static final Child[] CHILD_OPERATIONS = new Child[]{Child.SET_HOLDER, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS, Child.SET_STRATEGIES};
+    private static final Child[] CHILD_OPERATIONS = new Child[]{Child.SET_HOLDER, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS};
 
     private final Function<S, M> mapFunction;
     private Map<M, Traversal<S, E>> choices;
@@ -46,21 +45,20 @@ public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implement
         super(traversal);
         this.mapFunction = mapFunction;
         this.choices = choices;
-        this.executeTraversalOperations(CHILD_OPERATIONS);
-    }
+        for (final Traversal<S, E> child : this.choices.values()) {
+            child.asAdmin().addStep(new EndStep(child));
+            this.executeTraversalOperations(child, CHILD_OPERATIONS);
+        }
 
-    @Override
-    public TraversalStrategies getChildStrategies() {
-        return TraversalHolder.super.getChildStrategies().removeStrategies(SideEffectCapStrategy.class); // no auto cap();
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getTraversalRequirements();
+        return TraversalHolder.super.getRequirements();
     }
 
     @Override
-    public List<Traversal<S, E>> getTraversals() {
+    public List<Traversal<S, E>> getGlobalTraversals() {
         return Collections.unmodifiableList(new ArrayList<>(this.choices.values()));
     }
 
@@ -93,9 +91,10 @@ public final class ChooseStep<S, E, M> extends ComputerAwareStep<S, E> implement
         final ChooseStep<S, E, M> clone = (ChooseStep<S, E, M>) super.clone();
         clone.choices = new HashMap<>();
         for (final Map.Entry<M, Traversal<S, E>> entry : this.choices.entrySet()) {
-            clone.choices.put(entry.getKey(), entry.getValue().clone());
+            final Traversal<S, E> choiceClone = entry.getValue().clone();
+            clone.choices.put(entry.getKey(), choiceClone);
+            clone.executeTraversalOperations(choiceClone, CHILD_OPERATIONS);
         }
-        clone.executeTraversalOperations(CHILD_OPERATIONS);
         return clone;
     }
 

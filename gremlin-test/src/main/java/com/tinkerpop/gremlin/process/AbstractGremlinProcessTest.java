@@ -42,6 +42,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
 
     public <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {
         final List<T> results = traversal.toList();
+        assertFalse(traversal.hasNext());
         assertEquals("Checking result size", expectedResults.size(), results.size());
         for (T t : results) {
             if (t instanceof Map) {

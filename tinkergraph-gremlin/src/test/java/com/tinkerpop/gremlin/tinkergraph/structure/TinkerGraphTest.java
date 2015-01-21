@@ -3,6 +3,9 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.computer.ComputerResult;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -30,6 +33,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -139,8 +143,9 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay4() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().order().by("name", Order.incr).dedup().values("name");
-
+        Traversal t = g.V().local(__.outE().count());
+        System.out.println(t.toList());
+        System.out.println(t.hasNext());
         System.out.println(t);
         t.forEachRemaining(System.out::println);
         System.out.println(t);
