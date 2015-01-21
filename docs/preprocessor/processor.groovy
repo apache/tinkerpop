@@ -1,5 +1,11 @@
+/**
+ * @author Daniel Kuppitz (daniel at thinkaurelius.com)
+ */
+import com.tinkerpop.gremlin.process.computer.util.ScriptEngineCache
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
+
+import javax.script.ScriptContext
 
 def BLOCK_DELIMITER = "----"
 def STATEMENT_CONTINUATION_CHARACTERS = [".", ",", "{", "("]
@@ -30,7 +36,7 @@ def header = """
 
 def skipNextRead = false
 def inCodeSection = false
-def shell
+def engine
 
 sanitize = { def codeLine ->
     codeLine.replaceAll(/\s*(\<\d+\>,\s*)*\<\d+\>\s*$/, "").replaceAll(/\s*\/\/.*$/, "").trim()
@@ -60,7 +66,7 @@ new File(this.args[0]).withReader { reader ->
                 }
                 def res
                 try {
-                   res = shell.evaluate(script.toString())
+                   res = engine.eval(script.toString())
                 } catch (e) {
                    e.printStackTrace()
                    System.exit(1)
@@ -90,14 +96,13 @@ new File(this.args[0]).withReader { reader ->
             }
             if (!inCodeSection) println BLOCK_DELIMITER
         } else {
-            if (line.startsWith("[gremlin")) {
+            if (line.startsWith("[gremlin-")) {
                 def parts = line.split(/,/, 2)
                 def graph = parts.size() == 2 ? parts[1].capitalize().replaceAll(/\s*\]\s*$/, "") : ""
-                def binding = new Binding()
                 def g = graph.isEmpty() ? TinkerGraph.open() : TinkerFactory."create${graph}"()
-                binding.setProperty("g", g)
-                if (graph == "Modern") binding.setProperty("marko", g.V().has("name", "marko").next())
-                shell = new GroovyShell(this.class.classLoader, binding)
+                engine = ScriptEngineCache.get(parts[0].split(/-/, 2)[1].replaceAll(/\s*\]\s*$/, ""))
+                engine.put("g", g)
+                if (graph == "Modern") engine.put("marko", g.V().has("name", "marko").next())
                 reader.readLine()
                 inCodeSection = true
                 println "[source,groovy]"
