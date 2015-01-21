@@ -198,7 +198,7 @@ gremlin> g.V().has('name','marko').out('knows').values('name')
 
 Or, if the marko-vertex is already realized with a direct reference pointer (i.e. a variable), then the traversal can be spawned off that vertex. This illustrates that vertex (as well as edge and vertex property) also supports `GraphTraversal`-return methods.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 marko = g.V().has('name','marko').next()
 marko.out('knows') <1>
@@ -214,7 +214,7 @@ image::tinkerpop-classic-ex1.png[width=500]
 
 It is possible to represent any `map()`, `filter()`, or `sideEffect()` step using `flatMap()`. Map can return an iterator with a single object in it. Filter can return an iterator with a single object in it or no object at all. Side-effect can return an iterator containing the incoming object, but also update some other area of memory. Thus, ignoring `branch()`, `flatMap()` is the most general construct -- "turn the incoming object into an iterator of objects."
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().filter {it.get().value('name') == 'marko'}.
       flatMap {it.get().out('knows')}.
@@ -223,7 +223,7 @@ g.V().filter {it.get().value('name') == 'marko'}.
 
 Finally, as a strictly academic exercise, the traversal can be written completely using flatMap.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().flatMap {it.get().value('name') == 'marko' ? [it.get()].iterator() : [].iterator()}.
       flatMap {it.get().out('knows')}.
@@ -241,7 +241,7 @@ image::traversal-mechanics.png[width=500]
 
 In TinkerPop3, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept is new to TinkerPop3 and provides the means by which steps remain stateless. A traverser maintains all the metadata about the traversal -- e.g., how many times the traverser has gone through a loop, the path history of the traverser, the current object being traversed, etc. Traverser metadata may be accessed by a step. A classic example is the `path()`-step.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 marko.out('knows').values('name').path()
 ----
@@ -250,7 +250,7 @@ CAUTION: Path calculation is costly in terms of space as an array of previously 
 
 Another example is the `repeat()`-step which takes into account the number of times the traverser has gone through a particular section of the traversal expression.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 marko.repeat(__.out()).times(2).values('name')
 ----

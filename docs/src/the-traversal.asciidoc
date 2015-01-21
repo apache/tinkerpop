@@ -51,7 +51,7 @@ The `Traverser<S>` object provides access to:
 IMPORTANT: If a specific traversal step can do the necessary step-computation, use it. Lambda steps can not be optimized by the Gremlin <<traversalstrategy,traversal strategies>> and should only be used when the requisite computation does not have a corresponding standard Gremlin step. For example, instead of `filter{it.get().property('name').isPresent()}` use `has('name')`.
 
 image:map-lambda.png[width=150,float=right]
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).as('a').out() <1>
 g.V(1).as('a').out().map{it.path('a')} <2>
@@ -63,7 +63,7 @@ g.V(1).as('a').out().back('a') <3>
 <3> The <<back-step,`back()`>>-step is implemented as a `map()`-step that accesses data in the historic path.
 
 image:filter-lambda.png[width=160,float=right]
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().filter {it.get().label() == 'person'} <1>
 g.V().has(label,'person') <2>
@@ -74,7 +74,7 @@ g.V().has(label,'person') <2>
 
 
 image:side-effect-lambda.png[width=175,float=right]
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().has(label,'person').sideEffect(System.out.&println) <1>
 ----
@@ -82,7 +82,7 @@ g.V().has(label,'person').sideEffect(System.out.&println) <1>
 <1> Whatever enters `sideEffect()` is passed to the next step, but some intervening process can occur.
 
 image:branch-lambda.png[width=180,float=right]
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().branch {it.get().value('name') == 'marko' ? ['a'] : ['b']}.as('a').
       values('age').branch{['c']}.as('b').
@@ -103,7 +103,7 @@ image::addedge-step.png[width=450]
 
 link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit in the data was is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is defined by the traversal description. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived. This is made possible with `addE()`-step (*sideEffect*).
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).as('a').out('created')
 g.V(1).as('a').out('created').in('created')
@@ -124,7 +124,7 @@ image::aggregate-step.png[width=800]
 
 The `aggregate()`-step (*sideEffect*) is used to aggregate all the objects at a particular point of traversal into a Collection. The step uses link:http://en.wikipedia.org/wiki/Eager_evaluation[eager evaluation] in that no objects continue on until all previous objects have been fully aggregated (as opposed to <<store-step,`store()`>> which link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazily] fills a collection). The eager evaluation nature is crucial in situations where everything at a particular point is required for future computation. An example is provided below.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).out('created') // what has marko created?
 g.V(1).out('created').aggregate('x') // aggregate all his creations
@@ -139,7 +139,7 @@ In link:http://en.wikipedia.org/wiki/Recommender_system[recommendation systems],
 
 Finally, `aggregate()`-step can be modulated via `by()`-projection.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().out('knows').aggregate()
 g.V().out('knows').aggregate().by('name')
@@ -151,7 +151,7 @@ Back Step
 
 link:http://en.wikipedia.org/wiki/Functional_programming[Functional languages] make use of function composition and lazy evaluation to create complex computations from primitive operations. This is exactly what Gremlin `GraphTraversal` does. One of the differentiating aspects of Gremlin's data flow approach to graph processing is that the flow need not always go "forward," but in fact, can go back to a previously seen area of computation. Examples include <<repeat-step,`repeat()`>> as well as the `back()`-step (*map*).
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ---
 g.V().out().out()
 g.V().out().out().path()
@@ -166,7 +166,7 @@ Between Step
 
 The `between()`-step (*filter*) is similar to <<has-step,`has()`>>-step in that it filters elements according to their properties.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().between('age',20,30)
 g.V().between('age',20,30).values('age')
@@ -179,7 +179,7 @@ Choose Step
 
 The `choose()`-step (*branch*) allows for the current traverser to select which traversal branch to take. With `choose()`, it is possible to implement if/else-based semantics. The first set of examples below provide information about the vertices of the graph so its easier to understand the `choose()` examples to follow.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().has(label,'person').values('name').map {[it.get(), it.get().length()]}
 g.V().has(label,'person').filter {it.get().value('name').length() == 5}.in().values('name')
@@ -190,7 +190,7 @@ Given the facts above, the following examples show how to use `choose()` to sele
 
 image::choose-step.png[width=700]
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().has(label,'person').
       choose({ it.value('name').length() == 5},   // If the predicate is true, then do `in`, else do `out`.
@@ -217,7 +217,7 @@ Coin Step
 
 To randomly filter out a traverser, use the `coin()`-step (*filter*). The provided double argument biases the "coin toss."
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().coin(0.5)
 g.V().coin(0.0)
@@ -232,7 +232,7 @@ image::cyclicpath-step.png[width=400]
 
 Each traverser maintains its history through the traversal over the graph -- i.e. its <<path-data-structure,path>>. If it is important that the traverser repeat its course, then `cyclic()`-path should be used (*filter*). The step analyzes the path of the traverser thus far and if there are any repeats, the traverser is filtered out over the traversal computation. If non-cyclic behavior is desired, see <<simplepath-step,`simplePath()`>>.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).both().both()
 g.V(1).both().both().cyclicPath()
@@ -245,7 +245,7 @@ Dedup Step
 
 With `dedup()`-step (*filter*), repeatedly seen objects are removed from the traversal stream. Note that if a traverser's bulk is greater than 1, then it is set to 1 before being emitted.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().values('lang')
 g.V().values('lang').dedup()
@@ -253,7 +253,7 @@ g.V().values('lang').dedup()
 
 If a lambda is provided to `dedup()`, then the object is processed by the lambda prior to determining if it has been seen or not.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().values('name').map {[ it.get(), it.get().length() ]}
 g.V().values('name').dedup().by {it.length()}
@@ -267,7 +267,7 @@ Except Step
 
 The `except()`-step (*filter*) can be used to remove objects from the traversal stream. If `except()` is provided a string, then the excepting object is located at `traverser.sideEffects().get(label)`. If `except()` is provided a collection, then any object contained in that collection is filtered out. Please see the related <<retain-step,`retain()`>>-step.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).as('x').out('created').in('created')
 g.V(1).as('x').out('created').in('created').except('x') // co-developers
@@ -281,7 +281,7 @@ Fold Step
 
 There are situations when the traversal stream needs a "barrier" to aggregate all the objects and emit a computation that is a function of the aggregate. The `fold()`-step (*map*) is one particular instance of this. Please see <<unfold-step,`unfold()`>>-step for the inverse functionality.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).out('knows').values('name')
 g.V(1).out('knows').values('name').fold() <1>
@@ -303,7 +303,7 @@ Group Step
 
 As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required. That is, the actually path taken or the current location of a traverser is not the ultimate output of the computation, but some other representation of the traversal. The `group()`-step (*sideEffect*) is one such sideEffect that organizes the objects according to some function of the object. Then, if required, that organization (a list) is reduced. An example is provided below.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().group().by {it.value('name')[1]}   // group the vertices by the second letter of their name
 g.V().group().by {it.value('name')[1]}.by('name')   // for each vertex in the group, get their name (now the name[1] is apparent)
@@ -326,7 +326,7 @@ When it is important to know how many times a particular object has been at a pa
 
 	"What is the distribution of ages in the graph?"
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().has(label,'person').values('age').groupCount()
 g.V().has(label,'person').groupCount().by('age') // you can also supply a pre-group projection
@@ -338,7 +338,7 @@ There is one person that is 32, one person that is 35, one person that is 27, an
 
 image::groupcount-step.png[width=420]
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().repeat(__.both().groupCount('m').by {it.value('name')[1]}).times(10).cap('m')
 ----
@@ -355,7 +355,7 @@ image::has-step.png[width=670]
 
 It is possible to filter vertices, edges, and vertex properties based on their properties using `has()`-step (*filter*).
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().has(label,'person')
 g.V().has(label,'person').out().has('name',within,['vadas','josh'])
@@ -372,7 +372,7 @@ image::inject-step.png[width=800]
 
 One of the major features of TinkerPop3 is "injectable steps." This makes it possible to insert objects arbitrarily into a traversal stream. In general, `inject()`-step (*sideEffect*) exists and a few examples are provided below.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(4).out().values('name').inject('daniel')
 g.V(4).out().values('name').inject('daniel').map {it.get().length()}
@@ -381,7 +381,7 @@ g.V(4).out().values('name').inject('daniel').map {it.get().length()}.path()
 
 In the last example above, note that the path starting with `daniel` is only of length 2. This is because the `daniel` string was inserted half-way in the traversal. Finally, a typical use case is provided below -- when the start of the traversal is not a graph object.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 __.inject(1,2)
 __.inject(1,2).map {it.get() + 1}
@@ -394,7 +394,7 @@ Limit Step
 
 The `limit()`-step is analogous to <<range-step,`range()`-step>> save that the lower end range is set to 0.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().limit(2)
 g.V().range(0, 2)
@@ -409,7 +409,7 @@ image::local-step.png[width=450]
 
 A `GraphTraversal` operates on a continuous stream of objects. In many situations, it is important to operate on a single element within that stream. To do such object-local traversal computations, `local()`-step exists (*map*). Note that the examples below use the <<the-crew-toy-graph,The Crew>> toy data set.
 
-[gremlin,theCrew]
+[gremlin-groovy,theCrew]
 ----
 g.V().as('person').
       properties('location').order().by('startTime',incr).limit(2).
@@ -434,7 +434,7 @@ The `match()`-step (*map*) is introduced into TinkerPop3 to support a more link:
 
 image::match-step.png[width=500]
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().match('a',
       __.as('a').out('created').as('b'),
@@ -445,7 +445,7 @@ g.V().match('a',
 
 Note that the above can also be more concisely written as below which demonstrates that imperative inner-traversals can be arbitrarily defined.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().match('a',
       __.as('a').out('created').has('name', 'lop').as('b'),
@@ -454,7 +454,7 @@ g.V().match('a',
 
 MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. Like SPARQL, MatchStep conjoins a set of patterns applied to a graph.  For example, the following traversal finds exactly those songs which Jerry Garcia has both sung and written (using the Grateful Dead graph distributed in the `data/` directory):  
 
-[gremlin]
+[gremlin-groovy]
 ----
 g.io().readGraphML('data/grateful-dead.xml')
 g.V().match('a',
@@ -465,7 +465,7 @@ g.V().match('a',
 
 Among the features which differentiate `match()` from SPARQL are:
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().match('a',
       __.as('a').out('created').has('name','lop').as('b'), <1>
@@ -480,7 +480,7 @@ g.V().match('a',
 
 To extend point #3, it is possible to support going from imperative, to declarative, to imperative, ad infinitum.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().match('a',
       __.as('a').out('knows').as('b'),
@@ -494,7 +494,7 @@ g.V().match('a',
 
 Like all other steps in Gremlin, `match()` is a function and thus, `match()` within `match()` is a natural consequence of Gremlin's functional foundation (i.e. recursive matching).
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().match('a',
       __.as('a').out('knows').as('b'),
@@ -514,7 +514,7 @@ Using Where with Match
 
 Match is typically used in conjunction with both `select()` (demonstrated previously) and `where()` (presented here). A `where()` allows the user to further constrain the result set provided by `match()`.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().match('a',
       __.as('a').out('created').as('b'),
@@ -524,7 +524,7 @@ g.V().match('a',
 
 The `where()`-step can take either a `BiPredicate` (first example below) or a `Traversal` (second example below). Using `MatchWhereStrategy`, `where()`-clauses can be automatically folded into `match()` and thus, subject to `match()`-steps budget-match algorithm.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 traversal = g.V().match('a',
                   __.as('a').out('created').as('b'),
@@ -549,7 +549,7 @@ Order Step
 
 When the objects of the traversal stream need to be sorted, `order()`-step (*map*) can be leveraged.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().values('name').order()
 g.V().values('name').order().by(decr)
@@ -558,7 +558,7 @@ g.V().values('name').order().by {a,b -> a[1] <=> b[1]}
 
 Note that `order()` takes a `Comparator` var args and thus, its possible to do secondary sorting. Secondary sorting is presented below along with the handy `Comparator.comparing()` method.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 import static java.util.Comparator.*
 g.V().values('name').order().by(comparing {it[1]}) // order by the second letter
@@ -567,7 +567,7 @@ g.V().values('name').order().by(comparing {it[1]}).by(comparing {it[2]}) // orde
 
 One of the most traversed objects in a traversal is an `Element`. An element can have properties associated with it (i.e. key/value pairs). In many situations, it is desirable to sort an element traversal stream according to a comparison of their properties.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().values('name')
 g.V().order().by('name',incr).values('name')
@@ -576,7 +576,7 @@ g.V().order().by('name',decr).values('name')
 
 The `order()`-step allows the user to provide an arbitrary number of comparators for primary, secondary, etc. sorting. These comparators can be lambdas or they can be pre-defined enums (e.g. `Order.incr`). It is always best to use a pre-defined enum instead of a generic lambda as the underlying vendor may be able to optimize the execution when the comparator is inspectable.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().has(label,'person').order().by('name') {a,b -> a[1] <=> b[1]}.
                                   by('age',incr).values('name')
@@ -592,7 +592,7 @@ A traverser is transformed as it moves through a series of steps within a traver
 
 image::path-step.png[width=650]
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().out().out().values('name')
 g.V().out().out().values('name').path()
@@ -600,21 +600,21 @@ g.V().out().out().values('name').path()
 
 If edges are required in the path, then be sure to traverser those edges explicitly.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().outE().inV().outE().inV().path()
 ----
 
 It is possible to post-process the elements of the path in a round-robin fashion via `by()`.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().out().out().path().by('name').by('age')
 ----
 
 Finally, because `by()`-based post-processing, nothing prevents triggering yet another traversal. In the traversal below, for each element of the path traversed thus far, if its a person (as determined by having an `age`-property), then get all of their creations, else if its a creation, get all the people that created it.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().out().out().path().by {
         it.choose({ it.has(label,'person').hasNext() },
@@ -632,7 +632,7 @@ The `Path` data structure is an ordered list of objects, where each object is as
 
 image::path-data-structure.png[width=350]
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 path = g.V(1).as('a').has('name').as('b').
               out('knows').out('created').as('c').
@@ -713,7 +713,7 @@ Range Step
 
 As traversers propagate through the traversal, it is possible to only allow a certain number of them to pass through with `range()`-step (*filter*). When the low-end of the range is not met, objects are continued to be iterated. When within the low and high range (both inclusive), traversers are emitted. Finally, when above the high range, the traversal breaks out of iteration.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().range(0,3)
 g.V().range(1,3)
@@ -728,7 +728,7 @@ image::gremlin-fade.png[width=350]
 
 The `repeat()`-step (*branch*) is used for looping over a traversal given some break predicate. Below are some examples of `repeat()`-step in action.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).repeat(__.out()).times(2).path().by('name') <1>
 g.V().until(__.has('name','ripple')).
@@ -744,7 +744,7 @@ NOTE: The `times(x)` step modulator is an alias for `until{it.loops() >= x}`.
 
 The `repeat()`-step also supports an "emit predicate", where the predicate for an empty argument `emit()` is true (i.e. `emit() == emit{true}`). With `emit()`, the traverser is split in two -- the traverser exits the code block as well as continues back within the code block (assuming `until()` holds true).
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).repeat(__.out()).times(2).emit().path().by('name') <1>
 g.V(1).emit().repeat(__.out()).times(2).path().by('name') <2>
@@ -755,7 +755,7 @@ g.V(1).emit().repeat(__.out()).times(2).path().by('name') <2>
 
 The `emit()`-modulator can take an arbitrary predicate.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).repeat(__.out()).times(2).
        emit {it.get().property('lang').isPresent()}.path().by('name')
@@ -765,7 +765,7 @@ g.V(1).repeat(__.out()).times(2).
 
 image::repeat-step.png[width=500]
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).repeat(__.out()).times(2).emit().path().by('name')
 ----
@@ -774,7 +774,7 @@ The first time through the `repeat()`, the vertices lop, vadas, and josh are see
 
 Finally, note that both `emit()` and `until()` can take a traversal and in such, situations, the predicate is determined by `traversal.hasNext()`. A few examples are provided below.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).repeat(__.out()).until(__.has(label,'software')).path().by('name') <1>
 g.V(1).emit(__.has(label,'person')).repeat(__.out()).path().by('name') <2>
@@ -793,7 +793,7 @@ Retain Step
 
 The `retain()`-step (*filter*) can be used to filter objects from the traversal stream that don't match the provided criteria. If `retain()` is provided a string, the retaining object is retrieved via `traverser.path().get(label)`. If `retain()` is provided a collection, then any object not contained in that collection is filtered out. Please see the related <<except-step,`except()`>>-step.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).as('x').out('created').in('created')
 g.V(1).as('x').out('created').in('created').retain('x')
@@ -812,7 +812,7 @@ image:gremlin-sacks-running.png[width=175,float=right] A traverser can contain a
 
 Two trivial examples are presented below to demonstrate the *initial value supplier*. In the first example below, a traverser is created at each vertex in the graph (`g.V()`), with a 1.0 sack (`withSack{1.0f}`), and then the sack value is accessed (`sack()`). In the second example, a random float supplier is used to generate sack values.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().withSack {1.0f}.sack()
 rand = new Random()
@@ -821,7 +821,7 @@ g.V().withSack {rand.nextFloat()}.sack()
 
 A more complicated initial value supplier example is presented below where the sack values are used in a running computation and then emitted at the end of the traversal. When an edge is traversed, the edge weight is multiplied by the sack value (`sack(mult,'weight')`).
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().withSack {1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2)
 g.V().withSack {1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2).sack()
@@ -830,7 +830,7 @@ g.V().withSack {1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2).path(
 
 image:gremlin-sacks-standing.png[width=100,float=left] When complex objects are used (i.e. non-primitives), then a *split operator* should be defined to ensure that each traverser gets a clone of its parent's sack. The first example does not use a split operator and as such, the same map is propagated to all traversers (a global data structure). The second example, demonstrates how `Map.clone()` ensures that each traverser's sack contains a unique, local sack.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().withSack {[:]}.out().out().
       sack {m,v -> m[v.value('name')] = v.value('lang'); m}.sack() // BAD: single map
@@ -846,7 +846,7 @@ Sample Step
 
 The `sample()`-step is useful for sampling some number of traversers previous in the traversal.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().outE().sample(1).values('weight')
 g.V().outE().sample(1).by('weight').values('weight')
@@ -855,7 +855,7 @@ g.V().outE().sample(2).by('weight').values('weight')
 
 One of the more interesting use cases for `sample()` is when it is used in conjunction with <<local-step,`local()`>>. The combination of the two steps supports the execution of link:http://en.wikipedia.org/wiki/Random_walk[random walks]. In the example below, the traversal starts are vertex 1 and selects one edge to traverse based on a probability distribution generated by the weights of the edges. The output is always a single path as by selecting a single edge, the traverser never splits and continues down a single path in the graph.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).repeat(__.local(
          __.bothE().sample(1).by('weight').otherV()
@@ -879,7 +879,7 @@ There are two use cases for `select()`-step (*map*).
 
 The first use case is demonstrated via example below.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().as('a').out().as('b').out().as('c') // no select
 g.V().as('a').out().as('b').out().as('c').select()
@@ -890,7 +890,7 @@ g.V().as('a').out().as('b').out().as('c').select('a') // if the selection is one
 
 The second use case is best understood in terms of <<match-step,`match()`>>-step where the result of `match()` is a `Map<String,Object>` of variable bindings. However, any step that emits a `Map<String,Object>` can be selected. A contrived example is presented below.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().range(0, 2).as('a').map{[b:1,c:2]} <1>
 g.V().range(0, 2).as('a').map{[b:1,c:2]}.select() <2>
@@ -909,7 +909,7 @@ Using Where with Select
 
 Finally, like <<match-step,`match()`>>-step, it is possible to use `where()`, as where is a filter that processes `Map<String,Object>` streams.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().as('a').out('created').in('created').as('b').select().by('name') <1>
 g.V().as('a').out('created').in('created').as('b').
@@ -931,7 +931,7 @@ Shuffle Step
 
 Randomizing the order of the traversers at a particular point in the traversal is possible with `shuffle()`-step (*map*).
 
-[gremlin]
+[gremlin-groovy]
 ----
 __.inject(1,2,3).map {it.get() * 2}
 __.inject(1,2,3).map {it.get() * 2}.shuffle()
@@ -946,7 +946,7 @@ image::simplepath-step.png[width=400]
 
 When it is important that a traverser not repeat its path through the graph, `simplePath()`-step should be used (*filter*). The <<path-data-structure,path>> information of the traverser is analyzed and if the path has repeated objects in it, the traverser is filtered. If cyclic behavior is desired, see <<cyclicpath-step,`cyclicPath()`>>.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).both().both()
 g.V(1).both().both().simplePath()
@@ -959,7 +959,7 @@ Store Step
 
 When link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy] aggregation is needed, `store()`-step (*sideEffect*) should be used over <<aggregate-step,`aggregate()`>>. The two steps differ in that `store()` does not block and only stores objects in its side-effect collection as they pass through.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().aggregate('x').limit(1).cap('x')
 g.V().store('x').limit(1).cap('x')
@@ -967,7 +967,7 @@ g.V().store('x').limit(1).cap('x')
 
 It is interesting to note that there are three results in the `store()` side-effect even though the interval selection is for 2 objects. Realize that when the third object is on its way to the `range()` filter (i.e. `[0..1]`), it passes through `store()` and thus, stored before filtered.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.E().store().by('weight')
 ----
@@ -978,7 +978,7 @@ Subgraph Step
 
 Extracting a portion of a graph from a larger one for analysis, visualization or other purposes is a fairly common use case for graph analysts and developers. The `subgraph()`-step (*sideEffect*) provides a way to produce an edge-induced subgraph from virtually any traversal.  The following code shows how to produce the "knows" subgraph:
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 sg = g.E().subgraph {it.label() == 'knows'}.next() <1>
 sg.E() <2>
@@ -989,7 +989,7 @@ sg.E() <2>
 
 A more common subgraphing use case is to get all of the graph structure surrounding a single vertex:
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 sg = g.V(3).repeat(__.inE().outV()).times(3).emit().subgraph({true}).next()   <1>
 sg.E()
@@ -1041,7 +1041,7 @@ From any one element (i.e. vertex or edge), the emanating paths from that elemen
 
 image::tree-step.png[width=450]
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 tree = g.V().out().out().tree().next()
 ----
@@ -1052,7 +1052,7 @@ image::tree-step2.png[width=500]
 
 The resultant tree data structure can then be manipulated (see link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/process/graph/step/util/Tree.html[Tree JavaDoc]). For the sake of demonstration, a post-processing lambda is applied in the running example below.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 tree = g.V().out().out().tree().by('name').next()
 tree['marko']
@@ -1066,7 +1066,7 @@ Unfold Step
 
 If the object reaching `unfold()` (*flatMap*) is an iterator, iterable, or map, then it is unrolled into a linear form. If not, then the object is simply emitted. Please see <<fold-step,`fold()`>>-step for the inverse behavior.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(1).out().fold().inject('gremlin',[1.23,2.34])
 g.V(1).out().fold().inject('gremlin',[1.23,2.34]).unfold()
@@ -1074,7 +1074,7 @@ g.V(1).out().fold().inject('gremlin',[1.23,2.34]).unfold()
 
 Note that `unfold()` does not recursively unroll iterators. Instead, `repeat()` can be used to for recursive unrolling.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 __.inject(1,[2,3,[4,5,[6]]])
 __.inject(1,[2,3,[4,5,[6]]]).unfold()
@@ -1089,7 +1089,7 @@ image::union-step.png[width=650]
 
 The `union()`-step (*branch*) supports the merging of the results of an arbitrary number of traversals. When a traverser reaches a `union()`-step, it is copied to each of its internal steps. The traversers emitted from `union()` are the outputs of the respective internal traversals.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(4).union(
        __.in().values('age'),
@@ -1105,7 +1105,7 @@ ValueMap Step
 
 The `valueMap()`-step yields a Map representation of the properties of an element.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V().valueMap()
 g.V().valueMap('age')
@@ -1115,7 +1115,7 @@ g.E().valueMap()
 
 It is important to note that the map of a vertex maintains a list of values for each key. The map of an edge or vertex-property represents a single property (not a list). The reason is that vertices in TinkerPop3 leverage <<vertex-properties,vertex properties>> which are support multiple values per key. Using the <<the-crew-toy-graph,"The Crew">> toy graph, the point is made explicit.
 
-[gremlin,theCrew]
+[gremlin-groovy,theCrew]
 ----
 g.V().valueMap()
 g.V().has('name','marko').properties('location')
@@ -1124,7 +1124,7 @@ g.V().has('name','marko').properties('location').valueMap()
 
 If the `id`, `label`, `key`, and `value` of the `Element` is desired, then a boolean triggers its insertion into the returned map.
 
-[gremlin,theCrew]
+[gremlin-groovy,theCrew]
 ----
 g.V().has(label,'person').valueMap(true)
 g.V().has(label,'person').valueMap(true,'name')
@@ -1150,7 +1150,7 @@ The vertex steps (*flatMap*) are fundamental to the Gremlin language. Via these 
 * `bothV()`: Move to both vertices.
 * `otherV()` : Move to the vertex that was not the vertex that was moved from.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 g.V(4)
 g.V(4).outE()  // all outgoing edges
@@ -1262,7 +1262,7 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
 
 The traversal is redefined by simply taking a chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 t = g.V().has('name','marko'); null
 t.toString()
@@ -1323,7 +1323,7 @@ image:gremlin-quill.png[width=200,float=right] The super interface of GraphTrave
 
 This traversal definition can now be used as follows.
 
-[gremlin,modern]
+[gremlin-groovy,modern]
 ----
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
 g.of(SocialTraversal).people("marko").knows().name()

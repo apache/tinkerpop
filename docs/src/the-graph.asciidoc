@@ -34,7 +34,7 @@ gremlin> g.features()
 
 A common pattern for using features is to check their support prior to performing an operation:
 
-[gremlin]
+[gremlin-groovy]
 ----
 g.features().graph().supportsTransactions()
 g.features().graph().supportsTransactions() ? g.tx().commit() : "no tx"
@@ -128,7 +128,7 @@ TIP: A toy graph demonstrating all of the new TinkerPop3 graph structure feature
 .TinkerPop Crew
 image::the-crew-graph.png[width=685]
 
-[gremlin,theCrew]
+[gremlin-groovy,theCrew]
 ----
 g.V().as('a').properties('location').hasNot('endTime').as('b').
       select().by('name').by {it.value() + '(' + it.value('startTime') + ')'} // determine the current location of each person
@@ -155,7 +155,7 @@ TinkerPop3 introduces the concept of `Graph.Variables`. Variables are key/value 
 
 An example of graph variables in use is presented below in Gremlin-Groovy:
 
-[gremlin]
+[gremlin-groovy]
 ----
 g = TinkerGraph.open()
 g.variables()
@@ -735,7 +735,7 @@ NOTE: TinkerPop2 had the notion of "Graph Wrappers" which decorated standard `Gr
 
 To use a `GraphStrategy` instance, use the `Graph.strategy()` method to instantiate the `StrategyGraph` as follows:
 
-[gremlin]
+[gremlin-groovy]
 ----
 g = TinkerFactory.createModern()
 sg = g.strategy(IdentityStrategy.instance())
@@ -749,7 +749,7 @@ IdStrategy
 
 `IdStrategy` which affords complete control over element identifiers. Some `Graph` implementations, such as `TinkerGraph`, allow specification of custom identifiers when creating elements:
 
-[gremlin]
+[gremlin-groovy]
 ----
 g = TinkerGraph.open()
 v = g.addVertex(id,"42a")
@@ -786,7 +786,7 @@ PartitionStrategy
 
 `PartitionStrategy` is a `SubgraphStrategy` which creates logical subgraphs through the use of designated properties.  When each element is written to the `Graph`, it is marked with a property value indicating the current write-partition.  As elements are read from the graph, they are matched against the current set of read-partitions.  The read-partitions thereby define the union of a set of vertices and edges. For example:
 
-[gremlin]
+[gremlin-groovy]
 ----
 g = TinkerGraph.open()
 strategy = PartitionStrategy.build().partitionKey("com.example.partition").startPartition("A").create()
@@ -832,7 +832,7 @@ SequenceStrategy
 
 `SequenceStrategy` provides a way to string together a set of `GraphStrategy` implementations, such that they are executed in order from first to last.  The `Graph.strategy()` method provides a straightforward way to invisibly use `SequenceStrategy`:
 
-[gremlin]
+[gremlin-groovy]
 ----
 sg = g.strategy(ReadOnlyStrategy.instance(), PartitionStrategy.build().partitionKey('com.example.partition').startPartition('A').create())
 ----
