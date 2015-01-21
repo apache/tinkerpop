@@ -52,8 +52,6 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
     @Override
     public GroovyTraversalScript<S, E> using(final GraphComputer graphComputer) {
         this.graphComputer = graphComputer;
-        this.graphComputerScript = "traversal.applyStrategies(" + TraversalEngine.class.getCanonicalName() + "." + TraversalEngine.COMPUTER + ")\n";
-        // TODO: this should go at execute()
         return this;
     }
 

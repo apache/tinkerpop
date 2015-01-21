@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.ComputerResult;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -30,6 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -139,11 +142,13 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay4() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().order().by("name", Order.incr).dedup().values("name");
-
-        System.out.println(t);
+        ComputerResult result = g.compute().program(TraversalVertexProgram.build().
+                traversal("GraphFactory.open(['gremlin.graph':'com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph']).V().both().has(label,'person').values('age').groupCount('a')").
+                create()).submit().get();
+        System.out.println(result.memory().<Map>get("a"));
+        /*System.out.println(t);
         t.forEachRemaining(System.out::println);
-        System.out.println(t);
+        System.out.println(t);*/
     }
 
     /**

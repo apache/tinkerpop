@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -15,6 +16,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -58,6 +60,8 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
     public abstract GraphComputer get_g_compute_executeXcounterX_terminateX8X_mapreduceXcounter_aX_mapreduceXcounter_bX();
 
     public abstract GraphComputer get_g_compute_mapXidX_reduceXidX_reduceKeySortXreverseX_memoryKeyXidsX();
+
+    public abstract GraphComputer get_g_compute_programXTraversalVertexProgram_build_traversalXg_V_both_hasXlabel_personX_age_groupCountXaXX_create();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -288,6 +292,18 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         }
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldSupportStringTraversalVertexProgramExecution() throws Exception {
+        final ComputerResult result = get_g_compute_programXTraversalVertexProgram_build_traversalXg_V_both_hasXlabel_personX_age_groupCountXaXX_create().submit().get();
+        final Map<Integer, Long> map = result.memory().get("a");
+        assertEquals(4, map.size());
+        assertEquals(3, map.get(32).intValue());
+        assertEquals(1, map.get(35).intValue());
+        assertEquals(1, map.get(27).intValue());
+        assertEquals(3, map.get(29).intValue());
+    }
+
 
     public static class ComputerTest extends GraphComputerTest {
 
@@ -462,6 +478,13 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
                         return list;
                     })
                     .create());
+        }
+
+        @Override
+        public GraphComputer get_g_compute_programXTraversalVertexProgram_build_traversalXg_V_both_hasXlabel_personX_age_groupCountXaXX_create() {
+            return g.compute().program(TraversalVertexProgram.build().
+                    traversal("GraphFactory.open(['gremlin.graph':'" + g.getClass().getCanonicalName() + "']).V().both().has(label,'person').values('age').groupCount('a')").
+                    create());
         }
 
     }
