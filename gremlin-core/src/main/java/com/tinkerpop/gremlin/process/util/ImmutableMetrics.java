@@ -18,8 +18,8 @@ public class ImmutableMetrics implements Metrics, Serializable {
     protected long count;
     protected long durationNs = 0l;
     protected double percentDuration = -1;
-    protected Map<String, String> annotations = new HashMap<>();
-    protected Map<String, ImmutableMetrics> nested = new HashMap<>();
+    protected final Map<String, String> annotations = new HashMap<>();
+    protected final Map<String, ImmutableMetrics> nested = new HashMap<>();
 
     protected ImmutableMetrics() {
     }

@@ -42,7 +42,7 @@ public class ProfileStrategy extends AbstractTraversalStrategy {
             return;
 
         // Remove user-specified .profile() steps
-        List<ProfileStep> profileSteps = TraversalHelper.getStepsOfClass(ProfileStep.class, traversal);
+        final List<ProfileStep> profileSteps = TraversalHelper.getStepsOfClass(ProfileStep.class, traversal);
         for (ProfileStep step : profileSteps) {
             traversal.removeStep(step);
         }

@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
@@ -71,7 +72,8 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
 
     private StandardTraversalMetrics getTraversalMetricsUtil() {
         StandardTraversalMetrics traversalMetrics = this.getTraversal().asAdmin().getSideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, StandardTraversalMetrics::new);
-        traversalMetrics.initializeIfNecessary(this.getId(), this.traversal.asAdmin().getSteps().indexOf(this), name);
+        final boolean isComputer = this.traversal.asAdmin().getTraversalEngine().get().equals(TraversalEngine.COMPUTER);
+        traversalMetrics.initializeIfNecessary(this.getId(), this.traversal.asAdmin().getSteps().indexOf(this), name,  isComputer);
         return traversalMetrics;
     }
 }

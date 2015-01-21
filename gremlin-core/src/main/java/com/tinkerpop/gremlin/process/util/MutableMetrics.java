@@ -57,8 +57,8 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         // Merge annotations. If multiple values for a given key are found then append it to a comma-separated list.
         for (Map.Entry<String, String> p : other.annotations.entrySet()) {
             if (this.annotations.containsKey(p.getKey())) {
-                String existing = this.annotations.get(p.getKey());
-                List<String> existingValues = Arrays.asList(existing.split(","));
+                final String existing = this.annotations.get(p.getKey());
+                final List<String> existingValues = Arrays.asList(existing.split(","));
                 if (!existingValues.contains(p.getValue())) {
                     // New value. Append to comma-separated list.
                     this.annotations.put(p.getKey(), existing + "," + p.getValue());
@@ -104,7 +104,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
     }
 
     public ImmutableMetrics getImmutableClone() {
-        ImmutableMetrics clone = new ImmutableMetrics();
+        final ImmutableMetrics clone = new ImmutableMetrics();
         copyMembers(clone);
         this.nested.values().forEach(nested -> clone.nested.put(nested.id, ((MutableMetrics) nested).getImmutableClone()));
         return clone;
@@ -120,7 +120,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
 
     @Override
     public MutableMetrics clone() {
-        MutableMetrics clone = new MutableMetrics();
+        final MutableMetrics clone = new MutableMetrics();
         copyMembers(clone);
         this.nested.values().forEach(nested -> clone.nested.put(nested.id, ((MutableMetrics) nested).clone()));
         return clone;

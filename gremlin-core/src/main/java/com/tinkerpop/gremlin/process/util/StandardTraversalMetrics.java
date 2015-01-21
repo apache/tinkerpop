@@ -22,6 +22,7 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
      */
     private long totalStepDuration;
     private Map<String, ImmutableMetrics> computedMetrics;
+    private boolean isComputer = false;
 
     public StandardTraversalMetrics() {
     }
@@ -76,25 +77,25 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
         // Build a pretty table of metrics data.
 
         // Append headers
-        StringBuilder sb = new StringBuilder();
-        sb.append("Traversal Metrics\n").append(String.format("%28s %13s %11s %15s %8s", HEADERS));
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Traversal Metrics\n").append(String.format("%28s %21s %11s %15s %8s", HEADERS));
 
         // Append each StepMetric's row. indexToLabelMap values are ordered by index.
         for (String label : indexToLabelMap.values()) {
-            ImmutableMetrics s = computedMetrics.get(label);
+            final ImmutableMetrics s = computedMetrics.get(label);
             String rowName = s.getName();
 
             if (rowName.length() > 28)
                 rowName = rowName.substring(0, 28 - 3) + "...";
 
-            long itemCount = s.getNested(ELEMENT_COUNT_ID).getCount();
+            final long itemCount = s.getNested(ELEMENT_COUNT_ID).getCount();
 
-            sb.append(String.format("%n%28s %13d %11d %15.3f %8.2f",
+            sb.append(String.format("%n%28s %21d %11d %15.3f %8.2f",
                     rowName, itemCount, s.getCount(), s.getDuration(TimeUnit.MICROSECONDS) / 1000.0, s.getPercentDuration()));
         }
 
         // Append total duration
-        sb.append(String.format("%n%28s %13s %11s %15.3f %8s",
+        sb.append(String.format("%n%28s %21s %11s %15.3f %8s",
                 "TOTAL", "-", "-", getDuration(TimeUnit.MICROSECONDS) / 1000.0, "-"));
 
         return sb.toString();
@@ -113,11 +114,13 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
             tempMetrics.add(metrics.get(label).clone());
         }
 
-        // Subtract upstream traversal time from each step
-        for (int ii = tempMetrics.size() - 1; ii > 0; ii--) {
-            MutableMetrics cur = tempMetrics.get(ii);
-            MutableMetrics upStream = tempMetrics.get(ii - 1);
-            cur.setDuration(cur.getDuration(MutableMetrics.SOURCE_UNIT) - upStream.getDuration(MutableMetrics.SOURCE_UNIT));
+        if (!isComputer) {
+            // Subtract upstream traversal time from each step
+            for (int ii = tempMetrics.size() - 1; ii > 0; ii--) {
+                MutableMetrics cur = tempMetrics.get(ii);
+                MutableMetrics upStream = tempMetrics.get(ii - 1);
+                cur.setDuration(cur.getDuration(MutableMetrics.SOURCE_UNIT) - upStream.getDuration(MutableMetrics.SOURCE_UNIT));
+            }
         }
 
         // Calculate total duration
@@ -141,6 +144,7 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
 
         // iterate the incoming TraversalMetrics
         toMerge.forEachRemaining(inTraversalMetrics -> {
+            newTraversalMetrics.isComputer = inTraversalMetrics.isComputer;
 
             // aggregate the internal Metrics
             inTraversalMetrics.metrics.forEach((metricsId, toAggregate) -> {
@@ -165,12 +169,13 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
         return newTraversalMetrics;
     }
 
-    public void initializeIfNecessary(final String metricsId, final int index, final String displayName) {
+    public void initializeIfNecessary(final String metricsId, final int index, final String displayName, final boolean isComputer) {
         if (indexToLabelMap.containsKey(index)) {
             return;
         }
 
-        MutableMetrics newMetrics = new MutableMetrics(metricsId, displayName);
+        this.isComputer = isComputer;
+        final MutableMetrics newMetrics = new MutableMetrics(metricsId, displayName);
         // Add a nested metric for item count
         newMetrics.addNested(new MutableMetrics(ELEMENT_COUNT_ID, ITEM_COUNT_DISPLAY));
 

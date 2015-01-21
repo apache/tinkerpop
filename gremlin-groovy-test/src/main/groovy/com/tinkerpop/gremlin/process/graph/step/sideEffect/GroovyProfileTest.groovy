@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.process.util.StandardTraversalMetrics
 import com.tinkerpop.gremlin.structure.Vertex
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -17,6 +18,11 @@ public abstract class GroovyProfileTest {
             g.V.out.out.profile();
         }
 
+        @Override
+        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_repeat_both_profile() {
+            g.V.repeat(__.both()).times(3).profile();
+        }
+
     }
 
     public static class ComputerTest extends ProfileTest {
@@ -26,6 +32,11 @@ public abstract class GroovyProfileTest {
             ComputerTestHelper.compute("g.V.out.out.profile()", g);
         }
 
+
+        @Override
+        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_repeat_both_profile() {
+           ComputerTestHelper.compute("g.V.repeat(__.both()).times(3).profile()", g);
+        }
     }
 }
 
