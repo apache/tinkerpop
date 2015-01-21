@@ -1,27 +1,23 @@
 package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import org.javatuples.Pair;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupStep<S> extends FilterStep<S> implements Reversible, Reducing, FunctionHolder<S, Object> {
+public final class DedupStep<S> extends FilterStep<S> implements Reversible, Reducing<Set<Object>, S>, FunctionHolder<S, Object> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
             TraverserRequirement.BULK,
@@ -52,11 +48,11 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     }
 
     @Override
-    public Pair<Supplier<Set>, BiFunction<Set, Traverser<S>, Set>> getReducer() {
-        return Pair.with(HashSet::new, (set, traverser) -> {
-            set.add(null == this.uniqueFunction ? traverser.get() : this.uniqueFunction.apply(traverser.get()));
+    public Reducer<Set<Object>, S> getReducer() {
+        return new Reducer<>(HashSet::new, (set, start) -> {
+            set.add(null == this.uniqueFunction ? start : this.uniqueFunction.apply(start));
             return set;
-        });
+        }, true);
     }
 
     @Override

@@ -7,10 +7,6 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import org.javatuples.Pair;
-
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -38,14 +34,14 @@ public class ReducingStrategy extends AbstractTraversalStrategy {
 
     private static class ReducingIdentity extends AbstractStep implements Reducing {
 
-        private final Pair<Supplier, BiFunction> reducer;
+        private final Reducer reducer;
 
-        public ReducingIdentity(final Traversal traversal, final Pair<Supplier, BiFunction> reducer) {
+        public ReducingIdentity(final Traversal traversal, final Reducer reducer) {
             super(traversal);
             this.reducer = reducer;
         }
 
-        public Pair<Supplier, BiFunction> getReducer() {
+        public Reducer getReducer() {
             return this.reducer;
         }
 

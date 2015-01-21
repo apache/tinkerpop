@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.graph.step.util.LazyBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,8 +36,8 @@ public final class FoldStep<S, E> extends LazyBarrierStep<S, E> implements Reduc
     }
 
     @Override
-    public Pair<Supplier<E>, BiFunction<E, S, E>> getReducer() {
-        return Pair.with(this.getSeedSupplier(), ((ObjectBiFunction<S, E>) this.getBarrierFunction()).getBiFunction());
+    public Reducer<E, S> getReducer() {
+        return new Reducer<>(this.getSeedSupplier(), ((ObjectBiFunction<S, E>) this.getBarrierFunction()).getBiFunction(), false);
     }
 
     @Override

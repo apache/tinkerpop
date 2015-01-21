@@ -4,12 +4,8 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Barrier;
-import com.tinkerpop.gremlin.process.graph.marker.Reducing;
-import com.tinkerpop.gremlin.process.traverser.O_TraverserGenerator;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
-import org.javatuples.Pair;
 
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -21,6 +17,7 @@ public abstract class LazyBarrierStep<S, E> extends AbstractStep<S, E> implement
 
     private Supplier<E> seedSupplier;
     private BiFunction<E, Traverser<S>, E> barrierFunction;
+    private boolean done = false;
 
     public LazyBarrierStep(final Traversal traversal) {
         super(traversal);
@@ -43,16 +40,23 @@ public abstract class LazyBarrierStep<S, E> extends AbstractStep<S, E> implement
     }
 
     @Override
+    public void reset() {
+        super.reset();
+        this.done = false;
+    }
+
+    @Override
     public Traverser<E> processNextStart() {
-        if (this.starts.hasNext()) {
-            E seed = this.seedSupplier.get();
-            while (this.starts.hasNext()) {
-                seed = this.barrierFunction.apply(seed, this.starts.next());
-            }
-            return this.getTraversal().asAdmin().getTraverserGenerator().generate(seed, (Step) this, 1l);
-        } else {
+        if (this.done)
             throw FastNoSuchElementException.instance();
+
+        E seed = this.seedSupplier.get();
+        while (this.starts.hasNext()) {
+            seed = this.barrierFunction.apply(seed, this.starts.next());
         }
+        this.done = true;
+        return this.getTraversal().asAdmin().getTraverserGenerator().generate(seed, (Step) this, 1l);
+
     }
 
     ///////
