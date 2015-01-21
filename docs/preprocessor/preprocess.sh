@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pushd "$(dirname $0)/.." > /dev/null
+pushd "$(dirname $0)/../.." > /dev/null
 
 for input in $(find docs/src/ -name "*.asciidoc")
 do
