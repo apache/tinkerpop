@@ -57,7 +57,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
             }
             this.traversalEngine = Optional.of(engine);
             this.locked = true;
-            this.finalEndStep = TraversalHelper.getEnd(this);
+            this.finalEndStep = this.getEndStep();
         }
     }
 
@@ -69,16 +69,6 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     @Override
     public List<Step> getSteps() {
         return Collections.unmodifiableList(this.steps);
-    }
-
-    @Override
-    public void addStarts(final Iterator<Traverser<S>> starts) {
-        TraversalHelper.getStart(this).addStarts(starts);
-    }
-
-    @Override
-    public void addStart(final Traverser<S> start) {
-        TraversalHelper.getStart(this).addStart(start);
     }
 
     @Override
@@ -114,6 +104,16 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     @Override
     public boolean equals(final Object object) {
         return object instanceof Iterator && TraversalHelper.areEqual(this, (Iterator) object);
+    }
+
+    @Override
+    public Step<S, ?> getStartStep() {
+        return this.steps.isEmpty() ? EmptyStep.instance() : this.steps.get(0);
+    }
+
+    @Override
+    public Step<?, E> getEndStep() {
+        return this.steps.isEmpty() ? EmptyStep.instance() : this.steps.get(this.steps.size() - 1);
     }
 
     @Override

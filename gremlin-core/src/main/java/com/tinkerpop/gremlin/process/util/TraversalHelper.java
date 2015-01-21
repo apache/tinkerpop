@@ -65,14 +65,6 @@ public class TraversalHelper {
         return steps;
     }
 
-    public static <S, E> Step<S, ?> getStart(final Traversal.Admin<S, E> traversal) {
-        return traversal.getSteps().size() == 0 ? EmptyStep.instance() : traversal.getSteps().get(0);
-    }
-
-    public static <S, E> Step<?, E> getEnd(final Traversal.Admin<S, E> traversal) {
-        return traversal.getSteps().size() == 0 ? EmptyStep.instance() : traversal.getSteps().get(traversal.getSteps().size() - 1);
-    }
-
     public static boolean areEqual(final Iterator a, final Iterator b) {
         while (a.hasNext() || b.hasNext()) {
             if (a.hasNext() != b.hasNext())
@@ -149,7 +141,7 @@ public class TraversalHelper {
 
     public static String makeTraversalString(final Traversal.Admin<?, ?> traversal) {
         final List<Step> temp = new ArrayList<>();
-        Step currentStep = TraversalHelper.getStart(traversal);
+        Step currentStep = traversal.getStartStep();
         while (!(currentStep instanceof EmptyStep)) {
             temp.add(currentStep);
             currentStep = currentStep.getNextStep();

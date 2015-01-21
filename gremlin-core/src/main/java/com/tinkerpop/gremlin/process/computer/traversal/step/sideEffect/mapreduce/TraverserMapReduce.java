@@ -45,7 +45,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
 
     @Override
     public void loadState(final Configuration configuration) {
-        final Step step = TraversalHelper.getEnd(TraversalVertexProgram.getTraversalSupplier(configuration).get());
+        final Step step = TraversalVertexProgram.getTraversalSupplier(configuration).get().getEndStep();
         this.comparator = Optional.ofNullable(step instanceof ComparatorHolder ? GraphComputerHelper.chainComparators(((ComparatorHolder) step).getComparators()) : null);
         this.reducer = Optional.ofNullable(step instanceof Reducing ? ((Reducing) step).getReducer() : null);
     }

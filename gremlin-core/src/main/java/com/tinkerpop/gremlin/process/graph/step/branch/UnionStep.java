@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -27,7 +26,7 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
     public UnionStep(final Traversal traversal, final Traversal<S, E>... unionTraversals) {
         super(traversal);
         this.unionTraversals = Arrays.asList(unionTraversals);
-        for(final Traversal<S,E> child : this.unionTraversals) {
+        for (final Traversal<S, E> child : this.unionTraversals) {
             child.asAdmin().addStep(new EndStep(child));
             this.executeTraversalOperations(child, CHILD_OPERATIONS);
         }
@@ -38,7 +37,7 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
     protected Iterator<Traverser<E>> standardAlgorithm() {
         while (true) {
             for (final Traversal<S, E> union : this.unionTraversals) {
-                if (union.hasNext()) return TraversalHelper.getEnd(union.asAdmin());
+                if (union.hasNext()) return union.asAdmin().getEndStep();
             }
             final Traverser.Admin<S> start = this.starts.next();
             this.unionTraversals.forEach(union -> union.asAdmin().addStart(start.split()));
@@ -52,7 +51,7 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
             final Traverser.Admin<S> start = this.starts.next();
             for (final Traversal<S, E> union : this.unionTraversals) {
                 final Traverser.Admin<S> unionSplit = start.split();
-                unionSplit.setStepId(TraversalHelper.getStart(union.asAdmin()).getId());
+                unionSplit.setStepId(union.asAdmin().getStartStep().getId());
                 ends.add((Traverser) unionSplit);
             }
         }
@@ -74,7 +73,7 @@ public final class UnionStep<S, E> extends ComputerAwareStep<S, E> implements Tr
         final UnionStep<S, E> clone = (UnionStep<S, E>) super.clone();
         clone.unionTraversals = new ArrayList<>();
         for (final Traversal<S, E> unionTraversals : this.unionTraversals) {
-            final Traversal<S,E> unionTraversalClone = unionTraversals.clone();
+            final Traversal<S, E> unionTraversalClone = unionTraversals.clone();
             clone.unionTraversals.add(unionTraversalClone);
             clone.executeTraversalOperations(unionTraversalClone, CHILD_OPERATIONS);
         }

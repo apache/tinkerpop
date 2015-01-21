@@ -96,8 +96,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecurssively(MapReducer.class, this.traversal)) {
             this.mapReducers.add(mapReducer.getMapReduce());
         }
-        if (!(TraversalHelper.getEnd(this.traversal) instanceof SideEffectCapStep))
-            this.mapReducers.add(new TraverserMapReduce(TraversalHelper.getEnd(this.traversal)));
+        if (!(this.traversal.getEndStep() instanceof SideEffectCapStep))
+            this.mapReducers.add(new TraverserMapReduce(this.traversal.getEndStep()));
     }
 
     @Override
@@ -123,10 +123,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             final TraverserSet<Object> haltedTraversers = new TraverserSet<>();
             vertex.property(HALTED_TRAVERSERS, haltedTraversers);
 
-            if (!(TraversalHelper.getStart(this.traversal) instanceof GraphStep))
+            if (!(this.traversal.getStartStep() instanceof GraphStep))
                 throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
 
-            final GraphStep<Element> startStep = (GraphStep<Element>) TraversalHelper.getStart(this.traversal);   // TODO: make this generic to Traversal
+            final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.getStartStep();   // TODO: make this generic to Traversal
             final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(Graph.class).getTraverserGenerator(this.traversal);
             final String future = startStep.getNextStep().getId();
             boolean voteToHalt = true;

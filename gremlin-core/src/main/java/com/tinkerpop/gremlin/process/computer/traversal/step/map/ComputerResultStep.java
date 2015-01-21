@@ -38,7 +38,7 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
         this.memory.keys().forEach(key -> traversal.asAdmin().getSideEffects().set(key, this.memory.get(key)));
         this.computerTraversal = traversalVertexProgram.getTraversal();
 
-        final Step endStep = TraversalHelper.getEnd(this.computerTraversal);
+        final Step endStep = this.computerTraversal.getEndStep();
         this.traversers = endStep instanceof SideEffectCapStep ?
                 IteratorUtils.of(new B_O_PA_S_SE_SL_Traverser<>((S) this.memory.get(((SideEffectCapStep) endStep).getSideEffectKey()), this)) :  // TODO: use a generator
                 (Iterator<Traverser.Admin<S>>) this.memory.get(TraverserMapReduce.TRAVERSERS);

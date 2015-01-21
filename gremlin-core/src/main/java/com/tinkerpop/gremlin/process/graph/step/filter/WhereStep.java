@@ -90,8 +90,8 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
                 return whereStep.biPredicate.test(map.get(whereStep.firstKey), map.get(whereStep.secondKey));
             });
         } else {
-            final Step<?, ?> startStep = TraversalHelper.getStart(whereStep.constraint.asAdmin());
-            final Step<?, ?> endStep = TraversalHelper.getEnd(whereStep.constraint.asAdmin());
+            final Step<?, ?> startStep = whereStep.constraint.asAdmin().getStartStep();
+            final Step<?, ?> endStep = whereStep.constraint.asAdmin().getEndStep();
             whereStep.setPredicate(traverser -> {
                 final Map<String, E> map = traverser.get();
                 if (!map.containsKey(startStep.getLabel().get()))

@@ -25,7 +25,7 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
         if (engine.equals(TraversalEngine.COMPUTER))
             return;
 
-        final Step<?, ?> startStep = TraversalHelper.getStart(traversal);
+        final Step<?, ?> startStep = traversal.getStartStep();
         if (startStep instanceof GraphStep) {
             final GraphStep<?> originalGraphStep = (GraphStep) startStep;
             final TinkerGraphStep<?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);

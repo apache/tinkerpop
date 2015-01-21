@@ -22,7 +22,7 @@ public class Neo4jGraphStepStrategy extends AbstractTraversalStrategy {
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine traversalEngine) {
-        if (TraversalHelper.getStart(traversal) instanceof Neo4jGraphStep) {
+        if (traversal.getStartStep() instanceof Neo4jGraphStep) {
             final Neo4jGraphStep neo4jGraphStep = (Neo4jGraphStep) traversal.asAdmin().getSteps().get(0);
             Step<?, ?> currentStep = neo4jGraphStep.getNextStep();
             while (true) {

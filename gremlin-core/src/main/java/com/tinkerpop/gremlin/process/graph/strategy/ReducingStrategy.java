@@ -23,7 +23,7 @@ public class ReducingStrategy extends AbstractTraversalStrategy {
         if (engine.equals(TraversalEngine.STANDARD))
             return;
 
-        final Step endStep = TraversalHelper.getEnd(traversal);
+        final Step endStep = traversal.getEndStep();
         if (endStep instanceof Reducing)
             TraversalHelper.replaceStep(endStep, new ReducingIdentity(traversal, (Reducing) endStep), traversal);
     }

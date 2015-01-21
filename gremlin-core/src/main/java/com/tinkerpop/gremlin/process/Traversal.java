@@ -9,9 +9,9 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.BulkSet;
+import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -131,7 +131,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         try {
             this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
-            final Step<?, E> endStep = TraversalHelper.getEnd(this.asAdmin());
+            final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
                 final Traverser<E> traverser = endStep.next();
                 TraversalHelper.addToCollection(collection, traverser.get(), traverser.bulk());
@@ -152,7 +152,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         try {
             this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
-            final Step<?, E> endStep = TraversalHelper.getEnd(this.asAdmin());
+            final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
                 endStep.next();
             }
@@ -208,7 +208,9 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          *
          * @param starts an iterators of traversers
          */
-        public void addStarts(final Iterator<Traverser<S>> starts);
+        public default void addStarts(final Iterator<Traverser<S>> starts) {
+            this.getStartStep().addStarts(starts);
+        }
 
         /**
          * Add a single {@link Traverser} object to the head of the traversal.
@@ -217,7 +219,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @param start a traverser to add to the traversal
          */
         public default void addStart(final Traverser<S> start) {
-            this.addStarts(IteratorUtils.of(start));
+            this.getStartStep().addStart(start);
         }
 
         /**
@@ -247,6 +249,18 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         }
 
         public <S2, E2> Traversal<S2, E2> removeStep(final int index) throws IllegalStateException;
+
+        public default Step<S, ?> getStartStep() {
+            final List<Step> steps = this.getSteps();
+            final int size = steps.size();
+            return size == 0 ? EmptyStep.instance() : steps.get(0);
+        }
+
+        public default Step<?, E> getEndStep() {
+            final List<Step> steps = this.getSteps();
+            final int size = steps.size();
+            return size == 0 ? EmptyStep.instance() : steps.get(size - 1);
+        }
 
         /**
          * Apply the registered {@link TraversalStrategies} to the traversal.

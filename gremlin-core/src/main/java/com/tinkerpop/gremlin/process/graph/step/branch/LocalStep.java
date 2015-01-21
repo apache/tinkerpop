@@ -67,8 +67,8 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
         }
         while (true) {
             if (this.localTraversal.hasNext())
-                return TraversalHelper.getEnd(this.localTraversal).next();
-            else if(this.starts.hasNext()) {
+                return this.localTraversal.getEndStep().next();
+            else if (this.starts.hasNext()) {
                 this.localTraversal.reset();
                 this.localTraversal.addStart(this.starts.next());
             } else {
