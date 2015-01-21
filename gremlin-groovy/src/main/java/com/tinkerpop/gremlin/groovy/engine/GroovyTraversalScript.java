@@ -32,9 +32,7 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
     private GraphComputer graphComputer;
 
     private GroovyTraversalScript(final String traversalScript) {
-        this.traversalScript = "traversal = "
-                .concat(traversalScript.replaceAll("\\.v\\((.*)\\)\\.", ".V().has(id, $1).").replaceAll("\\.e\\((.*)\\)\\.", ".E().has(id, $1)."))
-                .concat("\n");
+        this.traversalScript = "traversal = ".concat(traversalScript).concat("\n");
     }
 
     public static <S, E> GroovyTraversalScript<S, E> of(final String traversalScript) {
@@ -55,6 +53,7 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
     public GroovyTraversalScript<S, E> using(final GraphComputer graphComputer) {
         this.graphComputer = graphComputer;
         this.graphComputerScript = "traversal.applyStrategies(" + TraversalEngine.class.getCanonicalName() + "." + TraversalEngine.COMPUTER + ")\n";
+        // TODO: this should go at execute()
         return this;
     }
 
