@@ -65,41 +65,22 @@ NOTE: If the above plugins are not loaded then they will need to be enabled or e
 
 The Gremlin Console is loaded and ready for commands. Recall that the console hosts the Gremlin-Groovy language.  Please review link:http://groovy.codehaus.org/[Groovy] for help on Groovy-related constructs. In short, Groovy is a superset of Java. What works in Java, works in Groovy. However, Groovy provides many shorthands to make it easier to interact with the Java API.  Moreoever, Gremlin provides many neat shorthands to make it easier to express paths through a property graph.
 
-[source,groovy]
+[gremlin-groovy]
 ----
-gremlin> i = 'goodbye'
-==>goodbye
-gremlin> j = 'self'
-==>self
-gremlin> i + " " + j
-==>goodbye self
-gremlin> "${i} ${j}"
-==>goodbye self
+i = 'goodbye'
+j = 'self'
+i + " " + j
+"${i} ${j}"
 ----
 
 The "toy" graph provides a way to get started with Gremlin quickly.
 
-[source,groovy]
+[gremlin-groovy]
 ----
-gremlin> g = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V()
-==>v[1]
-==>v[2]
-==>v[3]
-==>v[4]
-==>v[5]
-==>v[6]
-gremlin> g.V().values('name')
-==>marko
-==>vadas
-==>lop
-==>josh
-==>ripple
-==>peter
-gremlin> g.V().has('name','marko').out('knows').values('name')
-==>vadas
-==>josh
+g = TinkerFactory.createModern()
+g.V()
+g.V().values('name')
+g.V().has('name','marko').out('knows').values('name')
 ----
 
 Console Commands
