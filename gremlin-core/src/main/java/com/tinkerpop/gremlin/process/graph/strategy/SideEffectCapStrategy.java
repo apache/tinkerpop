@@ -5,6 +5,8 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
+import com.tinkerpop.gremlin.process.util.EmptyStep;
+import com.tinkerpop.gremlin.process.util.EmptyTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collections;
@@ -13,6 +15,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+
 public class SideEffectCapStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final SideEffectCapStrategy INSTANCE = new SideEffectCapStrategy();
@@ -23,7 +26,7 @@ public class SideEffectCapStrategy extends AbstractTraversalStrategy implements 
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
-        if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapable) {
+        if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapable && traversal.getTraversalHolder() instanceof EmptyStep) {
             ((GraphTraversal) traversal).cap();
         }
     }

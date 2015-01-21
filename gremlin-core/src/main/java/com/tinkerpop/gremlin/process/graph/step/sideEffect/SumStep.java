@@ -50,7 +50,6 @@ public final class SumStep extends AbstractStep<Number, Double> implements SideE
     @Override
     public void reset() {
         super.reset();
-        this.getTraversal().asAdmin().getSideEffects().remove(SUM_KEY);
     }
 
     @Override

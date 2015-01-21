@@ -48,7 +48,6 @@ public final class CountStep<S> extends AbstractStep<S, Long> implements SideEff
     @Override
     public void reset() {
         super.reset();
-        this.getTraversal().asAdmin().getSideEffects().remove(COUNT_KEY);
     }
 
     @Override

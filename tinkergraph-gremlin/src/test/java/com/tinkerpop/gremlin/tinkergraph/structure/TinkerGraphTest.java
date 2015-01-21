@@ -142,7 +142,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay4() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().emit().repeat(__.out()).times(2);
+        Traversal t = g.V().local(__.outE());
         System.out.println(t);
         t.forEachRemaining(System.out::println);
         System.out.println(t);

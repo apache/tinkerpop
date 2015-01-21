@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
-import com.tinkerpop.gremlin.process.graph.step.map.LocalStep;
 
 import java.util.ArrayList;
 import java.util.Collections;

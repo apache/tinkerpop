@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `LocalStep` traversal is treated as a branch, not an isolated traversal. Moreover, moved to `branch/`.
 * Traversal strategies are now applied when the `TraversalVertexProgram` state is loaded, not when submitted. Less error prone as it guarantees strategy application.
 * Reworked `TraversalHolder` where there are "local traversals" and "global traversals". Local traversals are not subject to OLAP message passing.
 * Fixed a bug in `DedupStep` that made itself apparent in `DedupOptimizerStrategy`.
