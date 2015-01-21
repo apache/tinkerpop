@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.console.groovy.plugin;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -35,6 +36,7 @@ public class UtilitiesGremlinPluginTest {
     }
 
     @Test
+    @Ignore
     public void shouldPluginUtilities() throws Exception {
         final UtilitiesGremlinPlugin plugin = new UtilitiesGremlinPlugin();
 
