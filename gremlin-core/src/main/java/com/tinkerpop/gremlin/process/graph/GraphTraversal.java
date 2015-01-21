@@ -66,6 +66,9 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.HasContainer;
+import com.tinkerpop.gremlin.process.graph.util.LoopPredicate;
+import com.tinkerpop.gremlin.process.graph.util.TraversalHasNextPredicate;
+import com.tinkerpop.gremlin.process.graph.util.TruePredicate;
 import com.tinkerpop.gremlin.process.util.ElementFunctionComparator;
 import com.tinkerpop.gremlin.process.util.ElementValueComparator;
 import com.tinkerpop.gremlin.process.util.ElementValueFunction;
@@ -520,11 +523,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> emit(final Traversal<?, ?> emitTraversal) {
-        return this.emit(new RepeatStep.TraversalPredicate<>((Traversal<E, ?>) emitTraversal));
+        return this.emit(new TraversalHasNextPredicate<>((Traversal<E, ?>) emitTraversal));
     }
 
     public default GraphTraversal<S, E> emit() {
-        return this.emit(t -> true);
+        return this.emit(TruePredicate.instance());
     }
 
     public default GraphTraversal<S, E> until(final Predicate<Traverser<E>> untilPredicate) {
@@ -532,11 +535,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> until(final Traversal<?, ?> untilTraversal) {
-        return this.until(new RepeatStep.TraversalPredicate<>((Traversal<E, ?>) untilTraversal));
+        return this.until(new TraversalHasNextPredicate<>((Traversal<E, ?>) untilTraversal));
     }
 
     public default GraphTraversal<S, E> times(final int maxLoops) {
-        return this.until(new RepeatStep.LoopPredicate<>(maxLoops));
+        return this.until(new LoopPredicate<>(maxLoops));
     }
 
 
