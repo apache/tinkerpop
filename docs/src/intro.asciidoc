@@ -216,20 +216,18 @@ It is possible to represent any `map()`, `filter()`, or `sideEffect()` step usin
 
 [gremlin,modern]
 ----
-g.V().
-  filter{it.get().value('name') == 'marko'}.
-  flatMap{it.get().out('knows')}.
-  map{it.get().value('name')}
+g.V().filter {it.get().value('name') == 'marko'}.
+      flatMap {it.get().out('knows')}.
+      map {it.get().value('name')}
 ----
 
 Finally, as a strictly academic exercise, the traversal can be written completely using flatMap.
 
 [gremlin,modern]
 ----
-g.V().
-  flatMap{it.get().value('name') == 'marko' ? [it.get()].iterator() : [].iterator()}.
-  flatMap{it.get().out('knows')}.
-  flatMap{[it.get().value('name')].iterator()}
+g.V().flatMap {it.get().value('name') == 'marko' ? [it.get()].iterator() : [].iterator()}.
+      flatMap {it.get().out('knows')}.
+      flatMap {[it.get().value('name')].iterator()}
 ----
 
 NOTE: Gremlin-Java is much more aligned with Gremlin-Groovy in TinkerPop3 than it ever was before. In TinkerPop0 through TinkerPop2, Gremlin-Java was extremely verbose due to the simulation of lambdas via anonymous inner classes.  

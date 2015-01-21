@@ -131,18 +131,17 @@ image::the-crew-graph.png[width=685]
 [gremlin,theCrew]
 ----
 g.V().as('a').properties('location').hasNot('endTime').as('b').
-  select().by('name').by{it.value() + '(' + it.value('startTime') + ')'} // determine the current location of each person
+      select().by('name').by {it.value() + '(' + it.value('startTime') + ')'} // determine the current location of each person
 g.V().has('name','gremlin').inE('uses').
-  order().by('skill',incr).as('a').
-  outV().as('b').
-    select().by('skill').by('name') // rank the users of gremlin by their skill level
+      order().by('skill',incr).as('a').
+      outV().as('b').
+      select().by('skill').by('name') // rank the users of gremlin by their skill level
 g.variables() // access the global graph variables
 g.variables().get('creator')
 g.variables().get('creator').get()
 g.V().has('name',g.variables().get('creator').get()).
-  properties('location').as('a').
-  valueMap().as('b').
-    select('a','b').by(value).by() // get the creator's vertex and for each location, get the associated properties
+      properties('location').as('a').valueMap().as('b').
+      select('a','b').by(value).by() // get the creator's vertex and for each location, get the associated properties
 ----
 
 Graph Variables
@@ -239,9 +238,9 @@ The `Transaction` object also exposes a method for executing automatic transacti
 
 [source,groovy]
 ----
-gremlin> g.tx().submit{it.addVertex("name","josh")}.retry(10)
+gremlin> g.tx().submit {it.addVertex("name","josh")}.retry(10)
 ==>v[2]
-gremlin> g.tx().submit{it.addVertex("name","daniel")}.exponentialBackoff(10)
+gremlin> g.tx().submit {it.addVertex("name","daniel")}.exponentialBackoff(10)
 ==>v[3]
 ----
 
@@ -753,7 +752,7 @@ IdStrategy
 [gremlin]
 ----
 g = TinkerGraph.open()
-v = g.addVertex(id, "42a")
+v = g.addVertex(id,"42a")
 g.V("42a")
 ----
 
@@ -773,7 +772,7 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 gremlin> sg = g.strategy(IdStrategy.build("idKey").create())
 ==>idstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
-gremlin> sg.addVertex(id,"42a").id()
+gremlin> sg.addVertex(id, "42a").id()
 ==>42a
 gremlin> sg.addVertex().id()
 ==>527d44d2-9a3a-4c15-89b6-021e3d613884
@@ -833,9 +832,10 @@ SequenceStrategy
 
 `SequenceStrategy` provides a way to string together a set of `GraphStrategy` implementations, such that they are executed in order from first to last.  The `Graph.strategy()` method provides a straightforward way to invisibly use `SequenceStrategy`:
 
-[source,groovy]
-gremlin> sg = g.strategy(ReadOnlyStrategy.instance(), PartitionStrategy.build().partitionKey('com.example.partition').startPartition('A').create())
-==>sequencestrategy[tinkergraph[vertices:0 edges:0]]
+[gremlin]
+----
+sg = g.strategy(ReadOnlyStrategy.instance(), PartitionStrategy.build().partitionKey('com.example.partition').startPartition('A').create())
+----
 
 The above code demonstrates a `Graph` that uses a `SequenceStrategy` composed of `ReadOnlyStrategy` and `PartitionStrategy`.  When the `SequenceStrategy` is invoked, it will first apply the `ReadOnlyStrategy` and then apply the `PartitionStrategy`.  It is important to consider the ordering of the `GraphStrategy` objects when choosing to use `SequenceStrategy` as it makes no attempts to determine if strategies will be in conflict with one another.  Be aware of the nature of the strategies and ensure that applying them in the order assigned will produce the desirable outcome.
 

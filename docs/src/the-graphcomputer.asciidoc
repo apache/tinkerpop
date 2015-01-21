@@ -75,8 +75,8 @@ If there are numerous statistics desired, then its possible to register as many 
 ----
 g = TinkerFactory.createModern()
 result = g.compute().program(PeerPressureVertexProgram.build().create()).
- mapReduce(ClusterPopulationMapReduce.build().create()).
- mapReduce(ClusterCountMapReduce.build().create()).submit().get()
+           mapReduce(ClusterPopulationMapReduce.build().create()).
+           mapReduce(ClusterCountMapReduce.build().create()).submit().get()
 result.memory().clusterPopulation
 result.memory().clusterCount
 ----
@@ -103,9 +103,9 @@ image:lambda-vertex-program.png[width=200,float=left] `LambdaVertexProgram` is t
 [gremlin,modern]
 ----
 result = g.compute().program(LambdaVertexProgram.build().
-             execute("a.singleProperty('counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
-             terminate('a.iteration > 9').
-             elementComputeKeys('counter').create()).submit().get()
+           execute("a.singleProperty('counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
+           terminate('a.iteration > 9').
+           elementComputeKeys('counter').create()).submit().get()
 result.graph().V().values('counter')
 ----
 
@@ -133,11 +133,11 @@ Finally, there also exists `LambdaMapReduce` to compliment `LambdaVertexProgram`
 [gremlin,modern]
 ----
 result = g.compute().
-             program(LambdaVertexProgram.build().
+           program(LambdaVertexProgram.build().
                execute("a.singleProperty('counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
                terminate('a.iteration > 9').
                elementComputeKeys('counter').create()).
-             mapReduce(LambdaMapReduce.build().
+           mapReduce(LambdaMapReduce.build().
                map("b.emit(a.value('counter'))").
                reduce("c.emit(a,b.sum())").
                memory('a.next()').

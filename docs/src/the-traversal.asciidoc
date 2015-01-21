@@ -65,7 +65,7 @@ g.V(1).as('a').out().back('a') <3>
 image:filter-lambda.png[width=160,float=right]
 [gremlin,modern]
 ----
-g.V().filter{it.get().label() == 'person'} <1>
+g.V().filter {it.get().label() == 'person'} <1>
 g.V().has(label,'person') <2>
 ----
 
@@ -76,7 +76,7 @@ g.V().has(label,'person') <2>
 image:side-effect-lambda.png[width=175,float=right]
 [gremlin,modern]
 ----
-g.V().has(label,'person').sideEffect{println it} <1>
+g.V().has(label,'person').sideEffect(System.out.&println) <1>
 ----
 
 <1> Whatever enters `sideEffect()` is passed to the next step, but some intervening process can occur.
@@ -84,10 +84,10 @@ g.V().has(label,'person').sideEffect{println it} <1>
 image:branch-lambda.png[width=180,float=right]
 [gremlin,modern]
 ----
-g.V().branch{it.get().value('name') == 'marko' ? ['a'] : ['b'] }.as('a').
-        values('age').branch{['c']}.as('b').
-        values('name').as('c') <1>
-g.V().choose({it.value('name') == 'marko'},
+g.V().branch {it.get().value('name') == 'marko' ? ['a'] : ['b']}.as('a').
+      values('age').branch{['c']}.as('b').
+      values('name').as('c') <1>
+g.V().choose({ it.value('name') == 'marko' },
                __.values('age'),
                __.values('name')) <2>
 ----
@@ -192,12 +192,13 @@ image::choose-step.png[width=700]
 
 [gremlin,modern]
 ----
-g.V().has(label,'person').choose({it.value('name').length() == 5},   // If the predicate is true, then do `in`, else do `out`.
-  __.in(),
-  __.out()).values('name')
-g.V().has(label,'person').choose({it.value('name').length()},   // Use the result of the function as a key to the map of traversal choices.
-  [5:__.in(),
-   4:__.out()]).values('name')
+g.V().has(label,'person').
+      choose({ it.value('name').length() == 5},   // If the predicate is true, then do `in`, else do `out`.
+               __.in(), __.out()).values('name')
+g.V().has(label,'person').
+      choose({ it.value('name').length()},   // Use the result of the function as a key to the map of traversal choices.
+             [ 5: __.in(),
+               4: __.out() ]).values('name')
 ----
 
 In Java8, there is no elegant syntax to create a `Map`. Thus, the last traversal above would look as follows:
@@ -254,8 +255,8 @@ If a lambda is provided to `dedup()`, then the object is processed by the lambda
 
 [gremlin,modern]
 ----
-g.V().values('name').map{[it.get(), it.get().length()]}
-g.V().values('name').dedup().by{it.length()}
+g.V().values('name').map {[ it.get(), it.get().length() ]}
+g.V().values('name').dedup().by {it.length()}
 ----
 
 WARNING: The `dedup()`-step does not have a correlate in <<traversalvertexprogram,Gremlin OLAP>> when used mid-traversal. When in mid-traversal de-duplication only occurs at the the current processing vertex and thus, is not a global operation as it in Gremlin OLTP. When `dedup()` is an end step, the resultant traversers are de-duplicated by `TraverserMapReduce`.
@@ -285,14 +286,16 @@ There are situations when the traversal stream needs a "barrier" to aggregate al
 g.V(1).out('knows').values('name')
 g.V(1).out('knows').values('name').fold() <1>
 g.V(1).out('knows').values('name').fold().next().getClass() <2>
-g.V(1).out('knows').values('name').fold(0){a,b -> a + b.length()} <3>
-g.V().values('age').fold(0){a,b -> a + b} <4>
+g.V(1).out('knows').values('name').fold(0) {a,b -> a + b.length()} <3>
+g.V().values('age').fold(0) {a,b -> a + b} <4>
+g.V().values('age').fold(0, sum) <5>
 ----
 
 <1> A parameterless `fold()` will aggregate all the objects into a list and then emit the list.
 <2> A verification of the type of list returned.
 <3> `fold()` can be provided two arguments --  a seed value and a reduce bi-function ("vadas" is 5 characters + "josh" with 4 characters).
 <4> What is the total age of the people in the graph?
+<5> The same as <4>, but using a built-in bi-function.
 
 [[group-step]]
 Group Step
@@ -304,7 +307,7 @@ As traversers propagate across a graph as defined by a traversal, sideEffect com
 ----
 g.V().group().by{it.value('name')[1]}   // group the vertices by the second letter of their name
 g.V().group().by{it.value('name')[1]}.by('name')   // for each vertex in the group, get their name (now the name[1] is apparent)
-g.V().group().by{it.value('name')[1]}.by('name').by{it.size()}   // for each grouping, what is it's size?
+g.V().group().by{it.value('name')[1]}.by('name').by {it.size()}   // for each grouping, what is it's size?
 ----
 
 The three projection parameters available to `group()` via `by()` are:
@@ -337,7 +340,7 @@ image::groupcount-step.png[width=420]
 
 [gremlin,modern]
 ----
-g.V().repeat(__.both().groupCount('m').by{it.value('name')[1]}).times(10).cap('m')
+g.V().repeat(__.both().groupCount('m').by {it.value('name')[1]}).times(10).cap('m')
 ----
 
 The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount()` with a string variable. Given that `groupCount()` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount()`, the object's count is incremented. If `groupCount()` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount()` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount()`) can be accessed with `cap()`-step by referencing the desired variable.
@@ -372,8 +375,8 @@ One of the major features of TinkerPop3 is "injectable steps." This makes it pos
 [gremlin,modern]
 ----
 g.V(4).out().values('name').inject('daniel')
-g.V(4).out().values('name').inject('daniel').map{it.get().length()}
-g.V(4).out().values('name').inject('daniel').map{it.get().length()}.path()
+g.V(4).out().values('name').inject('daniel').map {it.get().length()}
+g.V(4).out().values('name').inject('daniel').map {it.get().length()}.path()
 ----
 
 In the last example above, note that the path starting with `daniel` is only of length 2. This is because the `daniel` string was inserted half-way in the traversal. Finally, a typical use case is provided below -- when the start of the traversal is not a graph object.
@@ -381,8 +384,8 @@ In the last example above, note that the path starting with `daniel` is only of 
 [gremlin,modern]
 ----
 __.inject(1,2)
-__.inject(1,2).map{it.get() + 1}
-__.inject(1,2).map{it.get() + 1}.map{g.V(it.get()).next()}.values('name')
+__.inject(1,2).map {it.get() + 1}
+__.inject(1,2).map {it.get() + 1}.map {g.V(it.get()).next()}.values('name')
 ----
 
 [[limit-step]]
@@ -394,7 +397,7 @@ The `limit()`-step is analogous to <<range-step,`range()`-step>> save that the l
 [gremlin,modern]
 ----
 g.V().limit(2)
-g.V().range(0,2)
+g.V().range(0, 2)
 g.V().limit(2).toString()
 ----
 
@@ -409,11 +412,11 @@ A `GraphTraversal` operates on a continuous stream of objects. In many situation
 [gremlin,theCrew]
 ----
 g.V().as('person').
-  properties('location').order().by('startTime',incr).limit(2).
-  value().as('location').select().by('name').by() <1>
+      properties('location').order().by('startTime',incr).limit(2).
+      value().as('location').select().by('name').by() <1>
 g.V().as('person').
-  local(__.properties('location').order().by('startTime',incr).limit(2)).
-  value().as('location').select().by('name').by() <2>
+      local(__.properties('location').order().by('startTime',incr).limit(2)).
+      value().as('location').select().by('name').by() <2>
 ----
 
 <1> Get the first two people and their respective location according to the most historic location start time.
@@ -434,11 +437,10 @@ image::match-step.png[width=500]
 [gremlin,modern]
 ----
 g.V().match('a',
-   __.as('a').out('created').as('b'),
-   __.as('b').has('name', 'lop'),
-   __.as('b').in('created').as('c'),
-   __.as('c').has('age', 29)).
- select('a', 'c').by('name')
+      __.as('a').out('created').as('b'),
+      __.as('b').has('name', 'lop'),
+      __.as('b').in('created').as('c'),
+      __.as('c').has('age', 29)).select('a','c').by('name')
 ----
 
 Note that the above can also be more concisely written as below which demonstrates that imperative inner-traversals can be arbitrarily defined.
@@ -446,9 +448,8 @@ Note that the above can also be more concisely written as below which demonstrat
 [gremlin,modern]
 ----
 g.V().match('a',
-   __.as('a').out('created').has('name', 'lop').as('b'),
-   __.as('b').in('created').has('age', 29).as('c')).
- select('a','c').by('name')
+      __.as('a').out('created').has('name', 'lop').as('b'),
+      __.as('b').in('created').has('age', 29).as('c')).select('a','c').by('name')
 ----
 
 MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. Like SPARQL, MatchStep conjoins a set of patterns applied to a graph.  For example, the following traversal finds exactly those songs which Jerry Garcia has both sung and written (using the Grateful Dead graph distributed in the `data/` directory):  
@@ -457,9 +458,9 @@ MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPAR
 ----
 g.io().readGraphML('data/grateful-dead.xml')
 g.V().match('a',
-   __.as('a').has('name', 'Garcia'),
-   __.as('a').in('writtenBy').as('b'),
-   __.as('a').in('sungBy').as('b')).select('b').values('name')
+      __.as('a').has('name', 'Garcia'),
+      __.as('a').in('writtenBy').as('b'),
+      __.as('a').in('sungBy').as('b')).select('b').values('name')
 ----
 
 Among the features which differentiate `match()` from SPARQL are:
@@ -467,10 +468,10 @@ Among the features which differentiate `match()` from SPARQL are:
 [gremlin,modern]
 ----
 g.V().match('a',
-   __.as('a').out('created').has('name','lop').as('b'), <1>
-   __.as('b').in('created').has('age', 29).as('c'),
-   __.as('c').repeat(__.out()).times(2)). <2>
-  select('c').out('knows').dedup().values('name') <3>
+      __.as('a').out('created').has('name','lop').as('b'), <1>
+      __.as('b').in('created').has('age', 29).as('c'),
+      __.as('c').repeat(__.out()).times(2)). <2>
+      select('c').out('knows').dedup().values('name') <3>
 ----
 
 <1> *Patterns of arbitrary complexity*: `match()` is not restricted to triple patterns or property paths.
@@ -482,14 +483,13 @@ To extend point #3, it is possible to support going from imperative, to declarat
 [gremlin,modern]
 ----
 g.V().match('a',
-   __.as('a').out('knows').as('b'),
-   __.as('b').out('created').has('name','lop')).
- select('b').
- out('created').
- match('a',
-   __.as('a').in('created').as('b'),
-   __.as('b').out('knows').as('c')).
- select('c').values('name')
+      __.as('a').out('knows').as('b'),
+      __.as('b').out('created').has('name','lop')).
+      select('b').out('created').
+      match('a',
+      __.as('a').in('created').as('b'),
+      __.as('b').out('knows').as('c')).
+      select('c').values('name')
 ----
 
 Like all other steps in Gremlin, `match()` is a function and thus, `match()` within `match()` is a natural consequence of Gremlin's functional foundation (i.e. recursive matching).
@@ -497,12 +497,13 @@ Like all other steps in Gremlin, `match()` is a function and thus, `match()` wit
 [gremlin,modern]
 ----
 g.V().match('a',
-   __.as('a').out('knows').as('b'),
-   __.as('b').out('created').has('name','lop'),
-   __.as('b').match('x',
-       __.as('x').out('created').as('y'),
-       __.as('y').has('name','ripple')).select('y').as('c')).
-   select('a','c').by('name')
+      __.as('a').out('knows').as('b'),
+      __.as('b').out('created').has('name','lop'),
+      __.as('b').match('x',
+                 __.as('x').out('created').as('y'),
+                 __.as('y').has('name','ripple')).
+                 select('y').as('c')).
+      select('a','c').by('name')
 ----
 
 WARNING: Currently, `match()` does not operate within a multi-JVM <<graphcomputer,GraphComputer>> OLAP environment. Future work includes a linearization <<traversalstrategy,TraversalStrategy>> for `match()`.
@@ -516,10 +517,9 @@ Match is typically used in conjunction with both `select()` (demonstrated previo
 [gremlin,modern]
 ----
 g.V().match('a',
-   __.as('a').out('created').as('b'),
-   __.as('b').in('created').as('c')).
-     where('a', neq, 'c').
-      select('a','c').by('name')
+      __.as('a').out('created').as('b'),
+      __.as('b').in('created').as('c')).
+      where('a', neq, 'c').select('a','c').by('name')
 ----
 
 The `where()`-step can take either a `BiPredicate` (first example below) or a `Traversal` (second example below). Using `MatchWhereStrategy`, `where()`-clauses can be automatically folded into `match()` and thus, subject to `match()`-steps budget-match algorithm.
@@ -527,10 +527,10 @@ The `where()`-step can take either a `BiPredicate` (first example below) or a `T
 [gremlin,modern]
 ----
 traversal = g.V().match('a',
-   __.as('a').out('created').as('b'),
-   __.as('b').in('created').as('c')).
-     where(__.as('a').out('knows').as('c')). <1>
-      select('a','c').by('name'); null <2>
+                  __.as('a').out('created').as('b'),
+                  __.as('b').in('created').as('c')).
+                  where(__.as('a').out('knows').as('c')). <1>
+                  select('a','c').by('name'); null <2>
 traversal.toString() <3>
 traversal <4>, <5>
 traversal.toString() <6>
@@ -553,7 +553,7 @@ When the objects of the traversal stream need to be sorted, `order()`-step (*map
 ----
 g.V().values('name').order()
 g.V().values('name').order().by(decr)
-g.V().values('name').order().by{a,b -> a[1] <=> b[1]}
+g.V().values('name').order().by {a,b -> a[1] <=> b[1]}
 ----
 
 Note that `order()` takes a `Comparator` var args and thus, its possible to do secondary sorting. Secondary sorting is presented below along with the handy `Comparator.comparing()` method.
@@ -561,8 +561,8 @@ Note that `order()` takes a `Comparator` var args and thus, its possible to do s
 [gremlin,modern]
 ----
 import static java.util.Comparator.*
-g.V().values('name').order().by(comparing{it[1]}) // order by the second letter
-g.V().values('name').order().by(comparing{it[1]}).by(comparing{it[2]}) // order by second letter and if a tie, the third letter
+g.V().values('name').order().by(comparing {it[1]}) // order by the second letter
+g.V().values('name').order().by(comparing {it[1]}).by(comparing {it[2]}) // order by second letter and if a tie, the third letter
 ----
 
 One of the most traversed objects in a traversal is an `Element`. An element can have properties associated with it (i.e. key/value pairs). In many situations, it is desirable to sort an element traversal stream according to a comparison of their properties.
@@ -578,8 +578,10 @@ The `order()`-step allows the user to provide an arbitrary number of comparators
 
 [gremlin,modern]
 ----
-g.V().has(label,'person').order().by('name'){a,b->a[1] <=> b[1]}.by('age',incr).values('name')
-g.V().has(label,'person').order().by('name'){a,b->a[1] <=> b[1]}.by('age',decr).values('name')
+g.V().has(label,'person').order().by('name') {a,b -> a[1] <=> b[1]}.
+                                  by('age',incr).values('name')
+g.V().has(label,'person').order().by('name') {a,b -> a[1] <=> b[1]}.
+                                  by('age',decr).values('name')
 ----
 
 [[path-step]]
@@ -614,10 +616,10 @@ Finally, because `by()`-based post-processing, nothing prevents triggering yet a
 
 [gremlin,modern]
 ----
-g.V().out().out().path().by{
-  it.choose({it.has(label,'person').hasNext()},
-    __.out('created').values('name'),
-    __.in('created').values('name')).toList()}
+g.V().out().out().path().by {
+        it.choose({ it.has(label,'person').hasNext() },
+                    __.out('created').values('name'),
+                    __.in('created').values('name')).toList() }
 ----
 
 WARNING: Generating path information is expensive as the history of the traverser is stored into a Java list. With numerous traversers, there are numerous lists. Moreover, in an OLAP <<graphcomputer,`GraphComputer`>> environment this becomes exceedingly prohibitive as there are traversers emanating from all vertices in the graph in parallel. In OLAP there are optimizations provided for traverser populations, but when paths are calculated (and each traverser is unique due to its history), then these optimizations are no longer possible.
@@ -632,7 +634,10 @@ image::path-data-structure.png[width=350]
 
 [gremlin,modern]
 ----
-path = g.V(1).as('a').has('name').as('b').out('knows').out('created').as('c').has('name','ripple').values('name').as('d').identity().as('e').path().next()
+path = g.V(1).as('a').has('name').as('b').
+              out('knows').out('created').as('c').
+              has('name','ripple').values('name').as('d').
+              identity().as('e').path().next()
 path.size()
 path.objects()
 path.labels()
@@ -727,7 +732,7 @@ The `repeat()`-step (*branch*) is used for looping over a traversal given some b
 ----
 g.V(1).repeat(__.out()).times(2).path().by('name') <1>
 g.V().until(__.has('name','ripple')).
-        repeat(__.out()).path().by('name') <2>
+      repeat(__.out()).path().by('name') <2>
 ----
 
 <1> do-while semantics stating to do `out()` 2 times.
@@ -752,12 +757,10 @@ The `emit()`-modulator can take an arbitrary predicate.
 
 [gremlin,modern]
 ----
-g.V(1).repeat(__.out()).
-         times(2).
-         emit{it.get().property('lang').isPresent()}.path().by('name')
-g.V(1).repeat(__.out()).
-         times(2).
-         emit(__.has('lang')).path().by('name') // the same query, but using a traversal instead of a predicate
+g.V(1).repeat(__.out()).times(2).
+       emit {it.get().property('lang').isPresent()}.path().by('name')
+g.V(1).repeat(__.out()).times(2).
+       emit(__.has('lang')).path().by('name') // the same query, but using a traversal instead of a predicate
 ----
 
 image::repeat-step.png[width=500]
@@ -775,8 +778,8 @@ Finally, note that both `emit()` and `until()` can take a traversal and in such,
 ----
 g.V(1).repeat(__.out()).until(__.has(label,'software')).path().by('name') <1>
 g.V(1).emit(__.has(label,'person')).repeat(__.out()).path().by('name') <2>
-g.V(1).repeat(__.out()).until(__.outE().count().cap().filter{it.get() == 0}).path().by('name') <3>
-g.V(1).repeat(__.out()).until{!it.get().outE().hasNext()}.path().by('name') <4>
+g.V(1).repeat(__.out()).until(__.outE().count().cap().filter {it.get() == 0}).path().by('name') <3>
+g.V(1).repeat(__.out()).until {!it.get().outE().hasNext()}.path().by('name') <4>
 ----
 
 <1> Starting from vertex 1, keep taking outgoing edges until a software vertex is reached.
@@ -811,30 +814,28 @@ Two trivial examples are presented below to demonstrate the *initial value suppl
 
 [gremlin,modern]
 ----
-g.V().withSack{1.0f}.sack()
+g.V().withSack {1.0f}.sack()
 rand = new Random()
-g.V().withSack{rand.nextFloat()}.sack()
+g.V().withSack {rand.nextFloat()}.sack()
 ----
 
 A more complicated initial value supplier example is presented below where the sack values are used in a running computation and then emitted at the end of the traversal. When an edge is traversed, the edge weight is multiplied by the sack value (`sack(mult,'weight')`).
 
 [gremlin,modern]
 ----
-g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2)
-g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2).sack()
-g.V().withSack{1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2).path().by().by('weight')
+g.V().withSack {1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2)
+g.V().withSack {1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2).sack()
+g.V().withSack {1.0f}.repeat(__.outE().sack(mult,'weight').inV()).times(2).path().by().by('weight')
 ----
 
 image:gremlin-sacks-standing.png[width=100,float=left] When complex objects are used (i.e. non-primitives), then a *split operator* should be defined to ensure that each traverser gets a clone of its parent's sack. The first example does not use a split operator and as such, the same map is propagated to all traversers (a global data structure). The second example, demonstrates how `Map.clone()` ensures that each traverser's sack contains a unique, local sack.
 
 [gremlin,modern]
 ----
-g.V().withSack { [:] }.
-  out().out().
-  sack { m, v -> m[v.value('name')] = v.value('lang'); m }.sack() // BAD: single map
-g.V().withSack { [:] } { m -> m.clone() }.
-  out().out().
-  sack { m, v -> m[v.value('name')] = v.value('lang'); m }.sack() // GOOD: cloned map
+g.V().withSack {[:]}.out().out().
+      sack {m,v -> m[v.value('name')] = v.value('lang'); m}.sack() // BAD: single map
+g.V().withSack {[:]} {m -> m.clone()}.out().out().
+      sack {m,v -> m[v.value('name')] = v.value('lang'); m}.sack() // GOOD: cloned map
 ----
 
 NOTE: For primitives (i.e. integers, longs, floats, etc.), a split operator is not required as a primitives are encoded in the memory address of the sack, not as a reference to an object.
@@ -857,14 +858,14 @@ One of the more interesting use cases for `sample()` is when it is used in conju
 [gremlin,modern]
 ----
 g.V(1).repeat(__.local(
-  __.bothE().sample(1).by('weight').otherV()
-)).times(5)
+         __.bothE().sample(1).by('weight').otherV()
+       )).times(5)
 g.V(1).repeat(__.local(
-  __.bothE().sample(1).by('weight').otherV()
-)).times(5).path()
+         __.bothE().sample(1).by('weight').otherV()
+       )).times(5).path()
 g.V(1).repeat(__.local(
-  __.bothE().sample(1).by('weight').otherV()
-)).times(10).path()
+         __.bothE().sample(1).by('weight').otherV()
+       )).times(10).path()
 ----
 
 [[select-step]]
@@ -912,12 +913,12 @@ Finally, like <<match-step,`match()`>>-step, it is possible to use `where()`, as
 ----
 g.V().as('a').out('created').in('created').as('b').select().by('name') <1>
 g.V().as('a').out('created').in('created').as('b').
-  select().by('name').
-    where('a',neq,'b') <2>
-g.V().as('a').out('created').in('created').as('b').select(). <3>
-     where('a',neq,'b').
-     where(__.as('a').out('knows').as('b')).
-       select().by('name')
+      select().by('name').where('a',neq,'b') <2>
+g.V().as('a').out('created').in('created').as('b').
+      select(). <3>
+      where('a',neq,'b').
+      where(__.as('a').out('knows').as('b')).
+      select().by('name')
 ----
 
 <1> A standard `select()` that generates a `Map<String,Object>` of variables bindings in the path (i.e. `a` and `b`) for the sake of a running example.
@@ -932,9 +933,9 @@ Randomizing the order of the traversers at a particular point in the traversal i
 
 [gremlin]
 ----
-__.inject(1,2,3).map{it.get() * 2}
-__.inject(1,2,3).map{it.get() * 2}.shuffle()
-__.inject(1,2,3).map{it.get() * 2}.shuffle()
+__.inject(1,2,3).map {it.get() * 2}
+__.inject(1,2,3).map {it.get() * 2}.shuffle()
+__.inject(1,2,3).map {it.get() * 2}.shuffle()
 ----
 
 [[simplepath-step]]
@@ -979,7 +980,7 @@ Extracting a portion of a graph from a larger one for analysis, visualization or
 
 [gremlin,modern]
 ----
-sg = g.E().subgraph { it.label() == 'knows' }.next() <1>
+sg = g.E().subgraph {it.label() == 'knows'}.next() <1>
 sg.E() <2>
 ----
 
@@ -1077,7 +1078,7 @@ Note that `unfold()` does not recursively unroll iterators. Instead, `repeat()` 
 ----
 __.inject(1,[2,3,[4,5,[6]]])
 __.inject(1,[2,3,[4,5,[6]]]).unfold()
-__.inject(1,[2,3,[4,5,[6]]]).repeat(__.unfold()).until{!(it.get() instanceof List)}
+__.inject(1,[2,3,[4,5,[6]]]).repeat(__.unfold()).until {!(it.get() instanceof List)}
 ----
 
 [[union-step]]
@@ -1091,11 +1092,11 @@ The `union()`-step (*branch*) supports the merging of the results of an arbitrar
 [gremlin,modern]
 ----
 g.V(4).union(
-   __.in().values('age'),
-   __.out().values('lang'))
+       __.in().values('age'),
+       __.out().values('lang'))
 g.V(4).union(
-   __.in().values('age'),
-   __.out().values('lang')).path()
+       __.in().values('age'),
+       __.out().values('lang')).path()
 ----
 
 [[valuemap-step]]
