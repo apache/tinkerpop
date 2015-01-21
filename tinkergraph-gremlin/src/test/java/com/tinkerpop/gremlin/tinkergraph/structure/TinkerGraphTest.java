@@ -142,13 +142,10 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay4() throws Exception {
         Graph g = TinkerFactory.createModern();
-        ComputerResult result = g.compute().program(TraversalVertexProgram.build().
-                traversal("GraphFactory.open(['gremlin.graph':'com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph']).V().both().has(label,'person').values('age').groupCount('a')").
-                create()).submit().get();
-        System.out.println(result.memory().<Map>get("a"));
-        /*System.out.println(t);
+        Traversal t = g.V().emit().repeat(__.out()).times(2);
+        System.out.println(t);
         t.forEachRemaining(System.out::println);
-        System.out.println(t);*/
+        System.out.println(t);
     }
 
     /**
