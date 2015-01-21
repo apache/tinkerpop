@@ -25,7 +25,7 @@ public class ReducingStrategy extends AbstractTraversalStrategy {
 
         final Step endStep = TraversalHelper.getEnd(traversal);
         if (endStep instanceof Reducing)
-            TraversalHelper.replaceStep(endStep, new ReducingIdentity(traversal, ((Reducing) endStep).getReducer()), traversal);
+            TraversalHelper.replaceStep(endStep, new ReducingIdentity(traversal, (Reducing) endStep), traversal);
     }
 
     public static ReducingStrategy instance() {
@@ -35,10 +35,17 @@ public class ReducingStrategy extends AbstractTraversalStrategy {
     private static class ReducingIdentity extends AbstractStep implements Reducing {
 
         private final Reducer reducer;
+        private String reducingStepString;
 
-        public ReducingIdentity(final Traversal traversal, final Reducer reducer) {
+        public ReducingIdentity(final Traversal traversal, final Reducing reducingStep) {
             super(traversal);
-            this.reducer = reducer;
+            this.reducer = reducingStep.getReducer();
+            this.reducingStepString = reducingStep.toString();
+        }
+
+        @Override
+        public String toString() {
+            return TraversalHelper.makeStepString(this, this.reducingStepString);
         }
 
         public Reducer getReducer() {

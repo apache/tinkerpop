@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
 import com.tinkerpop.gremlin.process.util.StandardTraversalMetrics;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
@@ -16,6 +17,10 @@ import java.util.Iterator;
 public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> {
 
     private Traversal traversal;
+
+    private ProfileMapReduce() {
+
+    }
 
     public ProfileMapReduce(final ProfileStep step) {
         this.traversal = step.getTraversal();
@@ -60,6 +65,16 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, S
     @Override
     public String toString() {
         return StringFactory.mapReduceString(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getClass().getCanonicalName().hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return GraphComputerHelper.areEqual(this, object);
     }
 
     @Override

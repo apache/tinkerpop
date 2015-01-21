@@ -24,8 +24,7 @@ public class MapStep<S, E> extends AbstractStep<S, E> {
     protected Traverser<E> processNextStart() {
         while (true) {
             final Traverser.Admin<S> traverser = this.starts.next();
-            final E end = this.function.apply(traverser);
-            return traverser.split(end, this);
+            return traverser.split(this.function.apply(traverser), this);
         }
     }
 

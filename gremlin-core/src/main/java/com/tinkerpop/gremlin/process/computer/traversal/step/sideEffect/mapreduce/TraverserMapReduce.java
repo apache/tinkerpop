@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_TraverserGenerator;
+import com.tinkerpop.gremlin.process.traverser.B_O_TraverserGenerator;
 import com.tinkerpop.gremlin.process.traverser.O_TraverserGenerator;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -70,7 +71,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
         while (values.hasNext()) {
             mutatingSeed = function.apply(mutatingSeed, onTraverser ? values.next() : ((Traverser) values.next()).get());
         }
-        emitter.emit(key, B_O_PA_S_SE_SL_TraverserGenerator.instance().generate(mutatingSeed, EmptyStep.instance(), 1l));  // TODO: this should be what is expected
+        emitter.emit(key, B_O_TraverserGenerator.instance().generate(mutatingSeed, EmptyStep.instance(), 1l));  // TODO: this should be what is expected
     }
 
     @Override
@@ -81,7 +82,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
     @Override
     public Iterator<Object> generateFinalResult(final Iterator<KeyValue<Comparable, Object>> keyValues) {
         if (this.reducer.isPresent() && !keyValues.hasNext())
-            return IteratorUtils.of(B_O_PA_S_SE_SL_TraverserGenerator.instance().generate(this.reducer.get().getSeedSupplier().get(), EmptyStep.instance(), 1l));  // TODO: this should be what is expected
+            return IteratorUtils.of(B_O_TraverserGenerator.instance().generate(this.reducer.get().getSeedSupplier().get(), EmptyStep.instance(), 1l));  // TODO: this should be what is expected
         else {
             return new Iterator<Object>() {
                 @Override
