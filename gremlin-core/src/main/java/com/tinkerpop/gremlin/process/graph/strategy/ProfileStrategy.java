@@ -21,36 +21,36 @@ public class ProfileStrategy extends AbstractTraversalStrategy {
 
     static {
         // Ensure that this strategy is applied last.
-        PRIORS.add(ChooseLinearStrategy.class);
+        PRIORS.add(ComparatorHolderRemovalStrategy.class);
         PRIORS.add(DedupOptimizerStrategy.class);
         PRIORS.add(EngineDependentStrategy.class);
         PRIORS.add(IdentityRemovalStrategy.class);
         PRIORS.add(LabeledEndStepStrategy.class);
         PRIORS.add(MatchWhereStrategy.class);
         PRIORS.add(ReducingStrategy.class);
+        PRIORS.add(RouteStrategy.class);
         PRIORS.add(SideEffectCapStrategy.class);
-        PRIORS.add(UnionLinearStrategy.class);
-        PRIORS.add(UnrollJumpStrategy.class);
+        PRIORS.add(SideEffectRegistrationStrategy.class);
     }
 
     private ProfileStrategy() {
     }
 
     @Override
-    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine traversalEngine) {
         if (!TraversalHelper.hasStepOfClass(ProfileStep.class, traversal))
             return;
 
         // Remove user-specified .profile() steps
         List<ProfileStep> profileSteps = TraversalHelper.getStepsOfClass(ProfileStep.class, traversal);
         for (ProfileStep step : profileSteps) {
-            TraversalHelper.removeStep(step, traversal);
+            traversal.removeStep(step);
         }
 
         // Add .profile() step after every pre-existing step.
-        final List<Step> steps = traversal.asAdmin().getSteps();
+        final List<Step> steps = traversal.getSteps();
         for (int ii = 0; ii < steps.size(); ii++) {
-            TraversalHelper.insertStep(new ProfileStep(traversal, steps.get(ii)), ii + 1, traversal);
+            traversal.addStep(ii + 1, new ProfileStep(traversal, steps.get(ii)));
             ii++;
         }
     }
