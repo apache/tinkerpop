@@ -18,9 +18,7 @@ import java.util.function.Supplier;
  */
 public final class FoldStep<S, E> extends LazyBarrierStep<S, E> implements Reducing<E, S> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
-            TraverserRequirement.OBJECT
-    ));
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(TraverserRequirement.OBJECT));
 
     public FoldStep(final Traversal traversal) {
         this(traversal, () -> (E) new ArrayList<S>(), (seed, start) -> {

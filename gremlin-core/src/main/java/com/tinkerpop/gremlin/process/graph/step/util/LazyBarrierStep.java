@@ -49,14 +49,12 @@ public abstract class LazyBarrierStep<S, E> extends AbstractStep<S, E> implement
     public Traverser<E> processNextStart() {
         if (this.done)
             throw FastNoSuchElementException.instance();
-
         E seed = this.seedSupplier.get();
         while (this.starts.hasNext()) {
             seed = this.barrierFunction.apply(seed, this.starts.next());
         }
         this.done = true;
         return this.getTraversal().asAdmin().getTraverserGenerator().generate(seed, (Step) this, 1l);
-
     }
 
     @Override

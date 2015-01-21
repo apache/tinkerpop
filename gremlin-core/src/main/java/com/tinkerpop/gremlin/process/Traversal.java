@@ -46,7 +46,9 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      *
      * @return the admin of this traversal
      */
-    public Admin<S, E> asAdmin();
+    public default Admin<S, E> asAdmin() {
+        return (Traversal.Admin<S, E>) this;
+    }
 
     /**
      * Submit the traversal to a {@link GraphComputer} for OLAP execution.
@@ -231,7 +233,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         public List<Step> getSteps();
 
         /**
-         * Add a {@link Step} to the end of the traversal. This method should automatically re-link the step accordingly (see {@link TraversalHelper#reLinkSteps}).
+         * Add a {@link Step} to the end of the traversal. This method should link the step to its next and previous step accordingly.
          * If the {@link TraversalStrategies} have already been applied, then an {@link IllegalStateException} is throw stating the traversal is locked.
          *
          * @param step the step to add
@@ -252,14 +254,12 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
         public default Step<S, ?> getStartStep() {
             final List<Step> steps = this.getSteps();
-            final int size = steps.size();
-            return size == 0 ? EmptyStep.instance() : steps.get(0);
+            return steps.isEmpty() ? EmptyStep.instance() : steps.get(0);
         }
 
         public default Step<?, E> getEndStep() {
             final List<Step> steps = this.getSteps();
-            final int size = steps.size();
-            return size == 0 ? EmptyStep.instance() : steps.get(size - 1);
+            return steps.isEmpty() ? EmptyStep.instance() : steps.get(steps.size() - 1);
         }
 
         /**
@@ -269,7 +269,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          *
          * @param engine the engine that will ultimately execute the traversal.
          */
-        public void applyStrategies(final TraversalEngine engine);
+        public void applyStrategies(final TraversalEngine engine); // TODO: throw exception if you try twice?
 
         /**
          * When the {@link TraversalStrategies} have been applied, the destined {@link TraversalEngine} has been declared.
