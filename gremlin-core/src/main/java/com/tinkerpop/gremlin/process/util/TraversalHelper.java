@@ -118,17 +118,6 @@ public class TraversalHelper {
         traversal.removeStep(removeStep);
     }
 
-    public static void reLinkSteps(final Traversal.Admin<?, ?> traversal) {
-        final List<Step> steps = traversal.getSteps();
-        for (int i = 0; i < steps.size(); i++) {
-            final Step previousStep = i > 0 ? steps.get(i - 1) : null;
-            final Step currentStep = steps.get(i);
-            final Step nextStep = i < steps.size() - 1 ? steps.get(i + 1) : null;
-            currentStep.setPreviousStep(null != previousStep ? previousStep : EmptyStep.instance());
-            currentStep.setNextStep(null != nextStep ? nextStep : EmptyStep.instance());
-        }
-    }
-
     public static String makeStepString(final Step<?, ?> step, final Object... arguments) {
         final StringBuilder builder = new StringBuilder(step.getClass().getSimpleName());
         final List<String> strings = Stream.of(arguments)
@@ -187,7 +176,7 @@ public class TraversalHelper {
             if (stepClass.isAssignableFrom(step.getClass()))
                 list.add((S) step);
             if (step instanceof TraversalHolder) {
-                for (final Traversal<?, ?> nest : ((TraversalHolder<?, ?>) step).getTraversals()) {
+                for (final Traversal<?, ?> nest : ((TraversalHolder) step).getGlobalTraversals()) {
                     list.addAll(TraversalHelper.getStepsOfAssignableClassRecurssively(stepClass, nest.asAdmin()));
                 }
             }
@@ -270,12 +259,12 @@ public class TraversalHelper {
         Traversal.Admin<?, ?> current = traversal;
         while (!(current instanceof EmptyTraversal)) {
             stepPosition.y++;
-            final TraversalHolder<?, ?> holder = current.getTraversalHolder();
+            final TraversalHolder holder = current.getTraversalHolder();
             if (null == stepPosition.parentId && !(holder instanceof EmptyStep))
                 stepPosition.parentId = holder.asStep().getId();
             if (-1 == stepPosition.z) {
-                for (int i = 0; i < holder.getTraversals().size(); i++) {
-                    if (holder.getTraversals().get(i) == current) {
+                for (int i = 0; i < holder.getGlobalTraversals().size(); i++) {
+                    if (holder.getGlobalTraversals().get(i) == current) {
                         stepPosition.z = i;
                     }
                 }

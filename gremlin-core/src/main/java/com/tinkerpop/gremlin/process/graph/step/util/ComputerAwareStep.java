@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -49,4 +50,27 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
     protected abstract Iterator<Traverser<E>> standardAlgorithm() throws NoSuchElementException;
 
     protected abstract Iterator<Traverser<E>> computerAlgorithm() throws NoSuchElementException;
+
+    //////
+
+    public class EndStep extends AbstractStep<S, S> {
+
+        public EndStep(final Traversal traversal) {
+            super(traversal);
+            this.traverserStepIdSetByChild = true;
+        }
+
+        @Override
+        protected Traverser<S> processNextStart() throws NoSuchElementException {
+            final Traverser.Admin<S> start = this.starts.next();
+            start.setStepId(ComputerAwareStep.this.getNextStep().getId());
+            return start;
+        }
+
+        @Override
+        public String toString() {
+            return TraversalHelper.makeStepString(this);
+        }
+    }
+
 }

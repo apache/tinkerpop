@@ -36,7 +36,7 @@ public class TraversalMatrix<S, E> {
         for (final Step<?, ?> step : traversal.getSteps()) {
             this.matrix.put(step.getId(), step);
             if (step instanceof TraversalHolder) {
-                for (final Traversal<?, ?> nest : ((TraversalHolder<?, ?>) step).getTraversals()) {
+                for (final Traversal<?, ?> nest : ((TraversalHolder) step).getGlobalTraversals()) {
                     this.harvestSteps(nest.asAdmin());
                 }
             }

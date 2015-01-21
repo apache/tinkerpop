@@ -30,7 +30,7 @@ import java.util.function.Function;
  */
 public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> implements TraversalHolder {
 
-    private static final Child[] CHILD_OPERATIONs = new Child[]{Child.SET_HOLDER, Child.SET_STRATEGIES}; // TODO: Nest.SET/MERGE_SIDE_EFFECTS?
+    private static final Child[] CHILD_OPERATIONS = new Child[]{Child.SET_HOLDER}; // TODO: Nest.SET/MERGE_SIDE_EFFECTS?
 
     static final BiConsumer<String, Object> TRIVIAL_CONSUMER = (s, t) -> {
     };
@@ -61,15 +61,15 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
         this.currentStart = new B_O_PA_S_SE_SL_Traverser<>(null, this);
         for (final Traversal tl : traversals) {
             addTraversalPrivate(tl);
+            this.executeTraversalOperations(tl, CHILD_OPERATIONS);
             this.traversals.add(tl);
         }
         checkSolvability();
-        this.executeTraversalOperations(CHILD_OPERATIONs);
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getTraversalRequirements();
+        return TraversalHolder.super.getRequirements();
     }
 
     @Override
@@ -88,16 +88,14 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     public void addTraversal(final Traversal<S, S> traversal) {
         addTraversalPrivate(traversal);
         this.traversals.add(traversal);
+        this.executeTraversalOperations(traversal, CHILD_OPERATIONS);
         checkSolvability();
-        this.executeTraversalOperations(CHILD_OPERATIONs);
-
     }
 
     public void setStartsPerOptimize(final int startsPerOptimize) {
         if (startsPerOptimize < 1) {
             throw new IllegalArgumentException();
         }
-
         this.startsPerOptimize = startsPerOptimize;
     }
 
@@ -374,7 +372,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     }
 
     @Override
-    public List<Traversal> getTraversals() {
+    public List<Traversal> getLocalTraversals() {
         return this.traversals;
     }
 

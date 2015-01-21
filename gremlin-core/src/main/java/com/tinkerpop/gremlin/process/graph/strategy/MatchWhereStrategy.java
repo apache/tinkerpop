@@ -40,8 +40,8 @@ public class MatchWhereStrategy extends AbstractTraversalStrategy implements Tra
             Step currentStep = matchStep.getNextStep();
             while (currentStep instanceof WhereStep || currentStep instanceof SelectStep || currentStep instanceof IdentityStep) {
                 if (currentStep instanceof WhereStep) {
-                    if (!((WhereStep) currentStep).hasBiPredicate()) {
-                        matchStep.addTraversal(((WhereStep<?>) currentStep).getTraversals().get(0));
+                    if (!((WhereStep) currentStep).getLocalTraversals().isEmpty()) {
+                        matchStep.addTraversal(((WhereStep<?>) currentStep).getLocalTraversals().get(0));
                         traversal.removeStep(currentStep);
                     } else {
                         foundWhereWithNoTraversal = true;

@@ -611,7 +611,7 @@ Installing Hadoop-Gremlin
 To the `.bash_profile` file, add the following environmental variable (of course, be sure the directories are respective of the local machine locations). The `HADOOP_GREMLIN_LIBS` is the location of all the Hadoop-Gremlin jars. It is possible to place developer jars into this directory for loading into the Hadoop job's classpath. Or, better yet, note that `HADOOP_GREMLIN_LIBS` can be a colon-separated (`:`) list of locations and thus will load all jars into the cluster at all provided locations.
 
 [source,shell]
-export HADOOP_GREMLIN_LIBS=/usr/local/gremlin-console/ext/hadoop-gremlin/
+export HADOOP_GREMLIN_LIBS=/usr/local/gremlin-console/ext/hadoop-gremlin:/usr/local/gremlin-console/lib
 
 If using <<gremlin-console,Gremlin Console>>, it is important to install the Hadoop-Gremlin plugin. Note that Hadoop-Gremlin requires a Gremlin Console restart after installing,
 

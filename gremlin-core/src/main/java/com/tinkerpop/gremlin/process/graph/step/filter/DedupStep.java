@@ -37,7 +37,7 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     }
 
     public boolean hasUniqueFunction() {
-        return null == this.uniqueFunction;
+        return null != this.uniqueFunction;
     }
 
     @Override

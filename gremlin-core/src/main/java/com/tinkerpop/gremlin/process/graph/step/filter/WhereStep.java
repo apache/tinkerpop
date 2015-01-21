@@ -17,8 +17,6 @@ import java.util.function.BiPredicate;
  */
 public final class WhereStep<E> extends FilterStep<Map<String, E>> implements TraversalHolder {
 
-    private static final Child[] CHILD_OPERATIONs = new Child[]{Child.SET_HOLDER, Child.SET_STRATEGIES};
-
     private final String firstKey;
     private final String secondKey;
     private final BiPredicate biPredicate;
@@ -41,16 +39,11 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         this.secondKey = null;
         this.biPredicate = null;
         this.constraint = constraint;
-        this.constraint.asAdmin().setStrategies(this.getTraversal().asAdmin().getStrategies());
-        this.executeTraversalOperations(CHILD_OPERATIONs);
+        this.executeTraversalOperations(this.constraint, Child.SET_HOLDER);
         WhereStep.generatePredicate(this);
     }
 
-    public boolean hasBiPredicate() {
-        return null != this.biPredicate;
-    }
-
-    public List<Traversal> getTraversals() {
+    public List<Traversal> getLocalTraversals() {
         return null == this.constraint ? Collections.emptyList() : Collections.singletonList(this.constraint);
     }
 
@@ -64,15 +57,18 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         final WhereStep<E> clone = (WhereStep<E>) super.clone();
         if (null != this.constraint) {
             clone.constraint = this.constraint.clone();
-            clone.executeTraversalOperations(CHILD_OPERATIONs);
+            clone.executeTraversalOperations(clone.constraint, Child.SET_HOLDER);
         }
         WhereStep.generatePredicate(clone);
         return clone;
     }
 
+
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return null == this.constraint ? Collections.singleton(TraverserRequirement.OBJECT) : this.getTraversalRequirements(TraverserRequirement.OBJECT);
+        final Set<TraverserRequirement> requirements = TraversalHolder.super.getRequirements();
+        requirements.add(TraverserRequirement.OBJECT);
+        return requirements;
     }
 
     @Override
