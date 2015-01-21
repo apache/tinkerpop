@@ -181,9 +181,9 @@ The `choose()`-step (*branch*) allows for the current traverser to select which 
 
 [gremlin,modern]
 ----
-g.V().has(label,'person').values('name').map{[it.get(), it.get().length()]}
-g.V().has(label,'person').filter{it.get().value('name').length() == 5}.in().values('name')
-g.V().has(label,'person').filter{it.get().value('name').length() == 4}.out().values('name')
+g.V().has(label,'person').values('name').map {[it.get(), it.get().length()]}
+g.V().has(label,'person').filter {it.get().value('name').length() == 5}.in().values('name')
+g.V().has(label,'person').filter {it.get().value('name').length() == 4}.out().values('name')
 ----
 
 Given the facts above, the following examples show how to use `choose()` to select the values.
@@ -305,9 +305,9 @@ As traversers propagate across a graph as defined by a traversal, sideEffect com
 
 [gremlin,modern]
 ----
-g.V().group().by{it.value('name')[1]}   // group the vertices by the second letter of their name
-g.V().group().by{it.value('name')[1]}.by('name')   // for each vertex in the group, get their name (now the name[1] is apparent)
-g.V().group().by{it.value('name')[1]}.by('name').by {it.size()}   // for each grouping, what is it's size?
+g.V().group().by {it.value('name')[1]}   // group the vertices by the second letter of their name
+g.V().group().by {it.value('name')[1]}.by('name')   // for each vertex in the group, get their name (now the name[1] is apparent)
+g.V().group().by {it.value('name')[1]}.by('name').by {it.size()}   // for each grouping, what is it's size?
 ----
 
 The three projection parameters available to `group()` via `by()` are:
