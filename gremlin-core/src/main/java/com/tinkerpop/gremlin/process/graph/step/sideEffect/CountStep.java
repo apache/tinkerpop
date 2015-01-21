@@ -16,11 +16,7 @@ import java.util.Set;
  */
 public final class CountStep<S> extends LazyBarrierStep<S, Long> implements Reducing<Long, Traverser<S>> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
-            TraverserRequirement.BULK
-    ));
-
-    public static final String COUNT_KEY = Graph.Hidden.hide("count");
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(TraverserRequirement.BULK));
 
     public CountStep(final Traversal traversal) {
         super(traversal);
