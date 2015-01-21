@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
 import javax.script.ScriptContext
 
 def BLOCK_DELIMITER = "----"
+def RESULT_PREFIX = "==>"
 def STATEMENT_CONTINUATION_CHARACTERS = [".", ",", "{", "("]
 def STATEMENT_PREFIX = "gremlin> "
 def STATEMENT_CONTINUATION_PREFIX = "         "
@@ -39,7 +40,7 @@ def inCodeSection = false
 def engine
 
 sanitize = { def codeLine ->
-    codeLine.replaceAll(/\s*(\<\d+\>,\s*)*\<\d+\>\s*$/, "").replaceAll(/\s*\/\/.*$/, "").trim()
+    codeLine.replaceAll(/\s*(\<\d+\>\s*)*\<\d+\>\s*$/, "").replaceAll(/\s*\/\/.*$/, "").trim()
 }
 
 new File(this.args[0]).withReader { reader ->
@@ -64,16 +65,19 @@ new File(this.args[0]).withReader { reader ->
                         println STATEMENT_CONTINUATION_PREFIX + line
                     }
                 }
-                def res
-                try {
-                   res = engine.eval(script.toString())
-                } catch (e) {
-                   e.printStackTrace()
-                   System.exit(1)
-                }
-                if (line.startsWith("import")) {
+                if (line.equals(BLOCK_DELIMITER)) {
+                    skipNextRead = false
+                    inCodeSection = false
+                } else if (line.startsWith("import ")) {
                     println "..."
                 } else {
+                    def res
+                    try {
+                       res = engine.eval(script.toString())
+                    } catch (e) {
+                       e.printStackTrace()
+                       System.exit(1)
+                    }
                     if (res instanceof Map) {
                         res = res.entrySet()
                     }
@@ -83,15 +87,11 @@ new File(this.args[0]).withReader { reader ->
                     if (res instanceof Iterator) {
                         while (res.hasNext()) {
                             def current = res.next()
-                            println "==>" + current
+                            println RESULT_PREFIX + (current ?: "null")
                         }
                     } else if (!line.isEmpty() && !line.startsWith("//")) {
-                        println "==>" + (res ?: "null")
+                        println RESULT_PREFIX + (res ?: "null")
                     }
-                }
-                if (line.equals(BLOCK_DELIMITER)) {
-                    skipNextRead = false
-                    inCodeSection = false
                 }
             }
             if (!inCodeSection) println BLOCK_DELIMITER
@@ -99,13 +99,14 @@ new File(this.args[0]).withReader { reader ->
             if (line.startsWith("[gremlin-")) {
                 def parts = line.split(/,/, 2)
                 def graph = parts.size() == 2 ? parts[1].capitalize().replaceAll(/\s*\]\s*$/, "") : ""
+                def lang = parts[0].split(/-/, 2)[1].replaceAll(/\s*\]\s*$/, "")
                 def g = graph.isEmpty() ? TinkerGraph.open() : TinkerFactory."create${graph}"()
-                engine = ScriptEngineCache.get(parts[0].split(/-/, 2)[1].replaceAll(/\s*\]\s*$/, ""))
+                engine = ScriptEngineCache.get(lang)
                 engine.put("g", g)
-                if (graph == "Modern") engine.put("marko", g.V().has("name", "marko").next())
+                engine.put("marko", g.V().has("name", "marko").tryNext().orElse(null))
                 reader.readLine()
                 inCodeSection = true
-                println "[source,groovy]"
+                println "[source,${lang}]"
                 println BLOCK_DELIMITER
             } else println line
         }

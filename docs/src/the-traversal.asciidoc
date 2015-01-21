@@ -295,7 +295,7 @@ g.V().values('age').fold(0, sum) <5>
 <2> A verification of the type of list returned.
 <3> `fold()` can be provided two arguments --  a seed value and a reduce bi-function ("vadas" is 5 characters + "josh" with 4 characters).
 <4> What is the total age of the people in the graph?
-<5> The same as <4>, but using a built-in bi-function.
+<5> The same as before, but using a built-in bi-function.
 
 [[group-step]]
 Group Step
@@ -532,7 +532,7 @@ traversal = g.V().match('a',
                   where(__.as('a').out('knows').as('c')). <1>
                   select('a','c').by('name'); null <2>
 traversal.toString() <3>
-traversal <4>, <5>
+traversal <4> <5>
 traversal.toString() <6>
 ----
 
@@ -785,7 +785,7 @@ g.V(1).repeat(__.out()).until {!it.get().outE().hasNext()}.path().by('name') <4>
 <1> Starting from vertex 1, keep taking outgoing edges until a software vertex is reached.
 <2> Starting from vertex 1, and in an infinite loop, emit the vertex if it is a person and then traverser the outgoing edges.
 <3> Starting from vertex 1, keep taking outgoing edges until a vertex is reached that has no more outgoing edges.
-<4> The same as <3>, but using a predicate argument for `until()`.
+<4> The same as before, but using a predicate argument for `until()`.
 
 [[retain-step]]
 Retain Step
