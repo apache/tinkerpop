@@ -6,16 +6,14 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.ProfileMapReduce;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.process.util.StandardTraversalMetrics;
+import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, MapReducer<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> {
+public final class ProfileStep<S> extends SideEffectStep<S> implements Reversible, MapReducer<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> {
 
     private final String name;
 
@@ -75,10 +73,5 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffec
         StandardTraversalMetrics traversalMetrics = this.getTraversal().asAdmin().getSideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, StandardTraversalMetrics::new);
         traversalMetrics.initializeIfNecessary(this.getId(), this.traversal.asAdmin().getSteps().indexOf(this), name);
         return traversalMetrics;
-    }
-
-    @Override
-    public String getSideEffectKey(){
-        return TraversalMetrics.METRICS_KEY;
     }
 }

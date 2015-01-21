@@ -100,21 +100,24 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
             traversal.iterate();
 
+            assertEquals("There should be 6 steps in this traversal (counting injected profile steps).", 6, traversal.asAdmin().getSteps().size());
+
             TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(TraversalMetrics.METRICS_KEY);
             traversalMetrics.toString(); // ensure no exceptions are thrown
 
+            // Grab the second (sideEffect{sleep}) step and check the times.
             Metrics metrics = traversalMetrics.getMetrics(1);
             // 6 elements w/ a 10ms sleep each = 60ms with 10ms for other computation
-            assertTrue("Duration should be at least the length of the sleep: " + metrics.getDuration(TimeUnit.MICROSECONDS),
+            assertTrue("Duration should be at least the length of the sleep: " + metrics.getDuration(TimeUnit.MILLISECONDS),
                     metrics.getDuration(TimeUnit.MILLISECONDS) >= 60);
-            assertTrue("Sanity check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MICROSECONDS),
+            assertTrue("Check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MILLISECONDS),
                     metrics.getDuration(TimeUnit.MILLISECONDS) < 80);
 
-            // 6 elements w/ a 5ms sleep each = 30ms with 10ms for other computation
+            // 6 elements w/ a 5ms sleep each = 30ms plus 20ms for other computation
             metrics = traversalMetrics.getMetrics(2);
-            assertTrue("Duration should be at least the length of the sleep: " + metrics.getDuration(TimeUnit.MICROSECONDS),
+            assertTrue("Duration should be at least the length of the sleep: " + metrics.getDuration(TimeUnit.MILLISECONDS),
                     metrics.getDuration(TimeUnit.MILLISECONDS) >= 30);
-            assertTrue("Sanity check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MICROSECONDS),
+            assertTrue("Check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MILLISECONDS),
                     metrics.getDuration(TimeUnit.MILLISECONDS) < 50);
 
             double totalPercentDuration = 0;

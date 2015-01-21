@@ -15,7 +15,7 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
 
     private boolean dirty = true;
     private final Map<String, MutableMetrics> metrics = new HashMap<>();
-    private final Map<Integer, String> indexToLabelMap = new HashMap<>();
+    private final Map<Integer, String> indexToLabelMap = new TreeMap<>();
 
     /*
     The following are computed values upon the completion of profiling in order to report the results back to the user
@@ -79,8 +79,9 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
         StringBuilder sb = new StringBuilder();
         sb.append("Traversal Metrics\n").append(String.format("%28s %13s %11s %15s %8s", HEADERS));
 
-        // Append each StepMetric's row.
-        for (ImmutableMetrics s : computedMetrics.values()) {
+        // Append each StepMetric's row. indexToLabelMap values are ordered by index.
+        for (String label : indexToLabelMap.values()) {
+            ImmutableMetrics s = computedMetrics.get(label);
             String rowName = s.getName();
 
             if (rowName.length() > 28)
@@ -105,8 +106,12 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
             return;
         }
 
+        // Create temp list of ordered metrics
         List<MutableMetrics> tempMetrics = new ArrayList<>(metrics.size());
-        metrics.values().forEach(m -> tempMetrics.add(m.clone()));
+        for (String label : indexToLabelMap.values()) {
+            // The indexToLabelMap is sorted by index (key)
+            tempMetrics.add(metrics.get(label).clone());
+        }
 
         // Subtract upstream traversal time from each step
         for (int ii = tempMetrics.size() - 1; ii > 0; ii--) {
