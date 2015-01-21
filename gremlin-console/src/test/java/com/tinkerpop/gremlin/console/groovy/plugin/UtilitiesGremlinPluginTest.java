@@ -36,7 +36,6 @@ public class UtilitiesGremlinPluginTest {
     }
 
     @Test
-    @Ignore
     public void shouldPluginUtilities() throws Exception {
         final UtilitiesGremlinPlugin plugin = new UtilitiesGremlinPlugin();
 
