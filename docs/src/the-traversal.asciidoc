@@ -651,33 +651,28 @@ path.d == path.e
 Profile Step
 ~~~~~~~~~~~~
 
-The `profile()`-step (*sideEffect*) exists to allow developers to profile their traversals to determine statistical information like step runtime, counts, etc. The `profile()`-step can only be used if the system property `tinkerpop.profiling` is set to `true`. Thus, prior to starting the Gremlin Console, set `JAVA_OPTIONS` accordingly.
+The `profile()`-step (*sideEffect*) exists to allow developers to profile their traversals to determine statistical information like step runtime, counts, etc.
 
-WARNING: When profiling is enabled, traversals are more costly to execute. Thus, be sure to not have `tinkerpop.profiling` set to `true` in any production or query time critical application. The best way to determine if profiling is enabled is to see if an `IllegalArgumentException` is thrown when the `profile()` step is used. If there is no exception, then profiling is enabled.
+WARNING: Profiling a Traversal will impede the Traversal's performance. This overhead is mostly excluded from the profile results, but durations are not exact. Thus, durations are best considered in relation to each other.
 
 [source,groovy]
 ----
-$ JAVA_OPTIONS=-Dtinkerpop.profiling=true bin/gremlin.sh
-
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----
 plugin activated: tinkerpop.tinkergraph
 gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V().out().out().profile()
+gremlin> g.V().repeat(__.both()).times(3).profile().cap(TraversalMetrics.METRICS_KEY)
 ==>Traversal Metrics
-                            Step       Count Traversers       Time (ms)   % Dur
-         TinkerGraphStep(vertex)           6          6           0.020    1.62
-          VertexStep(OUT,vertex)           6          6           1.165   94.10
-          VertexStep(OUT,vertex)           2          2           0.032    2.58
-                     ProfileStep           2          2           0.004    0.32
-               SideEffectCapStep           1          1           0.017    1.37
-                           TOTAL           -          -           1.238       -
-gremlin>
+                        Step                 Count  Traversers       Time (ms)    % Dur
+           GraphStep(vertex)                     6           6           0.614     3.01
+RepeatStep([VertexStep(BO...                    72          54          17.609    86.18
+ SideEffectCapStep(~metrics)                     1           1           2.210    10.82
+                       TOTAL                     -           -          20.434        -
 ----
 
-The `profile()`-step generates a `TraversalMetrics` object that contains the following information:
+The `profile()`-step generates a `TraversalMetrics` sideEffect object that contains the following information:
 
 * `Step`: A step within the traversal being profiled.
 * `Count`: The number of _represented_ traversers that passed through the step.
@@ -686,26 +681,6 @@ The `profile()`-step generates a `TraversalMetrics` object that contains the fol
 * `% Dur`: The percentage of total time spent in the step.
 
 image:gremlin-exercise.png[width=120,float=left] It is important to understand the difference between `Count` and `Traversers`. Traversers can be merged and as such, when two traversers are "the same" they may be aggregated into a single traverser. That new traverser has a `Traverser.bulk()` that is the sum of the two merged traverser bulks. On the other hand, the `Count` represents the sum of all `Traverser.bulk()` results and thus, expresses the number of "represented" (not enumerated) traversers. `Traversers` will always be less than or equal to `Count`.
-
-If `-Dtinkerpop.profiling=true` is not set, then the following exception occurs.
-
-[source,groovy]
-----
-$ bin/gremlin.sh
-
-         \,,,/
-         (o o)
------oOOo-(3)-oOOo-----
-plugin activated: tinkerpop.tinkergraph
-gremlin> g = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V().out().out().profile()
-The profile()-step can only be used when profiling is enabled via 'gremlin.sh -p' or directly via -Dtinkerpop.profiling=true
-Display stack trace? [yN]
-gremlin>
-----
-
-TIP: It is possible to enabled profiling for a Gremlin Console session via `gremlin.sh -p`.
 
 [[range-step]]
 Range Step
