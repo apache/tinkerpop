@@ -56,7 +56,7 @@ new File(this.args[0]).withReader { reader ->
                 if (!sanitizedLine.isEmpty() && sanitizedLine[-1] in STATEMENT_CONTINUATION_CHARACTERS) {
                     while (true) {
                         line = reader.readLine()
-                        if (!line.startsWith(" ") && !line.startsWith("}") && !line.startsWith(")")) {
+                        if (!line.startsWith(" ") && !line.startsWith("}") && !line.startsWith(")") || line.equals(BLOCK_DELIMITER)) {
                             skipNextRead = true
                             break
                         }
@@ -65,12 +65,13 @@ new File(this.args[0]).withReader { reader ->
                         println STATEMENT_CONTINUATION_PREFIX + line
                     }
                 }
-                if (line.equals(BLOCK_DELIMITER)) {
-                    skipNextRead = false
-                    inCodeSection = false
-                } else if (line.startsWith("import ")) {
+                if (line.startsWith("import ")) {
                     println "..."
                 } else {
+                    if (line.equals(BLOCK_DELIMITER)) {
+                        skipNextRead = false
+                        inCodeSection = false
+                    }
                     def res
                     try {
                        res = engine.eval(script.toString())
