@@ -14,17 +14,15 @@ def STATEMENT_PREFIX = "gremlin> "
 def STATEMENT_CONTINUATION_PREFIX = "         "
 
 def header = """
-    import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterCountMapReduce
-    import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterPopulationMapReduce
-    import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram
-    import com.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce
-    import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram
-    import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram
-    import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
+    import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.*
+    import com.tinkerpop.gremlin.process.computer.lambda.*
+    import com.tinkerpop.gremlin.process.computer.ranking.pagerank.*
+    import com.tinkerpop.gremlin.process.computer.traversal.*
+    import com.tinkerpop.gremlin.process.util.*;
     import com.tinkerpop.gremlin.structure.strategy.*
-    import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
+    import com.tinkerpop.gremlin.tinkergraph.structure.*
     import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
-    import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
+    import com.tinkerpop.gremlin.tinkergraph.structure.*
 
     import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
     import static com.tinkerpop.gremlin.process.T.*
