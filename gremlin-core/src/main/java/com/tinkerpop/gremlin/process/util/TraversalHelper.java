@@ -140,7 +140,7 @@ public class TraversalHelper {
     }
 
     public static String makeTraversalString(final Traversal.Admin<?, ?> traversal) {
-        final List<Step> temp = new ArrayList<>();
+        final List<Step> temp = new ArrayList<>();     // TODO: why not just traversal.getSteps().toString() ?
         Step currentStep = traversal.getStartStep();
         while (!(currentStep instanceof EmptyStep)) {
             temp.add(currentStep);

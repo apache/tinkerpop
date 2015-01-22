@@ -29,17 +29,9 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
     }
 
     @Override
-    public void reset() {
-        super.reset();
-        this.getTraversal().asAdmin().getSideEffects().remove(TraversalMetrics.METRICS_KEY);
-    }
-
-
-    @Override
     public MapReduce<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> getMapReduce() {
         return new ProfileMapReduce(this);
     }
-
 
     @Override
     public Traverser next() {
@@ -63,7 +55,6 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
     public boolean hasNext() {
         // Wrap SideEffectStep's hasNext() with timer.
         StandardTraversalMetrics traversalMetrics = getTraversalMetricsUtil();
-
         traversalMetrics.start(this.getId());
         boolean ret = super.hasNext();
         traversalMetrics.stop(this.getId());

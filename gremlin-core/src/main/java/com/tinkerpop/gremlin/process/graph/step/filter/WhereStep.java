@@ -20,7 +20,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
     private final String firstKey;
     private final String secondKey;
     private final BiPredicate biPredicate;
-    private Traversal constraint;
+    private Traversal.Admin constraint;
 
 
     public WhereStep(final Traversal traversal, final String firstKey, final String secondKey, final BiPredicate<E, E> biPredicate) {
@@ -38,7 +38,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         this.firstKey = null;
         this.secondKey = null;
         this.biPredicate = null;
-        this.constraint = constraint;
+        this.constraint = constraint.asAdmin();
         this.executeTraversalOperations(this.constraint, Child.SET_HOLDER);
         WhereStep.generatePredicate(this);
     }
@@ -56,7 +56,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
     public WhereStep<E> clone() throws CloneNotSupportedException {
         final WhereStep<E> clone = (WhereStep<E>) super.clone();
         if (null != this.constraint) {
-            clone.constraint = this.constraint.clone();
+            clone.constraint = this.constraint.clone().asAdmin();
             clone.executeTraversalOperations(clone.constraint, Child.SET_HOLDER);
         }
         WhereStep.generatePredicate(clone);
@@ -90,8 +90,8 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
                 return whereStep.biPredicate.test(map.get(whereStep.firstKey), map.get(whereStep.secondKey));
             });
         } else {
-            final Step<?, ?> startStep = whereStep.constraint.asAdmin().getStartStep();
-            final Step<?, ?> endStep = whereStep.constraint.asAdmin().getEndStep();
+            final Step<?, ?> startStep = whereStep.constraint.getStartStep();
+            final Step<?, ?> endStep = whereStep.constraint.getEndStep();
             whereStep.setPredicate(traverser -> {
                 final Map<String, E> map = traverser.get();
                 if (!map.containsKey(startStep.getLabel().get()))
@@ -109,7 +109,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
                 startStep.addStart(whereStep.getTraversal().asAdmin().getTraverserGenerator().generate(startObject, (Step) startStep, traverser.bulk()));
                 if (null == endObject) {
                     if (whereStep.constraint.hasNext()) {
-                        whereStep.constraint.asAdmin().reset();
+                        whereStep.constraint.reset();
                         return true;
                     } else {
                         return false;
@@ -118,7 +118,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
                 } else {
                     while (whereStep.constraint.hasNext()) {
                         if (whereStep.constraint.next().equals(endObject)) {
-                            whereStep.constraint.asAdmin().reset();
+                            whereStep.constraint.reset();
                             return true;
                         }
                     }

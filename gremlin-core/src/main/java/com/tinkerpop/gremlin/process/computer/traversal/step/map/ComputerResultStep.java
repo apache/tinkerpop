@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -27,7 +26,7 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
     private final Iterator<Traverser.Admin<S>> traversers;
     private final Graph graph;
     private final Memory memory;
-    private final Traversal.Admin<?,?> computerTraversal;
+    private final Traversal.Admin<?, ?> computerTraversal;
     private final boolean attachElements; // should be part of graph computer with "propagate properties"
 
     public ComputerResultStep(final Traversal traversal, final ComputerResult result, final TraversalVertexProgram traversalVertexProgram, final boolean attachElements) {
@@ -40,7 +39,7 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
 
         final Step endStep = this.computerTraversal.getEndStep();
         this.traversers = endStep instanceof SideEffectCapStep ?
-                IteratorUtils.of(new B_O_PA_S_SE_SL_Traverser<>((S) this.memory.get(((SideEffectCapStep) endStep).getSideEffectKey()), this)) :  // TODO: use a generator
+                IteratorUtils.of(this.computerTraversal.getTraverserGenerator().generate(this.memory.get(((SideEffectCapStep) endStep).getSideEffectKey()), this, 1l)) :
                 (Iterator<Traverser.Admin<S>>) this.memory.get(TraverserMapReduce.TRAVERSERS);
 
     }

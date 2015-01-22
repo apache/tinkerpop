@@ -494,6 +494,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.store(null);
     }
 
+    public default GraphTraversal<S, E> profile() {
+        return this.asAdmin().addStep(new ProfileStep<>(this));
+    }
+
     ///////////////////// BRANCH STEPS /////////////////////
 
     public default GraphTraversal<S, E> branch(final Function<Traverser<E>, Collection<String>> function) {
@@ -610,10 +614,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <V> GraphTraversal<S, E> by(final String elementPropertyProjection, final Comparator<V> propertyValueComparator) {
         ((ComparatorHolder<Element>) this.asAdmin().getEndStep()).addComparator(new ElementValueComparator<>(elementPropertyProjection, propertyValueComparator));
         return this;
-    }
-
-    public default GraphTraversal<S, E> profile() {
-        return this.asAdmin().addStep(new ProfileStep<>(this));
     }
 
     @Override

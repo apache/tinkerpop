@@ -123,10 +123,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             final TraverserSet<Object> haltedTraversers = new TraverserSet<>();
             vertex.property(HALTED_TRAVERSERS, haltedTraversers);
 
-            if (!(this.traversal.getStartStep() instanceof GraphStep))
+            if (!(this.traversal.getStartStep() instanceof GraphStep))                              // TODO: make this generic to Traversal
                 throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
 
-            final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.getStartStep();   // TODO: make this generic to Traversal
+            final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.getStartStep();
             final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(Graph.class).getTraverserGenerator(this.traversal);
             final String future = startStep.getNextStep().getId();
             boolean voteToHalt = true;

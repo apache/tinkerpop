@@ -29,8 +29,6 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     public boolean untilFirst = false;
     public boolean emitFirst = false;
 
-    private Step<?, S> endStep = null;
-
     public RepeatStep(final Traversal traversal) {
         super(traversal);
     }
@@ -48,7 +46,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     @SuppressWarnings("unchecked")
     public void setRepeatTraversal(final Traversal<S, S> repeatTraversal) {
         this.repeatTraversal = repeatTraversal.asAdmin(); // .clone();
-        this.repeatTraversal.asAdmin().addStep(new RepeatEndStep(this.repeatTraversal));
+        this.repeatTraversal.addStep(new RepeatEndStep(this.repeatTraversal));
         this.executeTraversalOperations(this.repeatTraversal, Child.SET_HOLDER, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS);
     }
 
@@ -124,18 +122,16 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     @Override
     protected Iterator<Traverser<S>> standardAlgorithm() throws NoSuchElementException {
-        if (null == this.endStep) this.endStep = this.repeatTraversal.getEndStep();
-        ////
         while (true) {
-            if (this.endStep.hasNext()) {
-                return this.endStep;
+            if (this.repeatTraversal.getEndStep().hasNext()) {
+                return this.repeatTraversal.getEndStep();
             } else {
                 final Traverser.Admin<S> start = this.starts.next();
                 if (doUntil(start, true)) {
                     start.resetLoops();
                     return IteratorUtils.of(start);
                 }
-                this.repeatTraversal.asAdmin().addStart(start);
+                this.repeatTraversal.addStart(start);
                 if (doEmit(start, true)) {
                     final Traverser.Admin<S> emitSplit = start.split();
                     emitSplit.resetLoops();
@@ -153,7 +149,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             start.setStepId(this.getNextStep().getId());
             return IteratorUtils.of(start);
         } else {
-            start.setStepId(this.repeatTraversal.asAdmin().getStartStep().getId());
+            start.setStepId(this.repeatTraversal.getStartStep().getId());
             if (doEmit(start, true)) {
                 final Traverser.Admin<S> emitSplit = start.split();
                 emitSplit.resetLoops();
