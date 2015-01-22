@@ -655,21 +655,9 @@ The `profile()`-step (*sideEffect*) exists to allow developers to profile their 
 
 WARNING: Profiling a Traversal will impede the Traversal's performance. This overhead is mostly excluded from the profile results, but durations are not exact. Thus, durations are best considered in relation to each other.
 
-[source,groovy]
+[gremlin-groovy,modern]
 ----
-         \,,,/
-         (o o)
------oOOo-(3)-oOOo-----
-plugin activated: tinkerpop.tinkergraph
-gremlin> g = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V().repeat(__.both()).times(3).profile().cap(TraversalMetrics.METRICS_KEY)
-==>Traversal Metrics
-                        Step                 Count  Traversers       Time (ms)    % Dur
-           GraphStep(vertex)                     6           6           0.614     3.01
-RepeatStep([VertexStep(BO...                    72          54          17.609    86.18
- SideEffectCapStep(~metrics)                     1           1           2.210    10.82
-                       TOTAL                     -           -          20.434        -
+g.V().out('created').repeat(__.both()).times(3).has(label,'person').values('age').sum().profile().cap(TraversalMetrics.METRICS_KEY)
 ----
 
 The `profile()`-step generates a `TraversalMetrics` sideEffect object that contains the following information:
