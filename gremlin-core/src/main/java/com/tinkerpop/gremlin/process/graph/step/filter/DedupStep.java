@@ -44,7 +44,7 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
 
     @Override
     public List<Function<S, Object>> getFunctions() {
-        return null == this.uniqueFunction ? Collections.emptyList() : Arrays.asList(this.uniqueFunction);
+        return null == this.uniqueFunction ? Collections.emptyList() : Collections.singletonList(this.uniqueFunction);
     }
 
     @Override
