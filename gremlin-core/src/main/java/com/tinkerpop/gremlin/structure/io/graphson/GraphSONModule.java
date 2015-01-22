@@ -176,13 +176,6 @@ public class GraphSONModule extends SimpleModule {
     }
 
     static class TraversalMetricsJacksonSerializer extends StdSerializer<TraversalMetrics> {
-        private static final String METRICS = "metrics";
-        private static final String DURATION = "dur";
-        private static final String NAME = "name";
-        private static final String PERCENT_DURATION = "percentDur";
-        private static final String COUNT = "count";
-        private static final String ANNOTATIONS = "annotations";
-
 
         public TraversalMetricsJacksonSerializer() {
             super(TraversalMetrics.class);
@@ -203,29 +196,30 @@ public class GraphSONModule extends SimpleModule {
         private void serializeInternal(final TraversalMetrics traversalMetrics, final JsonGenerator jsonGenerator) throws IOException {
             final Map<String, Object> m = new HashMap<>();
 
-            m.put(DURATION, traversalMetrics.getDuration(TimeUnit.MILLISECONDS));
+            m.put(GraphSONTokens.DURATION, traversalMetrics.getDuration(TimeUnit.MILLISECONDS));
             List<Map<String, Object>> metrics = new ArrayList<>();
             traversalMetrics.getMetrics().forEach(it -> metrics.add(metricsToMap(it)));
-            m.put(METRICS, metrics);
+            m.put(GraphSONTokens.METRICS, metrics);
 
             jsonGenerator.writeObject(m);
         }
 
         private Map<String, Object> metricsToMap(final Metrics metrics) {
             Map<String, Object> m = new HashMap<>();
-            m.put(NAME, metrics.getName());
-            m.put(COUNT, metrics.getCount());
-            m.put(DURATION, metrics.getDuration(TimeUnit.MILLISECONDS));
-            m.put(PERCENT_DURATION, metrics.getPercentDuration());
+            m.put(GraphSONTokens.ID, metrics.getId());
+            m.put(GraphSONTokens.NAME, metrics.getName());
+            m.put(GraphSONTokens.COUNT, metrics.getCount());
+            m.put(GraphSONTokens.DURATION, metrics.getDuration(TimeUnit.MILLISECONDS));
+            m.put(GraphSONTokens.PERCENT_DURATION, metrics.getPercentDuration());
 
             if (!metrics.getAnnotations().isEmpty()) {
-                m.put(ANNOTATIONS, metrics.getAnnotations());
+                m.put(GraphSONTokens.ANNOTATIONS, metrics.getAnnotations());
             }
 
             if (!metrics.getNested().isEmpty()) {
                 List<Map<String, Object>> nested = new ArrayList<>();
                 metrics.getNested().forEach(it -> nested.add(metricsToMap(it)));
-                m.put(METRICS, nested);
+                m.put(GraphSONTokens.METRICS, nested);
             }
             return m;
         }

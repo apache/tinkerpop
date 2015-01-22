@@ -21,4 +21,11 @@ public final class GraphSONTokens {
     public static final String LABEL = "label";
     public static final String IN_LABEL = "inVLabel";
     public static final String OUT_LABEL = "outVLabel";
+    // TraversalMetrics Tokens
+    public static final String METRICS = "metrics";
+    public static final String DURATION = "dur";
+    public static final String NAME = "name";
+    public static final String PERCENT_DURATION = "percentDur";
+    public static final String COUNT = "count";
+    public static final String ANNOTATIONS = "annotations";
 }

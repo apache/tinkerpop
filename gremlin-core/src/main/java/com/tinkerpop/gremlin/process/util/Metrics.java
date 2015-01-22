@@ -37,6 +37,13 @@ public interface Metrics {
     public String getName();
 
     /**
+     * Id of this Metrics.
+     *
+     * @return id of this Metrics.
+     */
+    public String getId();
+
+    /**
      * If this Metrics object has multiple peer Metrics then this value will represent the percentage of the total
      * duration taken by this Metrics object.
      *

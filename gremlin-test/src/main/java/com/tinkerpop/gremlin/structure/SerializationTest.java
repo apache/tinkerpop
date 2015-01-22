@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
 import org.junit.Test;
@@ -296,6 +297,36 @@ public class SerializationTest {
             // this is a SimpleTraverser so no properties are present in detachment
             assertFalse(detachedVIn.iterators().propertyIterator().hasNext());
             */
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeTraversalMetrics() throws Exception {
+            final ObjectMapper mapper = g.io().graphSONMapper().create().createMapper();
+            final TraversalMetrics tm = (TraversalMetrics) g.V().both().profile().cap(TraversalMetrics.METRICS_KEY).next();
+            final String json = mapper.writeValueAsString(tm);
+            final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
+
+            assertTrue(m.containsKey(GraphSONTokens.DURATION));
+            assertTrue(m.containsKey(GraphSONTokens.METRICS));
+
+            final List<Map<String, Object>> metrics = (List<Map<String, Object>>) m.get(GraphSONTokens.METRICS);
+            assertEquals(3, metrics.size());
+
+            final Map<String, Object> metrics0 = metrics.get(0);
+            assertTrue(metrics0.containsKey(GraphSONTokens.ID));
+            assertTrue(metrics0.containsKey(GraphSONTokens.NAME));
+            assertTrue(metrics0.containsKey(GraphSONTokens.COUNT));
+            assertTrue(metrics0.containsKey(GraphSONTokens.DURATION));
+            assertTrue(metrics0.containsKey(GraphSONTokens.PERCENT_DURATION));
+            assertTrue(metrics0.containsKey(GraphSONTokens.METRICS));
+
+            final Map<String, Object> nestedMetrics = (Map<String, Object>) ((List<?>)metrics0.get(GraphSONTokens.METRICS)).get(0);
+            assertTrue(nestedMetrics.containsKey(GraphSONTokens.ID));
+            assertTrue(nestedMetrics.containsKey(GraphSONTokens.NAME));
+            assertTrue(nestedMetrics.containsKey(GraphSONTokens.COUNT));
+            assertTrue(nestedMetrics.containsKey(GraphSONTokens.DURATION));
+            assertTrue(nestedMetrics.containsKey(GraphSONTokens.PERCENT_DURATION));
         }
     }
 }
