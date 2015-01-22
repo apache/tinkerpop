@@ -21,6 +21,7 @@ public class HasTraversalStep<S> extends FilterStep<S> implements TraversalHolde
         super(traversal);
         this.traversalPredicate = new TraversalHasNextPredicate<>(hasTraversal);
         this.setPredicate(this.traversalPredicate);
+        this.executeTraversalOperations(this.traversalPredicate.getTraversal(), Child.SET_HOLDER);
     }
 
     @Override
@@ -43,6 +44,7 @@ public class HasTraversalStep<S> extends FilterStep<S> implements TraversalHolde
         final HasTraversalStep<S> clone = (HasTraversalStep<S>) super.clone();
         clone.traversalPredicate = this.traversalPredicate.clone();
         clone.setPredicate(clone.traversalPredicate);
+        clone.executeTraversalOperations(clone.traversalPredicate.getTraversal(), Child.SET_HOLDER);
         return clone;
     }
 }
