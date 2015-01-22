@@ -12,7 +12,7 @@ before_install:
   - if [[ ("$TRAVIS_BRANCH" == "master" || "$TRAVIS_BRANCH" == "publish-docs") && "$TRAVIS_PULL_REQUEST" == "false" ]]; then git clone https://github.com/spmallette/travis-maven-deploy.git target/travis; fi
 script:
   - if [[ "$TRAVIS_BRANCH" == "master" && "$TRAVIS_PULL_REQUEST" == "false" ]]; then mvn deploy --settings target/travis/settings.xml -Dtravis; fi
-  - if [[ "$TRAVIS_BRANCH" == "publish-docs" && "$TRAVIS_PULL_REQUEST" == "false" ]]; then docs/preprocessor/preprocess.sh && mvn deploy --settings target/travis/settings.xml -Dasciidoc -Djavadoc; fi
+  - if [[ "$TRAVIS_BRANCH" == "publish-docs" && "$TRAVIS_PULL_REQUEST" == "false" ]]; then mvn clean install -DskipTests -Dmaven.javadoc.skip=true && docs/preprocessor/preprocess.sh && mvn deploy --settings target/travis/settings.xml -Dasciidoc -Djavadoc; fi
   - if [[ ("$TRAVIS_BRANCH" != "master" && "$TRAVIS_BRANCH" != "publish-docs") || "$TRAVIS_PULL_REQUEST" == "true" ]]; then mvn test -Dtravis; fi
 env:
   global:
