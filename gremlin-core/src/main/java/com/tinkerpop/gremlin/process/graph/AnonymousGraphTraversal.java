@@ -326,6 +326,10 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().subgraph(sideEffectKey);
     }
 
+    public default <A> GraphTraversal<A, Edge> subgraph() {
+        return this.<A>start().subgraph();
+    }
+
     public default <A> GraphTraversal<A, A> aggregate(final String sideEffectKey) {
         return this.<A>start().aggregate(sideEffectKey);
     }

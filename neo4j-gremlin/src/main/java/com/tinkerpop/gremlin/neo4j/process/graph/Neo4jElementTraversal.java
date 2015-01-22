@@ -332,6 +332,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.store(arg0);
 	}
 
+	public default Neo4jGraphTraversal<A, com.tinkerpop.gremlin.structure.Edge> subgraph() {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.subgraph();
+	}
+
 	public default Neo4jGraphTraversal<A, com.tinkerpop.gremlin.structure.Edge> subgraph(java.lang.String arg0) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.subgraph(arg0);
 	}

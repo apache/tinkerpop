@@ -25,6 +25,7 @@ import java.util.Set;
  * A side-effect step that produces an edge induced subgraph.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffectCapable, SideEffectRegistrar, Reversible {
 
@@ -32,7 +33,6 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
             TraverserRequirement.OBJECT,
             TraverserRequirement.SIDE_EFFECTS
     ));
-
 
     private Graph subgraph;
     private String sideEffectKey;
@@ -91,7 +91,7 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
         if (vertexIterator.hasNext()) return vertexIterator.next();
         final Vertex subgraphVertex = subgraph.addVertex(T.id, vertex.id(), T.label, vertex.label());
         vertex.iterators().propertyIterator().forEachRemaining(vertexProperty -> {
-            final VertexProperty<?> subgraphVertexProperty = subgraphVertex.property(vertexProperty.key(), vertexProperty.value(), T.id, vertexProperty.id()); // demand vertex property id?
+            final VertexProperty<?> subgraphVertexProperty = subgraphVertex.property(vertexProperty.key(), vertexProperty.value(), T.id, vertexProperty.id()); // TODO: demand vertex property id?
             vertexProperty.iterators().propertyIterator().forEachRemaining(property -> subgraphVertexProperty.<Object>property(property.key(), property.value()));
         });
         return subgraphVertex;

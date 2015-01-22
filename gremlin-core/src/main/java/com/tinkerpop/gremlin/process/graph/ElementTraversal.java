@@ -304,6 +304,10 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().subgraph(sideEffectKey);
     }
 
+    public default GraphTraversal<A, Edge> subgraph() {
+        return this.start().subgraph();
+    }
+
     public default GraphTraversal<A, A> aggregate(final String sideEffectKey) {
         return this.start().aggregate(sideEffectKey);
     }
