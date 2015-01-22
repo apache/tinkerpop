@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Path;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,7 +14,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SparsePath implements Path {
+public class SparsePath implements Path, Serializable {
 
     private final Map<String, Object> map = new HashMap<>();
     private Object currentObject = null;
