@@ -778,7 +778,7 @@ Finally, note that both `emit()` and `until()` can take a traversal and in such,
 ----
 g.V(1).repeat(__.out()).until(__.has(label,'software')).path().by('name') <1>
 g.V(1).emit(__.has(label,'person')).repeat(__.out()).path().by('name') <2>
-g.V(1).repeat(__.out()).until(__.outE().count().cap().filter {it.get() == 0}).path().by('name') <3>
+g.V(1).repeat(__.out()).until(__.outE().count().retain([0L])).path().by('name') <3>
 g.V(1).repeat(__.out()).until {!it.get().outE().hasNext()}.path().by('name') <4>
 ----
 
