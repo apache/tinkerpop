@@ -998,11 +998,11 @@ IMPORTANT: The `subgraph()`-step only writes to graphs that support user supplie
 TimeLimit Step
 ~~~~~~~~~~~~~~
 
-In many situations, a graph traversal is not about getting an exact answer as its about getting a relative ranking. A classic example is link:http://en.wikipedia.org/wiki/Recommender_system[recommendation]. What is desired is a relative ranking of vertices, not their absolute rank. Next, it may be desirable to have the traversal execute for no more than 750 milliseconds. In such situations, `timeLimit()`-step (*filter*) can be used.
-
-NOTE: The method `clock(int runs, Closure code)` is a utility preloaded in the <<gremlin-console,Gremlin Console>> that can be used to time execution of a body of code.
+In many situations, a graph traversal is not about getting an exact answer as its about getting a relative ranking. A classic example is link:http://en.wikipedia.org/wiki/Recommender_system[recommendation]. What is desired is a relative ranking of vertices, not their absolute rank. Next, it may be desirable to have the traversal execute for no more than 2 milliseconds. In such situations, `timeLimit()`-step (*filter*) can be used.
 
 image::timelimit-step.png[width=400]
+
+NOTE: The method `clock(int runs, Closure code)` is a utility preloaded in the <<gremlin-console,Gremlin Console>> that can be used to time execution of a body of code.
 
 [source,groovy]
 gremlin> :plugin use tinkerpop.utilities
