@@ -186,16 +186,20 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().dedup();
     }
 
-    public default GraphTraversal<A, A> except(final String sideEffectKey) {
-        return this.start().except(sideEffectKey);
+    public default GraphTraversal<A, A> except(final String sideEffectKeyOrPathLabel) {
+        return this.start().except(sideEffectKeyOrPathLabel);
     }
 
-    public default GraphTraversal<A, A> except(final Object exceptionObject) {
-        return this.start().except((A) exceptionObject);
+    public default GraphTraversal<A, A> except(final Object exceptObject) {
+        return this.start().except((A) exceptObject);
     }
 
-    public default GraphTraversal<A, A> except(final Collection<A> exceptionCollection) {
-        return this.start().except(exceptionCollection);
+    public default GraphTraversal<A, A> except(final Collection<A> exceptCollection) {
+        return this.start().except(exceptCollection);
+    }
+
+    public default GraphTraversal<A, A> has(final Traversal<?, ?> hasNextTraversal) {
+        return this.start().has(hasNextTraversal);
     }
 
     public default GraphTraversal<A, A> has(final String key) {
@@ -258,8 +262,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().limit(limit);
     }
 
-    public default GraphTraversal<A, A> retain(final String sideEffectKey) {
-        return this.start().retain(sideEffectKey);
+    public default GraphTraversal<A, A> retain(final String sideEffectKeyOrPathLabel) {
+        return this.start().retain(sideEffectKeyOrPathLabel);
     }
 
     public default GraphTraversal<A, A> retain(final Object retainObject) {

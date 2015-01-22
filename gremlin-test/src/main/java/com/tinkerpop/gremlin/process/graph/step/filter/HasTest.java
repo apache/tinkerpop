@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
@@ -26,6 +27,8 @@ import static org.junit.Assume.assumeTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class HasTest extends AbstractGremlinProcessTest {
+
+    public abstract Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX();
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_hasXkeyX(final Object v1Id, final String key);
 
@@ -54,6 +57,14 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX();
 
     public abstract Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age();
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
+        Traversal<Vertex, String> traversal = get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("josh"),traversal);
+    }
 
     @Test
     @LoadGraphWith(MODERN)
@@ -218,6 +229,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
 
         @Override
+        public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
+            return g.V().out("knows").has(__.out("created")).values("name");
+        }
+
+        @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXkeyX(final Object v1Id, final String key) {
             return g.V(v1Id).has(key);
         }
@@ -291,6 +307,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public static class ComputerTest extends HasTest {
         public ComputerTest() {
             requiresGraphComputer = true;
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
+            return g.V().out("knows").has(__.out("created")).<String>values("name").submit(g.compute());
         }
 
         @Override

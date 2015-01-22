@@ -8,12 +8,19 @@ import com.tinkerpop.gremlin.structure.Contains
 import com.tinkerpop.gremlin.structure.Edge
 import com.tinkerpop.gremlin.structure.Vertex
 
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyHasTest {
 
     public static class StandardTest extends HasTest {
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
+            g.V.out('knows').has(__.out('created')).name
+        }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXkeyX(final Object v1Id, final String key) {
@@ -87,6 +94,11 @@ public abstract class GroovyHasTest {
     }
 
     public static class ComputerTest extends HasTest {
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
+            ComputerTestHelper.compute("g.V.out('knows').has(__.out('created')).name", g);
+        }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXkeyX(final Object v1Id, final String key) {

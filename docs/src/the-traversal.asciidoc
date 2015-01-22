@@ -364,6 +364,23 @@ g.V().has(label,'person').out().has('name',within,['vadas','josh']).outE().has(l
 
 There are accessors available in the `T` "tokens" class. They include `label`, `id`, `key`, and `value`. Thus, it is possible to use `has()`-step to also filter on these aspects of an element.
 
+It is also possible to filter any arbitrary object based on an anonymous traversal having a result when that object is the start.
+
+[gremlin-groovy,modern]
+----
+g.V().has(__.out('created')).values('name') <1>
+g.V().out('knows').has(__.out('created')).values('name') <2>
+g.V().has(__.out('created').count().filter{it.get() >= 2}).values('name') <3>
+g.V().has(__.out('knows').has(__.out('created'))).values('name') <4>
+----
+
+<1> What are the names of the people who have created a project?
+<2> What are the names of the people that are known by someone one and have created a project?
+<3> What are the names of the people how have created two or more projects?
+<4> What are the names of the people who know someone that has created a project? (This only works in OLTP -- see the `WARNING` below)
+
+WARNING: The anonymous traversal of `has()` processes the current object "locally." In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
+
 [[inject-step]]
 Inject Step
 ~~~~~~~~~~~
@@ -423,6 +440,8 @@ g.V().as('person').
 <2> For every person, get their two most historic locations.
 
 The two traversals above look nearly identical save the inclusion of `local()` which wraps a section of the traversal in a object-local traversal. As such, the `order().by()` and the `limit()` refer to a particular object, not to the stream as a whole.
+
+WARNING: The anonymous traversal of `local()` processes the current object "locally." In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
 
 [[match-step]]
 Match Step
@@ -749,6 +768,8 @@ g.V(1).repeat(__.out()).until {!it.get().outE().hasNext()}.path().by('name') <4>
 <2> Starting from vertex 1, and in an infinite loop, emit the vertex if it is a person and then traverser the outgoing edges.
 <3> Starting from vertex 1, keep taking outgoing edges until a vertex is reached that has no more outgoing edges.
 <4> The same as before, but using a predicate argument for `until()`.
+
+WARNING: The anonymous traversal of `emit()` and `until()` (not `repeat()`) process their current objects "locally." In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversals do not leave the confines of the vertex's star graph. In other words, they can not traverse to an adjacent vertex's properties or edges.
 
 [[retain-step]]
 Retain Step

@@ -1,0 +1,48 @@
+package com.tinkerpop.gremlin.process.graph.step.filter;
+
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.graph.util.TraversalHasNextPredicate;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ */
+public class HasTraversalStep<S> extends FilterStep<S> implements TraversalHolder {
+
+    private TraversalHasNextPredicate<S, ?> traversalPredicate;
+
+    public HasTraversalStep(final Traversal traversal, final Traversal<S, ?> hasTraversal) {
+        super(traversal);
+        this.traversalPredicate = new TraversalHasNextPredicate<>(hasTraversal);
+        this.setPredicate(this.traversalPredicate);
+    }
+
+    @Override
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.traversalPredicate.getTraversal());
+    }
+
+    @Override
+    public List<Traversal<S, ?>> getLocalTraversals() {
+        return Collections.singletonList(this.traversalPredicate.getTraversal());
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return TraversalHelper.getRequirements(this.traversalPredicate.getTraversal().asAdmin());
+    }
+
+    @Override
+    public HasTraversalStep<S> clone() throws CloneNotSupportedException {
+        final HasTraversalStep<S> clone = (HasTraversalStep<S>) super.clone();
+        clone.traversalPredicate = this.traversalPredicate.clone();
+        clone.setPredicate(clone.traversalPredicate);
+        return clone;
+    }
+}

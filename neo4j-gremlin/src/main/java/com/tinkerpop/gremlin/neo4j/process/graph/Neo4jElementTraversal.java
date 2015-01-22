@@ -160,6 +160,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.groupCount(arg0);
 	}
 
+	public default Neo4jGraphTraversal<A, A> has(com.tinkerpop.gremlin.process.Traversal<?, ?> arg0) {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.has(arg0);
+	}
+
 	public default Neo4jGraphTraversal<A, A> has(java.lang.String arg0) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.has(arg0);
 	}
