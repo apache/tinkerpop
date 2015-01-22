@@ -6,7 +6,10 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
@@ -65,6 +68,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.graph.util.LoopPredicate;
 import com.tinkerpop.gremlin.process.graph.util.TraversalHasNextPredicate;
@@ -72,7 +76,6 @@ import com.tinkerpop.gremlin.process.graph.util.TruePredicate;
 import com.tinkerpop.gremlin.process.util.ElementFunctionComparator;
 import com.tinkerpop.gremlin.process.util.ElementValueComparator;
 import com.tinkerpop.gremlin.process.util.ElementValueFunction;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -106,7 +109,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     @Override
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
-        return (GraphTraversal) Traversal.super.<S, E>submit(computer);
+        try {
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
+            final ComputerResult result = computer.program(vertexProgram).submit().get();
+            final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>(result.graph().getClass());
+            return traversal.asAdmin().addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -290,16 +300,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new DedupStep<>(this));
     }
 
-    public default GraphTraversal<S, E> except(final String sideEffectKey) {
-        return this.asAdmin().addStep(new ExceptStep<E>(this, sideEffectKey));
+    public default GraphTraversal<S, E> except(final String sideEffectKeyOrPathLabel) {
+        return this.asAdmin().addStep(new ExceptStep<E>(this, sideEffectKeyOrPathLabel));
     }
 
-    public default GraphTraversal<S, E> except(final E exceptionObject) {
-        return this.asAdmin().addStep(new ExceptStep<>(this, exceptionObject));
+    public default GraphTraversal<S, E> except(final E exceptObject) {
+        return this.asAdmin().addStep(new ExceptStep<>(this, exceptObject));
     }
 
-    public default GraphTraversal<S, E> except(final Collection<E> exceptionCollection) {
-        return this.asAdmin().addStep(new ExceptStep<>(this, exceptionCollection));
+    public default GraphTraversal<S, E> except(final Collection<E> exceptCollection) {
+        return this.asAdmin().addStep(new ExceptStep<>(this, exceptCollection));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final String secondKey, final BiPredicate predicate) {
@@ -362,8 +372,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.range(0, limit);
     }
 
-    public default GraphTraversal<S, E> retain(final String sideEffectKey) {
-        return this.asAdmin().addStep(new RetainStep<>(this, sideEffectKey));
+    public default GraphTraversal<S, E> retain(final String sideEffectKeyOrPathLabel) {
+        return this.asAdmin().addStep(new RetainStep<>(this, sideEffectKeyOrPathLabel));
     }
 
     public default GraphTraversal<S, E> retain(final E retainObject) {

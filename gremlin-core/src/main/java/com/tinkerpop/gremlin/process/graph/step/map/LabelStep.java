@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LabelStep<E extends Element> extends MapStep<E, String> {
+public final class LabelStep<S extends Element> extends MapStep<S, String> {
 
     public LabelStep(final Traversal traversal) {
         super(traversal);

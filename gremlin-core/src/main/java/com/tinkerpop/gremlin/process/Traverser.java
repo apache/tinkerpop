@@ -102,11 +102,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
      */
     @Override
     public default int compareTo(final Traverser<T> other) throws ClassCastException {
-        final T a = this.get();
-        if (a instanceof Comparable)
-            return ((Comparable) a).compareTo(other.get());
-        else
-            throw new ClassCastException("The traverser does not contain a comparable object: " + a.getClass());
+        return ((Comparable) this.get()).compareTo(other.get());
     }
 
     /**
@@ -198,7 +194,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * Set the step id of where the traverser is located.
          * If the future is {@link Traverser.Admin#HALT}, then {@link Traverser.Admin#isHalted()} is true.
          *
-         * @param stepId The future labeled step of the traverser
+         * @param stepId The future step of the traverser
          */
         public void setStepId(final String stepId);
 

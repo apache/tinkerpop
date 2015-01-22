@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultS
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.BulkSet;
+import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -52,9 +52,8 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     /**
      * Submit the traversal to a {@link GraphComputer} for OLAP execution.
-     * This method should apply the traversal strategies for {@link TraversalEngine#COMPUTER}.
-     * Then register and execute the traversal via {@link TraversalVertexProgram}.
-     * Then wrap the {@link ComputerResult} in a new {@link Traversal} containing a {@link ComputerResultStep}.
+     * This method should execute the traversal via {@link TraversalVertexProgram}.
+     * It should then wrap the {@link ComputerResult} in a new {@link Traversal} containing a {@link ComputerResultStep}.
      *
      * @param computer the GraphComputer to execute the traversal on
      * @return a new traversal with the starts being the results of the TraversalVertexProgram
@@ -63,7 +62,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         try {
             final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
-            final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>(result.graph().getClass());
+            final Traversal<S, S> traversal = new DefaultTraversal<>(result.graph().getClass());
             return traversal.asAdmin().addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -82,6 +81,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     /**
      * Get the next n-number of results from the traversal.
+     * If the traversal has less than n-results, then only that number of results are returned.
      *
      * @param amount the number of results to get
      * @return the n-results in a {@link List}
@@ -131,7 +131,8 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default <C extends Collection<E>> C fill(final C collection) {
         try {
-            this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
+            if (!this.asAdmin().getTraversalEngine().isPresent())
+                this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
             final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
@@ -152,7 +153,8 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default <A, B> Traversal<A, B> iterate() {
         try {
-            this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
+            if (!this.asAdmin().getTraversalEngine().isPresent())
+                this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
             final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
@@ -194,7 +196,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     public static class Exceptions {
 
         public static IllegalStateException traversalIsLocked() {
-            return new IllegalStateException("The traversal strategies are complete and the traversal can no longer have steps added to it");
+            return new IllegalStateException("The traversal strategies are complete and the traversal can no longer be modulated");
         }
 
         public static IllegalStateException traversalIsNotReversible() {
@@ -234,29 +236,67 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
         /**
          * Add a {@link Step} to the end of the traversal. This method should link the step to its next and previous step accordingly.
-         * If the {@link TraversalStrategies} have already been applied, then an {@link IllegalStateException} is throw stating the traversal is locked.
          *
          * @param step the step to add
          * @param <E2> the output of the step
          * @return the updated traversal
+         * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
          */
         public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) throws IllegalStateException {
             return this.addStep(this.getSteps().size(), step);
         }
 
+        /**
+         * Add a {@link Step} to an arbitrary point in the traversal.
+         *
+         * @param index the location in the traversal to insert the step
+         * @param step  the step to add
+         * @param <S2>  the new start type of the traversal (if the added step was a start step)
+         * @param <E2>  the new end type of the traversal (if the added step was an end step)
+         * @return the newly modulated traversal
+         * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
+         */
         public <S2, E2> Traversal<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException;
 
+        /**
+         * Remove a {@link Step} from the traversal.
+         *
+         * @param step the step to remove
+         * @param <S2> the new start type of the traversal (if the removed step was a start step)
+         * @param <E2> the new end type of the traversal (if the removed step was an end step)
+         * @return the newly modulated traversal
+         * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
+         */
         public default <S2, E2> Traversal<S2, E2> removeStep(final Step<?, ?> step) throws IllegalStateException {
             return this.removeStep(this.getSteps().indexOf(step));
         }
 
+        /**
+         * Remove a {@link Step} from the traversal.
+         *
+         * @param index the location in the traversal of the step to be evicted
+         * @param <S2>  the new start type of the traversal (if the removed step was a start step)
+         * @param <E2>  the new end type of the traversal (if the removed step was an end step)
+         * @return the newly modulated traversal
+         * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
+         */
         public <S2, E2> Traversal<S2, E2> removeStep(final int index) throws IllegalStateException;
 
+        /**
+         * Get the start/head of the traversal. If the traversal is empty, then an {@link EmptyStep} instance is returned.
+         *
+         * @return the start step of the traversal
+         */
         public default Step<S, ?> getStartStep() {
             final List<Step> steps = this.getSteps();
             return steps.isEmpty() ? EmptyStep.instance() : steps.get(0);
         }
 
+        /**
+         * Get the end/tail of the traversal. If the traversal is empty, then an {@link EmptyStep} instance is returned.
+         *
+         * @return the end step of the traversal
+         */
         public default Step<?, E> getEndStep() {
             final List<Step> steps = this.getSteps();
             return steps.isEmpty() ? EmptyStep.instance() : steps.get(steps.size() - 1);
@@ -268,8 +308,9 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * The order of operations for strategy applications should be: globally id steps, apply strategies to root traversal, then to nested traversals.
          *
          * @param engine the engine that will ultimately execute the traversal.
+         * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
          */
-        public void applyStrategies(final TraversalEngine engine); // TODO: throw exception if you try twice?
+        public void applyStrategies(final TraversalEngine engine) throws IllegalStateException;
 
         /**
          * When the {@link TraversalStrategies} have been applied, the destined {@link TraversalEngine} has been declared.
@@ -281,7 +322,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
         /**
          * Get the {@link TraverserGenerator} associated with this traversal.
-         * The traversal generator creates {@link Traverser} instances that are respective of the traversal definition.
+         * The traversal generator creates {@link Traverser} instances that are respective of the traversal's {@link com.tinkerpop.gremlin.process.traverser.TraverserRequirement}.
          *
          * @return the generator of traversers
          */
@@ -335,8 +376,20 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          */
         public TraversalStrategies getStrategies();
 
+        /**
+         * Set the {@link TraversalHolder} {@link Step} that is the parent of this traversal.
+         * Traversals can be nested and this is the means by which the traversal tree is connected.
+         *
+         * @param step the traversal holder parent step
+         */
         public void setTraversalHolder(final TraversalHolder step);
 
+        /**
+         * Get the {@link TraversalHolder} {@link Step} that is the parent of this traversal.
+         * Traversals can be nested and this is the means by which the traversal tree is walked.
+         *
+         * @return the traversal holder parent step
+         */
         public TraversalHolder getTraversalHolder();
 
     }

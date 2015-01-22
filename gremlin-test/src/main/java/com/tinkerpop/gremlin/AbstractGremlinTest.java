@@ -204,7 +204,7 @@ public abstract class AbstractGremlinTest {
         final boolean muted = Boolean.parseBoolean(System.getProperty("muteTestLogs", "false"));
 
         if (!muted) System.out.println("Testing: " + traversal);
-        traversal.asAdmin().applyStrategies(TraversalEngine.STANDARD); // TODO!!!!
+        traversal.asAdmin().applyStrategies(TraversalEngine.STANDARD); // for GraphComputer, this will always be the ComputerResultStep traversal
         if (!muted) System.out.println("         " + traversal);
     }
 

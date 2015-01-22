@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class IdStep<E extends Element> extends MapStep<E, Object> {
+public final class IdStep<S extends Element> extends MapStep<S, Object> {
 
     public IdStep(final Traversal traversal) {
         super(traversal);

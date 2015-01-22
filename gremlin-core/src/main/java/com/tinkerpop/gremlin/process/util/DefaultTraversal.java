@@ -23,13 +23,12 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     private long lastEndCount = 0l;
     private boolean locked = false; // an optimization so getTraversalEngine().isEmpty() isn't required on each next()/hasNext()
     private Step<?, E> finalEndStep = EmptyStep.instance();
+    private final StepPosition stepPosition = new StepPosition();
 
     protected List<Step> steps = new ArrayList<>();
     protected TraversalStrategies strategies;
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
     protected Optional<TraversalEngine> traversalEngine = Optional.empty();
-
-    private final StepPosition stepPosition = new StepPosition();
 
     protected TraversalHolder traversalHolder = (TraversalHolder) EmptyStep.instance();
 
@@ -43,22 +42,23 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     }
 
     @Override
-    public void applyStrategies(final TraversalEngine engine) {
-        if (!this.locked) {
-            TraversalHelper.reIdSteps(this.stepPosition, this);
-            this.strategies.applyStrategies(this, engine);
-            for (final Step<?, ?> step : this.getSteps()) {
-                if (step instanceof TraversalHolder) {
-                    ((TraversalHolder) step).setStrategies(this.strategies); // TODO: should we clone?
-                    for (final Traversal<?, ?> nested : ((TraversalHolder) step).getGlobalTraversals()) {
-                        nested.asAdmin().applyStrategies(engine);
-                    }
+    public void applyStrategies(final TraversalEngine engine) throws IllegalStateException {
+        if (this.locked)
+            throw Traversal.Exceptions.traversalIsLocked();
+
+        TraversalHelper.reIdSteps(this.stepPosition, this);
+        this.strategies.applyStrategies(this, engine);
+        for (final Step<?, ?> step : this.getSteps()) {
+            if (step instanceof TraversalHolder) {
+                ((TraversalHolder) step).setStrategies(this.strategies); // TODO: should we clone?
+                for (final Traversal<?, ?> nested : ((TraversalHolder) step).getGlobalTraversals()) {
+                    nested.asAdmin().applyStrategies(engine);
                 }
             }
-            this.traversalEngine = Optional.of(engine);
-            this.locked = true;
-            this.finalEndStep = this.getEndStep();
         }
+        this.traversalEngine = Optional.of(engine);
+        this.locked = true;
+        this.finalEndStep = this.getEndStep();
     }
 
     @Override
