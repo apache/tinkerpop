@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `SubgraphStep` API has changed in support of in-traversal filtering and removing the need for path-based traversers.
 * Added `HasTraversalStep` which takes an anonymous traversal to determine whether or not to filter the current object.
 * Added `Traversal.Admin.getStartStep()` and `Traversal.Admin.getEndStep()`. Removed `TraversalHelper.getStart()` and `TraversalHelper.getEnd()`.
 * Refactored `profile()` to use injected steps. `ProfileStep` can now be used without any special JVM command line parameters.

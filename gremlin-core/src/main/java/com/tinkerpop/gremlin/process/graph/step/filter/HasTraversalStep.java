@@ -26,7 +26,7 @@ public class HasTraversalStep<S> extends FilterStep<S> implements TraversalHolde
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.traversalPredicate.getTraversal());
+        return TraversalHelper.makeStepString(this, this.traversalPredicate);
     }
 
     @Override

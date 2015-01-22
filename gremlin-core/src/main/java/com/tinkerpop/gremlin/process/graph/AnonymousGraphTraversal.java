@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
@@ -323,20 +322,8 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().cap();
     }
 
-    public default <A> GraphTraversal<A, A> subgraph(final String sideEffectKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
-        return this.<A>start().subgraph(sideEffectKey, edgeIdHolder, vertexMap, includeEdge);
-    }
-
-    public default <A> GraphTraversal<A, A> subgraph(final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
-        return this.<A>start().subgraph(edgeIdHolder, vertexMap, includeEdge);
-    }
-
-    public default <A> GraphTraversal<A, A> subgraph(final String sideEffectKey, final Predicate<Edge> includeEdge) {
-        return this.<A>start().subgraph(sideEffectKey, includeEdge);
-    }
-
-    public default <A> GraphTraversal<A, A> subgraph(final Predicate<Edge> includeEdge) {
-        return this.<A>start().subgraph(includeEdge);
+    public default <A> GraphTraversal<A, Edge> subgraph(final String sideEffectKey) {
+        return this.<A>start().subgraph(sideEffectKey);
     }
 
     public default <A> GraphTraversal<A, A> aggregate(final String sideEffectKey) {

@@ -93,7 +93,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
@@ -425,20 +424,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SumStep(this));
     }
 
-    public default GraphTraversal<S, E> subgraph(final String sideEffectKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
-        return this.asAdmin().addStep(new SubgraphStep<>(this, sideEffectKey, edgeIdHolder, vertexMap, includeEdge));
-    }
-
-    public default GraphTraversal<S, E> subgraph(final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
-        return this.subgraph(null, edgeIdHolder, vertexMap, includeEdge);
-    }
-
-    public default GraphTraversal<S, E> subgraph(final String sideEffectKey, final Predicate<Edge> includeEdge) {
-        return this.subgraph(sideEffectKey, null, null, includeEdge);
-    }
-
-    public default GraphTraversal<S, E> subgraph(final Predicate<Edge> includeEdge) {
-        return this.subgraph(null, null, null, includeEdge);
+    public default GraphTraversal<S, Edge> subgraph(final String sideEffectKey) {
+        return this.asAdmin().addStep(new SubgraphStep(this, sideEffectKey));
     }
 
     public default GraphTraversal<S, E> aggregate(final String sideEffectKey) {

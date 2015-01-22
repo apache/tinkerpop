@@ -300,20 +300,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().cap();
     }
 
-    public default GraphTraversal<A, A> subgraph(final String sideEffectKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(sideEffectKey, edgeIdHolder, vertexMap, includeEdge);
-    }
-
-    public default GraphTraversal<A, A> subgraph(final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(edgeIdHolder, vertexMap, includeEdge);
-    }
-
-    public default GraphTraversal<A, A> subgraph(final String sideEffectKey, final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(sideEffectKey, includeEdge);
-    }
-
-    public default GraphTraversal<A, A> subgraph(final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(includeEdge);
+    public default GraphTraversal<A, Edge> subgraph(final String sideEffectKey) {
+        return this.start().subgraph(sideEffectKey);
     }
 
     public default GraphTraversal<A, A> aggregate(final String sideEffectKey) {

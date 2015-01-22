@@ -364,7 +364,7 @@ g.V().has(label,'person').out().has('name',within,['vadas','josh']).outE().has(l
 
 There are accessors available in the `T` "tokens" class. They include `label`, `id`, `key`, and `value`. Thus, it is possible to use `has()`-step to also filter on these aspects of an element.
 
-It is also possible to filter any arbitrary object based on an anonymous traversal having a result when that object is the start.
+It is also possible to filter any arbitrary object based on an anonymous traversal.
 
 [gremlin-groovy,modern]
 ----
@@ -960,26 +960,39 @@ g.E().store().by('weight')
 Subgraph Step
 ~~~~~~~~~~~~~
 
-Extracting a portion of a graph from a larger one for analysis, visualization or other purposes is a fairly common use case for graph analysts and developers. The `subgraph()`-step (*sideEffect*) provides a way to produce an edge-induced subgraph from virtually any traversal.  The following code shows how to produce the "knows" subgraph:
+image::subgraph-logo.png[width=380]
+
+Extracting a portion of a graph from a larger one for analysis, visualization or other purposes is a fairly common use case for graph analysts and developers. The `subgraph()`-step (*sideEffect*) provides a way to produce an link:http://mathworld.wolfram.com/Edge-InducedSubgraph.html[edge-induced subgraph] from virtually any traversal.  The following example demonstrates how to produce the "knows" subgraph:
 
 [gremlin-groovy,modern]
 ----
-sg = g.E().subgraph {it.label() == 'knows'}.next() <1>
+sg = g.E().has(label,'knows').subgraph().next() <1>
 sg.E() <2>
 ----
 
-<1> As this function produces "edge-induced" subgraphs, the traversal must contain edges in the path.  Those edges found in that path are evaluated by a `Predicate` function to determine if they should be copied to the subgraph in conjunction with their associated vertices.
+<1> As this function produces "edge-induced" subgraphs, `subgraph()` must be called at edge steps.
 <2> The subgraph contains only "knows" edges.
 
 A more common subgraphing use case is to get all of the graph structure surrounding a single vertex:
 
 [gremlin-groovy,modern]
 ----
-sg = g.V(3).repeat(__.inE().outV()).times(3).emit().subgraph({true}).next()   <1>
+sg = g.V(3).repeat(__.inE().subgraph('sg').outV()).times(3).cap('sg').next()  <1>
 sg.E()
 ----
 
-<1> Starting at vertex `3`, traverse 3 steps away on in-edges, outputting all of that into the subgraph. Note that if now graph is provided, a `TinkerGraph` is assumed.
+<1> Starting at vertex `3`, traverse 3 steps away on in-edges, outputting all of that into the subgraph.
+
+There can be multiple `subgraph()` calls within the same traversal. Each operating against either the same graph (i.e. same side-effect key) or different graphs (i.e. different side-effect keys).
+
+[gremlin-groovy,modern]
+----
+t = g.V().outE('knows').subgraph('knowsG').inV().outE('created').subgraph('createdG').inV().inE('created').subgraph('createdG').iterate()
+t.sideEffects.get('knowsG').E()
+t.sideEffects.get('createdG').E()
+----
+
+IMPORTANT: The `subgraph()`-step only writes to graphs that support user supplied ids for its elements. Moreover, if no graph is specified via `withSideEffect()`, then <<tinkergraph-gremlin,TinkerGraph>> is assumed.
 
 [[timelimit-step]]
 TimeLimit Step
