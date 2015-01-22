@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
@@ -59,6 +60,7 @@ public final class GroupMapReduce implements MapReduce<Object, Collection, Objec
         this.sideEffectKey = configuration.getString(GROUP_BY_STEP_SIDE_EFFECT_KEY);
         this.groupStepId = configuration.getString(GROUP_BY_STEP_STEP_ID);
         this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
+        this.traversal.applyStrategies(TraversalEngine.COMPUTER); // TODO: this is a scary error prone requirement, but only a problem for GroupStep
         final GroupStep groupStep = new TraversalMatrix<>(this.traversal).getStepById(this.groupStepId);
         this.reduceFunction = groupStep.getReduceFunction();
         this.mapSupplier = this.traversal.getSideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
