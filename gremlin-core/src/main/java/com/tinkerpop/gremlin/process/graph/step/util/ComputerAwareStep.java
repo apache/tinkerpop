@@ -16,7 +16,6 @@ import java.util.NoSuchElementException;
  */
 public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> implements EngineDependent {
 
-    protected boolean onGraphComputer;
     private Iterator<Traverser<E>> previousIterator = Collections.emptyIterator();
 
     public ComputerAwareStep(final Traversal traversal) {
@@ -28,16 +27,13 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
         while (true) {
             if (this.previousIterator.hasNext())
                 return this.previousIterator.next();
-            this.previousIterator = this.onGraphComputer ? this.computerAlgorithm() : this.standardAlgorithm();
+            this.previousIterator = this.traverserStepIdSetByChild ? this.computerAlgorithm() : this.standardAlgorithm();
         }
     }
 
     @Override
     public void onEngine(final TraversalEngine engine) {
-        if (engine.equals(TraversalEngine.COMPUTER)) {
-            this.onGraphComputer = true;
-            this.traverserStepIdSetByChild = true;
-        }
+        this.traverserStepIdSetByChild = engine.equals(TraversalEngine.COMPUTER);
     }
 
     @Override
@@ -53,23 +49,27 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
     //////
 
-    public class EndStep extends AbstractStep<S, S> {
+    public class EndStep extends AbstractStep<S, S> implements EngineDependent {
 
         public EndStep(final Traversal traversal) {
             super(traversal);
-            this.traverserStepIdSetByChild = true;
         }
 
         @Override
         protected Traverser<S> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<S> start = this.starts.next();
-            start.setStepId(ComputerAwareStep.this.getNextStep().getId());
+            if (this.traverserStepIdSetByChild) start.setStepId(ComputerAwareStep.this.getNextStep().getId());
             return start;
         }
 
         @Override
         public String toString() {
             return TraversalHelper.makeStepString(this);
+        }
+
+        @Override
+        public void onEngine(final TraversalEngine engine) {
+            this.traverserStepIdSetByChild = engine.equals(TraversalEngine.COMPUTER);
         }
     }
 

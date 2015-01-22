@@ -55,7 +55,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
 
-            /*GroovyGraphComputerTest.ComputerTest.class,
+            GroovyGraphComputerTest.ComputerTest.class,
 
             //branch
             GroovyBranchTest.ComputerTest.class,
@@ -84,14 +84,13 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyFoldTest.ComputerTest.class,
             GroovyMapTest.ComputerTest.class,
             // TODO: GroovyMatchTest.ComputerTest.class,
-            // TODO: GroovyOrderByTest.ComputerTest.class,
             GroovyOrderTest.ComputerTest.class,
             GroovyPathTest.ComputerTest.class,
             GroovyPropertiesTest.ComputerTest.class,
             GroovySelectTest.ComputerTest.class,
             GroovyShuffleTest.ComputerTest.class,
             GroovyUnfoldTest.ComputerTest.class,
-            GroovyValueMapTest.ComputerTest.class,*/
+            GroovyValueMapTest.ComputerTest.class,
             GroovyVertexTest.ComputerTest.class,
 
             // sideEffect

@@ -109,7 +109,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             FoldTest.ComputerTest.class,
             MapTest.ComputerTest.class,
             // TODO: MatchTest.ComputerTest.class,
-            // TODO: OrderByTest.ComputerTest.class
             OrderTest.ComputerTest.class,
             PathTest.ComputerTest.class,
             PropertiesTest.ComputerTest.class,
@@ -179,7 +178,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // FoldTest.class,
             MapTest.class,
             // MatchTest.class,
-            // OrderByTest.class,
             OrderTest.class,
             PathTest.class,
             PropertiesTest.class,

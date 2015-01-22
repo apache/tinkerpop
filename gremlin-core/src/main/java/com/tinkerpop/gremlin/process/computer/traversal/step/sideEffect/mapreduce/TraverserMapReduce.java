@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.Step;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
@@ -8,11 +9,6 @@ import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
-import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_TraverserGenerator;
-import com.tinkerpop.gremlin.process.traverser.B_O_TraverserGenerator;
-import com.tinkerpop.gremlin.process.traverser.O_TraverserGenerator;
-import com.tinkerpop.gremlin.process.util.EmptyStep;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -32,6 +28,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
 
     public static final String TRAVERSERS = Graph.Hidden.hide("traversers");
 
+    private Traversal.Admin<?, ?> traversal;
     private Optional<Comparator<Comparable>> comparator = Optional.empty();
     private Optional<Reducing.Reducer> reducer = Optional.empty();
 
@@ -39,13 +36,15 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
     }
 
     public TraverserMapReduce(final Step traversalEndStep) {
+        this.traversal = traversalEndStep.getTraversal().asAdmin();
         this.comparator = Optional.ofNullable(traversalEndStep instanceof ComparatorHolder ? GraphComputerHelper.chainComparators(((ComparatorHolder) traversalEndStep).getComparators()) : null);
         this.reducer = Optional.ofNullable(traversalEndStep instanceof Reducing ? ((Reducing) traversalEndStep).getReducer() : null);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        final Step endStep = TraversalVertexProgram.getTraversalSupplier(configuration).get().getEndStep();
+        this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
+        final Step endStep = this.traversal.getEndStep();
         this.comparator = Optional.ofNullable(endStep instanceof ComparatorHolder ? GraphComputerHelper.chainComparators(((ComparatorHolder) endStep).getComparators()) : null);
         this.reducer = Optional.ofNullable(endStep instanceof Reducing ? ((Reducing) endStep).getReducer() : null);
     }
@@ -71,7 +70,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
         while (values.hasNext()) {
             mutatingSeed = function.apply(mutatingSeed, onTraverser ? values.next() : ((Traverser) values.next()).get());
         }
-        emitter.emit(key, B_O_TraverserGenerator.instance().generate(mutatingSeed, EmptyStep.instance(), 1l));  // TODO: this should be what is expected
+        emitter.emit(key, this.traversal.getTraverserGenerator().generate(mutatingSeed, (Step) this.traversal.getEndStep(), 1l));
     }
 
     @Override
@@ -82,7 +81,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
     @Override
     public Iterator<Object> generateFinalResult(final Iterator<KeyValue<Comparable, Object>> keyValues) {
         if (this.reducer.isPresent() && !keyValues.hasNext())
-            return IteratorUtils.of(B_O_TraverserGenerator.instance().generate(this.reducer.get().getSeedSupplier().get(), EmptyStep.instance(), 1l));  // TODO: this should be what is expected
+            return IteratorUtils.of(this.traversal.getTraverserGenerator().generate(this.reducer.get().getSeedSupplier().get(), (Step) this.traversal.getEndStep(), 1l));
         else {
             return new Iterator<Object>() {
                 @Override
