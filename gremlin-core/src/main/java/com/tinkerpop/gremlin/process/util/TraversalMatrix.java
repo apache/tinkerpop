@@ -24,8 +24,8 @@ public class TraversalMatrix<S, E> {
         this.harvestSteps(this.traversal.asAdmin());
     }
 
-    public <A, B> Step<A, B> getStepById(final String stepId) {
-        return (Step<A, B>) this.matrix.get(stepId);
+    public <A, B, C extends Step<A, B>> C getStepById(final String stepId) {
+        return (C) this.matrix.get(stepId);
     }
 
     public Traversal<S, E> getTraversal() {
