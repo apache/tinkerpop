@@ -11,11 +11,11 @@ import java.util.Collections;
  */
 public final class UnionStep<S, E> extends BranchStep<S, E, TraversalOptionHolder.Pick> {
 
-    public UnionStep(final Traversal traversal, final Traversal<S, E>... unionTraversals) {
+    public UnionStep(final Traversal traversal, final Traversal<?, E>... unionTraversals) {
         super(traversal);
         this.setFunction(traverser -> Pick.any);
-        for (final Traversal<S, E> union : unionTraversals) {
-            super.addOption(Pick.any, union);
+        for (final Traversal<?, E> union : unionTraversals) {
+            super.addOption(Pick.any, (Traversal<S, E>) union);
         }
     }
 

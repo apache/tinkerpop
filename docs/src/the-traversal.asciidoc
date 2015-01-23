@@ -1167,6 +1167,40 @@ g.V(4).inE().outV()
 g.V(4).inE().bothV()
 ----
 
+[[a-note-on-lambdas]]
+A Note On Lambdas
+-----------------
+
+A link:http://en.wikipedia.org/wiki/Anonymous_function[lambda] is a function that can be referenced by software and thus, passed around like any other piece of data. In Gremlin, lambdas make it possible to generalize the behavior of a step such that custom steps can be created (on-the-fly) by the user. However, it is advised to avoid using lambdas if possible.
+
+[gremlin-groovy,modern]
+----
+g.V().filter{it.get().value('name') == 'marko'}.out('created').map{it.get().value('name')} <1>
+g.V().has('name','marko').out('created').values('name') <2>
+----
+
+<1> A lambda-rich Gremlin traversal which should and can be avoided. (*bad*)
+<2> The same traversal (result), but without using lambdas. (*good*)
+
+Gremlin attempts to provide the user a comprehensive collection of steps in the hopes that the user will never need to leverage a lambda in practice. It is advised that users only leverage a lambda if and only if there is no corresponding lambda-less step that encompasses the desired functionality. The reason being, lambdas can not be optimized by Gremlin's compiler strategies as they can not be programmatically inspected (see <<traversalstrategy,traversal strategies>>).
+
+In many situations where a lambda could be used, either a corresponding step exists or a traversal can be provided in its place. A `TraversalLambda` behaves like a typical lambda, but it can be optimized and it yields less objects than the corresponding pure-lambda form.
+
+[gremlin-groovy,modern]
+----
+g.V().out().out().path().
+                   by{it.value('name')}.
+                   by{it.value('name')}.
+                   by{it.in('created').values('name').fold().next()}   <1>
+g.V().out().out().path().
+                   by('name').
+                   by('name').
+                   by(__.in('created').values('name').fold())   <2>
+----
+
+<1> The length-3 paths have each of their objects transformed by a lambda. (*bad*)
+<2> The length-3 paths have their objects transformed by a lambda-less step and a traversal lambda. (*good*)
+
 [[traversalstrategy]]
 TraversalStrategy
 -----------------

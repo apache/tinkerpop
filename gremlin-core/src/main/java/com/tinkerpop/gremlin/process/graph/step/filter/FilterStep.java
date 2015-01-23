@@ -22,10 +22,6 @@ public class FilterStep<S> extends AbstractStep<S, S> {
         this.predicate = predicate;
     }
 
-    protected Predicate<Traverser<S>> getPredicate() {
-        return this.predicate;
-    }
-
     @Override
     protected Traverser<S> processNextStart() {
         while (true) {

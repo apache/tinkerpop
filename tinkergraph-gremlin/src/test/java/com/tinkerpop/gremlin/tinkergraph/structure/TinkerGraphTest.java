@@ -141,9 +141,7 @@ public class TinkerGraphTest {
         Graph g = TinkerFactory.createModern();
         //Traversal t = g.V().out().out().path().by("name").by("name").by(__.in("created").<String>values("age"));
 
-        Traversal t = g.V().branch(__.values("name")).
-                option("marko", __.values("age")).
-                option(TraversalOptionHolder.Pick.none, __.values("name"));
+        Traversal t = g.V().store("a").by(__.outE("created").count()).out().out().store("a").by(__.inE("created").values("weight").sum()).cap("a");
 
 
         System.out.println(t.toString());

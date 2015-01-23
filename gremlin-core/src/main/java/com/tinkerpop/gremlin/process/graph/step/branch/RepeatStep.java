@@ -6,8 +6,8 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.TraversalHasNextPredicate;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.TraversalLambda;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -54,15 +54,15 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     public void setUntilPredicate(final Predicate<Traverser<S>> untilPredicate) {
         if (null == this.repeatTraversal) this.untilFirst = true;
         this.untilPredicate = untilPredicate;
-        if (this.untilPredicate instanceof TraversalHasNextPredicate)
-            this.executeTraversalOperations(((TraversalHasNextPredicate<S, ?>) this.untilPredicate).getTraversal(), Child.SET_HOLDER);
+        if (this.untilPredicate instanceof TraversalLambda)
+            this.executeTraversalOperations(((TraversalLambda<S, ?>) this.untilPredicate).getTraversal(), Child.SET_HOLDER);
     }
 
     public void setEmitPredicate(final Predicate<Traverser<S>> emitPredicate) {
         if (null == this.repeatTraversal) this.emitFirst = true;
         this.emitPredicate = emitPredicate;
-        if (this.emitPredicate instanceof TraversalHasNextPredicate)
-            this.executeTraversalOperations(((TraversalHasNextPredicate<S, ?>) this.emitPredicate).getTraversal(), Child.SET_HOLDER);
+        if (this.emitPredicate instanceof TraversalLambda)
+            this.executeTraversalOperations(((TraversalLambda<S, ?>) this.emitPredicate).getTraversal(), Child.SET_HOLDER);
     }
 
     public List<Traversal<S, S>> getGlobalTraversals() {
@@ -71,10 +71,10 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     public List<Traversal<S, ?>> getLocalTraversals() {
         final List<Traversal<S, ?>> list = new ArrayList<>();
-        if (this.untilPredicate instanceof TraversalHasNextPredicate)
-            list.add(((TraversalHasNextPredicate<S, ?>) this.untilPredicate).getTraversal());
-        if (this.emitPredicate instanceof TraversalHasNextPredicate)
-            list.add(((TraversalHasNextPredicate<S, ?>) this.emitPredicate).getTraversal());
+        if (this.untilPredicate instanceof TraversalLambda)
+            list.add(((TraversalLambda<S, ?>) this.untilPredicate).getTraversal());
+        if (this.emitPredicate instanceof TraversalLambda)
+            list.add(((TraversalLambda<S, ?>) this.emitPredicate).getTraversal());
         return list;
     }
 

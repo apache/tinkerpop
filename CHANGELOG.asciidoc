@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `TraversalLambda` which implements function, predicate, and consumer whose function is the traversal.
 * Any non-core `Step` that takes a function or predicate can now take a traversal which maps to `traversal.next()` (function) and `traversal.hasNext()` (predicate).
 * `BarrierStep` is no longer abstract and added `GraphTraversal.barrier()` which is analogous to `fold().unfold()`, though cheaper.
 * Added `TraversalOptionHolder` for branching steps to index works with corresponding `GraphTraversal.option()`.

@@ -74,14 +74,12 @@ import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.graph.util.LoopPredicate;
-import com.tinkerpop.gremlin.process.util.ObjectTraversalHasNextPredicate;
-import com.tinkerpop.gremlin.process.util.ObjectTraversalNextFunction;
-import com.tinkerpop.gremlin.process.util.TraversalHasNextPredicate;
-import com.tinkerpop.gremlin.process.util.TraversalNextFunction;
 import com.tinkerpop.gremlin.process.graph.util.TruePredicate;
 import com.tinkerpop.gremlin.process.util.ElementFunctionComparator;
 import com.tinkerpop.gremlin.process.util.ElementValueComparator;
 import com.tinkerpop.gremlin.process.util.ElementValueFunction;
+import com.tinkerpop.gremlin.process.util.TraversalLambda;
+import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -518,7 +516,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <M, E2> GraphTraversal<S, E2> branch(final Traversal<?, M> traversalFunction) {
-        return this.branch(new TraversalNextFunction<>((Traversal<E, M>) traversalFunction));
+        return this.branch(new TraversalLambda<>((Traversal<E, M>) traversalFunction));
     }
 
     //
@@ -528,7 +526,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <M, E2> GraphTraversal<S, E2> choose(final Traversal<?, M> traversalFunction) {
-        return this.choose(new ObjectTraversalNextFunction<>((Traversal<E, M>) traversalFunction));
+        return this.choose(new TraversalObjectLambda<>((Traversal<E, M>) traversalFunction));
     }
 
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
@@ -536,7 +534,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <M, E2> GraphTraversal<S, E2> choose(final Traversal<?, M> traversalPredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
-        return this.choose(new ObjectTraversalHasNextPredicate<>((Traversal<E, M>) traversalPredicate), trueChoice, falseChoice);
+        return this.choose(new TraversalObjectLambda<>((Traversal<E, M>) traversalPredicate), trueChoice, falseChoice);
     }
 
     //
@@ -554,7 +552,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> emit(final Traversal<?, ?> emitTraversal) {
-        return this.emit(new TraversalHasNextPredicate<>((Traversal<E, ?>) emitTraversal));
+        return this.emit(new TraversalLambda<>((Traversal<E, ?>) emitTraversal));
     }
 
     public default GraphTraversal<S, E> emit() {
@@ -566,7 +564,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> until(final Traversal<?, ?> untilTraversal) {
-        return this.until(new TraversalHasNextPredicate<>((Traversal<E, ?>) untilTraversal));
+        return this.until(new TraversalLambda<>((Traversal<E, ?>) untilTraversal));
     }
 
     public default GraphTraversal<S, E> times(final int maxLoops) {
@@ -626,7 +624,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> by(final Traversal<?, ?> nextTraversal) {
-        ((FunctionHolder<Traverser<?>, ?>) this.asAdmin().getEndStep()).addFunction(new ObjectTraversalNextFunction(nextTraversal));
+        ((FunctionHolder<Traverser<?>, ?>) this.asAdmin().getEndStep()).addFunction(new TraversalObjectLambda(nextTraversal));
         return this;
     }
 
