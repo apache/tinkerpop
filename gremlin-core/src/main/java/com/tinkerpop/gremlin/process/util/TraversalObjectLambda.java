@@ -25,27 +25,24 @@ public class TraversalObjectLambda<S, E> implements Function<S, E>, Predicate<S>
     // function
     @Override
     public E apply(final S start) {
-        final Traverser.Admin<S> traverser = this.generator.generate(start, this.traversal.getStartStep(), 1l);
         this.traversal.reset();
-        this.traversal.addStart(traverser);
+        this.traversal.addStart(this.generator.generate(start, this.traversal.getStartStep(), 1l));
         return this.traversal.next();
     }
 
     // predicate
     @Override
     public boolean test(final S start) {
-        final Traverser.Admin<S> traverser = this.generator.generate(start, this.traversal.getStartStep(), 1l);
         this.traversal.reset();
-        this.traversal.addStart(traverser);
+        this.traversal.addStart(this.generator.generate(start, this.traversal.getStartStep(), 1l));
         return this.traversal.hasNext();
     }
 
     // consumer
     @Override
     public void accept(final S start) {
-        final Traverser.Admin<S> traverser = this.generator.generate(start, this.traversal.getStartStep(), 1l);
         this.traversal.reset();
-        this.traversal.addStart(traverser);
+        this.traversal.addStart(this.generator.generate(start, this.traversal.getStartStep(), 1l));
         this.traversal.iterate();
     }
 
