@@ -11,7 +11,7 @@ import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
-import com.tinkerpop.gremlin.process.graph.marker.ForkHolder;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -64,7 +64,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
         imports.add(GraphComputer.class.getPackage().getName() + DOT_STAR);
         staticImports.add(AnonymousGraphTraversal.Tokens.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(ForkHolder.Pick.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(TraversalOptionHolder.Pick.class.getCanonicalName() + DOT_STAR);
 
         // utils
         imports.add(Gremlin.class.getPackage().getName() + DOT_STAR);

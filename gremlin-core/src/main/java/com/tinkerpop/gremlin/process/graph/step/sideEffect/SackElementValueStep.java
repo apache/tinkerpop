@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -20,18 +21,15 @@ public final class SackElementValueStep<S extends Element, V> extends SideEffect
             TraverserRequirement.OBJECT
     ));
 
-    private final BinaryOperator<V> operator;
+    private BinaryOperator<V> operator;
     private final String propertyKey;
 
     public SackElementValueStep(final Traversal traversal, final BinaryOperator<V> operator, final String propertyKey) {
         super(traversal);
         this.operator = operator;
         this.propertyKey = propertyKey;
-        this.setConsumer(traverser -> {
-            traverser.get().iterators().valueIterator(this.propertyKey).forEachRemaining(value -> {
-                traverser.sack(this.operator.apply(traverser.sack(), (V) value));
-            });
-        });
+        SackElementValueStep.generateConsumer(this);
+
     }
 
     @Override
@@ -42,5 +40,23 @@ public final class SackElementValueStep<S extends Element, V> extends SideEffect
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
+    }
+
+    @Override
+    public SackElementValueStep<S, V> clone() throws CloneNotSupportedException {
+        final SackElementValueStep<S, V> clone = (SackElementValueStep<S, V>) super.clone();
+        clone.operator = CloneableLambda.cloneOrReturn(this.operator);
+        SackElementValueStep.generateConsumer(clone);
+        return clone;
+    }
+
+    /////////////////////////
+
+    private static final <S extends Element, V> void generateConsumer(final SackElementValueStep<S, V> sackElementValueStep) {
+        sackElementValueStep.setConsumer(traverser -> {
+            traverser.get().iterators().valueIterator(sackElementValueStep.propertyKey).forEachRemaining(value -> {
+                traverser.sack(sackElementValueStep.operator.apply(traverser.sack(), (V) value));
+            });
+        });
     }
 }

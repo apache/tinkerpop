@@ -31,6 +31,7 @@ def header = """
     import static com.tinkerpop.gremlin.structure.Operator.*
     import static com.tinkerpop.gremlin.structure.Order.*
     import static java.util.Comparator.*
+    import static com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder.Pick.*
 """
 
 def skipNextRead = false

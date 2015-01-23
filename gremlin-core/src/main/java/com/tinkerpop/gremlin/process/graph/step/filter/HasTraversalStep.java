@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
-import com.tinkerpop.gremlin.process.graph.util.TraversalHasNextPredicate;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.util.TraversalHasNextPredicate;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collections;
@@ -13,7 +13,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HasTraversalStep<S> extends FilterStep<S> implements TraversalHolder {
+public final class HasTraversalStep<S> extends FilterStep<S> implements TraversalHolder {
+
+    // TODO: cloning --- traversalPredicate and FilterStep.predicate (they are the same!)
 
     private TraversalHasNextPredicate<S, ?> traversalPredicate;
 

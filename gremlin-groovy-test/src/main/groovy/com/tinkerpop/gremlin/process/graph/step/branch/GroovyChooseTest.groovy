@@ -23,18 +23,20 @@ public abstract class GroovyChooseTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_chooseX0X_forkX0__outX_name(Object v1Id) {
-            g.V(v1Id).choose { 0 }.fork(0, __.out.name)
+        public Traversal<Vertex, String> get_g_VX1X_chooseX0X_optionX0__outX_name(Object v1Id) {
+            g.V(v1Id).choose { 0 }.option(0, __.out.name)
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_hasXlabel_personX_chooseXname_lengthX_forkX5__inX_forkX4__outX_forkX3__bothX_name() {
-            g.V.has(T.label, 'person').choose { it.name.length() }.fork(5, __.in).fork(4, __.out).fork(3, __.both).name
+        public Traversal<Vertex, String> get_g_V_hasXlabel_personX_chooseXname_lengthX_optionX5__inX_optionX4__outX_optionX3__bothX_name() {
+            g.V.has(T.label, 'person').choose {
+                it.name.length()
+            }.option(5, __.in).option(4, __.out).option(3, __.both).name
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX_forkX2L__nameX_forkX3L__valueMapX() {
-            g.V.choose { it.out.count().next() }.fork(2L, __.values('name')).fork(3L, __.valueMap())
+        public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {
+            g.V.choose(__.out.count).option(2L, __.values('name')).option(3L, __.valueMap())
         }
     }
 
@@ -48,18 +50,18 @@ public abstract class GroovyChooseTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_chooseX0X_forkX0__outX_name(Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).choose { 0 }.fork(0, __.out.name)", g);
+        public Traversal<Vertex, String> get_g_VX1X_chooseX0X_optionX0__outX_name(Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).choose { 0 }.option(0, __.out.name)", g);
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_hasXlabel_personX_chooseXname_lengthX_forkX5__inX_forkX4__outX_forkX3__bothX_name() {
-            ComputerTestHelper.compute("g.V.has(T.label,'person').choose { it.name.length() }.fork(5, __.in).fork(4, __.out).fork(3, __.both).name", g);
+        public Traversal<Vertex, String> get_g_V_hasXlabel_personX_chooseXname_lengthX_optionX5__inX_optionX4__outX_optionX3__bothX_name() {
+            ComputerTestHelper.compute("g.V.has(T.label,'person').choose { it.name.length() }.option(5, __.in).option(4, __.out).option(3, __.both).name", g);
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX_forkX2L__nameX_forkX3L__valueMapX() {
-            ComputerTestHelper.compute("g.V.choose { it.out.count().next() }.fork(2L, __.values('name')).fork(3L, __.valueMap())", g);
+        public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {
+            ComputerTestHelper.compute("g.V.choose(__.out.count).option(2L, __.values('name')).option(3L, __.valueMap())", g);
         }
     }
 }

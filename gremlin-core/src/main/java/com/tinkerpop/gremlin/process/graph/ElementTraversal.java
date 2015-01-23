@@ -381,12 +381,24 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().branch(function);
     }
 
+    public default <M, E2> GraphTraversal<A, E2> branch(final Traversal<?, M> traversalFunction) {
+        return this.start().branch(traversalFunction);
+    }
+
     public default <E2> GraphTraversal<A, E2> choose(final Predicate<A> choosePredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
         return this.start().choose(choosePredicate, trueChoice, falseChoice);
     }
 
     public default <M, E2> GraphTraversal<A, E2> choose(final Function<A, M> choiceFunction) {
         return this.start().choose(choiceFunction);
+    }
+
+    public default <M, E2> GraphTraversal<A, E2> choose(final Traversal<?, M> traversalFunction) {
+        return this.start().choose(traversalFunction);
+    }
+
+    public default <M, E2> GraphTraversal<A, E2> choose(final Traversal<?, M> traversalPredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
+        return this.start().choose(traversalPredicate, trueChoice, falseChoice);
     }
 
     public default <E2> GraphTraversal<A, E2> union(final Traversal<?, E2>... traversals) {

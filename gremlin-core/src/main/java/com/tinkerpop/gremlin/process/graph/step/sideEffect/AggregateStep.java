@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,17 +33,13 @@ public final class AggregateStep<S> extends BarrierStep<S> implements SideEffect
             TraverserRequirement.SIDE_EFFECTS
     ));
 
-    private Function<S, Object> preAggregateFunction = null;
+    private Function<S, Object> preAggregateFunction = s -> s;
     private String sideEffectKey;
 
     public AggregateStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.setConsumer(traverserSet ->
-                traverserSet.forEach(traverser ->
-                        TraversalHelper.addToCollection(traverser.getSideEffects().get(this.sideEffectKey),
-                                null == this.preAggregateFunction ? traverser.get() : this.preAggregateFunction.apply(traverser.get()),
-                                traverser.bulk())));
+        AggregateStep.generateConsumer(this);
     }
 
     @Override
@@ -79,5 +76,24 @@ public final class AggregateStep<S> extends BarrierStep<S> implements SideEffect
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
+    }
+
+    @Override
+    public AggregateStep<S> clone() throws CloneNotSupportedException {
+        final AggregateStep<S> clone = (AggregateStep<S>) super.clone();
+        clone.preAggregateFunction = CloneableLambda.cloneOrReturn(this.preAggregateFunction);
+        AggregateStep.generateConsumer(clone);
+        return clone;
+    }
+
+    /////////////////////////
+
+    private static final <S> void generateConsumer(final AggregateStep<S> aggregateStep) {
+        aggregateStep.setConsumer(traverserSet ->
+                traverserSet.forEach(traverser ->
+                        TraversalHelper.addToCollection(
+                                traverser.getSideEffects().get(aggregateStep.sideEffectKey),
+                                aggregateStep.preAggregateFunction.apply(traverser.get()),
+                                traverser.bulk())));
     }
 }

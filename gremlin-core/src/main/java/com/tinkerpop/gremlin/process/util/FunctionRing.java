@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.process.util;
 
+import com.tinkerpop.gremlin.util.function.CloneableLambda;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -9,7 +11,7 @@ import java.util.function.Function;
  */
 public class FunctionRing<A, B> implements Cloneable {
 
-    private final List<Function<A, B>> functions = new ArrayList<>();
+    private List<Function<A, B>> functions = new ArrayList<>();
     private int currentFunction = -1;
 
     public FunctionRing(final Function... functions) {
@@ -48,7 +50,13 @@ public class FunctionRing<A, B> implements Cloneable {
     }
 
     public FunctionRing<A, B> clone() throws CloneNotSupportedException {
-        return new FunctionRing<>(this.functions.toArray(new Function[this.functions.size()]));
+        final FunctionRing<A, B> clone = (FunctionRing<A, B>) super.clone();
+        clone.functions = new ArrayList<>();
+        clone.currentFunction = -1;
+        for (final Function<A, B> function : this.functions) {
+            clone.functions.add(CloneableLambda.cloneOrReturn(function));
+        }
+        return clone;
     }
 
     @Override
