@@ -52,6 +52,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.back(arg0);
 	}
 
+	public default Neo4jGraphTraversal<A, A> barrier() {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.barrier();
+	}
+
 	public default Neo4jGraphTraversal<A, A> between(java.lang.String arg0, java.lang.Comparable arg1, java.lang.Comparable arg2) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.between(arg0, arg1, arg2);
 	}

@@ -73,7 +73,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
             final List<Traversal<S, E>> branch = this.branches.get(choice);
             if (null != branch)
                 branch.forEach(traversal -> traversal.asAdmin().addStart(start.split()));
-            // else Pick.none
+            // TODO: else Pick.none
             if (choice != Pick.any) {
                 final List<Traversal<S, E>> anyBranch = this.branches.get(Pick.any);
                 if (null != anyBranch)
@@ -94,7 +94,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
                 split.setStepId(traversal.asAdmin().getStartStep().getId());
                 ends.add(split);
             });
-        } // else Pick.none
+        } // TODO: else Pick.none
         if (choice != Pick.any) {
             final List<Traversal<S, E>> anyBranch = this.branches.get(Pick.any);
             if (null != anyBranch) {

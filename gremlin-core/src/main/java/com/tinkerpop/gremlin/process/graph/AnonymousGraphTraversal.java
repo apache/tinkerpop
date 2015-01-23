@@ -473,6 +473,10 @@ public interface AnonymousGraphTraversal {
     public default <A> GraphTraversal<A, A> withPath() {
         return this.<A>start().withPath();
     }
+
+    public default <A> GraphTraversal<A, A> barrier() {
+        return this.<A>start().barrier();
+    }
 }
 
 

@@ -138,7 +138,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay4() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().outE("created").subgraph("sg").id();
+        Traversal t = g.V().outE("created").barrier();
         System.out.println(t.toString());
         t.forEachRemaining(System.out::println);
         System.out.println(t.toString());

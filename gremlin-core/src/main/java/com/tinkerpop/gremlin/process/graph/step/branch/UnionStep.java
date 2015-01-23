@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.ForkHolder;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -21,6 +22,11 @@ public final class UnionStep<S, E> extends BranchStep<S, E, ForkHolder.Pick> {
         if (Pick.any != pickToken)
             throw new IllegalArgumentException("Union step only supports the 'any' pick token: " + pickToken);
         super.addFork(pickToken, traversalFork);
+    }
+
+    @Override
+    public String toString() {
+        return TraversalHelper.makeStepString(this,this.branches.get(Pick.any));
     }
 
     /*@Override

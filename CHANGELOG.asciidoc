@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `BarrierStep` is no longer abstract and added `GraphTraversal.barrier()` which is analogous to `fold().unfold()`, though cheaper.
 * Added `ForkHolder` for branching steps to index works with corresponding `GraphTraversal.fork()`.
 * `BranchStep` is now a proper generalization of `UnionStep` and `ChooseStep`.
 * `SubgraphStep` has changed in support of in-traversal filtering and removing the need for path-based traversers.

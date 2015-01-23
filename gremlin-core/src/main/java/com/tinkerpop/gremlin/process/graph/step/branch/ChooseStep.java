@@ -32,6 +32,8 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
 
     @Override
     public void addFork(final M pickToken, final Traversal<S, E> traversalFork) {
+        if (Pick.any.equals(pickToken))
+            throw new IllegalArgumentException("Choose step can not have an any-fork as only one fork per traverser is allowed");
         if (this.branches.containsKey(pickToken))
             throw new IllegalArgumentException("Choose step can only have one traversal per pick token: " + pickToken);
         super.addFork(pickToken, traversalFork);
