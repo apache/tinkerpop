@@ -123,7 +123,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     @Override
-    public GraphTraversal.Admin<S, E> asAdmin();
+    public default GraphTraversal.Admin<S, E> asAdmin() {
+        return (GraphTraversal.Admin<S, E>) this;
+    }
 
     public interface Admin<S, E> extends Traversal.Admin<S, E> {
 
