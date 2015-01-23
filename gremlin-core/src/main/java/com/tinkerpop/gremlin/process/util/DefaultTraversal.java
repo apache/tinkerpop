@@ -103,6 +103,16 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     }
 
     @Override
+    public void addStart(final Traverser<S> start) {
+        if (!this.steps.isEmpty()) this.steps.get(0).addStart(start);
+    }
+
+    @Override
+    public void addStarts(final Iterator<Traverser<S>> starts) {
+        if (!this.steps.isEmpty()) this.steps.get(0).addStarts(starts);
+    }
+
+    @Override
     public String toString() {
         return TraversalHelper.makeTraversalString(this);
     }
