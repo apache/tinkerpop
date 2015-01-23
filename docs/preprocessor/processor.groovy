@@ -1,5 +1,5 @@
 /**
- * @author Daniel Kuppitz (daniel at thinkaurelius.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
 import com.tinkerpop.gremlin.process.computer.util.ScriptEngineCache
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
@@ -14,25 +14,12 @@ def STATEMENT_PREFIX = "gremlin> "
 def STATEMENT_CONTINUATION_PREFIX = "         "
 
 def header = """
-    import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.*
-    import com.tinkerpop.gremlin.process.computer.lambda.*
-    import com.tinkerpop.gremlin.process.computer.ranking.pagerank.*
-    import com.tinkerpop.gremlin.process.computer.traversal.*
-    import com.tinkerpop.gremlin.process.util.*;
-    import com.tinkerpop.gremlin.structure.strategy.*
-    import com.tinkerpop.gremlin.tinkergraph.structure.*
     import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
     import com.tinkerpop.gremlin.tinkergraph.structure.*
-
-    import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
-    import static com.tinkerpop.gremlin.process.T.*
-    import static com.tinkerpop.gremlin.structure.Compare.*
-    import static com.tinkerpop.gremlin.structure.Contains.*
-    import static com.tinkerpop.gremlin.structure.Operator.*
-    import static com.tinkerpop.gremlin.structure.Order.*
     import static java.util.Comparator.*
 """
 
+def imports = new com.tinkerpop.gremlin.console.ConsoleImportCustomizerProvider()
 def skipNextRead = false
 def inCodeSection = false
 def engine
@@ -47,7 +34,9 @@ new File(this.args[0]).withReader { reader ->
         if (inCodeSection) {
             inCodeSection = !line.equals(BLOCK_DELIMITER)
             if (inCodeSection) {
-                def script = new StringBuilder(header)
+                def script = new StringBuilder(header.toString())
+                imports.getCombinedImports().each { script.append("import ${it}\n") }
+                imports.getCombinedStaticImports().each { script.append("import static ${it}\n") }
                 def sanitizedLine = sanitize(line)
                 script.append(sanitizedLine)
                 println STATEMENT_PREFIX + line
