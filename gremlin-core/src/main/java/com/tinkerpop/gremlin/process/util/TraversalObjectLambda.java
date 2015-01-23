@@ -26,7 +26,6 @@ public class TraversalObjectLambda<S, E> implements Function<S, E>, Predicate<S>
     @Override
     public E apply(final S start) {
         final Traverser.Admin<S> traverser = this.generator.generate(start, this.traversal.getStartStep(), 1l);
-        traverser.setSideEffects(this.traversal.getSideEffects());
         this.traversal.reset();
         this.traversal.addStart(traverser);
         return this.traversal.next();
@@ -36,7 +35,6 @@ public class TraversalObjectLambda<S, E> implements Function<S, E>, Predicate<S>
     @Override
     public boolean test(final S start) {
         final Traverser.Admin<S> traverser = this.generator.generate(start, this.traversal.getStartStep(), 1l);
-        traverser.setSideEffects(this.traversal.getSideEffects());
         this.traversal.reset();
         this.traversal.addStart(traverser);
         return this.traversal.hasNext();
@@ -46,7 +44,6 @@ public class TraversalObjectLambda<S, E> implements Function<S, E>, Predicate<S>
     @Override
     public void accept(final S start) {
         final Traverser.Admin<S> traverser = this.generator.generate(start, this.traversal.getStartStep(), 1l);
-        traverser.setSideEffects(this.traversal.getSideEffects());
         this.traversal.reset();
         this.traversal.addStart(traverser);
         this.traversal.iterate();
