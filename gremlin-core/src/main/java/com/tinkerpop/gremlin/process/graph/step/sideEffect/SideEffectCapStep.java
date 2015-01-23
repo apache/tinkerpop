@@ -1,34 +1,26 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
-import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.graph.step.util.SupplierBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements EngineDependent, SideEffectRegistrar {
+public final class SideEffectCapStep<S, E> extends SupplierBarrierStep<S, E> implements SideEffectRegistrar {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
             TraverserRequirement.SIDE_EFFECTS,
             TraverserRequirement.OBJECT
     ));
 
-    private boolean done = false;
-    private boolean onGraphComputer = false;
     private String sideEffectKey;
 
     public SideEffectCapStep(final Traversal traversal, final String sideEffectKey) {
@@ -40,45 +32,7 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
     public void registerSideEffects() {
         if (null == this.sideEffectKey)
             this.sideEffectKey = ((SideEffectCapable) this.getPreviousStep()).getSideEffectKey();
-    }
-
-    @Override
-    public Traverser<E> processNextStart() {
-        return this.onGraphComputer ? computerAlgorithm() : standardAlgorithm();
-    }
-
-    private Traverser<E> standardAlgorithm() {
-        if (!this.done) {
-            Traverser.Admin<E> traverser = this.getTraversal().asAdmin().getTraverserGenerator().generate(null, (Step) this, 1l);
-            try {
-                while (true) {
-                    traverser = (Traverser.Admin<E>) this.starts.next();
-                }
-            } catch (final NoSuchElementException ignored) {
-            }
-
-            this.done = true;
-            traverser.setBulk(1l);
-            return traverser.split(traverser.getSideEffects().<E>get(this.sideEffectKey), (Step) this);
-        } else {
-            throw FastNoSuchElementException.instance();
-        }
-    }
-
-    private Traverser<E> computerAlgorithm() {
-        while (true) {
-            this.starts.next();
-        }
-    }
-
-    public void onEngine(final TraversalEngine traversalEngine) {
-        this.onGraphComputer = traversalEngine.equals(TraversalEngine.COMPUTER);
-    }
-
-    @Override
-    public void reset() {
-        super.reset();
-        this.done = false;
+        SideEffectCapStep.generateSupplier(this);
     }
 
     @Override
@@ -93,5 +47,18 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
+    }
+
+    @Override
+    public SideEffectCapStep<S, E> clone() throws CloneNotSupportedException {
+        final SideEffectCapStep<S, E> clone = (SideEffectCapStep<S, E>) super.clone();
+        SideEffectCapStep.generateSupplier(clone);
+        return clone;
+    }
+
+    /////////////////////////
+
+    private static final <S, E> void generateSupplier(final SideEffectCapStep<S, E> sideEffectCapStep) {
+        sideEffectCapStep.setSupplier(() -> sideEffectCapStep.getTraversal().asAdmin().getSideEffects().get(sideEffectCapStep.sideEffectKey));
     }
 }

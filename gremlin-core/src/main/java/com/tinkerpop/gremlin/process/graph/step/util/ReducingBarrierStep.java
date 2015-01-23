@@ -14,13 +14,13 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class LazyBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier {
+public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier {
 
     private Supplier<E> seedSupplier;
-    private BiFunction<E, Traverser<S>, E> barrierFunction;
+    private BiFunction<E, Traverser<S>, E> reducingBiFunction;
     private boolean done = false;
 
-    public LazyBarrierStep(final Traversal traversal) {
+    public ReducingBarrierStep(final Traversal traversal) {
         super(traversal);
     }
 
@@ -28,16 +28,16 @@ public abstract class LazyBarrierStep<S, E> extends AbstractStep<S, E> implement
         this.seedSupplier = seedSupplier;
     }
 
-    public void setFunction(final BiFunction<E, Traverser<S>, E> barrierFunction) {
-        this.barrierFunction = barrierFunction;
+    public void setBiFunction(final BiFunction<E, Traverser<S>, E> reducingBiFunction) {
+        this.reducingBiFunction = reducingBiFunction;
     }
 
     public Supplier<E> getSeedSupplier() {
         return this.seedSupplier;
     }
 
-    public BiFunction<E, Traverser<S>, E> getBarrierFunction() {
-        return this.barrierFunction;
+    public BiFunction<E, Traverser<S>, E> getBiFunction() {
+        return this.reducingBiFunction;
     }
 
     @Override
@@ -51,18 +51,17 @@ public abstract class LazyBarrierStep<S, E> extends AbstractStep<S, E> implement
         if (this.done)
             throw FastNoSuchElementException.instance();
         E seed = this.seedSupplier.get();
-        while (this.starts.hasNext()) {
-            seed = this.barrierFunction.apply(seed, this.starts.next());
-        }
+        while (this.starts.hasNext())
+            seed = this.reducingBiFunction.apply(seed, this.starts.next());
         this.done = true;
         return this.getTraversal().asAdmin().getTraverserGenerator().generate(seed, (Step) this, 1l);
     }
 
     @Override
-    public LazyBarrierStep<S, E> clone() throws CloneNotSupportedException {
-        final LazyBarrierStep<S, E> clone = (LazyBarrierStep<S, E>) super.clone();
+    public ReducingBarrierStep<S, E> clone() throws CloneNotSupportedException {
+        final ReducingBarrierStep<S, E> clone = (ReducingBarrierStep<S, E>) super.clone();
         clone.done = false;
-        clone.barrierFunction = CloneableLambda.cloneOrReturn(this.barrierFunction);
+        clone.reducingBiFunction = CloneableLambda.cloneOrReturn(this.reducingBiFunction);
         return clone;
     }
 
