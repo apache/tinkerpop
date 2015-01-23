@@ -84,7 +84,7 @@ public interface Neo4jGraphTraversal<S, E> extends GraphTraversal.Admin<S, E>, G
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.bothV();
 	}
 
-	public default Neo4jGraphTraversal<S, E> branch(java.util.function.Function<com.tinkerpop.gremlin.process.Traverser<E>, java.util.Collection<java.lang.String>> arg0) {
+	public default <M,E2> Neo4jGraphTraversal<S, E2> branch(java.util.function.Function<com.tinkerpop.gremlin.process.Traverser<E>, M> arg0) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.branch(arg0);
 	}
 
@@ -128,8 +128,8 @@ public interface Neo4jGraphTraversal<S, E> extends GraphTraversal.Admin<S, E>, G
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.cap(arg0);
 	}
 
-	public default <M,E2> Neo4jGraphTraversal<S, E2> choose(java.util.function.Function<E, M> arg0, java.util.Map<M, com.tinkerpop.gremlin.process.Traversal<?, E2>> arg1) {
-		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.choose(arg0, arg1);
+	public default <M,E2> Neo4jGraphTraversal<S, E2> choose(java.util.function.Function<E, M> arg0) {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.choose(arg0);
 	}
 
 	public default <E2> Neo4jGraphTraversal<S, E2> choose(java.util.function.Predicate<E> arg0, com.tinkerpop.gremlin.process.Traversal<?, E2> arg1, com.tinkerpop.gremlin.process.Traversal<?, E2> arg2) {
@@ -190,6 +190,14 @@ public interface Neo4jGraphTraversal<S, E> extends GraphTraversal.Admin<S, E>, G
 
 	public default <E2> Neo4jGraphTraversal<S, E2> fold(E2 arg0, java.util.function.BiFunction<E2, E, E2> arg1) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.fold(arg0, arg1);
+	}
+
+	public default <E2> Neo4jGraphTraversal<S, E> fork(com.tinkerpop.gremlin.process.Traversal<E, E2> arg0) {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.fork(arg0);
+	}
+
+	public default <M,E2> Neo4jGraphTraversal<S, E> fork(M arg0, com.tinkerpop.gremlin.process.Traversal<E, E2> arg1) {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.fork(arg0, arg1);
 	}
 
 	public default Neo4jGraphTraversal<S, E> group() {

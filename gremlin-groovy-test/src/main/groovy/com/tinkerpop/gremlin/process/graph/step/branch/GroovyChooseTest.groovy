@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.branch
 
+import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
@@ -22,23 +23,18 @@ public abstract class GroovyChooseTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id) {
-            g.V(v1Id).choose({ 0 }, [0: __.out.name]);
+        public Traversal<Vertex, String> get_g_VX1X_chooseX0X_forkX0__outX_name(Object v1Id) {
+            g.V(v1Id).choose { 0 }.fork(0, __.out.name)
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name() {
-            g.V().has('age').choose({ it.name.length() },
-                    [5: __.in(),
-                     4: __.out(),
-                     3: __.both()]).name;
+        public Traversal<Vertex, String> get_g_V_hasXlabel_personX_chooseXname_lengthX_forkX5__inX_forkX4__outX_forkX3__bothX_name() {
+            g.V.has(T.label, 'person').choose { it.name.length() }.fork(5, __.in).fork(4, __.out).fork(3, __.both).name
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_name_3L_valueMapX() {
-            g.V().choose({ it.out.count().next(); }, [
-                    2L: __.values('name'),
-                    3L: __.valueMap()])
+        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX_forkX2L__nameX_forkX3L__valueMapX() {
+            g.V.choose { it.out.count().next() }.fork(2L, __.values('name')).fork(3L, __.valueMap())
         }
     }
 
@@ -52,23 +48,18 @@ public abstract class GroovyChooseTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).choose({ 0 }, [0: __.out.name])", g);
+        public Traversal<Vertex, String> get_g_VX1X_chooseX0X_forkX0__outX_name(Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).choose { 0 }.fork(0, __.out.name)", g);
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name() {
-            ComputerTestHelper.compute("""g.V.has('age').choose({ it.name.length() },
-                    [5: __.in,
-                     4: __.out,
-                     3: __.both]).name""", g);
+        public Traversal<Vertex, String> get_g_V_hasXlabel_personX_chooseXname_lengthX_forkX5__inX_forkX4__outX_forkX3__bothX_name() {
+            ComputerTestHelper.compute("g.V.has(T.label,'person').choose { it.name.length() }.fork(5, __.in).fork(4, __.out).fork(3, __.both).name", g);
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_name_3L_valueMapX() {
-            ComputerTestHelper.compute("""g.V.choose({ it.out.count().next(); }, [
-                    2L: __.values('name'),
-                    3L: __.valueMap])""", g);
+        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX_forkX2L__nameX_forkX3L__valueMapX() {
+            ComputerTestHelper.compute("g.V.choose { it.out.count().next() }.fork(2L, __.values('name')).fork(3L, __.valueMap())", g);
         }
     }
 }

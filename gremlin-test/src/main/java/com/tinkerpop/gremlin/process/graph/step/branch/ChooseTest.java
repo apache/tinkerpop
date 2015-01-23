@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -23,11 +24,11 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name();
 
-    public abstract Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_VX1X_chooseX0X_forkX0__outX_name(Object v1Id);
 
-    public abstract Traversal<Vertex, String> get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name();
+    public abstract Traversal<Vertex, String> get_g_V_hasXlabel_personX_chooseXname_lengthX_forkX5__inX_forkX4__outX_forkX3__bothX_name();
 
-    public abstract Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_name_3L_valueMapX();
+    public abstract Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX_forkX2L__nameX_forkX3L__valueMapX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -53,8 +54,8 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_chooseX0XoutX_name() {
-        final Traversal<Vertex, String> traversal = get_g_v1_chooseX0XoutX_name(convertToVertexId("marko"));
+    public void g_VX1X_chooseX0X_forkX0__outX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_chooseX0X_forkX0__outX_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
         Map<String, Long> counts = new HashMap<>();
         int counter = 0;
@@ -72,8 +73,8 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name();
+    public void g_V_hasXlabel_personX_chooseXname_lengthX_forkX5__inX_forkX4__outX_forkX3__bothX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_hasXlabel_personX_chooseXname_lengthX_forkX5__inX_forkX4__outX_forkX3__bothX_name();
         printTraversalForm(traversal);
         Map<String, Long> counts = new HashMap<>();
         int counter = 0;
@@ -91,8 +92,8 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX() {
-        final Traversal<Vertex, Object> traversal = get_g_V_chooseXout_count_nextX2L_name_3L_valueMapX();
+    public void g_V_chooseXout_count_nextX_forkX2L__nameX_forkX3L__valueMapX() {
+        final Traversal<Vertex, Object> traversal = get_g_V_chooseXout_count_nextX_forkX2L__nameX_forkX3L__valueMapX();
         printTraversalForm(traversal);
         Map<String, Long> counts = new HashMap<>();
         int counter = 0;
@@ -117,27 +118,23 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id) {
-            return g.V(v1Id).choose(t -> 0, new HashMap<Integer, Traversal<?, String>>() {{
-                put(0, __.out().<String>values("name"));
-            }});
+        public Traversal<Vertex, String> get_g_VX1X_chooseX0X_forkX0__outX_name(Object v1Id) {
+            return g.V(v1Id).choose(t -> 0).fork(0, __.out()).values("name");
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name() {
-            return g.V().has("age").choose(v -> v.<String>value("name").length(), new HashMap() {{
-                put(5, __.in());
-                put(4, __.out());
-                put(3, __.both());
-            }}).values("name");
+        public Traversal<Vertex, String> get_g_V_hasXlabel_personX_chooseXname_lengthX_forkX5__inX_forkX4__outX_forkX3__bothX_name() {
+            return g.V().has(T.label, "person").choose(v -> v.<String>value("name").length())
+                    .fork(5, __.in())
+                    .fork(4, __.out())
+                    .fork(3, __.both()).values("name");
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_name_3L_valueMapX() {
-            return g.V().choose(v -> v.out().count().next(), new HashMap() {{
-                put(2L, __.values("name"));
-                put(3L, __.valueMap());
-            }});
+        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX_forkX2L__nameX_forkX3L__valueMapX() {
+            return g.V().choose(v -> v.out().count().next())
+                    .fork(2L, __.values("name"))
+                    .fork(3L, __.valueMap());
         }
     }
 
@@ -155,27 +152,23 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id) {
-            return g.V(v1Id).choose(t -> 0, new HashMap() {{
-                put(0, __.out().values("name"));
-            }}).submit(g.compute());
+        public Traversal<Vertex, String> get_g_VX1X_chooseX0X_forkX0__outX_name(Object v1Id) {
+            return g.V(v1Id).choose(t -> 0).fork(0, __.out()).<String>values("name").submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name() {
-            return g.V().has("age").choose(v -> v.<String>value("name").length(), new HashMap() {{
-                put(5, __.in());
-                put(4, __.out());
-                put(3, __.both());
-            }}).values("name").submit(g.compute());
+        public Traversal<Vertex, String> get_g_V_hasXlabel_personX_chooseXname_lengthX_forkX5__inX_forkX4__outX_forkX3__bothX_name() {
+            return g.V().has(T.label, "person").choose(v -> v.<String>value("name").length())
+                    .fork(5, __.in())
+                    .fork(4, __.out())
+                    .fork(3, __.both()).<String>values("name").submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_name_3L_valueMapX() {
-            return g.V().choose(v -> v.out().count().next(), new HashMap() {{
-                put(2L, __.values("name"));
-                put(3L, __.valueMap());
-            }}).submit(g.compute());
+        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX_forkX2L__nameX_forkX3L__valueMapX() {
+            return g.V().choose(v -> v.out().count().next())
+                    .fork(2L, __.values("name"))
+                    .fork(3L, __.valueMap()).submit(g.compute());
         }
     }
 }

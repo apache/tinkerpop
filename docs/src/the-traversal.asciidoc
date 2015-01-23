@@ -34,7 +34,7 @@ There are four generic steps by which all other specific steps described later e
 | `flatMap(Function<Traverser<S>, Iterator<E>>)` | map the traverser to an iterator of `E` objects that are streamed to the next step.
 | `filter(Predicate<Traverser<S>>)` | map the traverser to either true or false, where false will not pass the traverser to the next step.
 | `sideEffect(Consumer<Traverser<S>>)` | perform some operation on the traverser and pass it to the next step.
-| `branch(Function<Traverser<S>,Collection<String>>)` | split the traverser to all the steps that have a label in the returned string collection.
+| `branch(Function<Traverser<S>,M)` | split the traverser to all the traversals indexed by the `M` token.
 |=========================================================
 
 The `Traverser<S>` object provides access to:
@@ -84,16 +84,16 @@ g.V().has(label,'person').sideEffect(System.out.&println) <1>
 image:branch-lambda.png[width=180,float=right]
 [gremlin-groovy,modern]
 ----
-g.V().branch {it.get().value('name') == 'marko' ? ['a'] : ['b']}.as('a').
-      values('age').branch{['c']}.as('b').
-      values('name').as('c') <1>
+g.V().branch {it.get().value('name') == 'marko' ? ['a'] : ['b']}.
+       fork('a', __.values('age')).
+       fork('b', __.values('name')) <1>
 g.V().choose({ it.value('name') == 'marko' },
-               __.values('age'),
-               __.values('name')) <2>
+       __.values('age'),
+       __.values('name')) <2>
 ----
 
 <1> If the vertex is "marko", get his age, else get the name of the vertex.
-<2> The more specific `choose()`-step is implemented as a `branch()`.
+<2> The more specific boolean-based `choose()`-step is implemented as a `branch()`.
 
 [[addedge-step]]
 AddEdge Step
@@ -193,22 +193,27 @@ image::choose-step.png[width=700]
 [gremlin-groovy,modern]
 ----
 g.V().has(label,'person').
-      choose({ it.value('name').length() == 5},   // If the predicate is true, then do `in`, else do `out`.
-               __.in(), __.out()).values('name')
+       choose({ it.value('name').length() == 5},
+               __.in(), __.out()).values('name') <1>
 g.V().has(label,'person').
-      choose({ it.value('name').length()},   // Use the result of the function as a key to the map of traversal choices.
-             [ 5: __.in(),
-               4: __.out() ]).values('name')
+        choose{ it.value('name').length() }.
+          fork(5, __.in()).
+          fork(4, __.out()).values('name') <2>
 ----
 
-In Java8, there is no elegant syntax to create a `Map`. Thus, the last traversal above would look as follows:
+<1> If the predicate is true, then do `in`, else do `out`.
+<2> Use the result of the function as a key to the map of traversal choices.
 
-[source,java]
+However, note that `choose()` can have an arbitrary number of forks.
+
+[gremlin-groovy,modern]
 ----
-g.V().has("age").choose(v -> v.value("name").length(), new HashMap() {{
-  put(5,__.in());
-  put(4,__.out());
-}}).values("name")
+g.V().has(label,'person').
+       choose{ it.value('name') }.
+         fork('marko', __.values('age')).
+         fork('josh', __.values('name')).
+         fork('vadas', __.valueMap()).
+         fork('peter', __.label())
 ----
 
 [[coin-step]]
@@ -1089,11 +1094,11 @@ The `union()`-step (*branch*) supports the merging of the results of an arbitrar
 [gremlin-groovy,modern]
 ----
 g.V(4).union(
-       __.in().values('age'),
-       __.out().values('lang'))
+         __.in().values('age'),
+         __.out().values('lang'))
 g.V(4).union(
-       __.in().values('age'),
-       __.out().values('lang')).path()
+         __.in().values('age'),
+         __.out().values('lang')).path()
 ----
 
 [[valuemap-step]]

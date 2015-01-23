@@ -70,6 +70,14 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().identity();
     }
 
+    public default <A> GraphTraversal<A, String> label() {
+        return this.<A>start().label();
+    }
+
+    public default <A> GraphTraversal<A, Object> id() {
+        return this.<A>start().id();
+    }
+
     public default <A> GraphTraversal<A, Vertex> to(final Direction direction, final String... edgeLabels) {
         return this.<A>start().to(direction, edgeLabels);
     }
@@ -148,6 +156,10 @@ public interface AnonymousGraphTraversal {
 
     public default <A, E2> GraphTraversal<A, Map<String, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
         return this.<A>start().valueMap(includeTokens, propertyKeys);
+    }
+
+    public default <A> GraphTraversal<A, String> key() {
+        return this.<A>start().key();
     }
 
     public default <A, E2> GraphTraversal<A, E2> value() {
@@ -400,7 +412,7 @@ public interface AnonymousGraphTraversal {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default <A> GraphTraversal<A, A> branch(final Function<Traverser<A>, Collection<String>> function) {
+    public default <A, M, E2> GraphTraversal<A, E2> branch(final Function<Traverser<A>, M> function) {
         return this.<A>start().branch(function);
     }
 
@@ -408,8 +420,8 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().choose(choosePredicate, trueChoice, falseChoice);
     }
 
-    public default <A, E2, M> GraphTraversal<A, E2> choose(final Function<A, M> mapFunction, final Map<M, Traversal<?, E2>> choices) {
-        return this.<A>start().choose(mapFunction, choices);
+    public default <A, M, E2> GraphTraversal<A, E2> choose(final Function<A, M> choiceFunction) {
+        return this.<A>start().choose(choiceFunction);
     }
 
     public default <A, E2> GraphTraversal<A, E2> union(final Traversal<?, E2>... traversals) {

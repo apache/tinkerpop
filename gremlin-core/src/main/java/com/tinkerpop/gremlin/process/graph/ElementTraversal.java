@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
@@ -378,7 +377,7 @@ public abstract interface ElementTraversal<A extends Element> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default GraphTraversal<A, A> branch(final Function<Traverser<A>, Collection<String>> function) {
+    public default <M, E2> GraphTraversal<A, E2> branch(final Function<Traverser<A>, M> function) {
         return this.start().branch(function);
     }
 
@@ -386,8 +385,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().choose(choosePredicate, trueChoice, falseChoice);
     }
 
-    public default <E2, M> GraphTraversal<A, E2> choose(final Function<A, M> mapFunction, final Map<M, Traversal<?, E2>> choices) {
-        return this.start().choose(mapFunction, choices);
+    public default <M, E2> GraphTraversal<A, E2> choose(final Function<A, M> choiceFunction) {
+        return this.start().choose(choiceFunction);
     }
 
     public default <E2> GraphTraversal<A, E2> union(final Traversal<?, E2>... traversals) {

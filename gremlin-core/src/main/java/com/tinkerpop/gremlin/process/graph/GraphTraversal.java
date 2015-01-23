@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
+import com.tinkerpop.gremlin.process.graph.marker.ForkHolder;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
@@ -506,8 +507,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default GraphTraversal<S, E> branch(final Function<Traverser<E>, Collection<String>> function) {
-        final BranchStep<E> branchStep = new BranchStep<>(this);
+    public default <M, E2> GraphTraversal<S, E2> branch(final Function<Traverser<E>, M> function) {
+        final BranchStep<E, E2, M> branchStep = new BranchStep<>(this);
         branchStep.setFunction(function);
         return this.asAdmin().addStep(branchStep);
     }
@@ -516,8 +517,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this, choosePredicate, (Traversal<E, E2>) trueChoice, (Traversal<E, E2>) falseChoice));
     }
 
-    public default <M, E2> GraphTraversal<S, E2> choose(final Function<E, M> mapFunction, final Map<M, Traversal<?, E2>> choices) {
-        return this.asAdmin().addStep(new ChooseStep(this, mapFunction, (Map) choices));
+    public default <M, E2> GraphTraversal<S, E2> choose(final Function<E, M> choiceFunction) {
+        return this.asAdmin().addStep(new ChooseStep<>(this, choiceFunction));
     }
 
     public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... traversals) {
@@ -621,6 +622,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         ((ComparatorHolder<Element>) this.asAdmin().getEndStep()).addComparator(new ElementValueComparator<>(elementPropertyProjection, propertyValueComparator));
         return this;
     }
+
+    ////
+
+    public default <M, E2> GraphTraversal<S, E> fork(final M pickToken, final Traversal<E, E2> traversalFork) {
+        ((ForkHolder<M, E, E2>) this.asAdmin().getEndStep()).addFork(pickToken, (Traversal) traversalFork);
+        return this;
+    }
+
+    public default <E2> GraphTraversal<S, E> fork(final Traversal<E, E2> traversalFork) {
+        ((ForkHolder<ForkHolder.Pick, E, E2>) this.asAdmin().getEndStep()).addFork(ForkHolder.Pick.any, (Traversal) traversalFork);
+        return this;
+    }
+
+    /*public default <M,E2> GraphTraversal<S,E> fork(final Traversal<E,M> pickToken, final Traversal<E,E2> traversalFork) {
+        // TODO
+    }*/
 
     @Override
     public default void remove() {
