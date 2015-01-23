@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.StoreMapRed
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,8 +38,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     public StoreStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.setConsumer(traverser -> TraversalHelper.addToCollection(traverser.sideEffects(this.sideEffectKey),
-                null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser.get()), traverser.bulk()));
+        StoreStep.generateConsumer(this);
     }
 
     @Override
@@ -75,5 +75,22 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
+    }
+
+    @Override
+    public StoreStep<S> clone() throws CloneNotSupportedException {
+        final StoreStep<S> clone = (StoreStep<S>) super.clone();
+        clone.preStoreFunction = CloneableLambda.cloneOrReturn(this.preStoreFunction);
+        StoreStep.generateConsumer(clone);
+        return clone;
+    }
+
+    /////////////////////////
+
+    private static final <S> void generateConsumer(final StoreStep<S> storeStep) {
+        storeStep.setConsumer(traverser -> TraversalHelper.addToCollection(
+                traverser.sideEffects(storeStep.sideEffectKey),
+                storeStep.preStoreFunction.apply(traverser.get()),
+                traverser.bulk()));
     }
 }

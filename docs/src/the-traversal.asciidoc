@@ -34,7 +34,7 @@ There are four generic steps by which all other specific steps described later e
 | `flatMap(Function<Traverser<S>, Iterator<E>>)` | map the traverser to an iterator of `E` objects that are streamed to the next step.
 | `filter(Predicate<Traverser<S>>)` | map the traverser to either true or false, where false will not pass the traverser to the next step.
 | `sideEffect(Consumer<Traverser<S>>)` | perform some operation on the traverser and pass it to the next step.
-| `branch(Function<Traverser<S>,M)` | split the traverser to all the traversals indexed by the `M` token.
+| `branch(Function<Traverser<S>,M>)` | split the traverser to all the traversals indexed by the `M` token.
 |=========================================================
 
 The `Traverser<S>` object provides access to:
@@ -84,10 +84,10 @@ g.V().has(label,'person').sideEffect(System.out.&println) <1>
 image:branch-lambda.png[width=180,float=right]
 [gremlin-groovy,modern]
 ----
-g.V().branch {it.get().value('name') == 'marko' ? ['a'] : ['b']}.
-       fork('a', __.values('age')).
-       fork('b', __.values('name')) <1>
-g.V().choose({ it.value('name') == 'marko' },
+g.V().branch(__.values('name')).
+       option('marko', __.values('age')).
+       option(none, __.values('name')) <1>
+g.V().choose(__.has('name','marko'),
        __.values('age'),
        __.values('name')) <2>
 ----
@@ -197,23 +197,23 @@ g.V().has(label,'person').
                __.in(), __.out()).values('name') <1>
 g.V().has(label,'person').
         choose{ it.value('name').length() }.
-          fork(5, __.in()).
-          fork(4, __.out()).values('name') <2>
+          option(5, __.in()).
+          option(4, __.out()).values('name') <2>
 ----
 
 <1> If the predicate is true, then do `in`, else do `out`.
 <2> Use the result of the function as a key to the map of traversal choices.
 
-However, note that `choose()` can have an arbitrary number of forks.
+However, note that `choose()` can have an arbitrary number of options and moreover, can take a anonymous traversal as its choice function.
 
 [gremlin-groovy,modern]
 ----
 g.V().has(label,'person').
-       choose{ it.value('name') }.
-         fork('marko', __.values('age')).
-         fork('josh', __.values('name')).
-         fork('vadas', __.valueMap()).
-         fork('peter', __.label())
+       choose(__.values('name')).
+         option('marko', __.values('age')).
+         option('josh', __.values('name')).
+         option('vadas', __.valueMap()).
+         option('peter', __.label())
 ----
 
 [[coin-step]]
@@ -640,10 +640,10 @@ Finally, because `by()`-based post-processing, nothing prevents triggering yet a
 
 [gremlin-groovy,modern]
 ----
-g.V().out().out().path().by {
-        it.choose({ it.has(label,'person').hasNext() },
-                    __.out('created').values('name'),
-                    __.in('created').values('name')).toList() }
+g.V().out().out().path().by(
+                   __.choose(__.has(label,'person'),
+                                 __.out('created').values('name'),
+                                 __.in('created').values('name')).fold())
 ----
 
 WARNING: Generating path information is expensive as the history of the traverser is stored into a Java list. With numerous traversers, there are numerous lists. Moreover, in an OLAP <<graphcomputer,`GraphComputer`>> environment this becomes exceedingly prohibitive as there are traversers emanating from all vertices in the graph in parallel. In OLAP there are optimizations provided for traverser populations, but when paths are calculated (and each traverser is unique due to its history), then these optimizations are no longer possible.

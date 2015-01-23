@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,6 +60,7 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     public DedupStep<S> clone() throws CloneNotSupportedException {
         final DedupStep<S> clone = (DedupStep<S>) super.clone();
         clone.duplicateSet = new HashSet<>();
+        clone.uniqueFunction = CloneableLambda.cloneOrReturn(this.uniqueFunction);
         generatePredicate(clone);
         return clone;
     }

@@ -416,12 +416,24 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().branch(function);
     }
 
+    public default <A, M, E2> GraphTraversal<A, E2> branch(final Traversal<?, M> traversalFunction) {
+        return this.<A>start().branch(traversalFunction);
+    }
+
     public default <A, E2> GraphTraversal<A, E2> choose(final Predicate<A> choosePredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
         return this.<A>start().choose(choosePredicate, trueChoice, falseChoice);
     }
 
     public default <A, M, E2> GraphTraversal<A, E2> choose(final Function<A, M> choiceFunction) {
         return this.<A>start().choose(choiceFunction);
+    }
+
+    public default <A, M, E2> GraphTraversal<A, E2> choose(final Traversal<?, M> traversalFunction) {
+        return this.<A>start().choose(traversalFunction);
+    }
+
+    public default <A, M, E2> GraphTraversal<A, E2> choose(final Traversal<?, M> traversalPredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
+        return this.<A>start().choose(traversalPredicate, trueChoice, falseChoice);
     }
 
     public default <A, E2> GraphTraversal<A, E2> union(final Traversal<?, E2>... traversals) {

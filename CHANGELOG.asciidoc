@@ -9,8 +9,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Any non-core `Step` that takes a function or predicate can now take a traversal which maps to `traversal.next()` (function) and `traversal.hasNext()` (predicate).
 * `BarrierStep` is no longer abstract and added `GraphTraversal.barrier()` which is analogous to `fold().unfold()`, though cheaper.
-* Added `ForkHolder` for branching steps to index works with corresponding `GraphTraversal.fork()`.
+* Added `TraversalOptionHolder` for branching steps to index works with corresponding `GraphTraversal.option()`.
 * `BranchStep` is now a proper generalization of `UnionStep` and `ChooseStep`.
 * `SubgraphStep` has changed in support of in-traversal filtering and removing the need for path-based traversers.
 * Added `HasTraversalStep` which takes an anonymous traversal to determine whether or not to filter the current object.

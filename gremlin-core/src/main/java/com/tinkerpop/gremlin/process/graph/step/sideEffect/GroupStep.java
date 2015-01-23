@@ -14,6 +14,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupMapRed
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,16 +48,7 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     public GroupStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.setConsumer(traverser -> {
-            final Map<K, Collection<V>> groupByMap = null == this.tempGroupByMap ? traverser.sideEffects(this.sideEffectKey) : this.tempGroupByMap; // for nested traversals and not !starts.hasNext()
-            doGroup(traverser, groupByMap, this.keyFunction, this.valueFunction);
-            if (!this.onGraphComputer && null != this.reduceFunction && !this.starts.hasNext()) {
-                this.tempGroupByMap = groupByMap;
-                final Map<K, R> reduceMap = new HashMap<>();
-                doReduce(groupByMap, reduceMap, this.reduceFunction);
-                traverser.sideEffects(this.sideEffectKey, reduceMap);
-            }
-        });
+        GroupStep.generateConsumer(this);
     }
 
     @Override
@@ -136,5 +128,30 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
+    }
+
+    @Override
+    public GroupStep<S, K, V, R> clone() throws CloneNotSupportedException {
+        final GroupStep<S, K, V, R> clone = (GroupStep<S, K, V, R>) super.clone();
+        clone.keyFunction = CloneableLambda.cloneOrReturn(this.keyFunction);
+        clone.valueFunction = CloneableLambda.cloneOrReturn(this.valueFunction);
+        clone.reduceFunction = CloneableLambda.cloneOrReturn(this.reduceFunction);
+        GroupStep.generateConsumer(clone);
+        return clone;
+    }
+
+    /////////////////////////
+
+    private static final <S, K, V, R> void generateConsumer(final GroupStep<S, K, V, R> groupStep) {
+        groupStep.setConsumer(traverser -> {
+            final Map<K, Collection<V>> groupByMap = null == groupStep.tempGroupByMap ? traverser.sideEffects(groupStep.sideEffectKey) : groupStep.tempGroupByMap; // for nested traversals and not !starts.hasNext()
+            doGroup(traverser, groupByMap, groupStep.keyFunction, groupStep.valueFunction);
+            if (!groupStep.onGraphComputer && null != groupStep.reduceFunction && !groupStep.starts.hasNext()) {
+                groupStep.tempGroupByMap = groupByMap;
+                final Map<K, R> reduceMap = new HashMap<>();
+                doReduce(groupByMap, reduceMap, groupStep.reduceFunction);
+                traverser.sideEffects(groupStep.sideEffectKey, reduceMap);
+            }
+        });
     }
 }

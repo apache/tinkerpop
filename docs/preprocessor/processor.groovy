@@ -17,6 +17,7 @@ def header = """
     import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
     import com.tinkerpop.gremlin.tinkergraph.structure.*
     import static java.util.Comparator.*
+    import static com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder.Pick.*
 """
 
 def imports = new com.tinkerpop.gremlin.console.ConsoleImportCustomizerProvider()
