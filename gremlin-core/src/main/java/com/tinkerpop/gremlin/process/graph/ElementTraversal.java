@@ -49,7 +49,7 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().submit(graphComputer);
     }
 
-    ///////////////////// TRANSFORM STEPS /////////////////////
+    ///////////////////// MAP STEPS /////////////////////
 
     public default <E2> GraphTraversal<A, E2> map(final Function<Traverser<A>, E2> function) {
         return this.start().map(function);

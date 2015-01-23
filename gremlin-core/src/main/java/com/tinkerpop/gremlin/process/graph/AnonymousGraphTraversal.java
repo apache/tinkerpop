@@ -56,7 +56,7 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().submit(graphComputer);
     }
 
-    ///////////////////// TRANSFORM STEPS /////////////////////
+    ///////////////////// MAP STEPS /////////////////////
 
     public default <A, E2> GraphTraversal<A, E2> map(final Function<Traverser<A>, E2> function) {
         return this.<A>start().map(function);

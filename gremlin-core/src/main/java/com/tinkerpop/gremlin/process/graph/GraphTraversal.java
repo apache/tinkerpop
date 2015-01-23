@@ -519,8 +519,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.branch(new TraversalLambda<>((Traversal<E, M>) traversalFunction));
     }
 
-    //
-
     public default <M, E2> GraphTraversal<S, E2> choose(final Function<E, M> choiceFunction) {
         return this.asAdmin().addStep(new ChooseStep<>(this, choiceFunction));
     }
@@ -536,8 +534,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <M, E2> GraphTraversal<S, E2> choose(final Traversal<?, M> traversalPredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
         return this.choose(new TraversalObjectLambda<>((Traversal<E, M>) traversalPredicate), trueChoice, falseChoice);
     }
-
-    //
 
     public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... traversals) {
         return this.asAdmin().addStep(new UnionStep<>(this, (Traversal<E, E2>[]) traversals));
@@ -623,8 +619,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
-    public default GraphTraversal<S, E> by(final Traversal<?, ?> nextTraversal) {
-        ((FunctionHolder<Traverser<?>, ?>) this.asAdmin().getEndStep()).addFunction(new TraversalObjectLambda(nextTraversal));
+    public default GraphTraversal<S, E> by(final Traversal<?, ?> traversalLambda) {
+        ((FunctionHolder<Traverser<?>, ?>) this.asAdmin().getEndStep()).addFunction(new TraversalObjectLambda(traversalLambda));
         return this;
     }
 
@@ -652,19 +648,17 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ////
 
-    public default <M, E2> GraphTraversal<S, E> option(final M pickToken, final Traversal<E, E2> traversalFork) {
-        ((TraversalOptionHolder<M, E, E2>) this.asAdmin().getEndStep()).addOption(pickToken, (Traversal) traversalFork);
+    public default <M, E2> GraphTraversal<S, E> option(final M pickToken, final Traversal<E, E2> traversalOption) {
+        ((TraversalOptionHolder<M, E, E2>) this.asAdmin().getEndStep()).addOption(pickToken, (Traversal) traversalOption);
         return this;
     }
 
-    public default <E2> GraphTraversal<S, E> option(final Traversal<E, E2> traversalFork) {
-        ((TraversalOptionHolder<TraversalOptionHolder.Pick, E, E2>) this.asAdmin().getEndStep()).addOption(TraversalOptionHolder.Pick.any, (Traversal) traversalFork);
+    public default <E2> GraphTraversal<S, E> option(final Traversal<E, E2> traversalOption) {
+        ((TraversalOptionHolder<TraversalOptionHolder.Pick, E, E2>) this.asAdmin().getEndStep()).addOption(TraversalOptionHolder.Pick.any, (Traversal) traversalOption);
         return this;
     }
 
-    /*public default <M,E2> GraphTraversal<S,E> fork(final Traversal<E,M> pickToken, final Traversal<E,E2> traversalFork) {
-        // TODO
-    }*/
+    ////
 
     @Override
     public default void remove() {
@@ -685,17 +679,4 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         }
     }
-
-    /////////////////////////////////////
-
-    /*
-    // TODO: Will add as we flush out for GA
-    public default GraphTraversal<S, Pair<Vertex, Double>> pageRank() {
-        return (GraphTraversal) this.asAdmin().addStep(new PageRankStep(this));
-    }
-
-    public default GraphTraversal<S, Pair<Vertex, Double>> pageRank(final Supplier<Traversal> incidentTraversal) {
-        return (GraphTraversal) this.asAdmin().addStep(new PageRankStep(this, (Supplier) incidentTraversal));
-    }
-    */
 }
