@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph.step.sideEffect;
+package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
@@ -13,17 +13,14 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SumStep extends ReducingBarrierStep<Number, Double> implements Reducing<Double, Traverser<Number>> {
+public final class CountStep<S> extends ReducingBarrierStep<S, Long> implements Reducing<Long, Traverser<S>> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
-            TraverserRequirement.BULK,
-            TraverserRequirement.OBJECT
-    ));
+    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(TraverserRequirement.BULK));
 
-    public SumStep(final Traversal traversal) {
+    public CountStep(final Traversal traversal) {
         super(traversal);
-        this.setSeedSupplier(() -> 0.0d);
-        this.setBiFunction((seed, start) -> seed + (start.get().doubleValue() * start.bulk()));
+        this.setSeedSupplier(() -> 0l);
+        this.setBiFunction((seed, start) -> seed + start.bulk());
     }
 
 
@@ -33,7 +30,7 @@ public final class SumStep extends ReducingBarrierStep<Number, Double> implement
     }
 
     @Override
-    public Reducer<Double, Traverser<Number>> getReducer() {
+    public Reducer<Long, Traverser<S>> getReducer() {
         return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true);
     }
 }

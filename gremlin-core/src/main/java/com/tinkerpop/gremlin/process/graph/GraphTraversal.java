@@ -40,6 +40,8 @@ import com.tinkerpop.gremlin.process.graph.step.map.IdStep;
 import com.tinkerpop.gremlin.process.graph.step.map.KeyStep;
 import com.tinkerpop.gremlin.process.graph.step.map.LabelStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
+import com.tinkerpop.gremlin.process.graph.step.map.MaxStep;
+import com.tinkerpop.gremlin.process.graph.step.map.MinStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PathStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesStep;
@@ -54,7 +56,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
+import com.tinkerpop.gremlin.process.graph.step.map.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
@@ -67,7 +69,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
+import com.tinkerpop.gremlin.process.graph.step.map.SumStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
@@ -285,6 +287,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new FoldStep<>(this, () -> seed, foldFunction)); // TODO: User should provide supplier
     }
 
+    public default GraphTraversal<S, Long> count() {
+        return this.asAdmin().addStep(new CountStep<>(this));
+    }
+
+    public default GraphTraversal<S, Double> sum() {
+        return this.asAdmin().addStep(new SumStep(this));
+    }
+
+    public default <E2 extends Number> GraphTraversal<S, E2> max() {
+        return this.asAdmin().addStep(new MaxStep<>(this));
+    }
+
+    public default <E2 extends Number> GraphTraversal<S, E2> min() {
+        return this.asAdmin().addStep(new MinStep<>(this));
+    }
+
     public default <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {
         return this.asAdmin().addStep(new LocalStep<>(this, localTraversal));
     }
@@ -419,14 +437,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <E2> GraphTraversal<S, E2> cap() {
         return this.cap(null);
-    }
-
-    public default GraphTraversal<S, Long> count() {
-        return this.asAdmin().addStep(new CountStep<>(this));
-    }
-
-    public default GraphTraversal<S, Double> sum() {
-        return this.asAdmin().addStep(new SumStep(this));
     }
 
     public default GraphTraversal<S, Edge> subgraph(final String sideEffectKey) {

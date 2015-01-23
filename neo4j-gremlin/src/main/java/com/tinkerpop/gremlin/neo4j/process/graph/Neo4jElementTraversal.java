@@ -248,6 +248,14 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.match(arg0, arg1);
 	}
 
+	public default <E2 extends Number> Neo4jGraphTraversal<A, E2> max() {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.max();
+	}
+
+	public default <E2 extends Number> Neo4jGraphTraversal<A, E2> min() {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.min();
+	}
+
 	public default Neo4jGraphTraversal<A, A> order() {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.order();
 	}

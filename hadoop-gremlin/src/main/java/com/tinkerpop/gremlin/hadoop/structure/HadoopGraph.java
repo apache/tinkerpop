@@ -60,27 +60,27 @@ import java.util.Optional;
         method = "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest$StandardTest",
+        test = "com.tinkerpop.gremlin.process.graph.step.map.CountTest$StandardTest",
         method = "g_V_both_both_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest$StandardTest",
+        test = "com.tinkerpop.gremlin.process.graph.step.map.CountTest$StandardTest",
         method = "g_V_repeatXoutX_timesX3X_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest$StandardTest",
+        test = "com.tinkerpop.gremlin.process.graph.step.map.CountTest$StandardTest",
         method = "g_V_repeatXoutX_timesX8X_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTest$StandardTest",
+        test = "com.tinkerpop.gremlin.process.graph.step.map.GroovyCountTest$StandardTest",
         method = "g_V_both_both_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTest$StandardTest",
+        test = "com.tinkerpop.gremlin.process.graph.step.map.GroovyCountTest$StandardTest",
         method = "g_V_repeatXoutX_timesX3X_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTest$StandardTest",
+        test = "com.tinkerpop.gremlin.process.graph.step.map.GroovyCountTest$StandardTest",
         method = "g_V_repeatXoutX_timesX8X_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(

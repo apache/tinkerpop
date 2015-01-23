@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `MinStep` and `MaxStep` with respective `min()` and `max()`.
+* `CountStep` and `SumStep` now extend `ReducingBarrierStep` and no longer are sideEffect steps.
 * `SideEffectCapStep` now extends `SupplierBarrier` and is much simpler than before.
 * Added `SupplierBarrier` which simply drains the traversal and emits the value of a provided supplier.
 * Added `TraversalLambda` which implements function, predicate, and consumer over a provided traversal.

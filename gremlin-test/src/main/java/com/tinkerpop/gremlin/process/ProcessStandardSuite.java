@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process;
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.process.graph.step.branch.BranchTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.LocalTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.BetweenTest;
@@ -19,10 +20,11 @@ import com.tinkerpop.gremlin.process.graph.step.filter.SampleTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
+import com.tinkerpop.gremlin.process.graph.step.map.CountTest;
 import com.tinkerpop.gremlin.process.graph.step.map.FoldTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.LocalTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MatchTest;
+import com.tinkerpop.gremlin.process.graph.step.map.MaxTest;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
@@ -32,7 +34,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.ValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectTest;
@@ -105,9 +106,11 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // map
             BackTest.StandardTest.class,
+            CountTest.StandardTest.class,
             FoldTest.StandardTest.class,
             MapTest.StandardTest.class,
             MatchTest.StandardTest.class,
+            MaxTest.StandardTest.class,
             OrderTest.StandardTest.class,
             com.tinkerpop.gremlin.process.graph.step.map.PathTest.StandardTest.class,
             PropertiesTest.StandardTest.class,
@@ -120,7 +123,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // sideEffect
             AddEdgeTest.StandardTest.class,
             AggregateTest.StandardTest.class,
-            CountTest.StandardTest.class,
             GroupTest.StandardTest.class,
             GroupCountTest.StandardTest.class,
             InjectTest.StandardTest.class,
@@ -172,9 +174,11 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // map
             BackTest.class,
+            CountTest.class,
             FoldTest.class,
             MapTest.class,
             MatchTest.class,
+            MaxTest.class,
             OrderTest.class,
             com.tinkerpop.gremlin.process.graph.step.map.PathTest.class,
             SelectTest.class,
@@ -186,7 +190,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // sideEffect
             AddEdgeTest.class,
             AggregateTest.class,
-            CountTest.class,
             GroupTest.class,
             GroupCountTest.class,
             InjectTest.class,

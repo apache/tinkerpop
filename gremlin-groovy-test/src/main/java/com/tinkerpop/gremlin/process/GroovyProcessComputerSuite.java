@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyBranchTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyChooseTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.GroovyLocalTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyRepeatTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUnionTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyBetweenTest;
@@ -20,9 +21,10 @@ import com.tinkerpop.gremlin.process.graph.step.filter.GroovySampleTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovySimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyWhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyBackTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyCountTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyFoldTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.GroovyLocalTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyMapTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyMaxTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPropertiesTest;
@@ -32,7 +34,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.GroovyUnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyVertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAggregateTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyInjectTest;
@@ -81,9 +82,11 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
 
             // map
             GroovyBackTest.ComputerTest.class,
+            GroovyCountTest.ComputerTest.class,
             GroovyFoldTest.ComputerTest.class,
             GroovyMapTest.ComputerTest.class,
             // TODO: GroovyMatchTest.ComputerTest.class,
+            GroovyMaxTest.ComputerTest.class,
             GroovyOrderTest.ComputerTest.class,
             GroovyPathTest.ComputerTest.class,
             GroovyPropertiesTest.ComputerTest.class,
@@ -96,7 +99,6 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             // sideEffect
             // TODO: GroovyAddEdgeTest.ComputerTest.class,
             GroovyAggregateTest.ComputerTest.class,
-            GroovyCountTest.ComputerTest.class,
             GroovyGroupTest.ComputerTest.class,
             GroovyGroupCountTest.ComputerTest.class,
             GroovyInjectTest.ComputerTest.class,

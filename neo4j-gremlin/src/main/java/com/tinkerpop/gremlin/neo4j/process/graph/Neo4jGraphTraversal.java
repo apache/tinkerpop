@@ -312,6 +312,14 @@ public interface Neo4jGraphTraversal<S, E> extends GraphTraversal.Admin<S, E>, G
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.match(arg0, arg1);
 	}
 
+	public default <E2 extends Number> Neo4jGraphTraversal<S, E2> max() {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.max();
+	}
+
+	public default <E2 extends Number> Neo4jGraphTraversal<S, E2> min() {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.min();
+	}
+
 	public default <E2> Neo4jGraphTraversal<S, E> option(com.tinkerpop.gremlin.process.Traversal<E, E2> arg0) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.option(arg0);
 	}

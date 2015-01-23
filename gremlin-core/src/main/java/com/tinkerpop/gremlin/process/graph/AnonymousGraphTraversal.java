@@ -44,14 +44,6 @@ public interface AnonymousGraphTraversal {
 
     //////////////////////////////////////////////////////////////////////
 
-    public default <A> GraphTraversal<A, Long> count() {
-        return this.<A>start().count();
-    }
-
-    public default <A> GraphTraversal<A, Double> sum() {
-        return this.<A>start().sum();
-    }
-
     public default <A> GraphTraversal<A, A> submit(final GraphComputer graphComputer) {
         return this.<A>start().submit(graphComputer);
     }
@@ -202,8 +194,20 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().fold(seed, foldFunction);
     }
 
-    public default <A, E2> GraphTraversal<A, E2> local(final Traversal<?, E2> localTraversal) {
-        return this.<A>start().local(localTraversal);
+    public default <A> GraphTraversal<A, Long> count() {
+        return this.<A>start().count();
+    }
+
+    public default <A> GraphTraversal<A, Double> sum() {
+        return this.<A>start().sum();
+    }
+
+    public default <A, E2 extends Number> GraphTraversal<A, E2> min() {
+        return this.<A>start().min();
+    }
+
+    public default <A, E2 extends Number> GraphTraversal<A, E2> max() {
+        return this.<A>start().max();
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -458,6 +462,10 @@ public interface AnonymousGraphTraversal {
 
     public default <A> GraphTraversal<A, A> emit() {
         return this.<A>start().emit();
+    }
+
+    public default <A, E2> GraphTraversal<A, E2> local(final Traversal<?, E2> localTraversal) {
+        return this.<A>start().local(localTraversal);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

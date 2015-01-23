@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph.step.sideEffect;
+package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
@@ -6,31 +6,27 @@ import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.graph.step.util.ReducingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CountStep<S> extends ReducingBarrierStep<S, Long> implements Reducing<Long, Traverser<S>> {
+public final class MaxStep<S extends Number> extends ReducingBarrierStep<S, S> implements Reducing<S, Traverser<S>> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(TraverserRequirement.BULK));
-
-    public CountStep(final Traversal traversal) {
+    public MaxStep(final Traversal traversal) {
         super(traversal);
-        this.setSeedSupplier(() -> 0l);
-        this.setBiFunction((seed, start) -> seed + start.bulk());
+        this.setSeedSupplier(() -> (S) Double.valueOf(Double.MIN_VALUE));
+        this.setBiFunction((seed, start) -> seed.doubleValue() > start.get().doubleValue() ? seed : start.get());
     }
-
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return REQUIREMENTS;
+        return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
     @Override
-    public Reducer<Long, Traverser<S>> getReducer() {
+    public Reducer<S, Traverser<S>> getReducer() {
         return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true);
     }
 }
