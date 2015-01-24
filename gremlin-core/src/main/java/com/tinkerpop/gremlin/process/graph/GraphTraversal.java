@@ -612,7 +612,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> by() {
-        ((FunctionHolder) this.asAdmin().getEndStep()).addFunction(Function.identity());
+        ((FunctionHolder<?,?>) this.asAdmin().getEndStep()).addFunction(Function.identity());
         return this;
     }
 
