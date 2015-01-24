@@ -82,7 +82,7 @@ public final class SampleStep<S> extends BarrierStep<S> implements Reversible, F
             //////////////// else sample the set
             double totalWeight = 0.0d;
             for (final Traverser<S> s : traverserSet) {
-                totalWeight = totalWeight + (sampleStep.probabilityFunction.apply(s.get()).doubleValue() * s.bulk());
+                totalWeight = totalWeight + (sampleStep.probabilityFunction.apply(sampleStep.traversalFunction ? (S) s : s.get()).doubleValue() * s.bulk());
             }
             ///////
             final TraverserSet<S> sampledSet = new TraverserSet<>();
