@@ -11,6 +11,8 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.StoreMapRed
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.TraversalLambda;
+import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.Arrays;
@@ -34,6 +36,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
 
     private Function<S, Object> preStoreFunction = s -> s;
     private String sideEffectKey;
+    private boolean traversalFunction = false;
 
     public StoreStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
@@ -64,12 +67,14 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
 
     @Override
     public void addFunction(final Function<S, Object> function) {
-        this.preStoreFunction = function;
+        this.preStoreFunction = (this.traversalFunction = function instanceof TraversalObjectLambda) ?
+                new TraversalLambda(((TraversalObjectLambda<S, Object>) function).getTraversal()) :
+                function;
     }
 
     @Override
     public List<Function<S, Object>> getFunctions() {
-        return null == this.preStoreFunction ? Collections.emptyList() : Arrays.asList(this.preStoreFunction);
+        return Collections.singletonList(this.preStoreFunction);
     }
 
     @Override
@@ -90,7 +95,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     private static final <S> void generateConsumer(final StoreStep<S> storeStep) {
         storeStep.setConsumer(traverser -> TraversalHelper.addToCollection(
                 traverser.sideEffects(storeStep.sideEffectKey),
-                storeStep.preStoreFunction.apply(traverser.get()),
+                storeStep.preStoreFunction.apply(storeStep.traversalFunction ? (S) traverser : traverser.get()),
                 traverser.bulk()));
     }
 }

@@ -11,6 +11,8 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupCountM
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.TraversalLambda;
+import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.Arrays;
@@ -33,8 +35,9 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
             TraverserRequirement.SIDE_EFFECTS
     ));
 
-    private Function<S, Object> preGroupFunction = null;
+    private Function<S, Object> preGroupFunction = s -> s;
     private String sideEffectKey;
+    private boolean traversalFunction = false;
     // TODO: onFirst like subgraph so we don't keep getting the map
 
     public GroupCountStep(final Traversal traversal, final String sideEffectKey) {
@@ -66,12 +69,14 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
 
     @Override
     public void addFunction(final Function<S, Object> function) {
-        this.preGroupFunction = function;
+        this.preGroupFunction = (this.traversalFunction = function instanceof TraversalObjectLambda) ?
+                new TraversalLambda(((TraversalObjectLambda<S, Object>) function).getTraversal()) :
+                function;
     }
 
     @Override
     public List<Function<S, Object>> getFunctions() {
-        return null == this.preGroupFunction ? Collections.emptyList() : Arrays.asList(this.preGroupFunction);
+        return Collections.singletonList(this.preGroupFunction);
     }
 
     @Override
@@ -92,7 +97,9 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
     private static final <S> void generateConsumer(final GroupCountStep<S> groupCountStep) {
         groupCountStep.setConsumer(traverser -> {
             final Map<Object, Long> groupCountMap = traverser.sideEffects(groupCountStep.sideEffectKey);
-            MapHelper.incr(groupCountMap, null == groupCountStep.preGroupFunction ? traverser.get() : groupCountStep.preGroupFunction.apply(traverser.get()), traverser.bulk());
+            MapHelper.incr(groupCountMap, groupCountStep.preGroupFunction.apply(groupCountStep.traversalFunction ?
+                    (S) traverser :
+                    traverser.get()), traverser.bulk());
         });
     }
 }

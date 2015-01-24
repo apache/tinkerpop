@@ -12,6 +12,8 @@ import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.TraversalLambda;
+import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.Arrays;
@@ -35,6 +37,7 @@ public final class AggregateStep<S> extends BarrierStep<S> implements SideEffect
 
     private Function<S, Object> preAggregateFunction = s -> s;
     private String sideEffectKey;
+    private boolean traversalFunction = false;
 
     public AggregateStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
@@ -65,12 +68,14 @@ public final class AggregateStep<S> extends BarrierStep<S> implements SideEffect
 
     @Override
     public void addFunction(final Function<S, Object> function) {
-        this.preAggregateFunction = function;
+        this.preAggregateFunction = (this.traversalFunction = function instanceof TraversalObjectLambda) ?
+                new TraversalLambda(((TraversalObjectLambda<S, Object>) function).getTraversal()) :
+                function;
     }
 
     @Override
     public List<Function<S, Object>> getFunctions() {
-        return null == this.preAggregateFunction ? Collections.emptyList() : Arrays.asList(this.preAggregateFunction);
+        return Collections.singletonList(this.preAggregateFunction);
     }
 
     @Override
@@ -93,7 +98,7 @@ public final class AggregateStep<S> extends BarrierStep<S> implements SideEffect
                 traverserSet.forEach(traverser ->
                         TraversalHelper.addToCollection(
                                 traverser.getSideEffects().get(aggregateStep.sideEffectKey),
-                                aggregateStep.preAggregateFunction.apply(traverser.get()),
+                                aggregateStep.preAggregateFunction.apply(aggregateStep.traversalFunction ? (S) traverser : traverser.get()),
                                 traverser.bulk())));
     }
 }
