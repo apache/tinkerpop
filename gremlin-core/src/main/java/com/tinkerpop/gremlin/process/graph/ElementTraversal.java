@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
@@ -38,19 +37,11 @@ public abstract interface ElementTraversal<A extends Element> {
 
     //////////////////////////////////////////////////////////////////////
 
-    public default GraphTraversal<A, Long> count() {
-        return this.start().count();
-    }
-
-    public default GraphTraversal<A, Double> sum() {
-        return this.start().sum();
-    }
-
     public default GraphTraversal<A, A> submit(final GraphComputer graphComputer) {
         return this.start().submit(graphComputer);
     }
 
-    ///////////////////// TRANSFORM STEPS /////////////////////
+    ///////////////////// MAP STEPS /////////////////////
 
     public default <E2> GraphTraversal<A, E2> map(final Function<Traverser<A>, E2> function) {
         return this.start().map(function);
@@ -168,8 +159,20 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().fold(seed, foldFunction);
     }
 
-    public default <E2> GraphTraversal<A, E2> local(final Traversal<?, E2> localTraversal) {
-        return this.start().local(localTraversal);
+    public default GraphTraversal<A, Long> count() {
+        return this.start().count();
+    }
+
+    public default GraphTraversal<A, Double> sum() {
+        return this.start().sum();
+    }
+
+    public default <E2 extends Number> GraphTraversal<A, E2> min() {
+        return this.start().min();
+    }
+
+    public default <E2 extends Number> GraphTraversal<A, E2> max() {
+        return this.start().max();
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -300,20 +303,12 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().cap();
     }
 
-    public default GraphTraversal<A, A> subgraph(final String sideEffectKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(sideEffectKey, edgeIdHolder, vertexMap, includeEdge);
+    public default GraphTraversal<A, Edge> subgraph(final String sideEffectKey) {
+        return this.start().subgraph(sideEffectKey);
     }
 
-    public default GraphTraversal<A, A> subgraph(final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(edgeIdHolder, vertexMap, includeEdge);
-    }
-
-    public default GraphTraversal<A, A> subgraph(final String sideEffectKey, final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(sideEffectKey, includeEdge);
-    }
-
-    public default GraphTraversal<A, A> subgraph(final Predicate<Edge> includeEdge) {
-        return this.start().subgraph(includeEdge);
+    public default GraphTraversal<A, Edge> subgraph() {
+        return this.start().subgraph();
     }
 
     public default GraphTraversal<A, A> aggregate(final String sideEffectKey) {
@@ -386,16 +381,28 @@ public abstract interface ElementTraversal<A extends Element> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default GraphTraversal<A, A> branch(final Function<Traverser<A>, Collection<String>> function) {
+    public default <M, E2> GraphTraversal<A, E2> branch(final Function<Traverser<A>, M> function) {
         return this.start().branch(function);
+    }
+
+    public default <M, E2> GraphTraversal<A, E2> branch(final Traversal<?, M> traversalFunction) {
+        return this.start().branch(traversalFunction);
     }
 
     public default <E2> GraphTraversal<A, E2> choose(final Predicate<A> choosePredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
         return this.start().choose(choosePredicate, trueChoice, falseChoice);
     }
 
-    public default <E2, M> GraphTraversal<A, E2> choose(final Function<A, M> mapFunction, final Map<M, Traversal<?, E2>> choices) {
-        return this.start().choose(mapFunction, choices);
+    public default <M, E2> GraphTraversal<A, E2> choose(final Function<A, M> choiceFunction) {
+        return this.start().choose(choiceFunction);
+    }
+
+    public default <M, E2> GraphTraversal<A, E2> choose(final Traversal<?, M> traversalFunction) {
+        return this.start().choose(traversalFunction);
+    }
+
+    public default <M, E2> GraphTraversal<A, E2> choose(final Traversal<?, M> traversalPredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
+        return this.start().choose(traversalPredicate, trueChoice, falseChoice);
     }
 
     public default <E2> GraphTraversal<A, E2> union(final Traversal<?, E2>... traversals) {
@@ -430,6 +437,10 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().times(maxLoops);
     }
 
+    public default <E2> GraphTraversal<A, E2> local(final Traversal<?, E2> localTraversal) {
+        return this.start().local(localTraversal);
+    }
+
     ///////////////////// UTILITY STEPS /////////////////////
 
     public default GraphTraversal<A, A> as(final String label) {
@@ -454,5 +465,9 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default GraphTraversal<A, A> withPath() {
         return this.start().withPath();
+    }
+
+    public default GraphTraversal<A, A> barrier() {
+        return this.start().barrier();
     }
 }

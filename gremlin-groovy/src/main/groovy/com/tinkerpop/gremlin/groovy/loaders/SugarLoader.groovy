@@ -25,8 +25,11 @@ class SugarLoader {
             }
         }
 
-        GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
-            ((GraphTraversal) delegate).values(name);
+        [GraphTraversal, AnonymousGraphTraversal].forEach {
+            // g.V.age
+            it.metaClass.methodMissing = { final String name, final def args ->
+                delegate.values(name);
+            }
         }
 
         Traverser.metaClass.mixin(TraverserCategory.class);

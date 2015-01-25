@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
 import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.LocalStep;
@@ -31,6 +32,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereStep;
 import com.tinkerpop.gremlin.process.graph.step.map.BackStep;
+import com.tinkerpop.gremlin.process.graph.step.map.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
@@ -39,6 +41,8 @@ import com.tinkerpop.gremlin.process.graph.step.map.IdStep;
 import com.tinkerpop.gremlin.process.graph.step.map.KeyStep;
 import com.tinkerpop.gremlin.process.graph.step.map.LabelStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
+import com.tinkerpop.gremlin.process.graph.step.map.MaxStep;
+import com.tinkerpop.gremlin.process.graph.step.map.MinStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PathStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesStep;
@@ -48,12 +52,12 @@ import com.tinkerpop.gremlin.process.graph.step.map.SackStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectOneStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
+import com.tinkerpop.gremlin.process.graph.step.map.SumStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
@@ -66,17 +70,18 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
+import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.graph.util.LoopPredicate;
-import com.tinkerpop.gremlin.process.graph.util.TraversalHasNextPredicate;
 import com.tinkerpop.gremlin.process.graph.util.TruePredicate;
 import com.tinkerpop.gremlin.process.util.ElementFunctionComparator;
 import com.tinkerpop.gremlin.process.util.ElementValueComparator;
 import com.tinkerpop.gremlin.process.util.ElementValueFunction;
+import com.tinkerpop.gremlin.process.util.TraversalLambda;
+import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -93,7 +98,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
@@ -121,7 +125,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     @Override
-    public GraphTraversal.Admin<S, E> asAdmin();
+    public default GraphTraversal.Admin<S, E> asAdmin() {
+        return (GraphTraversal.Admin<S, E>) this;
+    }
 
     public interface Admin<S, E> extends Traversal.Admin<S, E> {
 
@@ -281,6 +287,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new FoldStep<>(this, () -> seed, foldFunction)); // TODO: User should provide supplier
     }
 
+    public default GraphTraversal<S, Long> count() {
+        return this.asAdmin().addStep(new CountStep<>(this));
+    }
+
+    public default GraphTraversal<S, Double> sum() {
+        return this.asAdmin().addStep(new SumStep(this));
+    }
+
+    public default <E2 extends Number> GraphTraversal<S, E2> max() {
+        return this.asAdmin().addStep(new MaxStep<>(this));
+    }
+
+    public default <E2 extends Number> GraphTraversal<S, E2> min() {
+        return this.asAdmin().addStep(new MinStep<>(this));
+    }
+
     public default <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {
         return this.asAdmin().addStep(new LocalStep<>(this, localTraversal));
     }
@@ -417,28 +439,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.cap(null);
     }
 
-    public default GraphTraversal<S, Long> count() {
-        return this.asAdmin().addStep(new CountStep<>(this));
+    public default GraphTraversal<S, Edge> subgraph(final String sideEffectKey) {
+        return this.asAdmin().addStep(new SubgraphStep(this, sideEffectKey));
     }
 
-    public default GraphTraversal<S, Double> sum() {
-        return this.asAdmin().addStep(new SumStep(this));
-    }
-
-    public default GraphTraversal<S, E> subgraph(final String sideEffectKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
-        return this.asAdmin().addStep(new SubgraphStep<>(this, sideEffectKey, edgeIdHolder, vertexMap, includeEdge));
-    }
-
-    public default GraphTraversal<S, E> subgraph(final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
-        return this.subgraph(null, edgeIdHolder, vertexMap, includeEdge);
-    }
-
-    public default GraphTraversal<S, E> subgraph(final String sideEffectKey, final Predicate<Edge> includeEdge) {
-        return this.subgraph(sideEffectKey, null, null, includeEdge);
-    }
-
-    public default GraphTraversal<S, E> subgraph(final Predicate<Edge> includeEdge) {
-        return this.subgraph(null, null, null, includeEdge);
+    public default GraphTraversal<S, Edge> subgraph() {
+        return this.subgraph(null);
     }
 
     public default GraphTraversal<S, E> aggregate(final String sideEffectKey) {
@@ -515,18 +521,30 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default GraphTraversal<S, E> branch(final Function<Traverser<E>, Collection<String>> function) {
-        final BranchStep<E> branchStep = new BranchStep<>(this);
+    public default <M, E2> GraphTraversal<S, E2> branch(final Function<Traverser<E>, M> function) {
+        final BranchStep<E, E2, M> branchStep = new BranchStep<>(this);
         branchStep.setFunction(function);
         return this.asAdmin().addStep(branchStep);
+    }
+
+    public default <M, E2> GraphTraversal<S, E2> branch(final Traversal<?, M> traversalFunction) {
+        return this.branch(new TraversalLambda<>((Traversal<E, M>) traversalFunction));
+    }
+
+    public default <M, E2> GraphTraversal<S, E2> choose(final Function<E, M> choiceFunction) {
+        return this.asAdmin().addStep(new ChooseStep<>(this, choiceFunction));
+    }
+
+    public default <M, E2> GraphTraversal<S, E2> choose(final Traversal<?, M> traversalFunction) {
+        return this.choose(new TraversalObjectLambda<>((Traversal<E, M>) traversalFunction));
     }
 
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this, choosePredicate, (Traversal<E, E2>) trueChoice, (Traversal<E, E2>) falseChoice));
     }
 
-    public default <M, E2> GraphTraversal<S, E2> choose(final Function<E, M> mapFunction, final Map<M, Traversal<?, E2>> choices) {
-        return this.asAdmin().addStep(new ChooseStep(this, mapFunction, (Map) choices));
+    public default <M, E2> GraphTraversal<S, E2> choose(final Traversal<?, M> traversalPredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
+        return this.choose(new TraversalObjectLambda<>((Traversal<E, M>) traversalPredicate), trueChoice, falseChoice);
     }
 
     public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... traversals) {
@@ -542,7 +560,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> emit(final Traversal<?, ?> emitTraversal) {
-        return this.emit(new TraversalHasNextPredicate<>((Traversal<E, ?>) emitTraversal));
+        return this.emit(new TraversalLambda<>((Traversal<E, ?>) emitTraversal));
     }
 
     public default GraphTraversal<S, E> emit() {
@@ -554,7 +572,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> until(final Traversal<?, ?> untilTraversal) {
-        return this.until(new TraversalHasNextPredicate<>((Traversal<E, ?>) untilTraversal));
+        return this.until(new TraversalLambda<>((Traversal<E, ?>) untilTraversal));
     }
 
     public default GraphTraversal<S, E> times(final int maxLoops) {
@@ -589,6 +607,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
+    public default GraphTraversal<S, E> barrier() {
+        return this.asAdmin().addStep(new BarrierStep<>(this));
+    }
+
     public default GraphTraversal<S, E> by() {
         ((FunctionHolder) this.asAdmin().getEndStep()).addFunction(Function.identity());
         return this;
@@ -606,6 +628,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> by(final String elementPropertyProjection) {
         ((FunctionHolder<Element, ?>) this.asAdmin().getEndStep()).addFunction(new ElementValueFunction<>(elementPropertyProjection));
+        return this;
+    }
+
+    public default GraphTraversal<S, E> by(final Traversal<?, ?> traversalLambda) {
+        ((FunctionHolder<?, ?>) this.asAdmin().getEndStep()).addFunction(new TraversalObjectLambda(traversalLambda));
         return this;
     }
 
@@ -631,6 +658,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
+    ////
+
+    public default <M, E2> GraphTraversal<S, E> option(final M pickToken, final Traversal<E, E2> traversalOption) {
+        ((TraversalOptionHolder<M, E, E2>) this.asAdmin().getEndStep()).addOption(pickToken, (Traversal) traversalOption);
+        return this;
+    }
+
+    public default <E2> GraphTraversal<S, E> option(final Traversal<E, E2> traversalOption) {
+        ((TraversalOptionHolder<TraversalOptionHolder.Pick, E, E2>) this.asAdmin().getEndStep()).addOption(TraversalOptionHolder.Pick.any, (Traversal) traversalOption);
+        return this;
+    }
+
+    ////
+
     @Override
     public default void remove() {
         try {
@@ -650,17 +691,4 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         }
     }
-
-    /////////////////////////////////////
-
-    /*
-    // TODO: Will add as we flush out for GA
-    public default GraphTraversal<S, Pair<Vertex, Double>> pageRank() {
-        return (GraphTraversal) this.asAdmin().addStep(new PageRankStep(this));
-    }
-
-    public default GraphTraversal<S, Pair<Vertex, Double>> pageRank(final Supplier<Traversal> incidentTraversal) {
-        return (GraphTraversal) this.asAdmin().addStep(new PageRankStep(this, (Supplier) incidentTraversal));
-    }
-    */
 }

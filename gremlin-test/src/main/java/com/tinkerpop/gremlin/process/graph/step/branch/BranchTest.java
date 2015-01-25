@@ -7,39 +7,68 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class BranchTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, String> get_g_V_branch_byXsoftware__a_bX_asXaX_lang_branchXcX_asXbX_name_asXcX();
+    public abstract Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX();
+
+    public abstract Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX();
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_branch_byXsoftware__a_bX_asXaX_lang_branchXcX_asXbX_name_asXcX() {
-        final Traversal<Vertex, String> traversal = get_g_V_branch_byXsoftware__a_bX_asXaX_lang_branchXcX_asXbX_name_asXcX();
-        printTraversalForm(traversal);
-        checkResults(Arrays.asList("java", "java", "marko", "vadas", "josh", "lop", "ripple", "peter"), traversal);
+        final List<Traversal<Vertex, Object>> traversals = Arrays.asList(
+                get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX(),
+                get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX());
+        traversals.forEach(traversal -> {
+            printTraversalForm(traversal);
+            checkResults(Arrays.asList("java", "java", "lop", "ripple", 29, 27, 32, 35), traversal);
+        });
     }
 
 
     public static class StandardTest extends BranchTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_branch_byXsoftware__a_bX_asXaX_lang_branchXcX_asXbX_name_asXcX() {
-            return g.V().branch(t -> t.get().label().equals("software") ? Arrays.asList("a", "b") : Collections.singletonList("b")).as("a").values("lang").branch(t -> Collections.singletonList("c")).as("b").<String>values("name").as("c");
+        public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
+            return g.V().branch(v -> v.get().label().equals("person") ? "a" : "b")
+                    .option("a", __.values("age"))
+                    .option("b", __.values("lang"))
+                    .option("b", __.values("name"));
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
+            return g.V().branch(__.label())
+                    .option("person", __.values("age"))
+                    .option("software", __.values("lang"))
+                    .option("software", __.values("name"));
         }
     }
 
     public static class ComputerTest extends BranchTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_branch_byXsoftware__a_bX_asXaX_lang_branchXcX_asXbX_name_asXcX() {
-            return g.V().branch(t -> t.get().label().equals("software") ? Arrays.asList("a", "b") : Collections.singletonList("b")).as("a").values("lang").branch(t -> Collections.singletonList("c")).as("b").<String>values("name").as("c").submit(g.compute());
+        public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
+            return g.V().branch(v -> v.get().label().equals("person") ? "a" : "b")
+                    .option("a", __.values("age"))
+                    .option("b", __.values("lang"))
+                    .option("b", __.values("name")).submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
+            return g.V().branch(__.label())
+                    .option("person", __.values("age"))
+                    .option("software", __.values("lang"))
+                    .option("software", __.values("name")).submit(g.compute());
         }
     }
 }

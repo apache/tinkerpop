@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +20,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
 
     private final String firstKey;
     private final String secondKey;
-    private final BiPredicate biPredicate;
+    private BiPredicate biPredicate;
     private Traversal.Admin constraint;
 
 
@@ -59,6 +60,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
             clone.constraint = this.constraint.clone().asAdmin();
             clone.executeTraversalOperations(clone.constraint, Child.SET_HOLDER);
         }
+        clone.biPredicate = CloneableLambda.cloneOrReturn(this.biPredicate);
         WhereStep.generatePredicate(clone);
         return clone;
     }

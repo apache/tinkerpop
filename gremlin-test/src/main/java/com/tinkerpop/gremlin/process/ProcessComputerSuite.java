@@ -23,6 +23,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
 import com.tinkerpop.gremlin.process.graph.step.map.FoldTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.LocalTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
+import com.tinkerpop.gremlin.process.graph.step.map.MaxTest;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesTest;
@@ -32,7 +33,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
+import com.tinkerpop.gremlin.process.graph.step.map.CountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectTest;
@@ -106,8 +107,10 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // map
             BackTest.ComputerTest.class,
+            CountTest.ComputerTest.class,
             FoldTest.ComputerTest.class,
             MapTest.ComputerTest.class,
+            MaxTest.ComputerTest.class,
             // TODO: MatchTest.ComputerTest.class,
             OrderTest.ComputerTest.class,
             PathTest.ComputerTest.class,
@@ -121,7 +124,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // sideEffect
             // TODO: AddEdgeTest.ComputerTest.class,
             AggregateTest.ComputerTest.class,
-            CountTest.ComputerTest.class,
             GroupTest.ComputerTest.class,
             GroupCountTest.ComputerTest.class,
             // TODO: InjectTest.ComputerTest.class,
@@ -175,8 +177,10 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // map
             BackTest.class,
+            CountTest.class,
             // FoldTest.class,
             MapTest.class,
+            MaxTest.class,
             // MatchTest.class,
             OrderTest.class,
             PathTest.class,
@@ -191,7 +195,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // sideEffect
             // AddEdgeTest.class,
             AggregateTest.class,
-            CountTest.class,
             GroupTest.class,
             GroupCountTest.class,
             InjectTest.class,

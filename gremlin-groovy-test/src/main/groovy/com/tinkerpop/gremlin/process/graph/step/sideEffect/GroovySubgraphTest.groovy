@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.Vertex
 
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -12,14 +14,15 @@ public abstract class GroovySubgraphTest {
     public static class StandardTest extends SubgraphTest {
 
         @Override
-        public Traversal<Vertex, Graph> get_g_VX1X_outE_subgraphXknowsX_name_capXsgX(
+        public Traversal<Vertex, Graph> get_g_V_withSideEffectXsgX_outEXknowsX_subgraphXsgX_name_capXsgX(
                 final Object v1Id, final Graph subgraph) {
-            g.V(v1Id).withSideEffect('sg') { subgraph }.outE.subgraph('sg') { it.label() == 'knows' }.name.cap('sg')
+            g.V(v1Id).withSideEffect('sg') { subgraph }.outE('knows').subgraph('sg').name.cap('sg')
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_inE_subgraphXcreatedX_name(final Graph subgraph) {
-            return g.V.withSideEffect('sg') { subgraph }.inE.subgraph('sg') { it.label() == "created" }.name;
+        public Traversal<Vertex, String> get_g_V_withSideEffectXsgX_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup(
+                final Graph subgraph) {
+            g.V.withSideEffect('sg') { subgraph }.repeat(__.bothE('created').subgraph('sg').outV).times(5).name.dedup
         }
     }
 }

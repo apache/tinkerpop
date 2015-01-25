@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
 
+import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -12,18 +14,37 @@ public abstract class GroovyBranchTest {
     public static class StandardTest extends BranchTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_branch_byXsoftware__a_bX_asXaX_lang_branchXcX_asXbX_name_asXcX() {
-            g.V.branch { it.label() == 'software' ? ['a', 'b'] : ['b'] }.as('a').lang.branch {
-                ['c']
-            }.as('b').name.as('c')
+        public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
+            g.V.branch { it.label() == 'person' ? 'a' : 'b' }
+                    .option('a', __.age)
+                    .option('b', __.lang)
+                    .option('b', __.values('name'))
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
+            g.V.branch(__.label)
+                    .option('person', __.age)
+                    .option('software', __.lang)
+                    .option('software', __.values('name'));
         }
     }
 
     public static class ComputerTest extends BranchTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_branch_byXsoftware__a_bX_asXaX_lang_branchXcX_asXbX_name_asXcX() {
-            ComputerTestHelper.compute("g.V.branch{it.label() == 'software' ? ['a','b'] : ['b']}.as('a').lang.branch{['c']}.as('b').name.as('c')", g);
+        public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
+            ComputerTestHelper.compute("g.V.branch { it.label() == 'person' ? 'a' : 'b' }.option('a', __.age).option('b', __.lang).option('b',__.values('name'))", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
+            ComputerTestHelper.compute("""
+            g.V.branch(__.label)
+                    .option('person', __.age)
+                    .option('software', __.lang)
+                    .option('software', __.values('name'))
+            """, g)
         }
     }
 }

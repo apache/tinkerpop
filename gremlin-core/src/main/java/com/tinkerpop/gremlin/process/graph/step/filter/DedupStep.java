@@ -6,6 +6,9 @@ import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.TraversalLambda;
+import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
+import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +29,7 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
 
     private Function<S, Object> uniqueFunction = null;
     private Set<Object> duplicateSet = new HashSet<>();
+    private boolean traversalFunction = false;
 
     public DedupStep(final Traversal traversal) {
         super(traversal);
@@ -38,7 +42,9 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
 
     @Override
     public void addFunction(final Function<S, Object> function) {
-        this.uniqueFunction = function;
+        this.uniqueFunction = (this.traversalFunction = function instanceof TraversalObjectLambda) ?
+                new TraversalLambda(((TraversalObjectLambda<S, Object>) function).getTraversal()) :
+                function;
         DedupStep.generatePredicate(this);
     }
 
@@ -59,7 +65,8 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     public DedupStep<S> clone() throws CloneNotSupportedException {
         final DedupStep<S> clone = (DedupStep<S>) super.clone();
         clone.duplicateSet = new HashSet<>();
-        generatePredicate(clone);
+        clone.uniqueFunction = CloneableLambda.cloneOrReturn(this.uniqueFunction);
+        DedupStep.generatePredicate(clone);
         return clone;
     }
 
@@ -90,7 +97,7 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
         } else {
             dedupStep.setPredicate(traverser -> {
                 traverser.asAdmin().setBulk(1);
-                return dedupStep.duplicateSet.add(dedupStep.uniqueFunction.apply(traverser.get()));
+                return dedupStep.duplicateSet.add(dedupStep.uniqueFunction.apply(dedupStep.traversalFunction ? (S) traverser : traverser.get()));
             });
         }
     }

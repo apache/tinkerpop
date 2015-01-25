@@ -1,110 +1,70 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.GraphFactory;
-import org.javatuples.Pair;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.function.Predicate;
 
 /**
  * A side-effect step that produces an edge induced subgraph.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapable, SideEffectRegistrar, Reversible {
+public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffectCapable, SideEffectRegistrar, Reversible {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
             TraverserRequirement.OBJECT,
-            TraverserRequirement.SIDE_EFFECTS,
-            TraverserRequirement.PATH
+            TraverserRequirement.SIDE_EFFECTS
     ));
 
-
     private Graph subgraph;
-    private Boolean subgraphSupportsUserIds;
-
-    private final Map<Object, Vertex> idVertexMap;
-    private final Set<Object> edgeIdsAdded;
     private String sideEffectKey;
+
     private static final Map<String, Object> DEFAULT_CONFIGURATION = new HashMap<String, Object>() {{
-        put("gremlin.graph", "com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph");
+        put(Graph.GRAPH, "com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph"); // hard coded because TinkerGraph is not part of gremlin-core
     }};
 
     // TODO: add support for side-effecting out an edge list.
 
-    public SubgraphStep(final Traversal traversal, final String sideEffectKey,
-                        final Set<Object> edgeIdHolder,
-                        final Map<Object, Vertex> idVertexMap,
-                        final Predicate<Edge> includeEdge) {
+    public SubgraphStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.edgeIdsAdded = null == edgeIdHolder ? new HashSet<>() : edgeIdHolder;
-        this.idVertexMap = null == idVertexMap ? new HashMap<>() : idVertexMap;
         this.setConsumer(traverser -> {
             if (null == this.subgraph) {
-                this.subgraph = traverser.asAdmin().getSideEffects().get(this.sideEffectKey);
-                this.subgraphSupportsUserIds = this.subgraph.features().vertex().supportsUserSuppliedIds();
+                this.subgraph = traverser.sideEffects(this.sideEffectKey);
+                if (!this.subgraph.features().vertex().supportsUserSuppliedIds() || !this.subgraph.features().edge().supportsUserSuppliedIds())
+                    throw new IllegalArgumentException("The provided subgraph must support user supplied ids for vertices and edges: " + this.subgraph);
             }
-            traverser.path().stream().map(Pair::getValue0)
-                    .filter(i -> i instanceof Edge)
-                    .map(e -> (Edge) e)
-                    .filter(e -> !this.edgeIdsAdded.contains(e.id()))
-                    .filter(includeEdge::test)
-                    .forEach(e -> {
-                        final Vertex newVOut = getOrCreateVertex(e.outV().next());
-                        final Vertex newVIn = getOrCreateVertex(e.inV().next());
-                        newVOut.addEdge(e.label(), newVIn, ElementHelper.getProperties(e, subgraphSupportsUserIds, false, Collections.emptySet()));
-                        // TODO: If userSuppliedIds exist, don't do this to save sideEffects
-                        this.edgeIdsAdded.add(e.id());
-                    });
+            SubgraphStep.addEdgeToSubgraph(this.subgraph, traverser.get());
         });
     }
 
     @Override
     public void registerSideEffects() {
         if (null == this.sideEffectKey) this.sideEffectKey = this.getId();
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
+        this.getTraversal().asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
     }
 
     @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
-    }
-
-    private Vertex getOrCreateVertex(final Vertex vertex) {
-        Vertex foundVertex = null;
-        if (this.subgraphSupportsUserIds) {
-            try {
-                foundVertex = this.subgraph.V(vertex.id()).next();
-            } catch (final NoSuchElementException e) {
-                // do nothing;
-            }
-        } else {
-            foundVertex = this.idVertexMap.get(vertex.id());
-        }
-
-        if (null == foundVertex) {
-            foundVertex = this.subgraph.addVertex(ElementHelper.getProperties(vertex, this.subgraphSupportsUserIds, true, Collections.emptySet()));
-            if (!this.subgraphSupportsUserIds)
-                this.idVertexMap.put(vertex.id(), foundVertex);
-        }
-        return foundVertex;
     }
 
     @Override
@@ -115,5 +75,35 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
+    }
+
+    @Override
+    public SubgraphStep clone() throws CloneNotSupportedException {
+        final SubgraphStep clone = (SubgraphStep) super.clone();
+        this.subgraph = null;
+        return clone;
+    }
+
+    ///
+
+    private static Vertex getOrCreate(final Graph subgraph, final Vertex vertex) {
+        final Iterator<Vertex> vertexIterator = subgraph.iterators().vertexIterator(vertex.id());
+        if (vertexIterator.hasNext()) return vertexIterator.next();
+        final Vertex subgraphVertex = subgraph.addVertex(T.id, vertex.id(), T.label, vertex.label());
+        vertex.iterators().propertyIterator().forEachRemaining(vertexProperty -> {
+            final VertexProperty<?> subgraphVertexProperty = subgraphVertex.property(vertexProperty.key(), vertexProperty.value(), T.id, vertexProperty.id()); // TODO: demand vertex property id?
+            vertexProperty.iterators().propertyIterator().forEachRemaining(property -> subgraphVertexProperty.<Object>property(property.key(), property.value()));
+        });
+        return subgraphVertex;
+    }
+
+    private static void addEdgeToSubgraph(final Graph subgraph, final Edge edge) {
+        final Iterator<Edge> edgeIterator = subgraph.iterators().edgeIterator(edge.id());
+        if (edgeIterator.hasNext()) return;
+        final Iterator<Vertex> vertexIterator = edge.iterators().vertexIterator(Direction.BOTH);
+        final Vertex subGraphOutVertex = getOrCreate(subgraph, vertexIterator.next());
+        final Vertex subGraphInVertex = getOrCreate(subgraph, vertexIterator.next());
+        final Edge subGraphEdge = subGraphOutVertex.addEdge(edge.label(), subGraphInVertex, T.id, edge.id());
+        edge.iterators().propertyIterator().forEachRemaining(property -> subGraphEdge.<Object>property(property.key(), property.value()));
     }
 }

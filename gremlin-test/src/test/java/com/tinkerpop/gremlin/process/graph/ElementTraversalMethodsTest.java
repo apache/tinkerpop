@@ -23,12 +23,12 @@ public class ElementTraversalMethodsTest {
     public void shouldHaveAllGraphTraversalMethodsOffVertex() {
         final List<Method> graphTraversalMethods = Arrays.asList(GraphTraversal.class.getMethods()).stream()
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
-                .filter(m -> !m.getName().equals("addStep"))
                 .filter(m -> !m.getName().equals("value"))
                 .filter(m -> !m.getName().equals("id"))
                 .filter(m -> !m.getName().equals("label"))
                 .filter(m -> !m.getName().equals("key"))
                 .filter(m -> !m.getName().equals("by"))
+                .filter(m -> !m.getName().equals("option"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> vertexMethods = new ArrayList<>(Arrays.asList(Vertex.class.getMethods()));
@@ -48,12 +48,12 @@ public class ElementTraversalMethodsTest {
     public void shouldHaveAllGraphTraversalMethodsOffEdge() {
         final List<Method> graphTraversalMethods = Arrays.asList(GraphTraversal.class.getMethods()).stream()
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
-                .filter(m -> !m.getName().equals("addStep"))
                 .filter(m -> !m.getName().equals("value"))
                 .filter(m -> !m.getName().equals("id"))
                 .filter(m -> !m.getName().equals("label"))
                 .filter(m -> !m.getName().equals("key"))
                 .filter(m -> !m.getName().equals("by"))
+                .filter(m -> !m.getName().equals("option"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> edgeMethods = new ArrayList<>(Arrays.asList(Edge.class.getMethods()));
@@ -74,12 +74,12 @@ public class ElementTraversalMethodsTest {
     public void shouldHaveAllGraphTraversalMethodsOffVertexProperty() {
         final List<Method> graphTraversalMethods = Arrays.asList(GraphTraversal.class.getMethods()).stream()
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
-                .filter(m -> !m.getName().equals("addStep"))
                 .filter(m -> !m.getName().equals("value"))
                 .filter(m -> !m.getName().equals("id"))
                 .filter(m -> !m.getName().equals("label"))
                 .filter(m -> !m.getName().equals("key"))
                 .filter(m -> !m.getName().equals("by"))
+                .filter(m -> !m.getName().equals("option"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> vertexPropertyMethods = new ArrayList<>(Arrays.asList(VertexProperty.class.getMethods()));

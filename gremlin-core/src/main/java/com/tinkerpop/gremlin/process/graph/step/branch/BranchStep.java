@@ -1,132 +1,142 @@
 package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
+import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.process.util.EmptyTraverser;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraverserSet;
-import com.tinkerpop.gremlin.util.function.CloneableFunction;
+import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent {
+public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements TraversalOptionHolder<M, S, E> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
-            TraverserRequirement.BULK,
-            TraverserRequirement.OBJECT
-    ));
+    private static final TraversalHolder.Child[] CHILD_OPERATIONS = new TraversalHolder.Child[]{
+            TraversalHolder.Child.SET_HOLDER,
+            TraversalHolder.Child.MERGE_IN_SIDE_EFFECTS,
+            TraversalHolder.Child.SET_SIDE_EFFECTS};
 
-    private Function<Traverser<S>, Collection<String>> branchFunction;
-    private boolean onGraphComputer = false;
-    private TraverserSet<S> graphComputerQueue;
+    protected Function<Traverser<S>, M> pickFunction;
+    protected Map<M, List<Traversal<S, E>>> traversalOptions = new HashMap<>();
 
     public BranchStep(final Traversal traversal) {
         super(traversal);
-        this.traverserStepIdSetByChild = true;
+    }
+
+    public void setFunction(final Function<Traverser<S>, M> pickFunction) {
+        this.pickFunction = pickFunction;
+    }
+
+    @Override
+    public void addOption(final M pickToken, final Traversal<S, E> traversalOption) {
+        if (this.traversalOptions.containsKey(pickToken))
+            this.traversalOptions.get(pickToken).add(traversalOption);
+        else
+            this.traversalOptions.put(pickToken, new ArrayList<>(Collections.singletonList(traversalOption)));
+        traversalOption.asAdmin().addStep(new EndStep(traversalOption));
+        this.executeTraversalOperations(traversalOption, CHILD_OPERATIONS);
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return REQUIREMENTS;
+        return TraversalOptionHolder.super.getRequirements();
     }
 
     @Override
-    public Traverser<S> processNextStart() {
-        return this.onGraphComputer ? this.computerAlgorithm() : this.standardAlgorithm();
+    public List<Traversal<S, E>> getGlobalTraversals() {
+        return Collections.unmodifiableList(this.traversalOptions.values().stream()
+                .flatMap(list -> list.stream())
+                .collect(Collectors.toList()));
     }
 
-    private final Traverser<S> computerAlgorithm() {
+    @Override
+    protected Iterator<Traverser<E>> standardAlgorithm() {
         while (true) {
-            if (!this.graphComputerQueue.isEmpty())
-                return this.graphComputerQueue.remove();
-            final Traverser<S> traverser = this.starts.next();
-            for (final String stepLabel : this.branchFunction.apply(traverser)) {
-                final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-                String future;
-                if (stepLabel.isEmpty()) {
-                    future = this.getNextStep().getId();
-                } else {
-                    try {
-                        future = TraversalHelper.getStepByLabel(stepLabel, this.getTraversal().asAdmin()).getNextStep().getId();
-                    } catch (IllegalArgumentException e) {
-                        future = TraversalHelper.getStepById(stepLabel, this.getTraversal().asAdmin()).getNextStep().getId();
-                    }
-                }
-                sibling.setStepId(future);
-                this.graphComputerQueue.add(sibling);
+            final Optional<Traversal<S, E>> fullBranch = this.traversalOptions.values().stream()
+                    .flatMap(list -> list.stream())
+                    .filter(Traversal::hasNext)
+                    .findAny();
+            if (fullBranch.isPresent()) return fullBranch.get().asAdmin().getEndStep();
+
+            final Traverser.Admin<S> start = this.starts.next();
+            final M choice = this.pickFunction.apply(start);
+            final List<Traversal<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
+            if (null != branch)
+                branch.forEach(traversal -> traversal.asAdmin().addStart(start.split()));
+            if (choice != Pick.any) {
+                final List<Traversal<S, E>> anyBranch = this.traversalOptions.get(Pick.any);
+                if (null != anyBranch)
+                    anyBranch.forEach(traversal -> traversal.asAdmin().addStart(start.split()));
             }
         }
     }
 
-    private final Traverser<S> standardAlgorithm() {
-        final Traverser<S> traverser = this.starts.next();
-        for (final String stepLabel : this.branchFunction.apply(traverser)) {
-            final Traverser.Admin<S> sibling = traverser.asAdmin().split();
-            if (stepLabel.isEmpty()) {
-                sibling.setStepId(this.getNextStep().getId());
-                this.getNextStep().addStart(sibling);
-            } else {
-                sibling.setStepId(stepLabel);
-                TraversalHelper.<S, Object>getStepByLabel(stepLabel, this.getTraversal().asAdmin()).getNextStep().addStart((Traverser) sibling);
+    @Override
+    protected Iterator<Traverser<E>> computerAlgorithm() {
+        final List<Traverser<E>> ends = new ArrayList<>();
+        final Traverser.Admin<S> start = this.starts.next();
+        final M choice = this.pickFunction.apply(start);
+        final List<Traversal<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
+        if (null != branch) {
+            branch.forEach(traversal -> {
+                final Traverser.Admin<E> split = (Traverser.Admin<E>) start.split();
+                split.setStepId(traversal.asAdmin().getStartStep().getId());
+                ends.add(split);
+            });
+        }
+        if (choice != Pick.any) {
+            final List<Traversal<S, E>> anyBranch = this.traversalOptions.get(Pick.any);
+            if (null != anyBranch) {
+                anyBranch.forEach(traversal -> {
+                    final Traverser.Admin<E> split = (Traverser.Admin<E>) start.split();
+                    split.setStepId(traversal.asAdmin().getStartStep().getId());
+                    ends.add(split);
+                });
             }
         }
-        return EmptyTraverser.instance();
+        return ends.iterator();
     }
 
     @Override
-    public void onEngine(final TraversalEngine traversalEngine) {
-        if (traversalEngine.equals(TraversalEngine.COMPUTER)) {
-            this.onGraphComputer = true;
-            this.graphComputerQueue = new TraverserSet<>();
-        } else {
-            this.onGraphComputer = false;
-            this.graphComputerQueue = null;
+    public BranchStep<S, E, M> clone() throws CloneNotSupportedException {
+        final BranchStep<S, E, M> clone = (BranchStep<S, E, M>) super.clone();
+        clone.traversalOptions = new HashMap<>();
+        for (final Map.Entry<M, List<Traversal<S, E>>> entry : this.traversalOptions.entrySet()) {
+            for (final Traversal<S, E> traversal : entry.getValue()) {
+                final Traversal<S, E> clonedTraversal = traversal.clone();
+                if (clone.traversalOptions.containsKey(entry.getKey()))
+                    clone.traversalOptions.get(entry.getKey()).add(clonedTraversal);
+                else
+                    clone.traversalOptions.put(entry.getKey(), new ArrayList<>(Collections.singletonList(clonedTraversal)));
+                clone.executeTraversalOperations(clonedTraversal, CHILD_OPERATIONS);
+            }
         }
-    }
-
-    @Override
-    public BranchStep<S> clone() throws CloneNotSupportedException {
-        final BranchStep<S> clone = (BranchStep<S>) super.clone();
-        if (this.onGraphComputer) clone.graphComputerQueue = new TraverserSet<S>();
-        if (this.branchFunction instanceof CloneableFunction)
-            clone.branchFunction = CloneableFunction.clone((CloneableFunction<Traverser<S>, Collection<String>>) this.branchFunction);
+        clone.pickFunction = CloneableLambda.cloneOrReturn(this.pickFunction);
         return clone;
-    }
-
-    public void setFunction(final Function<Traverser<S>, Collection<String>> function) {
-        this.branchFunction = function;
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.branchFunction);
+        return TraversalHelper.makeStepString(this, this.traversalOptions.toString());
     }
 
-    public static class GoToLabels<S> implements Function<Traverser<S>, Collection<String>> {
-
-        private final Collection<String> stepLabels;
-
-        public GoToLabels(final Collection<String> stepLabels) {
-            this.stepLabels = stepLabels;
-        }
-
-        public Collection<String> apply(final Traverser<S> traverser) {
-            return this.stepLabels;
-        }
-
-        public String toString() {
-            return "goTo(" + this.stepLabels.toString().replace("[", "").replace("]", "") + ")";
-        }
+    @Override
+    public void reset() {
+        super.reset();
+        this.resetTraversals();
     }
 }

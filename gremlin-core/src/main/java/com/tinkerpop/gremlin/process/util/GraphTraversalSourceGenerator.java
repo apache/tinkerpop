@@ -29,6 +29,11 @@ public class GraphTraversalSourceGenerator {
         add("between");
     }};
 
+    private static final Set<String> methodsWithE2AsNumberSingle = new HashSet<String>() {{
+        add("min");
+        add("max");
+    }};
+
     private static final Set<String> methodsWithE2AsElementMulti = new HashSet<String>() {{
         add("sack");
     }};
@@ -74,6 +79,9 @@ public class GraphTraversalSourceGenerator {
                 }
                 if (methodsWithE2AsElementMulti.contains(method.getName())) {
                     methodName = methodName.replace("<E2,", "<E2 extends Element,");
+                }
+                if (methodsWithE2AsNumberSingle.contains(method.getName())) {
+                    methodName = methodName.replace("<E2>", "<E2 extends Number>");
                 }
                 final String parameters = Arrays.asList(method.getParameters()).stream().map(p -> p.getName()).collect(Collectors.toList()).toString().replace("[", "").replace("]", "");
                 methodName = "\t" + methodName + " {\n\t\treturn (" + desiredTraversalReturnClassName + ") " + traversalToCloneClass.getCanonicalName() + ".super." + method.getName() + "(" + parameters + ");\n\t}\n\n";
