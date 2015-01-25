@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -44,7 +46,7 @@ public class GremlinServer {
     private final Optional<CompletableFuture<Void>> serverReady;
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
-    private final EventExecutorGroup gremlinGroup;
+    private final ExecutorService gremlinExecutorService;
 
     public GremlinServer(final Settings settings) {
         this(settings, null);
@@ -60,7 +62,7 @@ public class GremlinServer {
         workerGroup = new NioEventLoopGroup(settings.threadPoolWorker);
 
         final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-%d").build();
-        gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool, threadFactory);
+        gremlinExecutorService = Executors.newFixedThreadPool(settings.gremlinPool, threadFactory);
     }
 
     /**
@@ -76,9 +78,9 @@ public class GremlinServer {
             b.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, settings.writeBufferHighWaterMark);
             b.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
-            final GremlinExecutor gremlinExecutor = initializeGremlinExecutor(gremlinGroup, workerGroup);
+            final GremlinExecutor gremlinExecutor = initializeGremlinExecutor(gremlinExecutorService, workerGroup);
             final Channelizer channelizer = createChannelizer(settings);
-            channelizer.init(settings, gremlinExecutor, gremlinGroup, graphs.get(), workerGroup);
+            channelizer.init(settings, gremlinExecutor, gremlinExecutorService, graphs.get(), workerGroup);
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(channelizer);
@@ -112,7 +114,7 @@ public class GremlinServer {
         }
     }
 
-    private GremlinExecutor initializeGremlinExecutor(final EventExecutorGroup gremlinGroup,
+    private GremlinExecutor initializeGremlinExecutor(final ExecutorService gremlinExecutorService,
                                                       final ScheduledExecutorService scheduledExecutorService) {
         // initialize graphs from configuration
         if (!graphs.isPresent()) graphs = Optional.of(new Graphs(settings));
@@ -127,7 +129,7 @@ public class GremlinServer {
                 .afterTimeout(b -> graphs.get().rollbackAll())
                 .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphs.get().getGraphsAsBindings())
-                .executorService(gremlinGroup)
+                .executorService(gremlinExecutorService)
                 .scheduledExecutorService(scheduledExecutorService);
 
         settings.scriptEngines.forEach((k, v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config));
@@ -153,7 +155,7 @@ public class GremlinServer {
         logger.info("Shutting down thread pools.");
 
         try {
-            gremlinGroup.shutdownGracefully();
+            gremlinExecutorService.shutdown();
         } finally {
             logger.debug("Shutdown Gremlin thread pool.");
         }

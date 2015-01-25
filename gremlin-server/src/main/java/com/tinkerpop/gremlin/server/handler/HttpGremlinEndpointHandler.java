@@ -14,11 +14,15 @@ import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.util.MetricManager;
+import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -26,6 +30,9 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.FutureListener;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.UnaryOperator;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaders.Names.*;
@@ -72,11 +81,6 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelReadComplete(final ChannelHandlerContext ctx) {
-        ctx.flush();
-    }
-
-    @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
         if (msg instanceof FullHttpRequest) {
             final FullHttpRequest req = (FullHttpRequest) msg;
@@ -107,33 +111,56 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             }
 
             try {
-                logger.debug("Processing request containing script [{}] and bindings of [{}]", requestArguments.getValue0(), requestArguments.getValue1());
+                logger.debug("Processing request containing script [{}] and bindings of [{}] on {}",
+                        requestArguments.getValue0(), requestArguments.getValue1(), Thread.currentThread().getName());
+                final ChannelPromise promise = ctx.channel().newPromise();
+                final AtomicReference<Object> resultHolder = new AtomicReference<>();
+                promise.addListener(future -> {
+                    logger.debug("Preparing HTTP response for request with script [{}] and bindings of [{}] with result of [{}] on [{}]",
+                            requestArguments.getValue0(), requestArguments.getValue1(), resultHolder.get(), Thread.currentThread().getName());
+                    final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, (ByteBuf) resultHolder.get());
+                    response.headers().set(CONTENT_TYPE, accept);
+                    response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
+
+                    // handle cors business
+                    final String origin = req.headers().get(ORIGIN);
+                    if (origin != null)
+                        response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+
+                    if (!isKeepAlive(req)) {
+                        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+                    } else {
+                        response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+                        ctx.writeAndFlush(response);
+                    }
+                });
+
                 final Timer.Context timerContext = evalOpTimer.time();
-                final Object result = gremlinExecutor.eval(requestArguments.getValue0(), requestArguments.getValue2(), requestArguments.getValue1()).get();
-                timerContext.stop();
+                // provide a transform function to serialize to message - this will force serialization to occur
+                // in the same thread as the eval. after the CompletableFuture is returned from the eval the result
+                // is ready to be written as a ByteBuf directly to the response.  nothing should be blocking here.
+                gremlinExecutor.eval(requestArguments.getValue0(), requestArguments.getValue2(), requestArguments.getValue1(),
+                        FunctionUtils.wrapFunction(o -> {
+                            // stopping the timer here is roughly equivalent to where the timer would have been stopped for
+                            // this metric in other contexts.  we just want to measure eval time not serialization time.
+                            timerContext.stop();
 
-                final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
-                        .code(ResponseStatusCode.SUCCESS)
-                        .result(IteratorUtils.convertToList(result)).create();
-
-                final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(
-                        serializer.serializeResponseAsString(responseMessage).getBytes(UTF8)));
-                response.headers().set(CONTENT_TYPE, accept);
-                response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
-
-                // handle cors business
-                final String origin = req.headers().get(ORIGIN);
-                if (origin != null)
-                    response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
-
-                if (!isKeepAlive(req)) {
-                    ctx.write(response).addListener(ChannelFutureListener.CLOSE);
-                } else {
-                    response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-                    ctx.write(response);
-                }
+                            logger.debug("Transforming result of request with script [{}] and bindings of [{}] with result of [{}] on [{}]",
+                                    requestArguments.getValue0(), requestArguments.getValue1(), o, Thread.currentThread().getName());
+                            final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
+                                    .code(ResponseStatusCode.SUCCESS)
+                                    .result(IteratorUtils.convertToList(o)).create();
+                            return (Object) Unpooled.wrappedBuffer(serializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
+                        })).thenAcceptAsync(r -> {
+                    // now that the eval/serialization is done in the same thread - complete the promise so we can
+                    // write back the HTTP response on the same thread as the original request
+                    resultHolder.set(r);
+                    promise.setSuccess();
+                }, gremlinExecutor.getExecutorService());
             } catch (Exception ex) {
-                // tossed to exeptionCaught which delegates to sendError method
+                // todo: serialization errors in the transform will likely end up as a RuntimeException in a RuntimeException - do better
+
+                // tossed to exceptionCaught which delegates to sendError method
                 throw new RuntimeException(ex);
             }
         }

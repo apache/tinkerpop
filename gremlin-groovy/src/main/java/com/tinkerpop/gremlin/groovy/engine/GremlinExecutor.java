@@ -33,6 +33,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -106,6 +108,16 @@ public class GremlinExecutor implements AutoCloseable {
     }
 
     public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Bindings boundVars) {
+        return eval(script, language, boundVars, null);
+    }
+
+    public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Map<String, Object> boundVars,
+                                          final Function<Object, Object> transformResult) {
+        return eval(script, language, new SimpleBindings(boundVars), transformResult);
+    }
+
+    public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Bindings boundVars,
+                                          final Function<Object, Object> transformResult) {
         final String lang = language.orElse("gremlin-groovy");
 
         logger.debug("Preparing to evaluate script - {} - in thread [{}]", script, Thread.currentThread().getName());
@@ -129,7 +141,10 @@ public class GremlinExecutor implements AutoCloseable {
                 else
                     afterSuccess.accept(bindings);
 
-                return o;
+                // apply a transformation before sending back the result - useful when trying to force serialization
+                // in the same thread that the eval took place given threadlocal nature of graphs as well as some
+                // transactional constraints
+                return null == transformResult ? o : transformResult.apply(o);
             } catch (Exception ex) {
                 afterFailure.accept(bindings, ex);
                 throw new RuntimeException(ex);

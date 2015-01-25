@@ -7,8 +7,13 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -27,7 +32,7 @@ public class HttpChannelizer extends AbstractChannelizer {
             pipeline.addLast(new LoggingHandler("http-io", LogLevel.DEBUG));
 
         pipeline.addLast(new HttpObjectAggregator(1048576));
-        pipeline.addLast(gremlinGroup, "http-gremlin-handler", new HttpGremlinEndpointHandler(serializers, gremlinExecutor));
+        pipeline.addLast("http-gremlin-handler", new HttpGremlinEndpointHandler(serializers, gremlinExecutor));
     }
 
     @Override

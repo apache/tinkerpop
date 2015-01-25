@@ -9,6 +9,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Refactored Netty pipeline structure to not have a second "Gremlin" executor group and instead used a standard `ExecutorService`.
+* Refactored the `GremlinExecutor` to take an optional transformation function so as to allow manipulation of results from `eval` in the same thread of execution.
+* Fixed issue with the `HttpGremlinEndpointHandler` where requests were getting blocked when `keep-alive` was on.
 * Added `HasTraversalStep` which takes an anonymous traversal to determine whether or not to filter the current object.
 * Added `Traversal.Admin.getStartStep()` and `Traversal.Admin.getEndStep()`. Removed `TraversalHelper.getStart()` and `TraversalHelper.getEnd()`.
 * Refactored `profile()` to use injected steps. `ProfileStep` can now be used without any special JVM command line parameters.
