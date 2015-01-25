@@ -29,6 +29,10 @@ sanitize = { def codeLine ->
     codeLine.replaceAll(/\s*(\<\d+\>\s*)*\<\d+\>\s*$/, "").replaceAll(/\s*\/\/.*$/, "").trim()
 }
 
+format = { def codeLine ->
+    codeLine.replaceAll(/\s*((\<\d+\>\s*)*\<\d+\>)\s*$/, '   //// $1')
+}
+
 new File(this.args[0]).withReader { reader ->
     while (skipNextRead || (line = reader.readLine()) != null) {
         skipNextRead = false
@@ -40,7 +44,7 @@ new File(this.args[0]).withReader { reader ->
                 imports.getCombinedStaticImports().each { script.append("import static ${it}\n") }
                 def sanitizedLine = sanitize(line)
                 script.append(sanitizedLine)
-                println STATEMENT_PREFIX + line
+                println STATEMENT_PREFIX + format(line)
                 if (!sanitizedLine.isEmpty() && sanitizedLine[-1] in STATEMENT_CONTINUATION_CHARACTERS) {
                     while (true) {
                         line = reader.readLine()
@@ -50,7 +54,7 @@ new File(this.args[0]).withReader { reader ->
                         }
                         sanitizedLine = sanitize(line)
                         script.append(sanitizedLine)
-                        println STATEMENT_CONTINUATION_PREFIX + line
+                        println STATEMENT_CONTINUATION_PREFIX + format(line)
                     }
                 }
                 if (line.startsWith("import ")) {
