@@ -431,12 +431,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(sideEffectStep);
     }
 
-    public default <E2> GraphTraversal<S, E2> cap(final String sideEffectKey) {
-        return this.asAdmin().addStep(new SideEffectCapStep<>(this, sideEffectKey));
-    }
-
-    public default <E2> GraphTraversal<S, E2> cap() {
-        return this.cap(null);
+    public default <E2> GraphTraversal<S, E2> cap(final String... sideEffectKeys) {
+        return this.asAdmin().addStep(new SideEffectCapStep<>(this, sideEffectKeys));
     }
 
     public default GraphTraversal<S, Edge> subgraph(final String sideEffectKey) {

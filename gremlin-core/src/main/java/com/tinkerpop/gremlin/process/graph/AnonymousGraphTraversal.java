@@ -330,12 +330,8 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().sideEffect(consumer);
     }
 
-    public default <A, E2> GraphTraversal<A, E2> cap(final String sideEffectKey) {
-        return this.<A>start().cap(sideEffectKey);
-    }
-
-    public default <A, E2> GraphTraversal<A, E2> cap() {
-        return this.<A>start().cap();
+    public default <A, E2> GraphTraversal<A, E2> cap(final String... sideEffectKeys) {
+        return this.<A>start().cap(sideEffectKeys);
     }
 
     public default <A> GraphTraversal<A, Edge> subgraph(final String sideEffectKey) {

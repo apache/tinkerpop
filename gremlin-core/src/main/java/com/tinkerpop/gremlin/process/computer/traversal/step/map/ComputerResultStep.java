@@ -15,7 +15,10 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.detached.Attachable;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -38,10 +41,20 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
         this.computerTraversal = traversalVertexProgram.getTraversal();
 
         final Step endStep = this.computerTraversal.getEndStep();
-        this.traversers = endStep instanceof SideEffectCapStep ?
-                IteratorUtils.of(this.computerTraversal.getTraverserGenerator().generate(this.memory.get(((SideEffectCapStep) endStep).getSideEffectKey()), this, 1l)) :
-                (Iterator<Traverser.Admin<S>>) this.memory.get(TraverserMapReduce.TRAVERSERS);
-
+        if (endStep instanceof SideEffectCapStep) {
+            final List<String> sideEffectKeys = ((SideEffectCapStep<?, ?>) endStep).getSideEffectKeys();
+            if (sideEffectKeys.size() == 1)
+                this.traversers = IteratorUtils.of(this.computerTraversal.getTraverserGenerator().generate(this.memory.get(sideEffectKeys.get(0)), this, 1l));
+            else {
+                final Map<String, Object> sideEffects = new HashMap<>();
+                for (final String sideEffectKey : sideEffectKeys) {
+                    sideEffects.put(sideEffectKey, this.memory.get(sideEffectKey));
+                }
+                this.traversers = IteratorUtils.of(this.computerTraversal.getTraverserGenerator().generate((S) sideEffects, this, 1l));
+            }
+        } else {
+            this.traversers = this.memory.get(TraverserMapReduce.TRAVERSERS);
+        }
     }
 
     @Override

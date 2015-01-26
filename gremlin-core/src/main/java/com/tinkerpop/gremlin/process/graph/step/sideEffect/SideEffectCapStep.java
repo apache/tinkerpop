@@ -8,7 +8,10 @@ import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -21,27 +24,26 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
             TraverserRequirement.OBJECT
     ));
 
-    private String sideEffectKey;
+    private List<String> sideEffectKeys;
 
-    public SideEffectCapStep(final Traversal traversal, final String sideEffectKey) {
+    public SideEffectCapStep(final Traversal traversal, final String... sideEffectKeys) {
         super(traversal);
-        this.sideEffectKey = sideEffectKey;
+        this.sideEffectKeys = Arrays.asList(sideEffectKeys);
     }
 
-    @Override
     public void registerSideEffects() {
-        if (null == this.sideEffectKey)
-            this.sideEffectKey = ((SideEffectCapable) this.getPreviousStep()).getSideEffectKey();
+        if (this.sideEffectKeys.isEmpty())
+            this.sideEffectKeys = Arrays.asList(((SideEffectCapable) this.getPreviousStep()).getSideEffectKey());
         SideEffectCapStep.generateSupplier(this);
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.sideEffectKey);
+        return TraversalHelper.makeStepString(this, this.sideEffectKeys);
     }
 
-    public String getSideEffectKey() {
-        return this.sideEffectKey;
+    public List<String> getSideEffectKeys() {
+        return this.sideEffectKeys;
     }
 
     @Override
@@ -56,9 +58,19 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
         return clone;
     }
 
+    public Map<String, Object> getMapOfSideEffects() {
+        final Map<String, Object> sideEffects = new HashMap<>();
+        for (final String sideEffectKey : this.sideEffectKeys) {
+            sideEffects.put(sideEffectKey, this.getTraversal().asAdmin().getSideEffects().get(sideEffectKey));
+        }
+        return sideEffects;
+    }
+
     /////////////////////////
 
     private static final <S, E> void generateSupplier(final SideEffectCapStep<S, E> sideEffectCapStep) {
-        sideEffectCapStep.setSupplier(() -> sideEffectCapStep.getTraversal().asAdmin().getSideEffects().get(sideEffectCapStep.sideEffectKey));
+        sideEffectCapStep.setSupplier(() -> sideEffectCapStep.sideEffectKeys.size() == 1 ?
+                sideEffectCapStep.getTraversal().asAdmin().getSideEffects().get(sideEffectCapStep.sideEffectKeys.get(0)) :
+                (E) sideEffectCapStep.getMapOfSideEffects());
     }
 }

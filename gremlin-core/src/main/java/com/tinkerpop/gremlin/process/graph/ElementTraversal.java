@@ -295,12 +295,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().sideEffect(consumer);
     }
 
-    public default <E2> GraphTraversal<A, E2> cap(final String sideEffectKey) {
-        return this.start().cap(sideEffectKey);
-    }
-
-    public default <E2> GraphTraversal<A, E2> cap() {
-        return this.start().cap();
+    public default <E2> GraphTraversal<A, E2> cap(final String... sideEffectKeys) {
+        return this.start().cap(sideEffectKeys);
     }
 
     public default GraphTraversal<A, Edge> subgraph(final String sideEffectKey) {
