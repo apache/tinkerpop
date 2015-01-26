@@ -51,7 +51,7 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.amountToSample);
+        return TraversalHelper.makeStepString(this, this.amountToSample, this.probabilityFunction);
     }
 
     @Override

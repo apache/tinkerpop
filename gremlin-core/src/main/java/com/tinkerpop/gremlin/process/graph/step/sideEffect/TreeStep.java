@@ -64,7 +64,7 @@ public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRe
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.sideEffectKey);
+        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.functionRing);
     }
 
     @Override

@@ -134,7 +134,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.traversalOptions.toString());
+        return TraversalHelper.makeStepString(this, this.pickFunction, this.traversalOptions);
     }
 
     @Override

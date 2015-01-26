@@ -64,7 +64,7 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.sideEffectKey);
+        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.preGroupFunction);
     }
 
     @Override

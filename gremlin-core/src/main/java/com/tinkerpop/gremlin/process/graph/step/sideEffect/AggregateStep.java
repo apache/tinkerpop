@@ -59,7 +59,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.sideEffectKey);
+        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.preAggregateFunction);
     }
 
     @Override
