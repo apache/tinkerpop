@@ -12,12 +12,12 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class SupplierBarrierStep<S, E> extends AbstractStep<S, E> {
+public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> {
 
     public Supplier<E> supplier;
     private boolean done = false;
 
-    public SupplierBarrierStep(final Traversal traversal) {
+    public SupplyingBarrierStep(final Traversal traversal) {
         super(traversal);
     }
 
@@ -42,8 +42,8 @@ public abstract class SupplierBarrierStep<S, E> extends AbstractStep<S, E> {
     }
 
     @Override
-    public SupplierBarrierStep<S, E> clone() throws CloneNotSupportedException {
-        final SupplierBarrierStep<S, E> clone = (SupplierBarrierStep<S, E>) super.clone();
+    public SupplyingBarrierStep<S, E> clone() throws CloneNotSupportedException {
+        final SupplyingBarrierStep<S, E> clone = (SupplyingBarrierStep<S, E>) super.clone();
         clone.done = false;
         clone.supplier = CloneableLambda.cloneOrReturn(this.supplier);
         return clone;

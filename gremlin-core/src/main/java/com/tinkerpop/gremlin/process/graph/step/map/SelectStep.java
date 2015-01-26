@@ -4,9 +4,9 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
+import com.tinkerpop.gremlin.process.graph.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -53,7 +53,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Func
         this.requiresPaths = traversalEngine.equals(TraversalEngine.COMPUTER) ?
                 TraversalHelper.getLabelsUpTo(this, this.traversal.asAdmin()).stream().filter(this.selectLabels::contains).findAny().isPresent() :
                 TraversalHelper.getStepsUpTo(this, this.traversal.asAdmin()).stream()
-                        .filter(step -> step instanceof Barrier)
+                        .filter(step -> step instanceof CollectingBarrierStep)
                         .filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal.asAdmin()).stream().filter(this.selectLabels::contains).findAny().isPresent()
                                 || (step.getLabel().isPresent() && this.selectLabels.contains(step.getLabel().get()))) // TODO: get rid of this (there is a test case to check it)
                         .findAny().isPresent();

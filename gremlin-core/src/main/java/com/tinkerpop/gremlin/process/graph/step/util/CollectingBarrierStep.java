@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
@@ -15,11 +14,11 @@ import java.util.function.Consumer;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BarrierStep<S> extends AbstractStep<S, S> implements Barrier {
+public class CollectingBarrierStep<S> extends AbstractStep<S, S> {
     private TraverserSet<S> traverserSet = new TraverserSet<>();
     private Consumer<TraverserSet<S>> barrierConsumer;
 
-    public BarrierStep(final Traversal traversal) {
+    public CollectingBarrierStep(final Traversal traversal) {
         super(traversal);
     }
 
@@ -42,8 +41,8 @@ public class BarrierStep<S> extends AbstractStep<S, S> implements Barrier {
     }
 
     @Override
-    public BarrierStep<S> clone() throws CloneNotSupportedException {
-        final BarrierStep<S> clone = (BarrierStep<S>) super.clone();
+    public CollectingBarrierStep<S> clone() throws CloneNotSupportedException {
+        final CollectingBarrierStep<S> clone = (CollectingBarrierStep<S>) super.clone();
         clone.traverserSet = new TraverserSet<>();
         clone.barrierConsumer = CloneableLambda.cloneOrReturn(this.barrierConsumer);
         return clone;
