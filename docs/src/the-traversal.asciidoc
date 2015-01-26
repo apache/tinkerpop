@@ -185,6 +185,23 @@ g.V().has('age',gte,20).has('age',lt,30).values('age') <2>
 <1> Find all ages between 20 (inclusive) and 30 (exclusive).
 <2> The equivalent expression using only `has()`.
 
+[[count-step]]
+Count Step
+~~~~~~~~~~
+
+The `count()`-step (*map*) counts the total number of represented traversers in the streams (i.e. the bulk count).
+
+[gremlin-groovy,modern]
+----
+g.V().count()
+g.V().has(label,'person').count()
+g.V().has(label,'person').outE('created').count().path()  <1>
+g.V().has(label,'person').outE('created').count().map{it.get() * 10}.map{it.get() + 2}.path() <2>
+----
+
+<1> `count()`-step is a reducing barrier step meaning that all of the previous traversers are folded into a new traverser.
+<2> The path of the traverser emanating from `count()` starts at `count()`.
+
 [[choose-step]]
 Choose Step
 ~~~~~~~~~~~
@@ -589,6 +606,30 @@ traversal.toString() <6>
 <4> The Gremlin Console will automatically iterate anything that is an iterator or is iterable.
 <5> Both marko and josh are co-developers and marko knows josh.
 <6> The string representation of the traversal after the strategies have been applied (and thus, `where()` is folded into `match()`)
+
+[[max-step]]
+Max Step
+~~~~~~~~
+
+The `max()`-step (*map*) operates on a stream of numbers and determines which is the largest number in the stream.
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').max()
+g.V().repeat(__.both()).times(3).values('age').max()
+----
+
+[[min-step]]
+Min Step
+~~~~~~~~
+
+The `min()`-step (*map*) operates on a stream of numbers and determines which is the smallest number in the stream.
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').min()
+g.V().repeat(__.both()).times(3).values('age').min()
+----
 
 [[order-step]]
 Order Step
@@ -1031,6 +1072,18 @@ t.sideEffects.get('createdG').E()
 
 IMPORTANT: The `subgraph()`-step only writes to graphs that support user supplied ids for its elements. Moreover, if no graph is specified via `withSideEffect()`, then <<tinkergraph-gremlin,TinkerGraph>> is assumed.
 
+[[sum-step]]
+Sum Step
+~~~~~~~~
+
+The `sum()`-step (*map*) operates on a stream of numbers and sums the numbers together to yield a double. Note that the current traverser number is multiplied by the traverser bulk to determine how many such numbers are being represented.
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').sum()
+g.V().repeat(__.both()).times(3).values('age').sum()
+----
+
 [[timelimit-step]]
 TimeLimit Step
 ~~~~~~~~~~~~~~
@@ -1205,11 +1258,23 @@ g.V(4).inE().bothV()
 <4> Moving forward touching edges and vertices.
 <5> Moving forward only touching vertices.
 
+[[a-note-on-barrier-steps]]
+A Note on Barrier Steps
+-----------------------
+
+image:barrier.png[width=165,float=right] Gremlin is primarily a link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy], stream processing language. This means that Gremlin fully processes (to the best of its abilities) any traversers currently in the traversal pipeline before getting more data from the start/head of the traversal. However, there are numerous situations in which a completely lazy computation is not possible (or impractical). When a computation is not lazy, a "barrier step" exists. There are three types of barriers:
+
+  . `BarrierStep`: All of the traversers prior to the step are aggregated into a collection and then processed in some way prior to be "drained" one-by-one to the next step. Examples include: <<order-step,`order()`>>, <<shuffle-step,`shuffle()`>>, <<sample-step,`sample()`>>, <<aggregate-step,`aggregate()`>>.
+  . `ReducingBarrierStep`: All of the traversers prior to the step are processed by a reduce function and once all the previous traversers are processed, a single "reduced value" traverser is emitted to the next step. Examples include: <<fold-step,`fold()`>>, <<count-step,`count()`>>, <<sum-step,`sum()`>>, <<max-step,`max()`>>, <<min-step,`min()`>>.
+  . `SupplierBarrierStep`: All of the traversers prior to the step are iterated (no processing) and then some provided supplier yields the single traversers to continue to the next step. Examples include: <<cap-step,`cap()`>>.
+
+In Gremlin OLAP (see <<traversalvertexprogram,`TraversalVertexProgram`>>), a barrier is introduced at the end of every <<vertex-steps,adjacent vertex step>>. This means that the traversal does its best to compute as much as possible at the current, local vertex. What is can't compute without referencing an adjacent vertex is aggregated into a barrier collection. When there are no more traversers at the local vertex, the barriered traversers are the messages that are propagated to remote vertices for further processing.
+
 [[a-note-on-lambdas]]
 A Note On Lambdas
 -----------------
 
-A link:http://en.wikipedia.org/wiki/Anonymous_function[lambda] is a function that can be referenced by software and thus, passed around like any other piece of data. In Gremlin, lambdas make it possible to generalize the behavior of a step such that custom steps can be created (on-the-fly) by the user. However, it is advised to avoid using lambdas if possible.
+image:lambda.png[width=150,float=right] A link:http://en.wikipedia.org/wiki/Anonymous_function[lambda] is a function that can be referenced by software and thus, passed around like any other piece of data. In Gremlin, lambdas make it possible to generalize the behavior of a step such that custom steps can be created (on-the-fly) by the user. However, it is advised to avoid using lambdas if possible.
 
 [gremlin-groovy,modern]
 ----

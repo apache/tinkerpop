@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SupplierBarrierStep<S, E> extends AbstractStep<S, E> {
+public abstract class SupplierBarrierStep<S, E> extends AbstractStep<S, E> {
 
     public Supplier<E> supplier;
     private boolean done = false;
