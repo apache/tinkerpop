@@ -109,8 +109,8 @@ public class TinkerGraphTest {
                 () -> g.V().out().out().out().path(),
                 () -> g.V().repeat(__.out()).times(2),
                 () -> g.V().repeat(__.out()).times(3),
-                () -> g.V().map(v -> v.get().out().out().values("name").toList()),
-                () -> g.V().out().map(v -> v.get().out().out().values("name").toList())
+                () -> g.V().local(__.out().out().values("name").fold()),
+                () -> g.V().out().local(__.out().out().values("name").fold())
         );
         traversals.forEach(traversal -> {
             System.out.println("\nTESTING: " + traversal.get());

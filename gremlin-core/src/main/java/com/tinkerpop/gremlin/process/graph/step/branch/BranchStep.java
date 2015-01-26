@@ -34,7 +34,6 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
 
     protected Function<Traverser<S>, M> pickFunction;
     protected Map<M, List<Traversal<S, E>>> traversalOptions = new HashMap<>();
-    protected List<Traversal<S, E>> list = new ArrayList<>();
 
     public BranchStep(final Traversal traversal) {
         super(traversal);
@@ -52,7 +51,6 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
             this.traversalOptions.put(pickToken, new ArrayList<>(Collections.singletonList(traversalOption)));
         traversalOption.asAdmin().addStep(new EndStep(traversalOption));
         this.executeTraversalOperations(traversalOption, CHILD_OPERATIONS);
-        list.add(traversalOption);
     }
 
     @Override
