@@ -77,8 +77,4 @@ public class TraversalObjectLambda<S, E> implements Function<S, E>, Predicate<S>
     public void resetLambda() {
         this.traversal.reset();
     }
-
-    public TraversalLambda<S, E> asTraversalLambda() {
-        return new TraversalLambda<>(this.traversal);
-    }
 }

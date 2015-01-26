@@ -6,11 +6,10 @@ import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.util.SmartLambda;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
-import com.tinkerpop.gremlin.util.function.ResettableLambda;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,15 +24,11 @@ import java.util.function.Function;
  */
 public final class SampleStep<S> extends CollectingBarrierStep<S> implements Reversible, FunctionHolder<S, Number> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
-            TraverserRequirement.BULK,
-            TraverserRequirement.OBJECT
-    ));
+    private static final Set<TraverserRequirement> REQUIREMENTS = Collections.singleton(TraverserRequirement.BULK);
 
-    private Function<S, Number> probabilityFunction = s -> 1.0d;
+    private SmartLambda<S, Number> smartLambda = new SmartLambda<>((Function) s -> 1.0d);
     private final int amountToSample;
     private static final Random RANDOM = new Random();
-    private boolean traversalFunction = false;
 
     public SampleStep(final Traversal traversal, final int amountToSample) {
         super(traversal);
@@ -44,36 +39,37 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
 
     @Override
     public void addFunction(final Function<S, Number> function) {
-        this.probabilityFunction = (this.traversalFunction = function instanceof TraversalObjectLambda) ?
-                ((TraversalObjectLambda) function).asTraversalLambda() :
-                function;
+        this.smartLambda.setLambda(function);
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.amountToSample, this.probabilityFunction);
+        return TraversalHelper.makeStepString(this, this.amountToSample, this.smartLambda);
     }
 
     @Override
     public List<Function<S, Number>> getFunctions() {
-        return Collections.singletonList(this.probabilityFunction);
+        return Collections.singletonList(this.smartLambda);
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return REQUIREMENTS;
+        final Set<TraverserRequirement> requirements = new HashSet<>();
+        requirements.addAll(this.smartLambda.getRequirements());
+        requirements.addAll(REQUIREMENTS);
+        return requirements;
     }
 
     @Override
     public void reset() {
         super.reset();
-        ResettableLambda.resetOrReturn(this.probabilityFunction);
+        this.smartLambda.reset();
     }
 
     @Override
     public SampleStep<S> clone() throws CloneNotSupportedException {
         final SampleStep<S> clone = (SampleStep<S>) super.clone();
-        clone.probabilityFunction = CloneableLambda.cloneOrReturn(this.probabilityFunction);
+        clone.smartLambda = CloneableLambda.cloneOrReturn(this.smartLambda);
         SampleStep.generatePredicate(clone);
         return clone;
     }
@@ -88,7 +84,7 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
             //////////////// else sample the set
             double totalWeight = 0.0d;
             for (final Traverser<S> s : traverserSet) {
-                totalWeight = totalWeight + (sampleStep.probabilityFunction.apply(sampleStep.traversalFunction ? (S) s : s.get()).doubleValue() * s.bulk());
+                totalWeight = totalWeight + (sampleStep.smartLambda.apply((S) s).doubleValue() * s.bulk());
             }
             ///////
             final TraverserSet<S> sampledSet = new TraverserSet<>();
@@ -99,7 +95,7 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
                 for (final Traverser.Admin<S> s : traverserSet) {
                     long sampleBulk = sampledSet.contains(s) ? sampledSet.get(s).bulk() : 0;
                     if (sampleBulk < s.bulk()) {
-                        final double currentWeight = sampleStep.probabilityFunction.apply(sampleStep.traversalFunction ? (S) s : s.get()).doubleValue();
+                        final double currentWeight = sampleStep.smartLambda.apply((S) s).doubleValue();
                         for (int i = 0; i < (s.bulk() - sampleBulk); i++) {
                             runningWeight = runningWeight + currentWeight;
                             if (RANDOM.nextDouble() <= (runningWeight / totalWeight)) {

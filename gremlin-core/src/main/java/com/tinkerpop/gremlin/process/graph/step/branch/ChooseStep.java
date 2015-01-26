@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.util.TraversalLambda;
 import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
 
 import java.util.function.Function;
@@ -18,7 +19,7 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
     public ChooseStep(final Traversal traversal, final Function<S, M> choiceFunction) {
         super(traversal);
         this.setFunction(choiceFunction instanceof TraversalObjectLambda ?
-                ((TraversalObjectLambda) choiceFunction).asTraversalLambda() :
+                new TraversalLambda<>(((TraversalObjectLambda<S, M>) choiceFunction).getTraversal()) :
                 new Function<Traverser<S>, M>() {
                     @Override
                     public M apply(final Traverser<S> traverser) {

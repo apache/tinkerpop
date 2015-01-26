@@ -11,10 +11,8 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.AggregateMa
 import com.tinkerpop.gremlin.process.graph.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
+import com.tinkerpop.gremlin.process.util.SmartLambda;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalLambda;
-import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
-import com.tinkerpop.gremlin.util.function.CloneableLambda;
 import com.tinkerpop.gremlin.util.function.ResettableLambda;
 
 import java.util.Arrays;
@@ -32,13 +30,11 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
 
     private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
             TraverserRequirement.BULK,
-            TraverserRequirement.OBJECT,
             TraverserRequirement.SIDE_EFFECTS
     ));
 
-    private Function<S, Object> preAggregateFunction = s -> s;
+    private SmartLambda<S, Object> smartLambda = new SmartLambda<>();
     private String sideEffectKey;
-    private boolean traversalFunction = false;
 
     public AggregateStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
@@ -59,7 +55,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.preAggregateFunction);
+        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.smartLambda);
     }
 
     @Override
@@ -69,25 +65,26 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
 
     @Override
     public void addFunction(final Function<S, Object> function) {
-        this.preAggregateFunction = (this.traversalFunction = function instanceof TraversalObjectLambda) ?
-                ((TraversalObjectLambda) function).asTraversalLambda() :
-                function;
+        this.smartLambda.setLambda(function);
     }
 
     @Override
     public List<Function<S, Object>> getFunctions() {
-        return Collections.singletonList(this.preAggregateFunction);
+        return Collections.singletonList(this.smartLambda);
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return REQUIREMENTS;
+        final Set<TraverserRequirement> requirements = new HashSet<>();
+        requirements.addAll(this.smartLambda.getRequirements());
+        requirements.addAll(REQUIREMENTS);
+        return requirements;
     }
 
     @Override
     public AggregateStep<S> clone() throws CloneNotSupportedException {
         final AggregateStep<S> clone = (AggregateStep<S>) super.clone();
-        clone.preAggregateFunction = CloneableLambda.cloneOrReturn(this.preAggregateFunction);
+        clone.smartLambda = this.smartLambda.clone();
         AggregateStep.generateConsumer(clone);
         return clone;
     }
@@ -95,7 +92,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     @Override
     public void reset() {
         super.reset();
-        ResettableLambda.resetOrReturn(this.preAggregateFunction);
+        this.smartLambda.reset();
     }
 
     /////////////////////////
@@ -105,7 +102,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
                 traverserSet.forEach(traverser ->
                         TraversalHelper.addToCollection(
                                 traverser.getSideEffects().get(aggregateStep.sideEffectKey),
-                                aggregateStep.preAggregateFunction.apply(aggregateStep.traversalFunction ? (S) traverser : traverser.get()),
+                                aggregateStep.smartLambda.apply((S) traverser),
                                 traverser.bulk())));
     }
 }

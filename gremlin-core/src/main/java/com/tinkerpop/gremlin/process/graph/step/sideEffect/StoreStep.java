@@ -10,9 +10,8 @@ import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.StoreMapReduce;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
+import com.tinkerpop.gremlin.process.util.SmartLambda;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalLambda;
-import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 import com.tinkerpop.gremlin.util.function.ResettableLambda;
 
@@ -35,9 +34,8 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
             TraverserRequirement.SIDE_EFFECTS
     ));
 
-    private Function<S, Object> preStoreFunction = s -> s;
+    private SmartLambda<S, Object> smartLambda = new SmartLambda<>();
     private String sideEffectKey;
-    private boolean traversalFunction = false;
 
     public StoreStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
@@ -58,7 +56,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.preStoreFunction);
+        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.smartLambda);
     }
 
     @Override
@@ -68,31 +66,32 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
 
     @Override
     public void addFunction(final Function<S, Object> function) {
-        this.preStoreFunction = (this.traversalFunction = function instanceof TraversalObjectLambda) ?
-                ((TraversalObjectLambda) function).asTraversalLambda() :
-                function;
+        this.smartLambda.setLambda(function);
     }
 
     @Override
     public List<Function<S, Object>> getFunctions() {
-        return Collections.singletonList(this.preStoreFunction);
+        return Collections.singletonList(this.smartLambda);
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return REQUIREMENTS;
+        final Set<TraverserRequirement> requirements = new HashSet<>();
+        requirements.addAll(this.smartLambda.getRequirements());
+        requirements.addAll(REQUIREMENTS);
+        return requirements;
     }
 
     @Override
     public void reset() {
         super.reset();
-        ResettableLambda.resetOrReturn(this.preStoreFunction);
+        this.smartLambda.reset();
     }
 
     @Override
     public StoreStep<S> clone() throws CloneNotSupportedException {
         final StoreStep<S> clone = (StoreStep<S>) super.clone();
-        clone.preStoreFunction = CloneableLambda.cloneOrReturn(this.preStoreFunction);
+        clone.smartLambda = this.smartLambda.clone();
         StoreStep.generateConsumer(clone);
         return clone;
     }
@@ -102,7 +101,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     private static final <S> void generateConsumer(final StoreStep<S> storeStep) {
         storeStep.setConsumer(traverser -> TraversalHelper.addToCollection(
                 traverser.sideEffects(storeStep.sideEffectKey),
-                storeStep.preStoreFunction.apply(storeStep.traversalFunction ? (S) traverser : traverser.get()),
+                storeStep.smartLambda.apply((S) traverser),
                 traverser.bulk()));
     }
 }
