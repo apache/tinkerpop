@@ -37,34 +37,9 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
     @Override
     public void addOption(final M pickToken, final Traversal<S, E> traversalOption) {
         if (Pick.any.equals(pickToken))
-            throw new IllegalArgumentException("Choose step can not have an any-fork as only one fork per traverser is allowed");
+            throw new IllegalArgumentException("Choose step can not have an any-option as only one option per traverser is allowed");
         if (this.traversalOptions.containsKey(pickToken))
             throw new IllegalArgumentException("Choose step can only have one traversal per pick token: " + pickToken);
         super.addOption(pickToken, traversalOption);
     }
-
-    /*@Override
-    protected Iterator<Traverser<E>> standardAlgorithm() {
-        while (true) {
-            final Traverser<S> start = this.starts.next();
-            final Traversal<S, E> choice = this.choices.get(this.mapFunction.apply(start.get()));
-            if (null != choice) {
-                choice.asAdmin().addStart(start);
-                return choice.asAdmin().getEndStep();
-            }
-        }
-    }
-
-    @Override
-    protected Iterator<Traverser<E>> computerAlgorithm() {
-        while (true) {
-            final Traverser<S> start = this.starts.next();
-            final Traversal<S, E> choice = this.choices.get(this.mapFunction.apply(start.get()));
-            if (null != choice) {
-                start.asAdmin().setStepId(choice.asAdmin().getStartStep().getId());
-                return IteratorUtils.of((Traverser) start);
-            }
-        }
-    }*/
-
 }

@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.computer.traversal;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalSideEffects;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
@@ -23,7 +22,6 @@ import com.tinkerpop.gremlin.process.util.TraversalMatrix;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -127,7 +125,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
 
             final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.getStartStep();
-            final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(Graph.class).getTraverserGenerator(this.traversal);
+            final TraverserGenerator traverserGenerator = this.traversal.getTraverserGenerator();
             final String future = startStep.getNextStep().getId();
             boolean voteToHalt = true;
             final Iterator<? extends Element> starts = startStep.returnsVertices() ? IteratorUtils.of(vertex) : vertex.iterators().edgeIterator(Direction.OUT);

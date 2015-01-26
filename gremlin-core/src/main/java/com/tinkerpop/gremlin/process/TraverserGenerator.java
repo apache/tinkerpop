@@ -10,7 +10,7 @@ import java.util.Set;
  */
 public interface TraverserGenerator {
 
-    public Set<TraverserRequirement> requirements();
+    public Set<TraverserRequirement> getProvidedRequirements();
 
     public <S> Traverser.Admin<S> generate(final S start, final Step<S, ?> startStep, final long initialBulk);
 

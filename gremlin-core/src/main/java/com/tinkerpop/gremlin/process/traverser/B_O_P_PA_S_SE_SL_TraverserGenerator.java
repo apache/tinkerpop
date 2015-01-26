@@ -34,7 +34,7 @@ public class B_O_P_PA_S_SE_SL_TraverserGenerator implements TraverserGenerator {
     }
 
     @Override
-    public Set<TraverserRequirement> requirements() {
+    public Set<TraverserRequirement> getProvidedRequirements() {
         return REQUIREMENTS;
     }
 

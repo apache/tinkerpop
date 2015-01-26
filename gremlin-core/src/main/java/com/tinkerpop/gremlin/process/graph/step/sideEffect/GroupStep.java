@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupMapReduce;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
+import com.tinkerpop.gremlin.process.util.SmartLambda;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 import com.tinkerpop.gremlin.util.function.ResettableLambda;
@@ -39,8 +40,8 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     ));
 
     private char state = 'k';
-    private Function<S, K> keyFunction = s -> (K) s;
-    private Function<S, V> valueFunction = s -> (V) s;
+    private SmartLambda<S, K> keyFunction = new SmartLambda<>();
+    private SmartLambda<S, V> valueFunction = new SmartLambda<>();
     private Function<Collection<V>, R> reduceFunction = null;
     private String sideEffectKey;
     private boolean onGraphComputer = false;
@@ -63,9 +64,9 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
         this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMap<K, Collection<V>>::new);
     }
 
-    private static <S, K, V> void doGroup(final Traverser<S> traverser, final Map<K, Collection<V>> groupMap, final Function<S, K> keyFunction, final Function<S, V> valueFunction) {
-        final K key = keyFunction.apply(traverser.get());
-        final V value = valueFunction.apply(traverser.get());
+    private static <S, K, V> void doGroup(final Traverser<S> traverser, final Map<K, Collection<V>> groupMap, final SmartLambda<S, K> keyFunction, final SmartLambda<S, V> valueFunction) {
+        final K key = keyFunction.apply((S) traverser);
+        final V value = valueFunction.apply((S) traverser);
         Collection<V> values = groupMap.get(key);
         if (null == values) {
             values = new BulkSet<>();
@@ -96,8 +97,8 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     @Override
     public void reset() {
         super.reset();
-        ResettableLambda.resetOrReturn(this.keyFunction);
-        ResettableLambda.resetOrReturn(this.valueFunction);
+        this.keyFunction.reset();
+        this.valueFunction.reset();
         ResettableLambda.resetOrReturn(this.reduceFunction);
     }
 
@@ -108,10 +109,10 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     @Override
     public void addFunction(final Function<Object, Object> function) {
         if ('k' == this.state) {
-            this.keyFunction = (Function) function;
+            this.keyFunction.setLambda(function);
             this.state = 'v';
         } else if ('v' == this.state) {
-            this.valueFunction = (Function) function;
+            this.valueFunction.setLambda(function);
             this.state = 'r';
         } else if ('r' == this.state) {
             this.reduceFunction = (Function) function;
@@ -136,14 +137,18 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return REQUIREMENTS;
+        final Set<TraverserRequirement> requirements = new HashSet<>();
+        requirements.addAll(this.keyFunction.getRequirements());
+        requirements.addAll(this.valueFunction.getRequirements());
+        requirements.addAll(REQUIREMENTS);
+        return requirements;
     }
 
     @Override
     public GroupStep<S, K, V, R> clone() throws CloneNotSupportedException {
         final GroupStep<S, K, V, R> clone = (GroupStep<S, K, V, R>) super.clone();
-        clone.keyFunction = CloneableLambda.cloneOrReturn(this.keyFunction);
-        clone.valueFunction = CloneableLambda.cloneOrReturn(this.valueFunction);
+        clone.keyFunction = this.keyFunction.clone();
+        clone.valueFunction = this.valueFunction.clone();
         clone.reduceFunction = CloneableLambda.cloneOrReturn(this.reduceFunction);
         GroupStep.generateConsumer(clone);
         return clone;

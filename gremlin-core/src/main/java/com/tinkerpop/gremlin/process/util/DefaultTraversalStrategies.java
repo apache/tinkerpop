@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.traverser.util.DefaultTraverserGeneratorFactory;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -56,13 +55,13 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public void applyStrategies(final Traversal.Admin<?,?> traversal, final TraversalEngine engine) {
+    public void applyStrategies(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
         this.traversalStrategies.forEach(ts -> ts.apply(traversal.asAdmin(), engine));
     }
 
     @Override
-    public TraverserGenerator getTraverserGenerator(final Traversal.Admin<?,?> traversal) {
-        return this.traverserGeneratorFactory.getTraverserGenerator(traversal);
+    public TraverserGeneratorFactory getTraverserGeneratorFactory() {
+        return this.traverserGeneratorFactory;
     }
 
     @Override
@@ -75,7 +74,6 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
         final DefaultTraversalStrategies clone = (DefaultTraversalStrategies) super.clone();
         clone.traversalStrategies = new ArrayList<>();
         clone.traversalStrategies.addAll(this.traversalStrategies);
-        // TraversalStrategies.sortStrategies(clone.traversalStrategies);
         return clone;
     }
 

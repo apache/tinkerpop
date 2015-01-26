@@ -7,12 +7,14 @@ import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.TraversalLambda;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 import com.tinkerpop.gremlin.util.function.ResettableLambda;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +57,11 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return TraversalOptionHolder.super.getRequirements();
+        final Set<TraverserRequirement> requirements = new HashSet<>();
+        if (this.pickFunction instanceof TraversalLambda)
+            requirements.addAll((((TraversalLambda<S, E>) this.pickFunction).getTraversal().asAdmin().getTraverserRequirements()));
+        requirements.addAll(TraversalOptionHolder.super.getRequirements());
+        return requirements;
     }
 
     @Override

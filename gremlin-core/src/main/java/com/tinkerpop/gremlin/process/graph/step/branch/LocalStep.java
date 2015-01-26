@@ -50,7 +50,7 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return TraversalHelper.getRequirements(this.localTraversal);
+        return this.localTraversal.getTraverserRequirements();
     }
 
     @Override

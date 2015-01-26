@@ -59,6 +59,6 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return TraversalHelper.getRequirements(this.computerTraversal);
+        return this.computerTraversal.getTraverserRequirements();
     }
 }

@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultS
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
@@ -22,6 +23,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * A {@link Traversal} represents a directed walk over a {@link Graph}.
@@ -327,7 +329,25 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @return the generator of traversers
          */
         public default TraverserGenerator getTraverserGenerator() {
-            return this.getStrategies().getTraverserGenerator(this);
+            return this.getStrategies().getTraverserGeneratorFactory().getTraverserGenerator(this);
+        }
+
+        /**
+         * Get the set of all {@link TraverserRequirement}s for this traversal.
+         *
+         * @return the features of a traverser that are required to execute properly in this traversal
+         */
+        public default Set<TraverserRequirement> getTraverserRequirements() {
+            final Set<TraverserRequirement> requirements = this.getSteps().stream()
+                    .flatMap(step -> ((Step<?, ?>) step).getRequirements().stream())
+                    .collect(Collectors.toSet());
+            if (this.getSideEffects().keys().size() > 0)
+                requirements.add(TraverserRequirement.SIDE_EFFECTS);
+            if (this.getSideEffects().getSackInitialValue().isPresent())
+                requirements.add(TraverserRequirement.SACK);
+            if (this.getTraversalEngine().isPresent() && this.getTraversalEngine().get().equals(TraversalEngine.COMPUTER))
+                requirements.add(TraverserRequirement.BULK);
+            return requirements;
         }
 
         /**

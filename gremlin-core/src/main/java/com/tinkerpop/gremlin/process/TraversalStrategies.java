@@ -7,10 +7,10 @@ import com.tinkerpop.gremlin.process.graph.strategy.EngineDependentStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.IdentityRemovalStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.LabeledEndStepStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.MatchWhereStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.ProfileStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.ReducingStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectRegistrationStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.ProfileStrategy;
 import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -73,11 +73,9 @@ public interface TraversalStrategies extends Cloneable {
     public TraversalStrategies clone() throws CloneNotSupportedException;
 
     /**
-     * Get the {@link TraverserGenerator} to use to generate traversers in the {@link Traversal}.
-     *
-     * @param traversal the traversal that will have traversers generated for it
+     * Get the {@link TraverserGeneratorFactory} to use to generate traversers.
      */
-    public TraverserGenerator getTraverserGenerator(final Traversal.Admin<?, ?> traversal);
+    public TraverserGeneratorFactory getTraverserGeneratorFactory();
 
     /**
      * Set the {@link TraverserGeneratorFactory} to use for determining which {@link Traverser} type to generate for the {@link Traversal}.

@@ -45,7 +45,9 @@ public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Co
     // function
     @Override
     public E apply(final S traverser) {
-        return this.usesTraversalLambda ? this.traversalLambda.apply((Traverser<S>) traverser) : ((Function<S, E>) this.lambda).apply(((Traverser<S>) traverser).get());
+        return this.usesTraversalLambda ?
+                this.traversalLambda.apply((Traverser<S>) traverser) :
+                ((Function<S, E>) this.lambda).apply(((Traverser<S>) traverser).get());
     }
 
     // predicate
@@ -71,7 +73,7 @@ public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Co
     @Override
     public SmartLambda<S, E> clone() throws CloneNotSupportedException {
         final SmartLambda<S, E> clone = (SmartLambda<S, E>) super.clone();
-        if (this.usesTraversalLambda)
+        if (clone.usesTraversalLambda)
             clone.traversalLambda = this.traversalLambda.clone();
         else
             clone.lambda = CloneableLambda.cloneOrReturn(this.lambda);
@@ -98,7 +100,7 @@ public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Co
 
     public Set<TraverserRequirement> getRequirements() {
         return this.usesTraversalLambda ?
-                TraversalHelper.getRequirements(this.traversalLambda.getTraversal().asAdmin()) :
+                this.traversalLambda.getTraversal().asAdmin().getTraverserRequirements() :
                 Collections.singleton(TraverserRequirement.OBJECT);
     }
 }

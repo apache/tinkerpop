@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.traverser.util.DefaultTraverserGeneratorFactory;
 
@@ -27,7 +26,7 @@ public final class EmptyTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public void applyStrategies(final Traversal.Admin<?,?> traversal, final TraversalEngine engine) {
+    public void applyStrategies(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
 
     }
 
@@ -47,8 +46,8 @@ public final class EmptyTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public TraverserGenerator getTraverserGenerator(final Traversal.Admin<?,?> traversal) {
-        return DefaultTraverserGeneratorFactory.instance().getTraverserGenerator(traversal);
+    public TraverserGeneratorFactory getTraverserGeneratorFactory() {
+        return DefaultTraverserGeneratorFactory.instance();
     }
 
     @Override

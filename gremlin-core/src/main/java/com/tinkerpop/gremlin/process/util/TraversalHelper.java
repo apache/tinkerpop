@@ -232,17 +232,6 @@ public class TraversalHelper {
         return name;
     }
 
-    public static Set<TraverserRequirement> getRequirements(final Traversal.Admin<?, ?> traversal) {
-        final Set<TraverserRequirement> requirements = traversal.getSteps().stream()
-                .flatMap(step -> ((Step<?, ?>) step).getRequirements().stream())
-                .collect(Collectors.toSet());
-        if (traversal.getSideEffects().keys().size() > 0)
-            requirements.add(TraverserRequirement.SIDE_EFFECTS);
-        if (traversal.getSideEffects().getSackInitialValue().isPresent())
-            requirements.add(TraverserRequirement.SACK);
-        return requirements;
-    }
-
     public static void reIdSteps(final StepPosition stepPosition, final Traversal.Admin<?, ?> traversal) {
         stepPosition.x = 0;
         stepPosition.y = -1;

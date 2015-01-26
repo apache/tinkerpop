@@ -15,14 +15,14 @@ public final class UnionStep<S, E> extends BranchStep<S, E, TraversalOptionHolde
         super(traversal);
         this.setFunction(traverser -> Pick.any);
         for (final Traversal<?, E> union : unionTraversals) {
-            super.addOption(Pick.any, (Traversal<S, E>) union);
+            this.addOption(Pick.any, (Traversal<S, E>) union);
         }
     }
 
     @Override
     public void addOption(final Pick pickToken, final Traversal<S, E> traversalOption) {
         if (Pick.any != pickToken)
-            throw new IllegalArgumentException("Union step only supports the 'any' pick token: " + pickToken);
+            throw new IllegalArgumentException("Union step only supports the any token: " + pickToken);
         super.addOption(pickToken, traversalOption);
     }
 
@@ -30,29 +30,4 @@ public final class UnionStep<S, E> extends BranchStep<S, E, TraversalOptionHolde
     public String toString() {
         return TraversalHelper.makeStepString(this, this.traversalOptions.getOrDefault(Pick.any, Collections.emptyList()));
     }
-
-    /*@Override
-    protected Iterator<Traverser<E>> standardAlgorithm() {
-        while (true) {
-            for (final Traversal<S, E> union : this.unionTraversals) {
-                if (union.hasNext()) return union.asAdmin().getEndStep();
-            }
-            final Traverser.Admin<S> start = this.starts.next();
-            this.unionTraversals.forEach(union -> union.asAdmin().addStart(start.split()));
-        }
-    }
-
-    @Override
-    protected Iterator<Traverser<E>> computerAlgorithm() {
-        final List<Traverser<E>> ends = new ArrayList<>();
-        while (ends.isEmpty()) {
-            final Traverser.Admin<S> start = this.starts.next();
-            for (final Traversal<S, E> union : this.unionTraversals) {
-                final Traverser.Admin<S> unionSplit = start.split();
-                unionSplit.setStepId(union.asAdmin().getStartStep().getId());
-                ends.add((Traverser) unionSplit);
-            }
-        }
-        return ends.iterator();
-    }*/
 }

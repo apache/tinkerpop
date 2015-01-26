@@ -38,7 +38,7 @@ public final class HasTraversalStep<S> extends FilterStep<S> implements Traversa
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return TraversalHelper.getRequirements(this.traversalLambda.getTraversal().asAdmin());
+        return this.traversalLambda.getTraversal().asAdmin().getTraverserRequirements();
     }
 
     @Override

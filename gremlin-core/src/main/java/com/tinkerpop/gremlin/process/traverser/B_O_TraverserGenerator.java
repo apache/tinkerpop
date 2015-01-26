@@ -28,7 +28,7 @@ public class B_O_TraverserGenerator implements TraverserGenerator {
     }
 
     @Override
-    public Set<TraverserRequirement> requirements() {
+    public Set<TraverserRequirement> getProvidedRequirements() {
         return REQUIREMENTS;
     }
 

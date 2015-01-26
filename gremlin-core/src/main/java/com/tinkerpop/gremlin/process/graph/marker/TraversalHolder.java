@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +53,7 @@ public interface TraversalHolder {
 
     public default Set<TraverserRequirement> getRequirements() {
         return Stream.concat(this.getLocalTraversals().stream(), this.getGlobalTraversals().stream())
-                .flatMap(t -> TraversalHelper.getRequirements(t.asAdmin()).stream())
+                .flatMap(t -> t.asAdmin().getTraverserRequirements().stream())
                 .collect(Collectors.toSet());
     }
 
