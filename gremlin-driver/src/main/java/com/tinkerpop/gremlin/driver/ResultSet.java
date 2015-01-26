@@ -56,7 +56,7 @@ public class ResultSet implements Iterable<Result> {
         if (!responseQueue.isEmpty())
             return false;
 
-        awaitItems(1).join();
+        internalAwaitItems(1);
 
         assert !responseQueue.isEmpty() || allItemsAvailable();
         return responseQueue.isEmpty();
@@ -70,7 +70,7 @@ public class ResultSet implements Iterable<Result> {
         if (msg != null)
             return new Result(msg);
 
-        awaitItems(1).join();
+        internalAwaitItems(1);
 
         msg = responseQueue.poll();
         if (msg != null)
@@ -87,23 +87,7 @@ public class ResultSet implements Iterable<Result> {
         if (allItemsAvailable())
             CompletableFuture.completedFuture(getAvailableItemCount());
 
-        return CompletableFuture.supplyAsync(() -> {
-            while (!allItemsAvailable() && getAvailableItemCount() < items) {
-                if (!channel.isOpen()) {
-                    onChannelError.get();
-                    throw new RuntimeException("Error while processing results from channel - check client and server logs for more information");
-                }
-
-                try {
-                    // small delay between checks for available items
-                    Thread.sleep(10);
-                } catch (Exception ex) {
-                    return null;
-                }
-            }
-
-            return getAvailableItemCount();
-        }, executor);
+        return CompletableFuture.supplyAsync(() -> internalAwaitItems(items), executor);
     }
 
     /**
@@ -147,5 +131,16 @@ public class ResultSet implements Iterable<Result> {
                 throw new UnsupportedOperationException();
             }
         };
+    }
+
+    private int internalAwaitItems(final int items) {
+        while (!allItemsAvailable() && getAvailableItemCount() < items) {
+            if (!channel.isOpen()) {
+                onChannelError.get();
+                throw new RuntimeException("Error while processing results from channel - check client and server logs for more information");
+            }
+        }
+
+        return getAvailableItemCount();
     }
 }

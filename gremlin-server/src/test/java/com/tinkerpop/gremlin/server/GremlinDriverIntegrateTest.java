@@ -22,8 +22,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -106,6 +108,45 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         results.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
 
         cluster.close();
+    }
+
+    /**
+     * This test arose from this issue: https://github.com/tinkerpop/tinkerpop3/issues/515
+     * <br/>
+     * ResultSet.all returns a CompleteableFuture that blocks on the worker pool until isExausted returns false.
+     * isExausted in turn needs a thread on the worker pool to even return. So its totally possible to consume all
+     * threads on the worker pool waiting for .all to finish such that you can't even get one to wait for
+     * isExausted to run.
+     */
+    @Test
+    public void shouldAvoidDeadlockOnCallToResultSetDotAll() throws Exception {
+        final int workerPoolSizeForDriver = 2;
+
+        // the number of requests is 4 as this originally did produce the problem described above in the javadoc
+        // of the test, but this has been tested to much higher multiples and passes.  note that the
+        // maxWaitForConnection setting is high so that the client doesn't timeout waiting for an available
+        // connection. obviously this can also be fixed by increasing the maxConnectionPoolSize.
+        final int requests = workerPoolSizeForDriver * 4;
+        final Cluster cluster = Cluster.build()
+                .workerPoolSize(workerPoolSizeForDriver)
+                .maxWaitForConnection(300000)
+                .create();
+        final Client client = cluster.connect();
+
+        final CountDownLatch latch = new CountDownLatch(requests);
+        final AtomicReference[] refs = new AtomicReference[requests];
+        IntStream.range(0, requests).forEach(ix -> {
+            refs[ix] = new AtomicReference();
+            client.submitAsync("Thread.sleep(5000);[1,2,3,4,5,6,7,8,9]").thenAccept(rs ->
+                rs.all().thenAccept(refs[ix]::set).thenRun(latch::countDown));
+        });
+
+        // countdown should have reached zero as results should have eventually been all returned and processed
+        assertTrue(latch.await(20, TimeUnit.SECONDS));
+
+        final List<Integer> expected = IntStream.range(1, 10).boxed().collect(Collectors.toList());
+        IntStream.range(0, requests).forEach(r ->
+            assertTrue(expected.containsAll(((List<Result>) refs[r].get()).stream().map(resultItem -> new Integer(resultItem.getInt())).collect(Collectors.toList()))));
     }
 
     @Test
