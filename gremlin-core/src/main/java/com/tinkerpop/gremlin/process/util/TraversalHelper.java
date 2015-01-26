@@ -65,7 +65,7 @@ public class TraversalHelper {
         return steps;
     }
 
-    public static boolean areEqual(final Iterator a, final Iterator b) {
+    /*public static boolean areEqual(final Iterator a, final Iterator b) {
         while (a.hasNext() || b.hasNext()) {
             if (a.hasNext() != b.hasNext())
                 return false;
@@ -73,7 +73,7 @@ public class TraversalHelper {
                 return false;
         }
         return true;
-    }
+    }*/
 
     public static <S, E> Step<?, E> insertTraversal(final int insertIndex, final Traversal.Admin<S, E> insertTraversal, final Traversal.Admin<?, ?> traversal) {
         if (0 == traversal.getSteps().size()) {

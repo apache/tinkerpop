@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Traversal.equals()` is no longer computed by determining if the objects returned are equal.
 * Altered messaging in Gremlin Console when using a remote that is not yet activated.
 * Fixed potential for deadlock in Gremlin Driver when waiting for results from the server.
 * Refactored Netty pipeline structure to not have a second "Gremlin" executor group and instead used a standard `ExecutorService`.

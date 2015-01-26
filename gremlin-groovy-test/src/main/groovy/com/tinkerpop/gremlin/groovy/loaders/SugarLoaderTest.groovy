@@ -61,10 +61,10 @@ class SugarLoaderTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldAllowSugar() {
         SugarLoader.load()
-        assertEquals(g.V(), g.V)
-        assertEquals(g.V().out(), g.V.out)
-        assertEquals(g.V().out().values('name'), g.V.out.name)
-        assertEquals(g.V(1).out().out().values('name'), g.V(1).out.out.name);
+        assertEquals(6, g.V.count.next())
+        assertEquals(6, g.V.out.count.next())
+        assertEquals(6, g.V.out.name.count.next())
+        assertEquals(2, g.V(1).out.out.name.count.next());
         g.V(1).next().name = 'okram'
         assertEquals('okram', g.V(1).next().name);
         g.V(1).next()['name'] = 'marko a. rodriguez'
@@ -95,27 +95,22 @@ class SugarLoaderTest extends AbstractGremlinTest {
         println("g.V")
         println "  Java8-style:  " + clock(5000) { g.V() }
         println "  Groovy-style: " + clock(5000) { g.V }
-        assertEquals(g.V(), g.V)
 
         println("\ng.V.outE.inV")
         println "  Java8-style:  " + clock(5000) { g.V().outE().inV() }
         println "  Groovy-style: " + clock(5000) { g.V.outE.inV }
-        assertEquals(g.V().outE().inV(), g.V.outE.inV)
 
         println("\ng.V.outE.inV.outE.inV")
         println "  Java8-style:  " + clock(5000) { g.V().outE().inV().outE().inV() }
         println "  Groovy-style: " + clock(5000) { g.V.outE.inV.outE.inV }
-        assertEquals(g.V().outE().inV().outE().inV(), g.V.outE.inV.outE.inV)
 
         println("\ng.V.name")
         println "  Java8-style:  " + clock(5000) { g.V().values('name') }
         println "  Groovy-style: " + clock(5000) { g.V.name }
-        assertEquals(g.V().values('name'), g.V.name)
 
         println("\ng.V(1).name")
         println "  Java8-style:  " + clock(5000) { g.V(1).values('name') }
         println "  Groovy-style: " + clock(5000) { g.V(1).name }
-        assertEquals(g.V(1).values('name'), g.V(1).name)
 
         /*println("\ng.V(1)['name'] = 'okram'")
         println "  Java8-style:  " + clock(5000) { g.V(1).property('name', 'okram') }
@@ -128,16 +123,12 @@ class SugarLoaderTest extends AbstractGremlinTest {
         println("\ng.V(1).outE")
         println "  Java8-style:  " + clock(5000) { g.V(1).outE() }
         println "  Groovy-style: " + clock(5000) { g.V(1).outE }
-        assertEquals(g.V(1).outE().inV(), g.V(1).outE.inV)
 
         println("\ng.V.as('a').map{[it.a.name, it.name]}")
         println "  Java8-style:  " + clock(5000) {
             g.V().as('a').map { [it.path('a').value('name'), it.get().value('name')] }
         }
         println "  Groovy-style: " + clock(5000) { g.V.as('a').map { [it.a.name, it.name] } }
-        assertEquals(g.V().as('a').map { [it.path('a').value('name'), it.get().value('name')] }, g.V.as('a').map {
-            [it.path('a').name, it.name]
-        })
 
     }
 

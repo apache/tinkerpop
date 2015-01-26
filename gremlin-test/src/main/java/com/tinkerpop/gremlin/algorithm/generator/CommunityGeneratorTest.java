@@ -106,7 +106,7 @@ public class CommunityGeneratorTest {
                 assertTrue(g.V().count().next() > 0);
                 assertTrue(g1.E().count().next() > 0);
                 assertTrue(g1.V().count().next() > 0);
-                assertEquals(g.E().count(), g1.E().count());
+                assertEquals(g.E().count().next(), g1.E().count().next());
 
                 // ensure that every vertex has the same number of edges between graphs.
                 assertTrue(same(g, g1));

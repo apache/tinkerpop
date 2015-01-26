@@ -118,11 +118,6 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof Iterator && TraversalHelper.areEqual(this, (Iterator) object);
-    }
-
-    @Override
     public Step<S, ?> getStartStep() {
         return this.steps.isEmpty() ? EmptyStep.instance() : this.steps.get(0);
     }
