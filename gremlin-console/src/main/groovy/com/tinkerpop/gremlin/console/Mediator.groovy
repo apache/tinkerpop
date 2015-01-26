@@ -67,8 +67,12 @@ class Mediator {
             file.delete()
 
         new File(PLUGIN_CONFIG_FILE).withWriter { out ->
-            availablePlugins.findAll { it.value.activated }.each { k, v -> out << (k + LINE_SEP) }
+            activePlugins().each { k, v -> out << (k + LINE_SEP) }
         }
+    }
+
+    def activePlugins() {
+        availablePlugins.findAll { it.value.activated }
     }
 
     static def readPluginState() {

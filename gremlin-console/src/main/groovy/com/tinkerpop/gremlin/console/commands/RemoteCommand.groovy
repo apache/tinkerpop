@@ -25,7 +25,11 @@ class RemoteCommand extends ComplexCommandSupport {
         if (!mediator.availablePlugins.values().any {
             it.plugin.name == arguments[0]
         }) return "No plugin named ${arguments[0]}"
-        def plugin = mediator.availablePlugins.values().find { it.plugin.name == arguments[0] }.plugin
+
+        def pluggedIn = mediator.availablePlugins.values().find { it.plugin.name == arguments[0] }
+        if (!pluggedIn.activated) return "Plugin is available but not activated with ':plugin use ${arguments[0]}'"
+
+        def plugin = pluggedIn.plugin
         def Optional<RemoteAcceptor> remoteAcceptor = plugin.remoteAcceptor()
         if (!remoteAcceptor.isPresent()) return "${arguments[0]} does not accept remote configuration"
 

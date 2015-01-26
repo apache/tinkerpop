@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Altered messaging in Gremlin Console when using a remote that is not yet activated.
 * Refactored Netty pipeline structure to not have a second "Gremlin" executor group and instead used a standard `ExecutorService`.
 * Refactored the `GremlinExecutor` to take an optional transformation function so as to allow manipulation of results from `eval` in the same thread of execution.
 * Fixed issue with the `HttpGremlinEndpointHandler` where requests were getting blocked when `keep-alive` was on.
