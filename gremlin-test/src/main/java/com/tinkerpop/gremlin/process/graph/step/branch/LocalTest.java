@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -27,6 +28,20 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXlabel_personX_asXaX_localXoutXcreatedX_asXbXX_selectXa_bX_byXnameX_byXidX();
 
     public abstract Traversal<Vertex, Long> get_g_V_localXoutE_countX();
+
+    public abstract Traversal<Vertex, String> get_g_VX1X_localXoutEXknowsX_limitX1XX_inV_name(final Object v1Id);
+
+    public abstract Traversal<Vertex, String> get_g_V_localXbothEXcreatedX_limitX1XX_otherV_name();
+
+    public abstract Traversal<Vertex, Edge> get_g_VX4X_localXbothEX1_createdX_limitX1XX(final Object v4Id);
+
+    public abstract Traversal<Vertex, Edge> get_g_VX4X_localXbothEXknows_createdX_limitX1XX(final Object v4Id);
+
+    public abstract Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX1XX_otherV_name(final Object v4Id);
+
+    public abstract Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX2XX_otherV_name(final Object v4Id);
+
+    public abstract Traversal<Vertex, String> get_g_V_localXinEXknowsX_limitX2XX_outV_name();
 
     @Test
     @LoadGraphWith(CREW)
@@ -69,22 +84,97 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
 
     }
 
-    /*@Test
+    @Test
     @LoadGraphWith(MODERN)
-    public void g_V_localXoutE_weight_groupCountX() {
-        final Traversal<Vertex, Map<Double, Long>> traversal = get_g_V_localXoutE_weight_groupCountX();
+    public void g_VX4X_localXbothEXknows_createdX_limitX1XX() {
+        final Traversal<Vertex, Edge> traversal = get_g_VX4X_localXbothEXknows_createdX_limitX1XX(convertToVertexId("josh"));
+        printTraversalForm(traversal);
+        final Edge edge = traversal.next();
+        assertTrue(edge.label().equals("created") || edge.label().equals("knows"));
+        assertTrue(edge.value("weight").equals(1.0d) || edge.value("weight").equals(0.4d));
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX4X_localXbothE_limitX1XX_otherV_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX4X_localXbothE_limitX1XX_otherV_name(convertToVertexId("josh"));
+        printTraversalForm(traversal);
         int counter = 0;
-        int zeroCounter = 0;
         while (traversal.hasNext()) {
             counter++;
-            final Map<Double, Long> map = traversal.next();
-            if(0 == map.size()) zeroCounter++;
-            System.out.println(map);
+            final String name = traversal.next();
+            assertTrue(name.equals("marko") || name.equals("ripple") || name.equals("lop"));
         }
-        assertEquals(6, counter);
-        assertEquals(3, zeroCounter);
-    }*/
+        assertEquals(1, counter);
+        assertFalse(traversal.hasNext());
 
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX4X_localXbothE_limitX2XX_otherV_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX4X_localXbothE_limitX2XX_otherV_name(convertToVertexId("josh"));
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final String name = traversal.next();
+            assertTrue(name.equals("marko") || name.equals("ripple") || name.equals("lop"));
+        }
+        assertEquals(2, counter);
+        assertFalse(traversal.hasNext());
+    }
+
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_localXinEXknowsX_limitX2XX_outV_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_localXinEXknowsX_limitX2XX_outV_name();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            assertEquals(traversal.next(), "marko");
+        }
+        assertFalse(traversal.hasNext());
+        assertEquals(2, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX4X_localXbothEX1_createdX_limitX1XX() {
+        final Traversal<Vertex, Edge> traversal = get_g_VX4X_localXbothEX1_createdX_limitX1XX(convertToVertexId("josh"));
+        printTraversalForm(traversal);
+        final Edge edge = traversal.next();
+        assertEquals("created", edge.label());
+        assertTrue(edge.value("weight").equals(1.0d) || edge.value("weight").equals(0.4d));
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_localXoutEXknowsX_limitX1XX_inV_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_localXoutEXknowsX_limitX1XX_inV_name(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        final String name = traversal.next();
+        assertTrue(name.equals("vadas") || name.equals("josh"));
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_localXbothEXcreatedX_limitX1XX_otherV_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_localXbothEXcreatedX_limitX1XX_otherV_name();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final String name = traversal.next();
+            assertTrue(name.equals("marko") || name.equals("lop") || name.equals("josh") || name.equals("ripple") || name.equals("peter"));
+        }
+        assertEquals(5, counter);
+    }
 
     public static class StandardTest extends LocalTest {
         public StandardTest() {
@@ -106,10 +196,41 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
             return g.V().local(__.outE().count());
         }
 
-        /*@Override
-        public Traversal<Vertex, Map<Double, Long>> get_g_V_localXoutE_weight_groupCountX() {
-            return g.V().local((Traversal) __.outE().values("weight").groupCount());
-        }*/
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_localXoutEXknowsX_limitX1XX_inV_name(final Object v1Id) {
+            return g.V(v1Id).local(__.outE("knows").limit(1)).inV().values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_localXbothEXcreatedX_limitX1XX_otherV_name() {
+            return g.V().local(__.bothE("created").limit(1)).otherV().values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX4X_localXbothEX1_createdX_limitX1XX(final Object v4Id) {
+            return g.V(v4Id).local(__.bothE("created").limit(1));
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX4X_localXbothEXknows_createdX_limitX1XX(final Object v4Id) {
+            return g.V(v4Id).local(__.bothE("knows", "created").limit(1));
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX1XX_otherV_name(final Object v4Id) {
+            return g.V(v4Id).local(__.bothE().limit(1)).otherV().values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX2XX_otherV_name(final Object v4Id) {
+            return g.V(v4Id).local(__.bothE().limit(2)).otherV().values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_localXinEXknowsX_limitX2XX_outV_name() {
+            return g.V().local(__.inE("knows").limit(2)).outV().values("name");
+        }
+
 
     }
 
@@ -133,10 +254,40 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
             return g.V().local(__.outE().count()).submit(g.compute());
         }
 
-        /*@Override
-        public Traversal<Vertex, Map<Double, Long>> get_g_V_localXoutE_weight_groupCountX() {
-            return g.V().local((Traversal) __.outE().values("weight").groupCount()).submit(g.compute());
-        }*/
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_localXoutEXknowsX_limitX1XX_inV_name(final Object v1Id) {
+            return g.V(v1Id).local(__.outE("knows").limit(1)).inV().<String>values("name").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_localXbothEXcreatedX_limitX1XX_otherV_name() {
+            return g.V().local(__.bothE("created").limit(1)).otherV().<String>values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX1XX_otherV_name(final Object v4Id) {
+            return g.V(v4Id).local(__.bothE().limit(1)).otherV().<String>values("name").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX2XX_otherV_name(final Object v4Id) {
+            return g.V(v4Id).local(__.bothE().limit(2)).otherV().<String>values("name").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX4X_localXbothEX1_createdX_limitX1XX(final Object v4Id) {
+            return g.V(v4Id).local(__.bothE("created").limit(1)).submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX4X_localXbothEXknows_createdX_limitX1XX(final Object v4Id) {
+            return g.V(v4Id).local(__.bothE("knows", "created").limit(1)).submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_localXinEXknowsX_limitX2XX_outV_name() {
+            return g.V().local(__.inE("knows").limit(2)).outV().<String>values("name").submit(g.compute());
+        }
 
     }
 }

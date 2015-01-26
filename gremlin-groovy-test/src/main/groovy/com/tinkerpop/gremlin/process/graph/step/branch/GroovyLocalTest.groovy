@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.branch
 import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
-import com.tinkerpop.gremlin.process.graph.step.branch.LocalTest
+import com.tinkerpop.gremlin.structure.Edge
 import com.tinkerpop.gremlin.structure.Order
 import com.tinkerpop.gremlin.structure.Vertex
 
@@ -31,10 +31,40 @@ public abstract class GroovyLocalTest {
             g.V.local(__.outE.count());
         }
 
-        /*@Override
-        public Traversal<Vertex, Map<Double, Long>> get_g_V_localXoutE_weight_groupCountX() {
-            return g.V().local((Traversal) __.outE().values("weight").groupCount());
-        }*/
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_localXoutEXknowsX_limitX1XX_inV_name(final Object v1Id) {
+            g.V(v1Id).local(__.outE('knows').limit(1)).inV.name
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_localXbothEXcreatedX_limitX1XX_otherV_name() {
+            g.V().local(__.bothE('created').limit(1)).otherV.name
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX4X_localXbothEX1_createdX_limitX1XX(final Object v4Id) {
+            g.V(v4Id).local(__.bothE('created').limit(1))
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX4X_localXbothEXknows_createdX_limitX1XX(final Object v4Id) {
+            g.V(v4Id).local(__.bothE('knows', 'created').limit(1))
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX1XX_otherV_name(final Object v4Id) {
+            g.V(v4Id).local(__.bothE.limit(1)).otherV.name
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX2XX_otherV_name(final Object v4Id) {
+            g.V(v4Id).local(__.bothE.limit(2).otherV).name
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_localXinEXknowsX_limitX2XX_outV_name() {
+            g.V().inE('knows').local(__.limit(2).outV).name
+        }
     }
 
     public static class ComputerTest extends LocalTest {
@@ -54,11 +84,40 @@ public abstract class GroovyLocalTest {
             ComputerTestHelper.compute("g.V.local(__.outE.count())", g);
         }
 
-        /*@Override
-        public Traversal<Vertex, Map<Double, Long>> get_g_V_localXoutE_weight_groupCountX() {
-            return g.V().local((Traversal) __.outE().values("weight").groupCount());
-        }*/
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_localXoutEXknowsX_limitX1XX_inV_name(final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).local(__.outE('knows').limit(1)).inV.name", g);
+        }
 
+        @Override
+        public Traversal<Vertex, String> get_g_V_localXbothEXcreatedX_limitX1XX_otherV_name() {
+            ComputerTestHelper.compute("g.V().local(__.bothE('created').limit(1)).otherV.name", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX4X_localXbothEX1_createdX_limitX1XX(final Object v4Id) {
+            ComputerTestHelper.compute("g.V(${v4Id}).local(__.bothE('created').limit(1))", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX4X_localXbothEXknows_createdX_limitX1XX(final Object v4Id) {
+            ComputerTestHelper.compute("g.V(${v4Id}).local(__.bothE('knows', 'created').limit(1))", g);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX1XX_otherV_name(final Object v4Id) {
+            ComputerTestHelper.compute("g.V(${v4Id}).local(__.bothE.limit(1)).otherV.name", g);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX2XX_otherV_name(final Object v4Id) {
+            ComputerTestHelper.compute("g.V(${v4Id}).local(__.bothE.limit(2)).otherV.name", g);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_localXinEXknowsX_limitX2XX_outV_name() {
+            ComputerTestHelper.compute("g.V().local(__.inE('knows').limit(2).outV).name", g);
+        }
     }
 
 }
