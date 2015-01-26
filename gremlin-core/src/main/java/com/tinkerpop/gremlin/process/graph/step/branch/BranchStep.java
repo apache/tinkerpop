@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
+import com.tinkerpop.gremlin.util.function.ResettableLambda;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +16,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -32,6 +32,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
 
     protected Function<Traverser<S>, M> pickFunction;
     protected Map<M, List<Traversal<S, E>>> traversalOptions = new HashMap<>();
+    protected List<Traversal<S, E>> list = new ArrayList<>();
 
     public BranchStep(final Traversal traversal) {
         super(traversal);
@@ -49,6 +50,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
             this.traversalOptions.put(pickToken, new ArrayList<>(Collections.singletonList(traversalOption)));
         traversalOption.asAdmin().addStep(new EndStep(traversalOption));
         this.executeTraversalOperations(traversalOption, CHILD_OPERATIONS);
+        list.add(traversalOption);
     }
 
     @Override
@@ -66,12 +68,13 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     @Override
     protected Iterator<Traverser<E>> standardAlgorithm() {
         while (true) {
-            final Optional<Traversal<S, E>> fullBranch = this.traversalOptions.values().stream()
-                    .flatMap(list -> list.stream())
-                    .filter(Traversal::hasNext)
-                    .findAny();
-            if (fullBranch.isPresent()) return fullBranch.get().asAdmin().getEndStep();
-
+            for (final List<Traversal<S, E>> options : this.traversalOptions.values()) {
+                for (final Traversal<S, E> option : options) {
+                    if (option.hasNext())
+                        return option.asAdmin().getEndStep();
+                }
+            }
+            ///
             final Traverser.Admin<S> start = this.starts.next();
             final M choice = this.pickFunction.apply(start);
             final List<Traversal<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
@@ -137,6 +140,11 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     @Override
     public void reset() {
         super.reset();
-        this.resetTraversals();
+        ResettableLambda.resetOrReturn(this.pickFunction);
+        for (final List<Traversal<S, E>> options : this.traversalOptions.values()) {
+            for (final Traversal<S, E> option : options) {
+                option.asAdmin().reset();
+            }
+        }
     }
 }

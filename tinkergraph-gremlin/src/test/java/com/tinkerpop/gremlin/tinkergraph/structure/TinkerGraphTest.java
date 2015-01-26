@@ -3,8 +3,8 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -138,15 +138,30 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay4() throws Exception {
-        Graph g = TinkerFactory.createModern();
-        //Traversal t = g.V().out().out().path().by("name").by("name").by(__.in("created").<String>values("age"));
+        Graph g = TinkerGraph.open();
+        g.io().readGraphML("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
+        final List<Supplier<Traversal>> traversals = Arrays.asList(
+                () -> g.V().has(T.label, "song").out().groupCount().<Vertex>by(t ->
+                        t.choose(r -> r.has(T.label, "artist").hasNext(),
+                                __.in("writtenBy", "sungBy"),
+                                __.union(__.identity(), __.both("followedBy"))).values("name")).fold(),
+                () -> g.V().has(T.label, "song").out().groupCount().<Vertex>by(t ->
+                        t.choose(__.has(T.label, "artist"),
+                                __.in("writtenBy", "sungBy"),
+                                __.union(__.identity(), __.both("followedBy"))).values("name")).fold(),
+                () -> g.V().has(T.label, "song").out().groupCount().by(
+                        __.choose(__.has(T.label, "artist"),
+                                __.in("writtenBy", "sungBy"),
+                                __.union(__.identity(), __.both("followedBy"))).values("name")).fold());
 
-        Traversal t = g.V().values("age").min();
-
-
-        System.out.println(t.toString());
-        t.forEachRemaining(System.out::println);
-        System.out.println(t.toString());
+        traversals.forEach(traversal -> {
+            System.out.println("\nTESTING: " + traversal.get());
+            for (int i = 0; i < 10; i++) {
+                final long t = System.currentTimeMillis();
+                traversal.get().iterate();
+                System.out.print("   " + (System.currentTimeMillis() - t));
+            }
+        });
     }
 
     /**

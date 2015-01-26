@@ -11,9 +11,9 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupCountM
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalLambda;
 import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
+import com.tinkerpop.gremlin.util.function.ResettableLambda;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -70,7 +70,7 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
     @Override
     public void addFunction(final Function<S, Object> function) {
         this.preGroupFunction = (this.traversalFunction = function instanceof TraversalObjectLambda) ?
-                new TraversalLambda(((TraversalObjectLambda<S, Object>) function).getTraversal()) :
+                ((TraversalObjectLambda) function).asTraversalLambda() :
                 function;
     }
 
@@ -90,6 +90,12 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
         clone.preGroupFunction = CloneableLambda.cloneOrReturn(this.preGroupFunction);
         GroupCountStep.generateConsumer(clone);
         return clone;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        ResettableLambda.resetOrReturn(this.preGroupFunction);
     }
 
     /////////////////////////

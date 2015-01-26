@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +32,7 @@ public final class HasStep<S extends Element> extends FilterStep<S> implements H
 
     @Override
     public List<HasContainer> getHasContainers() {
-        return Arrays.asList(this.hasContainer);
+        return Collections.singletonList(this.hasContainer);
     }
 
     @Override

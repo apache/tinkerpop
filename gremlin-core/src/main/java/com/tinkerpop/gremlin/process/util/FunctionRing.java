@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
+import com.tinkerpop.gremlin.util.function.ResettableLambda;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ public class FunctionRing<A, B> implements Cloneable {
     }
 
     public void reset() {
+        this.functions.forEach(ResettableLambda::resetOrReturn);
         this.currentFunction = -1;
     }
 

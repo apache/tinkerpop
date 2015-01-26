@@ -15,6 +15,7 @@ import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
+import com.tinkerpop.gremlin.util.function.ResettableLambda;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -90,6 +91,14 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.sideEffectKey);
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        ResettableLambda.resetOrReturn(this.keyFunction);
+        ResettableLambda.resetOrReturn(this.valueFunction);
+        ResettableLambda.resetOrReturn(this.reduceFunction);
     }
 
     public Function<Collection<V>, R> getReduceFunction() {

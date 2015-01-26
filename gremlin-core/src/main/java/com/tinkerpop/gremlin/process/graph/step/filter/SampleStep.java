@@ -7,10 +7,10 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalLambda;
 import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
+import com.tinkerpop.gremlin.util.function.ResettableLambda;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,7 +45,7 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
     @Override
     public void addFunction(final Function<S, Number> function) {
         this.probabilityFunction = (this.traversalFunction = function instanceof TraversalObjectLambda) ?
-                new TraversalLambda(((TraversalObjectLambda<S, Number>) function).getTraversal()) :
+                ((TraversalObjectLambda) function).asTraversalLambda() :
                 function;
     }
 
@@ -62,6 +62,12 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        ResettableLambda.resetOrReturn(this.probabilityFunction);
     }
 
     @Override

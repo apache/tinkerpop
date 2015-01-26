@@ -14,6 +14,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalLambda;
 import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
+import com.tinkerpop.gremlin.util.function.ResettableLambda;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,7 +69,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     @Override
     public void addFunction(final Function<S, Object> function) {
         this.preStoreFunction = (this.traversalFunction = function instanceof TraversalObjectLambda) ?
-                new TraversalLambda(((TraversalObjectLambda<S, Object>) function).getTraversal()) :
+                ((TraversalObjectLambda) function).asTraversalLambda() :
                 function;
     }
 
@@ -80,6 +81,12 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        ResettableLambda.resetOrReturn(this.preStoreFunction);
     }
 
     @Override
