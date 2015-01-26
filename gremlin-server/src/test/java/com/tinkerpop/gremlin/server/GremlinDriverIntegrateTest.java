@@ -122,10 +122,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldAvoidDeadlockOnCallToResultSetDotAll() throws Exception {
         final int workerPoolSizeForDriver = 2;
 
-        // the number of requests is 4 as this originally did produce the problem described above in the javadoc
-        // of the test, but this has been tested to much higher multiples and passes.  note that the
-        // maxWaitForConnection setting is high so that the client doesn't timeout waiting for an available
-        // connection. obviously this can also be fixed by increasing the maxConnectionPoolSize.
+        // the number of requests 4 times the size of the worker pool as this originally did produce the problem
+        // described above in the javadoc of the test (though an equivalent number also produced it), but this has
+        // been tested to much higher multiples and passes.  note that the maxWaitForConnection setting is high so
+        // that the client doesn't timeout waiting for an available connection. obviously this can also be fixed
+        // by increasing the maxConnectionPoolSize.
         final int requests = workerPoolSizeForDriver * 4;
         final Cluster cluster = Cluster.build()
                 .workerPoolSize(workerPoolSizeForDriver)
