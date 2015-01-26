@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
+import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -27,7 +27,11 @@ public class TraversalObjectLambda<S, E> implements Function<S, E>, Predicate<S>
     public E apply(final S start) {
         this.traversal.reset();
         this.traversal.addStart(this.generator.generate(start, this.traversal.getStartStep(), 1l));
-        return this.traversal.next();
+        try {
+            return this.traversal.next(); // map
+        } catch (final NoSuchElementException e) {
+            throw new IllegalArgumentException("The provided start does not map to a value: " + start + "->" + this.traversal);
+        }
     }
 
     // predicate
