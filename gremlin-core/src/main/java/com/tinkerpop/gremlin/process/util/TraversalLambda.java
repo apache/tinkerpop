@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
+import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -26,7 +27,11 @@ public final class TraversalLambda<S, E> implements Function<Traverser<S>, E>, P
         split.setSideEffects(this.traversal.getSideEffects());
         this.traversal.reset();
         this.traversal.addStart(split);
-        return this.traversal.next(); // map
+        try {
+            return this.traversal.next(); // map
+        } catch (final NoSuchElementException e) {
+            throw new IllegalArgumentException("The provided traverser does not map to a value: " + split + "->" + this.traversal);
+        }
     }
 
     // predicate
