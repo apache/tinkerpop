@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -144,16 +143,17 @@ public class TinkerGraphTest {
                 () -> g.V().has(T.label, "song").out().groupCount().<Vertex>by(t ->
                         t.choose(r -> r.has(T.label, "artist").hasNext(),
                                 __.in("writtenBy", "sungBy"),
-                                __.union(__.identity(), __.both("followedBy"))).values("name")).fold(),
+                                __.union(__.identity(), __.both("followedBy"))).values("name").next()).fold(),
                 () -> g.V().has(T.label, "song").out().groupCount().<Vertex>by(t ->
                         t.choose(__.has(T.label, "artist"),
                                 __.in("writtenBy", "sungBy"),
-                                __.union(__.identity(), __.both("followedBy"))).values("name")).fold(),
+                                __.union(__.identity(), __.both("followedBy"))).values("name").next()).fold(),
                 () -> g.V().has(T.label, "song").out().groupCount().by(
                         __.choose(__.has(T.label, "artist"),
                                 __.in("writtenBy", "sungBy"),
-                                __.union(__.identity(), __.both("followedBy"))).values("name")).fold());
-
+                                __.union(__.identity(), __.both("followedBy"))).values("name")).fold(),
+                () -> g.V().has(T.label, "song").both().groupCount().<Vertex>by(t -> t.both().values("name").next()),
+                () -> g.V().has(T.label, "song").both().groupCount().by(__.both().values("name")));
         traversals.forEach(traversal -> {
             System.out.println("\nTESTING: " + traversal.get());
             for (int i = 0; i < 10; i++) {
