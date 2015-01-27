@@ -450,6 +450,52 @@ __.inject(1,2).map {it.get() + 1}
 __.inject(1,2).map {it.get() + 1}.map {g.V(it.get()).next()}.values('name')
 ----
 
+IMPORTANT: Note that a standalone anonymous traversal is a common use case which comes with a limitation: Anonymous traversals do not have all strategies applied to them by default. This can lead to some unexpected behaviors as shown in the following example.
+
+[source,groovy]
+----
+gremlin> g = TinkerFactory.createModern()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> software = g.V().has(label, "software").toList()
+==>v[3]
+==>v[5]
+gremlin> __.inject(software).unfold().groupCount().by("lang")
+Side effects do not have a value for provided key: null
+Display stack trace? [yN]
+----
+
+You have two options to get around this limitation. Either explicitly apply all the required strategies to all anonymous taversal or apply the strategies only to the current traversal.
+
+[gremlin-groovy,modern]
+----
+import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal
+import com.tinkerpop.gremlin.process.graph.strategy.*
+TraversalStrategies.GlobalCache.registerStrategies(AnonymousGraphTraversal, <1>
+    TraversalStrategies.GlobalCache.getStrategies(AnonymousGraphTraversal).addStrategies(
+        SideEffectCapStrategy.instance(),
+        SideEffectRegistrationStrategy.instance()))
+software = g.V().has(label, "software").toList()
+__.inject(software).unfold().groupCount().by("lang")
+----
+
+<1> Apply required strategies globally for all anonymous traversals.
+
+[gremlin-groovy,modern]
+----
+import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal
+import com.tinkerpop.gremlin.process.graph.strategy.*
+software = g.V().has(label, "software").toList()
+t = __.inject(software).unfold().groupCount().by("lang"); null <1>
+t.getStrategies().addStrategies(
+    SideEffectCapStrategy.instance(),
+    SideEffectRegistrationStrategy.instance()) <2>
+t <3>
+----
+
+<1> Create the traversal, but don't evaluate it.
+<2> Apply the required strategies locally (only for this particular traversal).
+<3> Evaluate the traversal.
+
 [[limit-step]]
 Limit Step
 ~~~~~~~~~~

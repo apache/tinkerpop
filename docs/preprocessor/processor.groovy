@@ -14,6 +14,8 @@ def STATEMENT_PREFIX = "gremlin> "
 def STATEMENT_CONTINUATION_PREFIX = "         "
 
 def header = """
+    import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal
+    import com.tinkerpop.gremlin.process.graph.strategy.*
     import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
     import com.tinkerpop.gremlin.tinkergraph.structure.*
     import static java.util.Comparator.*
@@ -29,7 +31,7 @@ sanitize = { def codeLine ->
 }
 
 format = { def codeLine ->
-    codeLine.replaceAll(/\s*((\<\d+\>\s*)*\<\d+\>)\s*$/, '   //// $1')
+    codeLine.replaceAll(/\s*((\s\<\d+\>\s*)*\s\<\d+\>)\s*$/, '   ////$1')
 }
 
 new File(this.args[0]).withReader { reader ->
