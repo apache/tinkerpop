@@ -9,11 +9,13 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -139,5 +141,10 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public int hashCode() {
         return -343564565;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getTraverserRequirements() {
+        return Collections.emptySet();
     }
 }

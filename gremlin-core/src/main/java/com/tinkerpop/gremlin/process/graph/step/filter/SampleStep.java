@@ -4,16 +4,14 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.SmartLambda;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
-import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -22,9 +20,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SampleStep<S> extends CollectingBarrierStep<S> implements Reversible, FunctionHolder<S, Number> {
-
-    private static final Set<TraverserRequirement> REQUIREMENTS = Collections.singleton(TraverserRequirement.BULK);
+public final class SampleStep<S> extends CollectingBarrierStep<S> implements Reversible, FunctionHolder<S, Number>, TraversalHolder {
 
     private SmartLambda<S, Number> smartLambda = new SmartLambda<>((Function) s -> 1.0d);
     private final int amountToSample;
@@ -36,10 +32,15 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
         SampleStep.generatePredicate(this);
     }
 
+    @Override
+    public List<Traversal<S, Number>> getLocalTraversals() {
+        return this.smartLambda.getTraversalAsList();
+    }
 
     @Override
     public void addFunction(final Function<S, Number> function) {
         this.smartLambda.setLambda(function);
+        this.executeTraversalOperations(this.smartLambda.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
     }
 
     @Override
@@ -54,9 +55,8 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = new HashSet<>();
-        requirements.addAll(this.smartLambda.getRequirements());
-        requirements.addAll(REQUIREMENTS);
+        final Set<TraverserRequirement> requirements = TraversalHolder.super.getRequirements();
+        requirements.add(TraverserRequirement.BULK);
         return requirements;
     }
 
@@ -69,7 +69,8 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
     @Override
     public SampleStep<S> clone() throws CloneNotSupportedException {
         final SampleStep<S> clone = (SampleStep<S>) super.clone();
-        clone.smartLambda = CloneableLambda.cloneOrReturn(this.smartLambda);
+        clone.smartLambda = this.smartLambda.clone();
+        clone.executeTraversalOperations(clone.smartLambda.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
         SampleStep.generatePredicate(clone);
         return clone;
     }

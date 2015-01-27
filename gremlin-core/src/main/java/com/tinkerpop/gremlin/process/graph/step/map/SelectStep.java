@@ -6,13 +6,14 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements FunctionHolder<Object, Object>, EngineDependent {
+public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements FunctionHolder<Object, Object>, TraversalHolder, EngineDependent {
 
     protected FunctionRing<Object, Object> functionRing;
     private final List<String> selectLabels;
@@ -42,10 +43,6 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Func
     public void reset() {
         super.reset();
         this.functionRing.reset();
-    }
-
-    public boolean hasStepFunctions() {
-        return !this.functionRing.isEmpty();
     }
 
     @Override
@@ -68,6 +65,9 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Func
     public SelectStep<S, E> clone() throws CloneNotSupportedException {
         final SelectStep<S, E> clone = (SelectStep<S, E>) super.clone();
         clone.functionRing = this.functionRing.clone();
+        for (final Traversal<Object, Object> traversal : clone.functionRing.getTraversals()) {
+            clone.executeTraversalOperations(traversal, TYPICAL_LOCAL_OPERATIONS);
+        }
         SelectStep.generateFunction(clone);
         return clone;
     }
@@ -75,6 +75,8 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Func
     @Override
     public void addFunction(final Function<Object, Object> function) {
         this.functionRing.addFunction(function);
+        if (function instanceof TraversableLambda)
+            this.executeTraversalOperations(((TraversableLambda) function).getTraversal(), TYPICAL_LOCAL_OPERATIONS);
     }
 
     @Override
@@ -83,8 +85,13 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Func
     }
 
     @Override
+    public List<Traversal<Object, Object>> getLocalTraversals() {
+        return this.functionRing.getTraversals();
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = new HashSet<>();
+        final Set<TraverserRequirement> requirements = TraversalHolder.super.getRequirements();
         if (this.requiresPaths)
             requirements.add(TraverserRequirement.PATH);
         requirements.add(TraverserRequirement.OBJECT);

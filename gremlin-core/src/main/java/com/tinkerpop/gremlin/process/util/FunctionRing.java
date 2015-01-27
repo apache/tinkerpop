@@ -1,11 +1,14 @@
 package com.tinkerpop.gremlin.process.util;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 import com.tinkerpop.gremlin.util.function.ResettableLambda;
+import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -49,6 +52,13 @@ public class FunctionRing<A, B> implements Cloneable {
 
     public List<Function<A, B>> getFunctions() {
         return this.functions;
+    }
+
+    public List<Traversal<A, B>> getTraversals() {
+        return this.functions.stream()
+                .filter(function -> function instanceof TraversableLambda)
+                .map(function -> ((TraversableLambda<A,B>) function).getTraversal())
+                .collect(Collectors.toList());
     }
 
     public FunctionRing<A, B> clone() throws CloneNotSupportedException {

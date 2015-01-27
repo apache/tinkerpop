@@ -3,10 +3,12 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.MutablePath;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,7 +18,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PathStep<S> extends MapStep<S, Path> implements FunctionHolder<Object, Object> {
+public final class PathStep<S> extends MapStep<S, Path> implements FunctionHolder<Object, Object>, TraversalHolder {
 
     private FunctionRing<Object, Object> functionRing;
 
@@ -30,6 +32,9 @@ public final class PathStep<S> extends MapStep<S, Path> implements FunctionHolde
     public PathStep<S> clone() throws CloneNotSupportedException {
         final PathStep<S> clone = (PathStep<S>) super.clone();
         clone.functionRing = this.functionRing.clone();
+        for (final Traversal<Object, Object> traversal : clone.functionRing.getTraversals()) {
+            clone.executeTraversalOperations(traversal, TYPICAL_LOCAL_OPERATIONS);
+        }
         PathStep.generateFunction(clone);
         return clone;
     }
@@ -43,6 +48,13 @@ public final class PathStep<S> extends MapStep<S, Path> implements FunctionHolde
     @Override
     public void addFunction(final Function<Object, Object> function) {
         this.functionRing.addFunction(function);
+        if (function instanceof TraversableLambda)
+            this.executeTraversalOperations(((TraversableLambda) function).getTraversal(), TYPICAL_LOCAL_OPERATIONS);
+    }
+
+    @Override
+    public List<Traversal<Object, Object>> getLocalTraversals() {
+        return this.functionRing.getTraversals();
     }
 
     @Override
@@ -69,7 +81,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements FunctionHolde
                 path = traverser.path();
             else {
                 path = MutablePath.make();
-                traverser.path().forEach((object,labels) -> path.extend(pathStep.functionRing.next().apply(object), labels.toArray(new String[labels.size()])));
+                traverser.path().forEach((object, labels) -> path.extend(pathStep.functionRing.next().apply(object), labels.toArray(new String[labels.size()])));
             }
             pathStep.functionRing.reset();
             return path;

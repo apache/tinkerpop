@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 import com.tinkerpop.gremlin.util.function.ResettableLambda;
+import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
@@ -13,7 +14,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalObjectLambda<S, E> implements Function<S, E>, Predicate<S>, Consumer<S>, Cloneable, CloneableLambda, ResettableLambda {
+public class TraversalObjectLambda<S, E> implements Function<S, E>, Predicate<S>, Consumer<S>, Cloneable, TraversableLambda<S,E> {
 
     private Traversal.Admin<S, E> traversal;
     private TraverserGenerator generator;
@@ -51,6 +52,7 @@ public class TraversalObjectLambda<S, E> implements Function<S, E>, Predicate<S>
         this.traversal.iterate();
     }
 
+    @Override
     public Traversal<S, E> getTraversal() {
         return this.traversal;
     }
@@ -74,7 +76,7 @@ public class TraversalObjectLambda<S, E> implements Function<S, E>, Predicate<S>
     }
 
     @Override
-    public void resetLambda() {
+    public void reset() {
         this.traversal.reset();
     }
 }

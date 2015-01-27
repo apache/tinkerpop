@@ -7,16 +7,15 @@ import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupCountMapReduce;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.SmartLambda;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,12 +24,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectRegistrar, SideEffectCapable, Reversible, FunctionHolder<S, Object>, MapReducer<Object, Long, Object, Long, Map<Object, Long>> {
-
-    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
-            TraverserRequirement.BULK,
-            TraverserRequirement.SIDE_EFFECTS
-    ));
+public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectRegistrar, SideEffectCapable, Reversible, TraversalHolder, FunctionHolder<S, Object>, MapReducer<Object, Long, Object, Long, Map<Object, Long>> {
 
     private SmartLambda<S, Object> smartLambda = new SmartLambda<>();
     private String sideEffectKey;
@@ -66,6 +60,7 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
     @Override
     public void addFunction(final Function<S, Object> function) {
         this.smartLambda.setLambda(function);
+        this.executeTraversalOperations(this.smartLambda.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
     }
 
     @Override
@@ -74,10 +69,15 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
     }
 
     @Override
+    public List<Traversal<S, Object>> getLocalTraversals() {
+        return this.smartLambda.getTraversalAsList();
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = new HashSet<>();
-        requirements.addAll(this.smartLambda.getRequirements());
-        requirements.addAll(REQUIREMENTS);
+        final Set<TraverserRequirement> requirements = TraversalHolder.super.getRequirements();
+        requirements.add(TraverserRequirement.BULK);
+        requirements.add(TraverserRequirement.SIDE_EFFECTS);
         return requirements;
     }
 
@@ -85,6 +85,7 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
     public GroupCountStep<S> clone() throws CloneNotSupportedException {
         final GroupCountStep<S> clone = (GroupCountStep<S>) super.clone();
         clone.smartLambda = this.smartLambda.clone();
+        clone.executeTraversalOperations(clone.smartLambda.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
         GroupCountStep.generateConsumer(clone);
         return clone;
     }

@@ -1,11 +1,14 @@
 package com.tinkerpop.gremlin.process.util;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 import com.tinkerpop.gremlin.util.function.ResettableLambda;
+import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -14,7 +17,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Consumer<S>, Cloneable, CloneableLambda, ResettableLambda {
+public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Consumer<S>, Cloneable, TraversableLambda {
 
     private TraversalLambda<S, E> traversalLambda;
     private Object lambda;
@@ -85,16 +88,13 @@ public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Co
         return this.clone();
     }
 
-    public void reset() {
-        if (this.usesTraversalLambda)
-            this.traversalLambda.resetLambda();
-        else
-            ResettableLambda.resetOrReturn(this.lambda);
-    }
 
     @Override
-    public void resetLambda() {
-        this.reset();
+    public void reset() {
+        if (this.usesTraversalLambda)
+            this.traversalLambda.reset();
+        else
+            ResettableLambda.resetOrReturn(this.lambda);
     }
 
 
@@ -102,5 +102,14 @@ public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Co
         return this.usesTraversalLambda ?
                 this.traversalLambda.getTraversal().asAdmin().getTraverserRequirements() :
                 Collections.singleton(TraverserRequirement.OBJECT);
+    }
+
+    @Override
+    public Traversal<S, E> getTraversal() {
+        return this.usesTraversalLambda ? this.traversalLambda.getTraversal() : EmptyTraversal.instance();
+    }
+
+    public List<Traversal<S, E>> getTraversalAsList() {
+        return this.usesTraversalLambda ? Collections.singletonList(this.traversalLambda.getTraversal()) : Collections.emptyList();
     }
 }

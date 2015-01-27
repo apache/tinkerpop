@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -10,11 +9,11 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalLambda;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 import com.tinkerpop.gremlin.util.function.ResettableLambda;
+import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -27,11 +26,6 @@ import java.util.stream.Collectors;
  */
 public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements TraversalOptionHolder<M, S, E> {
 
-    private static final TraversalHolder.Child[] CHILD_OPERATIONS = new TraversalHolder.Child[]{
-            TraversalHolder.Child.SET_HOLDER,
-            TraversalHolder.Child.MERGE_IN_SIDE_EFFECTS,
-            TraversalHolder.Child.SET_SIDE_EFFECTS};
-
     protected Function<Traverser<S>, M> pickFunction;
     protected Map<M, List<Traversal<S, E>>> traversalOptions = new HashMap<>();
 
@@ -41,6 +35,8 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
 
     public void setFunction(final Function<Traverser<S>, M> pickFunction) {
         this.pickFunction = pickFunction;
+        if (this.pickFunction instanceof TraversableLambda)
+            this.executeTraversalOperations(((TraversableLambda) this.pickFunction).getTraversal(), TYPICAL_LOCAL_OPERATIONS);
     }
 
     @Override
@@ -50,16 +46,12 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
         else
             this.traversalOptions.put(pickToken, new ArrayList<>(Collections.singletonList(traversalOption)));
         traversalOption.asAdmin().addStep(new EndStep(traversalOption));
-        this.executeTraversalOperations(traversalOption, CHILD_OPERATIONS);
+        this.executeTraversalOperations(traversalOption, TYPICAL_GLOBAL_OPERATIONS);
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = new HashSet<>();
-        if (this.pickFunction instanceof TraversalLambda)
-            requirements.addAll((((TraversalLambda<S, E>) this.pickFunction).getTraversal().asAdmin().getTraverserRequirements()));
-        requirements.addAll(TraversalOptionHolder.super.getRequirements());
-        return requirements;
+        return TraversalOptionHolder.super.getRequirements();
     }
 
     @Override
@@ -67,6 +59,11 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
         return Collections.unmodifiableList(this.traversalOptions.values().stream()
                 .flatMap(list -> list.stream())
                 .collect(Collectors.toList()));
+    }
+
+    @Override
+    public List<Traversal<S, M>> getLocalTraversals() {
+        return this.pickFunction instanceof TraversalLambda ? Collections.singletonList(((TraversalLambda) this.pickFunction).getTraversal()) : Collections.emptyList();
     }
 
     @Override
@@ -129,10 +126,12 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
                     clone.traversalOptions.get(entry.getKey()).add(clonedTraversal);
                 else
                     clone.traversalOptions.put(entry.getKey(), new ArrayList<>(Collections.singletonList(clonedTraversal)));
-                clone.executeTraversalOperations(clonedTraversal, CHILD_OPERATIONS);
+                clone.executeTraversalOperations(clonedTraversal, TYPICAL_GLOBAL_OPERATIONS);
             }
         }
         clone.pickFunction = CloneableLambda.cloneOrReturn(this.pickFunction);
+        if (clone.pickFunction instanceof TraversableLambda)
+            clone.executeTraversalOperations(((TraversableLambda) clone.pickFunction).getTraversal(), TYPICAL_LOCAL_OPERATIONS);
         return clone;
     }
 

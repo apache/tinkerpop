@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalLambda;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
+import com.tinkerpop.gremlin.util.function.TraversableLambda;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
@@ -48,21 +48,21 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     public void setRepeatTraversal(final Traversal<S, S> repeatTraversal) {
         this.repeatTraversal = repeatTraversal.asAdmin(); // .clone();
         this.repeatTraversal.addStep(new RepeatEndStep(this.repeatTraversal));
-        this.executeTraversalOperations(this.repeatTraversal, Child.SET_HOLDER, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS);
+        this.executeTraversalOperations(this.repeatTraversal, TYPICAL_GLOBAL_OPERATIONS);
     }
 
     public void setUntilPredicate(final Predicate<Traverser<S>> untilPredicate) {
         if (null == this.repeatTraversal) this.untilFirst = true;
         this.untilPredicate = untilPredicate;
-        if (this.untilPredicate instanceof TraversalLambda)
-            this.executeTraversalOperations(((TraversalLambda<S, ?>) this.untilPredicate).getTraversal(), Child.SET_HOLDER);
+        if (this.untilPredicate instanceof TraversableLambda)
+            this.executeTraversalOperations(((TraversableLambda) this.untilPredicate).getTraversal(), TYPICAL_LOCAL_OPERATIONS);
     }
 
     public void setEmitPredicate(final Predicate<Traverser<S>> emitPredicate) {
         if (null == this.repeatTraversal) this.emitFirst = true;
         this.emitPredicate = emitPredicate;
-        if (this.emitPredicate instanceof TraversalLambda)
-            this.executeTraversalOperations(((TraversalLambda<S, ?>) this.emitPredicate).getTraversal(), Child.SET_HOLDER);
+        if (this.emitPredicate instanceof TraversableLambda)
+            this.executeTraversalOperations(((TraversableLambda) this.emitPredicate).getTraversal(), TYPICAL_LOCAL_OPERATIONS);
     }
 
     public List<Traversal<S, S>> getGlobalTraversals() {
@@ -71,10 +71,10 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     public List<Traversal<S, ?>> getLocalTraversals() {
         final List<Traversal<S, ?>> list = new ArrayList<>();
-        if (this.untilPredicate instanceof TraversalLambda)
-            list.add(((TraversalLambda<S, ?>) this.untilPredicate).getTraversal());
-        if (this.emitPredicate instanceof TraversalLambda)
-            list.add(((TraversalLambda<S, ?>) this.emitPredicate).getTraversal());
+        if (this.untilPredicate instanceof TraversableLambda)
+            list.add(((TraversableLambda<S, ?>) this.untilPredicate).getTraversal());
+        if (this.emitPredicate instanceof TraversableLambda)
+            list.add(((TraversableLambda<S, ?>) this.emitPredicate).getTraversal());
         return list;
     }
 
@@ -114,8 +114,8 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         clone.repeatTraversal = this.repeatTraversal.clone().asAdmin();
         clone.untilPredicate = CloneableLambda.cloneOrReturn(this.untilPredicate);
         clone.emitPredicate = CloneableLambda.cloneOrReturn(this.emitPredicate);
-        clone.getGlobalTraversals().forEach(global -> clone.executeTraversalOperations(global, Child.SET_HOLDER, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS));
-        clone.getLocalTraversals().forEach(local -> clone.executeTraversalOperations(local, Child.SET_HOLDER));
+        clone.getGlobalTraversals().forEach(global -> clone.executeTraversalOperations(global, TYPICAL_GLOBAL_OPERATIONS));
+        clone.getLocalTraversals().forEach(local -> clone.executeTraversalOperations(local, TYPICAL_LOCAL_OPERATIONS));
         return clone;
     }
 

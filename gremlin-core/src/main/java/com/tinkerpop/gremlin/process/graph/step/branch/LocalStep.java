@@ -26,7 +26,7 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
     public LocalStep(final Traversal traversal, final Traversal<S, E> localTraversal) {
         super(traversal);
         this.localTraversal = localTraversal.asAdmin();
-        this.executeTraversalOperations(this.localTraversal, Child.SET_HOLDER, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS);
+        this.executeTraversalOperations(this.localTraversal, TYPICAL_GLOBAL_OPERATIONS);
     }
 
     @Override
@@ -34,7 +34,7 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
         final LocalStep<S, E> clone = (LocalStep<S, E>) super.clone();
         clone.localTraversal = this.localTraversal.clone().asAdmin();
         clone.first = true;
-        clone.executeTraversalOperations(clone.localTraversal, Child.SET_HOLDER, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS);
+        clone.executeTraversalOperations(clone.localTraversal, TYPICAL_GLOBAL_OPERATIONS);
         return clone;
     }
 

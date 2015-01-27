@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupMapReduce;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
@@ -18,11 +19,11 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 import com.tinkerpop.gremlin.util.function.ResettableLambda;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,13 +32,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, SideEffectRegistrar, FunctionHolder<Object, Object>, Reversible, EngineDependent, MapReducer<Object, Collection, Object, Object, Map> {
-
-    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
-            TraverserRequirement.BULK,
-            TraverserRequirement.OBJECT,
-            TraverserRequirement.SIDE_EFFECTS
-    ));
+public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, SideEffectRegistrar, TraversalHolder, FunctionHolder<Object, Object>, Reversible, EngineDependent, MapReducer<Object, Collection, Object, Object, Map> {
 
     private char state = 'k';
     private SmartLambda<S, K> keyFunction = new SmartLambda<>();
@@ -95,6 +90,14 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     }
 
     @Override
+    public List<Traversal<S, Object>> getLocalTraversals() {
+        final List<Traversal<S, Object>> traversals = new ArrayList<>();
+        traversals.addAll((List) this.keyFunction.getTraversalAsList());
+        traversals.addAll((List) this.valueFunction.getTraversalAsList());
+        return traversals;
+    }
+
+    @Override
     public void reset() {
         super.reset();
         this.keyFunction.reset();
@@ -110,9 +113,11 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     public void addFunction(final Function<Object, Object> function) {
         if ('k' == this.state) {
             this.keyFunction.setLambda(function);
+            this.executeTraversalOperations(this.keyFunction.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
             this.state = 'v';
         } else if ('v' == this.state) {
             this.valueFunction.setLambda(function);
+            this.executeTraversalOperations(this.valueFunction.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
             this.state = 'r';
         } else if ('r' == this.state) {
             this.reduceFunction = (Function) function;
@@ -137,10 +142,9 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = new HashSet<>();
-        requirements.addAll(this.keyFunction.getRequirements());
-        requirements.addAll(this.valueFunction.getRequirements());
-        requirements.addAll(REQUIREMENTS);
+        final Set<TraverserRequirement> requirements = TraversalHolder.super.getRequirements();
+        requirements.add(TraverserRequirement.BULK);
+        requirements.add(TraverserRequirement.SIDE_EFFECTS);
         return requirements;
     }
 
@@ -148,7 +152,9 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     public GroupStep<S, K, V, R> clone() throws CloneNotSupportedException {
         final GroupStep<S, K, V, R> clone = (GroupStep<S, K, V, R>) super.clone();
         clone.keyFunction = this.keyFunction.clone();
+        clone.executeTraversalOperations(this.keyFunction.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
         clone.valueFunction = this.valueFunction.clone();
+        clone.executeTraversalOperations(this.valueFunction.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
         clone.reduceFunction = CloneableLambda.cloneOrReturn(this.reduceFunction);
         GroupStep.generateConsumer(clone);
         return clone;

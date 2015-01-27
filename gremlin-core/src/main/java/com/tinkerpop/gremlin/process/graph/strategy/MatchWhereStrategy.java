@@ -47,7 +47,7 @@ public class MatchWhereStrategy extends AbstractTraversalStrategy implements Tra
                         foundWhereWithNoTraversal = true;
                     }
                 } else if (currentStep instanceof SelectStep) {
-                    if (((SelectStep) currentStep).hasStepFunctions() || foundWhereWithNoTraversal)
+                    if (!((SelectStep) currentStep).getFunctions().isEmpty() || foundWhereWithNoTraversal)
                         break;
                 }  // else is the identity step
                 currentStep = currentStep.getNextStep();

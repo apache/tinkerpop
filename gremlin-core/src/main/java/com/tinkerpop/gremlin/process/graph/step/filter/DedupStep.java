@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.SmartLambda;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -18,7 +19,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupStep<S> extends FilterStep<S> implements Reversible, Reducing<Set<Object>, S>, FunctionHolder<S, Object> {
+public final class DedupStep<S> extends FilterStep<S> implements Reversible, Reducing<Set<Object>, S>, FunctionHolder<S, Object>, TraversalHolder {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
             TraverserRequirement.BULK,
@@ -33,19 +34,22 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
         DedupStep.generatePredicate(this);
     }
 
-    public boolean hasUniqueFunction() {
-        return null != this.smartLambda;
-    }
-
     @Override
     public void addFunction(final Function<S, Object> function) {
         this.smartLambda = new SmartLambda<>(function);
+        this.executeTraversalOperations(this.smartLambda.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
         DedupStep.generatePredicate(this);
     }
 
     @Override
     public List<Function<S, Object>> getFunctions() {
         return null == this.smartLambda ? Collections.emptyList() : Collections.singletonList(this.smartLambda);
+    }
+
+    @Override
+    public List<Traversal<S, Object>> getLocalTraversals() {
+        if (null == this.smartLambda) return Collections.emptyList();
+        return this.smartLambda.getTraversalAsList();
     }
 
     @Override
@@ -60,7 +64,10 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     public DedupStep<S> clone() throws CloneNotSupportedException {
         final DedupStep<S> clone = (DedupStep<S>) super.clone();
         clone.duplicateSet = new HashSet<>();
-        clone.smartLambda = this.smartLambda.clone();
+        if (null != this.smartLambda) {
+            clone.smartLambda = this.smartLambda.clone();
+            clone.executeTraversalOperations(clone.smartLambda.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
+        }
         DedupStep.generatePredicate(clone);
         return clone;
     }
@@ -82,8 +89,7 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
         if (null == this.smartLambda)
             return REQUIREMENTS;
         else {
-            final Set<TraverserRequirement> requirements = new HashSet<>();
-            requirements.addAll(this.smartLambda.getRequirements());
+            final Set<TraverserRequirement> requirements = TraversalHolder.super.getRequirements();
             requirements.addAll(REQUIREMENTS);
             return requirements;
         }

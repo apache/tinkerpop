@@ -5,11 +5,11 @@ package com.tinkerpop.gremlin.util.function;
  */
 public interface ResettableLambda {
 
-    public void resetLambda();
+    public void reset();
 
     public static void resetOrReturn(final Object lambda) {
         if (lambda instanceof ResettableLambda)
-            ((ResettableLambda) lambda).resetLambda();
+            ((ResettableLambda) lambda).reset();
     }
 
 }

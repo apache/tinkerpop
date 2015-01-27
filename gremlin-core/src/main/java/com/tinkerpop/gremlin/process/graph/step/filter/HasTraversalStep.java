@@ -23,7 +23,7 @@ public final class HasTraversalStep<S> extends FilterStep<S> implements Traversa
         super(traversal);
         this.traversalLambda = new TraversalLambda<>(hasTraversal);
         this.setPredicate(this.traversalLambda);
-        this.executeTraversalOperations(this.traversalLambda.getTraversal(), Child.SET_HOLDER);
+        this.executeTraversalOperations(this.traversalLambda.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
     }
 
     @Override
@@ -38,15 +38,15 @@ public final class HasTraversalStep<S> extends FilterStep<S> implements Traversa
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.traversalLambda.getTraversal().asAdmin().getTraverserRequirements();
+        return this.traversalLambda.getRequirements();
     }
 
     @Override
     public HasTraversalStep<S> clone() throws CloneNotSupportedException {
         final HasTraversalStep<S> clone = (HasTraversalStep<S>) super.clone();
         clone.traversalLambda = this.traversalLambda.clone();
+        clone.executeTraversalOperations(clone.traversalLambda.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
         clone.setPredicate(clone.traversalLambda);
-        clone.executeTraversalOperations(clone.traversalLambda.getTraversal(), Child.SET_HOLDER);
         return clone;
     }
 }

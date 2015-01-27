@@ -126,10 +126,9 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        g = g.strategy(PartitionStrategy.build().partitionKey("name").create());
-        GraphTraversal t = g.V().out();
+        Traversal t = g.V().has(T.label, "person").values("age").union(__.count(), __.count());
         System.out.println(t.toString());
-        t.iterate();
+        t.forEachRemaining(System.out::println);
         System.out.println(t.toString());
 
     }

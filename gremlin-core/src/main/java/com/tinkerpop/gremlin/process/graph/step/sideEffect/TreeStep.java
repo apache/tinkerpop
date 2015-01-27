@@ -8,11 +8,13 @@ import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.TreeMapReduce;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -23,7 +25,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRegistrar, Reversible, SideEffectCapable, FunctionHolder<Object, Object>, MapReducer<Object, Tree, Object, Tree, Tree> {
+public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRegistrar, Reversible, SideEffectCapable, TraversalHolder, FunctionHolder<Object, Object>, MapReducer<Object, Tree, Object, Tree, Tree> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
             TraverserRequirement.PATH,
@@ -71,6 +73,9 @@ public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRe
     public TreeStep<S> clone() throws CloneNotSupportedException {
         final TreeStep<S> clone = (TreeStep<S>) super.clone();
         clone.functionRing = this.functionRing.clone();
+        for (final Traversal<Object, Object> traversal : clone.functionRing.getTraversals()) {
+            clone.executeTraversalOperations(traversal, TYPICAL_LOCAL_OPERATIONS);
+        }
         TreeStep.generateConsumer(clone);
         return clone;
     }
@@ -78,11 +83,18 @@ public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRe
     @Override
     public void addFunction(final Function<Object, Object> function) {
         this.functionRing.addFunction(function);
+        if (function instanceof TraversableLambda)
+            this.executeTraversalOperations(((TraversableLambda) function).getTraversal(), TYPICAL_LOCAL_OPERATIONS);
     }
 
     @Override
     public List<Function<Object, Object>> getFunctions() {
         return this.functionRing.getFunctions();
+    }
+
+    @Override
+    public List<Traversal<Object, Object>> getLocalTraversals() {
+        return this.functionRing.getTraversals();
     }
 
     @Override

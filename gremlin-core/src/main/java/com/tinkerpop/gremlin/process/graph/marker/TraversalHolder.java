@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,6 +22,9 @@ public interface TraversalHolder {
         SET_SIDE_EFFECTS,
         MERGE_IN_SIDE_EFFECTS,
     }
+
+    public static Child[] TYPICAL_GLOBAL_OPERATIONS = {Child.SET_HOLDER, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS};
+    public static Child[] TYPICAL_LOCAL_OPERATIONS = {Child.SET_HOLDER};
 
     public default <S, E> List<Traversal<S, E>> getGlobalTraversals() {
         return Collections.emptyList();
@@ -65,5 +69,4 @@ public interface TraversalHolder {
     public default Step<?, ?> asStep() {
         return (Step<?, ?>) this;
     }
-
 }
