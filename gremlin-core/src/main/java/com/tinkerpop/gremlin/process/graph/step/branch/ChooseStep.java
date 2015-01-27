@@ -58,10 +58,10 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
 
     private static class PredicateToFunction<S, E> implements Function<Traverser<S>, Boolean>, TraversableLambda<S, E>, Cloneable {
 
-        private Traversal.Admin<S, E> predicateTraversal;
+        private Traversal.Admin<S, E> traversal;
 
         public PredicateToFunction(final Traversal<S, E> traversal) {
-            this.predicateTraversal = traversal.asAdmin();
+            this.traversal = traversal.asAdmin();
         }
 
         @Override
@@ -72,27 +72,32 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
         @Override
         public Boolean apply(final Traverser<S> traverser) {
             final Traverser.Admin<S> split = traverser.asAdmin().split();
-            split.setSideEffects(this.predicateTraversal.getSideEffects());
-            this.predicateTraversal.reset();
-            this.predicateTraversal.addStart(split);
-            return this.predicateTraversal.hasNext();
+            split.setSideEffects(this.traversal.getSideEffects());
+            this.traversal.reset();
+            this.traversal.addStart(split);
+            return this.traversal.hasNext();
         }
 
         @Override
         public Traversal<S, E> getTraversal() {
-            return this.predicateTraversal;
+            return this.traversal;
         }
 
         @Override
         public void reset() {
-            this.predicateTraversal.reset();
+            this.traversal.reset();
         }
 
         @Override
         public PredicateToFunction<S, E> clone() throws CloneNotSupportedException {
             final PredicateToFunction<S, E> clone = (PredicateToFunction<S, E>) super.clone();
-            clone.predicateTraversal = this.predicateTraversal.clone().asAdmin();
+            clone.traversal = this.traversal.clone().asAdmin();
             return clone;
+        }
+
+        @Override
+        public String toString() {
+            return this.traversal.toString();
         }
     }
 }
