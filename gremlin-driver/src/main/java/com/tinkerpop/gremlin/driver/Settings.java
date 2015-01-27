@@ -74,7 +74,7 @@ class Settings {
         public MessageSerializer create() throws Exception {
             final Class clazz = Class.forName(className);
             final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
-            Optional.ofNullable(config).ifPresent(serializer::configure);
+            Optional.ofNullable(config).ifPresent(c -> serializer.configure(c, null));
             return serializer;
         }
     }

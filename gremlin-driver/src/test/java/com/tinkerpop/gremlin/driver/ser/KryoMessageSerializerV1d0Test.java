@@ -46,7 +46,7 @@ public class KryoMessageSerializerV1d0Test {
     public MessageSerializer textSerializer = new KryoMessageSerializerV1d0();
 
     public KryoMessageSerializerV1d0Test() {
-        textSerializer.configure(config);
+        textSerializer.configure(config, null);
     }
 
     @Test

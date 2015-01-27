@@ -117,14 +117,14 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
                 final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
                 if (config.config != null)
-                    serializer.configure(config.config);
+                    serializer.configure(config.config, graphs.getGraphs());
 
                 return Optional.ofNullable(serializer);
             } catch (ClassNotFoundException cnfe) {
                 logger.warn("Could not find configured serializer class - {} - it will not be available", config.className);
                 return Optional.<MessageSerializer>empty();
             } catch (Exception ex) {
-                logger.warn("Could not instantiate configured serializer class - {} - it will not be available.", config.className);
+                logger.warn("Could not instantiate configured serializer class - {} - it will not be available. {}", config.className, ex.getMessage());
                 return Optional.<MessageSerializer>empty();
             }
         }).filter(Optional::isPresent).map(Optional::get).flatMap(serializer ->

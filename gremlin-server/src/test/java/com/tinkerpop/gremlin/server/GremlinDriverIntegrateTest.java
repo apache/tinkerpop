@@ -222,7 +222,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Map<String, Object> m = new HashMap<>();
         m.put("serializeResultToString", true);
         final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0();
-        serializer.configure(m);
+        serializer.configure(m, null);
 
         final Cluster cluster = Cluster.build().serializer(serializer).create();
         final Client client = cluster.connect();
@@ -240,7 +240,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Map<String, Object> m = new HashMap<>();
         m.put("custom", Arrays.asList(String.format("%s;%s", JsonBuilder.class.getCanonicalName(), JsonBuilderKryoSerializer.class.getCanonicalName())));
         final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0();
-        serializer.configure(m);
+        serializer.configure(m, null);
 
         final Cluster cluster = Cluster.build().serializer(serializer).create();
         final Client client = cluster.connect();

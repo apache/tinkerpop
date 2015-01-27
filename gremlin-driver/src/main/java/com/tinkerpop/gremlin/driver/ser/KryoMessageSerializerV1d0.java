@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -47,6 +48,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
     private static final String TOKEN_EXTENDED_VERSION = "extendedVersion";
     private static final String TOKEN_CUSTOM = "custom";
     private static final String TOKEN_SERIALIZE_RESULT_TO_STRING = "serializeResultToString";
+    private static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
 
     private boolean serializeToString;
 
@@ -67,7 +69,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
     }
 
     @Override
-    public void configure(final Map<String, Object> config) {
+    public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
         final byte extendedVersion;
         try {
             extendedVersion = Byte.parseByte(config.getOrDefault(TOKEN_EXTENDED_VERSION, KryoMapper.DEFAULT_EXTENDED_VERSION).toString());
@@ -76,7 +78,28 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                     config.getOrDefault(TOKEN_EXTENDED_VERSION, ""), TOKEN_EXTENDED_VERSION, this.getClass().getName()), ex);
         }
 
-        final KryoMapper.Builder builder = KryoMapper.build(KryoMapper.Version.V_1_0_0).extendedVersion(extendedVersion);
+        final KryoMapper.Builder initialBuilder;
+        final Object graphToUseForMapper = config.get(TOKEN_USE_MAPPER_FROM_GRAPH);
+        if (graphToUseForMapper != null) {
+            if (null == graphs) throw new IllegalStateException(String.format(
+                    "No graphs have been provided to the serializer and therefore %s is not a valid configuration", TOKEN_USE_MAPPER_FROM_GRAPH));
+
+            final Graph g = graphs.get(graphToUseForMapper.toString());
+            if (null == g) throw new IllegalStateException(String.format(
+                    "There is no graph named [%s] configured to be used in the %s setting",
+                    graphToUseForMapper, TOKEN_USE_MAPPER_FROM_GRAPH));
+
+            // a graph was found so use the mapper it constructs.  this allows kryo to be auto-configured with any
+            // custom classes that the implementation allows for
+            initialBuilder = g.io().kryoMapper();
+        } else {
+            // no graph was supplied so just use the default - this will likely be the case when using a graph
+            // with no custom classes or a situation where the user needs complete control like when using two
+            // distinct implementations each with their own custom classes.
+            initialBuilder = KryoMapper.build(KryoMapper.Version.V_1_0_0);
+        }
+
+        final KryoMapper.Builder builder = initialBuilder.extendedVersion(extendedVersion);
 
         final List<String> classNameList;
         try {
