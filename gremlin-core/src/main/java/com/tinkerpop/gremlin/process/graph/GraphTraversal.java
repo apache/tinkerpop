@@ -42,6 +42,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.KeyStep;
 import com.tinkerpop.gremlin.process.graph.step.map.LabelStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MaxStep;
+import com.tinkerpop.gremlin.process.graph.step.map.MeanStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MinStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PathStep;
@@ -90,6 +91,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.tools.MeanNumber;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -301,6 +303,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <E2 extends Number> GraphTraversal<S, E2> min() {
         return this.asAdmin().addStep(new MinStep<>(this));
+    }
+
+    public default GraphTraversal<S, MeanNumber> mean() {
+        return this.asAdmin().addStep(new MeanStep<>(this));
     }
 
     public default <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {
