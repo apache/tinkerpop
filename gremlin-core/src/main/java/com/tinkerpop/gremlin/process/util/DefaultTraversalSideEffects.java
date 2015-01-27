@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -139,7 +140,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
         final Set<String> keys = new HashSet<>();
         keys.addAll(this.objectMap.keySet());
         keys.addAll(this.supplierMap.keySet());
-        return keys;
+        return Collections.unmodifiableSet(keys);
     }
 
     /**
