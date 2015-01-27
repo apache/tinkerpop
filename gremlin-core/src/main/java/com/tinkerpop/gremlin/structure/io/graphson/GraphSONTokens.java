@@ -19,6 +19,8 @@ public final class GraphSONTokens {
     public static final String IN_E = "inE";
     public static final String OUT_E = "outE";
     public static final String LABEL = "label";
+    public static final String LABELS = "labels";
+    public static final String OBJECTS = "objects";
     public static final String IN_LABEL = "inVLabel";
     public static final String OUT_LABEL = "outVLabel";
     // TraversalMetrics Tokens

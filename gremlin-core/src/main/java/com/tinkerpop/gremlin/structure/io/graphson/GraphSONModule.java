@@ -1,15 +1,19 @@
 package com.tinkerpop.gremlin.structure.io.graphson;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.util.Metrics;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.*;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
@@ -31,6 +35,7 @@ public class GraphSONModule extends SimpleModule {
         addSerializer(VertexProperty.class, new VertexPropertyJacksonSerializer());
         addSerializer(Property.class, new PropertyJacksonSerializer());
         addSerializer(TraversalMetrics.class, new TraversalMetricsJacksonSerializer());
+        addSerializer(Path.class, new PathJacksonSerializer());
     }
 
     static class VertexPropertyJacksonSerializer extends StdSerializer<VertexProperty> {
@@ -172,7 +177,33 @@ public class GraphSONModule extends SimpleModule {
 
             jsonGenerator.writeObject(m);
         }
+    }
 
+    static class PathJacksonSerializer extends StdSerializer<Path> {
+        public PathJacksonSerializer() {
+            super(Path.class);
+        }
+
+        @Override
+        public void serialize(final Path path, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException, JsonGenerationException {
+            ser(path, jsonGenerator);
+        }
+
+        @Override
+        public void serializeWithType(final Path path, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer)
+                throws IOException, JsonProcessingException {
+            ser(path, jsonGenerator);
+        }
+
+        private void ser(final Path path, final JsonGenerator jsonGenerator)
+                throws IOException {
+            final Map<String, Object> m = new HashMap<>();
+            m.put(GraphSONTokens.LABELS, path.labels());
+            m.put(GraphSONTokens.OBJECTS, path.objects());
+            jsonGenerator.writeObject(m);
+        }
     }
 
     static class TraversalMetricsJacksonSerializer extends StdSerializer<TraversalMetrics> {
@@ -205,7 +236,7 @@ public class GraphSONModule extends SimpleModule {
         }
 
         private Map<String, Object> metricsToMap(final Metrics metrics) {
-            Map<String, Object> m = new HashMap<>();
+            final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, metrics.getId());
             m.put(GraphSONTokens.NAME, metrics.getName());
             m.put(GraphSONTokens.COUNT, metrics.getCount());

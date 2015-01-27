@@ -222,7 +222,6 @@ public class SerializationTest {
             final String json = mapper.writeValueAsString(p);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
-            // todo: decide if this should really include "key" and "type" since Property is a first class citizen
             assertEquals(p.value(), m.get(GraphSONTokens.VALUE));
         }
 
@@ -234,7 +233,6 @@ public class SerializationTest {
             final String json = mapper.writeValueAsString(vp);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
-            // todo: should we have "type" here too?
             assertEquals(vp.label(), m.get(GraphSONTokens.LABEL));
             assertNotNull(m.get(GraphSONTokens.ID));
             assertEquals(vp.value(), m.get(GraphSONTokens.VALUE));
@@ -248,7 +246,6 @@ public class SerializationTest {
             final String json = mapper.writeValueAsString(vp);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
-            // todo: should we have "type" here too?
             assertEquals(vp.label(), m.get(GraphSONTokens.LABEL));
             assertNotNull(m.get(GraphSONTokens.ID));
             assertEquals(vp.value(), m.get(GraphSONTokens.VALUE));
@@ -264,39 +261,22 @@ public class SerializationTest {
             final String json = mapper.writeValueAsString(p);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
-            // todo: path is not asserted yet...
+            assertEquals(2, m.size());
 
-            /*
-            assertEquals(p.labels().size(), detached.labels().size());
-            assertEquals(p.labels().get(0).size(), detached.labels().get(0).size());
-            assertEquals(p.labels().get(1).size(), detached.labels().get(1).size());
-            assertEquals(p.labels().get(2).size(), detached.labels().get(2).size());
-            assertTrue(p.labels().stream().flatMap(Collection::stream).allMatch(detached::hasLabel));
+            final List<List<String>> labels = (List<List<String>>) m.get(GraphSONTokens.LABELS);
+            assertEquals(3, labels.size());
+            assertEquals("a", labels.get(0).get(0));
+            assertEquals(1, labels.get(0).size());
+            assertEquals("b", labels.get(1).get(0));
+            assertEquals(1, labels.get(1).size());
+            assertEquals("c", labels.get(2).get(0));
+            assertEquals(1, labels.get(2).size());
 
-            final Vertex vOut = p.get("a");
-            final Vertex detachedVOut = detached.get("a");
-            assertEquals(vOut.label(), detachedVOut.label());
-            assertEquals(vOut.id(), detachedVOut.id());
-
-            // this is a SimpleTraverser so no properties are present in detachment
-            assertFalse(detachedVOut.iterators().propertyIterator().hasNext());
-
-            final Edge e = p.get("b");
-            final Edge detachedE = detached.get("b");
-            assertEquals(e.label(), detachedE.label());
-            assertEquals(e.id(), detachedE.id());
-
-            // this is a SimpleTraverser so no properties are present in detachment
-            assertFalse(detachedE.iterators().propertyIterator().hasNext());
-
-            final Vertex vIn = p.get("c");
-            final Vertex detachedVIn = detached.get("c");
-            assertEquals(vIn.label(), detachedVIn.label());
-            assertEquals(vIn.id(), detachedVIn.id());
-
-            // this is a SimpleTraverser so no properties are present in detachment
-            assertFalse(detachedVIn.iterators().propertyIterator().hasNext());
-            */
+            final List<Object> objects = (List<Object>) m.get(GraphSONTokens.OBJECTS);
+            assertEquals(3, objects.size());
+            assertEquals("marko", ((Map) ((List) ((Map) ((Map) objects.get(0)).get(GraphSONTokens.PROPERTIES)).get("name")).get(0)).get(GraphSONTokens.VALUE));
+            assertEquals("created", ((Map) objects.get(1)).get(GraphSONTokens.LABEL));
+            assertEquals("lop", ((Map) ((List) ((Map) ((Map) objects.get(2)).get(GraphSONTokens.PROPERTIES)).get("name")).get(0)).get(GraphSONTokens.VALUE));
         }
 
         @Test
