@@ -25,6 +25,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.FoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MatchTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MaxTest;
+import com.tinkerpop.gremlin.process.graph.step.map.MinTest;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
@@ -111,6 +112,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             MapTest.StandardTest.class,
             MatchTest.StandardTest.class,
             MaxTest.StandardTest.class,
+            MinTest.StandardTest.class,
             OrderTest.StandardTest.class,
             com.tinkerpop.gremlin.process.graph.step.map.PathTest.StandardTest.class,
             PropertiesTest.StandardTest.class,
@@ -179,6 +181,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             MapTest.class,
             MatchTest.class,
             MaxTest.class,
+            MinTest.class,
             OrderTest.class,
             com.tinkerpop.gremlin.process.graph.step.map.PathTest.class,
             SelectTest.class,
