@@ -13,7 +13,6 @@ import java.util.Set;
  */
 public class MultiMap {
 
-
     public static <K, V> boolean putAll(final Map<K, Set<V>> map, final K key, final Collection<V> values) {
         return getMapSet(map, key).addAll(values);
     }

@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -91,7 +90,7 @@ public final class VertexTraversalSideEffects implements TraversalSideEffects {
 
     @Override
     public void setLocalVertex(final Vertex vertex) {
-        this.objectMap = vertex.<Map<String, Object>>property(SIDE_EFFECTS).orElse(new HashMap<>());
+        this.objectMap = vertex.<Map<String, Object>>property(SIDE_EFFECTS).orElse(Collections.emptyMap());
     }
 
     @Override
