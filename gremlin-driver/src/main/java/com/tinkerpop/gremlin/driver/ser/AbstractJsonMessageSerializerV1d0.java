@@ -11,6 +11,8 @@ import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import groovy.json.JsonBuilder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -29,12 +31,47 @@ import java.util.UUID;
 public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerializer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractJsonMessageSerializerV1d0.class);
 
+    protected ObjectMapper mapper;
+
+    protected static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
+
     protected final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {
     };
 
-    abstract ObjectMapper obtainMapper();
+    public AbstractJsonMessageSerializerV1d0() {
+        final GraphSONMapper.Builder builder = configureBuilder(GraphSONMapper.build());
+        mapper = builder.create().createMapper();
+    }
 
     abstract byte[] obtainHeader();
+
+    abstract GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder);
+
+    @Override
+    public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
+        final GraphSONMapper.Builder initialBuilder;
+        final Object graphToUseForMapper = config.get(TOKEN_USE_MAPPER_FROM_GRAPH);
+        if (graphToUseForMapper != null) {
+            if (null == graphs) throw new IllegalStateException(String.format(
+                    "No graphs have been provided to the serializer and therefore %s is not a valid configuration", TOKEN_USE_MAPPER_FROM_GRAPH));
+
+            final Graph g = graphs.get(graphToUseForMapper.toString());
+            if (null == g) throw new IllegalStateException(String.format(
+                    "There is no graph named [%s] configured to be used in the %s setting",
+                    graphToUseForMapper, TOKEN_USE_MAPPER_FROM_GRAPH));
+
+            // a graph was found so use the mapper it constructs.  this allows graphson to be auto-configured with any
+            // custom classes that the implementation allows for
+            initialBuilder = g.io().graphSONMapper();
+        } else {
+            // no graph was supplied so just use the default - this will likely be the case when using a graph
+            // with no custom classes or a situation where the user needs complete control like when using two
+            // distinct implementations each with their own custom classes.
+            initialBuilder = GraphSONMapper.build();
+        }
+
+        mapper = configureBuilder(initialBuilder).create().createMapper();
+    }
 
     @Override
     public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
@@ -54,7 +91,7 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
             message.put(SerTokens.TOKEN_RESULT, result);
             message.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
 
-            final byte[] payload = obtainMapper().writeValueAsBytes(message);
+            final byte[] payload = mapper.writeValueAsBytes(message);
             encodedMessage = allocator.buffer(payload.length);
             encodedMessage.writeBytes(payload);
 
@@ -72,7 +109,7 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
         ByteBuf encodedMessage = null;
         try {
             final byte[] header = obtainHeader();
-            final byte[] payload = obtainMapper().writeValueAsBytes(requestMessage);
+            final byte[] payload = mapper.writeValueAsBytes(requestMessage);
 
             encodedMessage = allocator.buffer(header.length + payload.length);
             encodedMessage.writeBytes(header);
@@ -92,7 +129,7 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
         try {
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
-            return obtainMapper().readValue(payload, RequestMessage.class);
+            return mapper.readValue(payload, RequestMessage.class);
         } catch (Exception ex) {
             logger.warn("Request [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);
@@ -104,7 +141,7 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
         try {
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
-            final Map<String, Object> responseData = obtainMapper().readValue(payload, mapTypeReference);
+            final Map<String, Object> responseData = mapper.readValue(payload, mapTypeReference);
             final Map<String, Object> status = (Map<String, Object>) responseData.get(SerTokens.TOKEN_STATUS);
             final Map<String, Object> result = (Map<String, Object>) responseData.get(SerTokens.TOKEN_RESULT);
             return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))

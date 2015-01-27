@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.driver.ser;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 
 import java.nio.ByteBuffer;
@@ -13,11 +12,6 @@ import java.nio.ByteBuffer;
 public class JsonMessageSerializerGremlinV1d0 extends AbstractJsonMessageSerializerV1d0 {
 
     private static final String MIME_TYPE = SerTokens.MIME_JSON_V1D0;
-
-    private static final ObjectMapper mapper = GraphSONMapper.build()
-            .addCustomModule(new JsonMessageSerializerV1d0.GremlinServerModule())
-            .embedTypes(true)
-            .create().createMapper();
 
     private static byte[] header;
 
@@ -39,7 +33,8 @@ public class JsonMessageSerializerGremlinV1d0 extends AbstractJsonMessageSeriali
     }
 
     @Override
-    ObjectMapper obtainMapper() {
-        return mapper;
+    GraphSONMapper.Builder configureBuilder(GraphSONMapper.Builder builder) {
+        return builder.addCustomModule(new JsonMessageSerializerV1d0.GremlinServerModule())
+                .embedTypes(true);
     }
 }
