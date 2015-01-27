@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Refactored `GraphTraversal.cap()` to `GraphTraversal.cap(String...)` to support multi-sideEffect grabs.
+* Added `CloneableLambda', `ResettableLambda', and `TraversableLambda` interfaces to allow steps to process such lambdas as needed.
 * Added `Traversal.Admin.getTraverserRequirements()` and removed `TraversalHelper.getTraverserRequirements(Traversal)`.
 * Added `SmartLambda` which is smart about handling a `TraversalLambda` or a standard Java8 lambda.
 * `Traversal.equals()` is no longer computed by determining if the objects returned are equal.
@@ -24,7 +26,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `SupplyingBarrier` which simply drains the traversal and emits the value of a provided supplier.
 * Added `TraversalLambda` which implements function, predicate, and consumer over a provided traversal.
 * Any non-core `Step` that takes a function or predicate can now take a traversal which maps to `traversal.next()` (function) and `traversal.hasNext()` (predicate).
-* `BarrierStep` is no longer abstract and added `GraphTraversal.barrier()` which is analogous to `fold().unfold()`, though cheaper.
+* `CollectingBarrierStep` is no longer abstract and added `GraphTraversal.barrier()` which is analogous to `fold().unfold()`, though cheaper.
 * Added `TraversalOptionHolder` for branching steps to index works with corresponding `GraphTraversal.option()`.
 * `BranchStep` is now a proper generalization of `UnionStep` and `ChooseStep`.
 * `SubgraphStep` has changed in support of in-traversal filtering and removing the need for path-based traversers.
@@ -33,7 +35,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Refactored `profile()` to use injected steps. `ProfileStep` can now be used without any special JVM command line parameters.
 * Added `ReducingBarrierStep` which acts like `CollectingBarrierStep` but operates on a seed with a bi-function.
 * Added a preprocessor for AsciiDocs. Documentation code examples are executed and the results are dynamically inserted into the doc file.
-* `LocalStep` traversal is treated as a branch, not an isolated traversal. Moreover, moved to `branch/`.
+* `LocalStep` traversal is treated as a branch, not an isolated traversal. Moreover, moved `LocalStep` to `branch/`.
 * Traversal strategies are now applied when the `TraversalVertexProgram` state is loaded, not when submitted. Less error prone as it guarantees strategy application.
 * Reworked `TraversalHolder` where there are "local traversals" and "global traversals". Local traversals are not subject to OLAP message passing.
 * Fixed a bug in `DedupStep` that made itself apparent in `DedupOptimizerStrategy`.

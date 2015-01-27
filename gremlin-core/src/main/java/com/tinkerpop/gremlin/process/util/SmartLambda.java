@@ -88,7 +88,6 @@ public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Co
         return this.clone();
     }
 
-
     @Override
     public void reset() {
         if (this.usesTraversalLambda)
