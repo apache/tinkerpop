@@ -43,6 +43,10 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
         mapper = builder.create().createMapper();
     }
 
+    public AbstractJsonMessageSerializerV1d0(final GraphSONMapper mapper) {
+        this.mapper = mapper.createMapper();
+    }
+
     abstract byte[] obtainHeader();
 
     abstract GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder);

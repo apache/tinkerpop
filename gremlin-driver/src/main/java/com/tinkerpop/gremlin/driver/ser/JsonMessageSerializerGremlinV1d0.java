@@ -22,6 +22,14 @@ public class JsonMessageSerializerGremlinV1d0 extends AbstractJsonMessageSeriali
         header = buffer.array();
     }
 
+    public JsonMessageSerializerGremlinV1d0() {
+        super();
+    }
+
+    public JsonMessageSerializerGremlinV1d0(final GraphSONMapper mapper) {
+        super(mapper);
+    }
+
     @Override
     public String[] mimeTypesSupported() {
         return new String[]{MIME_TYPE};

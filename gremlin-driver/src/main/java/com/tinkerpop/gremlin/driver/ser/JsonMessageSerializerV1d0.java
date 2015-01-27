@@ -30,6 +30,14 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
         header = buffer.array();
     }
 
+    public JsonMessageSerializerV1d0() {
+        super();
+    }
+
+    public JsonMessageSerializerV1d0(final GraphSONMapper mapper) {
+        super(mapper);
+    }
+
     @Override
     public String[] mimeTypesSupported() {
         return new String[]{MIME_TYPE};
