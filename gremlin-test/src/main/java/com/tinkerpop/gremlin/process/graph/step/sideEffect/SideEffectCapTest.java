@@ -37,7 +37,6 @@ public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore
     @LoadGraphWith(MODERN)
     public void g_V_chooseXlabel_person__age_groupCountXaX__name_groupCountXbXX_capXa_bX() {
         final Traversal<Vertex, Map<String, Map<Object, Long>>> traversal = get_g_V_chooseXlabel_person__age_groupCountXaX__name_groupCountXbXX_capXa_bX();
@@ -45,7 +44,6 @@ public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
         assertTrue(traversal.hasNext());
         Map<String, Map<Object, Long>> map = traversal.next();
         assertFalse(traversal.hasNext());
-        System.out.println("!!!!!!!!!" + map);
         assertEquals(2, map.size());
         assertTrue(map.containsKey("a"));
         assertTrue(map.containsKey("b"));

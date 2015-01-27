@@ -539,8 +539,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this, choosePredicate, (Traversal<E, E2>) trueChoice, (Traversal<E, E2>) falseChoice));
     }
 
-    public default <M, E2> GraphTraversal<S, E2> choose(final Traversal<?, M> traversalPredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
-        return this.choose(new TraversalObjectLambda<>((Traversal<E, M>) traversalPredicate), trueChoice, falseChoice);
+    public default <E2> GraphTraversal<S, E2> choose(final Traversal<?, ?> traversalPredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
+        return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this, (Traversal) traversalPredicate, (Traversal<E, E2>) trueChoice, (Traversal<E, E2>) falseChoice));
     }
 
     public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... traversals) {
