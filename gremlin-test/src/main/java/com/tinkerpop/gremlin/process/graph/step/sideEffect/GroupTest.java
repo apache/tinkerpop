@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -97,6 +96,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_group_byXoutE_countX_byXnameX() {
         final Traversal<Vertex, Map<Long, Collection<String>>> traversal = get_g_V_group_byXoutE_countX_byXnameX();
+        printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         final Map<Long, Collection<String>> map = traversal.next();
         assertFalse(traversal.hasNext());

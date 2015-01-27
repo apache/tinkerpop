@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -126,7 +127,9 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().has(T.label,"person").group().by(__.outE("created").count()).by(__.outE().label().groupCount().cap());
+        Traversal t =  g.V().choose(__.has(T.label, "person"),
+                __.values("age").groupCount("a"),
+                __.values("name").groupCount("b")).<Map<String,Map<Object,Long>>>cap("a", "b").flatMap(m -> m.get().values().iterator());
         System.out.println(t.toString());
         t.forEachRemaining(System.out::println);
         System.out.println(t.toString());
