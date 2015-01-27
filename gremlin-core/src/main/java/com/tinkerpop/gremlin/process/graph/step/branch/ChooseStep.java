@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.TraversalLambda;
 import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
+import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -18,18 +19,28 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
 
     public ChooseStep(final Traversal traversal, final Function<S, M> choiceFunction) {
         super(traversal);
-        this.setFunction(choiceFunction instanceof TraversalObjectLambda ?
-                new TraversalLambda<>(((TraversalObjectLambda<S, M>) choiceFunction).getTraversal()) :
-                new Function<Traverser<S>, M>() {
-                    @Override
-                    public M apply(final Traverser<S> traverser) {
-                        return choiceFunction.apply(traverser.get());
-                    }
-                });
+        if (choiceFunction instanceof TraversalObjectLambda) {
+            this.setFunction(new TraversalLambda<>(((TraversalObjectLambda<S, M>) choiceFunction).getTraversal()));
+        } else if (choiceFunction instanceof PredicateToFunction) {
+            this.setFunction((PredicateToFunction) choiceFunction);
+        } else {
+            this.setFunction(new Function<Traverser<S>, M>() {
+                @Override
+                public M apply(final Traverser<S> traverser) {
+                    return choiceFunction.apply(traverser.get());
+                }
+            });
+        }
     }
 
     public ChooseStep(final Traversal traversal, final Predicate<S> predicate, final Traversal<S, E> trueChoice, final Traversal<S, E> falseChoice) {
         this(traversal, (Function) s -> predicate.test((S) s));
+        this.addOption((M) Boolean.TRUE, trueChoice);
+        this.addOption((M) Boolean.FALSE, falseChoice);
+    }
+
+    public ChooseStep(final Traversal traversal, final Traversal<S, ?> predicate, final Traversal<S, E> trueChoice, final Traversal<S, E> falseChoice) {
+        this(traversal, (Function<S, M>) new PredicateToFunction<>(predicate));
         this.addOption((M) Boolean.TRUE, trueChoice);
         this.addOption((M) Boolean.FALSE, falseChoice);
     }
@@ -41,5 +52,47 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
         if (this.traversalOptions.containsKey(pickToken))
             throw new IllegalArgumentException("Choose step can only have one traversal per pick token: " + pickToken);
         super.addOption(pickToken, traversalOption);
+    }
+
+    ////
+
+    private static class PredicateToFunction<S, E> implements Function<Traverser<S>, Boolean>, TraversableLambda<S, E>, Cloneable {
+
+        private Traversal.Admin<S, E> predicateTraversal;
+
+        public PredicateToFunction(final Traversal<S, E> traversal) {
+            this.predicateTraversal = traversal.asAdmin();
+        }
+
+        @Override
+        public PredicateToFunction<S, E> cloneLambda() throws CloneNotSupportedException {
+            return this.clone();
+        }
+
+        @Override
+        public Boolean apply(final Traverser<S> traverser) {
+            final Traverser.Admin<S> split = traverser.asAdmin().split();
+            split.setSideEffects(this.predicateTraversal.getSideEffects());
+            this.predicateTraversal.reset();
+            this.predicateTraversal.addStart(split);
+            return this.predicateTraversal.hasNext();
+        }
+
+        @Override
+        public Traversal<S, E> getTraversal() {
+            return this.predicateTraversal;
+        }
+
+        @Override
+        public void reset() {
+            this.predicateTraversal.reset();
+        }
+
+        @Override
+        public PredicateToFunction<S, E> clone() throws CloneNotSupportedException {
+            final PredicateToFunction<S, E> clone = (PredicateToFunction<S, E>) super.clone();
+            clone.predicateTraversal = this.predicateTraversal.clone().asAdmin();
+            return clone;
+        }
     }
 }
