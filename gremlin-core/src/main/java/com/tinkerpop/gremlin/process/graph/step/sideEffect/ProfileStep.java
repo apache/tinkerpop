@@ -30,7 +30,7 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
 
     @Override
     public MapReduce<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> getMapReduce() {
-        return new ProfileMapReduce(this);
+        return new ProfileMapReduce();
     }
 
     @Override
@@ -64,7 +64,7 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements Reversibl
     private StandardTraversalMetrics getTraversalMetricsUtil() {
         StandardTraversalMetrics traversalMetrics = this.getTraversal().asAdmin().getSideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, StandardTraversalMetrics::new);
         final boolean isComputer = this.traversal.asAdmin().getTraversalEngine().get().equals(TraversalEngine.COMPUTER);
-        traversalMetrics.initializeIfNecessary(this.getId(), this.traversal.asAdmin().getSteps().indexOf(this), name,  isComputer);
+        traversalMetrics.initializeIfNecessary(this.getId(), this.traversal.asAdmin().getSteps().indexOf(this), name, isComputer);
         return traversalMetrics;
     }
 }

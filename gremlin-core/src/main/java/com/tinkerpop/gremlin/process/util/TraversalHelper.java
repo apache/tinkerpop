@@ -134,7 +134,7 @@ public class TraversalHelper {
                     } else if (o instanceof Map) {
                         return ((Map) o).size() > 0;
                     } else {
-                        return true;
+                        return o.toString().length() > 0;
                     }
                 })
                 .map(o -> {
@@ -152,13 +152,7 @@ public class TraversalHelper {
     }
 
     public static String makeTraversalString(final Traversal.Admin<?, ?> traversal) {
-        final List<Step> temp = new ArrayList<>();     // TODO: why not just traversal.getSteps().toString() ?
-        Step currentStep = traversal.getStartStep();
-        while (!(currentStep instanceof EmptyStep)) {
-            temp.add(currentStep);
-            currentStep = currentStep.getNextStep();
-        }
-        return temp.toString();
+        return traversal.getSteps().toString();
     }
 
     public static <S> List<S> getStepsOfClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {

@@ -24,7 +24,17 @@ public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Co
     private boolean usesTraversalLambda;
 
     public SmartLambda() {
-        this((Function) s -> s);
+        this(new Function() {
+            @Override
+            public Object apply(final Object object) {
+                return object;
+            }
+
+            @Override
+            public String toString() {
+                return "";
+            }
+        });
     }
 
     public SmartLambda(final Object lambda) {

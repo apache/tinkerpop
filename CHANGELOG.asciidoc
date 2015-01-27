@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Greatly simplified all the traversal `MapReduce` implementations due to the introduction of `VertexTraversalSideEffects`.
+* Added `VertexTraversalSideEffects` as a cheap, static way to get a sideEffect-view of a vertex in OLAP.
 * Added `TraversalHelper.isLocalStarGraph()` which determines if a traversal is contained within the local star graph.
 * Added `TraversalVerificationStrategy` to verify if the traversal can be executed on respective engine.
 * Refactored `GraphTraversal.cap()` to `GraphTraversal.cap(String...)` to support multi-sideEffect grabs.

@@ -27,12 +27,11 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
     protected String openGraphScript;
     protected String traversalScript;
     protected String withSugarScript;
-    protected String graphComputerScript;
 
     private GraphComputer graphComputer;
 
     private GroovyTraversalScript(final String traversalScript) {
-        this.traversalScript = "traversal = ".concat(traversalScript).concat("\n");
+        this.traversalScript = traversalScript.concat("\n");
     }
 
     public static <S, E> GroovyTraversalScript<S, E> of(final String traversalScript) {
@@ -93,9 +92,6 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
             builder.append(this.openGraphScript);
         if (null != this.traversalScript)
             builder.append(this.traversalScript);
-        if (null != this.graphComputerScript)
-            builder.append(this.graphComputerScript);
-        builder.append("traversal\n");
         return builder.toString();
     }
 }

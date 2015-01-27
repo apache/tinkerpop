@@ -124,7 +124,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().local(__.out()).count().submit(g.compute());
+        Traversal t = g.V().repeat(__.groupCount("m").by(__.outE().count()).both()).times(8).cap("m");
         System.out.println(t.toString());
         t.forEachRemaining(System.out::println);
         System.out.println(t.toString());

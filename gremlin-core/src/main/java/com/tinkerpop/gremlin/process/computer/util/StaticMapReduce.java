@@ -21,6 +21,16 @@ public abstract class StaticMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK
 
     @Override
     public String toString() {
-        return StringFactory.mapReduceString(this);
+        return StringFactory.mapReduceString(this, this.getMemoryKey());
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return GraphComputerHelper.areEqual(this, object);
+    }
+
+    @Override
+    public int hashCode() {
+        return (this.getClass().getCanonicalName() + this.getMemoryKey()).hashCode();
     }
 }

@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import com.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
+import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -19,12 +19,11 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
+public final class AggregateMapReduce extends StaticMapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
 
     public static final String AGGREGATE_STEP_SIDE_EFFECT_KEY = "gremlin.aggregateStep.sideEffectKey";
 
     private String sideEffectKey;
-    private Traversal traversal;
     private Supplier<Collection> collectionSupplier;
 
     private AggregateMapReduce() {
@@ -33,21 +32,19 @@ public final class AggregateMapReduce implements MapReduce<MapReduce.NullObject,
 
     public AggregateMapReduce(final AggregateStep step) {
         this.sideEffectKey = step.getSideEffectKey();
-        this.traversal = step.getTraversal();
-        this.collectionSupplier = this.traversal.asAdmin().getSideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
+        this.collectionSupplier = step.getTraversal().asAdmin().getSideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        MapReduce.super.storeState(configuration);
+        super.storeState(configuration);
         configuration.setProperty(AGGREGATE_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(AGGREGATE_STEP_SIDE_EFFECT_KEY);
-        this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
-        this.collectionSupplier = this.traversal.asAdmin().getSideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
+        this.collectionSupplier = TraversalVertexProgram.getTraversalSupplier(configuration).get().getSideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
     }
 
     @Override
@@ -57,8 +54,7 @@ public final class AggregateMapReduce implements MapReduce<MapReduce.NullObject,
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-        this.traversal.asAdmin().getSideEffects().setLocalVertex(vertex);
-        this.traversal.asAdmin().getSideEffects().<Collection<?>>orElse(this.sideEffectKey, Collections.emptyList()).forEach(emitter::emit);
+        VertexTraversalSideEffects.of(vertex).<Collection<?>>orElse(this.sideEffectKey, Collections.emptyList()).forEach(emitter::emit);
     }
 
     @Override
@@ -71,27 +67,5 @@ public final class AggregateMapReduce implements MapReduce<MapReduce.NullObject,
     @Override
     public String getMemoryKey() {
         return this.sideEffectKey;
-    }
-
-    @Override
-    public int hashCode() {
-        return (this.getClass().getCanonicalName() + this.sideEffectKey).hashCode();
-    }
-
-    @Override
-    public boolean equals(final Object object) {
-        return GraphComputerHelper.areEqual(this, object);
-    }
-
-    @Override
-    public String toString() {
-        return StringFactory.mapReduceString(this, this.sideEffectKey);
-    }
-
-    @Override
-    public AggregateMapReduce clone() throws CloneNotSupportedException {
-        final AggregateMapReduce clone = (AggregateMapReduce) super.clone();
-        clone.traversal = this.traversal.clone();
-        return clone;
     }
 }

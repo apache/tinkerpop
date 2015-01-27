@@ -80,7 +80,7 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
 
     @Override
     public void setBulk(final long count) {
-        throw new UnsupportedOperationException("This traverser does not support bulking: " + this.getClass().getCanonicalName());
+
     }
 
     @Override
@@ -137,7 +137,7 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
 
     @Override
     public long bulk() {
-        return 1;
+        return 1l;
     }
 
     @Override

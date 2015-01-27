@@ -46,6 +46,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void registerSupplierIfAbsent(final String key, final Supplier supplier) {
         if (!this.supplierMap.containsKey(key))
             this.supplierMap.put(key, supplier);

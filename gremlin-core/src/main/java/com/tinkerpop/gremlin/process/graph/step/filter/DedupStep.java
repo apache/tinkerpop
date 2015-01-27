@@ -48,8 +48,7 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
 
     @Override
     public List<Traversal<S, Object>> getLocalTraversals() {
-        if (null == this.smartLambda) return Collections.emptyList();
-        return this.smartLambda.getTraversalAsList();
+        return null == this.smartLambda ? Collections.emptyList() : this.smartLambda.getTraversalAsList();
     }
 
     @Override
@@ -75,7 +74,7 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     @Override
     public void reset() {
         super.reset();
-        this.smartLambda.reset();
+        if (null != this.smartLambda) this.smartLambda.reset();
         this.duplicateSet.clear();
     }
 

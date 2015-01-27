@@ -25,6 +25,7 @@ public final class TraversalLambda<S, E> implements Function<Traverser<S>, E>, P
     public E apply(final Traverser<S> traverser) {
         final Traverser.Admin<S> split = traverser.asAdmin().split();
         split.setSideEffects(this.traversal.getSideEffects());
+        split.setBulk(1l); // TODO: do we do this?
         this.traversal.reset();
         this.traversal.addStart(split);
         try {
@@ -39,6 +40,7 @@ public final class TraversalLambda<S, E> implements Function<Traverser<S>, E>, P
     public boolean test(final Traverser<S> traverser) {
         final Traverser.Admin<S> split = traverser.asAdmin().split();
         split.setSideEffects(this.traversal.getSideEffects());
+        split.setBulk(1l);  // TODO: do we do this?
         this.traversal.reset();
         this.traversal.addStart(split);
         return this.traversal.hasNext(); // filter
@@ -49,6 +51,7 @@ public final class TraversalLambda<S, E> implements Function<Traverser<S>, E>, P
     public void accept(final Traverser<S> traverser) {
         final Traverser.Admin<S> split = traverser.asAdmin().split();
         split.setSideEffects(this.traversal.getSideEffects());
+        split.setBulk(1l);  // TODO: do we do this?
         this.traversal.reset();
         this.traversal.addStart(split);
         this.traversal.iterate(); // sideEffect
