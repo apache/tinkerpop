@@ -11,4 +11,8 @@ import com.tinkerpop.gremlin.structure.Element;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 interface Neo4jElementTraversalStub<A extends Element> extends ElementTraversal<A> {
+
+    public default Neo4jGraphTraversal<A, A> iterate() {
+        return (Neo4jGraphTraversal) ElementTraversal.super.iterate();
+    }
 }

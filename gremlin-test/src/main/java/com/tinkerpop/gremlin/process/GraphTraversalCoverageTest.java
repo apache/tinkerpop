@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.fail;
 
 /**
@@ -21,7 +22,7 @@ import static org.junit.Assert.fail;
 public class GraphTraversalCoverageTest extends AbstractGremlinProcessTest {
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(MODERN)
     public void shouldHaveSameTraversalReturnTypesForAllMethods() {
         final Set<String> allReturnTypes = new HashSet<>();
         final List<Pair<String, Object>> vendorsClasses = Arrays.asList(

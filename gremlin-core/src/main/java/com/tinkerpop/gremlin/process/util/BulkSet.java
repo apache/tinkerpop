@@ -66,8 +66,9 @@ public class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializable {
     }
 
     public boolean add(final S s, final long bulk) {
-        if (this.map.containsKey(s)) {
-            this.map.put(s, this.map.get(s) + bulk);
+        final Long current = this.map.get(s);
+        if (current != null) {
+            this.map.put(s, current + bulk);
             return false;
         } else {
             this.map.put(s, bulk);

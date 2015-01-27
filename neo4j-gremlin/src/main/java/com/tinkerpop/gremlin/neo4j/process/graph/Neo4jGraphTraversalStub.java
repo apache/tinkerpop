@@ -28,4 +28,9 @@ interface Neo4jGraphTraversalStub<S, E> extends GraphTraversal.Admin<S, E>, Grap
     }
 
     public <E2> Neo4jGraphTraversal<S, Map<String, E2>> cypher(final String query, final Map<String, Object> parameters);
+
+    public default Neo4jGraphTraversal<S,E> iterate() {
+        return (Neo4jGraphTraversal) GraphTraversal.super.iterate();
+    }
+
 }

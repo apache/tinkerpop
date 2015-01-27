@@ -687,4 +687,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         }
     }
+
+    @Override
+    public default GraphTraversal<S, E> iterate() {
+        Traversal.super.iterate();
+        return this;
+    }
 }

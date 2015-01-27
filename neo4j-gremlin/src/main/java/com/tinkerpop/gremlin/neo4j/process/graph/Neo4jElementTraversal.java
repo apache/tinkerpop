@@ -15,6 +15,10 @@ import com.tinkerpop.gremlin.structure.Element;
  */
 public interface Neo4jElementTraversal<A extends Element> extends ElementTraversal<A> {
 
+    public default Neo4jGraphTraversal<A, A> iterate() {
+        return (Neo4jGraphTraversal) ElementTraversal.super.iterate();
+    }
+
 
 	///////////////////////////////////////////////////////////////////////////////////
 	//// METHODS INHERITED FROM com.tinkerpop.gremlin.process.graph.ElementTraversal ////

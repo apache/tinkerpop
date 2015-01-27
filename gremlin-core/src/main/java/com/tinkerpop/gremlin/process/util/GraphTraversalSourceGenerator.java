@@ -69,7 +69,7 @@ public class GraphTraversalSourceGenerator {
         final List<Method> methods = Arrays.asList(traversalToCloneClass.getMethods());
         Collections.sort(methods, (a, b) -> (a.getName() + a.getParameterCount() + a.toGenericString()).compareTo((b.getName() + b.getParameterCount() + b.toGenericString())));
         for (final Method method : methods) {
-            if (method.getReturnType().equals(GraphTraversal.class) && !Modifier.isStatic(method.getModifiers()) && !method.getName().equals("addStep")) {
+            if (method.getReturnType().equals(GraphTraversal.class) && !Modifier.isStatic(method.getModifiers()) && !method.getName().equals("addStep") && !method.getName().equals("iterate")) {
                 String methodName = sharedToGenericString(method);
                 methodName = methodName.replace(GraphTraversal.class.getCanonicalName(), desiredTraversalReturnClassName);
                 methodName = methodName.replace(traversalToCloneClass.getCanonicalName() + ".", "");  // needed for ElementTraversal

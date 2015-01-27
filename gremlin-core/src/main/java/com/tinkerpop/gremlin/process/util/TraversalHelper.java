@@ -4,7 +4,10 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
+import com.tinkerpop.gremlin.process.graph.step.map.PropertiesStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
+import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,14 +69,19 @@ public class TraversalHelper {
     }
 
     public static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal) {
-        boolean foundOneVertexStep = false;
+        char state = 'v';
         for (final Step step : traversal.getSteps()) {
-            if (step instanceof VertexStep) {
-                if (foundOneVertexStep) {
-                    return false;
+            if (step instanceof PropertiesStep && state == 'u')
+                return false;
+            else if (step instanceof VertexStep) {
+                if (Vertex.class.isAssignableFrom(((VertexStep) step).getReturnClass())) {
+                    if (state == 'u') return false;
+                    if (state == 'v') state = 'u';
                 } else {
-                    foundOneVertexStep = true;
+                    state = 'e';
                 }
+            } else if (step instanceof EdgeVertexStep) {
+                if (state == 'e') state = 'u';
             }
         }
         return true;

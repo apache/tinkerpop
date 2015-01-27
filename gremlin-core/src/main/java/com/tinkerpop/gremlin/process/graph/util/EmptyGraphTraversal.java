@@ -39,4 +39,9 @@ public final class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implem
     public GraphTraversal<S, E> submit(final GraphComputer computer) {
         return instance();
     }
+
+    @Override
+    public GraphTraversal<S, E> iterate() {
+        return this;
+    }
 }

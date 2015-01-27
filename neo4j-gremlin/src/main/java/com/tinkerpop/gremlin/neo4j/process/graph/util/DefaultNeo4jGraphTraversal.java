@@ -22,4 +22,8 @@ public class DefaultNeo4jGraphTraversal<S, E> extends DefaultGraphTraversal<S, E
     public <E2> Neo4jGraphTraversal<S, Map<String, E2>> cypher(final String query, final Map<String, Object> parameters) {
         return (Neo4jGraphTraversal) this.addStep(new Neo4jCypherStep<>(this, this.graph, query, parameters));
     }
+
+    public Neo4jGraphTraversal<S, E> iterate() {
+        return (Neo4jGraphTraversal) super.iterate();
+    }
 }

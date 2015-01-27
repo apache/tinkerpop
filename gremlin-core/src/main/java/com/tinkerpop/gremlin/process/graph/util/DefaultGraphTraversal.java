@@ -16,4 +16,9 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
     public GraphTraversal.Admin<S, E> asAdmin() {
         return this;
     }
+
+    @Override
+    public GraphTraversal<S, E> iterate() {
+        return GraphTraversal.super.iterate();
+    }
 }

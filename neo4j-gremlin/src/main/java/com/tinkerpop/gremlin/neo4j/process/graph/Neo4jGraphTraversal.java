@@ -32,6 +32,11 @@ public interface Neo4jGraphTraversal<S, E> extends GraphTraversal.Admin<S, E>, G
 
     public <E2> Neo4jGraphTraversal<S, Map<String, E2>> cypher(final String query, final Map<String, Object> parameters);
 
+    public default Neo4jGraphTraversal<S,E> iterate() {
+        return (Neo4jGraphTraversal) GraphTraversal.super.iterate();
+    }
+
+
 	///////////////////////////////////////////////////////////////////////////////////
 	//// METHODS INHERITED FROM com.tinkerpop.gremlin.process.graph.GraphTraversal ////
 	///////////////////////////////////////////////////////////////////////////////////

@@ -466,4 +466,10 @@ public abstract interface ElementTraversal<A extends Element> {
     public default GraphTraversal<A, A> barrier() {
         return this.start().barrier();
     }
+
+    ////
+
+    public default GraphTraversal<A, A> iterate() {
+        return this.start().iterate();
+    }
 }
