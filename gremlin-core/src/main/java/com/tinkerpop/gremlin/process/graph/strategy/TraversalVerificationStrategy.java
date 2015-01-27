@@ -23,10 +23,10 @@ public class TraversalVerificationStrategy extends AbstractTraversalStrategy {
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
+
         final Step<?, ?> endStep = traversal.getEndStep() instanceof ComputerAwareStep.EndStep ?
                 ((ComputerAwareStep.EndStep) traversal.getEndStep()).getPreviousStep() :
                 traversal.getEndStep();
-
 
         for (final Step<?, ?> step : traversal.getSteps()) {
             // STANDARD AND COMPUTER
