@@ -58,7 +58,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         final WhereStep<E> clone = (WhereStep<E>) super.clone();
         if (null != this.constraint) {
             clone.constraint = this.constraint.clone().asAdmin();
-            clone.executeTraversalOperations(clone.constraint, Child.SET_HOLDER);
+            clone.executeTraversalOperations(clone.constraint, TYPICAL_LOCAL_OPERATIONS);
         }
         clone.biPredicate = CloneableLambda.cloneOrReturn(this.biPredicate);
         WhereStep.generatePredicate(clone);
@@ -107,7 +107,6 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
                 } else
                     endObject = null;
 
-                // TODO: Can we add LocalStep here?
                 startStep.addStart(whereStep.getTraversal().asAdmin().getTraverserGenerator().generate(startObject, (Step) startStep, traverser.bulk()));
                 if (null == endObject) {
                     if (whereStep.constraint.hasNext()) {

@@ -32,6 +32,11 @@ public abstract class GroovyGroupTest {
         public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX() {
             g.V.repeat(__.out.group('a').by('name').by.by { it.size() }).times(2).cap('a')
         }
+
+        @Override
+        public Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX() {
+            g.V.group.by(__.outE.count).by('name')
+        }
     }
 
     public static class ComputerTest extends GroupTest {
@@ -54,6 +59,11 @@ public abstract class GroovyGroupTest {
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX() {
             ComputerTestHelper.compute("g.V.repeat(__.out.group('a').by('name').by.by { it.size() }).times(2).cap('a')", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX() {
+            ComputerTestHelper.compute("g.V.group.by(__.outE.count).by('name')", g)
         }
     }
 }
