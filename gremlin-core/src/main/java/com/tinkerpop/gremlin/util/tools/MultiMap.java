@@ -28,9 +28,8 @@ public class MultiMap {
     }
 
     public static <K, V> Set<V> get(final Map<K, Set<V>> map, final K key) {
-        Set<V> set = getMapSet(map, key);
-        if (set == null) set = Collections.emptySet();
-        return set;
+        final Set<V> set = getMapSet(map, key);
+        return set == null ? Collections.emptySet() : set;
     }
 
     private static <K, V> Set<V> getMapSet(final Map<K, Set<V>> map, final K key) {
