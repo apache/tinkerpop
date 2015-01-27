@@ -18,6 +18,10 @@ import java.util.stream.Stream;
  */
 public class IteratorUtils {
 
+    private IteratorUtils() {
+
+    }
+
     public static final <S> Iterator<S> of(final S a) {
         return new SingleIterator<>(a);
     }
