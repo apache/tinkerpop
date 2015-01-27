@@ -56,6 +56,10 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     protected final Map<String, MessageSerializer> serializers = new HashMap<>();
 
+    private OpSelectorHandler opSelectorHandler;
+    private OpExecutorHandler opExecutorHandler;
+    private IteratorHandler iteratorHandler;
+
     /**
      * This method is called from within {@link #initChannel(io.netty.channel.socket.SocketChannel)} just after
      * the SSL handler is put in the pipeline.  Modify the pipeline as needed here.
@@ -85,6 +89,11 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         configureSerializers();
 
         this.sslEngine = settings.optionalSsl().isPresent() && settings.ssl.enabled ? Optional.ofNullable(createSslEngine()) : Optional.empty();
+
+        // these handlers don't share any state and can thus be initialized once per pipeline
+        this.opSelectorHandler = new OpSelectorHandler(settings, graphs, gremlinExecutor, scheduledExecutorService);
+        this.opExecutorHandler = new OpExecutorHandler(settings, graphs, gremlinExecutor, scheduledExecutorService);
+        this.iteratorHandler = new IteratorHandler(settings);
     }
 
     @Override
@@ -98,10 +107,9 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         // instance
         configure(pipeline);
 
-        pipeline.addLast(PIPELINE_OP_SELECTOR, new OpSelectorHandler(settings, graphs, gremlinExecutor, scheduledExecutorService));
-
-        pipeline.addLast(PIPELINE_RESULT_ITERATOR_HANDLER, new IteratorHandler(settings));
-        pipeline.addLast(PIPELINE_OP_EXECUTOR, new OpExecutorHandler(settings, graphs, gremlinExecutor, scheduledExecutorService));
+        pipeline.addLast(PIPELINE_OP_SELECTOR, opSelectorHandler);
+        pipeline.addLast(PIPELINE_RESULT_ITERATOR_HANDLER, iteratorHandler);
+        pipeline.addLast(PIPELINE_OP_EXECUTOR, opExecutorHandler);
 
         finalize(pipeline);
     }
