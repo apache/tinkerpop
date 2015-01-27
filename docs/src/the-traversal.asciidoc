@@ -303,7 +303,7 @@ WARNING: The `dedup()`-step does not have a correlate in <<traversalvertexprogra
 Except Step
 ~~~~~~~~~~~
 
-The `except()`-step (*filter*) can be used to remove objects from the traversal stream. If `except()` is provided a string, then the excepting object is located at `traverser.sideEffects().get(label)`. If `except()` is provided a collection, then any object contained in that collection is filtered out. Please see the related <<retain-step,`retain()`>>-step.
+The `except()`-step (*filter*) can be used to remove objects from the traversal stream. If `except()` is provided a string, then the excepting object is located at `traverser.sideEffects(string)` or `traverser.path(string)`. If `except()` is provided a collection, then any object contained in that collection is filtered out. Please see the related <<retain-step,`retain()`>>-step.
 
 [gremlin-groovy,modern]
 ----
@@ -849,7 +849,7 @@ WARNING: The anonymous traversal of `emit()` and `until()` (not `repeat()`) proc
 Retain Step
 ~~~~~~~~~~~
 
-The `retain()`-step (*filter*) can be used to filter objects from the traversal stream that don't match the provided criteria. If `retain()` is provided a string, the retaining object is retrieved via `traverser.path().get(label)`. If `retain()` is provided a collection, then any object not contained in that collection is filtered out. Please see the related <<except-step,`except()`>>-step.
+The `retain()`-step (*filter*) can be used to filter objects from the traversal stream that don't match the provided criteria. If `retain()` is provided a string, the retaining object is retrieved via `traverser.sideEffect(string)` or `traverser.path(string)`. If `retain()` is provided a collection, then any object not contained in that collection is filtered out. Please see the related <<except-step,`except()`>>-step.
 
 [gremlin-groovy,modern]
 ----
