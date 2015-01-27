@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -65,15 +65,19 @@ public class TraversalHelper {
         return steps;
     }
 
-    /*public static boolean areEqual(final Iterator a, final Iterator b) {
-        while (a.hasNext() || b.hasNext()) {
-            if (a.hasNext() != b.hasNext())
-                return false;
-            if (!a.next().equals(b.next()))
-                return false;
+    public static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal) {
+        boolean foundOneVertexStep = false;
+        for (final Step step : traversal.getSteps()) {
+            if (step instanceof VertexStep) {
+                if (foundOneVertexStep) {
+                    return false;
+                } else {
+                    foundOneVertexStep = true;
+                }
+            }
         }
         return true;
-    }*/
+    }
 
     public static <S, E> Step<?, E> insertTraversal(final int insertIndex, final Traversal.Admin<S, E> insertTraversal, final Traversal.Admin<?, ?> traversal) {
         if (0 == traversal.getSteps().size()) {

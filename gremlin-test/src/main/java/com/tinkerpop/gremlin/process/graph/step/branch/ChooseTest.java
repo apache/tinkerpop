@@ -54,7 +54,7 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_VX1X_chooseX0X_forkX0__outX_name() {
+    public void g_VX1X_chooseX0X_optionX0__outX_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_chooseX0X_optionX0__outX_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
         Map<String, Long> counts = new HashMap<>();
@@ -73,7 +73,7 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasXlabel_personX_chooseXname_lengthX_forkX5__inX_forkX4__outX_forkX3__bothX_name() {
+    public void g_V_hasXlabel_personX_chooseXname_lengthX_optionX5__inX_optionX4__outX_optionX3__bothX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_hasXlabel_personX_chooseXname_lengthX_optionX5__inX_optionX4__outX_optionX3__bothX_name();
         printTraversalForm(traversal);
         Map<String, Long> counts = new HashMap<>();
@@ -92,7 +92,7 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_chooseXout_count_nextX_forkX2L__nameX_forkX3L__valueMapX() {
+    public void g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {
         final Traversal<Vertex, Object> traversal = get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX();
         printTraversalForm(traversal);
         Map<String, Long> counts = new HashMap<>();

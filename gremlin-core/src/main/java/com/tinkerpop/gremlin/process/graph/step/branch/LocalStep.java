@@ -76,21 +76,4 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
             }
         }
     }
-
-    ////////////////
-
-    public boolean isLocalStarGraph() {
-        final List<Step> steps = this.localTraversal.getSteps();
-        boolean foundOneVertexStep = false;
-        for (final Step step : steps) {
-            if (step instanceof VertexStep) {
-                if (foundOneVertexStep) {
-                    return false;
-                } else {
-                    foundOneVertexStep = true;
-                }
-            }
-        }
-        return true;
-    }
 }
