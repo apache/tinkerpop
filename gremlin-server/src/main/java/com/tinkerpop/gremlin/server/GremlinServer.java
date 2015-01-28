@@ -10,8 +10,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.util.concurrent.DefaultEventExecutorGroup;
-import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -88,8 +86,8 @@ public class GremlinServer {
             // bind to host/port and wait for channel to be ready
             ch = b.bind(settings.host, settings.port).sync().channel();
 
-            logger.info("Gremlin Server configured with worker thread pool of {} and boss thread pool of {}",
-                    settings.threadPoolWorker, settings.threadPoolBoss);
+            logger.info("Gremlin Server configured with worker thread pool of {}, gremlin pool of {} and boss thread pool of {}.",
+                    settings.threadPoolWorker, settings.gremlinPool, settings.threadPoolBoss);
             logger.info("Channel started at port {}.", settings.port);
 
             serverReady.ifPresent(future -> future.complete(null));
