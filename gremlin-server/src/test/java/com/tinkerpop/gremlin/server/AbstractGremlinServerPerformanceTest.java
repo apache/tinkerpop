@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -21,19 +22,31 @@ public abstract class AbstractGremlinServerPerformanceTest {
     private static String host;
     private static String port;
 
+    private static CountDownLatch latch;
+
     @BeforeClass
     public static void setUp() throws Exception {
         final InputStream stream = AbstractGremlinServerPerformanceTest.class.getResourceAsStream("gremlin-server-performance.yaml");
         final Settings settings = Settings.read(stream);
         final CompletableFuture<Void> serverReadyFuture = new CompletableFuture<>();
 
+        latch = new CountDownLatch(1);
         thread = new Thread(() -> {
+            GremlinServer gremlinServer = null;
             try {
-                new GremlinServer(settings, serverReadyFuture).run();
+                gremlinServer = new GremlinServer(settings, serverReadyFuture);
+                gremlinServer.run();
+                latch.await();
             } catch (InterruptedException ie) {
                 logger.info("Shutting down Gremlin Server");
             } catch (Exception ex) {
                 logger.error("Could not start Gremlin Server for performance tests", ex);
+            } finally {
+                try {
+                    if (gremlinServer != null) gremlinServer.stop();
+                } catch (Exception ex) {
+                    logger.error("Could not stop Gremlin Server for performance tests", ex);
+                }
             }
         });
         thread.start();
@@ -56,8 +69,7 @@ public abstract class AbstractGremlinServerPerformanceTest {
     }
 
     public static void stopServer() throws Exception {
-        if (!thread.isInterrupted())
-            thread.interrupt();
+        latch.countDown();
 
         while (thread.isAlive()) {
             Thread.sleep(250);
