@@ -70,7 +70,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
         while (values.hasNext()) {
             mutatingSeed = function.apply(mutatingSeed, onTraverser ? values.next() : ((Traverser) values.next()).get());
         }
-        emitter.emit(key, this.traversal.getTraverserGenerator().generate(mutatingSeed, (Step) this.traversal.getEndStep(), 1l));
+        emitter.emit(key, this.traversal.getTraverserGenerator().generate(Reducing.FinalGet.tryFinalGet(mutatingSeed), (Step) this.traversal.getEndStep(), 1l));
     }
 
     @Override

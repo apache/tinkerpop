@@ -4,7 +4,10 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -77,10 +80,20 @@ public abstract class TinkerElement implements Element, Element.Iterators {
 
     @Override
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) (TinkerHelper.inComputerMode(this.graph) ?
-                this.graph.graphView.getProperties(TinkerElement.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator() :
-                this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).flatMap(entry -> entry.getValue().stream()).collect(Collectors.toList()).iterator());
+        if (TinkerHelper.inComputerMode(this.graph))
+            return (Iterator) this.graph.graphView.getProperties(TinkerElement.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
+        else {
+            if (propertyKeys.length == 1) {
+                final List<Property> properties = this.properties.getOrDefault(propertyKeys[0], Collections.emptyList());
+                if (properties.size() == 1) {
+                    return IteratorUtils.of(properties.get(0));
+                } else if (properties.isEmpty()) {
+                    return Collections.emptyIterator();
+                } else {
+                    return (Iterator) new ArrayList<>(properties).iterator();
+                }
+            } else
+                return (Iterator) this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).flatMap(entry -> entry.getValue().stream()).collect(Collectors.toList()).iterator();
+        }
     }
-
-
 }

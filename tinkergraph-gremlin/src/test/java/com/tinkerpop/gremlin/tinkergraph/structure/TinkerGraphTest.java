@@ -15,7 +15,6 @@ import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.util.StreamFactory;
-import com.tinkerpop.gremlin.util.tools.MeanNumber;
 import org.apache.commons.io.FileUtils;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -109,7 +108,8 @@ public class TinkerGraphTest {
                 () -> g.V().repeat(__.out()).times(2),
                 () -> g.V().repeat(__.out()).times(3),
                 () -> g.V().local(__.out().out().values("name").fold()),
-                () -> g.V().out().local(__.out().out().values("name").fold())
+                () -> g.V().out().local(__.out().out().values("name").fold()),
+                () -> g.V().out().map(v -> v.get().out().out().values("name").toList())
         );
         traversals.forEach(traversal -> {
             System.out.println("\nTESTING: " + traversal.get());
@@ -125,11 +125,11 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().values("age").mean().map(x->x.get().getClass());
+        Traversal t = g.V().values("age").mean().map(x -> x.get().getClass());
         System.out.println(t.toString());
         t.forEachRemaining(System.out::println);
         System.out.println(t.toString());
-       // System.out.println(t.next().doubleValue() > 10.0d);
+        // System.out.println(t.next().doubleValue() > 10.0d);
 
     }
 

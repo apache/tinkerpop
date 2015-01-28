@@ -3,10 +3,10 @@ package com.tinkerpop.gremlin.process.graph.step.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
-import com.tinkerpop.gremlin.util.tools.FinalGet;
 
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -54,7 +54,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> {
         while (this.starts.hasNext())
             seed = this.reducingBiFunction.apply(seed, this.starts.next());
         this.done = true;
-        return this.getTraversal().asAdmin().getTraverserGenerator().generate(FinalGet.tryFinalGet(seed), (Step) this, 1l);
+        return this.getTraversal().asAdmin().getTraverserGenerator().generate(Reducing.FinalGet.tryFinalGet(seed), (Step) this, 1l);
     }
 
     @Override
@@ -92,4 +92,8 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> {
 
         }*/
     }
+
+    ///////
+
+
 }
