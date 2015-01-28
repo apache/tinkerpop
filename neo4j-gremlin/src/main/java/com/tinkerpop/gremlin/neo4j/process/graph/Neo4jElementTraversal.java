@@ -252,7 +252,7 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.max();
 	}
 
-	public default Neo4jGraphTraversal<A, com.tinkerpop.gremlin.util.tools.MeanNumber> mean() {
+	public default Neo4jGraphTraversal<A, java.lang.Double> mean() {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.mean();
 	}
 

@@ -317,7 +317,7 @@ public interface Neo4jGraphTraversal<S, E> extends GraphTraversal.Admin<S, E>, G
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.max();
 	}
 
-	public default Neo4jGraphTraversal<S, com.tinkerpop.gremlin.util.tools.MeanNumber> mean() {
+	public default Neo4jGraphTraversal<S, java.lang.Double> mean() {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.mean();
 	}
 

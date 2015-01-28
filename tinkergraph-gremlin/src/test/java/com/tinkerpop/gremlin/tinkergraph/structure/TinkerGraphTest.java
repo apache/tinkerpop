@@ -125,7 +125,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal<Vertex,MeanNumber> t = g.V().repeat(__.both()).times(20).values("age").mean();
+        Traversal t = g.V().values("age").mean().map(x->x.get().getClass());
         System.out.println(t.toString());
         t.forEachRemaining(System.out::println);
         System.out.println(t.toString());

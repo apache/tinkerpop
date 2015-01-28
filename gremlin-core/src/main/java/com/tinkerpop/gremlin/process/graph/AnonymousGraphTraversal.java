@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.tools.MeanNumber;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -211,7 +210,7 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().max();
     }
 
-    public default <A> GraphTraversal<A, MeanNumber> mean() {
+    public default <A> GraphTraversal<A, Double> mean() {
         return this.<A>start().mean();
     }
 

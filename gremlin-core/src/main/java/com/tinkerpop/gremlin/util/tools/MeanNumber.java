@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.util.tools;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MeanNumber extends Number implements Comparable<Number> {
+public class MeanNumber extends Number implements Comparable<Number>, FinalGet<Double> {
 
     private long count = 0l;
     private double sum = 0.0d;
@@ -52,5 +52,10 @@ public class MeanNumber extends Number implements Comparable<Number> {
     @Override
     public int hashCode() {
         return Double.valueOf(this.doubleValue()).hashCode();
+    }
+
+    @Override
+    public Double getFinal() {
+        return this.doubleValue();
     }
 }

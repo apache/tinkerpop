@@ -91,7 +91,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.tools.MeanNumber;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -305,12 +304,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new MinStep<>(this));
     }
 
-    public default GraphTraversal<S, MeanNumber> mean() {
+    public default GraphTraversal<S, Double> mean() {
         return this.asAdmin().addStep(new MeanStep<>(this));
-    }
-
-    public default <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {
-        return this.asAdmin().addStep(new LocalStep<>(this, localTraversal));
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -581,6 +576,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.until(new LoopPredicate<>(maxLoops));
     }
 
+    public default <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {
+        return this.asAdmin().addStep(new LocalStep<>(this, localTraversal));
+    }
 
     ///////////////////// UTILITY STEPS /////////////////////
 

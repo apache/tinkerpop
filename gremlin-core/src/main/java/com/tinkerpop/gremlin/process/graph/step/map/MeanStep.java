@@ -14,14 +14,14 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MeanStep<S extends Number> extends ReducingBarrierStep<S, MeanNumber> implements Reducing<MeanNumber, Traverser<S>> {
+public class MeanStep<S extends Number, E extends Number> extends ReducingBarrierStep<S, E> implements Reducing<E, Traverser<S>> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(TraverserRequirement.OBJECT, TraverserRequirement.BULK));
 
     public MeanStep(final Traversal traversal) {
         super(traversal);
-        this.setSeedSupplier(MeanNumber::new);
-        this.setBiFunction((seed, start) -> seed.add(start.get(), start.bulk()));
+        this.setSeedSupplier(() -> (E) new MeanNumber());
+        this.setBiFunction((seed, start) -> (E) ((MeanNumber) seed).add(start.get(), start.bulk()));
     }
 
     @Override
@@ -30,7 +30,7 @@ public class MeanStep<S extends Number> extends ReducingBarrierStep<S, MeanNumbe
     }
 
     @Override
-    public Reducer<MeanNumber, Traverser<S>> getReducer() {
+    public Reducer<E, Traverser<S>> getReducer() {
         return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true);
     }
 }
