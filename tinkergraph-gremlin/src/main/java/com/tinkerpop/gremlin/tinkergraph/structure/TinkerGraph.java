@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 /**
@@ -56,8 +57,8 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     }};
 
     protected Long currentId = -1l;
-    protected Map<Object, Vertex> vertices = new HashMap<>();
-    protected Map<Object, Edge> edges = new HashMap<>();
+    protected Map<Object, Vertex> vertices = new ConcurrentHashMap<>();
+    protected Map<Object, Edge> edges = new ConcurrentHashMap<>();
     protected TinkerGraphVariables variables = new TinkerGraphVariables();
     protected TinkerGraphView graphView = null;
 

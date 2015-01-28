@@ -15,6 +15,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -302,6 +303,46 @@ public class GraphTest extends AbstractGremlinTest {
                         vertexCount - currentCounter, edges.size() - ((currentCounter + 1) / 2)));
             }
         }
+    }
+
+    /**
+     * Generate a graph with lots of vertices, then iterate the vertices and remove them from the graph
+     */
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
+    public void shouldRemoveVerticesWithoutConcurrentModificationException() {
+        for (int i = 0; i < 100; i++) {
+            g.addVertex();
+        }
+        final Iterator<Vertex> vertexIterator = g.iterators().vertexIterator();
+        assertTrue(vertexIterator.hasNext());
+        while (vertexIterator.hasNext()) {
+            vertexIterator.next().remove();
+        }
+        assertFalse(vertexIterator.hasNext());
+        assertFalse(g.iterators().vertexIterator().hasNext());
+    }
+
+    /**
+     * Generate a graph with lots of edges, then iterate the edges and remove them from the graph
+     */
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_EDGES)
+    public void shouldRemoveEdgesWithoutConcurrentModificationException() {
+        for (int i = 0; i < 50; i++) {
+            g.addVertex().addEdge("link", g.addVertex());
+        }
+
+        final Iterator<Edge> edgeIterator = g.iterators().edgeIterator();
+        assertTrue(edgeIterator.hasNext());
+        while (edgeIterator.hasNext()) {
+            edgeIterator.next().remove();
+        }
+        assertFalse(edgeIterator.hasNext());
+        assertFalse(g.iterators().edgeIterator().hasNext());
     }
 
     /**
