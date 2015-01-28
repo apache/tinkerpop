@@ -131,7 +131,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().has("name","josh").outE().has("weight", Compare.gt, 0.2).inV().has("lang", "java").values("name");
+        Traversal t = g.V().has("age",Compare.inside,Arrays.asList(20,30)).values("name");
         System.out.println(t.toString());
         t.forEachRemaining(System.out::println);
         System.out.println(t.toString());

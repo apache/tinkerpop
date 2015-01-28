@@ -91,6 +91,11 @@ public abstract class GroovyHasTest {
         public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
             g.V.has('person', 'name', 'marko').age;
         }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id) {
+            g.V(v1Id).outE.has('weight', Compare.inside, [0.0d, 0.6d]).inV
+        }
     }
 
     public static class ComputerTest extends HasTest {
@@ -168,6 +173,11 @@ public abstract class GroovyHasTest {
         @Override
         public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
             ComputerTestHelper.compute("g.V.has('person', 'name', 'marko').age", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).outE.has('weight', Compare.inside, [0.0d, 0.6d]).inV", g);
         }
     }
 }

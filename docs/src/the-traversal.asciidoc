@@ -169,22 +169,6 @@ g.V().out().as('x').out().back('x')
 g.V().out().out().as('x').back('x') // pointless
 ----
 
-[[between-step]]
-Between Step
-~~~~~~~~~~~~
-
-The `between()`-step (*filter*) is similar to <<has-step,`has()`>>-step in that it filters elements according to their properties.
-
-[gremlin-groovy,modern]
-----
-g.V().between('age',20,30)
-g.V().between('age',20,30).values('age') <1>
-g.V().has('age',gte,20).has('age',lt,30).values('age') <2>
-----
-
-<1> Find all ages between 20 (inclusive) and 30 (exclusive).
-<2> The equivalent expression using only `has()`.
-
 [[count-step]]
 Count Step
 ~~~~~~~~~~
@@ -405,7 +389,12 @@ g.V().has(label,'person')
 g.V().has(label,'person').out().has('name',within,['vadas','josh'])
 g.V().has(label,'person').out().has('name',within,['vadas','josh']).
       outE().has(label,'created')
+g.V().has('age',inside,[20,30]).values('age') <1>
+g.V().has('age',outside,[20,30]).values('age') <2>
 ----
+
+<1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
+<2> Find all vertices whose ages are not between 20 (inclusive) and 30 (exclusive).
 
 There are accessors available in the `T` "tokens" class. They include `label`, `id`, `key`, and `value`. Thus, it is possible to use `has()`-step to also filter on these aspects of an element.
 

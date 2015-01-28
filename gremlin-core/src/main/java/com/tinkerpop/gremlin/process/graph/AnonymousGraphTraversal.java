@@ -289,10 +289,6 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().where(constraint);
     }
 
-    public default <A extends Element> GraphTraversal<A, A> between(final String key, final Comparable startValue, final Comparable endValue) {
-        return this.<A>start().between(key, startValue, endValue);
-    }
-
     public default <A> GraphTraversal<A, A> is(final Object value) {
         return this.<A>start().is(value);
     }

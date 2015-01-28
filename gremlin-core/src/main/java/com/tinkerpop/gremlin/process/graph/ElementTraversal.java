@@ -254,10 +254,6 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().where(constraint);
     }
 
-    public default GraphTraversal<A, A> between(final String key, final Comparable startValue, final Comparable endValue) {
-        return this.start().between(key, startValue, endValue);
-    }
-
     public default GraphTraversal<A, A> is(final Object value) {
         return this.start().is(value);
     }

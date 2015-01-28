@@ -387,10 +387,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new HasStep(this, new HasContainer(key, Contains.without)));
     }
 
-    public default GraphTraversal<S, E> between(final String key, final Comparable startValue, final Comparable endValue) {
-        return this.has(key, Compare.gte, startValue).has(key, Compare.lt, endValue);
-    }
-
     public default GraphTraversal<S, E> is(final Object value) {
         return this.asAdmin().addStep(new IsStep<>(this, Compare.eq, value));
     }

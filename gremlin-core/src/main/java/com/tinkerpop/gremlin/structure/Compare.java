@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
+import java.util.List;
 import java.util.function.BiPredicate;
 
 /**
@@ -11,33 +12,88 @@ import java.util.function.BiPredicate;
 public enum Compare implements BiPredicate<Object, Object> {
 
     eq {
+        @Override
         public boolean test(final Object first, final Object second) {
             if (null == first)
                 return second == null;
             return first.equals(second);
         }
+
+        @Override
+        public Compare opposite() {
+            return neq;
+        }
     }, neq {
+        @Override
         public boolean test(final Object first, final Object second) {
             if (null == first)
                 return second != null;
             return !first.equals(second);
         }
+
+        @Override
+        public Compare opposite() {
+            return eq;
+        }
     }, gt {
+        @Override
         public boolean test(final Object first, final Object second) {
             return !(null == first || second == null) && ((Comparable) first).compareTo(second) >= 1;
         }
 
+        @Override
+        public Compare opposite() {
+            return lte;
+        }
     }, gte {
+        @Override
         public boolean test(final Object first, final Object second) {
             return !(null == first || second == null) && ((Comparable) first).compareTo(second) >= 0;
         }
+
+        @Override
+        public Compare opposite() {
+            return lt;
+        }
     }, lt {
+        @Override
         public boolean test(final Object first, final Object second) {
             return !(null == first || second == null) && ((Comparable) first).compareTo(second) <= -1;
         }
+
+        @Override
+        public Compare opposite() {
+            return gte;
+        }
     }, lte {
+        @Override
         public boolean test(final Object first, final Object second) {
             return !(null == first || second == null) && ((Comparable) first).compareTo(second) <= 0;
+        }
+
+        @Override
+        public Compare opposite() {
+            return gt;
+        }
+    }, inside {
+        @Override
+        public boolean test(final Object first, final Object second) {
+            return !(null == first || second == null) && gte.test(first, ((List) second).get(0)) && lt.test(first, ((List) second).get(1));
+        }
+
+        @Override
+        public Compare opposite() {
+            return outside;
+        }
+    }, outside {
+        @Override
+        public boolean test(final Object first, final Object second) {
+            return !(null == first || second == null) && lt.test(first, ((List) second).get(0)) || gte.test(first, ((List) second).get(1));
+        }
+
+        @Override
+        public Compare opposite() {
+            return inside;
         }
     };
 
@@ -50,60 +106,5 @@ public enum Compare implements BiPredicate<Object, Object> {
     /**
      * Produce the opposite representation of the current {@code Compare} enum.
      */
-    public Compare opposite() {
-        if (this.equals(eq))
-            return neq;
-        else if (this.equals(neq))
-            return eq;
-        else if (this.equals(gt))
-            return lte;
-        else if (this.equals(gte))
-            return lt;
-        else if (this.equals(lt))
-            return gte;
-        else if (this.equals(lte))
-            return gt;
-        else
-            throw new IllegalStateException("Comparator does not have an opposite");
-    }
-
-    /**
-     * Gets the operator representation of the {@code Compare} object.
-     */
-    public String asString() {
-        if (this.equals(eq))
-            return "=";
-        else if (this.equals(gt))
-            return ">";
-        else if (this.equals(gte))
-            return ">=";
-        else if (this.equals(lte))
-            return "<=";
-        else if (this.equals(lt))
-            return "<";
-        else if (this.equals(neq))
-            return "<>";
-        else
-            throw new IllegalStateException("Comparator does not have a string representation");
-    }
-
-    /**
-     * Get the {@code Compare} value based on the operator that represents it.
-     */
-    public static Compare fromString(final String c) {
-        if (c.equals("="))
-            return eq;
-        else if (c.equals("<>"))
-            return neq;
-        else if (c.equals(">"))
-            return gt;
-        else if (c.equals(">="))
-            return gte;
-        else if (c.equals("<"))
-            return lt;
-        else if (c.equals("<="))
-            return lte;
-        else
-            throw new IllegalArgumentException("String representation does not match any comparator");
-    }
+    public abstract Compare opposite();
 }

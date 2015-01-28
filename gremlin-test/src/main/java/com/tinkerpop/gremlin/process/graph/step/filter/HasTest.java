@@ -58,12 +58,14 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age();
 
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id);
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
         Traversal<Vertex, String> traversal = get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX();
         printTraversalForm(traversal);
-        checkResults(Arrays.asList("josh"),traversal);
+        checkResults(Arrays.asList("josh"), traversal);
     }
 
     @Test
@@ -223,6 +225,18 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_outE_hasXweight_inside_0_06X_inV() {
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_outE_hasXweight_inside_0_06X_inV(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        while (traversal.hasNext()) {
+            Vertex vertex = traversal.next();
+            assertTrue(vertex.value("name").equals("vadas") || vertex.value("name").equals("lop"));
+        }
+        assertFalse(traversal.hasNext());
+    }
+
     public static class StandardTest extends HasTest {
         public StandardTest() {
             requiresGraphComputer = false;
@@ -301,6 +315,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
             return g.V().has("person", "name", "marko").values("age");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id) {
+            return g.V(v1Id).outE().has("weight", Compare.inside, Arrays.asList(0.0d, 0.6d)).inV();
         }
     }
 
@@ -382,6 +401,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
             return g.V().has("person", "name", "marko").<Integer>values("age").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id) {
+            return g.V(v1Id).outE().has("weight", Compare.inside, Arrays.asList(0.0d, 0.6d)).inV().submit(g.compute());
         }
     }
 }
