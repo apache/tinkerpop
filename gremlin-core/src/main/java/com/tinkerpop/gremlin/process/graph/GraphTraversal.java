@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph;
 
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.Scope;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -44,7 +45,8 @@ import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MaxStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MeanStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MinStep;
-import com.tinkerpop.gremlin.process.graph.step.map.OrderStep;
+import com.tinkerpop.gremlin.process.graph.step.map.OrderGlobalStep;
+import com.tinkerpop.gremlin.process.graph.step.map.OrderLocalStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PathStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertyMapStep;
@@ -52,7 +54,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.PropertyValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SackStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectOneStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
-import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SumStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
@@ -217,11 +218,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> order() {
-        return this.asAdmin().addStep(new OrderStep<>(this));
+        return this.order(Scope.global);
     }
 
-    public default GraphTraversal<S, E> shuffle() {
-        return this.asAdmin().addStep(new ShuffleStep<>(this));
+    public default <E2> GraphTraversal<S, E2> order(final Scope scope) {
+        return scope.equals(Scope.local) ? this.asAdmin().addStep(new OrderLocalStep<>(this)) : this.asAdmin().addStep(new OrderGlobalStep<>(this));
     }
 
     public default <E2> GraphTraversal<S, ? extends Property<E2>> properties(final String... propertyKeys) {
@@ -645,11 +646,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <V> GraphTraversal<S, E> by(final Function<Element, V> elementFunctionProjection, final Comparator<V> elementFunctionValueComparator) {
         ((ComparatorHolder<Element>) this.asAdmin().getEndStep()).addComparator(new ElementFunctionComparator<>(elementFunctionProjection, elementFunctionValueComparator));
-        return this;
-    }
-
-    public default <V> GraphTraversal<S, E> by(final T tokenProjection, final Comparator<V> tokenValueComparator) {
-        ((ComparatorHolder<Element>) this.asAdmin().getEndStep()).addComparator(new ElementFunctionComparator<>(tokenProjection, (Comparator) tokenValueComparator));
         return this;
     }
 

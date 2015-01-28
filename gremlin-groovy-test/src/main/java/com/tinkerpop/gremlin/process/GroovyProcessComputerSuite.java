@@ -31,7 +31,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPropertiesTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovySelectTest;
-import com.tinkerpop.gremlin.process.graph.step.map.GroovyShuffleTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyUnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyVertexTest;
@@ -95,7 +94,6 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyPathTest.ComputerTest.class,
             GroovyPropertiesTest.ComputerTest.class,
             GroovySelectTest.ComputerTest.class,
-            GroovyShuffleTest.ComputerTest.class,
             GroovyUnfoldTest.ComputerTest.class,
             GroovyValueMapTest.ComputerTest.class,
             GroovyVertexTest.ComputerTest.class,

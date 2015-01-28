@@ -17,11 +17,11 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrderStep<S> extends CollectingBarrierStep<S> implements Reversible, ComparatorHolder<S> {
+public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implements Reversible, ComparatorHolder<S> {
 
     private final List<Comparator<S>> comparators = new ArrayList<>();
 
-    public OrderStep(final Traversal traversal) {
+    public OrderGlobalStep(final Traversal traversal) {
         super(traversal);
         this.setConsumer(traversers -> traversers.sort((a, b) -> a.compareTo(b)));
     }

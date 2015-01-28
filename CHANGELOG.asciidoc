@@ -9,6 +9,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `Scope.local` and `Scope.global` in support of `OrderLocalStep` and `OrderGlobalStep` via `order(scope)`.
+* Added `Order.keyIncr`, `Order.keyDecr`, `Order.valueIncr`, and `Order.valueDecr` in support of `Map` sorting.
+* Added `Order.shuffle` and removed `shuffle()` in favor of `order().by(shuffle)`.
 * The `maxContentLength` setting in Gremlin Server is now respected by the HTTP/REST Gremlin endpoint.
 * Fixed resource leak in the HTTP/REST Gremlin endpoint of Gremlin Server.
 * Added `MeanStep`, `mean()`, and `MeanNumber` for calculating number averages in a traversal.
