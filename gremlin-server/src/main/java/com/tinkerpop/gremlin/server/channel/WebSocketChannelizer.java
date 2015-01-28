@@ -15,6 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * A {@link com.tinkerpop.gremlin.server.Channelizer} that exposes a WebSocket-based Gremlin endpoint with a custom
+ * sub-protocol.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class WebSocketChannelizer extends AbstractChannelizer {

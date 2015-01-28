@@ -10,6 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * A {@link com.tinkerpop.gremlin.server.Channelizer} that exposes an NIO-based Gremlin endpoint with a custom
+ * protocol.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class NioChannelizer extends AbstractChannelizer {
