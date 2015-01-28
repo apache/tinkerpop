@@ -31,6 +31,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,10 +173,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                     promise.setSuccess();
                 }, gremlinExecutor.getExecutorService());
             } catch (Exception ex) {
-                // todo: serialization errors in the transform will likely end up as a RuntimeException in a RuntimeException - do better
-
                 // tossed to exceptionCaught which delegates to sendError method
-                throw new RuntimeException(ex);
+                final Throwable t = ExceptionUtils.getRootCause(ex);
+                throw new RuntimeException(null == t ? ex : t);
             }
         }
     }
