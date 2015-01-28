@@ -30,7 +30,7 @@ public abstract class AbstractGremlinServerIntegrationTest {
         final Settings overridenSettings = overrideSettings(settings);
         this.server = new GremlinServer(overridenSettings);
 
-        server.run().join();
+        server.start().join();
     }
 
     @After

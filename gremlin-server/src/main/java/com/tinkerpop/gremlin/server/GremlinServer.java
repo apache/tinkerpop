@@ -12,8 +12,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Slf4JLoggerFactory;
@@ -30,7 +28,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Start and stop Gremlin Server.
@@ -70,7 +67,7 @@ public class GremlinServer {
     /**
      * Start Gremlin Server with {@link Settings} provided to the constructor.
      */
-    public CompletableFuture<Void> run() throws Exception {
+    public CompletableFuture<Void> start() throws Exception {
         final CompletableFuture<Void> serverReadyFuture = new CompletableFuture<>();
         try {
             final ServerBootstrap b = new ServerBootstrap();
@@ -244,7 +241,7 @@ public class GremlinServer {
 
         logger.info("Configuring Gremlin Server from {}", file);
         settings.optionalMetrics().ifPresent(GremlinServer::configureMetrics);
-        new GremlinServer(settings).run();
+        new GremlinServer(settings).start();
     }
 
     public static String getHeader() {

@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Starts and stops one instance for all tests that extend from this class.
@@ -33,7 +32,7 @@ public abstract class AbstractGremlinServerPerformanceTest {
             GremlinServer gremlinServer = null;
             try {
                 gremlinServer = new GremlinServer(settings);
-                gremlinServer.run().join();
+                gremlinServer.start().join();
 
                 // the server was started and is ready for tests
                 serverReadyFuture.complete(null);
