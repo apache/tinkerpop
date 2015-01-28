@@ -27,7 +27,9 @@ public class NioChannelizer extends AbstractChannelizer {
     private NioGremlinBinaryRequestDecoder nioGremlinBinaryRequestDecoder;
 
     @Override
-    public void init(Settings settings, GremlinExecutor gremlinExecutor, ExecutorService gremlinExecutorService, Graphs graphs, ScheduledExecutorService scheduledExecutorService) {
+    public void init(final Settings settings, final GremlinExecutor gremlinExecutor,
+                     final ExecutorService gremlinExecutorService, final Graphs graphs,
+                     final ScheduledExecutorService scheduledExecutorService) {
         super.init(settings, gremlinExecutor, gremlinExecutorService, graphs, scheduledExecutorService);
         nioGremlinBinaryRequestDecoder = new NioGremlinBinaryRequestDecoder(serializers);
     }

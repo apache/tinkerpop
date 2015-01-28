@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import com.tinkerpop.gremlin.driver.ser.SerializationException;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
@@ -16,6 +17,7 @@ import java.util.List;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@ChannelHandler.Sharable
 public class WsGremlinTextRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
 
     @Override

@@ -1,6 +1,9 @@
 package com.tinkerpop.gremlin.server.channel;
 
+import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.server.AbstractChannelizer;
+import com.tinkerpop.gremlin.server.Graphs;
+import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.handler.WsGremlinBinaryRequestDecoder;
 import com.tinkerpop.gremlin.server.handler.WsGremlinResponseEncoder;
 import com.tinkerpop.gremlin.server.handler.WsGremlinTextRequestDecoder;
@@ -14,6 +17,9 @@ import io.netty.handler.logging.LoggingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+
 /**
  * A {@link com.tinkerpop.gremlin.server.Channelizer} that exposes a WebSocket-based Gremlin endpoint with a custom
  * sub-protocol.
@@ -22,6 +28,21 @@ import org.slf4j.LoggerFactory;
  */
 public class WebSocketChannelizer extends AbstractChannelizer {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketChannelizer.class);
+
+    private WsGremlinResponseEncoder wsGremlinResponseEncoder;
+    private WsGremlinTextRequestDecoder wsGremlinTextRequestDecoder;
+    private WsGremlinBinaryRequestDecoder wsGremlinBinaryRequestDecoder;
+
+    @Override
+    public void init(final Settings settings, final GremlinExecutor gremlinExecutor,
+                     final ExecutorService gremlinExecutorService, final Graphs graphs,
+                     final ScheduledExecutorService scheduledExecutorService) {
+        super.init(settings, gremlinExecutor, gremlinExecutorService, graphs, scheduledExecutorService);
+
+        wsGremlinResponseEncoder = new WsGremlinResponseEncoder();
+        wsGremlinTextRequestDecoder = new WsGremlinTextRequestDecoder();
+        wsGremlinBinaryRequestDecoder = new WsGremlinBinaryRequestDecoder(serializers);
+    }
 
     @Override
     public void configure(final ChannelPipeline pipeline) {
@@ -50,9 +71,9 @@ public class WebSocketChannelizer extends AbstractChannelizer {
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
 
-        pipeline.addLast("response-encoder", new WsGremlinResponseEncoder());
-        pipeline.addLast("request-text-decoder", new WsGremlinTextRequestDecoder());
-        pipeline.addLast("request-binary-decoder", new WsGremlinBinaryRequestDecoder(serializers));
+        pipeline.addLast("response-encoder", wsGremlinResponseEncoder);
+        pipeline.addLast("request-text-decoder", wsGremlinTextRequestDecoder);
+        pipeline.addLast("request-binary-decoder", wsGremlinBinaryRequestDecoder);
 
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
