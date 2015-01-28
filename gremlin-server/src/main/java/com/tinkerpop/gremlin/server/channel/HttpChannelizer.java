@@ -20,6 +20,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
+ * Constructs a {@link com.tinkerpop.gremlin.server.Channelizer} that exposes an HTTP/REST endpoint in Gremlin Server.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class HttpChannelizer extends AbstractChannelizer {
