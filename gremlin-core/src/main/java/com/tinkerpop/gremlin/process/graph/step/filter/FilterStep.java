@@ -35,7 +35,7 @@ public class FilterStep<S> extends AbstractStep<S, S> {
     @Override
     public FilterStep<S> clone() throws CloneNotSupportedException {
         final FilterStep<S> clone = (FilterStep<S>) super.clone();
-        clone.predicate = CloneableLambda.cloneOrReturn(this.predicate);
+        clone.predicate = CloneableLambda.tryClone(this.predicate);
         return clone;
     }
 }

@@ -61,7 +61,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> {
     public ReducingBarrierStep<S, E> clone() throws CloneNotSupportedException {
         final ReducingBarrierStep<S, E> clone = (ReducingBarrierStep<S, E>) super.clone();
         clone.done = false;
-        clone.reducingBiFunction = CloneableLambda.cloneOrReturn(this.reducingBiFunction);
+        clone.reducingBiFunction = CloneableLambda.tryClone(this.reducingBiFunction);
         return clone;
     }
 
@@ -87,7 +87,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> {
         /*@Override
         public ObjectBiFunction<S, E> clone() throws CloneNotSupportedException {
             final ObjectBiFunction<S, E> clone = (ObjectBiFunction<S, E>) super.clone();
-            clone.biFunction = CloneableLambda.cloneOrReturn(this.biFunction);
+            clone.biFunction = CloneableLambda.tryClone(this.biFunction);
             return clone;
 
         }*/

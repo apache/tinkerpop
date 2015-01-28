@@ -44,7 +44,7 @@ public class CollectingBarrierStep<S> extends AbstractStep<S, S> {
     public CollectingBarrierStep<S> clone() throws CloneNotSupportedException {
         final CollectingBarrierStep<S> clone = (CollectingBarrierStep<S>) super.clone();
         clone.traverserSet = new TraverserSet<>();
-        clone.barrierConsumer = CloneableLambda.cloneOrReturn(this.barrierConsumer);
+        clone.barrierConsumer = CloneableLambda.tryClone(this.barrierConsumer);
         return clone;
     }
 

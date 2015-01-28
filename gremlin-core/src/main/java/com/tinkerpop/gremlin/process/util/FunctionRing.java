@@ -38,7 +38,7 @@ public class FunctionRing<A, B> implements Cloneable {
     }
 
     public void reset() {
-        this.functions.forEach(ResettableLambda::resetOrReturn);
+        this.functions.forEach(ResettableLambda::tryReset);
         this.currentFunction = -1;
     }
 
@@ -66,7 +66,7 @@ public class FunctionRing<A, B> implements Cloneable {
         clone.functions = new ArrayList<>();
         clone.currentFunction = -1;
         for (final Function<A, B> function : this.functions) {
-            clone.functions.add(CloneableLambda.cloneOrReturn(function));
+            clone.functions.add(CloneableLambda.tryClone(function));
         }
         return clone;
     }

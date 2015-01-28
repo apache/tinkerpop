@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -129,7 +128,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
                 clone.executeTraversalOperations(clonedTraversal, TYPICAL_GLOBAL_OPERATIONS);
             }
         }
-        clone.pickFunction = CloneableLambda.cloneOrReturn(this.pickFunction);
+        clone.pickFunction = CloneableLambda.tryClone(this.pickFunction);
         if (clone.pickFunction instanceof TraversableLambda)
             clone.executeTraversalOperations(((TraversableLambda) clone.pickFunction).getTraversal(), TYPICAL_LOCAL_OPERATIONS);
         return clone;
@@ -144,7 +143,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     public void reset() {
         super.reset();
         //TraversalOptionHolder.super.resetTraversals();
-        ResettableLambda.resetOrReturn(this.pickFunction);
+        ResettableLambda.tryReset(this.pickFunction);
         for (final List<Traversal<S, E>> options : this.traversalOptions.values()) {
             for (final Traversal<S, E> option : options) {
                 option.asAdmin().reset();

@@ -102,7 +102,7 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
         super.reset();
         this.keyFunction.reset();
         this.valueFunction.reset();
-        ResettableLambda.resetOrReturn(this.reduceFunction);
+        ResettableLambda.tryReset(this.reduceFunction);
     }
 
     public Function<Collection<V>, R> getReduceFunction() {
@@ -155,7 +155,7 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
         clone.executeTraversalOperations(this.keyFunction.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
         clone.valueFunction = this.valueFunction.clone();
         clone.executeTraversalOperations(this.valueFunction.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
-        clone.reduceFunction = CloneableLambda.cloneOrReturn(this.reduceFunction);
+        clone.reduceFunction = CloneableLambda.tryClone(this.reduceFunction);
         GroupStep.generateConsumer(clone);
         return clone;
     }

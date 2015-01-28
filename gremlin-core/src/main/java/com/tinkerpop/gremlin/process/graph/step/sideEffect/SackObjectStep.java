@@ -36,7 +36,7 @@ public final class SackObjectStep<S, V> extends SideEffectStep<S> {
     @Override
     public SackObjectStep<S, V> clone() throws CloneNotSupportedException {
         final SackObjectStep<S, V> clone = (SackObjectStep<S, V>) super.clone();
-        clone.operator = CloneableLambda.cloneOrReturn(this.operator);
+        clone.operator = CloneableLambda.tryClone(this.operator);
         SackObjectStep.generateConsumer(clone);
         return clone;
     }
