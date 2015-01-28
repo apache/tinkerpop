@@ -355,39 +355,39 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new HasTraversalStep<>(this, (Traversal<E, ?>) hasNextTraversal));
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> has(final String key) {
-        return this.asAdmin().addStep(new HasStep<>(this, new HasContainer(key, Contains.within)));
+    public default GraphTraversal<S, E> has(final String key) {
+        return this.asAdmin().addStep(new HasStep(this, new HasContainer(key, Contains.within)));
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final Object value) {
+    public default GraphTraversal<S, E> has(final String key, final Object value) {
         return this.has(key, Compare.eq, value);
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> has(final T accessor, final Object value) {
+    public default GraphTraversal<S, E> has(final T accessor, final Object value) {
         return this.has(accessor.getAccessor(), value);
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
-        return this.asAdmin().addStep(new HasStep<>(this, new HasContainer(key, predicate, value)));
+    public default GraphTraversal<S, E> has(final String key, final BiPredicate predicate, final Object value) {
+        return this.asAdmin().addStep(new HasStep(this, new HasContainer(key, predicate, value)));
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> has(final T accessor, final BiPredicate predicate, final Object value) {
+    public default GraphTraversal<S, E> has(final T accessor, final BiPredicate predicate, final Object value) {
         return this.has(accessor.getAccessor(), predicate, value);
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final Object value) {
+    public default GraphTraversal<S, E> has(final String label, final String key, final Object value) {
         return this.has(label, key, Compare.eq, value);
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final BiPredicate predicate, final Object value) {
+    public default GraphTraversal<S, E> has(final String label, final String key, final BiPredicate predicate, final Object value) {
         return this.has(T.label, label).has(key, predicate, value);
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> hasNot(final String key) {
-        return this.asAdmin().addStep(new HasStep<>(this, new HasContainer(key, Contains.without)));
+    public default GraphTraversal<S, E> hasNot(final String key) {
+        return this.asAdmin().addStep(new HasStep(this, new HasContainer(key, Contains.without)));
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> between(final String key, final Comparable startValue, final Comparable endValue) {
+    public default GraphTraversal<S, E> between(final String key, final Comparable startValue, final Comparable endValue) {
         return this.has(key, Compare.gte, startValue).has(key, Compare.lt, endValue);
     }
 

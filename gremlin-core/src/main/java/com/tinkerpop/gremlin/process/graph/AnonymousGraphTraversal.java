@@ -245,35 +245,35 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().has(hasNextTraversal);
     }
 
-    public default <A extends Element> GraphTraversal<A, A> has(final String key) {
+    public default <A> GraphTraversal<A, A> has(final String key) {
         return this.<A>start().has(key);
     }
 
-    public default <A extends Element> GraphTraversal<A, A> has(final String key, final Object value) {
+    public default <A> GraphTraversal<A, A> has(final String key, final Object value) {
         return this.<A>start().has(key, value);
     }
 
-    public default <A extends Element> GraphTraversal<A, A> has(final T accessor, final Object value) {
+    public default <A> GraphTraversal<A, A> has(final T accessor, final Object value) {
         return this.<A>start().has(accessor, value);
     }
 
-    public default <A extends Element> GraphTraversal<A, A> has(final String key, final BiPredicate predicate, final Object value) {
+    public default <A> GraphTraversal<A, A> has(final String key, final BiPredicate predicate, final Object value) {
         return this.<A>start().has(key, predicate, value);
     }
 
-    public default <A extends Element> GraphTraversal<A, A> has(final T accessor, final BiPredicate predicate, final Object value) {
+    public default <A> GraphTraversal<A, A> has(final T accessor, final BiPredicate predicate, final Object value) {
         return this.<A>start().has(accessor, predicate, value);
     }
 
-    public default <A extends Element> GraphTraversal<A, A> has(final String label, final String key, final Object value) {
+    public default <A> GraphTraversal<A, A> has(final String label, final String key, final Object value) {
         return this.<A>start().has(label, key, value);
     }
 
-    public default <A extends Element> GraphTraversal<A, A> has(final String label, final String key, final BiPredicate predicate, final Object value) {
+    public default <A> GraphTraversal<A, A> has(final String label, final String key, final BiPredicate predicate, final Object value) {
         return this.<A>start().has(label, key, predicate, value);
     }
 
-    public default <A extends Element> GraphTraversal<A, A> hasNot(final String key) {
+    public default <A> GraphTraversal<A, A> hasNot(final String key) {
         return this.<A>start().hasNot(key);
     }
 
