@@ -19,9 +19,9 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -181,7 +181,7 @@ public class TinkerGraph implements Graph, Graph.Iterators {
             final Vertex vertex = this.vertices.get(vertexIds[0]);
             return null == vertex ? Collections.emptyIterator() : IteratorUtils.of(vertex);
         } else
-            return Stream.of(vertexIds).filter(this.vertices::containsKey).map(this.vertices::get).iterator();
+            return Stream.of(vertexIds).map(this.vertices::get).filter(Objects::nonNull).iterator();
     }
 
     @Override
@@ -192,7 +192,7 @@ public class TinkerGraph implements Graph, Graph.Iterators {
             final Edge edge = this.edges.get(edgeIds[0]);
             return null == edge ? Collections.emptyIterator() : IteratorUtils.of(edge);
         } else
-            return Stream.of(edgeIds).filter(this.edges::containsKey).map(this.edges::get).iterator();
+            return Stream.of(edgeIds).map(this.edges::get).filter(Objects::nonNull).iterator();
     }
 
     /**
