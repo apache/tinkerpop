@@ -127,7 +127,7 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().order();
     }
 
-    public default <A, E2> GraphTraversal<A, E2> order(final Scope scope) {
+    public default <A> GraphTraversal<A, A> order(final Scope scope) {
         return this.<A>start().order(scope);
     }
 

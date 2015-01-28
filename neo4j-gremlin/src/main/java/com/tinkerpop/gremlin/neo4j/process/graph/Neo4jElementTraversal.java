@@ -264,7 +264,7 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.order();
 	}
 
-	public default <E2> Neo4jGraphTraversal<A, E2> order(com.tinkerpop.gremlin.process.Scope arg0) {
+	public default Neo4jGraphTraversal<A, A> order(com.tinkerpop.gremlin.process.Scope arg0) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.order(arg0);
 	}
 

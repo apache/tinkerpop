@@ -89,6 +89,7 @@ import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -221,7 +222,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.order(Scope.global);
     }
 
-    public default <E2> GraphTraversal<S, E2> order(final Scope scope) {
+    public default GraphTraversal<S, E> order(final Scope scope) {
         return scope.equals(Scope.local) ? this.asAdmin().addStep(new OrderLocalStep<>(this)) : this.asAdmin().addStep(new OrderGlobalStep<>(this));
     }
 
@@ -638,6 +639,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     ////
+
+    public default GraphTraversal<S, E> by(final Order order) {
+        ((ComparatorHolder) this.asAdmin().getEndStep()).addComparator(order);
+        return this;
+    }
 
     public default GraphTraversal<S, E> by(final Comparator<E> comparator) {
         ((ComparatorHolder<E>) this.asAdmin().getEndStep()).addComparator(comparator);

@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import com.tinkerpop.gremlin.process.Scope;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -9,14 +10,14 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -40,6 +41,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_select();
 
+    public abstract Traversal<Vertex, Map<Integer, Integer>> get_g_V_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -168,6 +170,29 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         assertEquals(4, counter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX() {
+        final Traversal<Vertex, Map<Integer, Integer>> traversal = get_g_V_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        final Map<Integer, Integer> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(4, map.size());
+        final Iterator<Map.Entry<Integer, Integer>> iterator = map.entrySet().iterator();
+        Map.Entry<Integer, Integer> entry = iterator.next();
+        assertEquals(3, entry.getKey().intValue());
+        assertEquals(87, entry.getValue().intValue());
+        entry = iterator.next();
+        assertEquals(2, entry.getKey().intValue());
+        assertEquals(58, entry.getValue().intValue());
+        entry = iterator.next();
+        assertEquals(1, entry.getKey().intValue());
+        assertEquals(29, entry.getValue().intValue());
+        entry = iterator.next();
+        assertEquals(4, entry.getKey().intValue());
+        assertEquals(29, entry.getValue().intValue());
+        assertFalse(iterator.hasNext());
+    }
 
     public static class StandardTest extends OrderTest {
 
@@ -211,6 +236,18 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_select() {
             return g.V().as("a").out("created").as("b").order().by(Order.shuffle).select();
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Integer, Integer>> get_g_V_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(final Object v1Id) {
+            return g.V(v1Id).map(v -> {
+                final Map<Integer, Integer> map = new HashMap<>();
+                map.put(1, (int) v.get().value("age"));
+                map.put(2, (int) v.get().value("age") * 2);
+                map.put(3, (int) v.get().value("age") * 3);
+                map.put(4, (int) v.get().value("age"));
+                return map;
+            }).order(Scope.local).by(Order.valueDecr).by(Order.keyIncr);
         }
 
     }
@@ -264,6 +301,18 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_select() {
             return (Traversal) g.V().as("a").out("created").as("b").order().by(Order.shuffle).select().submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Integer, Integer>> get_g_V_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(final Object v1Id) {
+            return g.V(v1Id).map(v -> {
+                final Map<Integer, Integer> map = new HashMap<>();
+                map.put(1, (int) v.get().value("age"));
+                map.put(2, (int) v.get().value("age") * 2);
+                map.put(3, (int) v.get().value("age") * 3);
+                map.put(4, (int) v.get().value("age"));
+                return map;
+            }).order(Scope.local).by(Order.valueDecr).by(Order.keyIncr).submit(g.compute());
         }
     }
 }

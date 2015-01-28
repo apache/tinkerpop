@@ -112,7 +112,7 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().order();
     }
 
-    public default <E2> GraphTraversal<A, E2> order(final Scope scope) {
+    public default GraphTraversal<A, A> order(final Scope scope) {
         return this.start().order(scope);
     }
 

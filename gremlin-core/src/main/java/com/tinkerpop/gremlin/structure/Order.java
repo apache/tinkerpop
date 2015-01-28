@@ -7,7 +7,7 @@ import java.util.Random;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum Order implements Comparator {
+public enum Order implements Comparator<Object> {
 
     incr {
         @Override
