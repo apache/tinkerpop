@@ -2,19 +2,13 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.step.filter.CoinStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.filter.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesStep;
-import com.tinkerpop.gremlin.process.graph.step.map.PropertyMapStep;
-import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import java.util.List;
 
 import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.*;
@@ -50,15 +44,15 @@ public class TraversalHelperTest {
     @Test
     public void shouldAddStepsCorrectly() {
         Traversal traversal = new DefaultTraversal<>(Object.class);
-        traversal.asAdmin().addStep(0,new FilterStep(traversal));
-        traversal.asAdmin().addStep(0,new HasStep(traversal, null));
-        traversal.asAdmin().addStep(0,new IdentityStep(traversal));
+        traversal.asAdmin().addStep(0, new FilterStep(traversal));
+        traversal.asAdmin().addStep(0, new HasStep(traversal, null));
+        traversal.asAdmin().addStep(0, new IdentityStep(traversal));
         validateToyTraversal(traversal);
 
         traversal = new DefaultTraversal<>(Object.class);
-        traversal.asAdmin().addStep(0,new IdentityStep(traversal));
-        traversal.asAdmin().addStep(1,new HasStep(traversal, null));
-        traversal.asAdmin().addStep(2,new FilterStep(traversal));
+        traversal.asAdmin().addStep(0, new IdentityStep(traversal));
+        traversal.asAdmin().addStep(1, new HasStep(traversal, null));
+        traversal.asAdmin().addStep(2, new FilterStep(traversal));
         validateToyTraversal(traversal);
     }
 
@@ -73,12 +67,12 @@ public class TraversalHelperTest {
         traversal.asAdmin().removeStep(3);
         validateToyTraversal(traversal);
 
-        traversal.asAdmin().addStep(0,new PropertiesStep(traversal, PropertyType.PROPERTY, "marko"));
+        traversal.asAdmin().addStep(0, new PropertiesStep(traversal, PropertyType.PROPERTY, "marko"));
         traversal.asAdmin().removeStep(0);
         validateToyTraversal(traversal);
 
         traversal.asAdmin().removeStep(1);
-        traversal.asAdmin().addStep(1,new HasStep(traversal, null));
+        traversal.asAdmin().addStep(1, new HasStep(traversal, null));
         validateToyTraversal(traversal);
     }
 
