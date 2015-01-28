@@ -22,7 +22,7 @@ public abstract class AbstractGremlinServerPerformanceTest {
     private static String host;
     private static String port;
 
-    private static CountDownLatch latch;
+    private static CountDownLatch latchWaitForTestsToComplete;
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -30,13 +30,13 @@ public abstract class AbstractGremlinServerPerformanceTest {
         final Settings settings = Settings.read(stream);
         final CompletableFuture<Void> serverReadyFuture = new CompletableFuture<>();
 
-        latch = new CountDownLatch(1);
+        latchWaitForTestsToComplete = new CountDownLatch(1);
         thread = new Thread(() -> {
             GremlinServer gremlinServer = null;
             try {
-                gremlinServer = new GremlinServer(settings, serverReadyFuture);
-                gremlinServer.run();
-                latch.await();
+                gremlinServer = new GremlinServer(settings);
+                gremlinServer.run().join();
+                latchWaitForTestsToComplete.await();
             } catch (InterruptedException ie) {
                 logger.info("Shutting down Gremlin Server");
             } catch (Exception ex) {
@@ -69,7 +69,7 @@ public abstract class AbstractGremlinServerPerformanceTest {
     }
 
     public static void stopServer() throws Exception {
-        latch.countDown();
+        latchWaitForTestsToComplete.countDown();
 
         while (thread.isAlive()) {
             Thread.sleep(250);

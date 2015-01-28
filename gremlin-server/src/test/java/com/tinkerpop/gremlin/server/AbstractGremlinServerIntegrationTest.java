@@ -18,8 +18,6 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractGremlinServerIntegrationTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinServerIntegrationTest.class);
 
-    private Thread thread;
-
     private GremlinServer server;
 
     public Settings overrideSettings(final Settings settings) {
@@ -34,30 +32,12 @@ public abstract class AbstractGremlinServerIntegrationTest {
     public void setUp() throws Exception {
         final InputStream stream = getSettingsInputStream();
         final Settings settings = Settings.read(stream);
-        final CompletableFuture<Void> serverReadyFuture = new CompletableFuture<>();
 
         final Settings overridenSettings = overrideSettings(settings);
-        final GremlinServer server = new GremlinServer(overridenSettings, serverReadyFuture);
+        final GremlinServer server = new GremlinServer(overridenSettings);
         this.server = server;
 
-        thread = new Thread(() -> {
-            try {
-                server.run();
-            } catch (InterruptedException ie) {
-                logger.info("Shutting down Gremlin Server");
-            } catch (Exception ex) {
-                logger.error("Could not start Gremlin Server for integration tests", ex);
-            }
-        });
-        thread.start();
-
-        // make sure gremlin server gets off the ground - longer than 30 seconds means that this didn't work somehow
-        try {
-            serverReadyFuture.get(30000, TimeUnit.MILLISECONDS);
-        } catch (Exception ex) {
-            logger.error("Server did not start in the expected time or was otherwise interrupted.", ex);
-            return;
-        }
+        server.run().join();
     }
 
     @After
@@ -67,13 +47,6 @@ public abstract class AbstractGremlinServerIntegrationTest {
 
     public void stopServer() throws Exception {
         server.stop();
-
-        if (!thread.isInterrupted())
-            thread.interrupt();
-
-        while (thread.isAlive()) {
-            Thread.sleep(250);
-        }
     }
 
     public static boolean deleteDirectory(final File directory) {

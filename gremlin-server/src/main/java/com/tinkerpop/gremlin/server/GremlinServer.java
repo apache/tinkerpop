@@ -6,6 +6,8 @@ import com.tinkerpop.gremlin.structure.Graph;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -41,17 +43,11 @@ public class GremlinServer {
     private Optional<Graphs> graphs = Optional.empty();
     private Channel ch;
 
-    private final Optional<CompletableFuture<Void>> serverReady;
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
     private final ExecutorService gremlinExecutorService;
 
     public GremlinServer(final Settings settings) {
-        this(settings, null);
-    }
-
-    public GremlinServer(final Settings settings, final CompletableFuture<Void> serverReady) {
-        this.serverReady = Optional.ofNullable(serverReady);
         this.settings = settings;
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "gremlin-shutdown-hook"));
@@ -66,7 +62,8 @@ public class GremlinServer {
     /**
      * Start Gremlin Server with {@link Settings} provided to the constructor.
      */
-    public void run() throws Exception {
+    public CompletableFuture<Void> run() throws Exception {
+        final CompletableFuture<Void> serverReadyFuture = new CompletableFuture<>();
         try {
             final ServerBootstrap b = new ServerBootstrap();
 
@@ -84,16 +81,26 @@ public class GremlinServer {
                     .childHandler(channelizer);
 
             // bind to host/port and wait for channel to be ready
-            ch = b.bind(settings.host, settings.port).sync().channel();
+            b.bind(settings.host, settings.port).addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(final ChannelFuture channelFuture) throws Exception {
+                    ch = channelFuture.channel();
 
-            logger.info("Gremlin Server configured with worker thread pool of {}, gremlin pool of {} and boss thread pool of {}.",
-                    settings.threadPoolWorker, settings.gremlinPool, settings.threadPoolBoss);
-            logger.info("Channel started at port {}.", settings.port);
+                    logger.info("Gremlin Server configured with worker thread pool of {}, gremlin pool of {} and boss thread pool of {}.",
+                            settings.threadPoolWorker, settings.gremlinPool, settings.threadPoolBoss);
+                    logger.info("Channel started at port {}.", settings.port);
 
-            serverReady.ifPresent(future -> future.complete(null));
+                    serverReadyFuture.complete(null);
+                }
+            });
+
+            // serverReady.ifPresent(future -> future.complete(null));
         } catch (Exception ex) {
             logger.error("Gremlin Server Error", ex);
+            serverReadyFuture.completeExceptionally(ex);
         }
+
+        return serverReadyFuture;
     }
 
     private static Channelizer createChannelizer(final Settings settings) throws Exception {
