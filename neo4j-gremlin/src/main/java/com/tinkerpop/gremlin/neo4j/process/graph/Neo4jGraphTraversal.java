@@ -289,6 +289,14 @@ public interface Neo4jGraphTraversal<S, E> extends GraphTraversal.Admin<S, E>, G
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.inject(arg0);
 	}
 
+	public default Neo4jGraphTraversal<S, E> is(java.lang.Object arg0) {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.is(arg0);
+	}
+
+	public default Neo4jGraphTraversal<S, E> is(java.util.function.BiPredicate arg0, java.lang.Object arg1) {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.is(arg0, arg1);
+	}
+
 	public default Neo4jGraphTraversal<S, java.lang.String> key() {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.key();
 	}

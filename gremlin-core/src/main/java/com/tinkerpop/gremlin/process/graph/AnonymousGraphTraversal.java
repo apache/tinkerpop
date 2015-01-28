@@ -292,6 +292,14 @@ public interface AnonymousGraphTraversal {
         return this.<A>start().between(key, startValue, endValue);
     }
 
+    public default <A> GraphTraversal<A, A> is(final Object value) {
+        return this.<A>start().is(value);
+    }
+
+    public default <A> GraphTraversal<A, A> is(final BiPredicate predicate, final Object value) {
+        return this.<A>start().is(predicate, value);
+    }
+
     public default <A> GraphTraversal<A, A> coin(final double probability) {
         return this.<A>start().coin(probability);
     }
