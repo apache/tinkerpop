@@ -30,6 +30,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
+import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -91,6 +92,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
             if (req.getMethod() != GET && req.getMethod() != POST) {
                 sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString());
+                ReferenceCountUtil.release(msg);
                 return;
             }
 
@@ -99,6 +101,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 requestArguments = getGremlinScript(req);
             } catch (IllegalArgumentException iae) {
                 sendError(ctx, BAD_REQUEST, iae.getMessage());
+                ReferenceCountUtil.release(msg);
                 return;
             }
 
@@ -107,8 +110,15 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             final MessageTextSerializer serializer = (MessageTextSerializer) serializers.get(accept);
             if (null == serializer) {
                 sendError(ctx, BAD_REQUEST, String.format("no serializer for requested Accept header: %s", accept));
+                ReferenceCountUtil.release(msg);
                 return;
             }
+
+            final String origin = req.headers().get(ORIGIN);
+            final boolean keepAlive = !isKeepAlive(req);
+
+            // not using the req any where below here - assume it is safe to release at this point.
+            ReferenceCountUtil.release(msg);
 
             try {
                 logger.debug("Processing request containing script [{}] and bindings of [{}] on {}",
@@ -123,11 +133,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                     response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
 
                     // handle cors business
-                    final String origin = req.headers().get(ORIGIN);
-                    if (origin != null)
-                        response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+                    if (origin != null) response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
 
-                    if (!isKeepAlive(req)) {
+                    if (!keepAlive) {
                         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
                     } else {
                         response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);

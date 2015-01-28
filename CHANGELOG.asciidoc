@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed resource leak in the `HttpChannelizer` of Gremlin Server.
 * Added `MeanStep`, `mean()`, and `MeanNumber` for calculating number averages in a traversal.
 * Greatly simplified all the traversal `MapReduce` implementations due to the introduction of `VertexTraversalSideEffects`.
 * Added `VertexTraversalSideEffects` as a cheap, static way to get a sideEffect-view of a vertex in OLAP.
