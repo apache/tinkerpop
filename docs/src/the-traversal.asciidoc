@@ -464,7 +464,7 @@ Side effects do not have a value for provided key: null
 Display stack trace? [yN]
 ----
 
-You have two options to get around this limitation. Either explicitly apply all the required strategies to all anonymous taversal or apply the strategies only to the current traversal.
+You have two options to get around this limitation. Either explicitly apply all the required strategies to all anonymous taversals or apply the strategies only to the current traversal.
 
 [gremlin-groovy,modern]
 ----
@@ -495,6 +495,27 @@ t <3>
 <1> Create the traversal, but don't evaluate it.
 <2> Apply the required strategies locally (only for this particular traversal).
 <3> Evaluate the traversal.
+
+[[is-step]]
+Is Step
+~~~~~~~~~~~~
+
+It is possible to filter scalar values using `is()`-step (*filter*).
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').is(32)
+g.V().values('age').is(lte, 30)
+g.V().values('age').is(gte, 29).is(lt, 34)
+g.V().has(__.in('created').count().is(1l)).values('name') <1>
+g.V().has(__.in('created').count().is(gte, 2l)).values('name') <2>
+g.V().has(__.in('created').values('age').
+                           mean().is(gte, 30d).is(lt, 35d)).values('name') <3>
+----
+
+<1> Find projects having exactly one contributor.
+<2> Find projects having two or more contributors.
+<3> Find projects whose contributors average age is between 30 and 35.
 
 [[limit-step]]
 Limit Step
