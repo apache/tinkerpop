@@ -18,8 +18,8 @@ import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
@@ -31,9 +31,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.FutureListener;
-import io.netty.util.concurrent.GenericFutureListener;
 import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +45,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.UnaryOperator;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaders.Names.*;
@@ -62,6 +58,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@ChannelHandler.Sharable
 public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(HttpGremlinEndpointHandler.class);
     private static final Charset UTF8 = Charset.forName("UTF-8");

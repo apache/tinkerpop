@@ -1,6 +1,9 @@
 package com.tinkerpop.gremlin.server.channel;
 
+import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.server.AbstractChannelizer;
+import com.tinkerpop.gremlin.server.Graphs;
+import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -14,12 +17,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class HttpChannelizer extends AbstractChannelizer {
     private static final Logger logger = LoggerFactory.getLogger(HttpChannelizer.class);
+
+    private HttpGremlinEndpointHandler httpGremlinEndpointHandler;
+
+    @Override
+    public void init(final Settings settings, final GremlinExecutor gremlinExecutor,
+                     final ExecutorService gremlinExecutorService, final Graphs graphs,
+                     final ScheduledExecutorService scheduledExecutorService) {
+        super.init(settings, gremlinExecutor, gremlinExecutorService, graphs, scheduledExecutorService);
+        httpGremlinEndpointHandler = new HttpGremlinEndpointHandler(serializers, gremlinExecutor);
+    }
 
     @Override
     public void configure(final ChannelPipeline pipeline) {
@@ -32,7 +46,7 @@ public class HttpChannelizer extends AbstractChannelizer {
             pipeline.addLast(new LoggingHandler("http-io", LogLevel.DEBUG));
 
         pipeline.addLast(new HttpObjectAggregator(1048576));
-        pipeline.addLast("http-gremlin-handler", new HttpGremlinEndpointHandler(serializers, gremlinExecutor));
+        pipeline.addLast("http-gremlin-handler", httpGremlinEndpointHandler);
     }
 
     @Override
