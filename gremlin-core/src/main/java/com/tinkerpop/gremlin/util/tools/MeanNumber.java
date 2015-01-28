@@ -43,4 +43,14 @@ public class MeanNumber extends Number implements Comparable<Number> {
     public int compareTo(final Number number) {
         return Double.valueOf(this.doubleValue()).compareTo(number.doubleValue());
     }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof Number && Double.valueOf(this.doubleValue()).equals(((Number) object).doubleValue());
+    }
+
+    @Override
+    public int hashCode() {
+        return Double.valueOf(this.doubleValue()).hashCode();
+    }
 }
