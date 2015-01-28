@@ -184,7 +184,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
     public void serializeToJsonMapWithElementForKey() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
         final Map<Vertex, Integer> map = new HashMap<>();
-        map.put(g.V().<Vertex>has("name", Compare.eq, "marko").next(), 1000);
+        map.put(g.V().has("name", Compare.eq, "marko").next(), 1000);
 
         final ResponseMessage response = convert(map);
         assertCommon(response);

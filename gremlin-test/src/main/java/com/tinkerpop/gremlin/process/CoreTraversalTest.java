@@ -126,7 +126,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldTraversalResetProperly() {
-        final Traversal<Object, Vertex> traversal = __.as("a").out().out().<Vertex>has("name", Contains.within, Arrays.asList("ripple", "lop")).as("b");
+        final Traversal<Object, Vertex> traversal = __.as("a").out().out().has("name", Contains.within, Arrays.asList("ripple", "lop")).as("b");
         if (new Random().nextBoolean()) traversal.asAdmin().reset();
         assertFalse(traversal.hasNext());
         traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));

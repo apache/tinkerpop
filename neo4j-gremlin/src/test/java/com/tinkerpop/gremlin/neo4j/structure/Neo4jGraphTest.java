@@ -176,7 +176,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         this.g.tx().commit();
         this.g.addVertex(T.label, "Person", "name", "marko");
         this.g.tx().commit();
-        assertEquals("marko", g.V().<Vertex>has(T.label, "Person").<Vertex>has("name", "marko").next().value("name"));
+        assertEquals("marko", g.V().has(T.label, "Person").has("name", "marko").next().value("name"));
     }
 
     @Test
@@ -239,13 +239,13 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         }
 
         this.g.tx().commit();
-        assertEquals(1, this.g.V().has(T.label, "Person").<Vertex>has("name", "marko").count().next(), 0);
-        assertEquals(1, this.g.V().has(T.label, "Person").<Vertex>has("surname", "aaaa").count().next(), 0);
+        assertEquals(1, this.g.V().has(T.label, "Person").has("name", "marko").count().next(), 0);
+        assertEquals(1, this.g.V().has(T.label, "Person").has("surname", "aaaa").count().next(), 0);
         this.g.addVertex(T.label, "Person", "surname", "aaaa");
         this.g.addVertex(T.label, "Person", "name", "marko");
         this.g.tx().commit();
-        assertEquals(2, this.g.V().has(T.label, "Person").<Vertex>has("name", "marko").count().next(), 0);
-        assertEquals(2, this.g.V().has(T.label, "Person").<Vertex>has("surname", "aaaa").count().next(), 0);
+        assertEquals(2, this.g.V().has(T.label, "Person").has("name", "marko").count().next(), 0);
+        assertEquals(2, this.g.V().has(T.label, "Person").has("surname", "aaaa").count().next(), 0);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -256,7 +256,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         this.g.tx().commit();
         this.g.addVertex(T.label, "Person", "name", "marko");
         this.g.tx().commit();
-        assertEquals("marko", g.V().<Vertex>has(T.label, "Person").<Vertex>has("name", "marko").next().value("name"));
+        assertEquals("marko", g.V().has(T.label, "Person").has("name", "marko").next().value("name"));
         this.g.addVertex(T.label, "Person", "name", "marko");
     }
 

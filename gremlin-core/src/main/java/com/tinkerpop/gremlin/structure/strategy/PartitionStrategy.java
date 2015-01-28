@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
@@ -163,25 +164,25 @@ public final class PartitionStrategy implements GraphStrategy {
 
             @Override
             public GraphTraversal<S, Edge> toE(final Direction direction, final String... edgeLabels) {
-                return super.toE(direction, edgeLabels).<Edge>has(getPartitionKey(), Contains.within, getReadPartitions()).filter(edge -> testEdge(edge.get()));
+                return super.toE(direction, edgeLabels).has(getPartitionKey(), Contains.within, getReadPartitions()).filter(edge -> testEdge(edge.get()));
             }
 
             @Override
             public GraphTraversal<S, Vertex> toV(final Direction direction) {
-                return super.toV(direction).<Vertex>has(getPartitionKey(), Contains.within, getReadPartitions());
+                return super.toV(direction).has(getPartitionKey(), Contains.within, getReadPartitions());
             }
 
             @Override
             public GraphTraversal<S, Vertex> otherV() {
-                return super.otherV().<Vertex>has(getPartitionKey(), Contains.within, getReadPartitions());
+                return super.otherV().has(getPartitionKey(), Contains.within, getReadPartitions());
             }
 
             @Override
-            public <E2 extends Element> GraphTraversal<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
+            public GraphTraversal<S, E> has(final String key, final BiPredicate predicate, final Object value) {
                 final HasContainer hasContainer = new HasContainer(key, predicate, value);
-                final HasStep<E2> hasStep = new HasStep<>(this, hasContainer);
+                final HasStep<Element> hasStep = new HasStep<>(this, hasContainer);
                 hasStep.setPredicate(element -> hasContainer.test(((StrategyElement) element.get()).getBaseElement()));
-                return this.asAdmin().addStep(hasStep);
+                return this.asAdmin().addStep((Step) hasStep);
             }
         };
     }

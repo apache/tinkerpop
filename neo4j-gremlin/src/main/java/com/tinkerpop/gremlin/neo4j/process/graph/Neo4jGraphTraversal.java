@@ -77,7 +77,7 @@ public interface Neo4jGraphTraversal<S, E> extends GraphTraversal.Admin<S, E>, G
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.barrier();
 	}
 
-	public default <E2 extends Element> Neo4jGraphTraversal<S, E2> between(java.lang.String arg0, java.lang.Comparable arg1, java.lang.Comparable arg2) {
+	public default Neo4jGraphTraversal<S, E> between(java.lang.String arg0, java.lang.Comparable arg1, java.lang.Comparable arg2) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.between(arg0, arg1, arg2);
 	}
 
@@ -229,39 +229,39 @@ public interface Neo4jGraphTraversal<S, E> extends GraphTraversal.Admin<S, E>, G
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupCount(arg0);
 	}
 
-	public default <E2 extends Element> Neo4jGraphTraversal<S, E2> has(java.lang.String arg0) {
-		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0);
-	}
-
 	public default Neo4jGraphTraversal<S, E> has(com.tinkerpop.gremlin.process.Traversal<?, ?> arg0) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0);
 	}
 
-	public default <E2 extends Element> Neo4jGraphTraversal<S, E2> has(com.tinkerpop.gremlin.process.T arg0, java.lang.Object arg1) {
+	public default Neo4jGraphTraversal<S, E> has(java.lang.String arg0) {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0);
+	}
+
+	public default Neo4jGraphTraversal<S, E> has(com.tinkerpop.gremlin.process.T arg0, java.lang.Object arg1) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1);
 	}
 
-	public default <E2 extends Element> Neo4jGraphTraversal<S, E2> has(java.lang.String arg0, java.lang.Object arg1) {
+	public default Neo4jGraphTraversal<S, E> has(java.lang.String arg0, java.lang.Object arg1) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1);
 	}
 
-	public default <E2 extends Element> Neo4jGraphTraversal<S, E2> has(com.tinkerpop.gremlin.process.T arg0, java.util.function.BiPredicate arg1, java.lang.Object arg2) {
+	public default Neo4jGraphTraversal<S, E> has(com.tinkerpop.gremlin.process.T arg0, java.util.function.BiPredicate arg1, java.lang.Object arg2) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1, arg2);
 	}
 
-	public default <E2 extends Element> Neo4jGraphTraversal<S, E2> has(java.lang.String arg0, java.lang.String arg1, java.lang.Object arg2) {
+	public default Neo4jGraphTraversal<S, E> has(java.lang.String arg0, java.lang.String arg1, java.lang.Object arg2) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1, arg2);
 	}
 
-	public default <E2 extends Element> Neo4jGraphTraversal<S, E2> has(java.lang.String arg0, java.util.function.BiPredicate arg1, java.lang.Object arg2) {
+	public default Neo4jGraphTraversal<S, E> has(java.lang.String arg0, java.util.function.BiPredicate arg1, java.lang.Object arg2) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1, arg2);
 	}
 
-	public default <E2 extends Element> Neo4jGraphTraversal<S, E2> has(java.lang.String arg0, java.lang.String arg1, java.util.function.BiPredicate arg2, java.lang.Object arg3) {
+	public default Neo4jGraphTraversal<S, E> has(java.lang.String arg0, java.lang.String arg1, java.util.function.BiPredicate arg2, java.lang.Object arg3) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1, arg2, arg3);
 	}
 
-	public default <E2 extends Element> Neo4jGraphTraversal<S, E2> hasNot(java.lang.String arg0) {
+	public default Neo4jGraphTraversal<S, E> hasNot(java.lang.String arg0) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hasNot(arg0);
 	}
 

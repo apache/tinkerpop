@@ -126,13 +126,13 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX() {
-            return (Traversal) g.V().<Vertex>has("lang")
+            return (Traversal) g.V().has("lang")
                     .group("a").by("lang").by("name").out().cap("a");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXsizeX() {
-            return (Traversal) g.V().<Vertex>has("lang")
+            return (Traversal) g.V().has("lang")
                     .group().by("lang").by(v -> 1).<Collection>by(Collection::size);
         }
 
@@ -160,13 +160,13 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX() {
-            return (Traversal) g.V().<Vertex>has("lang")
+            return (Traversal) g.V().has("lang")
                     .group("a").by("lang").by("name").out().cap("a").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXsizeX() {
-            return (Traversal) g.V().<Vertex>has("lang")
+            return (Traversal) g.V().has("lang")
                     .group().by("lang").by(v -> 1).<Collection>by(Collection::size).submit(g.compute());
         }
 
