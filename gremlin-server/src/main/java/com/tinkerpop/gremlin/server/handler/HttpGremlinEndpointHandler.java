@@ -56,6 +56,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
+ * Handler that processes HTTP requests to the REST Gremlin endpoint.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @ChannelHandler.Sharable
@@ -66,8 +68,15 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
 
+    /**
+     * Serializers for the response.
+     */
     private final Map<String, MessageSerializer> serializers;
 
+    /**
+     * This is just a generic mapper to interpret the JSON of a POSTed request.  It is not used for the serialization
+     * of the response.
+     */
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final GremlinExecutor gremlinExecutor;
