@@ -5,16 +5,18 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
-import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -92,23 +94,44 @@ public class TinkerHelper {
     }
 
     public static final Iterator<TinkerEdge> getEdges(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {
-        Stream<Edge> edgeStream = null;
-        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
-            edgeStream = (edgeLabels.length == 0 ? vertex.outEdges.keySet().stream() : Stream.of(edgeLabels)).filter(label -> !Graph.Hidden.isHidden(label)).map(vertex.outEdges::get).filter(edges -> null != edges).flatMap(list -> list.stream());
-        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
-            edgeStream = Stream.concat(null == edgeStream ? Stream.empty() : edgeStream, (edgeLabels.length == 0 ? vertex.inEdges.keySet().stream() : Stream.of(edgeLabels)).filter(label -> !Graph.Hidden.isHidden(label)).map(vertex.inEdges::get).filter(edges -> null != edges).flatMap(list -> list.stream()));
-        return (Iterator) edgeStream.collect(Collectors.toList()).iterator();
-
-
+        final List<Edge> edges = new ArrayList<>();
+        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) {
+            if (edgeLabels.length == 0)
+                vertex.outEdges.values().forEach(edges::addAll);
+            else if (edgeLabels.length == 1)
+                edges.addAll(vertex.outEdges.getOrDefault(edgeLabels[0], Collections.emptySet()));
+            else
+                Stream.of(edgeLabels).map(vertex.outEdges::get).filter(Objects::nonNull).forEach(edges::addAll);
+        }
+        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
+            if (edgeLabels.length == 0)
+                vertex.inEdges.values().forEach(edges::addAll);
+            else if (edgeLabels.length == 1)
+                edges.addAll(vertex.inEdges.getOrDefault(edgeLabels[0], Collections.emptySet()));
+            else
+                Stream.of(edgeLabels).map(vertex.inEdges::get).filter(Objects::nonNull).forEach(edges::addAll);
+        }
+        return (Iterator) edges.iterator();
     }
 
     public static final Iterator<TinkerVertex> getVertices(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {
-        if (direction != Direction.BOTH) {
-            return IteratorUtils.map(TinkerHelper.getEdges(vertex, direction, edgeLabels), direction.equals(Direction.IN) ? edge -> (TinkerVertex) edge.outVertex : edge -> (TinkerVertex) edge.inVertex);
-        } else {
-            return IteratorUtils.<TinkerVertex>concat(
-                    IteratorUtils.map(TinkerHelper.getEdges(vertex, Direction.OUT, edgeLabels), edge -> (TinkerVertex) edge.inVertex),
-                    IteratorUtils.map(TinkerHelper.getEdges(vertex, Direction.IN, edgeLabels), edge -> (TinkerVertex) edge.outVertex));
+        final List<Vertex> vertices = new ArrayList<>();
+        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) {
+            if (edgeLabels.length == 0)
+                vertex.outEdges.values().forEach(set -> set.forEach(edge -> vertices.add(((TinkerEdge) edge).inVertex)));
+            else if (edgeLabels.length == 1)
+                vertex.outEdges.getOrDefault(edgeLabels[0], Collections.emptySet()).forEach(edge -> vertices.add(((TinkerEdge) edge).inVertex));
+            else
+                Stream.of(edgeLabels).map(vertex.outEdges::get).filter(Objects::nonNull).flatMap(Set::stream).forEach(edge -> vertices.add(((TinkerEdge) edge).inVertex));
         }
+        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
+            if (edgeLabels.length == 0)
+                vertex.inEdges.values().forEach(set -> set.forEach(edge -> vertices.add(((TinkerEdge) edge).outVertex)));
+            else if (edgeLabels.length == 1)
+                vertex.inEdges.getOrDefault(edgeLabels[0], Collections.emptySet()).forEach(edge -> vertices.add(((TinkerEdge) edge).outVertex));
+            else
+                Stream.of(edgeLabels).map(vertex.inEdges::get).filter(Objects::nonNull).flatMap(Set::stream).forEach(edge -> vertices.add(((TinkerEdge) edge).outVertex));
+        }
+        return (Iterator) vertices.iterator();
     }
 }
