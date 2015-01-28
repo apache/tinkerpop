@@ -47,6 +47,7 @@ public class GremlinServer {
     private Channel ch;
 
     private CompletableFuture<Void> serverStopped = null;
+    private CompletableFuture<Void> serverStarted = null;
 
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
@@ -67,8 +68,14 @@ public class GremlinServer {
     /**
      * Start Gremlin Server with {@link Settings} provided to the constructor.
      */
-    public CompletableFuture<Void> start() throws Exception {
-        final CompletableFuture<Void> serverReadyFuture = new CompletableFuture<>();
+    public synchronized CompletableFuture<Void> start() throws Exception {
+        if(serverStarted != null) {
+            // server already started - don't get it rolling again
+            return serverStarted;
+        }
+
+        serverStarted = new CompletableFuture<>();
+        final CompletableFuture<Void> serverReadyFuture = serverStarted = new CompletableFuture<>();
         try {
             final ServerBootstrap b = new ServerBootstrap();
 
@@ -98,14 +105,12 @@ public class GremlinServer {
                     serverReadyFuture.complete(null);
                 }
             });
-
-            // serverReady.ifPresent(future -> future.complete(null));
         } catch (Exception ex) {
             logger.error("Gremlin Server Error", ex);
             serverReadyFuture.completeExceptionally(ex);
         }
 
-        return serverReadyFuture;
+        return serverStarted;
     }
 
     private static Channelizer createChannelizer(final Settings settings) throws Exception {
