@@ -2,13 +2,9 @@ package com.tinkerpop.gremlin.server;
 
 import org.junit.After;
 import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Starts and stops an instance for each executed test.
@@ -16,8 +12,6 @@ import java.util.concurrent.TimeUnit;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinServerIntegrationTest {
-    private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinServerIntegrationTest.class);
-
     private GremlinServer server;
 
     public Settings overrideSettings(final Settings settings) {
@@ -34,8 +28,7 @@ public abstract class AbstractGremlinServerIntegrationTest {
         final Settings settings = Settings.read(stream);
 
         final Settings overridenSettings = overrideSettings(settings);
-        final GremlinServer server = new GremlinServer(overridenSettings);
-        this.server = server;
+        this.server = new GremlinServer(overridenSettings);
 
         server.run().join();
     }
@@ -46,7 +39,7 @@ public abstract class AbstractGremlinServerIntegrationTest {
     }
 
     public void stopServer() throws Exception {
-        server.stop();
+        server.stop().join();
     }
 
     public static boolean deleteDirectory(final File directory) {

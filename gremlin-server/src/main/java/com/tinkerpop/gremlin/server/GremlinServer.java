@@ -12,6 +12,9 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.FutureListener;
+import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -22,9 +25,12 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Start and stop Gremlin Server.
@@ -43,6 +49,8 @@ public class GremlinServer {
     private Optional<Graphs> graphs = Optional.empty();
     private Channel ch;
 
+    private CompletableFuture<Void> serverStopped = null;
+
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
     private final ExecutorService gremlinExecutorService;
@@ -50,7 +58,7 @@ public class GremlinServer {
     public GremlinServer(final Settings settings) {
         this.settings = settings;
 
-        Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "gremlin-shutdown-hook"));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.stop().join(), "gremlin-shutdown-hook"));
 
         bossGroup = new NioEventLoopGroup(settings.threadPoolBoss);
         workerGroup = new NioEventLoopGroup(settings.threadPoolWorker);
@@ -152,10 +160,19 @@ public class GremlinServer {
     }
 
     /**
-     * Stop Gremlin Server and free the port binding.
+     * Stop Gremlin Server and free the port binding. Note that multiple calls to this method will return the
+     * same instance of the {@link java.util.concurrent.CompletableFuture}.
      */
-    public void stop() {
-        ch.close();
+    public synchronized CompletableFuture<Void> stop() {
+        if (serverStopped != null) {
+            // shutdown has started so don't fire it off again
+            return serverStopped;
+        }
+
+        serverStopped = new CompletableFuture<>();
+        final CountDownLatch servicesLeftToShutdown = new CountDownLatch(3);
+
+        ch.close().addListener(f -> servicesLeftToShutdown.countDown());
 
         logger.info("Shutting down thread pools.");
 
@@ -166,29 +183,46 @@ public class GremlinServer {
         }
 
         try {
-            workerGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully().addListener((GenericFutureListener) f -> servicesLeftToShutdown.countDown());
         } finally {
             logger.debug("Shutdown Worker thread pool.");
         }
         try {
-            bossGroup.shutdownGracefully();
+            bossGroup.shutdownGracefully().addListener((GenericFutureListener) f -> servicesLeftToShutdown.countDown());
         } finally {
             logger.debug("Shutdown Boss thread pool.");
         }
 
         // channel is shutdown as are the thread pools - time to kill graphs as nothing else should be acting on them
-        graphs.ifPresent(gs -> gs.getGraphs().forEach((k, v) -> {
-            logger.debug("Closing Graph instance [{}]", k);
+        new Thread(() -> {
             try {
-                v.close();
-            } catch (Exception ex) {
-                logger.warn(String.format("Exception while closing Graph instance [%s]", k), ex);
-            } finally {
-                logger.info("Closed Graph instance [{}]", k);
+                gremlinExecutorService.awaitTermination(30000, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException ie) {
+                logger.warn("Timeout waiting for Gremlin thread pool to shutdown - continuing with shutdown process.");
             }
-        }));
 
-        logger.info("Gremlin Server - shutdown complete");
+            try {
+                servicesLeftToShutdown.await(30000, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException ie) {
+                logger.warn("Timeout waiting for bossy/worker thread pools to shutdown - continuing with shutdown process.");
+            }
+
+            graphs.ifPresent(gs -> gs.getGraphs().forEach((k, v) -> {
+                logger.debug("Closing Graph instance [{}]", k);
+                try {
+                    v.close();
+                } catch (Exception ex) {
+                    logger.warn(String.format("Exception while closing Graph instance [%s]", k), ex);
+                } finally {
+                    logger.info("Closed Graph instance [{}]", k);
+                }
+            }));
+
+            logger.info("Gremlin Server - shutdown complete");
+            serverStopped.complete(null);
+        }, "gremlin-server-graph-close").start();
+
+        return serverStopped;
     }
 
     public static void main(final String[] args) throws Exception {
