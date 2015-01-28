@@ -26,6 +26,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasTraversalStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.IsStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.SampleStep;
@@ -388,6 +389,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <E2 extends Element> GraphTraversal<S, E2> between(final String key, final Comparable startValue, final Comparable endValue) {
         return this.has(key, Compare.gte, startValue).has(key, Compare.lt, endValue);
+    }
+
+    public default GraphTraversal<S, E> is(final Object value) {
+        return this.asAdmin().addStep(new IsStep<>(this, Compare.eq, value));
+    }
+
+    public default GraphTraversal<S, E> is(final BiPredicate predicate, final Object value) {
+        return this.asAdmin().addStep(new IsStep<>(this, predicate, value));
     }
 
     public default GraphTraversal<S, E> coin(final double probability) {

@@ -258,6 +258,14 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().between(key, startValue, endValue);
     }
 
+    public default GraphTraversal<A, A> is(final Object value) {
+        return this.start().is(value);
+    }
+
+    public default GraphTraversal<A, A> is(final BiPredicate predicate, final Object value) {
+        return this.start().is(predicate, value);
+    }
+
     public default GraphTraversal<A, A> coin(final double probability) {
         return this.start().coin(probability);
     }

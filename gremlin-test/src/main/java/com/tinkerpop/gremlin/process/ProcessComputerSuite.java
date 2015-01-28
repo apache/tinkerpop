@@ -16,6 +16,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.IsTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SampleTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
@@ -100,6 +101,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             FilterTest.ComputerTest.class,
             HasNotTest.ComputerTest.class,
             HasTest.ComputerTest.class,
+            IsTest.ComputerTest.class,
             CoinTest.ComputerTest.class,
             // TODO: RangeTest.ComputerTest.class,
             RetainTest.ComputerTest.class,
@@ -173,6 +175,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             FilterTest.class,
             HasNotTest.class,
             HasTest.class,
+            IsTest.class,
             CoinTest.class,
             // RangeTest.class,
             RetainTest.class,

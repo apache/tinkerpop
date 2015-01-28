@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a `ConcurrentModificationException` bug in TinkerGraph that occurred when doing full vertex/edge scans and removing elements along the way.
 * Added `Scope.local` and `Scope.global` in support of `OrderLocalStep` and `OrderGlobalStep` via `order(scope)`.
 * Added `Order.keyIncr`, `Order.keyDecr`, `Order.valueIncr`, and `Order.valueDecr` in support of `Map` sorting.
 * Added `Order.shuffle` and removed `shuffle()` in favor of `order().by(shuffle)`.

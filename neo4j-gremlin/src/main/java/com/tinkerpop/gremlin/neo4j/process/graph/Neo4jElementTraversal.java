@@ -232,6 +232,14 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.inject(arg0);
 	}
 
+	public default Neo4jGraphTraversal<A, A> is(java.lang.Object arg0) {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.is(arg0);
+	}
+
+	public default Neo4jGraphTraversal<A, A> is(java.util.function.BiPredicate arg0, java.lang.Object arg1) {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.is(arg0, arg1);
+	}
+
 	public default Neo4jGraphTraversal<A, A> limit(long arg0) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.limit(arg0);
 	}

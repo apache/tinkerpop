@@ -17,6 +17,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyFilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyIsTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovySampleTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovySimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyWhereTest;
@@ -74,6 +75,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyFilterTest.ComputerTest.class,
             GroovyHasNotTest.ComputerTest.class,
             GroovyHasTest.ComputerTest.class,
+            GroovyIsTest.ComputerTest.class,
             GroovyCoinTest.ComputerTest.class,
             // TODO: GroovyRangeTest.ComputerTest.class,
             // TODO: GroovyRetainTest.ComputerTest.class,
