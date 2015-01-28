@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph;
 
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.Scope;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
@@ -111,8 +112,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().order();
     }
 
-    public default GraphTraversal<A, A> shuffle() {
-        return this.start().shuffle();
+    public default GraphTraversal<A, A> order(final Scope scope) {
+        return this.start().order(scope);
     }
 
     public default <E2> GraphTraversal<A, ? extends Property<E2>> properties(final String... propertyKeys) {
