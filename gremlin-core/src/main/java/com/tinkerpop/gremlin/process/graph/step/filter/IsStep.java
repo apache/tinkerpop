@@ -29,6 +29,6 @@ public class IsStep<S> extends FilterStep<S> implements Reversible {
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.BULK);
+        return Collections.singleton(TraverserRequirement.OBJECT);
     }
 }
