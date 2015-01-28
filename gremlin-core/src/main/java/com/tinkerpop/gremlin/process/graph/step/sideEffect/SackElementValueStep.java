@@ -45,7 +45,7 @@ public final class SackElementValueStep<S extends Element, V> extends SideEffect
     @Override
     public SackElementValueStep<S, V> clone() throws CloneNotSupportedException {
         final SackElementValueStep<S, V> clone = (SackElementValueStep<S, V>) super.clone();
-        clone.operator = CloneableLambda.cloneOrReturn(this.operator);
+        clone.operator = CloneableLambda.tryClone(this.operator);
         SackElementValueStep.generateConsumer(clone);
         return clone;
     }

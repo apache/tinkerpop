@@ -33,7 +33,7 @@ public class SideEffectStep<S> extends AbstractStep<S, S> implements Reversible 
     @Override
     public SideEffectStep<S> clone() throws CloneNotSupportedException {
         final SideEffectStep<S> clone = (SideEffectStep<S>) super.clone();
-        clone.consumer = CloneableLambda.cloneOrReturn(this.consumer);
+        clone.consumer = CloneableLambda.tryClone(this.consumer);
         return clone;
     }
 }

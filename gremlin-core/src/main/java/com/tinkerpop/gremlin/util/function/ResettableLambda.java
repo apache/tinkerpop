@@ -7,7 +7,7 @@ public interface ResettableLambda {
 
     public void reset();
 
-    public static void resetOrReturn(final Object lambda) {
+    public static void tryReset(final Object lambda) {
         if (lambda instanceof ResettableLambda)
             ((ResettableLambda) lambda).reset();
     }

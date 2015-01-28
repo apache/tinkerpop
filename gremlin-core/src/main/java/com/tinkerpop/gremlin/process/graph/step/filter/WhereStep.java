@@ -60,7 +60,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
             clone.constraint = this.constraint.clone().asAdmin();
             clone.executeTraversalOperations(clone.constraint, TYPICAL_LOCAL_OPERATIONS);
         }
-        clone.biPredicate = CloneableLambda.cloneOrReturn(this.biPredicate);
+        clone.biPredicate = CloneableLambda.tryClone(this.biPredicate);
         WhereStep.generatePredicate(clone);
         return clone;
     }

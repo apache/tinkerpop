@@ -89,7 +89,7 @@ public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Co
         if (clone.usesTraversalLambda)
             clone.traversalLambda = this.traversalLambda.clone();
         else
-            clone.lambda = CloneableLambda.cloneOrReturn(this.lambda);
+            clone.lambda = CloneableLambda.tryClone(this.lambda);
         return clone;
     }
 
@@ -103,7 +103,7 @@ public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Co
         if (this.usesTraversalLambda)
             this.traversalLambda.reset();
         else
-            ResettableLambda.resetOrReturn(this.lambda);
+            ResettableLambda.tryReset(this.lambda);
     }
 
 

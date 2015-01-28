@@ -112,8 +112,8 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     public RepeatStep<S> clone() throws CloneNotSupportedException {
         final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
         clone.repeatTraversal = this.repeatTraversal.clone().asAdmin();
-        clone.untilPredicate = CloneableLambda.cloneOrReturn(this.untilPredicate);
-        clone.emitPredicate = CloneableLambda.cloneOrReturn(this.emitPredicate);
+        clone.untilPredicate = CloneableLambda.tryClone(this.untilPredicate);
+        clone.emitPredicate = CloneableLambda.tryClone(this.emitPredicate);
         clone.getGlobalTraversals().forEach(global -> clone.executeTraversalOperations(global, TYPICAL_GLOBAL_OPERATIONS));
         clone.getLocalTraversals().forEach(local -> clone.executeTraversalOperations(local, TYPICAL_LOCAL_OPERATIONS));
         return clone;
