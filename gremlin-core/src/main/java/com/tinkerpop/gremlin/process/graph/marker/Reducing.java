@@ -10,6 +10,8 @@ public interface Reducing<A, B> {
 
     public Reducer<A, B> getReducer();
 
+    //////////
+
     public class Reducer<A, B> {
         private final Supplier<A> seedSupplier;
         private final BiFunction<A, B, A> biFunction;
@@ -31,6 +33,17 @@ public interface Reducing<A, B> {
 
         public BiFunction<A, B, A> getBiFunction() {
             return this.biFunction;
+        }
+    }
+
+    //////////
+
+    public interface FinalGet<A> {
+
+        public A getFinal();
+
+        public static <A> A tryFinalGet(final Object object) {
+            return object instanceof FinalGet ? ((FinalGet<A>) object).getFinal() : (A) object;
         }
     }
 }
