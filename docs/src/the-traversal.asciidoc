@@ -665,6 +665,21 @@ g.V().values('age').max()
 g.V().repeat(__.both()).times(3).values('age').max()
 ----
 
+[[mean-step]]
+Mean Step
+~~~~~~~~~
+
+The `mean()`-step (*map*) operates on a stream of numbers and determines the average of those numbers.
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').mean()
+g.V().repeat(__.both()).times(3).values('age').mean() <1>
+g.V().repeat(__.both()).times(3).values('age').dedup().mean()
+----
+
+<1> Realize that traversers are being bulked by `repeat()`. There may be more of a particular number than another, thus altering the average.
+
 [[min-step]]
 Min Step
 ~~~~~~~~
