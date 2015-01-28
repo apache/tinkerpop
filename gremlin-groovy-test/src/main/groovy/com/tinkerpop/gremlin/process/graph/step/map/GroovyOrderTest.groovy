@@ -55,7 +55,7 @@ public abstract class GroovyOrderTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Integer, Integer>> get_g_V_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(
+        public Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(
                 final Object v1Id) {
             g.V(v1Id).map {
                 final Map map = [:];
@@ -111,7 +111,7 @@ public abstract class GroovyOrderTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Integer, Integer>> get_g_V_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(
+        public Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(
                 final Object v1Id) {
             ComputerTestHelper.compute("""
             g.V(${v1Id}).map {
