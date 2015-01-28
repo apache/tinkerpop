@@ -498,7 +498,7 @@ t <3>
 
 [[is-step]]
 Is Step
-~~~~~~~~~~~~
+~~~~~~~
 
 It is possible to filter scalar values using `is()`-step (*filter*).
 
