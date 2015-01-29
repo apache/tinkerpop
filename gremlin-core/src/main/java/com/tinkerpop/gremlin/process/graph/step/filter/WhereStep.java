@@ -73,12 +73,6 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         return requirements;
     }
 
-    @Override
-    public void reset() {
-        super.reset();
-        this.resetTraversals();
-    }
-
     /////////////////////////
 
     private static final <E> void generatePredicate(final WhereStep<E> whereStep) {

@@ -79,12 +79,6 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     }
 
     @Override
-    public void reset() {
-        super.reset();
-        this.smartLambda.reset();
-    }
-
-    @Override
     public StoreStep<S> clone() throws CloneNotSupportedException {
         final StoreStep<S> clone = (StoreStep<S>) super.clone();
         clone.smartLambda = this.smartLambda.clone();

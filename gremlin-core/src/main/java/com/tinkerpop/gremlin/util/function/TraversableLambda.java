@@ -8,7 +8,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversableLambda<S, E> extends CloneableLambda, ResettableLambda {
+public interface TraversableLambda<S, E> extends CloneableLambda {
 
     public Traversal<S, E> getTraversal();
 
@@ -16,7 +16,6 @@ public interface TraversableLambda<S, E> extends CloneableLambda, ResettableLamb
         return this.getTraversal().asAdmin().getTraverserRequirements();
     }
 
-    @Override
     public default void reset() {
         this.getTraversal().asAdmin().reset();
     }

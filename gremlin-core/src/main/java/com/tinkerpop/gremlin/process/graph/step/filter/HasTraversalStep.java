@@ -57,10 +57,4 @@ public final class HasTraversalStep<S> extends AbstractStep<S, S> implements Tra
         clone.executeTraversalOperations(clone.traversalLambda.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
         return clone;
     }
-
-    @Override
-    public void reset() {
-        super.reset();
-        this.traversalLambda.reset();
-    }
 }

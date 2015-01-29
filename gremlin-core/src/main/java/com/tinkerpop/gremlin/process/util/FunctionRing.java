@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
-import com.tinkerpop.gremlin.util.function.ResettableLambda;
 import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.ArrayList;
@@ -38,7 +37,6 @@ public class FunctionRing<A, B> implements Cloneable {
     }
 
     public void reset() {
-        this.functions.forEach(ResettableLambda::tryReset);
         this.currentFunction = -1;
     }
 

@@ -54,12 +54,6 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
     }
 
     @Override
-    public void reset() {
-        super.reset();
-        this.resetTraversals();
-    }
-
-    @Override
     protected Traverser<E> processNextStart() throws NoSuchElementException {
         if (this.first) {
             this.first = false;

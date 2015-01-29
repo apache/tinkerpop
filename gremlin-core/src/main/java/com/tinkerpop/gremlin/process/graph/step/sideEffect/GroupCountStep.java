@@ -90,12 +90,6 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
         return clone;
     }
 
-    @Override
-    public void reset() {
-        super.reset();
-        this.smartLambda.reset();
-    }
-
     /////////////////////////
 
     private static final <S> void generateConsumer(final GroupCountStep<S> groupCountStep) {

@@ -89,12 +89,6 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
         return clone;
     }
 
-    @Override
-    public void reset() {
-        super.reset();
-        this.smartLambda.reset();
-    }
-
     /////////////////////////
 
     private static final <S> void generateConsumer(final AggregateStep<S> aggregateStep) {
