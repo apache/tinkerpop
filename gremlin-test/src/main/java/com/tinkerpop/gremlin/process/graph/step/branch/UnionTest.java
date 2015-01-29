@@ -11,8 +11,7 @@ import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static com.tinkerpop.gremlin.process.graph.__.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -28,6 +27,8 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount();
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount();
+
+    public abstract Traversal<Vertex, Number> get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(final Object v1Id, final Object v2Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -102,28 +103,59 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX() {
+        final Traversal<Vertex, Number> traversal = get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(convertToVertexId("marko"), convertToVertexId("vadas"));
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Number startNumber = traversal.next();
+        assertTrue(traversal.hasNext());
+        if (startNumber.longValue() == 3l) {
+            assertEquals(0l, traversal.next().longValue());
+            assertEquals(1.9d, traversal.next().doubleValue(), 0.1d);
+            //
+            assertEquals(0l, traversal.next().longValue());
+            assertEquals(1l, traversal.next().longValue());
+            assertEquals(0.0d, traversal.next().doubleValue(), 0.1d);
+        } else {
+            assertEquals(1l, traversal.next().longValue());
+            assertEquals(0.0d, traversal.next().doubleValue(), 0.1d);
+            //
+            assertEquals(3l, traversal.next().longValue());
+            assertEquals(0l, traversal.next().longValue());
+            assertEquals(1.9d, traversal.next().doubleValue(), 0.1d);
+        }
+        assertFalse(traversal.hasNext());
+    }
+
     public static class StandardTest extends UnionTest {
 
         public StandardTest() {
             requiresGraphComputer = false;
         }
 
+        @Override
         public Traversal<Vertex, String> get_g_V_unionXout__inX_name() {
             return g.V().union(out(), in()).values("name");
         }
 
+        @Override
         public Traversal<Vertex, String> get_g_VX1X_unionXrepeatXoutX_timesX2X__outX_name(final Object v1Id) {
             return g.V(v1Id).union(repeat(out()).times(2), out()).values("name");
         }
 
+        @Override
         public Traversal<Vertex, String> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX() {
             return g.V().choose(v -> v.label().equals("person"), union(out().values("lang"), out().values("name")), in().label());
         }
 
+        @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
             return (Traversal) g.V().choose(v -> v.label().equals("person"), union(out().values("lang"), out().values("name")), in().label()).groupCount();
         }
 
+        @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount() {
             return (Traversal) g.V().union(
                     repeat(union(
@@ -133,6 +165,11 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
                             in("created"),
                             out("created"))).times(2)).label().groupCount();
         }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(final Object v1Id, final Object v2Id) {
+            return g.V(v1Id, v2Id).union(outE().count(), inE().count(), (Traversal) outE().values("weight").sum());
+        }
     }
 
     public static class ComputerTest extends UnionTest {
@@ -141,22 +178,27 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
+        @Override
         public Traversal<Vertex, String> get_g_V_unionXout__inX_name() {
             return g.V().union(out(), in()).<String>values("name").submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, String> get_g_VX1X_unionXrepeatXoutX_timesX2X__outX_name(final Object v1Id) {
             return g.V(v1Id).union(repeat(out()).times(2), out()).<String>values("name").submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, String> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX() {
             return g.V().choose(v -> v.label().equals("person"), union(out().values("lang"), out().values("name")), in().label()).submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
             return (Traversal) g.V().choose(v -> v.label().equals("person"), union(out().values("lang"), out().values("name")), in().label()).groupCount().submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount() {
             return (Traversal) g.V().union(
                     repeat(union(
@@ -165,6 +207,11 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
                     repeat(union(
                             in("created"),
                             out("created"))).times(2)).label().groupCount().submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(final Object v1Id, final Object v2Id) {
+            return g.V(v1Id, v2Id).union(outE().count(), inE().count(), (Traversal) outE().values("weight").sum()); // DOES NOT WORK IN OLAP
         }
     }
 }

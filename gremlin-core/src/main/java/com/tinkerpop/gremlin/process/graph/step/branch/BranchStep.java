@@ -27,6 +27,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
 
     protected Function<Traverser<S>, M> pickFunction;
     protected Map<M, List<Traversal<S, E>>> traversalOptions = new HashMap<>();
+    private boolean first = true;
 
     public BranchStep(final Traversal traversal) {
         super(traversal);
@@ -68,22 +69,32 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     @Override
     protected Iterator<Traverser<E>> standardAlgorithm() {
         while (true) {
-            for (final List<Traversal<S, E>> options : this.traversalOptions.values()) {
-                for (final Traversal<S, E> option : options) {
-                    if (option.hasNext())
-                        return option.asAdmin().getEndStep();
+            if(!this.first) {
+                for (final List<Traversal<S, E>> options : this.traversalOptions.values()) {
+                    for (final Traversal<S, E> option : options) {
+                        if (option.hasNext())
+                            return option.asAdmin().getEndStep();
+                    }
                 }
             }
+            this.first = false;
             ///
             final Traverser.Admin<S> start = this.starts.next();
             final M choice = this.pickFunction.apply(start);
             final List<Traversal<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
-            if (null != branch)
-                branch.forEach(traversal -> traversal.asAdmin().addStart(start.split()));
+            if (null != branch) {
+                branch.forEach(traversal -> {
+                    traversal.asAdmin().reset();
+                    traversal.asAdmin().addStart(start.split());
+                });
+            }
             if (choice != Pick.any) {
                 final List<Traversal<S, E>> anyBranch = this.traversalOptions.get(Pick.any);
                 if (null != anyBranch)
-                    anyBranch.forEach(traversal -> traversal.asAdmin().addStart(start.split()));
+                    anyBranch.forEach(traversal -> {
+                        traversal.asAdmin().reset();
+                        traversal.asAdmin().addStart(start.split());
+                    });
             }
         }
     }
@@ -143,6 +154,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     public void reset() {
         super.reset();
         //TraversalOptionHolder.super.resetTraversals();
+        this.first = true;
         ResettableLambda.tryReset(this.pickFunction);
         for (final List<Traversal<S, E>> options : this.traversalOptions.values()) {
             for (final Traversal<S, E> option : options) {

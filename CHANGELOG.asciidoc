@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `__` is now a class with static `GraphTraversal` methods and thus `repeat(out())` is possible.
 * Added `IsStep` / `.is()` that allows filtering of scalar values.
 * Added `Compare.inside` and `Compare.outside` for testing ranges. Removed `between()` as now its `has('age',inside,[10,30])`.
 * `GraphTraversal.has()` no longer requires the element type to be cast in the traversal definition.
@@ -82,7 +83,7 @@ TinkerPop 3.0.0.M7 (Release Date: January 19, 2015)
 * Moved `Traverser.sideEffects()` to `Traverser.asAdmin().getSideEffects()`. Users should use `Traverser.sideEffects(key)` and `Traverser.sideEffects(key,value)`.
 * Added `SerializationTest` to the `StructureStandardSuite` in `gremlin-test` which validates serialization at a lower level than `IoTest`.
 * Removed `IntervalStep` and renamed `interval()` to `between()` which is simply an alias to a `has().has()` chain.
-* Added `__` static interface which allows for `__.out().out()`-style and `out().out()`-style construction of anonymous traversals (instead of `g.of()`).
+* Added `__` static interface which allows for `__.out().out()`-style construction of anonymous traversals (instead of `g.of()`).
 * The only `GraphTraversal` steps that operate on `Traverser` are the base lambdas and `repeat()` (i.e. `emit()` and `until()`).
 * Removed dependency on the `reflections` library in `gremlin-test` which removed the default implementation of `GraphProvider.getImplementations()` - vendors now need to implement this method themselves.
 * Relaxed the `<S>` typing requirement for anonymous traversals when applied to `choose()`, `repeat()`, `union()`, etc.

@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.graph.step.util.ReducingBarrierStep;
 import com.tinkerpop.gremlin.process.graph.step.util.SupplyingBarrierStep;
+import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Optional;
@@ -23,31 +24,23 @@ public class TraversalVerificationStrategy extends AbstractTraversalStrategy {
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
+        if (engine.equals(TraversalEngine.STANDARD))
+            return;
 
         final Step<?, ?> endStep = traversal.getEndStep() instanceof ComputerAwareStep.EndStep ?
                 ((ComputerAwareStep.EndStep) traversal.getEndStep()).getPreviousStep() :
                 traversal.getEndStep();
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-            // STANDARD AND COMPUTER
-            if (step instanceof TraversalHolder) {
-                for (final Traversal<?, ?> global : ((TraversalHolder) step).getGlobalTraversals()) {
-                    if (TraversalHelper.hasStepOfAssignableClass(ReducingBarrierStep.class, global.asAdmin()) || TraversalHelper.hasStepOfAssignableClass(SupplyingBarrierStep.class, global.asAdmin()))
-                        throw new IllegalStateException("Global nested traversals may not contain barrier-steps: " + global);
-                }
+            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep) && (step != endStep || !(traversal.getTraversalHolder() instanceof EmptyStep))) {
+                throw new IllegalStateException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step);
             }
-            /// COMPUTER ONLY
-            if (engine.equals(TraversalEngine.COMPUTER)) {
-                if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep) && step != endStep) {
-                    throw new IllegalStateException("GraphComputer traversals may not contain mid-traversal barriers: " + step);
-                }
-                if (step instanceof TraversalHolder) {
-                    final Optional<Traversal<Object, Object>> traversalOptional = ((TraversalHolder) step).getLocalTraversals().stream()
-                            .filter(t -> !TraversalHelper.isLocalStarGraph(t.asAdmin()))
-                            .findAny();
-                    if (traversalOptional.isPresent())
-                        throw new IllegalStateException("Local traversals on GraphComputer may not traverse past the local star-graph: " + traversalOptional.get());
-                }
+            if (step instanceof TraversalHolder) {
+                final Optional<Traversal<Object, Object>> traversalOptional = ((TraversalHolder) step).getLocalTraversals().stream()
+                        .filter(t -> !TraversalHelper.isLocalStarGraph(t.asAdmin()))
+                        .findAny();
+                if (traversalOptional.isPresent())
+                    throw new IllegalStateException("Local traversals on GraphComputer may not traverse past the local star-graph: " + traversalOptional.get());
             }
         }
     }

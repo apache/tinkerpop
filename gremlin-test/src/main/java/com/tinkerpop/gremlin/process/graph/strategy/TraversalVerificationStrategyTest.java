@@ -17,18 +17,17 @@ public abstract class TraversalVerificationStrategyTest extends AbstractGremlinP
     public static class StandardTest extends TraversalVerificationStrategyTest {
         @Test
         @LoadGraphWith(MODERN)
-        public void shouldNotAllowNestedGlobalTraversalToHaveBarriers() {
+        public void shouldAllowNestedGlobalTraversalToHaveBarriers() {
             try {
-                final GraphTraversal t = g.V().values("age").union(max(), min(), sum()).iterate();
-                fail("Nested global traversals should not be allowed to contain barriers (STANDARD): " + t);
+                g.V().values("age").union(max(), min(), sum()).iterate();
             } catch (IllegalStateException e) {
-
+                fail("Nested global traversals can have barrier steps on STANDARD:" + e.getMessage());
             }
         }
 
         @Test
         @LoadGraphWith(MODERN)
-        public void shouldNotAllowMidTraversalBarriersOnComputer() {
+        public void shouldAllowMidTraversalBarriersOnComputer() {
             try {
                 g.V().count().sum().iterate();
             } catch (IllegalStateException e) {
@@ -38,7 +37,7 @@ public abstract class TraversalVerificationStrategyTest extends AbstractGremlinP
 
         @Test
         @LoadGraphWith(MODERN)
-        public void shouldNotAllowLocalTraversalsToLeaveTheStarGraphOnComputer() {
+        public void shouldAllowLocalTraversalsToLeaveTheStarGraphOnComputer() {
             try {
                 g.V().local(out().out()).iterate();
             } catch (IllegalStateException e) {
