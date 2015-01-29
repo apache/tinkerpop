@@ -65,6 +65,8 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
+    private final TinkerGraphFeatures features = new TinkerGraphFeatures();
+
     /**
      * An empty private constructor that initializes {@link TinkerGraph} with no {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.  Primarily
      * used for purposes of serialization issues.
@@ -203,7 +205,7 @@ public class TinkerGraph implements Graph, Graph.Iterators {
      */
     @Override
     public Features features() {
-        return new TinkerGraphFeatures();
+        return features;
     }
 
     public static class TinkerGraphFeatures implements Features {
