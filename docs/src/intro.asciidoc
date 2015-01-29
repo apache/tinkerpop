@@ -252,7 +252,7 @@ Another example is the `repeat()`-step which takes into account the number of ti
 
 [gremlin-groovy,modern]
 ----
-marko.repeat(__.out()).times(2).values('name')
+marko.repeat(out()).times(2).values('name')
 ----
 
 NOTE: In TinkerPop2, the `repeat()`-step was called `loop()`. Repeat has been generalized to support both do-while and while-do semantics which is explained in <<repeat-step,Repeat Step>>.
