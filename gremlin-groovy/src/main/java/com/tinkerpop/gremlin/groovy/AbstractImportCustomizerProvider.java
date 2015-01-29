@@ -31,6 +31,7 @@ import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import com.tinkerpop.gremlin.util.Gremlin;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
+import com.tinkerpop.gremlin.util.tools.TimeUtils;
 import groovy.grape.Grape;
 import groovy.json.JsonBuilder;
 import org.apache.commons.configuration.Configuration;
@@ -103,6 +104,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         staticImports.add(Order.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Operator.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Scope.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(TimeUtils.class.getCanonicalName() + DOT_STAR);
     }
 
     @Override
