@@ -290,6 +290,13 @@ There are times when there may be a specific test in the suite that the implemen
 public class HadoopGraph implements Graph {
 ----
 
+The above examples show how to ignore individual tests.  It is also possible to ignore an entire test case (i.e. all the methods within the test) by setting the `method` to "*".  Also note that some of the tests in the Gremlin Test Suite are parameterized tests and require an additional level of specificity to be properly ignored.  To ignore these types of tests, examine the name template of the parameterized tests.  It is defined by a Java annotation that looks like this:
+
+[source, java]
+@Parameterized.Parameters(name = "expect({0})")
+
+The annotation above shows that the name of each parameterized test will be prefixed with "expect" and have parentheses wrapped around the first parameter (at index 0) value supplied to each test.  This information can only be garnered by studying the test set up itself.  Once the pattern is determined and the specific unique name of the parameterized test is identified, add it to the `specific` property on the `OptOut` annotation in addition to the other arguments.
+
 These annotations help provide users a level of transparency into test suite compliance (via the xref:describe-graph[describeGraph()] utility function). It also allows implementers to have a lot of flexibility in terms of how they wish to support TinkerPop.  For example, maybe there is a single test case that prevents an implementer from claiming support of a `Feature`.  The implementer could choose to either not support the `Feature` or support it but "opt-out" of the test with a "reason" as to why so that users understand the limitation.
 
 Accessibility via GremlinPlugin
