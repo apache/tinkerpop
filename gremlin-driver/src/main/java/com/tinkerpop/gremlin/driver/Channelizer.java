@@ -22,6 +22,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * Client-side channel initializer interface.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Channelizer extends ChannelHandler {
@@ -38,6 +40,9 @@ public interface Channelizer extends ChannelHandler {
     public default void connected() {
     }
 
+    /**
+     * Base implementation of the client side {@link Channelizer}.
+     */
     abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
         protected Connection connection;
         protected Cluster cluster;
@@ -86,6 +91,9 @@ public interface Channelizer extends ChannelHandler {
         }
     }
 
+    /**
+     * WebSocket {@link Channelizer} implementation.
+     */
     class WebSocketChannelizer extends AbstractChannelizer {
         private WebSocketClientHandler handler;
 
@@ -136,6 +144,9 @@ public interface Channelizer extends ChannelHandler {
         }
     }
 
+    /**
+     * NIO {@link Channelizer} implementation.
+     */
     class NioChannelizer extends AbstractChannelizer {
         private NioGremlinRequestEncoder nioGremlinRequestEncoder;
 
