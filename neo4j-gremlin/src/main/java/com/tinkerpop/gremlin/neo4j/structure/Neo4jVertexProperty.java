@@ -1,8 +1,5 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jGraphTraversal;
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jVertexPropertyTraversal;
-import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jGraphTraversal;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Element;
@@ -31,7 +28,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty.Iterators, WrappedVertex<Node>, Neo4jVertexPropertyTraversal {
+public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty.Iterators, WrappedVertex<Node> {
 
     public static final Label VERTEX_PROPERTY_LABEL = DynamicLabel.label("vertexProperty");
     public static final String VERTEX_PROPERTY_PREFIX = Graph.Hidden.hide("");
@@ -56,12 +53,6 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
         this.node = node;
         this.key = (String) node.getProperty(T.key.getAccessor());
         this.value = (V) node.getProperty(T.value.getAccessor());
-    }
-
-    @Override
-    public Neo4jGraphTraversal<VertexProperty, VertexProperty> start() {
-        final Neo4jGraphTraversal<VertexProperty, VertexProperty> traversal = new DefaultNeo4jGraphTraversal<>(this.getClass(), this.vertex.graph);
-        return traversal.addStep(new StartStep<>(traversal, this));
     }
 
     @Override

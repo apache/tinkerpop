@@ -1,10 +1,6 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jGraphTraversal;
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jVertexTraversal;
-import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jGraphTraversal;
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -33,7 +29,7 @@ import java.util.stream.Stream;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterators, WrappedVertex<Node>, Neo4jVertexTraversal {
+public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterators, WrappedVertex<Node> {
 
     protected static final String LABEL_DELIMINATOR = "::";
 
@@ -172,12 +168,6 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
                 DynamicRelationshipType.withName(label)), this.graph);
         ElementHelper.attachProperties(edge, keyValues);
         return edge;
-    }
-
-    @Override
-    public Neo4jGraphTraversal<Vertex, Vertex> start() {
-        final Neo4jGraphTraversal<Vertex, Vertex> traversal = new DefaultNeo4jGraphTraversal<>(this.getClass(), this.graph);
-        return traversal.addStep(new StartStep<>(traversal, this));
     }
 
     @Override
