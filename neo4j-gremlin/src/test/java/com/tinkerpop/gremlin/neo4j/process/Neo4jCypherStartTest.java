@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.neo4j.process.graph.step.map;
+package com.tinkerpop.gremlin.neo4j.process;
 
 import com.tinkerpop.gremlin.neo4j.BaseNeo4jGraphTest;
 import com.tinkerpop.gremlin.process.Traversal;
