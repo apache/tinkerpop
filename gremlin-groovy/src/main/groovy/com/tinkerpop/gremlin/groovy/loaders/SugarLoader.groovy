@@ -30,7 +30,9 @@ class SugarLoader {
         __.metaClass.static.propertyMissing = { final String name ->
             return null != __.metaClass.getMetaMethod(name) ? __."$name"() : __.values(name);
         }
-        /*Object.metaClass.propertyMissing = { final String name ->
+        /*
+        // out and age
+        Object.metaClass.propertyMissing = { final String name ->
             __."$name"();
         }*/
 
@@ -114,23 +116,4 @@ class SugarLoader {
             return TraversalHelper.makeTraversalString(this.metaClass.owner);
         }
     }
-
-    /*public static class __Category {
-
-        public static final get(final __ anonymousTraversal, final String key) {
-            anonymousTraversal."$key"()
-        }
-
-        public static final getAt(final __ anonymousTraversal, final Integer index) {
-            anonymousTraversal.range(index, index + 1);
-        }
-
-        public static final getAt(final __ anonymousTraversal, final Range range) {
-            anonymousTraversal.range(range.getFrom() as Integer, range.getTo() as Integer);
-        }
-
-        public String toString() {
-            return TraversalHelper.makeTraversalString(this.metaClass.owner);
-        }
-    }*/
 }
