@@ -445,15 +445,15 @@ IMPORTANT: Note that a standalone anonymous traversal is a common use case which
 ----
 gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> software = g.V().has(label, "software").toList()
+gremlin> software = g.V().has(label, 'software').toList()
 ==>v[3]
 ==>v[5]
-gremlin> inject(software).unfold().groupCount().by("lang")
+gremlin> inject(software).unfold().groupCount().by('lang')
 Side effects do not have a value for provided key: null
 Display stack trace? [yN]
 ----
 
-You have two options to get around this limitation. Either explicitly apply all the required strategies to all anonymous taversals or apply the strategies only to the current traversal.
+You have two options to get around this limitation. Either explicitly apply all the required strategies to all anonymous traversals or apply the strategies only to the current traversal.
 
 [gremlin-groovy,modern]
 ----
@@ -463,8 +463,8 @@ TraversalStrategies.GlobalCache.registerStrategies(__, <1>
     TraversalStrategies.GlobalCache.getStrategies(__).addStrategies(
         SideEffectCapStrategy.instance(),
         SideEffectRegistrationStrategy.instance()))
-software = g.V().has(label, "software").toList()
-inject(software).unfold().groupCount().by("lang")
+software = g.V().has(label, 'software').toList()
+inject(software).unfold().groupCount().by('lang')
 ----
 
 <1> Apply required strategies globally for all anonymous traversals.
