@@ -495,11 +495,11 @@ It is possible to filter scalar values using `is()`-step (*filter*).
 ----
 g.V().values('age').is(32)
 g.V().values('age').is(lte, 30)
-g.V().values('age').is(gte, 29).is(lt, 34)
+g.V().values('age').is(inside, [30, 40])
 g.V().has(__.in('created').count().is(1l)).values('name') <1>
 g.V().has(__.in('created').count().is(gte, 2l)).values('name') <2>
 g.V().has(__.in('created').values('age').
-                           mean().is(gte, 30d).is(lt, 35d)).values('name') <3>
+                           mean().is(inside, [30d, 35d])).values('name') <3>
 ----
 
 <1> Find projects having exactly one contributor.
