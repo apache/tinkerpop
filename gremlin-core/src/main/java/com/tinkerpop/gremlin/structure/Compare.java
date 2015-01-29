@@ -78,7 +78,7 @@ public enum Compare implements BiPredicate<Object, Object> {
     }, inside {
         @Override
         public boolean test(final Object first, final Object second) {
-            return !(null == first || second == null) && gte.test(first, ((List) second).get(0)) && lt.test(first, ((List) second).get(1));
+            return !(null == first || second == null) && gt.test(first, ((List) second).get(0)) && lt.test(first, ((List) second).get(1));
         }
 
         @Override
@@ -88,7 +88,7 @@ public enum Compare implements BiPredicate<Object, Object> {
     }, outside {
         @Override
         public boolean test(final Object first, final Object second) {
-            return !(null == first || second == null) && lt.test(first, ((List) second).get(0)) || gte.test(first, ((List) second).get(1));
+            return !(null == first || second == null) && lt.test(first, ((List) second).get(0)) || gt.test(first, ((List) second).get(1));
         }
 
         @Override
