@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
-import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.Collections;
 import java.util.Set;
@@ -44,7 +43,6 @@ public class CollectingBarrierStep<S> extends AbstractStep<S, S> {
     public CollectingBarrierStep<S> clone() throws CloneNotSupportedException {
         final CollectingBarrierStep<S> clone = (CollectingBarrierStep<S>) super.clone();
         clone.traverserSet = new TraverserSet<>();
-        clone.barrierConsumer = CloneableLambda.tryClone(this.barrierConsumer);
         return clone;
     }
 

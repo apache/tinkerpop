@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.util.function.CloneableLambda;
 import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.Collections;
@@ -16,7 +15,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Consumer<S>, Cloneable, TraversableLambda {
+public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Consumer<S>, Cloneable, TraversableLambda<S,E> {
 
     private TraversalLambda<S, E> traversalLambda;
     private Object lambda;
@@ -87,14 +86,7 @@ public final class SmartLambda<S, E> implements Function<S, E>, Predicate<S>, Co
         final SmartLambda<S, E> clone = (SmartLambda<S, E>) super.clone();
         if (clone.usesTraversalLambda)
             clone.traversalLambda = this.traversalLambda.clone();
-        else
-            clone.lambda = CloneableLambda.tryClone(this.lambda);
         return clone;
-    }
-
-    @Override
-    public SmartLambda<S, E> cloneLambda() throws CloneNotSupportedException {
-        return this.clone();
     }
 
     public Set<TraverserRequirement> getRequirements() {

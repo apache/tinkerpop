@@ -61,12 +61,6 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
     }
 
     @Override
-    public void reset() {
-        super.reset();
-        this.smartLambda.reset();
-    }
-
-    @Override
     public SampleStep<S> clone() throws CloneNotSupportedException {
         final SampleStep<S> clone = (SampleStep<S>) super.clone();
         clone.smartLambda = this.smartLambda.clone();

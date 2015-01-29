@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -36,7 +35,6 @@ public final class SackObjectStep<S, V> extends SideEffectStep<S> {
     @Override
     public SackObjectStep<S, V> clone() throws CloneNotSupportedException {
         final SackObjectStep<S, V> clone = (SackObjectStep<S, V>) super.clone();
-        clone.operator = CloneableLambda.tryClone(this.operator);
         SackObjectStep.generateConsumer(clone);
         return clone;
     }

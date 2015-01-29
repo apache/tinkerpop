@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.function.Predicate;
 
@@ -30,12 +29,5 @@ public class FilterStep<S> extends AbstractStep<S, S> {
                 return traverser;
             }
         }
-    }
-
-    @Override
-    public FilterStep<S> clone() throws CloneNotSupportedException {
-        final FilterStep<S> clone = (FilterStep<S>) super.clone();
-        clone.predicate = CloneableLambda.tryClone(this.predicate);
-        return clone;
     }
 }

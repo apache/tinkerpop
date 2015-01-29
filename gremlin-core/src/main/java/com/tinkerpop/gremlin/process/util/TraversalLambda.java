@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalLambda<S, E> implements Function<Traverser<S>, E>, Predicate<Traverser<S>>, Consumer<Traverser<S>>, Cloneable, TraversableLambda<S, E> {
+public final class TraversalLambda<S, E> implements Function<Traverser<S>, E>, Predicate<Traverser<S>>, Consumer<Traverser<S>>, Cloneable, TraversableLambda<S,E> {
 
     private Traversal.Admin<S, E> traversal;
 
@@ -72,15 +72,5 @@ public final class TraversalLambda<S, E> implements Function<Traverser<S>, E>, P
         final TraversalLambda<S, E> clone = (TraversalLambda<S, E>) super.clone();
         clone.traversal = this.traversal.clone().asAdmin();
         return clone;
-    }
-
-    @Override
-    public TraversalLambda<S, E> cloneLambda() throws CloneNotSupportedException {
-        return this.clone();
-    }
-
-    @Override
-    public void reset() {
-        this.traversal.reset();
     }
 }

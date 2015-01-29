@@ -74,7 +74,6 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     @Override
     public void reset() {
         super.reset();
-        if (null != this.smartLambda) this.smartLambda.reset();
         this.duplicateSet.clear();
     }
 

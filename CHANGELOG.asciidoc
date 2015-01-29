@@ -30,7 +30,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `TraversalVerificationStrategy` to verify if the traversal can be executed on respective engine.
 * Refactored `GraphTraversal.cap()` to `GraphTraversal.cap(String...)` to support multi-sideEffect grabs.
 * Added GraphSON serialization for `Path`.
-* Added `CloneableLambda', `ResettableLambda', and `TraversableLambda` interfaces to allow steps to process such lambdas as needed.
+* Added `TraversableLambda` interfaces to allow steps to process such lambdas more easily.
 * Added `Traversal.Admin.getTraverserRequirements()` and removed `TraversalHelper.getTraverserRequirements(Traversal)`.
 * Added `SmartLambda` which is smart about handling a `TraversalLambda` or a standard Java8 lambda.
 * `Traversal.equals()` is no longer computed by determining if the objects returned are equal.

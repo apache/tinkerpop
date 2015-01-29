@@ -56,17 +56,12 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
 
     ////
 
-    private static class PredicateToFunction<S, E> implements Function<Traverser<S>, Boolean>, TraversableLambda<S, E>, Cloneable {
+    private static class PredicateToFunction<S, E> implements Function<Traverser<S>, Boolean>, TraversableLambda, Cloneable {
 
         private Traversal.Admin<S, E> traversal;
 
         public PredicateToFunction(final Traversal<S, E> traversal) {
             this.traversal = traversal.asAdmin();
-        }
-
-        @Override
-        public PredicateToFunction<S, E> cloneLambda() throws CloneNotSupportedException {
-            return this.clone();
         }
 
         @Override
@@ -81,11 +76,6 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
         @Override
         public Traversal<S, E> getTraversal() {
             return this.traversal;
-        }
-
-        @Override
-        public void reset() {
-            this.traversal.reset();
         }
 
         @Override

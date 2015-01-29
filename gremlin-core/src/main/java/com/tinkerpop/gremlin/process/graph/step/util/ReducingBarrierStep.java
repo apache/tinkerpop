@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
-import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -61,7 +60,6 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> {
     public ReducingBarrierStep<S, E> clone() throws CloneNotSupportedException {
         final ReducingBarrierStep<S, E> clone = (ReducingBarrierStep<S, E>) super.clone();
         clone.done = false;
-        clone.reducingBiFunction = CloneableLambda.tryClone(this.reducingBiFunction);
         return clone;
     }
 

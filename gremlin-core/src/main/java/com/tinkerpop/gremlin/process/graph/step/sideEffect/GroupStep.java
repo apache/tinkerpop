@@ -16,7 +16,6 @@ import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.SmartLambda;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -146,7 +145,6 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
         clone.executeTraversalOperations(this.keyFunction.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
         clone.valueFunction = this.valueFunction.clone();
         clone.executeTraversalOperations(this.valueFunction.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
-        clone.reduceFunction = CloneableLambda.tryClone(this.reduceFunction);
         GroupStep.generateConsumer(clone);
         return clone;
     }

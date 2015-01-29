@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
-import com.tinkerpop.gremlin.util.function.CloneableLambda;
 
 import java.util.function.Supplier;
 
@@ -45,7 +44,6 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> {
     public SupplyingBarrierStep<S, E> clone() throws CloneNotSupportedException {
         final SupplyingBarrierStep<S, E> clone = (SupplyingBarrierStep<S, E>) super.clone();
         clone.done = false;
-        clone.supplier = CloneableLambda.tryClone(this.supplier);
         return clone;
     }
 

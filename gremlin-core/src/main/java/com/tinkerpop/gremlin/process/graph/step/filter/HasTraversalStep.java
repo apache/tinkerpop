@@ -47,7 +47,7 @@ public final class HasTraversalStep<S> extends AbstractStep<S, S> implements Tra
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.traversalLambda.getRequirements();
+        return this.traversalLambda.getTraversal().asAdmin().getTraverserRequirements();
     }
 
     @Override

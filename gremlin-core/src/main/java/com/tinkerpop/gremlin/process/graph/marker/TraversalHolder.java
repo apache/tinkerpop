@@ -61,11 +61,6 @@ public interface TraversalHolder {
                 .collect(Collectors.toSet());
     }
 
-    public default void resetTraversals() {
-        this.getGlobalTraversals().forEach(traversal -> traversal.asAdmin().reset());
-        this.getLocalTraversals().forEach(traversal -> traversal.asAdmin().reset());
-    }
-
     public default Step<?, ?> asStep() {
         return (Step<?, ?>) this;
     }

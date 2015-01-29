@@ -1,22 +1,19 @@
 package com.tinkerpop.gremlin.util.function;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversableLambda<S, E> extends CloneableLambda {
+public interface TraversableLambda<S,E> extends Cloneable {
 
     public Traversal<S, E> getTraversal();
 
-    public default Set<TraverserRequirement> getRequirements() {
-        return this.getTraversal().asAdmin().getTraverserRequirements();
+    public TraversableLambda clone() throws CloneNotSupportedException;
+
+    public static <T> T tryAndClone(final Object object) throws CloneNotSupportedException {
+        return (object instanceof TraversableLambda) ? (T) ((TraversableLambda) object).clone() : (T) object;
+
     }
 
-    public default void reset() {
-        this.getTraversal().asAdmin().reset();
-    }
 }
