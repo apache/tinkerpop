@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.driver.handler;
 
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
@@ -14,6 +15,7 @@ import java.util.List;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@ChannelHandler.Sharable
 public class WebSocketGremlinResponseDecoder extends MessageToMessageDecoder<WebSocketFrame> {
     private final MessageSerializer serializer;
 

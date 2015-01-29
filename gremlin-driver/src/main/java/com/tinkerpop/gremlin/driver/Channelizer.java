@@ -38,8 +38,6 @@ public interface Channelizer extends ChannelHandler {
     public default void connected() {
     }
 
-    ;
-
     abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
         protected Connection connection;
         protected Cluster cluster;
@@ -91,6 +89,16 @@ public interface Channelizer extends ChannelHandler {
     class WebSocketChannelizer extends AbstractChannelizer {
         private WebSocketClientHandler handler;
 
+        private WebSocketGremlinRequestEncoder webSocketGremlinRequestEncoder;
+        private WebSocketGremlinResponseDecoder webSocketGremlinResponseDecoder;
+
+        @Override
+        public void init(final Connection connection) {
+            super.init(connection);
+            webSocketGremlinRequestEncoder = new WebSocketGremlinRequestEncoder(true, cluster.getSerializer());
+            webSocketGremlinResponseDecoder = new WebSocketGremlinResponseDecoder(cluster.getSerializer());
+        }
+
         @Override
         public boolean supportsSsl() {
             final String scheme = connection.getUri().getScheme();
@@ -114,8 +122,8 @@ public interface Channelizer extends ChannelHandler {
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
             pipeline.addLast("ws-handler", handler);
-            pipeline.addLast("gremlin-encoder", new WebSocketGremlinRequestEncoder(true, cluster.getSerializer()));
-            pipeline.addLast("gremlin-decoder", new WebSocketGremlinResponseDecoder(cluster.getSerializer()));
+            pipeline.addLast("gremlin-encoder", webSocketGremlinRequestEncoder);
+            pipeline.addLast("gremlin-decoder", webSocketGremlinResponseDecoder);
         }
 
         @Override
@@ -129,10 +137,18 @@ public interface Channelizer extends ChannelHandler {
     }
 
     class NioChannelizer extends AbstractChannelizer {
+        private NioGremlinRequestEncoder nioGremlinRequestEncoder;
+
+        @Override
+        public void init(final Connection connection) {
+            super.init(connection);
+            nioGremlinRequestEncoder = new NioGremlinRequestEncoder(true, cluster.getSerializer());
+        }
+
         @Override
         public void configure(ChannelPipeline pipeline) {
             pipeline.addLast("gremlin-decoder", new NioGremlinResponseDecoder(cluster.getSerializer()));
-            pipeline.addLast("gremlin-encoder", new NioGremlinRequestEncoder(true, cluster.getSerializer()));
+            pipeline.addLast("gremlin-encoder", nioGremlinRequestEncoder);
         }
     }
 }

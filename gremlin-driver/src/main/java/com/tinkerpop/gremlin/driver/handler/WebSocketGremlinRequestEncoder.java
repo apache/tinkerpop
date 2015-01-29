@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
@@ -16,9 +17,10 @@ import java.util.List;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@ChannelHandler.Sharable
 public class WebSocketGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketGremlinRequestEncoder.class);
-    private boolean binaryEncoding = false;
+    private final boolean binaryEncoding;
 
     private final MessageSerializer serializer;
 
