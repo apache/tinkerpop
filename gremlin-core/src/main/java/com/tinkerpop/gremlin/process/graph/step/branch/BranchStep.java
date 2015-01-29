@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalLambda;
 import com.tinkerpop.gremlin.util.function.CloneableLambda;
 import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
@@ -154,7 +153,5 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     public void reset() {
         super.reset();
         this.first = true;
-        if (this.pickFunction instanceof TraversableLambda)
-            ((TraversableLambda) this.pickFunction).reset();
     }
 }
