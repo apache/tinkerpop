@@ -10,6 +10,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Moved `clock()` out of the Utility plugin. It is now available in Groovy and Java.
+* Changed the `OptOut` annotation to allow for ignoring an entire test case using a wildcard.
 * Added `AndStep` and `OrStep` filters to support arbitrary conjunction of traversals.
 * `__` is now a class with static `GraphTraversal` methods and thus `repeat(out())` is possible.
 * Added `IsStep` / `.is()` that allows filtering of scalar values.

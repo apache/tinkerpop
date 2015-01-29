@@ -1132,7 +1132,8 @@ public interface Graph extends AutoCloseable {
         public String test();
 
         /**
-         * The specific name of the test method to opt out of.
+         * The specific name of the test method to opt out of or asterisk to opt out of all methods in a
+         * {@link #test}.
          */
         public String method();
 

@@ -25,8 +25,10 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -225,7 +227,7 @@ public abstract class AbstractGremlinSuite extends Suite {
                 throw new InitializationError(String.format("Invalid @OptOut on Graph instance.  Could not instantiate test class (it may have been renamed): %s", optOut.test()));
             }
 
-            if (!Arrays.stream(testClass.getMethods()).anyMatch(m -> m.getName().equals(optOut.method())))
+            if (!optOut.method().equals("*") && !Arrays.stream(testClass.getMethods()).anyMatch(m -> m.getName().equals(optOut.method())))
                 throw new InitializationError(String.format("Invalid @OptOut on Graph instance.  Could not match @OptOut test name %s on test class %s (it may have been renamed)", optOut.method(), optOut.test()));
         }
     }
@@ -256,19 +258,34 @@ public abstract class AbstractGremlinSuite extends Suite {
      */
     public static class OptOutTestFilter extends Filter {
 
-        private final List<Description> testsToIgnore;
+        private final List<Description> individualTestsToIgnore;
+        private final List<Graph.OptOut> entireTestsToIgnore;
 
         public OptOutTestFilter(final Graph.OptOut[] optOuts) {
-            testsToIgnore = Arrays.stream(optOuts)
+            // split the tests to filter into two groups - true represents those that should ignore a whole
+            final Map<Boolean, List<Graph.OptOut>> split = Arrays.stream(optOuts).collect(
+                    Collectors.groupingBy(optOut -> optOut.method().equals("*")));
+
+            final List<Graph.OptOut> optOutsOfIndividualTests = split.getOrDefault(Boolean.FALSE, Collections.emptyList());
+            individualTestsToIgnore = optOutsOfIndividualTests.stream()
+                    .filter(ignoreTest -> !ignoreTest.method().equals("*"))
                     .<Pair>map(ignoreTest -> Pair.with(ignoreTest.test(), ignoreTest.specific().isEmpty() ? ignoreTest.method() : String.format("%s[%s]", ignoreTest.method(), ignoreTest.specific())))
                     .<Description>map(p -> Description.createTestDescription(p.getValue0().toString(), p.getValue1().toString()))
                     .collect(Collectors.toList());
+
+            entireTestsToIgnore = split.getOrDefault(Boolean.TRUE, Collections.emptyList());
         }
 
         @Override
         public boolean shouldRun(final Description description) {
+            // first check if all tests from a class should be ignored
+            if (!entireTestsToIgnore.isEmpty() && entireTestsToIgnore.stream()
+                    .anyMatch(optOut -> optOut.test().equals(description.getClassName()))) {
+                return false;
+            }
+
             if (description.isTest()) {
-                return !testsToIgnore.contains(description);
+                return !individualTestsToIgnore.contains(description);
             }
 
             // explicitly check if any children want to run
@@ -283,7 +300,7 @@ public abstract class AbstractGremlinSuite extends Suite {
         @Override
         public String describe() {
             return String.format("Method %s",
-                    String.join(",", testsToIgnore.stream().map(Description::getDisplayName).collect(Collectors.toList())));
+                    String.join(",", individualTestsToIgnore.stream().map(Description::getDisplayName).collect(Collectors.toList())));
         }
     }
 }
