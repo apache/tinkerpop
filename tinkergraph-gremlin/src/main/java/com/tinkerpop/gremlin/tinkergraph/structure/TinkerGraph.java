@@ -65,8 +65,6 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
-    private final TinkerGraphFeatures features = new TinkerGraphFeatures();
-
     /**
      * An empty private constructor that initializes {@link TinkerGraph} with no {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.  Primarily
      * used for purposes of serialization issues.
@@ -205,23 +203,28 @@ public class TinkerGraph implements Graph, Graph.Iterators {
      */
     @Override
     public Features features() {
-        return features;
+        return TinkerGraphFeatures.INSTANCE;
     }
 
     public static class TinkerGraphFeatures implements Features {
+
+        static final TinkerGraphFeatures INSTANCE = new TinkerGraphFeatures();
+
+        private TinkerGraphFeatures() {}
+
         @Override
         public GraphFeatures graph() {
-            return new TinkerGraphGraphFeatures();
+            return TinkerGraphGraphFeatures.INSTANCE;
         }
 
         @Override
         public EdgeFeatures edge() {
-            return new TinkerGraphEdgeFeatures();
+            return TinkerGraphEdgeFeatures.INSTANCE;
         }
 
         @Override
         public VertexFeatures vertex() {
-            return new TinkerGraphVertexFeatures();
+            return TinkerGraphVertexFeatures.INSTANCE;
         }
 
         @Override
@@ -231,6 +234,10 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     }
 
     public static class TinkerGraphVertexFeatures implements Features.VertexFeatures {
+        static final TinkerGraphVertexFeatures INSTANCE = new TinkerGraphVertexFeatures();
+
+        private TinkerGraphVertexFeatures() {}
+
         @Override
         public boolean supportsCustomIds() {
             return false;
@@ -238,6 +245,10 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     }
 
     public static class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {
+        static final TinkerGraphEdgeFeatures INSTANCE = new TinkerGraphEdgeFeatures();
+
+        private TinkerGraphEdgeFeatures(){}
+
         @Override
         public boolean supportsCustomIds() {
             return false;
@@ -245,6 +256,10 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     }
 
     public static class TinkerGraphGraphFeatures implements Features.GraphFeatures {
+        static final TinkerGraphGraphFeatures INSTANCE = new TinkerGraphGraphFeatures();
+
+        private TinkerGraphGraphFeatures() {}
+
         @Override
         public boolean supportsTransactions() {
             return false;
