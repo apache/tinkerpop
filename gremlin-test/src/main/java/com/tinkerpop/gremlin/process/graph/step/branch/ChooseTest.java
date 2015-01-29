@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -113,28 +113,28 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
             return g.V().choose(v -> v.<String>value("name").length() == 5,
-                    __.out(),
-                    __.in()).values("name");
+                    out(),
+                    in()).values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_chooseX0X_optionX0__outX_name(Object v1Id) {
-            return g.V(v1Id).choose(t -> 0).option(0, __.out()).values("name");
+            return g.V(v1Id).choose(t -> 0).option(0, out()).values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXlabel_personX_chooseXname_lengthX_optionX5__inX_optionX4__outX_optionX3__bothX_name() {
             return g.V().has(T.label, "person").choose(v -> v.<String>value("name").length())
-                    .option(5, __.in())
-                    .option(4, __.out())
-                    .option(3, __.both()).values("name");
+                    .option(5, in())
+                    .option(4, out())
+                    .option(3, both()).values("name");
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {
-            return g.V().choose(__.out().count())
-                    .option(2L, __.values("name"))
-                    .option(3L, __.valueMap());
+            return g.V().choose(out().count())
+                    .option(2L, values("name"))
+                    .option(3L, valueMap());
         }
     }
 
@@ -147,28 +147,28 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
             return g.V().choose(v -> v.<String>value("name").length() == 5,
-                    __.out(),
-                    __.in()).<String>values("name").submit(g.compute());
+                    out(),
+                    in()).<String>values("name").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_chooseX0X_optionX0__outX_name(Object v1Id) {
-            return g.V(v1Id).choose(t -> 0).option(0, __.out()).<String>values("name").submit(g.compute());
+            return g.V(v1Id).choose(t -> 0).option(0, out()).<String>values("name").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXlabel_personX_chooseXname_lengthX_optionX5__inX_optionX4__outX_optionX3__bothX_name() {
             return g.V().has(T.label, "person").choose(v -> v.<String>value("name").length())
-                    .option(5, __.in())
-                    .option(4, __.out())
-                    .option(3, __.both()).<String>values("name").submit(g.compute());
+                    .option(5, in())
+                    .option(4, out())
+                    .option(3, both()).<String>values("name").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {
-            return g.V().choose(__.out().count())
-                    .option(2L, __.values("name"))
-                    .option(3L, __.valueMap()).submit(g.compute());
+            return g.V().choose(out().count())
+                    .option(2L, values("name"))
+                    .option(3L, valueMap()).submit(g.compute());
         }
     }
 }

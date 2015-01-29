@@ -7,8 +7,6 @@ import com.tinkerpop.gremlin.structure.Direction
 import com.tinkerpop.gremlin.structure.Edge
 import com.tinkerpop.gremlin.structure.Vertex
 
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -35,7 +33,6 @@ public abstract class GroovyVertexTest {
         public Traversal<Vertex, Vertex> get_g_VX4X_both(final Object v4Id) {
             g.V(v4Id).both
         }
-
 
 
         @Override

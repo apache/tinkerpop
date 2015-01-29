@@ -405,7 +405,7 @@ public interface Neo4jGraphTraversal<S, E> extends GraphTraversal.Admin<S, E>, G
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.sack(arg0);
 	}
 
-	public default <E2 extends Element,V> Neo4jGraphTraversal<S, E2> sack(java.util.function.BinaryOperator<V> arg0, java.lang.String arg1) {
+	public default <V> Neo4jGraphTraversal<S, E> sack(java.util.function.BinaryOperator<V> arg0, java.lang.String arg1) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.sack(arg0, arg1);
 	}
 

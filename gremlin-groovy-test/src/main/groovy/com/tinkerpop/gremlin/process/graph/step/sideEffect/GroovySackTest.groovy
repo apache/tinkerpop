@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
 
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
+import com.tinkerpop.gremlin.process.graph.__
 import static com.tinkerpop.gremlin.structure.Operator.sum
 
 /**

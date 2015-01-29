@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.PropertyType;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -21,14 +21,14 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldCorrectlyTestIfReversible() {
-        assertTrue(TraversalHelper.isReversible(__.out().asAdmin()));
-        assertTrue(TraversalHelper.isReversible(__.outE().inV().asAdmin()));
-        assertTrue(TraversalHelper.isReversible(__.in().in().asAdmin()));
-        assertTrue(TraversalHelper.isReversible(__.inE().outV().outE().inV().asAdmin()));
-        assertTrue(TraversalHelper.isReversible(__.outE().has("since").inV().asAdmin()));
-        assertTrue(TraversalHelper.isReversible(__.outE().as("x").asAdmin()));
+        assertTrue(TraversalHelper.isReversible(out().asAdmin()));
+        assertTrue(TraversalHelper.isReversible(outE().inV().asAdmin()));
+        assertTrue(TraversalHelper.isReversible(in().in().asAdmin()));
+        assertTrue(TraversalHelper.isReversible(inE().outV().outE().inV().asAdmin()));
+        assertTrue(TraversalHelper.isReversible(outE().has("since").inV().asAdmin()));
+        assertTrue(TraversalHelper.isReversible(outE().as("x").asAdmin()));
 
-        assertFalse(TraversalHelper.isReversible(__.identity().as("a").outE().back("a").asAdmin()));
+        assertFalse(TraversalHelper.isReversible(identity().as("a").outE().back("a").asAdmin()));
 
     }
 

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -138,12 +138,12 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX() {
-            return g.V().repeat(__.out().group("a").by("name").by().<Collection>by(Collection::size)).times(2).cap("a");
+            return g.V().repeat(out().group("a").by("name").by().<Collection>by(Collection::size)).times(2).cap("a");
         }
 
         @Override
         public Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX() {
-            return (Traversal) g.V().group().by(__.outE().count()).by("name");
+            return (Traversal) g.V().group().by(outE().count()).by("name");
         }
     }
 
@@ -172,12 +172,12 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX() {
-            return g.V().repeat(__.out().group("a").by("name").by().<Collection>by(Collection::size)).times(2).<Map<String, Integer>>cap("a").submit(g.compute());
+            return g.V().repeat(out().group("a").by("name").by().<Collection>by(Collection::size)).times(2).<Map<String, Integer>>cap("a").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX() {
-            return (Traversal) g.V().group().by(__.outE().count()).by("name").submit(g.compute());
+            return (Traversal) g.V().group().by(outE().count()).by("name").submit(g.compute());
         }
     }
 

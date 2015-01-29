@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.process.Scope;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -9,7 +8,6 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Operator;
-import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
@@ -29,14 +27,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -90,7 +85,7 @@ public class TinkerGraphTest {
         v7.addEdge("link", v9, "weight", 1f);
         v8.addEdge("link", v9, "weight", 7f);
 
-        v1.withSack(() -> Float.MIN_VALUE).repeat(__.outE().sack(Operator.max, "weight").inV()).times(5).sack().submit(g.compute()).forEachRemaining(System.out::println);
+        v1.withSack(() -> Float.MIN_VALUE).repeat(outE().sack(Operator.max, "weight").inV()).times(5).sack().submit(g.compute()).forEachRemaining(System.out::println);
     }
 
     @Test
@@ -111,10 +106,10 @@ public class TinkerGraphTest {
                 () -> g.V().outE().inV().outE().inV().outE().inV(),
                 () -> g.V().out().out().out(),
                 () -> g.V().out().out().out().path(),
-                () -> g.V().repeat(__.out()).times(2),
-                () -> g.V().repeat(__.out()).times(3),
-                () -> g.V().local(__.out().out().values("name").fold()),
-                () -> g.V().out().local(__.out().out().values("name").fold()),
+                () -> g.V().repeat(out()).times(2),
+                () -> g.V().repeat(out()).times(3),
+                () -> g.V().local(out().out().values("name").fold()),
+                () -> g.V().out().local(out().out().values("name").fold()),
                 () -> g.V().out().map(v -> v.get().out().out().values("name").toList())
         );
         traversals.forEach(traversal -> {
@@ -131,7 +126,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().has("age",Compare.inside,Arrays.asList(20,30)).values("name");
+        Traversal t = g.V().has("age", Compare.inside, Arrays.asList(20, 30)).values("name");
         System.out.println(t.toString());
         t.forEachRemaining(System.out::println);
         System.out.println(t.toString());
@@ -147,18 +142,18 @@ public class TinkerGraphTest {
         final List<Supplier<Traversal>> traversals = Arrays.asList(
                 () -> g.V().has(T.label, "song").out().groupCount().<Vertex>by(t ->
                         t.choose(r -> r.has(T.label, "artist").hasNext(),
-                                __.in("writtenBy", "sungBy"),
-                                __.both("followedBy")).values("name").next()).fold(),
+                                in("writtenBy", "sungBy"),
+                                both("followedBy")).values("name").next()).fold(),
                 () -> g.V().has(T.label, "song").out().groupCount().<Vertex>by(t ->
-                        t.choose(__.has(T.label, "artist"),
-                                __.in("writtenBy", "sungBy"),
-                                __.both("followedBy")).values("name").next()).fold(),
+                        t.choose(has(T.label, "artist"),
+                                in("writtenBy", "sungBy"),
+                                both("followedBy")).values("name").next()).fold(),
                 () -> g.V().has(T.label, "song").out().groupCount().by(
-                        __.choose(__.has(T.label, "artist"),
-                                __.in("writtenBy", "sungBy"),
-                                __.both("followedBy")).values("name")).fold(),
+                        choose(has(T.label, "artist"),
+                                in("writtenBy", "sungBy"),
+                                both("followedBy")).values("name")).fold(),
                 () -> g.V().has(T.label, "song").both().groupCount().<Vertex>by(t -> t.both().values("name").next()),
-                () -> g.V().has(T.label, "song").both().groupCount().by(__.both().values("name")));
+                () -> g.V().has(T.label, "song").both().groupCount().by(both().values("name")));
         traversals.forEach(traversal -> {
             System.out.println("\nTESTING: " + traversal.get());
             for (int i = 0; i < 10; i++) {

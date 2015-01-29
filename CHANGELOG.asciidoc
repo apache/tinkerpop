@@ -82,7 +82,7 @@ TinkerPop 3.0.0.M7 (Release Date: January 19, 2015)
 * Moved `Traverser.sideEffects()` to `Traverser.asAdmin().getSideEffects()`. Users should use `Traverser.sideEffects(key)` and `Traverser.sideEffects(key,value)`.
 * Added `SerializationTest` to the `StructureStandardSuite` in `gremlin-test` which validates serialization at a lower level than `IoTest`.
 * Removed `IntervalStep` and renamed `interval()` to `between()` which is simply an alias to a `has().has()` chain.
-* Added `AnonymousGraphTraversal.Tokens.__` which allows for `__.out().out()`-style construction of anonymous traversals (instead of `g.of()`).
+* Added `__` static interface which allows for `__.out().out()`-style and `out().out()`-style construction of anonymous traversals (instead of `g.of()`).
 * The only `GraphTraversal` steps that operate on `Traverser` are the base lambdas and `repeat()` (i.e. `emit()` and `until()`).
 * Removed dependency on the `reflections` library in `gremlin-test` which removed the default implementation of `GraphProvider.getImplementations()` - vendors now need to implement this method themselves.
 * Relaxed the `<S>` typing requirement for anonymous traversals when applied to `choose()`, `repeat()`, `union()`, etc.

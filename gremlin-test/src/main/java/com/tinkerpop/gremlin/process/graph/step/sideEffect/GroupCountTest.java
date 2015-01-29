@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -126,14 +126,14 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX() {
-            return g.V().repeat(__.out().groupCount("a").by("name")).times(2).cap("a");
+            return g.V().repeat(out().groupCount("a").by("name")).times(2).cap("a");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX() {
             return g.V().union(
-                    __.repeat(__.out()).times(2).groupCount("m").by("lang"),
-                    __.repeat(__.in()).times(2).groupCount("m").by("name")).cap("m");
+                    repeat(out()).times(2).groupCount("m").by("lang"),
+                    repeat(in()).times(2).groupCount("m").by("name")).cap("m");
         }
     }
 
@@ -164,14 +164,14 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX() {
-            return g.V().repeat(__.out().groupCount("a").by("name")).times(2).<Map<String, Long>>cap("a").submit(g.compute());
+            return g.V().repeat(out().groupCount("a").by("name")).times(2).<Map<String, Long>>cap("a").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX() {
             return g.V().union(
-                    __.repeat(__.out()).times(2).groupCount("m").by("lang"),
-                    __.repeat(__.in()).times(2).groupCount("m").by("name")).<Map<String, Long>>cap("m").submit(g.compute());
+                    repeat(out()).times(2).groupCount("m").by("lang"),
+                    repeat(in()).times(2).groupCount("m").by("name")).<Map<String, Long>>cap("m").submit(g.compute());
         }
     }
 }

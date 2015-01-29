@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
@@ -244,7 +244,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
-            return g.V().out("knows").has(__.out("created")).values("name");
+            return g.V().out("knows").has(out("created")).values("name");
         }
 
         @Override
@@ -330,7 +330,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
-            return g.V().out("knows").has(__.out("created")).<String>values("name").submit(g.compute());
+            return g.V().out("knows").has(out("created")).<String>values("name").submit(g.compute());
         }
 
         @Override

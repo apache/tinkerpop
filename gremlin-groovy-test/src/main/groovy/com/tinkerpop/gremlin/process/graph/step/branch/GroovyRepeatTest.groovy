@@ -6,7 +6,8 @@ import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
 
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
+import com.tinkerpop.gremlin.process.graph.__
+import static com.tinkerpop.gremlin.process.graph.__.*
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -20,17 +21,17 @@ public abstract class GroovyRepeatTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_repeatXoutX_untilXloops_gte_2X_name(final Object v1Id) {
-            g.V(v1Id).repeat(__.out).until { it.loops() >= 2 }.name
+            g.V(v1Id).repeat(out()).until { it.loops() >= 2 }.name
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilXloops_gte_2X() {
-            g.V.repeat(__.out).until { it.loops() >= 2 }
+            g.V.repeat(out()).until { it.loops() >= 2 }
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilXloops_gte_2X_emit() {
-            g.V.repeat(__.out).until { it.loops() >= 2 }.emit
+            g.V.repeat(out()).until { it.loops() >= 2 }.emit
         }
 
         @Override

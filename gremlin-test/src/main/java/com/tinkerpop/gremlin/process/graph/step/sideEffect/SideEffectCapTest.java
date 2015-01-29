@@ -5,13 +5,12 @@ import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -70,9 +69,9 @@ public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Map<Object, Long>>> get_g_V_chooseXlabel_person__age_groupCountXaX__name_groupCountXbXX_capXa_bX() {
-            return g.V().choose(__.has(T.label, "person"),
-                    __.values("age").groupCount("a"),
-                    __.values("name").groupCount("b")).cap("a", "b");
+            return g.V().choose(has(T.label, "person"),
+                    values("age").groupCount("a"),
+                    values("name").groupCount("b")).cap("a", "b");
         }
     }
 
@@ -90,9 +89,9 @@ public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Map<Object, Long>>> get_g_V_chooseXlabel_person__age_groupCountXaX__name_groupCountXbXX_capXa_bX() {
-            return g.V().choose(__.has(T.label, "person"),
-                    __.values("age").groupCount("a"),
-                    __.values("name").groupCount("b")).<Map<String, Map<Object, Long>>>cap("a", "b").submit(g.compute());
+            return g.V().choose(has(T.label, "person"),
+                    values("age").groupCount("a"),
+                    values("name").groupCount("b")).<Map<String, Map<Object, Long>>>cap("a", "b").submit(g.compute());
         }
     }
 }

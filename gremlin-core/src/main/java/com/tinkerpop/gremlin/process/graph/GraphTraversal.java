@@ -507,8 +507,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SackObjectStep<>(this, sackFunction));
     }
 
-    public default <E2 extends Element, V> GraphTraversal<S, E2> sack(final BinaryOperator<V> sackOperator, final String elementPropertyKey) {
-        return this.asAdmin().addStep(new SackElementValueStep<>(this, sackOperator, elementPropertyKey));
+    public default <V> GraphTraversal<S, E> sack(final BinaryOperator<V> sackOperator, final String elementPropertyKey) {
+        return this.asAdmin().addStep(new SackElementValueStep(this, sackOperator, elementPropertyKey));
     }
 
     public default GraphTraversal<S, E> store(final String sideEffectKey) {

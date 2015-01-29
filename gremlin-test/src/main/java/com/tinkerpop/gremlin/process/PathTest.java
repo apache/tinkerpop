@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.out;
 import static org.junit.Assert.*;
 
 /**
@@ -70,7 +70,7 @@ public class PathTest extends AbstractGremlinProcessTest {
             assertTrue(path.<List<String>>get("a").contains("matthias"));
         });
 
-        final Path path = g.V().as("x").repeat(__.out().as("y")).times(2).path().by("name").next();
+        final Path path = g.V().as("x").repeat(out().as("y")).times(2).path().by("name").next();
         assertEquals(3, path.size());
         assertEquals(3, path.labels().size());
         assertEquals(2, new HashSet<>(path.labels()).size());

@@ -11,7 +11,8 @@ import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressu
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.__;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -64,7 +65,8 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         // graph process
         imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
         imports.add(GraphComputer.class.getPackage().getName() + DOT_STAR);
-        staticImports.add(AnonymousGraphTraversal.Tokens.class.getCanonicalName() + DOT_STAR);
+        imports.add(GraphTraversal.class.getPackage().getName() + DOT_STAR);
+        staticImports.add(__.class.getCanonicalName() + DOT_STAR);
         staticImports.add(TraversalOptionHolder.Pick.class.getCanonicalName() + DOT_STAR);
 
         // utils

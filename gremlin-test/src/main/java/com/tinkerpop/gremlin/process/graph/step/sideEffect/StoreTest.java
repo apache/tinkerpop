@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -112,7 +112,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX() {
-            return (Traversal) g.V().store("a").by(__.outE("created").count()).out().out().store("a").by(__.inE("created").values("weight").sum());
+            return (Traversal) g.V().store("a").by(outE("created").count()).out().out().store("a").by(inE("created").values("weight").sum());
         }
     }
 
@@ -138,7 +138,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX() {
-            return (Traversal) g.V().store("a").by(__.outE("created").count()).out().out().store("a").by(__.inE("created").values("weight").sum()).submit(g.compute());
+            return (Traversal) g.V().store("a").by(outE("created").count()).out().out().store("a").by(inE("created").values("weight").sum()).submit(g.compute());
         }
     }
 

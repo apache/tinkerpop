@@ -23,19 +23,9 @@ import java.util.stream.Collectors;
  */
 public class GraphTraversalSourceGenerator {
 
-    private static final Set<String> methodsWithE2AsElementSingle = new HashSet<String>() {{
-        add("has");
-        add("hasNot");
-        add("between");
-    }};
-
     private static final Set<String> methodsWithE2AsNumberSingle = new HashSet<String>() {{
         add("min");
         add("max");
-    }};
-
-    private static final Set<String> methodsWithE2AsElementMulti = new HashSet<String>() {{
-        add("sack");
     }};
 
     public static void main(final String[] args) throws Exception {
@@ -74,12 +64,6 @@ public class GraphTraversalSourceGenerator {
                 methodName = methodName.replace(GraphTraversal.class.getCanonicalName(), desiredTraversalReturnClassName);
                 methodName = methodName.replace(traversalToCloneClass.getCanonicalName() + ".", "");  // needed for ElementTraversal
                 methodName = methodName.replace(resultTraversalClassName + ".", "");                  // needed for GraphTraversal
-                if (methodsWithE2AsElementSingle.contains(method.getName())) {
-                    methodName = methodName.replace("<E2>", "<E2 extends Element>");
-                }
-                if (methodsWithE2AsElementMulti.contains(method.getName())) {
-                    methodName = methodName.replace("<E2,", "<E2 extends Element,");
-                }
                 if (methodsWithE2AsNumberSingle.contains(method.getName())) {
                     methodName = methodName.replace("<E2>", "<E2 extends Number>");
                 }

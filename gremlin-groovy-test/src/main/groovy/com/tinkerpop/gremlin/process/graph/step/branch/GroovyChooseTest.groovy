@@ -2,10 +2,9 @@ package com.tinkerpop.gremlin.process.graph.step.branch
 
 import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
+import com.tinkerpop.gremlin.process.graph.__
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
-
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -18,8 +17,8 @@ public abstract class GroovyChooseTest {
         @Override
         public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
             g.V.choose({ it.name.length() == 5 },
-                    __.out(),
-                    __.in()).name;
+                    __.out,
+                    __.in).name;
         }
 
         @Override

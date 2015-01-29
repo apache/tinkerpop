@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -42,7 +42,7 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_min() {
-            return g.V().repeat(__.both()).times(5).values("age").min();
+            return g.V().repeat(both()).times(5).values("age").min();
         }
 
     }
@@ -56,7 +56,7 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_min() {
-            return g.V().repeat(__.both()).times(5).values("age").<Integer>min().submit(g.compute());
+            return g.V().repeat(both()).times(5).values("age").<Integer>min().submit(g.compute());
         }
     }
 }

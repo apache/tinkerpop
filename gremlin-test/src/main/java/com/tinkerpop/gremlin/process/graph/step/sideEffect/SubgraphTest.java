@@ -12,7 +12,7 @@ import org.junit.Test;
 import java.util.Arrays;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES;
@@ -89,7 +89,7 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_withSideEffectXsgX_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup(final Graph subgraph) {
-            return g.V().withSideEffect("sg", () -> subgraph).repeat(__.bothE("created").subgraph("sg").outV()).times(5).<String>values("name").dedup();
+            return g.V().withSideEffect("sg", () -> subgraph).repeat(bothE("created").subgraph("sg").outV()).times(5).<String>values("name").dedup();
         }
     }
 }

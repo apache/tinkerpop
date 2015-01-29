@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -138,7 +138,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_localXoutE_limitX1X_inVX_limitX3X() {
-            return g.V().local(__.outE().limit(1)).inV().limit(3);
+            return g.V().local(outE().limit(1)).inV().limit(3);
         }
 
         @Override
@@ -163,7 +163,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X() {
-            return g.V().repeat(__.both()).times(3).range(5, 11);
+            return g.V().repeat(both()).times(3).range(5, 11);
         }
     }
 }

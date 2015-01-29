@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.util.Arrays;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -97,12 +97,12 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX() {
-            return g.V().has(__.in("created").count().is(1l)).values("name");
+            return g.V().has(in("created").count().is(1l)).values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
-            return g.V().has(__.in("created").count().is(Compare.gte, 2l)).values("name");
+            return g.V().has(in("created").count().is(Compare.gte, 2l)).values("name");
         }
     }
 

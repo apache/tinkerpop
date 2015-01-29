@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -39,17 +39,17 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
             return g.V().branch(v -> v.get().label().equals("person") ? "a" : "b")
-                    .option("a", __.values("age"))
-                    .option("b", __.values("lang"))
-                    .option("b", __.values("name"));
+                    .option("a", values("age"))
+                    .option("b", values("lang"))
+                    .option("b", values("name"));
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
-            return g.V().branch(__.label())
-                    .option("person", __.values("age"))
-                    .option("software", __.values("lang"))
-                    .option("software", __.values("name"));
+            return g.V().branch(label())
+                    .option("person", values("age"))
+                    .option("software", values("lang"))
+                    .option("software", values("name"));
         }
     }
 
@@ -58,17 +58,17 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
             return g.V().branch(v -> v.get().label().equals("person") ? "a" : "b")
-                    .option("a", __.values("age"))
-                    .option("b", __.values("lang"))
-                    .option("b", __.values("name")).submit(g.compute());
+                    .option("a", values("age"))
+                    .option("b", values("lang"))
+                    .option("b", values("name")).submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
-            return g.V().branch(__.label())
-                    .option("person", __.values("age"))
-                    .option("software", __.values("lang"))
-                    .option("software", __.values("name")).submit(g.compute());
+            return g.V().branch(label())
+                    .option("person", values("age"))
+                    .option("software", values("lang"))
+                    .option("software", values("name")).submit(g.compute());
         }
     }
 }

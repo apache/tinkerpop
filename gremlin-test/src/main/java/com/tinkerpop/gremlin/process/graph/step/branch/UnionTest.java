@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -109,29 +109,29 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, String> get_g_V_unionXout__inX_name() {
-            return g.V().union(__.out(), __.in()).values("name");
+            return g.V().union(out(), in()).values("name");
         }
 
         public Traversal<Vertex, String> get_g_VX1X_unionXrepeatXoutX_timesX2X__outX_name(final Object v1Id) {
-            return g.V(v1Id).union(__.repeat(__.out()).times(2), __.out()).values("name");
+            return g.V(v1Id).union(repeat(out()).times(2), out()).values("name");
         }
 
         public Traversal<Vertex, String> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX() {
-            return g.V().choose(v -> v.label().equals("person"), __.union(__.out().values("lang"), __.out().values("name")), __.in().label());
+            return g.V().choose(v -> v.label().equals("person"), union(out().values("lang"), out().values("name")), in().label());
         }
 
         public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
-            return (Traversal) g.V().choose(v -> v.label().equals("person"), __.union(__.out().values("lang"), __.out().values("name")), __.in().label()).groupCount();
+            return (Traversal) g.V().choose(v -> v.label().equals("person"), union(out().values("lang"), out().values("name")), in().label()).groupCount();
         }
 
         public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount() {
             return (Traversal) g.V().union(
-                    __.repeat(__.union(
-                            __.out("created"),
-                            __.in("created"))).times(2),
-                    __.repeat(__.union(
-                            __.in("created"),
-                            __.out("created"))).times(2)).label().groupCount();
+                    repeat(union(
+                            out("created"),
+                            in("created"))).times(2),
+                    repeat(union(
+                            in("created"),
+                            out("created"))).times(2)).label().groupCount();
         }
     }
 
@@ -142,29 +142,29 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, String> get_g_V_unionXout__inX_name() {
-            return g.V().union(__.out(), __.in()).<String>values("name").submit(g.compute());
+            return g.V().union(out(), in()).<String>values("name").submit(g.compute());
         }
 
         public Traversal<Vertex, String> get_g_VX1X_unionXrepeatXoutX_timesX2X__outX_name(final Object v1Id) {
-            return g.V(v1Id).union(__.repeat(__.out()).times(2), __.out()).<String>values("name").submit(g.compute());
+            return g.V(v1Id).union(repeat(out()).times(2), out()).<String>values("name").submit(g.compute());
         }
 
         public Traversal<Vertex, String> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX() {
-            return g.V().choose(v -> v.label().equals("person"), __.union(__.out().values("lang"), __.out().values("name")), __.in().label()).submit(g.compute());
+            return g.V().choose(v -> v.label().equals("person"), union(out().values("lang"), out().values("name")), in().label()).submit(g.compute());
         }
 
         public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
-            return (Traversal) g.V().choose(v -> v.label().equals("person"), __.union(__.out().values("lang"), __.out().values("name")), __.in().label()).groupCount().submit(g.compute());
+            return (Traversal) g.V().choose(v -> v.label().equals("person"), union(out().values("lang"), out().values("name")), in().label()).groupCount().submit(g.compute());
         }
 
         public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount() {
             return (Traversal) g.V().union(
-                    __.repeat(__.union(
-                            __.out("created"),
-                            __.in("created"))).times(2),
-                    __.repeat(__.union(
-                            __.in("created"),
-                            __.out("created"))).times(2)).label().groupCount().submit(g.compute());
+                    repeat(union(
+                            out("created"),
+                            in("created"))).times(2),
+                    repeat(union(
+                            in("created"),
+                            out("created"))).times(2)).label().groupCount().submit(g.compute());
         }
     }
 }

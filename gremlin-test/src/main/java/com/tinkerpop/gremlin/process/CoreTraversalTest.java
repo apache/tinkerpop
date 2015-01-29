@@ -19,7 +19,7 @@ import java.util.Random;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static org.junit.Assert.*;
 
@@ -43,7 +43,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.tryNext().isPresent());
         assertFalse(traversal.hasNext());
 
-        Traversal<Integer, Integer> intTraversal = __.inject(7, 7, 2, 3, 6);
+        Traversal<Integer, Integer> intTraversal = inject(7, 7, 2, 3, 6);
         assertTrue(intTraversal.hasNext());
         final List<Integer> list = intTraversal.toList();
         assertFalse(intTraversal.hasNext());
@@ -56,7 +56,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         assertFalse(intTraversal.hasNext());
         assertFalse(intTraversal.tryNext().isPresent());
 
-        intTraversal = __.inject(7, 7, 2, 3, 6);
+        intTraversal = inject(7, 7, 2, 3, 6);
         assertTrue(intTraversal.hasNext());
         final Set<Integer> set = intTraversal.toSet();
         assertFalse(intTraversal.hasNext());
@@ -68,7 +68,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         assertFalse(intTraversal.hasNext());
         assertFalse(intTraversal.tryNext().isPresent());
 
-        intTraversal = __.inject(7, 7, 2, 3, 6);
+        intTraversal = inject(7, 7, 2, 3, 6);
         assertTrue(intTraversal.hasNext());
         final BulkSet<Integer> bulkSet = intTraversal.toBulkSet();
         assertFalse(intTraversal.hasNext());
@@ -111,7 +111,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldAddStartsProperly() {
-        final Traversal<Object, Vertex> traversal = __.out().out();
+        final Traversal<Object, Vertex> traversal = out().out();
         assertFalse(traversal.hasNext());
         traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
         assertTrue(traversal.hasNext());
@@ -126,7 +126,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldTraversalResetProperly() {
-        final Traversal<Object, Vertex> traversal = __.as("a").out().out().has("name", Contains.within, Arrays.asList("ripple", "lop")).as("b");
+        final Traversal<Object, Vertex> traversal = as("a").out().out().has("name", Contains.within, Arrays.asList("ripple", "lop")).as("b");
         if (new Random().nextBoolean()) traversal.asAdmin().reset();
         assertFalse(traversal.hasNext());
         traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));

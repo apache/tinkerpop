@@ -7,11 +7,6 @@ import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
 
-/*import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex*/
 import static org.junit.Assert.*
 
 /**
@@ -26,7 +21,7 @@ class SugarLoaderTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldNotAllowSugar() {
         SugarTestHelper.clearRegistry(graphProvider)
         try {
@@ -58,7 +53,7 @@ class SugarLoaderTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldAllowSugar() {
         SugarLoader.load()
         assertEquals(6, g.V.count.next())
@@ -72,7 +67,7 @@ class SugarLoaderTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldUseTraverserCategoryCorrectly() {
         SugarLoader.load()
         g.V.as('a').out.as('x').name.as('b').back('x').has('age').map { [it.a, it.b, it.age] }.forEach {
@@ -84,7 +79,7 @@ class SugarLoaderTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void performanceTesting() {
         SugarLoader.load()
 

@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -73,7 +73,7 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX() {
-            return g.V().local(__.outE().sample(1).by("weight"));
+            return g.V().local(outE().sample(1).by("weight"));
         }
     }
 
@@ -94,7 +94,7 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX() {
-            return g.V().local(__.outE().sample(1).by("weight")).submit(g.compute());
+            return g.V().local(outE().sample(1).by("weight")).submit(g.compute());
         }
     }
 }

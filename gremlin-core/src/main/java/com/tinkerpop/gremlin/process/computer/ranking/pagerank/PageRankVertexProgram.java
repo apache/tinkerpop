@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
+import com.tinkerpop.gremlin.process.graph.__;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -20,8 +21,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

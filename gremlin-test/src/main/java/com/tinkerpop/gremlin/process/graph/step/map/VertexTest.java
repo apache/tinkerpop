@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.*;
 
 /**

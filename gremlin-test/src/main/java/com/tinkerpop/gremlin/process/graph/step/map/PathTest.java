@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -127,7 +127,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX() {
-            return g.V().repeat(__.out()).times(2).path().by().by("name").by("lang");
+            return g.V().repeat(out()).times(2).path().by().by("name").by("lang");
         }
 
         @Override
@@ -160,7 +160,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX() {
             // TODO: Detached elements do not store properties (attach)
-            return g.V().repeat(__.out()).times(2).path().by().by("name").by("lang");
+            return g.V().repeat(out()).times(2).path().by().by("name").by("lang");
         }
 
         @Override

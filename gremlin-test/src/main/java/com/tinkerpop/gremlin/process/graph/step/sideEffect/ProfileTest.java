@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -174,7 +174,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_repeat_both_profile() {
-            return (Traversal) g.V().repeat(__.both()).times(3).profile();
+            return (Traversal) g.V().repeat(both()).times(3).profile();
         }
 
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_sleep_sleep_profile() {
@@ -213,7 +213,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_repeat_both_profile() {
-            return (Traversal) g.V().repeat(__.both()).times(3).profile().submit(g.compute());
+            return (Traversal) g.V().repeat(both()).times(3).profile().submit(g.compute());
         }
     }
 }

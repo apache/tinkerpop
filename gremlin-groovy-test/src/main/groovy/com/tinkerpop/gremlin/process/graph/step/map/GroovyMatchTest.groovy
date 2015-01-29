@@ -4,9 +4,7 @@ import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Compare
 import com.tinkerpop.gremlin.structure.Vertex
-
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
-
+import com.tinkerpop.gremlin.process.graph.__
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

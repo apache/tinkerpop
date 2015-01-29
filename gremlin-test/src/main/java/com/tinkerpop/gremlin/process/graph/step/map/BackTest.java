@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -195,8 +195,8 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_backXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_backXprojectXX_groupCount_byXnameX() {
             return (Traversal) g.V().out("created")
-                    .union(__.as("project").in("created").has("name", "marko").back("project"),
-                            __.as("project").in("created").in("knows").has("name", "marko").back("project")).groupCount().by("name");
+                    .union(as("project").in("created").has("name", "marko").back("project"),
+                            as("project").in("created").in("knows").has("name", "marko").back("project")).groupCount().by("name");
         }
     }
 
@@ -248,8 +248,8 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_backXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_backXprojectXX_groupCount_byXnameX() {
             return (Traversal) g.V().out("created")
-                    .union(__.as("project").in("created").has("name", "marko").back("project"),
-                            __.as("project").in("created").in("knows").has("name", "marko").back("project")).groupCount().by("name").submit(g.compute());
+                    .union(as("project").in("created").has("name", "marko").back("project"),
+                            as("project").in("created").in("knows").has("name", "marko").back("project")).groupCount().by("name").submit(g.compute());
         }
     }
 }

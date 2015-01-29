@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.fail;
 
 /**
@@ -19,7 +19,7 @@ public abstract class TraversalVerificationStrategyTest extends AbstractGremlinP
         @LoadGraphWith(MODERN)
         public void shouldNotAllowNestedGlobalTraversalToHaveBarriers() {
             try {
-                final GraphTraversal t = g.V().values("age").union(__.max(), __.min(), __.sum()).iterate();
+                final GraphTraversal t = g.V().values("age").union(max(), min(), sum()).iterate();
                 fail("Nested global traversals should not be allowed to contain barriers (STANDARD): " + t);
             } catch (IllegalStateException e) {
 
@@ -40,7 +40,7 @@ public abstract class TraversalVerificationStrategyTest extends AbstractGremlinP
         @LoadGraphWith(MODERN)
         public void shouldNotAllowLocalTraversalsToLeaveTheStarGraphOnComputer() {
             try {
-                g.V().local(__.out().out()).iterate();
+                g.V().local(out().out()).iterate();
             } catch (IllegalStateException e) {
                 fail("Local traversals leaving the star-graph are OK on STANDARD: " + e.getMessage());
             }
@@ -52,7 +52,7 @@ public abstract class TraversalVerificationStrategyTest extends AbstractGremlinP
         @LoadGraphWith(MODERN)
         public void shouldNotAllowNestedGlobalTraversalToHaveBarriers() {
             try {
-                final GraphTraversal t = g.V().values("age").union(__.max(), __.min(), __.sum()).submit(g.compute()).iterate();
+                final GraphTraversal t = g.V().values("age").union(max(), min(), sum()).submit(g.compute()).iterate();
                 fail("Nested global traversals should not be allowed to contain barriers (COMPUTER): " + t);
             } catch (IllegalStateException e) {
 
@@ -81,23 +81,23 @@ public abstract class TraversalVerificationStrategyTest extends AbstractGremlinP
         @LoadGraphWith(MODERN)
         public void shouldNotAllowLocalTraversalsToLeaveTheStarGraphOnComputer() {
             try {
-                g.V().local(__.outE().values("weight")).submit(g.compute()).iterate();
-                g.V().local(__.out().id()).submit(g.compute()).iterate();
-                g.V().local(__.outE().inV()).submit(g.compute()).iterate();
-                g.V().local(__.inE().as("a").values("weight").back("a").outV()).submit(g.compute()).iterate();
+                g.V().local(outE().values("weight")).submit(g.compute()).iterate();
+                g.V().local(out().id()).submit(g.compute()).iterate();
+                g.V().local(outE().inV()).submit(g.compute()).iterate();
+                g.V().local(inE().as("a").values("weight").back("a").outV()).submit(g.compute()).iterate();
             } catch (IllegalStateException e) {
                 fail("Local traversals on the star-graph are OK on COMPUTER: " + e.getMessage());
             }
 
             try {
-                final GraphTraversal t = g.V().local(__.out().out()).submit(g.compute()).iterate();
+                final GraphTraversal t = g.V().local(out().out()).submit(g.compute()).iterate();
                 fail("Local traversals should not be allowed to leave the star-graph (COMPUTER): " + t);
             } catch (IllegalStateException e) {
 
             }
 
             try {
-                final GraphTraversal t = g.V().local(__.out().values("name")).submit(g.compute()).iterate();
+                final GraphTraversal t = g.V().local(out().values("name")).submit(g.compute()).iterate();
                 fail("Local traversals should not be allowed to leave the star-graph (COMPUTER): " + t);
             } catch (IllegalStateException e) {
 

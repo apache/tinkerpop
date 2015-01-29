@@ -1,11 +1,9 @@
 package com.tinkerpop.gremlin.process.graph.step.map
 
 import com.tinkerpop.gremlin.process.Traversal
+import com.tinkerpop.gremlin.process.graph.__
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
-import com.tinkerpop.gremlin.process.graph.step.map.CountTest
 import com.tinkerpop.gremlin.structure.Vertex
-
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

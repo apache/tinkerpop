@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.process.Traverser
-import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
+import com.tinkerpop.gremlin.process.graph.__
 import com.tinkerpop.gremlin.process.util.TraversalHelper
 import com.tinkerpop.gremlin.structure.*
 
@@ -15,26 +15,27 @@ class SugarLoader {
 
         GremlinLoader.load();
 
-        [Traverser].forEach {
-            it.metaClass.getProperty = { final String key ->
-                TraverserCategory.get((Traverser) delegate, key);
-            }
-            // g.V.map{it.label()}
-            it.metaClass.methodMissing = { final String name, final def args ->
-                ((Traverser) delegate).get()."$name"(*args);
-            }
+        Traverser.metaClass.getProperty = { final String key ->
+            TraverserCategory.get((Traverser) delegate, key);
         }
-
-        [GraphTraversal, AnonymousGraphTraversal].forEach {
-            // g.V.age
-            it.metaClass.methodMissing = { final String name, final def args ->
-                delegate.values(name);
-            }
+        // g.V.map{it.label()}
+        Traverser.metaClass.methodMissing = { final String name, final def args ->
+            ((Traverser) delegate).get()."$name"(*args);
         }
+        // g.V.age
+        GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
+            delegate.values(name);
+        }
+        // __.age and __.out
+        __.metaClass.static.propertyMissing = { final String name ->
+            return null != __.metaClass.getMetaMethod(name) ? __."$name"() : __.values(name);
+        }
+        /*Object.metaClass.propertyMissing = { final String name ->
+            __."$name"();
+        }*/
 
         Traverser.metaClass.mixin(TraverserCategory.class);
         GraphTraversal.metaClass.mixin(GraphTraversalCategory.class);
-        AnonymousGraphTraversal.Tokens.metaClass.mixin(AnonymousGraphTraversalTokensCategory.class);
         Graph.metaClass.mixin(GraphCategory.class);
         Vertex.metaClass.mixin(VertexCategory.class);
         Edge.metaClass.mixin(ElementCategory.class);
@@ -114,22 +115,22 @@ class SugarLoader {
         }
     }
 
-    public static class AnonymousGraphTraversalTokensCategory {
+    /*public static class __Category {
 
-        public static final get(final AnonymousGraphTraversal.Tokens token, final String key) {
-            token."$key"()
+        public static final get(final __ anonymousTraversal, final String key) {
+            anonymousTraversal."$key"()
         }
 
-        public static final getAt(final AnonymousGraphTraversal.Tokens token, final Integer index) {
-            token.range(index, index + 1);
+        public static final getAt(final __ anonymousTraversal, final Integer index) {
+            anonymousTraversal.range(index, index + 1);
         }
 
-        public static final getAt(final AnonymousGraphTraversal.Tokens token, final Range range) {
-            token.range(range.getFrom() as Integer, range.getTo() as Integer);
+        public static final getAt(final __ anonymousTraversal, final Range range) {
+            anonymousTraversal.range(range.getFrom() as Integer, range.getTo() as Integer);
         }
 
         public String toString() {
             return TraversalHelper.makeTraversalString(this.metaClass.owner);
         }
-    }
+    }*/
 }

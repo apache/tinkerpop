@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
+import static com.tinkerpop.gremlin.process.graph.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -69,7 +69,7 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Float> get_g_V_withSackX0X_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-            return g.V().withSack(() -> 0.0f).repeat(__.outE().sack(Operator.sum, "weight").inV()).times(2).sack();
+            return g.V().withSack(() -> 0.0f).repeat(outE().sack(Operator.sum, "weight").inV()).times(2).sack();
         }
 
         @Override
@@ -93,7 +93,7 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Float> get_g_V_withSackX0X_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-            return g.V().withSack(() -> 0.0f).repeat(__.outE().sack(Operator.sum, "weight").inV()).times(2).<Float>sack().submit(g.compute());
+            return g.V().withSack(() -> 0.0f).repeat(outE().sack(Operator.sum, "weight").inV()).times(2).<Float>sack().submit(g.compute());
         }
 
         @Override

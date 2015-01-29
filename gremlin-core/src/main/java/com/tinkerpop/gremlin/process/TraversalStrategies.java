@@ -1,8 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.__;
 import com.tinkerpop.gremlin.process.graph.strategy.ComparatorHolderRemovalStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.TraversalVerificationStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.DedupOptimizerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.EngineDependentStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.IdentityRemovalStrategy;
@@ -12,6 +11,7 @@ import com.tinkerpop.gremlin.process.graph.strategy.ProfileStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.ReducingStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectRegistrationStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.TraversalVerificationStrategy;
 import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -163,7 +163,7 @@ public interface TraversalStrategies extends Cloneable {
                 CACHE.put(Vertex.class, coreStrategies.clone());
                 CACHE.put(Edge.class, coreStrategies.clone());
                 CACHE.put(VertexProperty.class, coreStrategies.clone());
-                CACHE.put(AnonymousGraphTraversal.class, new DefaultTraversalStrategies());
+                CACHE.put(__.class, new DefaultTraversalStrategies());
             } catch (final CloneNotSupportedException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -176,8 +176,8 @@ public interface TraversalStrategies extends Cloneable {
         public static TraversalStrategies getStrategies(final Class emanatingClass) {
             final TraversalStrategies traversalStrategies = CACHE.get(emanatingClass);
             if (null == traversalStrategies) {
-                if (AnonymousGraphTraversal.class.isAssignableFrom(emanatingClass))
-                    return CACHE.get(AnonymousGraphTraversal.class);
+                if (__.class.isAssignableFrom(emanatingClass))
+                    return CACHE.get(__.class);
                 else if (Graph.class.isAssignableFrom(emanatingClass))
                     return CACHE.get(Graph.class);
                 else if (Vertex.class.isAssignableFrom(emanatingClass))
