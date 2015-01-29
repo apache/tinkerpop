@@ -24,7 +24,7 @@ class SugarLoader {
         }
         // g.V.age
         GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
-            delegate.values(name);
+            ((GraphTraversal)delegate).values(name);
         }
         // __.age and __.out
         __.metaClass.static.propertyMissing = { final String name ->

@@ -48,6 +48,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.aggregate(arg0);
 	}
 
+	public default Neo4jGraphTraversal<A, A> and(com.tinkerpop.gremlin.process.Traversal<A, ?>... arg0) {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.and(arg0);
+	}
+
 	public default Neo4jGraphTraversal<A, A> as(java.lang.String arg0) {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.as(arg0);
 	}
@@ -262,6 +266,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 
 	public default <E2 extends Number> Neo4jGraphTraversal<A, E2> min() {
 		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.min();
+	}
+
+	public default Neo4jGraphTraversal<A, A> or(com.tinkerpop.gremlin.process.Traversal<A, ?>... arg0) {
+		return (Neo4jGraphTraversal) com.tinkerpop.gremlin.process.graph.ElementTraversal.super.or(arg0);
 	}
 
 	public default Neo4jGraphTraversal<A, A> order() {

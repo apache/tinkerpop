@@ -19,6 +19,7 @@ import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.LocalStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.AndStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.CoinStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
@@ -27,6 +28,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasTraversalStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IsStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.OrStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.SampleStep;
@@ -319,6 +321,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(filterStep);
     }
 
+    public default GraphTraversal<S, E> or(final Traversal<E, ?>... orTraversals) {
+        return this.asAdmin().addStep(new OrStep<>(this, orTraversals));
+    }
+
+    public default GraphTraversal<S, E> and(final Traversal<E, ?>... andTraversals) {
+        return this.asAdmin().addStep(new AndStep<>(this, andTraversals));
+    }
+
     public default GraphTraversal<S, E> inject(final E... injections) {
         return this.asAdmin().addStep(new InjectStep<>(this, injections));
     }
@@ -388,11 +398,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> is(final Object value) {
-        return this.asAdmin().addStep(new IsStep<>(this, Compare.eq, value));
+        return this.is(Compare.eq, value);
     }
 
     public default GraphTraversal<S, E> is(final BiPredicate predicate, final Object value) {
-        return this.asAdmin().addStep(new IsStep<>(this, predicate, value));
+        return this.asAdmin().addStep(new IsStep(this, predicate, value));
     }
 
     public default GraphTraversal<S, E> coin(final double probability) {

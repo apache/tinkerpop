@@ -214,6 +214,14 @@ public class __ {
         return __.<A>start().filter(predicate);
     }
 
+    public static <A> GraphTraversal<A, A> and(final Traversal<A, ?>... andTraversals) {
+        return __.<A>start().and(andTraversals);
+    }
+
+    public static <A> GraphTraversal<A, A> or(final Traversal<A, ?>... orTraversals) {
+        return __.<A>start().or(orTraversals);
+    }
+
     public static <A> GraphTraversal<A, A> inject(final Object... injections) {
         return __.<A>start().inject((A[]) injections);
     }
