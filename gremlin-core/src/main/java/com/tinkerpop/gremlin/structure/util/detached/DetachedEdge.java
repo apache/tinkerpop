@@ -44,9 +44,16 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
         super(edge);
         this.outVertex = DetachedFactory.detach(edge.iterators().vertexIterator(Direction.OUT).next(), false);
         this.inVertex = DetachedFactory.detach(edge.iterators().vertexIterator(Direction.IN).next(), false);
+
+        // only serialize properties if requested, the graph supports it and there are meta properties present.
+        // this prevents unnecessary object creation of a new HashMap of a new HashMap which will just be empty.
+        // it will use Collections.emptyMap() by default
         if (withProperties) {
-            this.properties = new HashMap<>();
-            edge.iterators().propertyIterator().forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
+            final Iterator<Property<Object>> propertyIterator = edge.iterators().propertyIterator();
+            if (propertyIterator.hasNext()) {
+                this.properties = new HashMap<>();
+                propertyIterator.forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
+            }
         }
     }
 

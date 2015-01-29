@@ -30,9 +30,15 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
         this.value = vertexProperty.value();
         this.vertex = DetachedFactory.detach(vertexProperty.element(), false);
 
+        // only serialize properties if requested, the graph supports it and there are meta properties present.
+        // this prevents unnecessary object creation of a new HashMap which will just be empty.  it will use
+        // Collections.emptyMap() by default
         if (withProperties && vertexProperty.graph().features().vertex().supportsMetaProperties()) {
-            this.properties = new HashMap<>();
-            vertexProperty.iterators().propertyIterator().forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
+            final Iterator<Property<Object>> propertyIterator = vertexProperty.iterators().propertyIterator();
+            if (propertyIterator.hasNext()) {
+                this.properties = new HashMap<>();
+                propertyIterator.forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
+            }
         }
     }
 
