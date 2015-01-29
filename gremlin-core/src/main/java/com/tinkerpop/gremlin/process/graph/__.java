@@ -30,6 +30,9 @@ import java.util.function.UnaryOperator;
  */
 public class __ {
 
+    private __() {
+    }
+
     //////////////////////////////////////////////////////////////////////
 
     private static <A> GraphTraversal<A, A> start() {
