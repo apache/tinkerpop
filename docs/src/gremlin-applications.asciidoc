@@ -839,24 +839,6 @@ The Utilities Plugin provides various functions, helper methods and imports of e
 
 NOTE: The Utilities Plugin is enabled in the Gremlin Console by default.
 
-[[clock]]
-Clock
-^^^^^
-
-The `clock` function provides a simple way to time how long it takes to execute a traversal (or any other code within the closure passed to it). By default, the `clock` function will execute the contents of the closure one hundred times and calculate the average time taken per execution.  `clock` can take an optional integer parameter to override number of times to execute the closure contents.
-
-[source,groovy]
-----
-gremlin> :plugin use tinkerpop.utilities
-==>tinkerpop.utilities activated
-gremlin> g = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> clock{g.V().both().both().both().iterate()}
-==>0.6182899999999999
-gremlin> clock(1000){g.V().both().both().both().iterate()}
-==>0.23745999999999978
-----
-
 [[benchmarking-and-profiling]]
 Benchmarking and Profiling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
