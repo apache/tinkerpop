@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `IsStep` / `.is()` that allows filtering of scalar values.
 * Added `Compare.inside` and `Compare.outside` for testing ranges. Removed `between()` as now its `has('age',inside,[10,30])`.
 * `GraphTraversal.has()` no longer requires the element type to be cast in the traversal definition.
 * Fixed a `ConcurrentModificationException` bug in TinkerGraph that occurred when doing full vertex/edge scans and removing elements along the way.
