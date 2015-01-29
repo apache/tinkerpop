@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.LocalTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.AndTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CoinTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
@@ -16,6 +17,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.IsTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.OrTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SampleTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
@@ -93,6 +95,8 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             UnionTest.ComputerTest.class,
 
             // filter
+            AndTest.ComputerTest.class,
+            CoinTest.ComputerTest.class,
             CyclicPathTest.ComputerTest.class,
             // TODO: DedupTest.ComputerTest.class
             ExceptTest.ComputerTest.class,
@@ -100,7 +104,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             HasNotTest.ComputerTest.class,
             HasTest.ComputerTest.class,
             IsTest.ComputerTest.class,
-            CoinTest.ComputerTest.class,
+            OrTest.ComputerTest.class,
             // TODO: RangeTest.ComputerTest.class,
             RetainTest.ComputerTest.class,
             SampleTest.ComputerTest.class,
@@ -166,6 +170,8 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             UnionTest.class,
 
             // filter
+            AndTest.class,
+            CoinTest.class,
             CyclicPathTest.class,
             // DedupTest.class,
             ExceptTest.class,
@@ -173,7 +179,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             HasNotTest.class,
             HasTest.class,
             IsTest.class,
-            CoinTest.class,
+            OrTest.class,
             // RangeTest.class,
             RetainTest.class,
             SampleTest.class,

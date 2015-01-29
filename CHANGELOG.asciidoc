@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `AndStep` and `OrStep` filters to support arbitrary conjunction of traversals.
 * `__` is now a class with static `GraphTraversal` methods and thus `repeat(out())` is possible.
 * Added `IsStep` / `.is()` that allows filtering of scalar values.
 * Added `Compare.inside` and `Compare.outside` for testing ranges. Removed `between()` as now its `has('age',inside,[10,30])`.

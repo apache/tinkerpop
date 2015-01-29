@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -125,7 +126,10 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V(2).union(outE().count(), inE().count(), (Traversal) outE().values("weight").sum());
+        Traversal t = g.V().or(
+                has("age", Compare.gt, 27),
+                outE().count().is(Compare.gte, 2l)).
+                    values("name");
         System.out.println(t.toString());
         t.forEachRemaining(System.out::println);
         System.out.println(t.toString());

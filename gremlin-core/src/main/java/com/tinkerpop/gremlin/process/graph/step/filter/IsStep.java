@@ -12,11 +12,11 @@ import java.util.function.BiPredicate;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class IsStep<S> extends FilterStep<S> implements Reversible {
+public final class IsStep<S> extends FilterStep<S> implements Reversible {
 
     private final Object value;
 
-    public IsStep(final Traversal traversal, final BiPredicate<S,Object> predicate, final Object value) {
+    public IsStep(final Traversal traversal, final BiPredicate<S, Object> predicate, final Object value) {
         super(traversal);
         this.value = value;
         this.setPredicate(traverser -> predicate.test(traverser.get(), this.value));

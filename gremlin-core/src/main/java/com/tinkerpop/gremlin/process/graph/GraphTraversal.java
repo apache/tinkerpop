@@ -321,12 +321,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(filterStep);
     }
 
-    public default GraphTraversal<S, E> or(final Traversal<E, ?>... orTraversals) {
-        return this.asAdmin().addStep(new OrStep<>(this, orTraversals));
+    public default GraphTraversal<S, E> or(final Traversal<?, ?>... orTraversals) {
+        return this.asAdmin().addStep(new OrStep(this, orTraversals));
     }
 
-    public default GraphTraversal<S, E> and(final Traversal<E, ?>... andTraversals) {
-        return this.asAdmin().addStep(new AndStep<>(this, andTraversals));
+    public default GraphTraversal<S, E> and(final Traversal<?, ?>... andTraversals) {
+        return this.asAdmin().addStep(new AndStep(this, andTraversals));
     }
 
     public default GraphTraversal<S, E> inject(final E... injections) {

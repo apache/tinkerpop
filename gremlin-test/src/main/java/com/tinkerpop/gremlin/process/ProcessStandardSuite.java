@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.LocalTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.RepeatTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.AndTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CoinTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupTest;
@@ -14,6 +15,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.IsTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.OrTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RangeTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SampleTest;
@@ -92,6 +94,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             UnionTest.StandardTest.class,
 
             // filter
+            AndTest.StandardTest.class,
+            CoinTest.StandardTest.class,
             CyclicPathTest.StandardTest.class,
             DedupTest.StandardTest.class,
             ExceptTest.StandardTest.class,
@@ -99,7 +103,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             HasNotTest.StandardTest.class,
             HasTest.StandardTest.class,
             IsTest.StandardTest.class,
-            CoinTest.StandardTest.class,
+            OrTest.StandardTest.class,
             RangeTest.StandardTest.class,
             RetainTest.StandardTest.class,
             SampleTest.StandardTest.class,
@@ -164,6 +168,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             UnionTest.class,
 
             // filter
+            AndTest.class,
+            CoinTest.class,
             CyclicPathTest.class,
             DedupTest.class,
             ExceptTest.class,
@@ -171,7 +177,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             HasNotTest.class,
             HasTest.class,
             IsTest.class,
-            CoinTest.class,
+            OrTest.class,
             RangeTest.class,
             RetainTest.class,
             SampleTest.class,

@@ -186,11 +186,11 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().filter(predicate);
     }
 
-    public default GraphTraversal<A, A> and(final Traversal<A, ?>... andTraversals) {
+    public default GraphTraversal<A, A> and(final Traversal<?, ?>... andTraversals) {
         return this.start().and(andTraversals);
     }
 
-    public default GraphTraversal<A, A> or(final Traversal<A, ?>... orTraversals) {
+    public default GraphTraversal<A, A> or(final Traversal<?, ?>... orTraversals) {
         return this.start().or(orTraversals);
     }
 
