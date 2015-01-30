@@ -39,13 +39,13 @@ import java.util.stream.Stream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Pieter Martin
  */
-public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
+public class Neo4jGraphStep<S extends Element> extends GraphStep<S> {
 
     public final List<HasContainer> hasContainers = new ArrayList<>();
 
-    public Neo4jGraphStep(final Traversal traversal, final Neo4jGraph graph, final Class<E> returnClass, final Object... ids) {
+    public Neo4jGraphStep(final Traversal traversal, final Neo4jGraph graph, final Class<S> returnClass, final Object... ids) {
         super(traversal, graph, returnClass, ids);
-        this.setIteratorSupplier(() -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
+        this.setIteratorSupplier(() -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
     }
 
     private Iterator<? extends Edge> edges() {

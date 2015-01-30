@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -43,22 +42,25 @@ public class StartStep<S> extends AbstractStep<S, S> implements Reversible {
         return TraversalHelper.makeStepString(this, this.start);
     }
 
-    public void generateTraversers(final TraverserGenerator traverserGenerator) {
-        if (null != this.start) {
-            if (this.start instanceof Iterator) {
-                this.starts.add(traverserGenerator.generateIterator((Iterator<S>) this.start, this, 1l));
-            } else {
-                this.starts.add(traverserGenerator.generate((S) this.start, this, 1l));
-            }
-        }
-    }
-
     @Override
     protected Traverser<S> processNextStart() {
         if (this.first) {
-            this.generateTraversers(this.getTraversal().asAdmin().getTraverserGenerator());
+            if (null != this.start) {
+                if (this.start instanceof Iterator)
+                    this.starts.add(this.getTraversal().asAdmin().getTraverserGenerator().generateIterator((Iterator<S>) this.start, this, 1l));
+                else
+                    this.starts.add(this.getTraversal().asAdmin().getTraverserGenerator().generate((S) this.start, this, 1l));
+            }
             this.first = false;
         }
         return this.starts.next();
+    }
+
+    @Override
+    public StartStep<S> clone() throws CloneNotSupportedException {
+        final StartStep<S> clone = (StartStep<S>) super.clone();
+        clone.first = true;
+        clone.start = null;
+        return clone;
     }
 }

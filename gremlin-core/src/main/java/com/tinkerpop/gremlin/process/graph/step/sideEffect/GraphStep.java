@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.TraverserGenerator;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -18,19 +18,19 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphStep<E extends Element> extends StartStep<E> implements EngineDependent {
+public class GraphStep<S extends Element> extends StartStep<S> implements EngineDependent {
 
-    protected final Class<E> returnClass;
+    protected final Class<S> returnClass;
     protected final Object[] ids;
     protected final Graph graph;
-    protected Supplier<Iterator<E>> iteratorSupplier;
+    protected Supplier<Iterator<S>> iteratorSupplier;
 
-    public GraphStep(final Traversal traversal, final Graph graph, final Class<E> returnClass, final Object... ids) {
+    public GraphStep(final Traversal traversal, final Graph graph, final Class<S> returnClass, final Object... ids) {
         super(traversal);
         this.graph = graph;
         this.returnClass = returnClass;
         this.ids = ids;
-        this.setIteratorSupplier(() -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ?
+        this.setIteratorSupplier(() -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ?
                 this.graph.iterators().vertexIterator(this.ids) :
                 this.graph.iterators().edgeIterator(this.ids)));
     }
@@ -47,11 +47,11 @@ public class GraphStep<E extends Element> extends StartStep<E> implements Engine
         return Edge.class.isAssignableFrom(this.returnClass);
     }
 
-    public Class<E> getReturnClass() {
+    public Class<S> getReturnClass() {
         return this.returnClass;
     }
 
-    public void setIteratorSupplier(final Supplier<Iterator<E>> iteratorSupplier) {
+    public void setIteratorSupplier(final Supplier<Iterator<S>> iteratorSupplier) {
         this.iteratorSupplier = iteratorSupplier;
     }
 
@@ -64,20 +64,14 @@ public class GraphStep<E extends Element> extends StartStep<E> implements Engine
     }
 
     @Override
-    public void generateTraversers(final TraverserGenerator traverserGenerator) {
-        try {
-            this.start = this.iteratorSupplier.get();
-            super.generateTraversers(traverserGenerator);
-            // TODO: rjbriod - is this catch necessary even with profiling removed?
-        } catch (final Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+    public void onEngine(final TraversalEngine traversalEngine) {
+        if (traversalEngine.equals(TraversalEngine.COMPUTER))
+            this.setIteratorSupplier(Collections::emptyIterator);
     }
 
     @Override
-    public void onEngine(final TraversalEngine traversalEngine) {
-        if (traversalEngine.equals(TraversalEngine.COMPUTER)) {
-            this.setIteratorSupplier(Collections::emptyIterator);
-        }
+    protected Traverser<S> processNextStart() {
+        if (this.first) this.start = this.iteratorSupplier.get();
+        return super.processNextStart();
     }
 }

@@ -20,15 +20,15 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
+public class TinkerGraphStep<S extends Element> extends GraphStep<S> {
 
     public final List<HasContainer> hasContainers = new ArrayList<>();
 
-    public TinkerGraphStep(final GraphStep<E> originalGraphStep) {
+    public TinkerGraphStep(final GraphStep<S> originalGraphStep) {
         super(originalGraphStep.getTraversal(), originalGraphStep.getGraph(TinkerGraph.class), originalGraphStep.getReturnClass(), originalGraphStep.getIds());
         if (originalGraphStep.getLabel().isPresent())
             this.setLabel(originalGraphStep.getLabel().get());
-        this.setIteratorSupplier(() -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
+        this.setIteratorSupplier(() -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
     }
 
     private Iterator<? extends Edge> edges() {
