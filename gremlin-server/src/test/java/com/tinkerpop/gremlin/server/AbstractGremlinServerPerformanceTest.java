@@ -53,7 +53,7 @@ public abstract class AbstractGremlinServerPerformanceTest {
                     logger.error("Could not stop Gremlin Server for performance tests", ex);
                 }
             }
-        }).start();
+        }, "performance-test-server-startup").start();
 
         // block until gremlin server gets off the ground
         logger.info("Performance test waiting for server to start up");

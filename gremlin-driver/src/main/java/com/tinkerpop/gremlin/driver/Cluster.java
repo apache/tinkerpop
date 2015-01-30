@@ -355,7 +355,7 @@ public class Cluster {
         private final EventLoopGroup group;
 
         public Factory(final int nioPoolSize) {
-            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-driver-nio-%d").build();
+            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-driver-loop-%d").build();
             group = new NioEventLoopGroup(nioPoolSize, threadFactory);
         }
 

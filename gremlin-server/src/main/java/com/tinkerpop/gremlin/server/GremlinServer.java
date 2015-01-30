@@ -41,6 +41,8 @@ public class GremlinServer {
         InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
     }
 
+    private static final String SERVER_THREAD_PREFIX = "gremlin-server-";
+
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
     private final Settings settings;
     private Optional<Graphs> graphs = Optional.empty();
@@ -56,13 +58,16 @@ public class GremlinServer {
     public GremlinServer(final Settings settings) {
         this.settings = settings;
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.stop().join(), "gremlin-shutdown-hook"));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.stop().join(), SERVER_THREAD_PREFIX + "shutdown"));
 
-        bossGroup = new NioEventLoopGroup(settings.threadPoolBoss);
-        workerGroup = new NioEventLoopGroup(settings.threadPoolWorker);
+        final BasicThreadFactory threadFactoryBoss = new BasicThreadFactory.Builder().namingPattern(SERVER_THREAD_PREFIX + "boss-%d").build();
+        bossGroup = new NioEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
 
-        final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-%d").build();
-        gremlinExecutorService = Executors.newFixedThreadPool(settings.gremlinPool, threadFactory);
+        final BasicThreadFactory threadFactoryWorker = new BasicThreadFactory.Builder().namingPattern(SERVER_THREAD_PREFIX + "worker-%d").build();
+        workerGroup = new NioEventLoopGroup(settings.threadPoolWorker, threadFactoryWorker);
+
+        final BasicThreadFactory threadFactoryGremlin = new BasicThreadFactory.Builder().namingPattern(SERVER_THREAD_PREFIX + "exec-%d").build();
+        gremlinExecutorService = Executors.newFixedThreadPool(settings.gremlinPool, threadFactoryGremlin);
     }
 
     /**
@@ -222,7 +227,7 @@ public class GremlinServer {
 
             logger.info("Gremlin Server - shutdown complete");
             serverStopped.complete(null);
-        }, "gremlin-server-graph-close").start();
+        }, SERVER_THREAD_PREFIX + "stop").start();
 
         return serverStopped;
     }
