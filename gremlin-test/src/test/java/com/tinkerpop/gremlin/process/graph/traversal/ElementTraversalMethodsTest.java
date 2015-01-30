@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph;
+package com.tinkerpop.gremlin.process.graph.traversal;
 
 import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -19,6 +19,27 @@ import static org.junit.Assert.fail;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class ElementTraversalMethodsTest {
+
+    @Test
+    public void shouldHaveAllGraphTraversalMethodsOff__() {
+        final List<Method> graphTraversalMethods = Arrays.asList(GraphTraversal.class.getMethods()).stream()
+                .filter(m -> !Modifier.isStatic(m.getModifiers()))
+                .filter(m -> !m.getName().equals("by"))
+                .filter(m -> !m.getName().equals("option"))
+                .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
+
+        final List<Method> vertexMethods = new ArrayList<>(Arrays.asList(__.class.getMethods()));
+
+        final List<Method> nonExistent = graphTraversalMethods.stream()
+                .filter(m -> !existsInList(m, vertexMethods))
+                .collect(Collectors.toList());
+        if (nonExistent.size() > 0) {
+            for (Method method : nonExistent) {
+                System.out.println("Requirement implementation: " + method);
+            }
+            fail("The following methods are not implemented by __: " + nonExistent);
+        }
+    }
 
     @Test
     public void shouldHaveAllGraphTraversalMethodsOffVertex() {

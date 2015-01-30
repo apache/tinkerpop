@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategyTest;
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversalCoverageTest;
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.BranchTest;
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.LocalTest;
@@ -146,9 +145,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // algorithms
             PageRankVertexProgramTest.class,
 
-            // compliance
-            GraphTraversalCoverageTest.class,
-
             // strategy
             ComputerDataStrategyTest.class,
 
@@ -223,9 +219,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // algorithms
             PageRankVertexProgramTest.class,
-
-            // compliance
-            GraphTraversalCoverageTest.class,
 
             // strategy
             ComputerDataStrategyTest.class,

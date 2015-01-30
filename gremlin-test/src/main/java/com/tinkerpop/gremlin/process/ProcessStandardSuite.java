@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversalCoverageTest;
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.BranchTest;
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.LocalTest;
@@ -148,7 +147,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             TraversalSideEffectsTest.StandardTest.class,
 
             // compliance
-            GraphTraversalCoverageTest.class,
             CoreTraversalTest.class,
             PathTest.class,
 
@@ -221,7 +219,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             TraversalSideEffectsTest.class,
 
             // compliance
-            GraphTraversalCoverageTest.class,
             CoreTraversalTest.class,
             PathTest.class,
 

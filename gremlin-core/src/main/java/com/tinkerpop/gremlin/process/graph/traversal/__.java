@@ -456,8 +456,16 @@ public class __ {
         return __.<A>start().repeat(traversal);
     }
 
+    public static <A> GraphTraversal<A, A> emit(final Traversal<?, ?> emitTraversal) {
+        return __.<A>start().emit(emitTraversal);
+    }
+
     public static <A> GraphTraversal<A, A> emit(final Predicate<Traverser<A>> emitPredicate) {
         return __.<A>start().emit(emitPredicate);
+    }
+
+    public static <A> GraphTraversal<A, A> until(final Traversal<?, ?> untilTraversal) {
+        return __.<A>start().until(untilTraversal);
     }
 
     public static <A> GraphTraversal<A, A> until(final Predicate<Traverser<A>> untilPredicate) {
