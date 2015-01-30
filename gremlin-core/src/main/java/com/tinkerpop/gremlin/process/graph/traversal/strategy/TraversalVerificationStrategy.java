@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.SupplyingBarrierStep;

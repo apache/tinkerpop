@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.branch;
 import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -21,7 +21,7 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
     private Traversal.Admin<S, E> localTraversal;
     private boolean first = true;
 
-    public LocalStep(final Traversal traversal, final Traversal.Admin<S, E> localTraversal) {
+    public LocalStep(final Traversal.Admin traversal, final Traversal.Admin<S, E> localTraversal) {
         super(traversal);
         this.integrateChild(this.localTraversal = localTraversal, TYPICAL_GLOBAL_OPERATIONS);
     }

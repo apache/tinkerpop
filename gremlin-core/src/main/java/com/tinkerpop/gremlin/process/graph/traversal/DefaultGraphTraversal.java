@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.traversal.DefaultTraversal;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implements GraphTraversal<S, E>, GraphTraversal.Admin<S, E> {
+public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implements GraphTraversal.Admin<S, E> {
 
     public DefaultGraphTraversal(final Class emanatingClass) {
         super(emanatingClass);
@@ -18,6 +18,6 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
 
     @Override
     public GraphTraversal<S, E> iterate() {
-        return GraphTraversal.super.iterate();
+        return GraphTraversal.Admin.super.iterate();
     }
 }

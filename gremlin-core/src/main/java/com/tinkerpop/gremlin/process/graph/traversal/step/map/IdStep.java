@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public final class IdStep<S extends Element> extends MapStep<S, Object> {
 
-    public IdStep(final Traversal traversal) {
+    public IdStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setFunction(traverser -> traverser.get().id());
     }

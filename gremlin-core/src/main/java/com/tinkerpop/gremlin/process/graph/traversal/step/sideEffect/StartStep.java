@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -17,12 +17,12 @@ public class StartStep<S> extends AbstractStep<S, S> implements Reversible {
     protected Object start;
     protected boolean first = true;
 
-    public StartStep(final Traversal traversal, final Object start) {
+    public StartStep(final Traversal.Admin traversal, final Object start) {
         super(traversal);
         this.start = start;
     }
 
-    public StartStep(final Traversal traversal) {
+    public StartStep(final Traversal.Admin traversal) {
         this(traversal, null);
     }
 

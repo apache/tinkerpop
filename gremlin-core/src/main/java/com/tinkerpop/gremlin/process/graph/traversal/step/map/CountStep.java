@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.Reducing;
+import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
@@ -17,7 +17,7 @@ public final class CountStep<S> extends ReducingBarrierStep<S, Long> implements 
 
     private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(TraverserRequirement.BULK));
 
-    public CountStep(final Traversal traversal) {
+    public CountStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(() -> 0l);
         this.setBiFunction((seed, start) -> seed + start.bulk());

@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.List;
@@ -85,12 +85,12 @@ public final class HasNextTraversal<S> implements Traversal.Admin<S, Boolean> {
     }
 
     @Override
-    public <S2, E2> Traversal<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
+    public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
         return this.hasNextTraversal.addStep(index, step);
     }
 
     @Override
-    public <S2, E2> Traversal<S2, E2> removeStep(int index) throws IllegalStateException {
+    public <S2, E2> Traversal.Admin<S2, E2> removeStep(int index) throws IllegalStateException {
         return null;
     }
 

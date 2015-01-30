@@ -17,7 +17,7 @@ public class CollectingBarrierStep<S> extends AbstractStep<S, S> {
     private TraverserSet<S> traverserSet = new TraverserSet<>();
     private Consumer<TraverserSet<S>> barrierConsumer;
 
-    public CollectingBarrierStep(final Traversal traversal) {
+    public CollectingBarrierStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 

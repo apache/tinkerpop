@@ -49,7 +49,7 @@ public class GiraphMessenger<M> implements Messenger<M> {
     }
 
     private static <T extends Traversal.Admin<Vertex, Edge>> T setVertexStart(final Traversal<Vertex, Edge> incidentTraversal, final Vertex vertex) {
-        incidentTraversal.asAdmin().addStep(0, new StartStep<>(incidentTraversal, vertex));
+        incidentTraversal.asAdmin().addStep(0, new StartStep<>(incidentTraversal.asAdmin(), vertex));
         return (T) incidentTraversal;
     }
 

@@ -3,11 +3,11 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
+import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.TreeMapReduce;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -26,7 +26,7 @@ public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRe
     private TraversalRing<Object, Object> traversalRing;
     private String sideEffectKey;
 
-    public TreeStep(final Traversal traversal, final String sideEffectKey) {
+    public TreeStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         this.traversalRing = new TraversalRing<>();

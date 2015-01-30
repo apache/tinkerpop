@@ -4,12 +4,12 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
-import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.EngineDependent;
+import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
+import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.GroupMapReduce;
 import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -37,7 +37,7 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     private boolean onGraphComputer = false;
     private Map<K, Collection<V>> tempGroupByMap;
 
-    public GroupStep(final Traversal traversal, final String sideEffectKey) {
+    public GroupStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         GroupStep.generateConsumer(this);

@@ -5,8 +5,8 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.ProfileMapReduce;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.util.metric.StandardTraversalMetrics;
@@ -21,12 +21,12 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements Reversib
 
     private final String name;
 
-    public ProfileStep(final Traversal traversal) {
+    public ProfileStep(final Traversal.Admin traversal) {
         super(traversal);
         this.name = null;
     }
 
-    public ProfileStep(final Traversal<?, ?> traversal, final Step step) {
+    public ProfileStep(final Traversal.Admin traversal, final Step step) {
         super(traversal);
         this.name = step.toString();
     }

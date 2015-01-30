@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.traversal;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,8 +20,7 @@ public final class TraversalMatrix<S, E> {
     private final Traversal.Admin<S, E> traversal;
 
     public TraversalMatrix(final Traversal.Admin<S, E> traversal) {
-        this.traversal = traversal;
-        this.harvestSteps(this.traversal.asAdmin());
+        this.harvestSteps(this.traversal = traversal);
     }
 
     public <A, B, C extends Step<A, B>> C getStepById(final String stepId) {
@@ -35,8 +35,8 @@ public final class TraversalMatrix<S, E> {
         for (final Step<?, ?> step : traversal.getSteps()) {
             this.matrix.put(step.getId(), step);
             if (step instanceof TraversalParent) {
-                for (final Traversal<?, ?> nest : ((TraversalParent) step).getGlobalChildren()) {
-                    this.harvestSteps(nest.asAdmin());
+                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
+                    this.harvestSteps(globalChild);
                 }
             }
         }

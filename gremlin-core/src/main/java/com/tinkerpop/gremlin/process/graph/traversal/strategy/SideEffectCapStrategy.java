@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
 import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 
 import java.util.Collections;

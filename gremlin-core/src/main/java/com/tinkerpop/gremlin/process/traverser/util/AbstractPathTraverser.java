@@ -31,7 +31,7 @@ public abstract class AbstractPathTraverser<T> implements Traverser<T>, Traverse
 
     public AbstractPathTraverser(final T t, final Step<T, ?> step) {
         this.t = t;
-        this.sideEffects = step.getTraversal().asAdmin().getSideEffects();
+        this.sideEffects = step.getTraversal().getSideEffects();
         this.sideEffects.getSackInitialValue().ifPresent(supplier -> this.sack = supplier.get());
     }
 

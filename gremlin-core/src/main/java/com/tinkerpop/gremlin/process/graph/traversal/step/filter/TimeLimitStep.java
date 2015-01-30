@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -20,7 +20,7 @@ public final class TimeLimitStep<S> extends FilterStep<S> implements Reversible 
     private AtomicBoolean timedOut = new AtomicBoolean(false);
 
 
-    public TimeLimitStep(final Traversal traversal, final long timeLimit) {
+    public TimeLimitStep(final Traversal.Admin traversal, final long timeLimit) {
         super(traversal);
         this.timeLimit = timeLimit;
         TimeLimitStep.generatePredicate(this);

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Collections;
@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public final class CyclicPathStep<S> extends FilterStep<S> implements Reversible {
 
-    public CyclicPathStep(final Traversal traversal) {
+    public CyclicPathStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setPredicate(traverser -> !traverser.path().isSimple());
     }

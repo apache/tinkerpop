@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -18,7 +18,7 @@ public final class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements R
 
     private Direction direction;
 
-    public EdgeVertexStep(final Traversal traversal, final Direction direction) {
+    public EdgeVertexStep(final Traversal.Admin traversal, final Direction direction) {
         super(traversal);
         this.direction = direction;
         this.setFunction(traverser -> traverser.get().iterators().vertexIterator(this.direction));

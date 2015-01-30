@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public final class PropertyValueStep<E> extends MapStep<Property<E>, E> {
 
-    public PropertyValueStep(final Traversal traversal) {
+    public PropertyValueStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setFunction(traverser -> traverser.get().value());
     }

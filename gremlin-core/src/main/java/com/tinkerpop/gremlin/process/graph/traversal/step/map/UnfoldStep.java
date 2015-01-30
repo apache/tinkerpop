@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public final class UnfoldStep<S, E> extends FlatMapStep<S, E> {
 
-    public UnfoldStep(final Traversal traversal) {
+    public UnfoldStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setFunction(traverser -> {
             final S s = traverser.get();

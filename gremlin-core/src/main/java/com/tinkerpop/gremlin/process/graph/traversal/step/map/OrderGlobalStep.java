@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.traversal.step.ComparatorHolder;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -22,7 +22,7 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
 
     private final List<Comparator<S>> comparators = new ArrayList<>();
 
-    public OrderGlobalStep(final Traversal traversal) {
+    public OrderGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setConsumer(traversers -> traversers.sort((Comparator) Order.incr));
     }

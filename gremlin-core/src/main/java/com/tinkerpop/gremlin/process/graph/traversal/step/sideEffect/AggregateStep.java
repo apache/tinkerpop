@@ -2,11 +2,11 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
+import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.AggregateMapReduce;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
@@ -28,7 +28,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     private Traversal.Admin<S, Object> aggregateTraversal = new IdentityTraversal<>();
     private String sideEffectKey;
 
-    public AggregateStep(final Traversal traversal, final String sideEffectKey) {
+    public AggregateStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         AggregateStep.generateConsumer(this);

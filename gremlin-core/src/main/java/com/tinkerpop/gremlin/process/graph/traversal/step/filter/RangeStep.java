@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Ranging;
+import com.tinkerpop.gremlin.process.graph.traversal.step.Ranging;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -20,7 +20,7 @@ public final class RangeStep<S> extends FilterStep<S> implements Ranging {
     private final long high;
     private AtomicLong counter = new AtomicLong(0l);
 
-    public RangeStep(final Traversal traversal, final long low, final long high) {
+    public RangeStep(final Traversal.Admin traversal, final long low, final long high) {
         super(traversal);
         if (low != -1 && high != -1 && low > high) {
             throw new IllegalArgumentException("Not a legal range: [" + low + ", " + high + "]");

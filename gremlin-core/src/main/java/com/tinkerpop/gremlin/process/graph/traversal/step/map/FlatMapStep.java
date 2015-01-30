@@ -17,7 +17,7 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
     private Traverser.Admin<S> head = null;
     private Iterator<E> iterator = Collections.emptyIterator();
 
-    public FlatMapStep(final Traversal traversal) {
+    public FlatMapStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 

@@ -208,16 +208,16 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     @Override
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         this.tx().readWrite();
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(Neo4jGraph.class);
-        traversal.asAdmin().addStep(new Neo4jGraphStep<>(traversal, this, Vertex.class, vertexIds));
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(Neo4jGraph.class);
+        traversal.addStep(new Neo4jGraphStep<>(traversal, this, Vertex.class, vertexIds));
         return traversal;
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
         this.tx().readWrite();
-        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(Neo4jGraph.class);
-        traversal.asAdmin().addStep(new Neo4jGraphStep<>(traversal, this, Edge.class, edgeIds));
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(Neo4jGraph.class);
+        traversal.addStep(new Neo4jGraphStep<>(traversal, this, Edge.class, edgeIds));
         return traversal;
     }
 
@@ -356,8 +356,8 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
      */
     public <S, E> GraphTraversal<S, E> cypher(final String query, final Map<String, Object> parameters) {
         this.tx().readWrite();
-        final GraphTraversal<S, E> traversal = new DefaultGraphTraversal<>(Neo4jGraph.class);
-        traversal.asAdmin().addStep(new StartStep(traversal, new Neo4jCypherIterator<S>((ResourceIterator) this.cypher.execute(query, parameters).iterator(), this)));
+        final GraphTraversal.Admin<S, E> traversal = new DefaultGraphTraversal<>(Neo4jGraph.class);
+        traversal.addStep(new StartStep(traversal, new Neo4jCypherIterator<S>((ResourceIterator) this.cypher.execute(query, parameters).iterator(), this)));
         return traversal;
     }
 

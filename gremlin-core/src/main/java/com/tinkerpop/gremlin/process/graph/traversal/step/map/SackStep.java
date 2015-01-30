@@ -11,7 +11,7 @@ import java.util.Set;
  */
 public final class SackStep<S, E> extends MapStep<S, E> {
 
-    public SackStep(final Traversal traversal) {
+    public SackStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setFunction(traverser -> traverser.sack());
     }

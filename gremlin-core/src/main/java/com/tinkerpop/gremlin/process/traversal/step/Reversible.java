@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph.marker;
+package com.tinkerpop.gremlin.process.traversal.step;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

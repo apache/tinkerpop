@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.traversal.step.ComparatorHolder;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Order;
@@ -24,7 +24,7 @@ public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Reversi
 
     private final List<Comparator<M>> comparators = new ArrayList<>();
 
-    public OrderLocalStep(final Traversal traversal) {
+    public OrderLocalStep(final Traversal.Admin traversal) {
         super(traversal);
         super.setFunction(Traverser::get);
         ///

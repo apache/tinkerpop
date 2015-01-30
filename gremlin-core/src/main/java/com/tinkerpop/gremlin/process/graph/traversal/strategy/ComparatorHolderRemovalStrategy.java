@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
+import com.tinkerpop.gremlin.process.graph.traversal.step.ComparatorHolder;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 /**

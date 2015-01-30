@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public final class LabelStep<S extends Element> extends MapStep<S, String> {
 
-    public LabelStep(final Traversal traversal) {
+    public LabelStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setFunction(traverser -> traverser.get().label());
     }

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -18,7 +18,7 @@ public final class ExceptStep<S> extends FilterStep<S> implements Reversible {
 
     private final String sideEffectKeyOrPathLabel;
 
-    public ExceptStep(final Traversal traversal, final String sideEffectKeyOrPathLabel) {
+    public ExceptStep(final Traversal.Admin traversal, final String sideEffectKeyOrPathLabel) {
         super(traversal);
         this.sideEffectKeyOrPathLabel = sideEffectKeyOrPathLabel;
         this.setPredicate(traverser -> {
@@ -31,13 +31,13 @@ public final class ExceptStep<S> extends FilterStep<S> implements Reversible {
         });
     }
 
-    public ExceptStep(final Traversal traversal, final Collection<S> exceptionCollection) {
+    public ExceptStep(final Traversal.Admin traversal, final Collection<S> exceptionCollection) {
         super(traversal);
         this.sideEffectKeyOrPathLabel = null;
         this.setPredicate(traverser -> !exceptionCollection.contains(traverser.get()));
     }
 
-    public ExceptStep(final Traversal traversal, final S exceptionObject) {
+    public ExceptStep(final Traversal.Admin traversal, final S exceptionObject) {
         super(traversal);
         this.sideEffectKeyOrPathLabel = null;
         this.setPredicate(traverser -> !exceptionObject.equals(traverser.get()));

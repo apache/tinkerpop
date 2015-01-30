@@ -16,7 +16,7 @@ public class MapStep<S, E> extends AbstractStep<S, E> {
 
     private Function<Traverser<S>, E> function = null;
 
-    public MapStep(final Traversal traversal) {
+    public MapStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 

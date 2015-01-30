@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
@@ -23,7 +23,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
     private Traversal.Admin constraint;
 
 
-    public WhereStep(final Traversal traversal, final String firstKey, final String secondKey, final BiPredicate<E, E> biPredicate) {
+    public WhereStep(final Traversal.Admin traversal, final String firstKey, final String secondKey, final BiPredicate<E, E> biPredicate) {
         super(traversal);
         this.firstKey = firstKey;
         this.secondKey = secondKey;
@@ -33,7 +33,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
 
     }
 
-    public WhereStep(final Traversal traversal, final Traversal.Admin constraint) {
+    public WhereStep(final Traversal.Admin traversal, final Traversal.Admin constraint) {
         super(traversal);
         this.firstKey = null;
         this.secondKey = null;

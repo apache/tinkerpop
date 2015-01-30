@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionParent;
+import com.tinkerpop.gremlin.process.graph.traversal.step.TraversalOptionParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -26,7 +26,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     protected Map<M, List<Traversal.Admin<S, E>>> traversalOptions = new HashMap<>();
     private boolean first = true;
 
-    public BranchStep(final Traversal traversal) {
+    public BranchStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 

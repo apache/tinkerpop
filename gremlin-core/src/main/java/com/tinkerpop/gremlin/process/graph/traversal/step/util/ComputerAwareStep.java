@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.util;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
+import com.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -18,7 +18,7 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
     private Iterator<Traverser<E>> previousIterator = Collections.emptyIterator();
 
-    public ComputerAwareStep(final Traversal traversal) {
+    public ComputerAwareStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
@@ -51,7 +51,7 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
     public class EndStep extends AbstractStep<S, S> implements EngineDependent {
 
-        public EndStep(final Traversal traversal) {
+        public EndStep(final Traversal.Admin traversal) {
             super(traversal);
         }
 

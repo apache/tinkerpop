@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reducing;
+import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
@@ -20,14 +20,14 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> implements R
 
     private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(TraverserRequirement.OBJECT));
 
-    public FoldStep(final Traversal traversal) {
+    public FoldStep(final Traversal.Admin traversal) {
         this(traversal, () -> (E) new ArrayList<S>(), (seed, start) -> {
             ((List) seed).add(start);
             return seed;
         });
     }
 
-    public FoldStep(final Traversal traversal, final Supplier<E> seed, final BiFunction<E, S, E> foldFunction) {
+    public FoldStep(final Traversal.Admin traversal, final Supplier<E> seed, final BiFunction<E, S, E> foldFunction) {
         super(traversal);
         this.setSeedSupplier(seed);
         this.setBiFunction(new ObjectBiFunction<>(foldFunction));

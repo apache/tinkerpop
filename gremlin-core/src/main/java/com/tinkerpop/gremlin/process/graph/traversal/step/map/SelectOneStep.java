@@ -15,7 +15,7 @@ public final class SelectOneStep<S, E> extends SelectStep {
     private final Function<Traverser<S>, Map<String, E>> tempFunction;
     private final String selectLabel;
 
-    public SelectOneStep(final Traversal traversal, final String selectLabel) {
+    public SelectOneStep(final Traversal.Admin traversal, final String selectLabel) {
         super(traversal, selectLabel);
         this.selectLabel = selectLabel;
         this.tempFunction = this.selectFunction;

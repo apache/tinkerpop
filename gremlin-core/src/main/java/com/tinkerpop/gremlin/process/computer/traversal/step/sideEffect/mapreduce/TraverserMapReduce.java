@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
-import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
-import com.tinkerpop.gremlin.process.graph.marker.Reducing;
+import com.tinkerpop.gremlin.process.graph.traversal.step.ComparatorHolder;
+import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -36,7 +36,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
     }
 
     public TraverserMapReduce(final Step traversalEndStep) {
-        this.traversal = traversalEndStep.getTraversal().asAdmin();
+        this.traversal = traversalEndStep.getTraversal();
         this.comparator = Optional.ofNullable(traversalEndStep instanceof ComparatorHolder ? GraphComputerHelper.chainComparators(((ComparatorHolder) traversalEndStep).getComparators()) : null);
         this.reducer = Optional.ofNullable(traversalEndStep instanceof Reducing ? ((Reducing) traversalEndStep).getReducer() : null);
     }

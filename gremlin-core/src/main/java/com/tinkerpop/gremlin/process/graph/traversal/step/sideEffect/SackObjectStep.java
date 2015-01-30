@@ -20,7 +20,7 @@ public final class SackObjectStep<S, V> extends SideEffectStep<S> {
 
     private BiFunction<V, S, V> operator;
 
-    public SackObjectStep(final Traversal traversal, final BiFunction<V, S, V> operator) {
+    public SackObjectStep(final Traversal.Admin traversal, final BiFunction<V, S, V> operator) {
         super(traversal);
         this.operator = operator;
         SackObjectStep.generateConsumer(this);

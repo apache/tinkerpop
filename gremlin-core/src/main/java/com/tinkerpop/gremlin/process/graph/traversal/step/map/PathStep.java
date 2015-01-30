@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -20,7 +20,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
 
     private TraversalRing<Object, Object> traversalRing;
 
-    public PathStep(final Traversal traversal) {
+    public PathStep(final Traversal.Admin traversal) {
         super(traversal);
         this.traversalRing = new TraversalRing<>();
         PathStep.generateFunction(this);

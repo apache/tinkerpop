@@ -70,8 +70,8 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
             try {
                 final TraversalVertexProgram vertexProgram = this.program();
                 final ComputerResult result = this.graphComputer.program(vertexProgram).submit().get();
-                final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>(result.graph().getClass());
-                return traversal.asAdmin().addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
+                final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(result.graph().getClass());
+                return traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<S, E> {
+public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     private E lastEnd = null;
     private long lastEndCount = 0l;
@@ -52,8 +53,8 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
         for (final Step<?, ?> step : this.getSteps()) {
             if (step instanceof TraversalParent) {
                 ((TraversalParent) step).setChildStrategies(this.strategies); // TODO: should we clone?
-                for (final Traversal<?, ?> nested : ((TraversalParent) step).getGlobalChildren()) {
-                    nested.asAdmin().applyStrategies(engine);
+                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
+                    globalChild.applyStrategies(engine);
                 }
             }
         }
@@ -170,7 +171,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     }
 
     @Override
-    public <S2, E2> Traversal<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
+    public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
         if (this.locked) throw Exceptions.traversalIsLocked();
         step.setId(this.stepPosition.nextXId());
         this.steps.add(index, step);
@@ -180,18 +181,18 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
         step.setNextStep(null != nextStep ? nextStep : EmptyStep.instance());
         if (null != previousStep) previousStep.setNextStep(step);
         if (null != nextStep) nextStep.setPreviousStep(step);
-        return (Traversal<S2, E2>) this;
+        return (Traversal.Admin<S2, E2>) this;
     }
 
     @Override
-    public <S2, E2> Traversal<S2, E2> removeStep(final int index) throws IllegalStateException {
+    public <S2, E2> Traversal.Admin<S2, E2> removeStep(final int index) throws IllegalStateException {
         if (this.locked) throw Exceptions.traversalIsLocked();
         final Step<?, ?> removedStep = this.steps.remove(index);
         final Step previousStep = removedStep.getPreviousStep();
         final Step nextStep = removedStep.getNextStep();
         previousStep.setNextStep(nextStep);
         nextStep.setPreviousStep(previousStep);
-        return (Traversal<S2, E2>) this;
+        return (Traversal.Admin<S2, E2>) this;
     }
 
     @Override

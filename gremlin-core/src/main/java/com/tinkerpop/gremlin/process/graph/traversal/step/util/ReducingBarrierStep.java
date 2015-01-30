@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.Reducing;
+import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 
@@ -19,7 +19,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> {
     private BiFunction<E, Traverser<S>, E> reducingBiFunction;
     private boolean done = false;
 
-    public ReducingBarrierStep(final Traversal traversal) {
+    public ReducingBarrierStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 

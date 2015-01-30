@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -16,7 +16,7 @@ public final class IsStep<S> extends FilterStep<S> implements Reversible {
 
     private final Object value;
 
-    public IsStep(final Traversal traversal, final BiPredicate<S, Object> predicate, final Object value) {
+    public IsStep(final Traversal.Admin traversal, final BiPredicate<S, Object> predicate, final Object value) {
         super(traversal);
         this.value = value;
         this.setPredicate(traverser -> predicate.test(traverser.get(), this.value));

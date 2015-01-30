@@ -4,8 +4,8 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.EngineDependent;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalRing;
@@ -30,10 +30,10 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Trav
     private boolean requiresPaths = false;
     protected Function<Traverser<S>, Map<String, E>> selectFunction;
 
-    public SelectStep(final Traversal traversal, final String... selectLabels) {
+    public SelectStep(final Traversal.Admin traversal, final String... selectLabels) {
         super(traversal);
         this.wasEmpty = selectLabels.length == 0;
-        this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal.asAdmin()) : Arrays.asList(selectLabels);
+        this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal) : Arrays.asList(selectLabels);
         SelectStep.generateFunction(this);
     }
 
@@ -82,7 +82,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Trav
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.PATH);
+        final Set<TraverserRequirement> requirements = this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.PATH_ACCESS);
         if (this.requiresPaths) requirements.add(TraverserRequirement.PATH);
         return requirements;
     }

@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public final class PropertyElementStep<E> extends MapStep<Property<E>, Element> {
 
-    public PropertyElementStep(final Traversal traversal) {
+    public PropertyElementStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setFunction(traverser -> traverser.get().element());
     }

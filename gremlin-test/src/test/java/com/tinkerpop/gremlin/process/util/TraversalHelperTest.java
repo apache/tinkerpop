@@ -38,7 +38,7 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldChainTogetherStepsWithNextPreviousInALinkedListStructure() {
-        Traversal traversal = new DefaultTraversal<>(Object.class);
+        Traversal.Admin traversal = new DefaultTraversal<>(Object.class);
         traversal.asAdmin().addStep(new IdentityStep(traversal));
         traversal.asAdmin().addStep(new HasStep(traversal, null));
         traversal.asAdmin().addStep(new FilterStep(traversal));
@@ -47,7 +47,7 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldAddStepsCorrectly() {
-        Traversal traversal = new DefaultTraversal<>(Object.class);
+        Traversal.Admin traversal = new DefaultTraversal<>(Object.class);
         traversal.asAdmin().addStep(0, new FilterStep(traversal));
         traversal.asAdmin().addStep(0, new HasStep(traversal, null));
         traversal.asAdmin().addStep(0, new IdentityStep(traversal));
@@ -62,7 +62,7 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldRemoveStepsCorrectly() {
-        Traversal traversal = new DefaultTraversal<>(Object.class);
+        Traversal.Admin traversal = new DefaultTraversal<>(Object.class);
         traversal.asAdmin().addStep(new IdentityStep(traversal));
         traversal.asAdmin().addStep(new HasStep(traversal, null));
         traversal.asAdmin().addStep(new FilterStep(traversal));

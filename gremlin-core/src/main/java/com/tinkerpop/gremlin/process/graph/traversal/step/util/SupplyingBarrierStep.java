@@ -16,7 +16,7 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> {
     public Supplier<E> supplier;
     private boolean done = false;
 
-    public SupplyingBarrierStep(final Traversal traversal) {
+    public SupplyingBarrierStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 

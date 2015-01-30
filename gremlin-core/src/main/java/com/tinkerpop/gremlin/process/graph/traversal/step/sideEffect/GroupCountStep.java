@@ -2,11 +2,11 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
+import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.GroupCountMapReduce;
 import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -29,7 +29,7 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
     private String sideEffectKey;
     // TODO: onFirst like subgraph so we don't keep getting the map
 
-    public GroupCountStep(final Traversal traversal, final String sideEffectKey) {
+    public GroupCountStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         GroupCountStep.generateConsumer(this);

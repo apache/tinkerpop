@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.map.match;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
@@ -54,7 +54,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     // initial value allows MatchStep to be used as a stand-alone query engine
     private Traverser.Admin<S> currentStart;
 
-    public MatchStep(final Traversal traversal, final String startLabel, final Traversal... traversals) {
+    public MatchStep(final Traversal.Admin traversal, final String startLabel, final Traversal... traversals) {
         super(traversal);
         this.startLabel = startLabel;
         this.traversalsByStartAs = new HashMap<>();

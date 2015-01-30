@@ -11,7 +11,7 @@ import java.util.NoSuchElementException;
  */
 public final class IdentityStep<S> extends AbstractStep<S, S> {
 
-    public IdentityStep(final Traversal traversal) {
+    public IdentityStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 

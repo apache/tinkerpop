@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
+import com.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -25,7 +25,7 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
     protected final Graph graph;
     protected Supplier<Iterator<S>> iteratorSupplier;
 
-    public GraphStep(final Traversal traversal, final Graph graph, final Class<S> returnClass, final Object... ids) {
+    public GraphStep(final Traversal.Admin traversal, final Graph graph, final Class<S> returnClass, final Object... ids) {
         super(traversal);
         this.graph = graph;
         this.returnClass = returnClass;

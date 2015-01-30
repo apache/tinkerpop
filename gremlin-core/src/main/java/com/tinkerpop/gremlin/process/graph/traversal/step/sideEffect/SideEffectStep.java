@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 
 import java.util.function.Consumer;
@@ -14,7 +14,7 @@ public class SideEffectStep<S> extends AbstractStep<S, S> implements Reversible 
 
     private Consumer<Traverser<S>> consumer;
 
-    public SideEffectStep(final Traversal traversal) {
+    public SideEffectStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 

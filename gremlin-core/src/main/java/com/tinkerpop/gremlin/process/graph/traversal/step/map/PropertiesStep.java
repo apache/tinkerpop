@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
@@ -20,7 +20,7 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Revers
     protected final String[] propertyKeys;
     protected final PropertyType returnType;
 
-    public PropertiesStep(final Traversal traversal, final PropertyType propertyType, final String... propertyKeys) {
+    public PropertiesStep(final Traversal.Admin traversal, final PropertyType propertyType, final String... propertyKeys) {
         super(traversal);
         this.returnType = propertyType;
         this.propertyKeys = propertyKeys;

@@ -13,8 +13,8 @@ public interface VertexPropertyTraversal extends ElementTraversal<VertexProperty
 
     @Override
     default GraphTraversal<VertexProperty, VertexProperty> start() {
-        final GraphTraversal<VertexProperty, VertexProperty> traversal = new DefaultGraphTraversal<>(this.getClass());
-        return traversal.asAdmin().addStep(new StartStep<>(traversal, this));
+        final GraphTraversal.Admin<VertexProperty, VertexProperty> traversal = new DefaultGraphTraversal<>(this.getClass());
+        return traversal.addStep(new StartStep<>(traversal, this));
     }
 
     @Override

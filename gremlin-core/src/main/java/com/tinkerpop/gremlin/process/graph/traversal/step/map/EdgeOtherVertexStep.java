@@ -16,7 +16,7 @@ import java.util.Set;
  */
 public final class EdgeOtherVertexStep extends MapStep<Edge, Vertex> {
 
-    public EdgeOtherVertexStep(final Traversal traversal) {
+    public EdgeOtherVertexStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setFunction(traverser -> {
             final List<Object> objects = traverser.path().objects();

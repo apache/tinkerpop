@@ -1,12 +1,11 @@
 package com.tinkerpop.gremlin.process.traversal.step;
 
+import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -63,12 +62,12 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     }
 
     @Override
-    public <A, B> Traversal<A, B> getTraversal() {
+    public <A, B> Traversal.Admin<A, B> getTraversal() {
         return EmptyTraversal.instance();
     }
 
     @Override
-    public void setTraversal(final Traversal<?, ?> traversal) {
+    public void setTraversal(final Traversal.Admin<?, ?> traversal) {
 
     }
 
@@ -83,12 +82,12 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     }
 
     @Override
-    public void setLabel(String label) {
+    public void setLabel(final String label) {
 
     }
 
     @Override
-    public void setId(String id) {
+    public void setId(final String id) {
 
     }
 

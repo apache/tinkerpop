@@ -112,26 +112,26 @@ public class TinkerFactory {
         g.variables().set("comment", "this graph was created to provide examples and test coverage for tinkerpop3 api advances");
     }
 
-    public interface SocialTraversal<S, E> extends Traversal<S, E> {
+    public interface SocialTraversal<S, E> extends Traversal.Admin<S,E> {
 
         public SocialTraversal<S, Vertex> people(final String name);
 
         public default SocialTraversal<S, Vertex> knows() {
             final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
             flatMapStep.setFunction(v -> v.get().out("knows"));
-            return (SocialTraversal) this.asAdmin().addStep(flatMapStep);
+            return (SocialTraversal) this.addStep(flatMapStep);
         }
 
         public default SocialTraversal<S, Vertex> created() {
             final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
             flatMapStep.setFunction(v -> v.get().out("created"));
-            return (SocialTraversal) this.asAdmin().addStep(flatMapStep);
+            return (SocialTraversal) this.addStep(flatMapStep);
         }
 
         public default SocialTraversal<S, String> name() {
             MapStep<Vertex, String> mapStep = new MapStep<>(this);
             mapStep.setFunction(v -> v.get().<String>value("name"));
-            return (SocialTraversal) this.asAdmin().addStep(mapStep);
+            return (SocialTraversal) this.addStep(mapStep);
         }
 
         public static <S> SocialTraversal<S, S> of(final Graph graph) {
@@ -147,7 +147,7 @@ public class TinkerFactory {
             }
 
             public SocialTraversal<S, Vertex> people(final String name) {
-                return (SocialTraversal) this.asAdmin().addStep(new StartStep<>(this, this.graph.V().has("name", name)));
+                return (SocialTraversal) this.addStep(new StartStep<>(this, this.graph.V().has("name", name)));
             }
 
         }

@@ -1,7 +1,7 @@
-package com.tinkerpop.gremlin.process.graph.marker;
+package com.tinkerpop.gremlin.process.graph.traversal.step;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

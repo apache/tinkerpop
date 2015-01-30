@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph.marker;
+package com.tinkerpop.gremlin.process.graph.traversal.step;
 
 import java.util.Comparator;
 import java.util.List;

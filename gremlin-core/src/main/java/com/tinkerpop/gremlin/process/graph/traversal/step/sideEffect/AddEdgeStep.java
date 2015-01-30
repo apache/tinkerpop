@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -27,7 +27,7 @@ public final class AddEdgeStep extends SideEffectStep<Vertex> implements Reversi
     private final String edgeLabel;
     private final String stepLabel;
 
-    public AddEdgeStep(final Traversal traversal, final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
+    public AddEdgeStep(final Traversal.Admin traversal, final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
         super(traversal);
         this.direction = direction;
         this.edgeLabel = edgeLabel;

@@ -382,7 +382,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         MatchStep<Object, Object> query;
         Iterator iter;
 
-        query = new MatchStep<>(g.V(), "d",
+        query = new MatchStep<>(g.V().asAdmin(), "d",
                 as("d").in("knows").as("a"),
                 as("d").has("name", "vadas"),
                 as("a").out("knows").as("b"),

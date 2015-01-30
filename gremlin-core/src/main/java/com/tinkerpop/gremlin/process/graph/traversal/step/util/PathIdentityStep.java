@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public final class PathIdentityStep<S> extends AbstractStep<S, S> {
 
-    public PathIdentityStep(final Traversal traversal) {
+    public PathIdentityStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 

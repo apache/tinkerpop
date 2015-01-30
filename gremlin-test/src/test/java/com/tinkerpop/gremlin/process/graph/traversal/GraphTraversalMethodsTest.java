@@ -26,6 +26,7 @@ public class GraphTraversalMethodsTest {
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .filter(m -> !m.getName().equals("by"))
                 .filter(m -> !m.getName().equals("option"))
+                .filter(m -> !m.getName().equals("asAdmin"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> vertexMethods = new ArrayList<>(Arrays.asList(__.class.getMethods()));
@@ -51,6 +52,7 @@ public class GraphTraversalMethodsTest {
                 .filter(m -> !m.getName().equals("key"))
                 .filter(m -> !m.getName().equals("by"))
                 .filter(m -> !m.getName().equals("option"))
+                .filter(m -> !m.getName().equals("asAdmin"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> vertexMethods = new ArrayList<>(Arrays.asList(Vertex.class.getMethods()));
@@ -76,6 +78,7 @@ public class GraphTraversalMethodsTest {
                 .filter(m -> !m.getName().equals("key"))
                 .filter(m -> !m.getName().equals("by"))
                 .filter(m -> !m.getName().equals("option"))
+                .filter(m -> !m.getName().equals("asAdmin"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> edgeMethods = new ArrayList<>(Arrays.asList(Edge.class.getMethods()));
@@ -102,6 +105,7 @@ public class GraphTraversalMethodsTest {
                 .filter(m -> !m.getName().equals("key"))
                 .filter(m -> !m.getName().equals("by"))
                 .filter(m -> !m.getName().equals("option"))
+                .filter(m -> !m.getName().equals("asAdmin"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> vertexPropertyMethods = new ArrayList<>(Arrays.asList(VertexProperty.class.getMethods()));

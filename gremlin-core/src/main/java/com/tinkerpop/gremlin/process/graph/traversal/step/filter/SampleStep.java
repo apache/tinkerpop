@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traversal.lambda.OneTraversal;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -25,7 +25,7 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
     private final int amountToSample;
     private static final Random RANDOM = new Random();
 
-    public SampleStep(final Traversal traversal, final int amountToSample) {
+    public SampleStep(final Traversal.Admin traversal, final int amountToSample) {
         super(traversal);
         this.amountToSample = amountToSample;
         SampleStep.generatePredicate(this);

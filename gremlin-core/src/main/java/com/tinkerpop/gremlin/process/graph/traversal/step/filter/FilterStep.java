@@ -13,7 +13,7 @@ public class FilterStep<S> extends AbstractStep<S, S> {
 
     private Predicate<Traverser<S>> predicate = null;
 
-    public FilterStep(final Traversal traversal) {
+    public FilterStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 

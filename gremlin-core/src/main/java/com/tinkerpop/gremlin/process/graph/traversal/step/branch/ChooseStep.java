@@ -11,12 +11,12 @@ import com.tinkerpop.gremlin.process.traversal.lambda.HasNextTraversal;
  */
 public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
 
-    public ChooseStep(final Traversal traversal, final Traversal.Admin<S, M> choiceTraversal) {
+    public ChooseStep(final Traversal.Admin traversal, final Traversal.Admin<S, M> choiceTraversal) {
         super(traversal);
         this.setBranchTraversal(choiceTraversal);
     }
 
-    public ChooseStep(final Traversal traversal, final Traversal.Admin<S, ?> predicateTraversal, final Traversal.Admin<S, E> trueChoice, final Traversal.Admin<S, E> falseChoice) {
+    public ChooseStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?> predicateTraversal, final Traversal.Admin<S, E> trueChoice, final Traversal.Admin<S, E> falseChoice) {
         this(traversal, new HasNextTraversal(predicateTraversal));
         this.addGlobalChildOption((M) Boolean.TRUE, trueChoice);
         this.addGlobalChildOption((M) Boolean.FALSE, falseChoice);

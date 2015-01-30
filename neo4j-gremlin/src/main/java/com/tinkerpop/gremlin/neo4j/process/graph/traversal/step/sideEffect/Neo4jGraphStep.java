@@ -43,7 +43,7 @@ public class Neo4jGraphStep<S extends Element> extends GraphStep<S> {
 
     public final List<HasContainer> hasContainers = new ArrayList<>();
 
-    public Neo4jGraphStep(final Traversal traversal, final Neo4jGraph graph, final Class<S> returnClass, final Object... ids) {
+    public Neo4jGraphStep(final Traversal.Admin traversal, final Neo4jGraph graph, final Class<S> returnClass, final Object... ids) {
         super(traversal, graph, returnClass, ids);
         this.setIteratorSupplier(() -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
     }

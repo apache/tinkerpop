@@ -88,8 +88,8 @@ public class HadoopRemoteAcceptor implements RemoteAcceptor {
             final ComputerResult computerResult = traversal.result().get();
             this.shell.getInterp().getContext().setProperty(RESULT, computerResult);
 
-            final GraphTraversal traversal2 = new DefaultGraphTraversal<>(Graph.class);
-            traversal2.asAdmin().addStep(new ComputerResultStep<>(traversal2, computerResult, vertexProgram, false));
+            final GraphTraversal.Admin traversal2 = new DefaultGraphTraversal<>(Graph.class);
+            traversal2.addStep(new ComputerResultStep<>(traversal2, computerResult, vertexProgram, false));
             traversal2.range(0, 19);
             return traversal2;
         } catch (Exception e) {

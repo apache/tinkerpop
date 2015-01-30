@@ -18,7 +18,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected Optional<String> label = Optional.empty();
     private boolean hasLabel = false;
     protected String id = Traverser.Admin.HALT;
-    protected Traversal traversal;
+    protected Traversal.Admin traversal;
     protected ExpandableStepIterator<S> starts;
     protected Traverser<E> nextEnd = null;
     protected boolean traverserStepIdSetByChild = false; // TODO: Step.teleport(traverser, step)
@@ -26,7 +26,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
 
-    public AbstractStep(final Traversal traversal) {
+    public AbstractStep(final Traversal.Admin traversal) {
         this.traversal = traversal;
         this.starts = new ExpandableStepIterator<S>((Step) this);
     }
@@ -127,12 +127,12 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public <A, B> Traversal<A, B> getTraversal() {
+    public <A, B> Traversal.Admin<A, B> getTraversal() {
         return this.traversal;
     }
 
     @Override
-    public void setTraversal(final Traversal<?, ?> traversal) {
+    public void setTraversal(final Traversal.Admin<?, ?> traversal) {
         this.traversal = traversal;
     }
 

@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.branch;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -28,7 +28,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     public boolean untilFirst = false;
     public boolean emitFirst = false;
 
-    public RepeatStep(final Traversal traversal) {
+    public RepeatStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
@@ -160,7 +160,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         if (step instanceof RepeatStep && null == ((RepeatStep) step).repeatTraversal) {
             ((RepeatStep<B>) step).setRepeatTraversal(repeatTraversal);
         } else {
-            final RepeatStep<B> repeatStep = new RepeatStep<>(traversal);
+            final RepeatStep<B> repeatStep = new RepeatStep<>(traversal.asAdmin());
             repeatStep.setRepeatTraversal(repeatTraversal);
             traversal.asAdmin().addStep(repeatStep);
         }
@@ -172,7 +172,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         if (step instanceof RepeatStep && null == ((RepeatStep) step).untilTraversal) {
             ((RepeatStep<B>) step).setUntilTraversal(untilPredicate);
         } else {
-            final RepeatStep<B> repeatStep = new RepeatStep<>(traversal);
+            final RepeatStep<B> repeatStep = new RepeatStep<>(traversal.asAdmin());
             repeatStep.setUntilTraversal(untilPredicate);
             traversal.asAdmin().addStep(repeatStep);
         }
@@ -184,7 +184,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         if (step instanceof RepeatStep && null == ((RepeatStep) step).emitTraversal) {
             ((RepeatStep<B>) step).setEmitTraversal(emitPredicate);
         } else {
-            final RepeatStep<B> repeatStep = new RepeatStep<>(traversal);
+            final RepeatStep<B> repeatStep = new RepeatStep<>(traversal.asAdmin());
             repeatStep.setEmitTraversal(emitPredicate);
             traversal.asAdmin().addStep(repeatStep);
         }
@@ -195,7 +195,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     public class RepeatEndStep extends ComputerAwareStep<S, S> {
 
-        public RepeatEndStep(final Traversal traversal) {
+        public RepeatEndStep(final Traversal.Admin traversal) {
             super(traversal);
         }
 

@@ -11,7 +11,7 @@ import java.util.NoSuchElementException;
  */
 public final class MarkerIdentityStep<S> extends AbstractStep<S, S> {
 
-    public MarkerIdentityStep(final Traversal traversal) {
+    public MarkerIdentityStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 

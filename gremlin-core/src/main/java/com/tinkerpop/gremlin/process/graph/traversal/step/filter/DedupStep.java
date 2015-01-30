@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reducing;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.Reducing;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -22,7 +22,7 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     private Traversal.Admin<S, Object> dedupTraversal = new IdentityTraversal<>();
     private Set<Object> duplicateSet = new HashSet<>();
 
-    public DedupStep(final Traversal traversal) {
+    public DedupStep(final Traversal.Admin traversal) {
         super(traversal);
         DedupStep.generatePredicate(this);
     }

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -18,7 +18,7 @@ public final class RetainStep<S> extends FilterStep<S> implements Reversible {
 
     private final String sideEffectKeyOrPathLabel;
 
-    public RetainStep(final Traversal traversal, final String sideEffectKeyOrPathLabel) {
+    public RetainStep(final Traversal.Admin traversal, final String sideEffectKeyOrPathLabel) {
         super(traversal);
         this.sideEffectKeyOrPathLabel = sideEffectKeyOrPathLabel;
         this.setPredicate(traverser -> {
@@ -32,13 +32,13 @@ public final class RetainStep<S> extends FilterStep<S> implements Reversible {
         });
     }
 
-    public RetainStep(final Traversal traversal, final Collection<S> retainCollection) {
+    public RetainStep(final Traversal.Admin traversal, final Collection<S> retainCollection) {
         super(traversal);
         this.sideEffectKeyOrPathLabel = null;
         this.setPredicate(traverser -> retainCollection.contains(traverser.get()));
     }
 
-    public RetainStep(final Traversal traversal, final S retainObject) {
+    public RetainStep(final Traversal.Admin traversal, final S retainObject) {
         super(traversal);
         this.sideEffectKeyOrPathLabel = null;
         this.setPredicate(traverser -> retainObject.equals(traverser.get()));

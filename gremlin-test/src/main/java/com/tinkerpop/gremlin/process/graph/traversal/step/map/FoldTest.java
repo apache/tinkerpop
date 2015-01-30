@@ -38,7 +38,6 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore("Does not work in OLAP because fold is not the end step")
     @LoadGraphWith(MODERN)
     public void g_V_fold_unfold() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_fold_unfold();
@@ -95,7 +94,7 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
-            return (Traversal) g.V().fold().unfold().submit(g.compute());
+            return (Traversal) g.V().fold().unfold(); // Does not work in OLAP cause fold() is not an endstep.
         }
 
         @Override

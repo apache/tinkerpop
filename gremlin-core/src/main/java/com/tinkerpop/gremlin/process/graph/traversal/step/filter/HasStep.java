@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.HasContainerHolder;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.traversal.step.HasContainerHolder;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -19,7 +19,7 @@ public final class HasStep<S extends Element> extends FilterStep<S> implements H
 
     private final HasContainer hasContainer;
 
-    public HasStep(final Traversal traversal, final HasContainer hasContainer) {
+    public HasStep(final Traversal.Admin traversal, final HasContainer hasContainer) {
         super(traversal);
         this.hasContainer = hasContainer;
         this.setPredicate(traverser -> this.hasContainer.test(traverser.get()));

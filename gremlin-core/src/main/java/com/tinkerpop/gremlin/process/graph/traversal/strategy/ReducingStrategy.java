@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.Reducing;
+import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -37,7 +37,7 @@ public class ReducingStrategy extends AbstractTraversalStrategy {
         private final Reducer reducer;
         private String reducingStepString;
 
-        public ReducingIdentity(final Traversal traversal, final Reducing reducingStep) {
+        public ReducingIdentity(final Traversal.Admin traversal, final Reducing reducingStep) {
             super(traversal);
             this.reducer = reducingStep.getReducer();
             this.reducingStepString = reducingStep.toString();

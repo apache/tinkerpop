@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -20,7 +20,7 @@ public final class HasTraversalStep<S> extends AbstractStep<S, S> implements Tra
 
     private Traversal.Admin<S, ?> hasTraversal;
 
-    public HasTraversalStep(final Traversal traversal, final Traversal.Admin<S, ?> hasTraversal) {
+    public HasTraversalStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?> hasTraversal) {
         super(traversal);
         this.integrateChild(this.hasTraversal = hasTraversal, TYPICAL_LOCAL_OPERATIONS);
     }

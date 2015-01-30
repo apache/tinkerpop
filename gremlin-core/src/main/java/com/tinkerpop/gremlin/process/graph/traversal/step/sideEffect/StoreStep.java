@@ -2,11 +2,11 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
+import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.StoreMapReduce;
 import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -27,7 +27,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     private Traversal.Admin<S, Object> storeTraversal = new IdentityTraversal<>();
     private String sideEffectKey;
 
-    public StoreStep(final Traversal traversal, final String sideEffectKey) {
+    public StoreStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         StoreStep.generateConsumer(this);

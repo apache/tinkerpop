@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -17,7 +17,7 @@ public final class CoinStep<S> extends FilterStep<S> implements Reversible {
     private static final Random RANDOM = new Random();
     private final double probability;
 
-    public CoinStep(final Traversal traversal, final double probability) {
+    public CoinStep(final Traversal.Admin traversal, final double probability) {
         super(traversal);
         this.probability = probability;
         this.setPredicate(traverser -> {

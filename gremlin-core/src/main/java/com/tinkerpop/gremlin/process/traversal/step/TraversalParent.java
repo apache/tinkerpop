@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.traversal;
+package com.tinkerpop.gremlin.process.traversal.step;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -68,10 +68,10 @@ public interface TraversalParent {
                     childTraversal.setParent(this);
                     break;
                 case MERGE_IN_SIDE_EFFECTS:
-                    childTraversal.getSideEffects().mergeInto(this.asStep().getTraversal().asAdmin().getSideEffects());
+                    childTraversal.getSideEffects().mergeInto(this.asStep().getTraversal().getSideEffects());
                     break;
                 case SET_SIDE_EFFECTS:
-                    childTraversal.setSideEffects(this.asStep().getTraversal().asAdmin().getSideEffects());
+                    childTraversal.setSideEffects(this.asStep().getTraversal().getSideEffects());
                     break;
             }
         }

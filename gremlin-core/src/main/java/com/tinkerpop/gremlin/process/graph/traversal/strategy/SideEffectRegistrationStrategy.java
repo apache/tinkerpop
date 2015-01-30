@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.strategy;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collections;

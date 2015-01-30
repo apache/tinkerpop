@@ -26,7 +26,7 @@ public final class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implem
     }
 
     @Override
-    public <E2> GraphTraversal<S, E2> addStep(final Step<?, E2> step) {
+    public <E2> GraphTraversal.Admin<S, E2> addStep(final Step<?, E2> step) {
         return instance();
     }
 

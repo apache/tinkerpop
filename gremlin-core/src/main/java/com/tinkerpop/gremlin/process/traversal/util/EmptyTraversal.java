@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
@@ -77,7 +77,7 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public <E2> Traversal<S, E2> addStep(final Step<?, E2> step) {
+    public <E2> Traversal.Admin<S, E2> addStep(final Step<?, E2> step) {
         return instance();
     }
 
@@ -126,13 +126,13 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public <S2, E2> Traversal<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
-        return (Traversal) this;
+    public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
+        return (Traversal.Admin) this;
     }
 
     @Override
-    public <S2, E2> Traversal<S2, E2> removeStep(final int index) throws IllegalStateException {
-        return (Traversal) this;
+    public <S2, E2> Traversal.Admin<S2, E2> removeStep(final int index) throws IllegalStateException {
+        return (Traversal.Admin) this;
     }
 
     @Override

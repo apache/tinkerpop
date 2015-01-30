@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traverser.O_TraverserGenerator;
 import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import com.tinkerpop.gremlin.process.traversal.util.EmptyTraversalSideEffects;
@@ -33,13 +33,13 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     }
 
     @Override
-    public <S2, E2> Traversal<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
-        return (Traversal<S2, E2>) this;
+    public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
+        return (Traversal.Admin<S2, E2>) this;
     }
 
     @Override
-    public <S2, E2> Traversal<S2, E2> removeStep(final int index) throws IllegalStateException {
-        return (Traversal<S2, E2>) this;
+    public <S2, E2> Traversal.Admin<S2, E2> removeStep(final int index) throws IllegalStateException {
+        return (Traversal.Admin<S2, E2>) this;
     }
 
     @Override

@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.Reducing;
+import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public final class MinStep<S extends Number> extends ReducingBarrierStep<S, S> implements Reducing<S, Traverser<S>> {
 
-    public MinStep(final Traversal traversal) {
+    public MinStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(() -> (S) Double.valueOf(Double.MAX_VALUE));
         this.setBiFunction((seed, start) -> seed.doubleValue() < start.get().doubleValue() ? seed : start.get());

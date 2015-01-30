@@ -32,12 +32,12 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
     private final Traversal.Admin<?, ?> computerTraversal;
     private final boolean attachElements; // should be part of graph computer with "propagate properties"
 
-    public ComputerResultStep(final Traversal traversal, final ComputerResult result, final TraversalVertexProgram traversalVertexProgram, final boolean attachElements) {
+    public ComputerResultStep(final Traversal.Admin traversal, final ComputerResult result, final TraversalVertexProgram traversalVertexProgram, final boolean attachElements) {
         super(traversal);
         this.graph = result.graph();
         this.memory = result.memory();
         this.attachElements = attachElements;
-        this.memory.keys().forEach(key -> traversal.asAdmin().getSideEffects().set(key, this.memory.get(key)));
+        this.memory.keys().forEach(key -> traversal.getSideEffects().set(key, this.memory.get(key)));
         this.computerTraversal = traversalVertexProgram.getTraversal();
 
         final Step endStep = this.computerTraversal.getEndStep();

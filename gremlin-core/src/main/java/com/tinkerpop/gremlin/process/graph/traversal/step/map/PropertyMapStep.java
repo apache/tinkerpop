@@ -24,7 +24,7 @@ public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
     protected final PropertyType returnType;
     protected final boolean includeTokens;
 
-    public PropertyMapStep(final Traversal traversal, final boolean includeTokens, final PropertyType propertyType, final String... propertyKeys) {
+    public PropertyMapStep(final Traversal.Admin traversal, final boolean includeTokens, final PropertyType propertyType, final String... propertyKeys) {
         super(traversal);
         this.includeTokens = includeTokens;
         this.propertyKeys = propertyKeys;

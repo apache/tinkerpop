@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public final class KeyStep extends MapStep<Property, String> {
 
-    public KeyStep(final Traversal traversal) {
+    public KeyStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setFunction(traverser -> traverser.get().key());
     }

@@ -4,14 +4,14 @@ import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.traversal.DefaultTraversal;
 import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      *
      * @return the admin of this traversal
      */
-    public default Admin<S, E> asAdmin() {
+    public default Traversal.Admin<S, E> asAdmin() {
         return (Traversal.Admin<S, E>) this;
     }
 
@@ -64,7 +64,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         try {
             final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this::asAdmin).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
-            final Traversal<S, S> traversal = new DefaultTraversal<>(result.graph().getClass());
+            final Traversal.Admin<S, S> traversal = new DefaultTraversal<>(result.graph().getClass());
             return traversal.asAdmin().addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -237,7 +237,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @return the updated traversal
          * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
          */
-        public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) throws IllegalStateException {
+        public default <E2> Traversal.Admin<S, E2> addStep(final Step<?, E2> step) throws IllegalStateException {
             return this.addStep(this.getSteps().size(), step);
         }
 
@@ -251,7 +251,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @return the newly modulated traversal
          * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
          */
-        public <S2, E2> Traversal<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException;
+        public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException;
 
         /**
          * Remove a {@link Step} from the traversal.
@@ -262,7 +262,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @return the newly modulated traversal
          * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
          */
-        public default <S2, E2> Traversal<S2, E2> removeStep(final Step<?, ?> step) throws IllegalStateException {
+        public default <S2, E2> Traversal.Admin<S2, E2> removeStep(final Step<?, ?> step) throws IllegalStateException {
             return this.removeStep(this.getSteps().indexOf(step));
         }
 
@@ -275,7 +275,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @return the newly modulated traversal
          * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
          */
-        public <S2, E2> Traversal<S2, E2> removeStep(final int index) throws IllegalStateException;
+        public <S2, E2> Traversal.Admin<S2, E2> removeStep(final int index) throws IllegalStateException;
 
         /**
          * Get the start/head of the traversal. If the traversal is empty, then an {@link EmptyStep} instance is returned.
@@ -355,7 +355,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          *
          * @return the traversal with its steps reversed
          */
-        public default Traversal<S, E> reverse() throws IllegalStateException {
+        public default Traversal.Admin<S, E> reverse() throws IllegalStateException {
             if (!TraversalHelper.isReversible(this)) throw Exceptions.traversalIsNotReversible();
             this.getSteps().stream().forEach(step -> ((Reversible) step).reverse());
             return this;
@@ -390,7 +390,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         public TraversalStrategies getStrategies();
 
         /**
-         * Set the {@link com.tinkerpop.gremlin.process.traversal.TraversalParent} {@link Step} that is the parent of this traversal.
+         * Set the {@link com.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is the parent of this traversal.
          * Traversals can be nested and this is the means by which the traversal tree is connected.
          *
          * @param step the traversal holder parent step
@@ -398,7 +398,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         public void setParent(final TraversalParent step);
 
         /**
-         * Get the {@link com.tinkerpop.gremlin.process.traversal.TraversalParent} {@link Step} that is the parent of this traversal.
+         * Get the {@link com.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is the parent of this traversal.
          * Traversals can be nested and this is the means by which the traversal tree is walked.
          *
          * @return the traversal holder parent step

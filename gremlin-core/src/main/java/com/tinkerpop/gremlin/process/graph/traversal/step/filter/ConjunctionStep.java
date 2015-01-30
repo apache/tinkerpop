@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -21,7 +21,7 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
     private List<Traversal.Admin<S, ?>> conjunctionTraversals;
     private final boolean isAnd;
 
-    public ConjunctionStep(final Traversal traversal, final Traversal.Admin<S, ?>... conjunctionTraversals) {
+    public ConjunctionStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?>... conjunctionTraversals) {
         super(traversal);
         this.isAnd = this.getClass().equals(AndStep.class);
         this.conjunctionTraversals = Arrays.asList(conjunctionTraversals);

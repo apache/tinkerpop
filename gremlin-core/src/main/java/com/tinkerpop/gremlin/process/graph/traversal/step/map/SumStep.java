@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.Reducing;
+import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
@@ -20,7 +20,7 @@ public final class SumStep extends ReducingBarrierStep<Number, Double> implement
             TraverserRequirement.OBJECT
     ));
 
-    public SumStep(final Traversal traversal) {
+    public SumStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(() -> 0.0d);
         this.setBiFunction((seed, start) -> seed + (start.get().doubleValue() * start.bulk()));

@@ -23,7 +23,7 @@ public final class SackElementValueStep<S extends Element, V> extends SideEffect
     private BinaryOperator<V> operator;
     private final String propertyKey;
 
-    public SackElementValueStep(final Traversal traversal, final BinaryOperator<V> operator, final String propertyKey) {
+    public SackElementValueStep(final Traversal.Admin traversal, final BinaryOperator<V> operator, final String propertyKey) {
         super(traversal);
         this.operator = operator;
         this.propertyKey = propertyKey;

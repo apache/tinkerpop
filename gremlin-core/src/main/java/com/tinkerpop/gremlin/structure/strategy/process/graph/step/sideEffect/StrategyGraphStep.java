@@ -18,7 +18,7 @@ public class StrategyGraphStep<E extends Element> extends GraphStep<E> {
 
     private final GraphTraversal<?, E> graphTraversal;
 
-    public StrategyGraphStep(final Traversal traversal, final StrategyGraph strategyGraph, final Class<E> returnClass, final GraphTraversal<?, E> graphTraversal) {
+    public StrategyGraphStep(final Traversal.Admin traversal, final StrategyGraph strategyGraph, final Class<E> returnClass, final GraphTraversal<?, E> graphTraversal) {
         super(traversal, strategyGraph, returnClass);
         this.graphTraversal = graphTraversal;
         this.setIteratorSupplier(() -> (Iterator) (Vertex.class.isAssignableFrom(this.returnClass) ?

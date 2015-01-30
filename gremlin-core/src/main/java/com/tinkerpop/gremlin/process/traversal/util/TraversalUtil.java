@@ -14,7 +14,7 @@ public final class TraversalUtil {
     }
 
     public static final <S, E> E apply(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
-        final Traverser.Admin<S> split = traverser.asAdmin().split();
+        final Traverser.Admin<S> split = traverser.split();
         split.setSideEffects(traversal.getSideEffects());
         split.setBulk(1l); // TODO: do we do this?
         traversal.reset();
@@ -27,7 +27,7 @@ public final class TraversalUtil {
     }
 
     public static final <S, E> boolean test(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
-        final Traverser.Admin<S> split = traverser.asAdmin().split();
+        final Traverser.Admin<S> split = traverser.split();
         split.setSideEffects(traversal.getSideEffects());
         split.setBulk(1l); // TODO: do we do this?
         traversal.reset();

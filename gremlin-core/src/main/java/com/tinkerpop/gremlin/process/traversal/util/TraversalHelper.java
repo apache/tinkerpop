@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.process.traversal.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
@@ -180,8 +180,8 @@ public final class TraversalHelper {
             if (stepClass.isAssignableFrom(step.getClass()))
                 list.add((S) step);
             if (step instanceof TraversalParent) {
-                for (final Traversal<?, ?> nest : ((TraversalParent) step).getGlobalChildren()) {
-                    list.addAll(TraversalHelper.getStepsOfAssignableClassRecurssively(stepClass, nest.asAdmin()));
+                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
+                    list.addAll(TraversalHelper.getStepsOfAssignableClassRecurssively(stepClass, globalChild));
                 }
             }
         }
@@ -262,7 +262,7 @@ public final class TraversalHelper {
                     }
                 }
             }
-            current = holder.asStep().getTraversal().asAdmin();
+            current = holder.asStep().getTraversal();
         }
         if (-1 == stepPosition.z) stepPosition.z = 0;
         if (null == stepPosition.parentId) stepPosition.parentId = "";
@@ -271,9 +271,9 @@ public final class TraversalHelper {
         }
     }
 
-    public static Traversal<?, ?> getRootTraversal(Traversal.Admin<?, ?> traversal) {
+    public static Traversal.Admin<?, ?> getRootTraversal(Traversal.Admin<?, ?> traversal) {
         while (!((traversal.getParent()) instanceof EmptyStep)) {
-            traversal = traversal.getParent().asStep().getTraversal().asAdmin();
+            traversal = traversal.getParent().asStep().getTraversal();
         }
         return traversal;
     }

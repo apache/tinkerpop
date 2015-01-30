@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -22,7 +22,7 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
     private Direction direction;
     private final Class<E> returnClass;
 
-    public VertexStep(final Traversal traversal, final Class<E> returnClass, final Direction direction, final String... edgeLabels) {
+    public VertexStep(final Traversal.Admin traversal, final Class<E> returnClass, final Direction direction, final String... edgeLabels) {
         super(traversal);
         this.direction = direction;
         this.edgeLabels = edgeLabels;

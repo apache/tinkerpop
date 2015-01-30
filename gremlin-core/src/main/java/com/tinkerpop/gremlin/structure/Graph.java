@@ -121,8 +121,8 @@ public interface Graph extends AutoCloseable {
      * @return a graph traversal over the vertices of the graph
      */
     public default GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this.getClass());
-        return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Vertex.class, vertexIds));
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this.getClass());
+        return traversal.addStep(new GraphStep<>(traversal, this, Vertex.class, vertexIds));
     }
 
     /**
@@ -133,8 +133,8 @@ public interface Graph extends AutoCloseable {
      * @return a graph traversal over the edges of the graph
      */
     public default GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this.getClass());
-        return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Edge.class, edgeIds));
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(this.getClass());
+        return traversal.addStep(new GraphStep<>(traversal, this, Edge.class, edgeIds));
     }
 
     /**

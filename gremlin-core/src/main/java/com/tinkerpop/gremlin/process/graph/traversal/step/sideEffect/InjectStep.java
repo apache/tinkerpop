@@ -13,7 +13,7 @@ public final class InjectStep<S> extends StartStep<S> {
     private final List<S> injections;
 
     @SafeVarargs
-    public InjectStep(final Traversal traversal, final S... injections) {
+    public InjectStep(final Traversal.Admin traversal, final S... injections) {
         super(traversal);
         this.injections = Arrays.asList(injections);
         this.start = this.injections.iterator();
