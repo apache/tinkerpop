@@ -28,7 +28,7 @@ public final class TraverserExecutor {
 
         final TraverserSet<Object> aliveTraversers = new TraverserSet<>();
         // gather incoming traversers into a traverser set and gain the 'weighted-set' optimization
-        final TraversalSideEffects traversalSideEffects = traversalMatrix.getTraversal().asAdmin().getSideEffects();
+        final TraversalSideEffects traversalSideEffects = traversalMatrix.getTraversal().getSideEffects();
         messenger.receiveMessages(MessageScope.Global.instance()).forEach(traverserSet -> {
             traverserSet.forEach(traverser -> {
                 traverser.setSideEffects(traversalSideEffects);

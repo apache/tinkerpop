@@ -6,13 +6,13 @@ import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traversal.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.StoreMapReduce;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.util.BulkSet;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable, SideEffectRegistrar, Reversible, TraversalHolder, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
+public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable, SideEffectRegistrar, Reversible, TraversalParent, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
 
     private Traversal.Admin<S, Object> storeTraversal = new IdentityTraversal<>();
     private String sideEffectKey;
@@ -55,29 +55,24 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     }
 
     @Override
-    public List<Traversal<S, Object>> getLocalTraversals() {
+    public List<Traversal.Admin<S, Object>> getLocalChildren() {
         return Collections.singletonList(this.storeTraversal);
     }
 
     @Override
-    public void addLocalTraversal(final Traversal.Admin<?, ?> storeTraversal) {
-        this.storeTraversal = (Traversal.Admin<S, Object>) storeTraversal;
-        this.executeTraversalOperations(this.storeTraversal, TYPICAL_LOCAL_OPERATIONS);
+    public void addLocalChild(final Traversal.Admin<?, ?> storeTraversal) {
+        this.storeTraversal = this.integrateChild(storeTraversal, TYPICAL_LOCAL_OPERATIONS);
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = TraversalHolder.super.getRequirements();
-        requirements.add(TraverserRequirement.SIDE_EFFECTS);
-        requirements.add(TraverserRequirement.BULK);
-        return requirements;
+        return this.getSelfAndChildRequirements(TraverserRequirement.SIDE_EFFECTS, TraverserRequirement.BULK);
     }
 
     @Override
     public StoreStep<S> clone() throws CloneNotSupportedException {
         final StoreStep<S> clone = (StoreStep<S>) super.clone();
-        clone.storeTraversal = this.storeTraversal.clone();
-        clone.executeTraversalOperations(clone.storeTraversal, TYPICAL_LOCAL_OPERATIONS);
+        clone.storeTraversal = clone.integrateChild(this.storeTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
         StoreStep.generateConsumer(clone);
         return clone;
     }
@@ -87,7 +82,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     private static final <S> void generateConsumer(final StoreStep<S> storeStep) {
         storeStep.setConsumer(traverser -> TraversalHelper.addToCollection(
                 traverser.sideEffects(storeStep.sideEffectKey),
-                TraversalUtil.function(traverser.asAdmin(), storeStep.storeTraversal),
+                TraversalUtil.apply(traverser.asAdmin(), storeStep.storeTraversal),
                 traverser.bulk()));
     }
 }

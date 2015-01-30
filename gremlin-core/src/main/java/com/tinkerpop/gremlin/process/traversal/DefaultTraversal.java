@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -23,7 +22,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
 
     private E lastEnd = null;
     private long lastEndCount = 0l;
-    private boolean locked = false; // an optimization so getTraversalEngine().isEmpty() isn't required on each next()/hasNext()
+    private boolean locked = false; // an optimization so getEngine().isEmpty() isn't required on each next()/hasNext()
     private Step<?, E> finalEndStep = EmptyStep.instance();
     private final StepPosition stepPosition = new StepPosition();
 
@@ -32,7 +31,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
     protected Optional<TraversalEngine> traversalEngine = Optional.empty();
 
-    protected TraversalHolder traversalHolder = (TraversalHolder) EmptyStep.instance();
+    protected TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
 
     public DefaultTraversal(final Class emanatingClass) {
         this.strategies = TraversalStrategies.GlobalCache.getStrategies(emanatingClass);
@@ -51,9 +50,9 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
         TraversalHelper.reIdSteps(this.stepPosition, this);
         this.strategies.applyStrategies(this, engine);
         for (final Step<?, ?> step : this.getSteps()) {
-            if (step instanceof TraversalHolder) {
-                ((TraversalHolder) step).setStrategies(this.strategies); // TODO: should we clone?
-                for (final Traversal<?, ?> nested : ((TraversalHolder) step).getGlobalTraversals()) {
+            if (step instanceof TraversalParent) {
+                ((TraversalParent) step).setChildStrategies(this.strategies); // TODO: should we clone?
+                for (final Traversal<?, ?> nested : ((TraversalParent) step).getGlobalChildren()) {
                     nested.asAdmin().applyStrategies(engine);
                 }
             }
@@ -64,7 +63,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     }
 
     @Override
-    public Optional<TraversalEngine> getTraversalEngine() {
+    public Optional<TraversalEngine> getEngine() {
         return this.traversalEngine;
     }
 
@@ -196,13 +195,13 @@ public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<
     }
 
     @Override
-    public void setTraversalHolder(final TraversalHolder step) {
-        this.traversalHolder = step;
+    public void setParent(final TraversalParent step) {
+        this.traversalParent = step;
     }
 
     @Override
-    public TraversalHolder getTraversalHolder() {
-        return this.traversalHolder;
+    public TraversalParent getParent() {
+        return this.traversalParent;
     }
 
 }

@@ -17,7 +17,7 @@ public class RouteStrategy extends AbstractTraversalStrategy {
 
     private static final String getNextStepIdRecurssively(final Step step) {
         if (step.getNextStep() instanceof EmptyStep) {
-            final Step holderStep = step.getTraversal().asAdmin().getTraversalHolder().asStep();
+            final Step holderStep = step.getTraversal().asAdmin().getParent().asStep();
             if (holderStep instanceof EmptyStep) {
                 return EmptyStep.instance().getId();
             } else {

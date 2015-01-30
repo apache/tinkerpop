@@ -41,7 +41,7 @@ public final class GroupMapReduce implements MapReduce<Object, Collection, Objec
     public GroupMapReduce(final GroupStep step) {
         this.groupStepId = step.getId();
         this.sideEffectKey = step.getSideEffectKey();
-        this.reduceFunction = step.getReduceFunction();
+        this.reduceFunction = step.getReduceTraversal();
         this.mapSupplier = step.getTraversal().asAdmin().getSideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
     }
 
@@ -59,7 +59,7 @@ public final class GroupMapReduce implements MapReduce<Object, Collection, Objec
         final Traversal.Admin<?, ?> traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
         traversal.applyStrategies(TraversalEngine.COMPUTER); // TODO: this is a scary error prone requirement, but only a problem for GroupStep
         final GroupStep groupStep = new TraversalMatrix<>(traversal).getStepById(this.groupStepId);
-        this.reduceFunction = groupStep.getReduceFunction();
+        this.reduceFunction = groupStep.getReduceTraversal();
         this.mapSupplier = traversal.getSideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
     }
 
@@ -77,7 +77,7 @@ public final class GroupMapReduce implements MapReduce<Object, Collection, Objec
     public void reduce(final Object key, final Iterator<Collection> values, final ReduceEmitter<Object, Object> emitter) {
         final Set set = new BulkSet<>();
         values.forEachRemaining(set::addAll);
-        emitter.emit(key, (null == this.reduceFunction) ? set : TraversalUtil.function(set, this.reduceFunction));
+        emitter.emit(key, (null == this.reduceFunction) ? set : TraversalUtil.apply(set, this.reduceFunction));
     }
 
     @Override

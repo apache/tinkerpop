@@ -13,7 +13,7 @@ public final class TraversalUtil {
     private TraversalUtil() {
     }
 
-    public static final <S, E> E function(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
+    public static final <S, E> E apply(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
         final Traverser.Admin<S> split = traverser.asAdmin().split();
         split.setSideEffects(traversal.getSideEffects());
         split.setBulk(1l); // TODO: do we do this?
@@ -26,7 +26,7 @@ public final class TraversalUtil {
         }
     }
 
-    public static final <S, E> boolean predicate(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
+    public static final <S, E> boolean test(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
         final Traverser.Admin<S> split = traverser.asAdmin().split();
         split.setSideEffects(traversal.getSideEffects());
         split.setBulk(1l); // TODO: do we do this?
@@ -37,7 +37,7 @@ public final class TraversalUtil {
 
     ///////
 
-    public static final <S, E> E function(final S start, final Traversal.Admin<S, E> traversal) {
+    public static final <S, E> E apply(final S start, final Traversal.Admin<S, E> traversal) {
         traversal.reset();
         traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
         try {
@@ -47,9 +47,10 @@ public final class TraversalUtil {
         }
     }
 
-    public static final <S, E> boolean predicate(final S start, final Traversal.Admin<S, E> traversal) {
+    public static final <S, E> boolean test(final S start, final Traversal.Admin<S, E> traversal) {
         traversal.reset();
         traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
         return traversal.hasNext(); // filter
     }
+
 }

@@ -2,10 +2,10 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.traversal.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,17 +16,17 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements TraversalHolder {
+public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements TraversalParent {
 
-    private List<Traversal<S, ?>> conjunctionTraversals;
+    private List<Traversal.Admin<S, ?>> conjunctionTraversals;
     private final boolean isAnd;
 
-    public ConjunctionStep(final Traversal traversal, final Traversal<S, ?>... conjunctionTraversals) {
+    public ConjunctionStep(final Traversal traversal, final Traversal.Admin<S, ?>... conjunctionTraversals) {
         super(traversal);
         this.isAnd = this.getClass().equals(AndStep.class);
         this.conjunctionTraversals = Arrays.asList(conjunctionTraversals);
-        for (final Traversal<S, ?> conjunctionTraversal : this.conjunctionTraversals) {
-            this.executeTraversalOperations(conjunctionTraversal, TYPICAL_LOCAL_OPERATIONS);
+        for (final Traversal.Admin<S, ?> conjunctionTraversal : this.conjunctionTraversals) {
+            this.integrateChild(conjunctionTraversal, TYPICAL_LOCAL_OPERATIONS);
         }
     }
 
@@ -35,10 +35,10 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
         while (true) {
             final Traverser.Admin<S> start = this.starts.next();
             boolean found = false;
-            for (final Traversal<S, ?> traversal : this.conjunctionTraversals) {
-                traversal.asAdmin().addStart(start.split());
+            for (final Traversal.Admin<S, ?> traversal : this.conjunctionTraversals) {
+                traversal.addStart(start.split());
                 found = traversal.hasNext();
-                traversal.asAdmin().reset();
+                traversal.reset();
                 if (this.isAnd) {
                     if (!found)
                         break;
@@ -51,11 +51,11 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return TraversalHolder.super.getRequirements();
+        return this.getSelfAndChildRequirements();
     }
 
     @Override
-    public List<Traversal<S, ?>> getLocalTraversals() {
+    public List<Traversal.Admin<S, ?>> getLocalChildren() {
         return this.conjunctionTraversals;
     }
 
@@ -63,10 +63,8 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
     public ConjunctionStep<S> clone() throws CloneNotSupportedException {
         final ConjunctionStep<S> clone = (ConjunctionStep<S>) super.clone();
         clone.conjunctionTraversals = new ArrayList<>();
-        for (final Traversal<S, ?> andTraversal : this.conjunctionTraversals) {
-            final Traversal<S, ?> clonedAndTraversal = andTraversal.asAdmin().clone();
-            clone.conjunctionTraversals.add(clonedAndTraversal);
-            clone.executeTraversalOperations(clonedAndTraversal, TYPICAL_LOCAL_OPERATIONS);
+        for (final Traversal.Admin<S, ?> andTraversal : this.conjunctionTraversals) {
+            clone.conjunctionTraversals.add(clone.integrateChild(andTraversal.clone(), TYPICAL_LOCAL_OPERATIONS));
         }
         return clone;
     }

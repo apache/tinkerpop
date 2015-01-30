@@ -2,9 +2,9 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.traversal.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.function.BiPredicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WhereStep<E> extends FilterStep<Map<String, E>> implements TraversalHolder {
+public final class WhereStep<E> extends FilterStep<Map<String, E>> implements TraversalParent {
 
     private final String firstKey;
     private final String secondKey;
@@ -33,17 +33,18 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
 
     }
 
-    public WhereStep(final Traversal traversal, final Traversal constraint) {
+    public WhereStep(final Traversal traversal, final Traversal.Admin constraint) {
         super(traversal);
         this.firstKey = null;
         this.secondKey = null;
         this.biPredicate = null;
-        this.constraint = constraint.asAdmin();
-        this.executeTraversalOperations(this.constraint, Child.SET_HOLDER);
+        this.constraint = constraint;
+        this.integrateChild(this.constraint, Child.SET_HOLDER);
         WhereStep.generatePredicate(this);
     }
 
-    public List<Traversal> getLocalTraversals() {
+    @Override
+    public List<Traversal.Admin> getLocalChildren() {
         return null == this.constraint ? Collections.emptyList() : Collections.singletonList(this.constraint);
     }
 
@@ -55,20 +56,15 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
     @Override
     public WhereStep<E> clone() throws CloneNotSupportedException {
         final WhereStep<E> clone = (WhereStep<E>) super.clone();
-        if (null != this.constraint) {
-            clone.constraint = this.constraint.clone().asAdmin();
-            clone.executeTraversalOperations(clone.constraint, TYPICAL_LOCAL_OPERATIONS);
-        }
+        if (null != this.constraint)
+            clone.constraint = clone.integrateChild(this.constraint.clone(), TYPICAL_LOCAL_OPERATIONS);
         WhereStep.generatePredicate(clone);
         return clone;
     }
 
-
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = TraversalHolder.super.getRequirements();
-        requirements.add(TraverserRequirement.OBJECT);
-        return requirements;
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
     }
 
     /////////////////////////
@@ -120,6 +116,4 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
             });
         }
     }
-
-
 }

@@ -9,13 +9,13 @@ import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traversal.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.GroupMapReduce;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.util.BulkSet;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,12 +27,12 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, SideEffectRegistrar, TraversalHolder, Reversible, EngineDependent, MapReducer<Object, Collection, Object, Object, Map> {
+public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, SideEffectRegistrar, TraversalParent, Reversible, EngineDependent, MapReducer<Object, Collection, Object, Object, Map> {
 
     private char state = 'k';
-    private Traversal.Admin<S, K> keyFunction = new IdentityTraversal<>();
-    private Traversal.Admin<S, V> valueFunction = new IdentityTraversal<>();
-    private Traversal.Admin<Collection<V>, R> reduceFunction = null;
+    private Traversal.Admin<S, K> keyTraversal = new IdentityTraversal<>();
+    private Traversal.Admin<S, V> valueTraversal = new IdentityTraversal<>();
+    private Traversal.Admin<Collection<V>, R> reduceTraversal = null;
     private String sideEffectKey;
     private boolean onGraphComputer = false;
     private Map<K, Collection<V>> tempGroupByMap;
@@ -55,8 +55,8 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     }
 
     private static <S, K, V> void doGroup(final Traverser.Admin<S> traverser, final Map<K, Collection<V>> groupMap, final Traversal.Admin<S, K> keyFunction, final Traversal.Admin<S, V> valueFunction) {
-        final K key = TraversalUtil.function(traverser, keyFunction);
-        final V value = TraversalUtil.function(traverser, valueFunction);
+        final K key = TraversalUtil.apply(traverser, keyFunction);
+        final V value = TraversalUtil.apply(traverser, valueFunction);
         Collection<V> values = groupMap.get(key);
         if (null == values) {
             values = new BulkSet<>();
@@ -66,7 +66,7 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     }
 
     private static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final Traversal.Admin<Collection<V>, R> reduceFunction) {
-        groupMap.forEach((k, vv) -> reduceMap.put(k, TraversalUtil.function(vv, reduceFunction)));
+        groupMap.forEach((k, vv) -> reduceMap.put(k, TraversalUtil.apply(vv, reduceFunction)));
     }
 
     @Override
@@ -81,31 +81,28 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.keyFunction, this.valueFunction, this.reduceFunction);
+        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.keyTraversal, this.valueTraversal, this.reduceTraversal);
     }
 
     @Override
-    public <A, B> List<Traversal<A, B>> getLocalTraversals() {
-        return null == this.reduceFunction ? (List) Arrays.asList(this.keyFunction, this.valueFunction) : (List) Arrays.asList(this.keyFunction, this.valueFunction, this.reduceFunction);
+    public <A, B> List<Traversal.Admin<A, B>> getLocalChildren() {
+        return null == this.reduceTraversal ? (List) Arrays.asList(this.keyTraversal, this.valueTraversal) : (List) Arrays.asList(this.keyTraversal, this.valueTraversal, this.reduceTraversal);
     }
 
-    public Traversal.Admin<Collection<V>, R> getReduceFunction() {
-        return this.reduceFunction;
+    public Traversal.Admin<Collection<V>, R> getReduceTraversal() {
+        return this.reduceTraversal;
     }
 
     @Override
-    public void addLocalTraversal(final Traversal.Admin<?, ?> kvrTraversal) {
+    public void addLocalChild(final Traversal.Admin<?, ?> kvrTraversal) {
         if ('k' == this.state) {
-            this.keyFunction = (Traversal.Admin<S, K>) kvrTraversal;
-            this.executeTraversalOperations(this.keyFunction, TYPICAL_LOCAL_OPERATIONS);
+            this.keyTraversal = this.integrateChild(kvrTraversal, TYPICAL_LOCAL_OPERATIONS);
             this.state = 'v';
         } else if ('v' == this.state) {
-            this.valueFunction = (Traversal.Admin<S, V>) kvrTraversal;
-            this.executeTraversalOperations(this.valueFunction, TYPICAL_LOCAL_OPERATIONS);
+            this.valueTraversal = this.integrateChild(kvrTraversal, TYPICAL_LOCAL_OPERATIONS);
             this.state = 'r';
         } else if ('r' == this.state) {
-            this.reduceFunction = (Traversal.Admin<Collection<V>, R>) kvrTraversal;
-            this.executeTraversalOperations(this.reduceFunction, TYPICAL_LOCAL_OPERATIONS);
+            this.reduceTraversal = this.integrateChild(kvrTraversal, TYPICAL_LOCAL_OPERATIONS);
             this.state = 'x';
         } else {
             throw new IllegalStateException("The key, value, and reduce functions for group()-step have already been set");
@@ -114,23 +111,16 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = TraversalHolder.super.getRequirements();
-        requirements.add(TraverserRequirement.BULK);
-        requirements.add(TraverserRequirement.SIDE_EFFECTS);
-        return requirements;
+        return this.getSelfAndChildRequirements(TraverserRequirement.SIDE_EFFECTS, TraverserRequirement.BULK);
     }
 
     @Override
     public GroupStep<S, K, V, R> clone() throws CloneNotSupportedException {
         final GroupStep<S, K, V, R> clone = (GroupStep<S, K, V, R>) super.clone();
-        clone.keyFunction = this.keyFunction.clone().asAdmin();
-        clone.executeTraversalOperations(this.keyFunction, TYPICAL_LOCAL_OPERATIONS);
-        clone.valueFunction = this.valueFunction.clone().asAdmin();
-        clone.executeTraversalOperations(this.valueFunction, TYPICAL_LOCAL_OPERATIONS);
-        if (null != this.reduceFunction) {
-            clone.reduceFunction = this.reduceFunction.clone().asAdmin();
-            clone.executeTraversalOperations(this.reduceFunction, TYPICAL_LOCAL_OPERATIONS);
-        }
+        clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+        clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+        if (null != this.reduceTraversal)
+            clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
         GroupStep.generateConsumer(clone);
         return clone;
     }
@@ -140,11 +130,11 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     private static final <S, K, V, R> void generateConsumer(final GroupStep<S, K, V, R> groupStep) {
         groupStep.setConsumer(traverser -> {
             final Map<K, Collection<V>> groupByMap = null == groupStep.tempGroupByMap ? traverser.sideEffects(groupStep.sideEffectKey) : groupStep.tempGroupByMap; // for nested traversals and not !starts.hasNext()
-            doGroup(traverser.asAdmin(), groupByMap, groupStep.keyFunction, groupStep.valueFunction);
-            if (!groupStep.onGraphComputer && null != groupStep.reduceFunction && !groupStep.starts.hasNext()) {
+            doGroup(traverser.asAdmin(), groupByMap, groupStep.keyTraversal, groupStep.valueTraversal);
+            if (!groupStep.onGraphComputer && null != groupStep.reduceTraversal && !groupStep.starts.hasNext()) {
                 groupStep.tempGroupByMap = groupByMap;
                 final Map<K, R> reduceMap = new HashMap<>();
-                doReduce(groupByMap, reduceMap, groupStep.reduceFunction);
+                doReduce(groupByMap, reduceMap, groupStep.reduceTraversal);
                 traverser.sideEffects(groupStep.sideEffectKey, reduceMap);
             }
         });

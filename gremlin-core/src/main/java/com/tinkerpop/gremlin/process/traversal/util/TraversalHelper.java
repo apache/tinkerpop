@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.traversal.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traversal.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
@@ -179,8 +179,8 @@ public final class TraversalHelper {
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (stepClass.isAssignableFrom(step.getClass()))
                 list.add((S) step);
-            if (step instanceof TraversalHolder) {
-                for (final Traversal<?, ?> nest : ((TraversalHolder) step).getGlobalTraversals()) {
+            if (step instanceof TraversalParent) {
+                for (final Traversal<?, ?> nest : ((TraversalParent) step).getGlobalChildren()) {
                     list.addAll(TraversalHelper.getStepsOfAssignableClassRecurssively(stepClass, nest.asAdmin()));
                 }
             }
@@ -252,12 +252,12 @@ public final class TraversalHelper {
         Traversal.Admin<?, ?> current = traversal;
         while (!(current instanceof EmptyTraversal)) {
             stepPosition.y++;
-            final TraversalHolder holder = current.getTraversalHolder();
+            final TraversalParent holder = current.getParent();
             if (null == stepPosition.parentId && !(holder instanceof EmptyStep))
                 stepPosition.parentId = holder.asStep().getId();
             if (-1 == stepPosition.z) {
-                for (int i = 0; i < holder.getGlobalTraversals().size(); i++) {
-                    if (holder.getGlobalTraversals().get(i) == current) {
+                for (int i = 0; i < holder.getGlobalChildren().size(); i++) {
+                    if (holder.getGlobalChildren().get(i) == current) {
                         stepPosition.z = i;
                     }
                 }
@@ -272,8 +272,8 @@ public final class TraversalHelper {
     }
 
     public static Traversal<?, ?> getRootTraversal(Traversal.Admin<?, ?> traversal) {
-        while (!((traversal.getTraversalHolder()) instanceof EmptyStep)) {
-            traversal = traversal.getTraversalHolder().asStep().getTraversal().asAdmin();
+        while (!((traversal.getParent()) instanceof EmptyStep)) {
+            traversal = traversal.getParent().asStep().getTraversal().asAdmin();
         }
         return traversal;
     }

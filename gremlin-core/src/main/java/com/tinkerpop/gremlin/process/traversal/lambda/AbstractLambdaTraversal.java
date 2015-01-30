@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traversal.TraversalParent;
 import com.tinkerpop.gremlin.process.traverser.O_TraverserGenerator;
 import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import com.tinkerpop.gremlin.process.traversal.util.EmptyTraversalSideEffects;
@@ -48,7 +48,7 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     }
 
     @Override
-    public Optional<TraversalEngine> getTraversalEngine() {
+    public Optional<TraversalEngine> getEngine() {
         return Optional.of(TraversalEngine.STANDARD);
     }
 
@@ -78,13 +78,13 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     }
 
     @Override
-    public void setTraversalHolder(final TraversalHolder step) {
+    public void setParent(final TraversalParent step) {
 
     }
 
     @Override
-    public TraversalHolder getTraversalHolder() {
-        return (TraversalHolder) EmptyStep.instance();
+    public TraversalParent getParent() {
+        return (TraversalParent) EmptyStep.instance();
     }
 
     @Override

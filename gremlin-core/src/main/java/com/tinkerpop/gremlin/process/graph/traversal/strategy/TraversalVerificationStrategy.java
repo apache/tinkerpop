@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traversal.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.SupplyingBarrierStep;
@@ -32,11 +32,11 @@ public class TraversalVerificationStrategy extends AbstractTraversalStrategy {
                 traversal.getEndStep();
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep) && (step != endStep || !(traversal.getTraversalHolder() instanceof EmptyStep))) {
+            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep))) {
                 throw new IllegalStateException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step);
             }
-            if (step instanceof TraversalHolder) {
-                final Optional<Traversal<Object, Object>> traversalOptional = ((TraversalHolder) step).getLocalTraversals().stream()
+            if (step instanceof TraversalParent) {
+                final Optional<Traversal.Admin<Object, Object>> traversalOptional = ((TraversalParent) step).getLocalChildren().stream()
                         .filter(t -> !TraversalHelper.isLocalStarGraph(t.asAdmin()))
                         .findAny();
                 if (traversalOptional.isPresent())

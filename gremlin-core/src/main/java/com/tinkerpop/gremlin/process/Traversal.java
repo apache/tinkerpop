@@ -4,9 +4,9 @@ import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import com.tinkerpop.gremlin.process.traversal.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.traversal.DefaultTraversal;
@@ -133,7 +133,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default <C extends Collection<E>> C fill(final C collection) {
         try {
-            if (!this.asAdmin().getTraversalEngine().isPresent())
+            if (!this.asAdmin().getEngine().isPresent())
                 this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
             final Step<?, E> endStep = this.asAdmin().getEndStep();
@@ -155,7 +155,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default <A, B> Traversal<A, B> iterate() {
         try {
-            if (!this.asAdmin().getTraversalEngine().isPresent())
+            if (!this.asAdmin().getEngine().isPresent())
                 this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
             final Step<?, E> endStep = this.asAdmin().getEndStep();
@@ -313,7 +313,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          *
          * @return whether the traversal engine has been defined or not.
          */
-        public Optional<TraversalEngine> getTraversalEngine();
+        public Optional<TraversalEngine> getEngine();
 
         /**
          * Get the {@link TraverserGenerator} associated with this traversal.
@@ -338,7 +338,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
                 requirements.add(TraverserRequirement.SIDE_EFFECTS);
             if (this.getSideEffects().getSackInitialValue().isPresent())
                 requirements.add(TraverserRequirement.SACK);
-            if (this.getTraversalEngine().isPresent() && this.getTraversalEngine().get().equals(TraversalEngine.COMPUTER))
+            if (this.getEngine().isPresent() && this.getEngine().get().equals(TraversalEngine.COMPUTER))
                 requirements.add(TraverserRequirement.BULK);
             return requirements;
         }
@@ -390,20 +390,20 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         public TraversalStrategies getStrategies();
 
         /**
-         * Set the {@link TraversalHolder} {@link Step} that is the parent of this traversal.
+         * Set the {@link com.tinkerpop.gremlin.process.traversal.TraversalParent} {@link Step} that is the parent of this traversal.
          * Traversals can be nested and this is the means by which the traversal tree is connected.
          *
          * @param step the traversal holder parent step
          */
-        public void setTraversalHolder(final TraversalHolder step);
+        public void setParent(final TraversalParent step);
 
         /**
-         * Get the {@link TraversalHolder} {@link Step} that is the parent of this traversal.
+         * Get the {@link com.tinkerpop.gremlin.process.traversal.TraversalParent} {@link Step} that is the parent of this traversal.
          * Traversals can be nested and this is the means by which the traversal tree is walked.
          *
          * @return the traversal holder parent step
          */
-        public TraversalHolder getTraversalHolder();
+        public TraversalParent getParent();
 
         /**
          * Cloning is used to duplicate the traversal typically in OLAP environments.

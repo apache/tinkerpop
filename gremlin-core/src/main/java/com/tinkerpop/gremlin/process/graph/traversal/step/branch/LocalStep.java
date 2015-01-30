@@ -1,12 +1,12 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.branch;
 
+import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.traversal.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,23 +16,21 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LocalStep<S, E> extends AbstractStep<S, E> implements TraversalHolder {
+public final class LocalStep<S, E> extends AbstractStep<S, E> implements TraversalParent {
 
     private Traversal.Admin<S, E> localTraversal;
     private boolean first = true;
 
-    public LocalStep(final Traversal traversal, final Traversal<S, E> localTraversal) {
+    public LocalStep(final Traversal traversal, final Traversal.Admin<S, E> localTraversal) {
         super(traversal);
-        this.localTraversal = localTraversal.asAdmin();
-        this.executeTraversalOperations(this.localTraversal, TYPICAL_GLOBAL_OPERATIONS);
+        this.integrateChild(this.localTraversal = localTraversal, TYPICAL_GLOBAL_OPERATIONS);
     }
 
     @Override
     public LocalStep<S, E> clone() throws CloneNotSupportedException {
         final LocalStep<S, E> clone = (LocalStep<S, E>) super.clone();
-        clone.localTraversal = this.localTraversal.clone().asAdmin();
+        clone.localTraversal = clone.integrateChild(this.localTraversal.clone(), TYPICAL_GLOBAL_OPERATIONS);
         clone.first = true;
-        clone.executeTraversalOperations(clone.localTraversal, TYPICAL_GLOBAL_OPERATIONS);
         return clone;
     }
 
@@ -42,7 +40,7 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
     }
 
     @Override
-    public List<Traversal<S, E>> getLocalTraversals() {
+    public List<Traversal.Admin<S, E>> getLocalChildren() {
         return Collections.singletonList(this.localTraversal);
     }
 

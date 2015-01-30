@@ -12,8 +12,9 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionParent;
+import com.tinkerpop.gremlin.process.traversal.TraversalParent;
+import com.tinkerpop.gremlin.process.graph.traversal.lambda.LoopTraversal;
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.LocalStep;
@@ -79,9 +80,6 @@ import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.HasContainer;
-import com.tinkerpop.gremlin.process.graph.traversal.lambda.LoopTraversal;
-import com.tinkerpop.gremlin.process.traversal.step.ElementFunctionComparator;
-import com.tinkerpop.gremlin.process.traversal.step.ElementValueComparator;
 import com.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import com.tinkerpop.gremlin.process.traversal.lambda.FilterTraversal;
 import com.tinkerpop.gremlin.process.traversal.lambda.FilterTraverserTraversal;
@@ -89,6 +87,8 @@ import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import com.tinkerpop.gremlin.process.traversal.lambda.MapTraversal;
 import com.tinkerpop.gremlin.process.traversal.lambda.MapTraverserTraversal;
 import com.tinkerpop.gremlin.process.traversal.lambda.TrueTraversal;
+import com.tinkerpop.gremlin.process.traversal.step.ElementFunctionComparator;
+import com.tinkerpop.gremlin.process.traversal.step.ElementValueComparator;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -99,6 +99,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import com.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -292,7 +293,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> fold(final E2 seed, final BiFunction<E2, E, E2> foldFunction) {
-        return this.asAdmin().addStep(new FoldStep<>(this, () -> seed, foldFunction)); // TODO: User should provide supplier
+        return this.asAdmin().addStep(new FoldStep<>(this, () -> seed, foldFunction)); // TODO: User should provide supplier?
     }
 
     public default GraphTraversal<S, Long> count() {
@@ -324,11 +325,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> or(final Traversal<?, ?>... orTraversals) {
-        return this.asAdmin().addStep(new OrStep(this, orTraversals));
+        return this.asAdmin().addStep(new OrStep(this, Arrays.copyOf(orTraversals, orTraversals.length, Traversal.Admin[].class)));
     }
 
     public default GraphTraversal<S, E> and(final Traversal<?, ?>... andTraversals) {
-        return this.asAdmin().addStep(new AndStep(this, andTraversals));
+        return this.asAdmin().addStep(new AndStep(this, Arrays.copyOf(andTraversals, andTraversals.length, Traversal.Admin[].class)));
     }
 
     public default GraphTraversal<S, E> inject(final E... injections) {
@@ -360,7 +361,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> where(final Traversal constraint) {
-        return this.asAdmin().addStep(new WhereStep<>(this, constraint));
+        return this.asAdmin().addStep(new WhereStep<>(this, constraint.asAdmin()));
     }
 
     public default GraphTraversal<S, E> has(final Traversal<?, ?> hasNextTraversal) {
@@ -563,12 +564,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.choose(new FilterTraversal<>(choosePredicate), trueChoice, falseChoice);
     }
 
-    public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... traversals) {
-        return this.asAdmin().addStep(new UnionStep<>(this, (Traversal<E, E2>[]) traversals));
+    public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... unionTraversals) {
+        return this.asAdmin().addStep(new UnionStep(this, Arrays.copyOf(unionTraversals, unionTraversals.length, Traversal.Admin[].class)));
     }
 
     public default GraphTraversal<S, E> repeat(final Traversal<?, E> repeatTraversal) {
-        return RepeatStep.addRepeatToTraversal(this, (Traversal<E, E>) repeatTraversal);
+        return RepeatStep.addRepeatToTraversal(this, (Traversal.Admin<E, E>) repeatTraversal);
     }
 
     public default GraphTraversal<S, E> emit(final Traversal<?, ?> emitTraversal) {
@@ -596,7 +597,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {
-        return this.asAdmin().addStep(new LocalStep<>(this, localTraversal));
+        return this.asAdmin().addStep(new LocalStep<>(this, localTraversal.asAdmin()));
     }
 
     ///////////////////// UTILITY STEPS /////////////////////
@@ -633,27 +634,27 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ////
 
     public default GraphTraversal<S, E> by() {
-        ((TraversalHolder) this.asAdmin().getEndStep()).addLocalTraversal(new IdentityTraversal<>());
+        ((TraversalParent) this.asAdmin().getEndStep()).addLocalChild(new IdentityTraversal<>());
         return this;
     }
 
     public default <V> GraphTraversal<S, E> by(final Function<V, Object> functionProjection) {
-        ((TraversalHolder) this.asAdmin().getEndStep()).addLocalTraversal(new MapTraversal<>(functionProjection));
+        ((TraversalParent) this.asAdmin().getEndStep()).addLocalChild(new MapTraversal<>(functionProjection));
         return this;
     }
 
     public default GraphTraversal<S, E> by(final T tokenProjection) {
-        ((TraversalHolder) this.asAdmin().getEndStep()).addLocalTraversal(new MapTraversal<>(tokenProjection));
+        ((TraversalParent) this.asAdmin().getEndStep()).addLocalChild(new MapTraversal<>(tokenProjection));
         return this;
     }
 
     public default GraphTraversal<S, E> by(final String elementPropertyKey) {
-        ((TraversalHolder) this.asAdmin().getEndStep()).addLocalTraversal(new ElementValueTraversal<>(elementPropertyKey));
+        ((TraversalParent) this.asAdmin().getEndStep()).addLocalChild(new ElementValueTraversal<>(elementPropertyKey));
         return this;
     }
 
     public default GraphTraversal<S, E> by(final Traversal<?, ?> byTraversal) {
-        ((TraversalHolder) this.asAdmin().getEndStep()).addLocalTraversal(byTraversal.asAdmin());
+        ((TraversalParent) this.asAdmin().getEndStep()).addLocalChild(byTraversal.asAdmin());
         return this;
     }
 
@@ -682,12 +683,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ////
 
     public default <M, E2> GraphTraversal<S, E> option(final M pickToken, final Traversal<E, E2> traversalOption) {
-        ((TraversalOptionHolder<M, E, E2>) this.asAdmin().getEndStep()).addOption(pickToken, traversalOption);
+        ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addGlobalChildOption(pickToken, traversalOption.asAdmin());
         return this;
     }
 
     public default <E2> GraphTraversal<S, E> option(final Traversal<E, E2> traversalOption) {
-        ((TraversalOptionHolder<TraversalOptionHolder.Pick, E, E2>) this.asAdmin().getEndStep()).addOption(TraversalOptionHolder.Pick.any, traversalOption);
+        ((TraversalOptionParent<TraversalOptionParent.Pick, E, E2>) this.asAdmin().getEndStep()).addGlobalChildOption(TraversalOptionParent.Pick.any, traversalOption.asAdmin());
         return this;
     }
 

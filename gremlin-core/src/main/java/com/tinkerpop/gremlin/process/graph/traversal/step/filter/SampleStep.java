@@ -3,13 +3,13 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traversal.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.traversal.lambda.OneTraversal;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
-import com.tinkerpop.gremlin.process.traversal.lambda.OneTraversal;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SampleStep<S> extends CollectingBarrierStep<S> implements Reversible, TraversalHolder {
+public final class SampleStep<S> extends CollectingBarrierStep<S> implements Reversible, TraversalParent {
 
     private Traversal.Admin<S, Number> probabilityTraversal = OneTraversal.instance();
     private final int amountToSample;
@@ -32,14 +32,13 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
     }
 
     @Override
-    public List<Traversal.Admin<S, Number>> getLocalTraversals() {
+    public List<Traversal.Admin<S, Number>> getLocalChildren() {
         return Collections.singletonList(this.probabilityTraversal);
     }
 
     @Override
-    public void addLocalTraversal(final Traversal.Admin<?, ?> probabilityTraversal) {
-        this.probabilityTraversal = (Traversal.Admin<S, Number>) probabilityTraversal;
-        this.executeTraversalOperations(this.probabilityTraversal, TYPICAL_LOCAL_OPERATIONS);
+    public void addLocalChild(final Traversal.Admin<?, ?> probabilityTraversal) {
+        this.probabilityTraversal = this.integrateChild(probabilityTraversal, TYPICAL_LOCAL_OPERATIONS);
     }
 
     @Override
@@ -49,16 +48,13 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = TraversalHolder.super.getRequirements();
-        requirements.add(TraverserRequirement.BULK);
-        return requirements;
+        return this.getSelfAndChildRequirements(TraverserRequirement.BULK);
     }
 
     @Override
     public SampleStep<S> clone() throws CloneNotSupportedException {
         final SampleStep<S> clone = (SampleStep<S>) super.clone();
-        clone.probabilityTraversal = this.probabilityTraversal.clone();
-        clone.executeTraversalOperations(clone.probabilityTraversal, TYPICAL_LOCAL_OPERATIONS);
+        clone.probabilityTraversal = clone.integrateChild(this.probabilityTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
         SampleStep.generatePredicate(clone);
         return clone;
     }
@@ -73,7 +69,7 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
             //////////////// else sample the set
             double totalWeight = 0.0d;
             for (final Traverser<S> s : traverserSet) {
-                totalWeight = totalWeight + TraversalUtil.function(s.asAdmin(), sampleStep.probabilityTraversal).doubleValue() * s.bulk();
+                totalWeight = totalWeight + TraversalUtil.apply(s.asAdmin(), sampleStep.probabilityTraversal).doubleValue() * s.bulk();
             }
             ///////
             final TraverserSet<S> sampledSet = new TraverserSet<>();
@@ -84,7 +80,7 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
                 for (final Traverser.Admin<S> s : traverserSet) {
                     long sampleBulk = sampledSet.contains(s) ? sampledSet.get(s).bulk() : 0;
                     if (sampleBulk < s.bulk()) {
-                        final double currentWeight = TraversalUtil.function(s, sampleStep.probabilityTraversal).doubleValue();
+                        final double currentWeight = TraversalUtil.apply(s, sampleStep.probabilityTraversal).doubleValue();
                         for (int i = 0; i < (s.bulk() - sampleBulk); i++) {
                             runningWeight = runningWeight + currentWeight;
                             if (RANDOM.nextDouble() <= (runningWeight / totalWeight)) {

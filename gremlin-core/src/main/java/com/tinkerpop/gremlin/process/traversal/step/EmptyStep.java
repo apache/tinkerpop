@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.traversal.step;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
+import com.tinkerpop.gremlin.process.traversal.TraversalParent;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import com.tinkerpop.gremlin.process.FastNoSuchElementException;
@@ -16,7 +16,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EmptyStep<S, E> implements Step<S, E>, TraversalHolder {
+public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
 
     private static final EmptyStep INSTANCE = new EmptyStep<>();
 
