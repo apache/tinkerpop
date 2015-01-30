@@ -89,7 +89,7 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
     /**
      * Cloning is used to duplicate steps for the purpose of traversal optimization and OLTP replication.
      * When cloning a step, it is important that the steps, the cloned step is equivalent to the state of the step when reset() is called.
-     * Moreover, the previous and next steps should be set to {@link com.tinkerpop.gremlin.process.util.step.EmptyStep}.
+     * Moreover, the previous and next steps should be set to {@link com.tinkerpop.gremlin.process.traversal.step.EmptyStep}.
      *
      * @return The cloned step
      * @throws CloneNotSupportedException

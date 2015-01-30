@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.console.groovy.plugin;
 
 import com.tinkerpop.gremlin.groovy.plugin.SugarGremlinPlugin;
 import com.tinkerpop.gremlin.groovy.util.MetaRegistryUtil;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.codehaus.groovy.tools.shell.Groovysh;

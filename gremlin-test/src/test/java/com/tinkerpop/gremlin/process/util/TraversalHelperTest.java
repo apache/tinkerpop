@@ -2,18 +2,19 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
-import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.map.PropertiesStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
-import com.tinkerpop.gremlin.process.util.step.EmptyStep;
-import com.tinkerpop.gremlin.process.util.traversal.DefaultTraversal;
-import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.FilterStep;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.HasStep;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.IdentityStep;
+import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import com.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import static com.tinkerpop.gremlin.process.graph.__.*;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -31,7 +32,7 @@ public class TraversalHelperTest {
         assertTrue(TraversalHelper.isReversible(outE().has("since").inV().asAdmin()));
         assertTrue(TraversalHelper.isReversible(outE().as("x").asAdmin()));
 
-        assertFalse(TraversalHelper.isReversible(identity().as("a").outE().back("a").asAdmin()));
+        assertFalse(TraversalHelper.isReversible(__.as("a").outE().back("a").asAdmin()));
 
     }
 

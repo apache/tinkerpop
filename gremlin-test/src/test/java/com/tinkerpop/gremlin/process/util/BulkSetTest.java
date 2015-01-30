@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.util.tool.BulkSet;
 import org.junit.Test;
 
 import java.util.Iterator;

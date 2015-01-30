@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import static com.tinkerpop.gremlin.process.graph.__.*;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

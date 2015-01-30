@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.groovy.function.GComparator
 import com.tinkerpop.gremlin.groovy.function.GFunction
-import com.tinkerpop.gremlin.process.graph.GraphTraversal
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -4,14 +4,14 @@ import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.tool.BulkSet;
-import com.tinkerpop.gremlin.process.util.traversal.DefaultTraversal;
-import com.tinkerpop.gremlin.process.util.step.EmptyStep;
-import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.BulkSet;
+import com.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.ArrayList;
@@ -203,7 +203,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
         /**
          * Add an iterator of {@link Traverser} objects to the head/start of the traversal.
-         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep}.
+         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectStep}.
          *
          * @param starts an iterators of traversers
          */
@@ -213,7 +213,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
         /**
          * Add a single {@link Traverser} object to the head of the traversal.
-         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep}.
+         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectStep}.
          *
          * @param start a traverser to add to the traversal
          */

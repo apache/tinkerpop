@@ -10,8 +10,8 @@ import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.__.bothE;
-import static com.tinkerpop.gremlin.process.graph.__.outE;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.bothE;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.outE;
 import static org.junit.Assert.*;
 
 /**

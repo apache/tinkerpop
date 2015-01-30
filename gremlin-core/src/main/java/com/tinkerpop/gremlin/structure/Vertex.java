@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.graph.VertexTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.VertexTraversal;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.util.Iterator;
