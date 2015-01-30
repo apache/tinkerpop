@@ -11,23 +11,21 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class InjectStep<S> extends AbstractStep<S, S> {
+public final class InjectStep<S> extends StartStep<S> {
 
     private final List<S> injections;
-    private boolean first = true;
 
     @SafeVarargs
     public InjectStep(final Traversal traversal, final S... injections) {
         super(traversal);
         this.injections = Arrays.asList(injections);
+        this.start = this.injections.iterator();
     }
 
     @Override
-    protected Traverser<S> processNextStart() {
-        if (this.first) {
-            this.addStarts((Iterator) this.getTraversal().asAdmin().getTraverserGenerator().generateIterator(this.injections.iterator(), this, 1l));
-            this.first = false;
-        }
-        return this.starts.next();
+    public InjectStep<S> clone() throws CloneNotSupportedException {
+        final InjectStep<S> clone = (InjectStep<S>)super.clone();
+        clone.start = this.injections.iterator();
+        return clone;
     }
 }
