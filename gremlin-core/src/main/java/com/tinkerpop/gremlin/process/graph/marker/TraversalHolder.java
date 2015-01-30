@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +31,16 @@ public interface TraversalHolder {
 
     public default <S, E> List<Traversal<S, E>> getLocalTraversals() {
         return Collections.emptyList();
+    }
+
+    public default void addLocalTraversal(final Traversal.Admin<?, ?> traversal) {
+        this.executeTraversalOperations(traversal, TYPICAL_LOCAL_OPERATIONS);
+        // TODO....
+    }
+
+    public default void addGlobalTraversal(final Traversal.Admin<?, ?> traversal) {
+        this.executeTraversalOperations(traversal, TYPICAL_GLOBAL_OPERATIONS);
+        // TODO....
     }
 
     public default void setStrategies(final TraversalStrategies strategies) {

@@ -163,6 +163,7 @@ public class TinkerGraphTest {
             for (int i = 0; i < 10; i++) {
                 final long t = System.currentTimeMillis();
                 traversal.get().iterate();
+                //System.out.println(traversal.get().toList());
                 System.out.print("   " + (System.currentTimeMillis() - t));
             }
         });

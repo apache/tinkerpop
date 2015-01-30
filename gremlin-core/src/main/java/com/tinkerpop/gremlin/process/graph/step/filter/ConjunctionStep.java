@@ -64,7 +64,7 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
         final ConjunctionStep<S> clone = (ConjunctionStep<S>) super.clone();
         clone.conjunctionTraversals = new ArrayList<>();
         for (final Traversal<S, ?> andTraversal : this.conjunctionTraversals) {
-            final Traversal<S, ?> clonedAndTraversal = andTraversal.clone();
+            final Traversal<S, ?> clonedAndTraversal = andTraversal.asAdmin().clone();
             clone.conjunctionTraversals.add(clonedAndTraversal);
             clone.executeTraversalOperations(clonedAndTraversal, TYPICAL_LOCAL_OPERATIONS);
         }

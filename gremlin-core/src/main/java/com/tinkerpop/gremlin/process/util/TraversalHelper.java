@@ -127,8 +127,8 @@ public class TraversalHelper {
         final List<String> strings = Stream.of(arguments)
                 .filter(o -> null != o)
                 .filter(o -> {
-                    if (o instanceof FunctionRing) {
-                        return ((FunctionRing) o).size() > 0;
+                    if (o instanceof TraversalRing) {
+                        return ((TraversalRing) o).size() > 0;
                     } else if (o instanceof Collection) {
                         return ((Collection) o).size() > 0;
                     } else if (o instanceof Map) {

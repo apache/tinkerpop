@@ -183,7 +183,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     @Override
     public TraversalVertexProgram clone() throws CloneNotSupportedException {
         final TraversalVertexProgram clone = (TraversalVertexProgram) super.clone();
-        clone.traversal = this.traversal.clone().asAdmin();
+        clone.traversal = this.traversal.clone();
         clone.traversalMatrix = new TraversalMatrix<>(clone.traversal);
         return clone;
     }
@@ -230,12 +230,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             return traversal(GREMLIN_GROOVY, traversalScript);
         }
 
-        public Builder traversal(final Supplier<Traversal> traversal) {
+        public Builder traversal(final Supplier<Traversal.Admin> traversal) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, TRAVERSAL_SUPPLIER, traversal);
             return this;
         }
 
-        public Builder traversal(final Class<Supplier<Traversal>> traversalClass) {
+        public Builder traversal(final Class<Supplier<Traversal.Admin>> traversalClass) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, TRAVERSAL_SUPPLIER, traversalClass);
             return this;
         }

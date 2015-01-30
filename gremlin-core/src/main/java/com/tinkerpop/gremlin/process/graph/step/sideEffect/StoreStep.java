@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.graph.marker.FunctionHolder;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
@@ -11,21 +10,21 @@ import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.StoreMapReduce;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.process.util.SmartLambda;
+import com.tinkerpop.gremlin.process.util.traversal.IdentityTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.TraversalUtil;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable, SideEffectRegistrar, Reversible, FunctionHolder<S, Object>, TraversalHolder, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
+public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable, SideEffectRegistrar, Reversible, TraversalHolder, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
 
-    private SmartLambda<S, Object> smartLambda = new SmartLambda<>();
+    private Traversal.Admin<S, Object> storeTraversal = new IdentityTraversal<>();
     private String sideEffectKey;
 
     public StoreStep(final Traversal traversal, final String sideEffectKey) {
@@ -47,7 +46,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.smartLambda);
+        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.storeTraversal);
     }
 
     @Override
@@ -56,18 +55,14 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     }
 
     @Override
-    public void addFunction(final Function<S, Object> function) {
-        this.smartLambda.setLambda(function);
-    }
-
-    @Override
-    public List<Function<S, Object>> getFunctions() {
-        return Collections.singletonList(this.smartLambda);
-    }
-
-    @Override
     public List<Traversal<S, Object>> getLocalTraversals() {
-        return this.smartLambda.getTraversalAsList();
+        return Collections.singletonList(this.storeTraversal);
+    }
+
+    @Override
+    public void addLocalTraversal(final Traversal.Admin<?, ?> storeTraversal) {
+        this.storeTraversal = (Traversal.Admin<S, Object>) storeTraversal;
+        this.executeTraversalOperations(this.storeTraversal, TYPICAL_LOCAL_OPERATIONS);
     }
 
     @Override
@@ -81,8 +76,8 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     @Override
     public StoreStep<S> clone() throws CloneNotSupportedException {
         final StoreStep<S> clone = (StoreStep<S>) super.clone();
-        clone.smartLambda = this.smartLambda.clone();
-        clone.executeTraversalOperations(clone.smartLambda.getTraversal(), TYPICAL_LOCAL_OPERATIONS);
+        clone.storeTraversal = this.storeTraversal.clone();
+        clone.executeTraversalOperations(clone.storeTraversal, TYPICAL_LOCAL_OPERATIONS);
         StoreStep.generateConsumer(clone);
         return clone;
     }
@@ -92,7 +87,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     private static final <S> void generateConsumer(final StoreStep<S> storeStep) {
         storeStep.setConsumer(traverser -> TraversalHelper.addToCollection(
                 traverser.sideEffects(storeStep.sideEffectKey),
-                storeStep.smartLambda.apply((S) traverser),
+                TraversalUtil.function(traverser.asAdmin(), storeStep.storeTraversal),
                 traverser.bulk()));
     }
 }

@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderGlobalStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
+import com.tinkerpop.gremlin.process.util.traversal.IdentityTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Arrays;
@@ -33,7 +34,7 @@ public class DedupOptimizerStrategy extends AbstractTraversalStrategy {
             done = true;
             for (int i = 0; i < traversal.getSteps().size(); i++) {
                 final Step step1 = traversal.getSteps().get(i);
-                if (step1 instanceof DedupStep && !((DedupStep) step1).getFunctions().isEmpty()) {
+                if (step1 instanceof DedupStep && !(((DedupStep) step1).getLocalTraversals().get(0) instanceof IdentityTraversal)) {
                     for (int j = i; j >= 0; j--) {
                         final Step step2 = traversal.getSteps().get(j);
                         if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(step2.getClass())).findAny().isPresent()) {

@@ -62,7 +62,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this::asAdmin).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
             final Traversal<S, S> traversal = new DefaultTraversal<>(result.graph().getClass());
             return traversal.asAdmin().addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
@@ -184,13 +184,6 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
         }
     }
-
-    /**
-     * Cloning is used to duplicate the traversal typically in OLAP environments.
-     *
-     * @return The cloned traversal
-     */
-    public Traversal<S, E> clone() throws CloneNotSupportedException;
 
     /**
      * A collection of {@link Exception} types associated with Traversal execution.
@@ -411,6 +404,13 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @return the traversal holder parent step
          */
         public TraversalHolder getTraversalHolder();
+
+        /**
+         * Cloning is used to duplicate the traversal typically in OLAP environments.
+         *
+         * @return The cloned traversal
+         */
+        public Traversal.Admin<S, E> clone() throws CloneNotSupportedException;
 
     }
 

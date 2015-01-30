@@ -2,12 +2,9 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -34,7 +31,7 @@ public final class SelectOneStep<S, E> extends SelectStep {
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.selectLabel, this.functionRing);
+        return TraversalHelper.makeStepString(this, this.selectLabel, this.traversalRing);
     }
 }
 

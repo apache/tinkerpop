@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.util.function.TraversableLambda;
+import com.tinkerpop.gremlin.process.util.TraversalUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements TraversalOptionHolder<M, S, E> {
 
-    protected Function<Traverser<S>, M> pickFunction;
+    protected Traversal.Admin<S, M> branchTraversal;
     protected Map<M, List<Traversal<S, E>>> traversalOptions = new HashMap<>();
     private boolean first = true;
 
@@ -31,10 +30,8 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
         super(traversal);
     }
 
-    public void setFunction(final Function<Traverser<S>, M> pickFunction) {
-        this.pickFunction = pickFunction;
-        if (this.pickFunction instanceof TraversableLambda)
-            this.executeTraversalOperations(((TraversableLambda) this.pickFunction).getTraversal(), TYPICAL_LOCAL_OPERATIONS);
+    public void setBranchTraversal(final Traversal.Admin<S, M> branchTraversal) {
+        this.executeTraversalOperations(this.branchTraversal = branchTraversal, TYPICAL_LOCAL_OPERATIONS);
     }
 
     @Override
@@ -61,7 +58,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
 
     @Override
     public List<Traversal<S, M>> getLocalTraversals() {
-        return this.pickFunction instanceof TraversableLambda ? Collections.singletonList(((TraversableLambda) this.pickFunction).getTraversal()) : Collections.emptyList();
+        return Collections.singletonList(this.branchTraversal);
     }
 
     @Override
@@ -78,7 +75,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
             this.first = false;
             ///
             final Traverser.Admin<S> start = this.starts.next();
-            final M choice = this.pickFunction.apply(start);
+            final M choice = TraversalUtil.function(start, this.branchTraversal);
             final List<Traversal<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
             if (null != branch) {
                 branch.forEach(traversal -> {
@@ -101,7 +98,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     protected Iterator<Traverser<E>> computerAlgorithm() {
         final List<Traverser<E>> ends = new ArrayList<>();
         final Traverser.Admin<S> start = this.starts.next();
-        final M choice = this.pickFunction.apply(start);
+        final M choice = TraversalUtil.function(start, this.branchTraversal);
         final List<Traversal<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
         if (null != branch) {
             branch.forEach(traversal -> {
@@ -129,7 +126,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
         clone.traversalOptions = new HashMap<>();
         for (final Map.Entry<M, List<Traversal<S, E>>> entry : this.traversalOptions.entrySet()) {
             for (final Traversal<S, E> traversal : entry.getValue()) {
-                final Traversal<S, E> clonedTraversal = traversal.clone();
+                final Traversal<S, E> clonedTraversal = traversal.asAdmin().clone();
                 if (clone.traversalOptions.containsKey(entry.getKey()))
                     clone.traversalOptions.get(entry.getKey()).add(clonedTraversal);
                 else
@@ -137,16 +134,14 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
                 clone.executeTraversalOperations(clonedTraversal, TYPICAL_GLOBAL_OPERATIONS);
             }
         }
-        if (clone.pickFunction instanceof TraversableLambda) {
-            clone.pickFunction = TraversableLambda.tryAndClone(this.pickFunction);
-            clone.executeTraversalOperations(((TraversableLambda) clone.pickFunction).getTraversal(), TYPICAL_LOCAL_OPERATIONS);
-        }
+        clone.branchTraversal = this.branchTraversal.clone();
+        clone.executeTraversalOperations(clone.branchTraversal, TYPICAL_LOCAL_OPERATIONS);
         return clone;
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.pickFunction, this.traversalOptions);
+        return TraversalHelper.makeStepString(this, this.branchTraversal, this.traversalOptions);
     }
 
     @Override

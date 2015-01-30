@@ -2,12 +2,10 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.util.TraversalLambda;
-import com.tinkerpop.gremlin.process.util.TraversalObjectLambda;
+import com.tinkerpop.gremlin.process.graph.__;
 import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 /**
  * A step which offers a choice of two or more Traversals to take.
@@ -17,30 +15,13 @@ import java.util.function.Predicate;
  */
 public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
 
-    public ChooseStep(final Traversal traversal, final Function<S, M> choiceFunction) {
+    public ChooseStep(final Traversal traversal, final Traversal.Admin<S, M> choiceTraversal) {
         super(traversal);
-        if (choiceFunction instanceof TraversalObjectLambda) {
-            this.setFunction(new TraversalLambda<>(((TraversalObjectLambda<S, M>) choiceFunction).getTraversal()));
-        } else if (choiceFunction instanceof PredicateToFunction) {
-            this.setFunction((PredicateToFunction) choiceFunction);
-        } else {
-            this.setFunction(new Function<Traverser<S>, M>() {
-                @Override
-                public M apply(final Traverser<S> traverser) {
-                    return choiceFunction.apply(traverser.get());
-                }
-            });
-        }
+        this.setBranchTraversal(choiceTraversal);
     }
 
-    public ChooseStep(final Traversal traversal, final Predicate<S> predicate, final Traversal<S, E> trueChoice, final Traversal<S, E> falseChoice) {
-        this(traversal, (Function) s -> predicate.test((S) s));
-        this.addOption((M) Boolean.TRUE, trueChoice);
-        this.addOption((M) Boolean.FALSE, falseChoice);
-    }
-
-    public ChooseStep(final Traversal traversal, final Traversal<S, ?> predicate, final Traversal<S, E> trueChoice, final Traversal<S, E> falseChoice) {
-        this(traversal, (Function<S, M>) new PredicateToFunction<>(predicate));
+    public ChooseStep(final Traversal traversal, final Traversal.Admin<S, ?> predicate, final Traversal.Admin<S, E> trueChoice, final Traversal.Admin<S, E> falseChoice) {
+        this(traversal, __.<S>has(predicate).count().map(t -> t.get() == 0l ? (M) Boolean.FALSE : (M) Boolean.TRUE).asAdmin());
         this.addOption((M) Boolean.TRUE, trueChoice);
         this.addOption((M) Boolean.FALSE, falseChoice);
     }
