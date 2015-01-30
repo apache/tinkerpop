@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -366,10 +367,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
         try {
             final Script scriptObject = InvokerHelper.createScript(scriptClass, binding);
-            Stream.of(scriptClass.getMethods()).forEach(m -> {
+            for (Method m : scriptClass.getMethods()) {
                 final String name = m.getName();
                 globalClosures.put(name, new MethodClosure(scriptObject, name));
-            });
+            };
 
             final MetaClass oldMetaClass = scriptObject.getMetaClass();
             scriptObject.setMetaClass(new DelegatingMetaClass(oldMetaClass) {
