@@ -15,11 +15,11 @@ import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduc
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.traversal.TraversalMatrix;
-import com.tinkerpop.gremlin.process.util.tool.TraverserSet;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SideEffectCapStep;
+import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traversal.TraversalMatrix;
+import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;

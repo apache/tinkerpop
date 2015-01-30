@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.graph.strategy.AbstractTraversalStrategy;
+import com.tinkerpop.gremlin.process.graph.traversal.strategy.AbstractTraversalStrategy;
 import org.junit.Test;
 
 import java.util.Collections;
