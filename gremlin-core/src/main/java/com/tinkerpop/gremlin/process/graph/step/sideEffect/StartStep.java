@@ -30,10 +30,6 @@ public class StartStep<S> extends AbstractStep<S, S> implements Reversible {
         return (T) this.start;
     }
 
-    public void setStart(final Object start) {
-        this.start = start;
-    }
-
     public boolean startAssignableTo(final Class... assignableClasses) {
         return Stream.of(assignableClasses).filter(check -> check.isAssignableFrom(this.start.getClass())).findAny().isPresent();
     }
