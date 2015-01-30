@@ -14,7 +14,7 @@ def STATEMENT_PREFIX = "gremlin> "
 def STATEMENT_CONTINUATION_PREFIX = "         "
 
 def header = """
-    import com.tinkerpop.gremlin.process.graph.strategy.*
+    import com.tinkerpop.gremlin.process.graph.traversal.strategy.*
     import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
     import com.tinkerpop.gremlin.tinkergraph.structure.*
     import static java.util.Comparator.*
