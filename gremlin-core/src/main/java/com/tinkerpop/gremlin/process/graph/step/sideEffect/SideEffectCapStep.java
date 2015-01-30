@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectRegistrar;
 import com.tinkerpop.gremlin.process.graph.step.util.SupplyingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
 
 import java.util.Arrays;
 import java.util.HashMap;

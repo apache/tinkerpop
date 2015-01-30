@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.hadoop.structure.hdfs;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
 import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;

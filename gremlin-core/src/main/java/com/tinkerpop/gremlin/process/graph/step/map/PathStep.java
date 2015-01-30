@@ -4,10 +4,10 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.MutablePath;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalRing;
-import com.tinkerpop.gremlin.process.util.TraversalUtil;
+import com.tinkerpop.gremlin.process.util.path.MutablePath;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalRing;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalUtil;
 
 import java.util.Collections;
 import java.util.List;

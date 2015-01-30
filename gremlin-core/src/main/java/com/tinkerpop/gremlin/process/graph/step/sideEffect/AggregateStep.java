@@ -10,10 +10,10 @@ import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.AggregateMapReduce;
 import com.tinkerpop.gremlin.process.graph.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.process.util.traversal.IdentityTraversal;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalUtil;
+import com.tinkerpop.gremlin.process.util.tool.BulkSet;
+import com.tinkerpop.gremlin.process.util.traversal.lambda.IdentityTraversal;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalUtil;
 
 import java.util.Collection;
 import java.util.Collections;

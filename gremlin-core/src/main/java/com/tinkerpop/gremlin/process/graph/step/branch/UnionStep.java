@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.__;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
 
 import java.util.Collections;
 

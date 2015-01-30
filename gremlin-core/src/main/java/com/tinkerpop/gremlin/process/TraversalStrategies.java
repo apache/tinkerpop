@@ -13,7 +13,7 @@ import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectRegistrationStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraversalVerificationStrategy;
 import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
-import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
+import com.tinkerpop.gremlin.process.util.traversal.util.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;

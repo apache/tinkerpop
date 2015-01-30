@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.computer.MessageCombiner;
-import com.tinkerpop.gremlin.process.util.TraverserSet;
+import com.tinkerpop.gremlin.process.util.tool.TraverserSet;
 
 import java.util.Optional;
 

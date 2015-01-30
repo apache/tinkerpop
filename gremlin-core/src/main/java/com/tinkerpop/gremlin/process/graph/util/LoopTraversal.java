@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.util;
 
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.util.traversal.AbstractSingleTraversal;
+import com.tinkerpop.gremlin.process.util.traversal.lambda.AbstractSingleTraversal;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

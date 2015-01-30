@@ -5,9 +5,9 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.step.AbstractStep;
+import com.tinkerpop.gremlin.process.FastNoSuchElementException;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;

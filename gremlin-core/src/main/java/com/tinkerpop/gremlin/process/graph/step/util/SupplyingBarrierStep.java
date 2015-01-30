@@ -3,8 +3,8 @@ package com.tinkerpop.gremlin.process.graph.step.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.process.util.step.AbstractStep;
+import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 
 import java.util.function.Supplier;
 

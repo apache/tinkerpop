@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.graph.step.util.ReducingBarrierStep;
 import com.tinkerpop.gremlin.process.graph.step.util.SupplyingBarrierStep;
-import com.tinkerpop.gremlin.process.util.EmptyStep;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.step.EmptyStep;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
 
 import java.util.Optional;
 

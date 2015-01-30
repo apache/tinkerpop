@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
 import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
-import com.tinkerpop.gremlin.process.util.BulkSet;
+import com.tinkerpop.gremlin.process.util.tool.BulkSet;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 

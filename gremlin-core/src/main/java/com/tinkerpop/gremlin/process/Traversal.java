@@ -8,10 +8,10 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.process.util.DefaultTraversal;
-import com.tinkerpop.gremlin.process.util.EmptyStep;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.tool.BulkSet;
+import com.tinkerpop.gremlin.process.util.traversal.DefaultTraversal;
+import com.tinkerpop.gremlin.process.util.step.EmptyStep;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.ArrayList;

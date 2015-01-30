@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect
 
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
-import com.tinkerpop.gremlin.process.util.StandardTraversalMetrics
+import com.tinkerpop.gremlin.process.util.metric.StandardTraversalMetrics
 import com.tinkerpop.gremlin.structure.Vertex
 import com.tinkerpop.gremlin.process.graph.__
 /**

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Path;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
+import com.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
 import org.junit.Test;

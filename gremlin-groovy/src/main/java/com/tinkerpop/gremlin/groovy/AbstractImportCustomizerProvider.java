@@ -14,7 +14,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.__;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
+import com.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;

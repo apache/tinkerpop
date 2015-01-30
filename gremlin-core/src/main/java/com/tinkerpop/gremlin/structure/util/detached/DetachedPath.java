@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.process.Path;
-import com.tinkerpop.gremlin.process.util.MutablePath;
+import com.tinkerpop.gremlin.process.util.path.MutablePath;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;

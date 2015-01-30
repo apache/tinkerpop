@@ -7,7 +7,10 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapHelper {
+public final class MapHelper {
+
+    private MapHelper() {
+    }
 
     public static <T> void incr(final Map<T, Long> map, final T key, final Long value) {
         map.put(key, value + map.getOrDefault(key, 0l));

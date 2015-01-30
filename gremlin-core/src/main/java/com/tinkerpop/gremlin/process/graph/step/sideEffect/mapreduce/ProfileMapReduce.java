@@ -4,8 +4,8 @@ import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
 import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
-import com.tinkerpop.gremlin.process.util.StandardTraversalMetrics;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
+import com.tinkerpop.gremlin.process.util.metric.StandardTraversalMetrics;
+import com.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;

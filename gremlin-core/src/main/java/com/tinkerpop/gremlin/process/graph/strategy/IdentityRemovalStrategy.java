@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

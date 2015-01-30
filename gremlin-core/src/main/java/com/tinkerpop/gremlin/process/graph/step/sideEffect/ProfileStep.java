@@ -8,9 +8,9 @@ import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.ProfileMapReduce;
-import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.process.util.StandardTraversalMetrics;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
+import com.tinkerpop.gremlin.process.util.step.AbstractStep;
+import com.tinkerpop.gremlin.process.util.metric.StandardTraversalMetrics;
+import com.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
 
 import java.util.NoSuchElementException;
 

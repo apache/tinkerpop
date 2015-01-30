@@ -7,9 +7,9 @@ import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupStep;
-import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.process.util.TraversalMatrix;
-import com.tinkerpop.gremlin.process.util.TraversalUtil;
+import com.tinkerpop.gremlin.process.util.tool.BulkSet;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalMatrix;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalUtil;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 

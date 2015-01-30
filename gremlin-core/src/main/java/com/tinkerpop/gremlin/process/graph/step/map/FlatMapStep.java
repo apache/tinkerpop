@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.util.AbstractStep;
+import com.tinkerpop.gremlin.process.util.step.AbstractStep;
 
 import java.util.Collections;
 import java.util.Iterator;

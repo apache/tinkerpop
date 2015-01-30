@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.util.iterator;
 
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
-import com.tinkerpop.gremlin.process.util.MultiIterator;
+import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,7 +15,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IteratorUtils {
+public final class IteratorUtils {
 
     private IteratorUtils() {
 

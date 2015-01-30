@@ -81,15 +81,15 @@ import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.graph.util.LoopTraversal;
-import com.tinkerpop.gremlin.process.util.ElementFunctionComparator;
-import com.tinkerpop.gremlin.process.util.ElementValueComparator;
-import com.tinkerpop.gremlin.process.util.traversal.ElementValueTraversal;
-import com.tinkerpop.gremlin.process.util.traversal.FilterTraversal;
-import com.tinkerpop.gremlin.process.util.traversal.FilterTraverserTraversal;
-import com.tinkerpop.gremlin.process.util.traversal.IdentityTraversal;
-import com.tinkerpop.gremlin.process.util.traversal.MapTraversal;
-import com.tinkerpop.gremlin.process.util.traversal.MapTraverserTraversal;
-import com.tinkerpop.gremlin.process.util.traversal.TrueTraversal;
+import com.tinkerpop.gremlin.process.util.step.ElementFunctionComparator;
+import com.tinkerpop.gremlin.process.util.step.ElementValueComparator;
+import com.tinkerpop.gremlin.process.util.traversal.lambda.ElementValueTraversal;
+import com.tinkerpop.gremlin.process.util.traversal.lambda.FilterTraversal;
+import com.tinkerpop.gremlin.process.util.traversal.lambda.FilterTraverserTraversal;
+import com.tinkerpop.gremlin.process.util.traversal.lambda.IdentityTraversal;
+import com.tinkerpop.gremlin.process.util.traversal.lambda.MapTraversal;
+import com.tinkerpop.gremlin.process.util.traversal.lambda.MapTraverserTraversal;
+import com.tinkerpop.gremlin.process.util.traversal.lambda.TrueTraversal;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -365,7 +365,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> has(final Traversal<?, ?> hasNextTraversal) {
-        return this.asAdmin().addStep(new HasTraversalStep<>(this, (Traversal<E, ?>) hasNextTraversal));
+        return this.asAdmin().addStep(new HasTraversalStep<>(this, (Traversal.Admin<E, ?>) hasNextTraversal));
     }
 
     public default GraphTraversal<S, E> has(final String key) {

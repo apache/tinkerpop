@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.graph.marker.ComparatorHolder;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Order;
 
 import java.util.ArrayList;

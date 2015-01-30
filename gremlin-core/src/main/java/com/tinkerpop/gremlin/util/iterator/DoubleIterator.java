@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.util.iterator;
 
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 
 import java.util.Iterator;
 

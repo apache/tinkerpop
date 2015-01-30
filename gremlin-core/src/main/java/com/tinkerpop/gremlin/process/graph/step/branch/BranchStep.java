@@ -5,8 +5,8 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
 import com.tinkerpop.gremlin.process.graph.step.util.ComputerAwareStep;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraversalUtil;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;

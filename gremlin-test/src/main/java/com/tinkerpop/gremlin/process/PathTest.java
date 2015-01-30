@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.util.ImmutablePath;
-import com.tinkerpop.gremlin.process.util.MutablePath;
+import com.tinkerpop.gremlin.process.util.path.ImmutablePath;
+import com.tinkerpop.gremlin.process.util.path.MutablePath;
 import org.junit.Test;
 
 import java.util.Arrays;

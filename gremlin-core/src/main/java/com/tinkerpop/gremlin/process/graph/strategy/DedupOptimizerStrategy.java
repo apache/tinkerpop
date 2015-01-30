@@ -6,8 +6,8 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderGlobalStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
-import com.tinkerpop.gremlin.process.util.traversal.IdentityTraversal;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.traversal.lambda.IdentityTraversal;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
 
 import java.util.Arrays;
 import java.util.List;

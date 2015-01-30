@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.hadoop.structure.hdfs;
 
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;

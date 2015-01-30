@@ -4,9 +4,9 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.util.Metrics;
-import com.tinkerpop.gremlin.process.util.StandardTraversalMetrics;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
+import com.tinkerpop.gremlin.process.util.metric.Metrics;
+import com.tinkerpop.gremlin.process.util.metric.StandardTraversalMetrics;
+import com.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 

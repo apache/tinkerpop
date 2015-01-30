@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.util.EmptyStep;
+import com.tinkerpop.gremlin.process.util.step.EmptyStep;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

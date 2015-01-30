@@ -3,8 +3,8 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.step.AbstractStep;
+import com.tinkerpop.gremlin.process.util.traversal.TraversalHelper;
 
 import java.util.Iterator;
 import java.util.stream.Stream;
