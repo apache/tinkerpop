@@ -16,6 +16,7 @@ import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import groovy.json.JsonBuilder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -31,6 +32,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
+import jdk.nashorn.internal.parser.JSONParser;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.javatuples.Triplet;
 import org.slf4j.Logger;
@@ -265,8 +267,10 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message) {
         logger.warn("Invalid request - responding with {} and {}", status, message);
         errorMeter.mark();
+        final ObjectNode node = mapper.createObjectNode();
+        node.put("message", message);
         final FullHttpResponse response = new DefaultFullHttpResponse(
-                HTTP_1_1, status, Unpooled.copiedBuffer("{\"message\": \"" + message + "\"}", CharsetUtil.UTF_8));
+                HTTP_1_1, status, Unpooled.copiedBuffer(node.toString(), CharsetUtil.UTF_8));
         response.headers().set(CONTENT_TYPE, "application/json");
 
         // Close the connection as soon as the error message is sent.
