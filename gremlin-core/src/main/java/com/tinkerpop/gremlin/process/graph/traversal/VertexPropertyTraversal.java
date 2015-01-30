@@ -1,7 +1,6 @@
-package com.tinkerpop.gremlin.process.graph;
+package com.tinkerpop.gremlin.process.graph.traversal;
 
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
-import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 

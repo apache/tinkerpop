@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversalCoverageTest;
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.BranchTest;
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.LocalTest;
@@ -49,6 +50,8 @@ import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SubgraphTes
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.TreeTest;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.TraversalSideEffectsTest;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
+import com.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
+import com.tinkerpop.gremlin.process.util.PathTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 

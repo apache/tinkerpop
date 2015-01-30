@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.branch
 
 import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.graph.__
+import com.tinkerpop.gremlin.process.graph.traversal.__
 import com.tinkerpop.gremlin.process.ComputerTestHelper
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.ChooseTest
 import com.tinkerpop.gremlin.structure.Vertex

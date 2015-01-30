@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
-import static com.tinkerpop.gremlin.process.graph.__.*;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
 
 /**
  * @author Bob Briody (http://bobbriody.com)

@@ -32,8 +32,8 @@ import java.util.function.Function;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.__.*;
-import com.tinkerpop.gremlin.process.graph.__;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
 import static org.junit.Assert.*;
 
 /**

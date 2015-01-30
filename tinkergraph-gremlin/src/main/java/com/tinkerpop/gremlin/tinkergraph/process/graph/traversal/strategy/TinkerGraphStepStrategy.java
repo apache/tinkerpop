@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.tinkergraph.process.graph.strategy;
+package com.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strategy;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.AbstractTraversalStrategy;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.traversal.sideEffect.TinkerGraphStep;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

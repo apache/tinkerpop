@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.graph.EdgeTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.EdgeTraversal;
 
 import java.util.Iterator;
 

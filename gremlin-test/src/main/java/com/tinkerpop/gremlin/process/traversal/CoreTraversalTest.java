@@ -1,9 +1,11 @@
-package com.tinkerpop.gremlin.process;
+package com.tinkerpop.gremlin.process.traversal;
 
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -19,7 +21,7 @@ import java.util.Random;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.__.*;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static org.junit.Assert.*;
 

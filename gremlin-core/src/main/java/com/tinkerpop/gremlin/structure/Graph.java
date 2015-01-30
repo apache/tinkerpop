@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.io.DefaultIo;

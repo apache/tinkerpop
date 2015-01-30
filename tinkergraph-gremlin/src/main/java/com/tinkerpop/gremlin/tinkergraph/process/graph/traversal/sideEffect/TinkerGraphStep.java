@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect;
+package com.tinkerpop.gremlin.tinkergraph.process.graph.traversal.sideEffect;
 
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.util.HasContainer;

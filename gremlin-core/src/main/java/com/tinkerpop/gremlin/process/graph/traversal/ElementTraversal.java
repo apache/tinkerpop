@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph;
+package com.tinkerpop.gremlin.process.graph.traversal;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Scope;

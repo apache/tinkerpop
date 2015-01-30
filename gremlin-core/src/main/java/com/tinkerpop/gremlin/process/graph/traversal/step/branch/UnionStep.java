@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.__;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 

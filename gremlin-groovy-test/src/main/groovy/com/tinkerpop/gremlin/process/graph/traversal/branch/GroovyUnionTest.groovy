@@ -1,12 +1,12 @@
 package com.tinkerpop.gremlin.process.graph.traversal.branch
 
-import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.graph.__
 import com.tinkerpop.gremlin.process.ComputerTestHelper
+import com.tinkerpop.gremlin.process.Traversal
+import com.tinkerpop.gremlin.process.graph.traversal.__
 import com.tinkerpop.gremlin.process.graph.traversal.step.branch.UnionTest
 import com.tinkerpop.gremlin.structure.Vertex
 
-import static com.tinkerpop.gremlin.process.graph.__.*
+import static com.tinkerpop.gremlin.process.graph.traversal.__.*
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.ComputerTestHelper
 import com.tinkerpop.gremlin.process.graph.traversal.step.filter.IsTest
 import com.tinkerpop.gremlin.structure.Compare
 import com.tinkerpop.gremlin.structure.Vertex
-import com.tinkerpop.gremlin.process.graph.__
+import com.tinkerpop.gremlin.process.graph.traversal.__
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */

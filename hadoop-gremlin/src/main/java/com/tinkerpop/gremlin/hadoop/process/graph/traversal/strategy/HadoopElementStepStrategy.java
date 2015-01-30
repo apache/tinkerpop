@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.hadoop.process.graph.strategy;
+package com.tinkerpop.gremlin.hadoop.process.graph.traversal.strategy;
 
 import com.tinkerpop.gremlin.hadoop.structure.HadoopElement;
 import com.tinkerpop.gremlin.process.Step;

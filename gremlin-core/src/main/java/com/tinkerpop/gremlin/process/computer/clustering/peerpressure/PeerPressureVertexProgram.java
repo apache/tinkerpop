@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
-import com.tinkerpop.gremlin.process.graph.__;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;

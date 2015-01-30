@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.sideEffect
 
 import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.graph.__
+import com.tinkerpop.gremlin.process.graph.traversal.__
 import com.tinkerpop.gremlin.process.ComputerTestHelper
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupCountTest
 import com.tinkerpop.gremlin.structure.Vertex

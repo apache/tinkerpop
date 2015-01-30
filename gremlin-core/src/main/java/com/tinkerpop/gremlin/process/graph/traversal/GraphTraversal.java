@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph;
+package com.tinkerpop.gremlin.process.graph.traversal;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Scope;
@@ -78,7 +78,6 @@ import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SubgraphSte
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.PathIdentityStep;
-import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.graph.traversal.lambda.LoopTraversal;
 import com.tinkerpop.gremlin.process.traversal.step.ElementFunctionComparator;

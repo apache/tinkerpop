@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect;
+package com.tinkerpop.gremlin.neo4j.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;

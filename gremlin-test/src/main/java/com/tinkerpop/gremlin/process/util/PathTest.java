@@ -1,6 +1,8 @@
-package com.tinkerpop.gremlin.process;
+package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.util.path.ImmutablePath;
 import com.tinkerpop.gremlin.process.util.path.MutablePath;
 import org.junit.Test;
@@ -9,7 +11,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import static com.tinkerpop.gremlin.process.graph.__.out;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.out;
 import static org.junit.Assert.*;
 
 /**

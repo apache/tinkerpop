@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.__.*;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

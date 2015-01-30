@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.__;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
 import com.tinkerpop.gremlin.util.function.TraversableLambda;
 
 import java.util.function.Function;

@@ -9,8 +9,8 @@ import org.junit.Test;
 import java.util.Arrays;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.__.has;
-import static com.tinkerpop.gremlin.process.graph.__.outE;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.has;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.outE;
 import static com.tinkerpop.gremlin.structure.Compare.gt;
 import static com.tinkerpop.gremlin.structure.Compare.gte;
 

@@ -2,11 +2,11 @@ package com.tinkerpop.gremlin.process.graph.traversal.strategy;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.__.*;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
 import static org.junit.Assert.fail;
 
 /**

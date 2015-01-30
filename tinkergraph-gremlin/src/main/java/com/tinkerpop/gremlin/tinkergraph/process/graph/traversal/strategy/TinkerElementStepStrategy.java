@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.tinkergraph.process.graph.strategy;
+package com.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strategy;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;

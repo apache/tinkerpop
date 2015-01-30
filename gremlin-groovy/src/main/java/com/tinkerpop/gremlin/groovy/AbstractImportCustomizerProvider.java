@@ -11,8 +11,8 @@ import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressu
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.__;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
 import com.tinkerpop.gremlin.process.graph.marker.TraversalOptionHolder;
 import com.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Compare;

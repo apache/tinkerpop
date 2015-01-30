@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversalCoverageTest;
 import com.tinkerpop.gremlin.process.graph.traversal.branch.GroovyBranchTest;
 import com.tinkerpop.gremlin.process.graph.traversal.branch.GroovyChooseTest;
 import com.tinkerpop.gremlin.process.graph.traversal.branch.GroovyLocalTest;
@@ -51,6 +52,7 @@ import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.GroovySideEffect
 import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.GroovyStoreTest;
 import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.GroovySubgraphTest;
 import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.GroovyTreeTest;
+import com.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 

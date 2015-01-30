@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.MatchTest
 import com.tinkerpop.gremlin.structure.Compare
 import com.tinkerpop.gremlin.structure.Vertex
-import com.tinkerpop.gremlin.process.graph.__
+import com.tinkerpop.gremlin.process.graph.traversal.__
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

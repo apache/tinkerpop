@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.hadoop.structure;
 
 import com.tinkerpop.gremlin.hadoop.Constants;
 import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
-import com.tinkerpop.gremlin.hadoop.process.graph.strategy.HadoopElementStepStrategy;
+import com.tinkerpop.gremlin.hadoop.process.graph.traversal.strategy.HadoopElementStepStrategy;
 import com.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopEdgeIterator;
 import com.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopVertexIterator;
 import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;

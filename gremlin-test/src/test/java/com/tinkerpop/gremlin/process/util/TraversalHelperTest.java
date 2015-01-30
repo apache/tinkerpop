@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
 import com.tinkerpop.gremlin.process.graph.traversal.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
@@ -13,7 +14,7 @@ import com.tinkerpop.gremlin.structure.PropertyType;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import static com.tinkerpop.gremlin.process.graph.__.*;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -31,7 +32,7 @@ public class TraversalHelperTest {
         assertTrue(TraversalHelper.isReversible(outE().has("since").inV().asAdmin()));
         assertTrue(TraversalHelper.isReversible(outE().as("x").asAdmin()));
 
-        assertFalse(TraversalHelper.isReversible(identity().as("a").outE().back("a").asAdmin()));
+        assertFalse(TraversalHelper.isReversible(__.as("a").outE().back("a").asAdmin()));
 
     }
 

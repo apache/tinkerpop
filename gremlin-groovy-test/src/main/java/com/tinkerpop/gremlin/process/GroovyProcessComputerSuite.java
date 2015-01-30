@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversalCoverageTest;
 import com.tinkerpop.gremlin.process.graph.traversal.branch.GroovyBranchTest;
 import com.tinkerpop.gremlin.process.graph.traversal.branch.GroovyChooseTest;
 import com.tinkerpop.gremlin.process.graph.traversal.branch.GroovyLocalTest;

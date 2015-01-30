@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.__.out;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.out;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 

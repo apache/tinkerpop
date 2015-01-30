@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.__.*;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
 import static org.junit.Assert.*;
 
 /**

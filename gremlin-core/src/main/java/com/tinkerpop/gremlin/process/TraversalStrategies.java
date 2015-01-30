@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.graph.__;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.ComparatorHolderRemovalStrategy;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.DedupOptimizerStrategy;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.EngineDependentStrategy;

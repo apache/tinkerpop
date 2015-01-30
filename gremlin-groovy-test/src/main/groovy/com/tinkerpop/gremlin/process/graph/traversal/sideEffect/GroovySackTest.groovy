@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.ComputerTestHelper
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SackTest
 import com.tinkerpop.gremlin.structure.Vertex
 
-import com.tinkerpop.gremlin.process.graph.__
+import com.tinkerpop.gremlin.process.graph.traversal.__
 import static com.tinkerpop.gremlin.structure.Operator.sum
 
 /**
