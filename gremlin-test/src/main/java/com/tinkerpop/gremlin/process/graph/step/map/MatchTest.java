@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import com.tinkerpop.gremlin.process.traversers.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.step.map.match.Bindings;
@@ -11,6 +10,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.match.Enumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.InnerJoinEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.IteratorEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
+import com.tinkerpop.gremlin.process.traversers.SimpleTraverser;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -31,7 +31,10 @@ import java.util.function.Function;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -978,22 +981,23 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         List<Bindings<T>> expectedList = new LinkedList<>();
         Collections.addAll(expectedList, expected);
 
-        if (expectedList.size() > actualList.size()) {
-            fail("" + (expectedList.size() - actualList.size()) + " expected results not found, including " + expectedList.get(actualList.size()));
-        } else if (actualList.size() > expectedList.size()) {
-            fail("" + (actualList.size() - expectedList.size()) + " unexpected results, including " + actualList.get(expectedList.size()));
-        }
-
         Collections.sort(actualList, comp);
         Collections.sort(expectedList, comp);
 
         for (int j = 0; j < actualList.size(); j++) {
+            if (j == expectedList.size()) {
+                fail("" + (actualList.size() - expectedList.size()) + " unexpected results, including " + actualList.get(expectedList.size()));
+            }
+
             Bindings<T> a = actualList.get(j);
             Bindings<T> e = expectedList.get(j);
 
             if (0 != comp.compare(a, e)) {
                 fail("unexpected result(s), including " + a);
             }
+        }
+        if (expectedList.size() > actualList.size()) {
+            fail("" + (expectedList.size() - actualList.size()) + " expected results not found, including " + expectedList.get(actualList.size()));
         }
     }
 
