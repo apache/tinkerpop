@@ -21,10 +21,10 @@ public class GremlinGroovyScriptEngineIntegrateTest extends AbstractGremlinTest 
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
 
         final String[] gremlins = new String[]{
-                "g.v(xxx).out().toList()",
-                "g.v(xxx).in().toList()",
-                "g.v(xxx).out().out().out().toList()",
-                "g.v(xxx).out().groupCount()"
+                "g.V(xxx).out().toList()",
+                "g.V(xxx).in().toList()",
+                "g.V(xxx).out().out().out().toList()",
+                "g.V(xxx).out().groupCount()"
         };
 
         long parameterizedStartTime = System.currentTimeMillis();

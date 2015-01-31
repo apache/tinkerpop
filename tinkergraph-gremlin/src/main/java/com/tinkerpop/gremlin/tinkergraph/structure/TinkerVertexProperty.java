@@ -1,15 +1,12 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -41,13 +38,8 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     }
 
     @Override
-    public GraphTraversal<VertexProperty, VertexProperty> start() {
-        return new TinkerElementTraversal<>(this, this.graph);
-    }
-
-    @Override
     public String key() {
-        return Graph.Key.unHide(this.key);
+        return this.key;
     }
 
     @Override
@@ -61,18 +53,8 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     }
 
     @Override
-    public boolean isHidden() {
-        return Graph.Key.isHidden(this.key);
-    }
-
-    @Override
     public String toString() {
         return StringFactory.propertyString(this);
-    }
-
-    @Override
-    public int hashCode() {
-        return this.key.hashCode() + this.value.hashCode() + this.vertex.hashCode() + this.properties.hashCode();
     }
 
     @Override
@@ -88,7 +70,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     @Override
     public <U> Property<U> property(final String key, final U value) {
         final Property<U> property = new TinkerProperty<U>(this, key, value);
-        this.properties.put(key, Arrays.asList(property));
+        this.properties.put(key, Collections.singletonList(property));
         return property;
     }
 
@@ -126,10 +108,4 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
         return (Iterator) super.propertyIterator(propertyKeys);
     }
-
-    @Override
-    public <U> Iterator<Property<U>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
-    }
-
 }

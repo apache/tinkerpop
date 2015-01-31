@@ -36,7 +36,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
 
     static {
         DEFAULT_SETTINGS.className = SessionOpProcessor.class.getCanonicalName();
-        DEFAULT_SETTINGS.config = new HashMap<String,Object>() {{
+        DEFAULT_SETTINGS.config = new HashMap<String, Object>() {{
             put(CONFIG_SESSION_TIMEOUT, DEFAULT_SESSION_TIMEOUT);
         }};
     }

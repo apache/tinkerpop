@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure.util;
 
-import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -14,6 +14,9 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.strategy.StrategyElement;
+import com.tinkerpop.gremlin.structure.strategy.StrategyProperty;
+import com.tinkerpop.gremlin.structure.strategy.StrategyVariables;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.javatuples.Pair;
 
@@ -44,6 +47,7 @@ public class StringFactory {
     private static final String DOTS = "...";
     private static final String DASH = "-";
     private static final String ARROW = "->";
+    private static final String STAR = "*";
     private static final String EMPTY_PROPERTY = "p[empty]";
     private static final String EMPTY_VERTEX_PROPERTY = "vp[empty]";
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -85,7 +89,7 @@ public class StringFactory {
     /**
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Graph}.
      *
-     * @param internalString a custom {@link String} that appends to the end of the standard representation
+     * @param internalString a mapper {@link String} that appends to the end of the standard representation
      */
     public static String graphString(final Graph graph, final String internalString) {
         return graph.getClass().getSimpleName().toLowerCase() + L_BRACKET + internalString + R_BRACKET;
@@ -103,16 +107,16 @@ public class StringFactory {
         return graphStrategy.getClass().getSimpleName().toLowerCase() + L_BRACKET + graph.toString() + R_BRACKET;
     }
 
-    public static String graphStrategyVertexString(final GraphStrategy graphStrategy, final Vertex vertex) {
-        return graphStrategy + L_BRACKET + vertex.toString() + R_BRACKET;
+    public static String graphStrategyElementString(final StrategyElement element) {
+        return element.getBaseElement() + STAR;
     }
 
-    public static String graphStrategyEdgeString(final GraphStrategy graphStrategy, final Edge edge) {
-        return graphStrategy + L_BRACKET + edge.toString() + R_BRACKET;
+    public static String graphStrategyPropertyString(final StrategyProperty property) {
+        return property.getBaseProperty() + STAR;
     }
 
-    public static String graphStrategyPropertyString(final GraphStrategy graphStrategy, final Property property) {
-        return graphStrategy + L_BRACKET + property.toString() + R_BRACKET;
+    public static String graphStrategyVariables(final StrategyVariables variables) {
+        return variables.getBaseVariables() + STAR;
     }
 
     public static String graphVariablesString(final Graph.Variables variables) {
@@ -148,7 +152,7 @@ public class StringFactory {
         return sb.toString();
     }
 
-    public static String traversalSideEffectsString(final Traversal.SideEffects traversalSideEffects) {
+    public static String traversalSideEffectsString(final TraversalSideEffects traversalSideEffects) {
         return "sideEffects" + L_BRACKET + "size:" + traversalSideEffects.keys().size() + R_BRACKET;
     }
 
@@ -164,8 +168,16 @@ public class StringFactory {
         return vertexProgram.getClass().getSimpleName() + L_BRACKET + internalString + R_BRACKET;
     }
 
+    public static String vertexProgramString(final VertexProgram vertexProgram) {
+        return vertexProgram.getClass().getSimpleName();
+    }
+
     public static String mapReduceString(final MapReduce mapReduce, final String internalString) {
         return mapReduce.getClass().getSimpleName() + L_BRACKET + internalString + R_BRACKET;
+    }
+
+    public static String mapReduceString(final MapReduce mapReduce) {
+        return mapReduce.getClass().getSimpleName();
     }
 
     private static Function<Method, String> createTransform(final Graph.Features.FeatureSet features) {

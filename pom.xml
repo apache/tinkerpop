@@ -60,7 +60,7 @@
         <module>gremlin-groovy-test</module>
         <module>tinkergraph-gremlin</module>
         <module>neo4j-gremlin</module>
-        <module>giraph-gremlin</module>
+        <module>hadoop-gremlin</module>
         <module>gremlin-driver</module>
         <module>gremlin-console</module>
         <module>gremlin-server</module>
@@ -71,7 +71,7 @@
         <url>git@github.com:tinkerpop/tinkerpop3.git</url>
     </scm>
     <properties>
-        <groovy.version>2.3.7</groovy.version>
+        <groovy.version>2.3.9</groovy.version>
         <junit.version>4.11</junit.version>
         <kuali.s3.wagon.version>1.1.20</kuali.s3.wagon.version>
         <!-- Directory containing the file ${log4j.properties} defined
@@ -79,10 +79,9 @@
              context of child modules, so path this relative to one of
              the modules under the root directory, not the root
              directory itself. -->
-        <log4j.properties.dir>${project.basedir}/../gremlin-server/config/</log4j.properties.dir>
+        <log4j.properties.dir>${project.basedir}/../gremlin-server/conf/</log4j.properties.dir>
         <log4j.properties>log4j-server.properties</log4j.properties>
         <metrics.version>3.0.2</metrics.version>
-        <guava.version>15.0</guava.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipIntegrationTests>true</skipIntegrationTests>
@@ -179,10 +178,6 @@
                 <version>2.5</version>
                 <configuration>
                     <archive>
-                        <index>true</index>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                        </manifest>
                         <manifestEntries>
                             <version>${project.version}</version>
                             <hash>${buildNumber}</hash>
@@ -212,7 +207,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.17</version>
                     <configuration>
-                        <argLine>-Dlog4j.configuration=${log4j.properties}
+                        <argLine>-Dlog4j.configuration=${log4j.properties} -Dbuild.dir=${project.build.directory}
                         </argLine>
                         <additionalClasspathElements>
                             <!-- So that Log4j can find the Log4j properties file -->
@@ -242,6 +237,7 @@
                                 <argLine>-Dlog4j.configuration=${log4j.properties} -Dhost=localhost -Dport=8182
                                     -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
                                     -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                                    -Dbuild.dir=${project.build.directory}
                                 </argLine>
                                 <additionalClasspathElements>
                                     <!-- So that Log4j can find the Log4j properties file -->
@@ -263,6 +259,7 @@
                                 <argLine>-Dlog4j.configuration=${log4j.properties} -Dhost=localhost -Dport=8182
                                     -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
                                     -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                                    -Dbuild.dir=${project.build.directory}
                                 </argLine>
                                 <additionalClasspathElements>
                                     <!-- So that Log4j can find the Log4j properties file -->
@@ -660,7 +657,7 @@
                                     <destDir>full</destDir>
                                     <additionalparam>-Xdoclint:none</additionalparam>
                                     <sourcepath>
-                                        giraph-gremlin/src/main/java:gremlin-algorithm/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:neo4j-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
+                                        hadoop-gremlin/src/main/java:gremlin-algorithm/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:neo4j-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
                                     </sourcepath>
                                     <quiet>true</quiet>
                                 </configuration>
@@ -746,7 +743,7 @@
                             <argLine>-Dlog4j.configuration=${log4j.properties}
                             </argLine>
                             <systemPropertyVariables>
-                                <muteTestLogs>true</muteTestLogs>
+                                <muteTestLogs>false</muteTestLogs>
                             </systemPropertyVariables>
                             <additionalClasspathElements>
                                 <!-- So that Log4j can find the Log4j properties file -->
@@ -757,6 +754,37 @@
                                 <exclude>**/*PerformanceTest.java</exclude>
                             </excludes>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>grapes</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>cleanGrapes</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>clean-grapes</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${basedir}/bin/clean-grapes.sh</executable>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

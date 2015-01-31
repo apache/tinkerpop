@@ -1,50 +1,56 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
-import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.JumpTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.UnionTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.UntilTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.DedupTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.IntervalTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.LocalRangeTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.RandomTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.RangeTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.WhereTest;
-import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
-import com.tinkerpop.gremlin.process.graph.step.map.FoldTest;
-import com.tinkerpop.gremlin.process.graph.step.map.HiddenValueMapTest;
-import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
-import com.tinkerpop.gremlin.process.graph.step.map.MatchTest;
-import com.tinkerpop.gremlin.process.graph.step.map.OrderByTest;
-import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
-import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
-import com.tinkerpop.gremlin.process.graph.step.map.PropertiesTest;
-import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
-import com.tinkerpop.gremlin.process.graph.step.map.ShuffleTest;
-import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
-import com.tinkerpop.gremlin.process.graph.step.map.ValueMapTest;
-import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeTest;
-import com.tinkerpop.gremlin.process.graph.step.util.TraversalSideEffectsTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.branch.BranchTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.branch.ChooseTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.branch.LocalTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.branch.RepeatTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.branch.UnionTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.AndTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.CoinTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.CyclicPathTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.DedupTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.ExceptTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.FilterTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.HasNotTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.HasTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.IsTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.OrTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.RetainTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.SampleTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.SimplePathTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.WhereTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.BackTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.CountTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.FoldTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.MapTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.MatchTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.MaxTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.MeanTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.MinTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.OrderTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.SelectTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.UnfoldTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.ValueMapTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.VertexTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AddEdgeTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AggregateTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupCountTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.ProfileTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SackTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SideEffectCapTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SideEffectTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StoreTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SubgraphTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.TreeTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.util.TraversalSideEffectsTest;
+import com.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
+import com.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
+import com.tinkerpop.gremlin.process.util.PathTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -54,7 +60,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * The ProcessStandardSuite is a custom JUnit test runner that executes the Gremlin Test Suite over a Graph
+ * The ProcessStandardSuite is a mapper JUnit test runner that executes the Gremlin Test Suite over a Graph
  * implementation.  This specialized test suite and runner is for use by Gremlin implementers to test their
  * Graph implementations.  The StructureStandardSuite ensures consistency and validity of the implementations that they
  * test.
@@ -83,38 +89,42 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] allTests = new Class<?>[]{
             // branch
+            BranchTest.StandardTest.class,
             ChooseTest.StandardTest.class,
-            JumpTest.StandardTest.class,
+            LocalTest.StandardTest.class,
+            RepeatTest.StandardTest.class,
             UnionTest.StandardTest.class,
-            UntilTest.StandardTest.class,
 
             // filter
+            AndTest.StandardTest.class,
+            CoinTest.StandardTest.class,
             CyclicPathTest.StandardTest.class,
             DedupTest.StandardTest.class,
             ExceptTest.StandardTest.class,
             FilterTest.StandardTest.class,
             HasNotTest.StandardTest.class,
             HasTest.StandardTest.class,
-            IntervalTest.StandardTest.class,
-            LocalRangeTest.StandardTest.class,
-            RandomTest.StandardTest.class,
+            IsTest.StandardTest.class,
+            OrTest.StandardTest.class,
             RangeTest.StandardTest.class,
             RetainTest.StandardTest.class,
+            SampleTest.StandardTest.class,
             SimplePathTest.StandardTest.class,
             WhereTest.StandardTest.class,
 
             // map
             BackTest.StandardTest.class,
+            CountTest.StandardTest.class,
             FoldTest.StandardTest.class,
-            HiddenValueMapTest.StandardTest.class,
             MapTest.StandardTest.class,
             MatchTest.StandardTest.class,
+            MaxTest.StandardTest.class,
+            MeanTest.StandardTest.class,
+            MinTest.StandardTest.class,
             OrderTest.StandardTest.class,
-            OrderByTest.StandardTest.class,
-            PathTest.StandardTest.class,
+            com.tinkerpop.gremlin.process.graph.traversal.step.map.PathTest.StandardTest.class,
             PropertiesTest.StandardTest.class,
             SelectTest.StandardTest.class,
-            ShuffleTest.StandardTest.class,
             VertexTest.StandardTest.class,
             UnfoldTest.StandardTest.class,
             ValueMapTest.StandardTest.class,
@@ -122,11 +132,11 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // sideEffect
             AddEdgeTest.StandardTest.class,
             AggregateTest.StandardTest.class,
-            CountTest.StandardTest.class,
-            GroupByTest.StandardTest.class,
+            GroupTest.StandardTest.class,
             GroupCountTest.StandardTest.class,
             InjectTest.StandardTest.class,
             ProfileTest.StandardTest.class,
+            SackTest.StandardTest.class,
             SideEffectCapTest.StandardTest.class,
             SideEffectTest.StandardTest.class,
             StoreTest.StandardTest.class,
@@ -137,9 +147,11 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             TraversalSideEffectsTest.StandardTest.class,
 
             // compliance
-            TraversalCoverageTest.class,
             CoreTraversalTest.class,
-            PathStructureTest.class,
+            PathTest.class,
+
+            // strategy
+            TraversalVerificationStrategyTest.StandardTest.class
 
             // algorithms
             // PageRankVertexProgramTest.class
@@ -150,36 +162,41 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      */
     protected static Class<?>[] testsToEnforce = new Class<?>[]{
             // branch
+            BranchTest.class,
             ChooseTest.class,
-            JumpTest.class,
+            LocalTest.class,
+            RepeatTest.class,
             UnionTest.class,
-            UntilTest.class,
 
             // filter
+            AndTest.class,
+            CoinTest.class,
             CyclicPathTest.class,
             DedupTest.class,
             ExceptTest.class,
             FilterTest.class,
             HasNotTest.class,
             HasTest.class,
-            IntervalTest.class,
-            RandomTest.class,
+            IsTest.class,
+            OrTest.class,
             RangeTest.class,
             RetainTest.class,
+            SampleTest.class,
             SimplePathTest.class,
             WhereTest.class,
 
             // map
             BackTest.class,
+            CountTest.class,
             FoldTest.class,
-            HiddenValueMapTest.class,
             MapTest.class,
             MatchTest.class,
+            MaxTest.class,
+            MeanTest.class,
+            MinTest.class,
             OrderTest.class,
-            OrderByTest.class,
-            PathTest.class,
+            com.tinkerpop.gremlin.process.graph.traversal.step.map.PathTest.class,
             SelectTest.class,
-            ShuffleTest.class,
             VertexTest.class,
             UnfoldTest.class,
             ValueMapTest.class,
@@ -187,11 +204,11 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // sideEffect
             AddEdgeTest.class,
             AggregateTest.class,
-            CountTest.class,
-            GroupByTest.class,
+            GroupTest.class,
             GroupCountTest.class,
             InjectTest.class,
             ProfileTest.class,
+            SackTest.class,
             SideEffectCapTest.class,
             SideEffectTest.class,
             StoreTest.class,
@@ -202,12 +219,14 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             TraversalSideEffectsTest.class,
 
             // compliance
-            TraversalCoverageTest.class,
             CoreTraversalTest.class,
-            PathStructureTest.class,
+            PathTest.class,
 
             // algorithms
             // PageRankVertexProgramTest.class
+
+            // strategy
+            TraversalVerificationStrategyTest.class
     };
 
     /**

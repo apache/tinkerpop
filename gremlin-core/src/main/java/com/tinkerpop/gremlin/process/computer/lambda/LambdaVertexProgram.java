@@ -1,10 +1,11 @@
 package com.tinkerpop.gremlin.process.computer.lambda;
 
 import com.tinkerpop.gremlin.process.computer.Memory;
+import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
+import com.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -22,7 +23,9 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LambdaVertexProgram<M extends Serializable> implements VertexProgram<M> {
+public class LambdaVertexProgram<M extends Serializable> extends StaticVertexProgram<M> {
+
+    private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Arrays.asList(MessageScope.Global.instance()));
 
     private static final String SETUP_LAMBDA = "gremlin.lambdaVertexProgram.setupLambda";
     private static final String EXECUTE_LAMBDA = "gremlin.lambdaVertexProgram.executeLambda";
@@ -65,7 +68,7 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(VERTEX_PROGRAM, this.getClass().getName());
+        super.storeState(configuration);
         if (null != this.setupLambdaHolder)
             this.setupLambdaHolder.storeState(configuration);
         if (null != this.executeLambdaHolder)
@@ -108,8 +111,13 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
     }
 
     @Override
+    public Set<MessageScope> getMessageScopes(final Memory memory) {
+        return MESSAGE_SCOPES;
+    }
+
+    @Override
     public String toString() {
-        return StringFactory.vertexProgramString(this, ""); // TODO: make a better toString();
+        return StringFactory.vertexProgramString(this);
     }
 
     //////////////////////////////

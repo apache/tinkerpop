@@ -1,9 +1,6 @@
 package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import com.tinkerpop.gremlin.structure.strategy.SequenceGraphStrategy;
-import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
 import com.tinkerpop.gremlin.util.config.YamlConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -28,14 +25,10 @@ public class GraphFactory {
      * @param configuration A configuration object that specifies the minimally required properties for a                        I
      *                      {@link com.tinkerpop.gremlin.structure.Graph} instance. This minimum is determined by the
      *                      {@link com.tinkerpop.gremlin.structure.Graph} instance itself.
-     * @param strategies    One or more {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} implementations
-     *                      to plug into the underlying {@link com.tinkerpop.gremlin.structure.Graph} being constructed.
-     *                      If multiple strategies are supplied then they are given in order to a
-     *                      {@link com.tinkerpop.gremlin.structure.strategy.SequenceGraphStrategy} for execution.
      * @return A {@link com.tinkerpop.gremlin.structure.Graph} instance.
      * @throws IllegalArgumentException if {@code configuration}
      */
-    public static Graph open(final Configuration configuration, final GraphStrategy... strategies) {
+    public static Graph open(final Configuration configuration) {
         if (null == configuration)
             throw Graph.Exceptions.argumentCanNotBeNull("configuration");
 
@@ -61,23 +54,7 @@ public class GraphFactory {
             throw new RuntimeException(String.format("GraphFactory could not instantiate this Graph implementation [%s]", clazz), e2);
         }
 
-        final Graph returnedGraph;
-        if (strategies != null && strategies.length == 1) {
-            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.getStrategy().setGraphStrategy(strategies[0]);
-            returnedGraph = swg;
-        } else if (strategies != null && strategies.length > 1) {
-            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.getStrategy().setGraphStrategy(new SequenceGraphStrategy(strategies));
-            returnedGraph = swg;
-        } else
-            returnedGraph = g;
-
-        return returnedGraph;
-    }
-
-    public static Graph open(final Configuration configuration) {
-        return open(configuration, null);
+        return g;
     }
 
     /**

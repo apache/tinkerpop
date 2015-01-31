@@ -7,17 +7,17 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,7 +33,7 @@ public class TinkerGraphView {
     public TinkerGraphView(final GraphComputer.Isolation isolation, final Set<String> computeKeys) {
         this.isolation = isolation;
         this.computeKeys = computeKeys;
-        this.computeProperties = new HashMap<>();
+        this.computeProperties = new ConcurrentHashMap<>();
     }
 
     public <V> Property<V> setProperty(final TinkerElement element, final String key, final V value) {
@@ -63,13 +63,8 @@ public class TinkerGraphView {
         }
     }
 
-
     public List<Property> getProperty(final TinkerElement element, final String key) {
-        if (isComputeKey(key)) {
-            return this.getValue(element, key);
-        } else {
-            return (List) TinkerHelper.getProperties(element).getOrDefault(key, Collections.emptyList());
-        }
+        return isComputeKey(key) ? this.getValue(element, key) : TinkerHelper.getProperties(element).getOrDefault(key, Collections.emptyList());
     }
 
     public List<Property> getProperties(final TinkerElement element) {
@@ -94,37 +89,36 @@ public class TinkerGraphView {
     //////////////////////
 
     private void setValue(final Element element, final String key, final Property property) {
-        final Map<String, List<Property>> nextMap = this.computeProperties.getOrDefault(element, new HashMap<>());
-        this.computeProperties.put(element, nextMap);
-        if (nextMap.containsKey(key)) {
+        final Map<String, List<Property>> elementProperties = this.computeProperties.computeIfAbsent(element, k -> new ConcurrentHashMap<>());
+        elementProperties.compute(key, (k, v) -> {
             if (element instanceof Vertex) {
-                nextMap.get(key).add(property);
-            } else {
-                nextMap.get(key).clear();
-                nextMap.get(key).add(property);
-            }
-        } else {
-            final List<Property> list = new ArrayList<>();
-            list.add(property);
-            nextMap.put(key, list);
-        }
+                if (null == v) v = Collections.synchronizedList(new ArrayList<>());
+                v.add(property);
+            } else
+                v = Arrays.asList(property);
+            return v;
+        });
     }
 
     private void removeValue(final Element element, final String key) {
-        final Map<String, List<Property>> map = this.computeProperties.get(element);
-        if (null != map)
-            map.remove(key);
+        this.computeProperties.computeIfPresent(element, (k, v) -> {
+            v.remove(key);
+            return v;
+        });
     }
 
     private void removeValue(final Element element, final String key, final Property property) {
-        final Map<String, List<Property>> map = this.computeProperties.get(element);
-        if (null != map)
-            map.get(key).remove(property);
+        this.computeProperties.computeIfPresent(element, (k, v) -> {
+            v.computeIfPresent(key, (k1, v1) -> {
+                v1.remove(property);
+                return v1;
+            });
+            return v;
+        });
     }
 
     private List<Property> getValue(final Element element, final String key) {
-        final Map<String, List<Property>> map = this.computeProperties.get(element);
-        return (null == map) ? Collections.emptyList() : map.getOrDefault(key, Collections.emptyList());
+        return this.computeProperties.getOrDefault(element, Collections.emptyMap()).getOrDefault(key, Collections.emptyList());
     }
 
     public boolean isComputeKey(final String key) {

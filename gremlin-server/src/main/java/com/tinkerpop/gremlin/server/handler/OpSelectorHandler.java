@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.op.OpLoader;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.server.util.MetricManager;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import org.javatuples.Pair;
@@ -28,6 +29,7 @@ import static com.codahale.metrics.MetricRegistry.name;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@ChannelHandler.Sharable
 public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
     private static final Logger logger = LoggerFactory.getLogger(OpSelectorHandler.class);
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));

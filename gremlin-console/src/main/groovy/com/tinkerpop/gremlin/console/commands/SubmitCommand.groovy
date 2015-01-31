@@ -18,5 +18,8 @@ class SubmitCommand extends CommandSupport {
     }
 
     @Override
-    def Object execute(final List<String> arguments) { return mediator.currentRemote().submit(arguments) }
+    def Object execute(final List<String> arguments) {
+        if (mediator.remotes.size() == 0) return "No remotes are configured.  Use :remote command."
+        return mediator.currentRemote().submit(arguments)
+    }
 }

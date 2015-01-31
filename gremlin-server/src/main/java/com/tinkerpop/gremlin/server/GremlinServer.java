@@ -6,12 +6,13 @@ import com.tinkerpop.gremlin.structure.Graph;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.util.concurrent.DefaultEventExecutorGroup;
-import io.netty.util.concurrent.EventExecutorGroup;
+import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -19,9 +20,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Start and stop Gremlin Server.
@@ -35,65 +41,81 @@ public class GremlinServer {
         InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
     }
 
+    private static final String SERVER_THREAD_PREFIX = "gremlin-server-";
+
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
     private final Settings settings;
     private Optional<Graphs> graphs = Optional.empty();
     private Channel ch;
 
-    private final Optional<CompletableFuture<Void>> serverReady;
+    private CompletableFuture<Void> serverStopped = null;
+    private CompletableFuture<Void> serverStarted = null;
+
+    private final EventLoopGroup bossGroup;
+    private final EventLoopGroup workerGroup;
+    private final ExecutorService gremlinExecutorService;
 
     public GremlinServer(final Settings settings) {
-        this(settings, null);
-    }
-
-    public GremlinServer(final Settings settings, final CompletableFuture<Void> serverReady) {
-        this.serverReady = Optional.ofNullable(serverReady);
         this.settings = settings;
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.stop().join(), SERVER_THREAD_PREFIX + "shutdown"));
+
+        final BasicThreadFactory threadFactoryBoss = new BasicThreadFactory.Builder().namingPattern(SERVER_THREAD_PREFIX + "boss-%d").build();
+        bossGroup = new NioEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
+
+        final BasicThreadFactory threadFactoryWorker = new BasicThreadFactory.Builder().namingPattern(SERVER_THREAD_PREFIX + "worker-%d").build();
+        workerGroup = new NioEventLoopGroup(settings.threadPoolWorker, threadFactoryWorker);
+
+        final BasicThreadFactory threadFactoryGremlin = new BasicThreadFactory.Builder().namingPattern(SERVER_THREAD_PREFIX + "exec-%d").build();
+        gremlinExecutorService = Executors.newFixedThreadPool(settings.gremlinPool, threadFactoryGremlin);
     }
 
     /**
      * Start Gremlin Server with {@link Settings} provided to the constructor.
      */
-    public void run() throws Exception {
-        final EventLoopGroup bossGroup = new NioEventLoopGroup(settings.threadPoolBoss);
-        final EventLoopGroup workerGroup = new NioEventLoopGroup(settings.threadPoolWorker);
+    public synchronized CompletableFuture<Void> start() throws Exception {
+        if(serverStarted != null) {
+            // server already started - don't get it rolling again
+            return serverStarted;
+        }
 
-        final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-%d").build();
-        final EventExecutorGroup gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool, threadFactory);
-
+        serverStarted = new CompletableFuture<>();
+        final CompletableFuture<Void> serverReadyFuture = serverStarted = new CompletableFuture<>();
         try {
             final ServerBootstrap b = new ServerBootstrap();
 
-            // when high value is reached then the channel becomes non-writeable and stays like that until the
+            // when high value is reached then the channel becomes non-writable and stays like that until the
             // low value is so that there is time to recover
             b.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, settings.writeBufferLowWaterMark);
             b.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, settings.writeBufferHighWaterMark);
             b.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
-            final GremlinExecutor gremlinExecutor = initializeGremlinExecutor(gremlinGroup, workerGroup);
+            final GremlinExecutor gremlinExecutor = initializeGremlinExecutor(gremlinExecutorService, workerGroup);
             final Channelizer channelizer = createChannelizer(settings);
-            channelizer.init(settings, gremlinExecutor, gremlinGroup, graphs.get(), workerGroup);
+            channelizer.init(settings, gremlinExecutor, gremlinExecutorService, graphs.get(), workerGroup);
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(channelizer);
 
-            ch = b.bind(settings.host, settings.port).sync().channel();
-            logger.info("Gremlin Server configured with worker thread pool of {} and boss thread pool of {}",
-                    settings.threadPoolWorker, settings.threadPoolBoss);
-            logger.info("Channel started at port {}.", settings.port);
+            // bind to host/port and wait for channel to be ready
+            b.bind(settings.host, settings.port).addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(final ChannelFuture channelFuture) throws Exception {
+                    ch = channelFuture.channel();
 
-            serverReady.ifPresent(future -> future.complete(null));
+                    logger.info("Gremlin Server configured with worker thread pool of {}, gremlin pool of {} and boss thread pool of {}.",
+                            settings.threadPoolWorker, settings.gremlinPool, settings.threadPoolBoss);
+                    logger.info("Channel started at port {}.", settings.port);
 
-            ch.closeFuture().sync();
-        } finally {
-            logger.info("Shutting down thread pools");
-
-            gremlinGroup.shutdownGracefully();
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
-
-            logger.info("Gremlin Server - shutdown complete");
+                    serverReadyFuture.complete(null);
+                }
+            });
+        } catch (Exception ex) {
+            logger.error("Gremlin Server Error", ex);
+            serverReadyFuture.completeExceptionally(ex);
         }
+
+        return serverStarted;
     }
 
     private static Channelizer createChannelizer(final Settings settings) throws Exception {
@@ -112,7 +134,7 @@ public class GremlinServer {
         }
     }
 
-    private GremlinExecutor initializeGremlinExecutor(final EventExecutorGroup gremlinGroup,
+    private GremlinExecutor initializeGremlinExecutor(final ExecutorService gremlinExecutorService,
                                                       final ScheduledExecutorService scheduledExecutorService) {
         // initialize graphs from configuration
         if (!graphs.isPresent()) graphs = Optional.of(new Graphs(settings));
@@ -125,9 +147,9 @@ public class GremlinServer {
                 .afterSuccess(b -> graphs.get().commitAll())
                 .beforeEval(b -> graphs.get().rollbackAll())
                 .afterTimeout(b -> graphs.get().rollbackAll())
-                .use(settings.use)
+                .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphs.get().getGraphsAsBindings())
-                .executorService(gremlinGroup)
+                .executorService(gremlinExecutorService)
                 .scheduledExecutorService(scheduledExecutorService);
 
         settings.scriptEngines.forEach((k, v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config));
@@ -145,10 +167,69 @@ public class GremlinServer {
     }
 
     /**
-     * Stop Gremlin Server and free the port.
+     * Stop Gremlin Server and free the port binding. Note that multiple calls to this method will return the
+     * same instance of the {@link java.util.concurrent.CompletableFuture}.
      */
-    public void stop() {
-        ch.close();
+    public synchronized CompletableFuture<Void> stop() {
+        if (serverStopped != null) {
+            // shutdown has started so don't fire it off again
+            return serverStopped;
+        }
+
+        serverStopped = new CompletableFuture<>();
+        final CountDownLatch servicesLeftToShutdown = new CountDownLatch(3);
+
+        ch.close().addListener(f -> servicesLeftToShutdown.countDown());
+
+        logger.info("Shutting down thread pools.");
+
+        try {
+            gremlinExecutorService.shutdown();
+        } finally {
+            logger.debug("Shutdown Gremlin thread pool.");
+        }
+
+        try {
+            workerGroup.shutdownGracefully().addListener((GenericFutureListener) f -> servicesLeftToShutdown.countDown());
+        } finally {
+            logger.debug("Shutdown Worker thread pool.");
+        }
+        try {
+            bossGroup.shutdownGracefully().addListener((GenericFutureListener) f -> servicesLeftToShutdown.countDown());
+        } finally {
+            logger.debug("Shutdown Boss thread pool.");
+        }
+
+        // channel is shutdown as are the thread pools - time to kill graphs as nothing else should be acting on them
+        new Thread(() -> {
+            try {
+                gremlinExecutorService.awaitTermination(30000, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException ie) {
+                logger.warn("Timeout waiting for Gremlin thread pool to shutdown - continuing with shutdown process.");
+            }
+
+            try {
+                servicesLeftToShutdown.await(30000, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException ie) {
+                logger.warn("Timeout waiting for bossy/worker thread pools to shutdown - continuing with shutdown process.");
+            }
+
+            graphs.ifPresent(gs -> gs.getGraphs().forEach((k, v) -> {
+                logger.debug("Closing Graph instance [{}]", k);
+                try {
+                    v.close();
+                } catch (Exception ex) {
+                    logger.warn(String.format("Exception while closing Graph instance [%s]", k), ex);
+                } finally {
+                    logger.info("Closed Graph instance [{}]", k);
+                }
+            }));
+
+            logger.info("Gremlin Server - shutdown complete");
+            serverStopped.complete(null);
+        }, SERVER_THREAD_PREFIX + "stop").start();
+
+        return serverStopped;
     }
 
     public static void main(final String[] args) throws Exception {
@@ -170,7 +251,7 @@ public class GremlinServer {
 
         logger.info("Configuring Gremlin Server from {}", file);
         settings.optionalMetrics().ifPresent(GremlinServer::configureMetrics);
-        new GremlinServer(settings).run();
+        new GremlinServer(settings).start();
     }
 
     public static String getHeader() {

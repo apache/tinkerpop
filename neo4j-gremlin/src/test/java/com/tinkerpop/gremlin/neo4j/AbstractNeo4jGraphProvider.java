@@ -2,23 +2,40 @@ package com.tinkerpop.gremlin.neo4j;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
+import com.tinkerpop.gremlin.neo4j.structure.Neo4jElement;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraphVariables;
+import com.tinkerpop.gremlin.neo4j.structure.Neo4jProperty;
+import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
+import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.neo4j.graphdb.DynamicLabel;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
+    private static final Set<Class> IMPLEMENTATIONS = new HashSet<Class>() {{
+        add(Neo4jEdge.class);
+        add(Neo4jElement.class);
+        add(Neo4jGraph.class);
+        add(Neo4jGraphVariables.class);
+        add(Neo4jProperty.class);
+        add(Neo4jVertex.class);
+        add(Neo4jVertexProperty.class);
+    }};
 
     @Override
     public void clear(final Graph g, final Configuration configuration) throws Exception {
         if (null != g) {
-            if (g.features().graph().supportsTransactions())
+            if (g.features().graph().supportsTransactions() && g.tx().isOpen())
                 g.tx().rollback();
             g.close();
         }
@@ -31,9 +48,9 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
     }
 
     @Override
-    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith) {
-        this.createIndices((Neo4jGraph) g, loadGraphWith.value());
-        super.loadGraphData(g, loadGraphWith);
+    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith, final Class testClass, final String testName) {
+        if (loadGraphWith != null) this.createIndices((Neo4jGraph) g, loadGraphWith.value());
+        super.loadGraphData(g, loadGraphWith, testClass, testName);
     }
 
     private void createIndices(final Neo4jGraph g, final LoadGraphWith.GraphData graphData) {
@@ -112,5 +129,10 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
             // TODO: add meta_property indices when meta_property graph is provided
             //throw new RuntimeException("Could not load graph with " + graphData);
         }
+    }
+
+    @Override
+    public Set<Class> getImplementations() {
+        return IMPLEMENTATIONS;
     }
 }

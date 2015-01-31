@@ -21,21 +21,12 @@ import org.junit.runners.Parameterized;
 import java.util.Date;
 import java.util.UUID;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_ANY_IDS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_STRING_IDS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_NUMERIC_IDS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_UUID_IDS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.*;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.*;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -105,7 +96,7 @@ public class FeatureSupportTest {
             try {
                 g.tx();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_TRANSACTIONS));
-            } catch (UnsupportedOperationException e) {
+            } catch (Exception e) {
                 validateException(Graph.Exceptions.transactionsNotSupported(), e);
             }
         }
@@ -120,7 +111,7 @@ public class FeatureSupportTest {
             try {
                 g.variables();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, Graph.Features.VariableFeatures.class.getSimpleName(), FEATURE_VARIABLES));
-            } catch (UnsupportedOperationException e) {
+            } catch (Exception e) {
                 validateException(Graph.Exceptions.variablesNotSupported(), e);
             }
         }
@@ -509,7 +500,7 @@ public class FeatureSupportTest {
     public static class ElementPropertyDataTypeFunctionalityTest extends AbstractGremlinTest {
         private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
-        @Parameterized.Parameters(name = "{index}: supports{0}({1})")
+        @Parameterized.Parameters(name = "supports{0}({1})")
         public static Iterable<Object[]> data() {
             return PropertyTest.PropertyFeatureSupportTest.data();
         }
@@ -530,7 +521,7 @@ public class FeatureSupportTest {
                 final Edge edge = createEdgeForPropertyFeatureTests();
                 edge.property("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgePropertyFeatures.class.getSimpleName(), featureName));
-            } catch (UnsupportedOperationException e) {
+            } catch (Exception e) {
                 validateException(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value), e);
             }
         }
@@ -542,7 +533,7 @@ public class FeatureSupportTest {
             try {
                 g.addVertex("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), featureName));
-            } catch (UnsupportedOperationException e) {
+            } catch (Exception e) {
                 validateException(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value), e);
             }
         }
@@ -565,7 +556,7 @@ public class FeatureSupportTest {
     public static class GraphVariablesFunctionalityTest extends AbstractGremlinTest {
         private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
-        @Parameterized.Parameters(name = "{index}: supports{0}({1})")
+        @Parameterized.Parameters(name = "supports{0}({1})")
         public static Iterable<Object[]> data() {
             return VariablesTest.GraphVariablesFeatureSupportTest.data();
         }
@@ -588,7 +579,7 @@ public class FeatureSupportTest {
                 final Graph.Variables variables = g.variables();
                 variables.set("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, Graph.Features.VariableFeatures.class.getSimpleName(), featureName));
-            } catch (UnsupportedOperationException e) {
+            } catch (Exception e) {
                 validateException(Graph.Variables.Exceptions.dataTypeOfVariableValueNotSupported(value), e);
             }
         }
@@ -775,6 +766,21 @@ public class FeatureSupportTest {
                 validateException(VertexProperty.Exceptions.metaPropertiesNotSupported(), ex);
             }
         }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_META_PROPERTIES, supported = false)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_ADD_PROPERTY)
+        public void shouldSupportMetaPropertyIfPropertiesHaveAnIteratorViaVertexProperty() throws Exception {
+            try {
+                final Vertex v = g.addVertex("name", "stephen");
+                v.property("name").iterators();
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_META_PROPERTIES));
+            } catch (Exception ex) {
+                validateException(VertexProperty.Exceptions.metaPropertiesNotSupported(), ex);
+            }
+        }
     }
 
     /**
@@ -786,7 +792,7 @@ public class FeatureSupportTest {
         private EdgeFeatures edgeFeatures;
         private EdgePropertyFeatures edgePropertyFeatures;
         private GraphFeatures graphFeatures;
-        private Graph.Features.VariableFeatures variableFeatures;
+        private Graph.Features.VariableFeatures variablesFeatures;
         private VertexFeatures vertexFeatures;
         private VertexPropertyFeatures vertexPropertyFeatures;
 
@@ -796,22 +802,22 @@ public class FeatureSupportTest {
             edgeFeatures = f.edge();
             edgePropertyFeatures = edgeFeatures.properties();
             graphFeatures = f.graph();
-            variableFeatures = graphFeatures.variables();
+            variablesFeatures = graphFeatures.variables();
             vertexFeatures = f.vertex();
             vertexPropertyFeatures = vertexFeatures.properties();
         }
 
         @Test
-        public void shouldSupportADataTypeIfGraphHasMemoryEnabled() {
-            assertEquals(variableFeatures.supportsVariables(), (variableFeatures.supportsBooleanValues() || variableFeatures.supportsDoubleValues()
-                    || variableFeatures.supportsFloatValues() || variableFeatures.supportsIntegerValues()
-                    || variableFeatures.supportsLongValues() || variableFeatures.supportsMapValues()
-                    || variableFeatures.supportsMixedListValues()|| variableFeatures.supportsByteValues()
-                    || variableFeatures.supportsBooleanArrayValues() || variableFeatures.supportsByteArrayValues()
-                    || variableFeatures.supportsDoubleArrayValues() || variableFeatures.supportsFloatArrayValues()
-                    || variableFeatures.supportsIntegerArrayValues() || variableFeatures.supportsLongArrayValues()
-                    || variableFeatures.supportsSerializableValues() || variableFeatures.supportsStringValues()
-                    || variableFeatures.supportsUniformListValues() || variableFeatures.supportsStringArrayValues()));
+        public void shouldSupportADataTypeIfGraphHasVariablesEnabled() {
+            assertEquals(variablesFeatures.supportsVariables(), (variablesFeatures.supportsBooleanValues() || variablesFeatures.supportsDoubleValues()
+                    || variablesFeatures.supportsFloatValues() || variablesFeatures.supportsIntegerValues()
+                    || variablesFeatures.supportsLongValues() || variablesFeatures.supportsMapValues()
+                    || variablesFeatures.supportsMixedListValues() || variablesFeatures.supportsByteValues()
+                    || variablesFeatures.supportsBooleanArrayValues() || variablesFeatures.supportsByteArrayValues()
+                    || variablesFeatures.supportsDoubleArrayValues() || variablesFeatures.supportsFloatArrayValues()
+                    || variablesFeatures.supportsIntegerArrayValues() || variablesFeatures.supportsLongArrayValues()
+                    || variablesFeatures.supportsSerializableValues() || variablesFeatures.supportsStringValues()
+                    || variablesFeatures.supportsUniformListValues() || variablesFeatures.supportsStringArrayValues()));
         }
 
         @Test

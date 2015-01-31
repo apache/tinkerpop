@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.graph.EdgeTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.EdgeTraversal;
 
 import java.util.Iterator;
 
@@ -29,7 +29,7 @@ public interface Edge extends Element, EdgeTraversal {
 
     /**
      * Gets the {@link Edge.Iterators} set.
-     *
+     * <p/>
      * {@inheritDoc}
      */
     @Override
@@ -43,6 +43,7 @@ public interface Edge extends Element, EdgeTraversal {
 
         /**
          * Retrieve the vertex (or vertices) associated with this edge as defined by the direction.
+         * If the direction is {@link Direction#BOTH} then the iterator order is: {@link Direction#OUT} then {@link Direction#IN}.
          *
          * @param direction Get the incoming vertex, outgoing vertex, or both vertices
          * @return An iterator with 1 or 2 vertices
@@ -55,11 +56,6 @@ public interface Edge extends Element, EdgeTraversal {
         @Override
         public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys);
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys);
     }
 
     /**

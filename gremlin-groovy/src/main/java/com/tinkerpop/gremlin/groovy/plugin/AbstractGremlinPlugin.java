@@ -14,22 +14,55 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinPlugin implements GremlinPlugin {
+    public static final String ENV_CONSOLE_IO = "ConsolePluginAcceptor.io";
+    public static final String ENV_CONSOLE_SHELL = "ConsolePluginAcceptor.shell";
+
     protected static final String IMPORT_SPACE = "import ";
     protected static final String IMPORT_STATIC_SPACE = "import static ";
     protected static final String DOT_STAR = ".*";
 
     protected IO io;
     protected Groovysh shell;
+    protected final boolean requireConsoleEnvironment;
+
+    public AbstractGremlinPlugin() {
+        this(false);
+    }
+
+    public AbstractGremlinPlugin(final boolean requireConsoleEnvironment) {
+        this.requireConsoleEnvironment = requireConsoleEnvironment;
+    }
 
     /**
      * {@inheritDoc}
-     * <p>
-     * This method may be overriden but take care to call this implementation so the shell and io variables get set.
+     * <p/>
+     * Provides a base implementation for plugins by grabbing the console environment variables and assigning them
+     * to the {@link #io} and {@link #shell} member variables.
+     *
+     * @throws IllegalEnvironmentException if {@link #requireConsoleEnvironment} is set to true and if either
+     *                                     the {@link #io} and {@link #shell} member variables are null.
      */
     @Override
-    public void pluginTo(final PluginAcceptor pluginAcceptor) {
+    public void pluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
         final Map<String, Object> environment = pluginAcceptor.environment();
-        this.io = (IO) environment.get("ConsolePluginAcceptor.io");
-        this.shell = (Groovysh) environment.get("ConsolePluginAcceptor.shell");
+        io = (IO) environment.get(ENV_CONSOLE_IO);
+        shell = (Groovysh) environment.get(ENV_CONSOLE_SHELL);
+
+        if (requireConsoleEnvironment && (null == io || null == shell))
+            throw new IllegalEnvironmentException(this, ENV_CONSOLE_SHELL, ENV_CONSOLE_IO);
+
+        try {
+            afterPluginTo(pluginAcceptor);
+        } catch (PluginInitializationException pie) {
+            throw pie;
+        } catch (Exception ex) {
+            throw new PluginInitializationException(ex);
+        }
     }
+
+    /**
+     * Called after the {@link #pluginTo(PluginAcceptor)} method is executed which sets the {@link #io} and
+     * {@link #shell} member variables.
+     */
+    public abstract void afterPluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException;
 }

@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.util.CharsetUtil;
@@ -11,8 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
-* @author Stephen Mallette (http://stephen.genoprime.com)
-*/
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+@ChannelHandler.Sharable
 public class NioGremlinRequestEncoder extends MessageToByteEncoder<Object> {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketGremlinRequestEncoder.class);
     private boolean binaryEncoding = false;

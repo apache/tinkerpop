@@ -1,26 +1,29 @@
 package com.tinkerpop.gremlin;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
+import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
+import com.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser;
+import com.tinkerpop.gremlin.process.traverser.B_O_Traverser;
+import com.tinkerpop.gremlin.process.traverser.O_Traverser;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONModule;
-import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.commons.configuration.Configuration;
-import org.reflections.Reflections;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Those developing Gremlin implementations must provide a GraphProvider implementation so that the
@@ -36,6 +39,20 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphProvider {
+
+    /**
+     * Implementations from {@code gremlin-core} that need to be part of the clear process.  This does not exempt
+     * vendors from having to register their extensions to any of these classes, but does prevent them from
+     * having to register them in addition to their own.
+     */
+    public static final Set<Class> CORE_IMPLEMENTATIONS = new HashSet<Class>() {{
+        add(__.class);
+        add(DefaultGraphTraversal.class);
+        add(B_O_PA_S_SE_SL_Traverser.class);
+        add(B_O_P_PA_S_SE_SL_Traverser.class);
+        add(B_O_Traverser.class);
+        add(O_Traverser.class);
+    }};
 
     /**
      * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance using the default
@@ -62,8 +79,9 @@ public interface GraphProvider {
      * has been created by one of the {@link #newGraphConfiguration(String, Class, String)} methods and has therefore
      * already been modified by the implementation as necessary for {@link Graph} creation.
      */
-    default public Graph openTestGraph(final Configuration config, final GraphStrategy strategy) {
-        return null == strategy ? GraphFactory.open(config) : GraphFactory.open(config, strategy);
+    default public Graph openTestGraph(final Configuration config, final GraphStrategy... strategies) {
+        final Graph g = GraphFactory.open(config);
+        return null == strategies ? g : g.strategy(strategies);
     }
 
     /**
@@ -118,9 +136,9 @@ public interface GraphProvider {
      * "gremlin.graph" setting which should be defined by the implementer. It should provide a
      * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
      *
-     * @param graphName a unique test graph name
-     * @param test the test class
-     * @param testMethodName the name of the test
+     * @param graphName              a unique test graph name
+     * @param test                   the test class
+     * @param testMethodName         the name of the test
      * @param configurationOverrides settings to override defaults with.
      */
     public Configuration newGraphConfiguration(final String graphName,
@@ -133,8 +151,8 @@ public interface GraphProvider {
      * "gremlin.graph" setting which should be defined by the implementer. It should provide a
      * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
      *
-     * @param graphName a unique test graph name
-     * @param test the test class
+     * @param graphName      a unique test graph name
+     * @param test           the test class
      * @param testMethodName the name of the test
      */
     default public Configuration newGraphConfiguration(final String graphName,
@@ -147,48 +165,21 @@ public interface GraphProvider {
      * Tests are annotated with a {@link com.tinkerpop.gremlin.LoadGraphWith} annotation. These annotations tell
      * the test what kind of data to preload into the graph instance.  It is up to the implementation to load the
      * graph with the data specified by that annotation. This method also represents the place where indices should
-     * be configured according the the {@link Graph} implementation's API.
+     * be configured according the the {@link Graph} implementation's API. Implementers can use the {@code testClass}
+     * and {@code testName} arguments to implement test specific configurations to their graphs.
      *
      * @param g             the {@link Graph} instance to load data into constructed by this {@code GraphProvider}
-     * @param loadGraphWith the annotation for the currently running test
+     * @param loadGraphWith the annotation for the currently running test - this value may be null if no graph
+     *                      data is to be loaded in front of the test.
+     * @param testClass     the test class being executed
+     * @param testName      the name of the test method being executed
      */
-    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith);
-
-
-    /**
-     * Construct a configured {@link GremlinKryo} instance.  The default implementation simply returns the most
-     * current version of the default {@link GremlinKryo} configuration.  This object should be satisfactory for
-     * most implementations.
-     * <br/>
-     * The only reason to override this method is if the {@link Graph} implementation utilizes custom classes
-     * somewhere that will be serialized in the course of test suite execution.  The most common issue with respect
-     * to this situation is the serialization of {@link Element} identifiers that are returned as custom classes.
-     * If an implementation does that, then the implementer will want to construct a {@link GremlinKryo} instance
-     * and register serializers to it prior to returning it from this method.
-     */
-    public default GremlinKryo createConfiguredGremlinKryo() {
-        return GremlinKryo.build().create();
-    }
-
-    /**
-     * Construct a configured {@code SimpleModule} instance.  The default implementation simply returns null, which
-     * does not apply any additional implementation specific serializers or behaviors.  This return value should
-     * be satisfactory for most implementations.
-     * <br/>
-     * The only reason to override this method is if the {@link Graph} implementation utilizes custom classes
-     * somewhere that will be serialized in the course of test suite execution.  The most common issue with respect
-     * to this situation is the serialization of {@link Element} identifiers that are returned as custom classes.
-     * If an implementation does that, then the implementer will want to construct a {@code SimpleModule} instance
-     * with a registered a custom serializer returning it from this method.
-     */
-    public default SimpleModule createConfiguredGraphSONModule() {
-        return null;
-    }
+    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith, final Class testClass, final String testName);
 
     /**
      * Converts the GraphSON representation of an identifier to the implementation's representation of an identifier.
-     * When serializing a custom identifier type to GraphSON an implementer will typically specify a custom serializer
-     * in {@link #createConfiguredGraphSONModule()}.  That will serialize the identifier to a GraphSON representation.
+     * When serializing a mapper identifier type to GraphSON an implementer will typically specify a mapper serializer
+     * in {@link com.tinkerpop.gremlin.structure.Graph.Io}.  That will serialize the identifier to a GraphSON representation.
      * When the GraphSON is deserialized, the identifier is written to an
      * {@link com.tinkerpop.gremlin.structure.util.detached.Attachable} object where it is passed to a user supplied
      * conversion {@link java.util.function.Function} that ultimately processes it.  It is in this conversion process
@@ -196,8 +187,8 @@ public interface GraphProvider {
      * providing the mechanism that a test can use to do the conversion.
      *
      * @param clazz The {@link Element} class that represents the identifier.
-     * @param id The identifier to convert.
-     * @param <ID> The type of the identifier.
+     * @param id    The identifier to convert.
+     * @param <ID>  The type of the identifier.
      * @return The reconstituted identifier.
      */
     public default <ID> ID reconstituteGraphSONIdentifier(final Class<? extends Element> clazz, final Object id) {
@@ -205,41 +196,52 @@ public interface GraphProvider {
     }
 
     /**
-     * Get the set of concrete implementations of certain classes and interfaces utilized by the test suite. The
-     * default implementation utilizes reflection given the package name of the {@code GraphProvider} interface
-     * as the root for its search, to find implementations of the classes the test suite requires.
-     * <br/>
-     * This class wants any implementations or extensions of the following interfaces or classes:
+     * Get the set of concrete implementations of certain classes and interfaces utilized by the test suite. This
+     * method should return any implementations or extensions of the following interfaces or classes:
      * <ul>
-     *     <li>{@link Graph}</li>
-     *     <li>{@link Property}</li>
-     *     <li>{@link Element}</li>
-     *     <li>{@link Traversal}</li>
-     *     <li>{@link Traverser}</li>
-     *     <li>{@link GraphTraversal}</li>
-     *     <li>{@link DefaultGraphTraversal}</li>
+     * <li>{@link Edge}</li>
+     * <li>{@link Edge.Iterators}</li>
+     * <li>{@link Element}</li>
+     * <li>{@link Element.Iterators}</li>
+     * <li>{@link DefaultGraphTraversal}</li>
+     * <li>{@link Graph}</li>
+     * <li>{@link Graph.Variables}</li>
+     * <li>{@link Graph.Iterators}</li>
+     * <li>{@link GraphTraversal}</li>
+     * <li>{@link com.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser}</li>
+     * <li>{@link Property}</li>
+     * <li>{@link com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser}</li>
+     * <li>{@link Traversal}</li>
+     * <li>{@link Traverser}</li>
+     * <li>{@link Vertex}</li>
+     * <li>{@link Vertex.Iterators}</li>
+     * <li>{@link VertexProperty}</li>
+     * <li>{@link VertexProperty.Iterators}</li>
      * </ul>
      * <br/>
-     * If so desired, implementers can override this method and simply supply the specific classes that implement
-     * and extend the above.  This may be necessary if the implementers package structure doesn't align with the
-     * default implementation or for some reason the reflection approach is unable to properly get all of the
-     * classes required.  It should be clear that a custom implementation of this method is required if there are
-     * failures in the GroovyEnvironmentSuite.
+     * The test suite only enforces registration of the following core structure interfaces (i.e. these classes must
+     * be registered or the tests will fail to execute):
+     * <ul>
+     * <li>{@link Edge}</li>
+     * <li>{@link Edge.Iterators}</li>
+     * <li>{@link Element}</li>
+     * <li>{@link Element.Iterators}</li>
+     * <li>{@link Graph}</li>
+     * <li>{@link Graph.Variables}</li>
+     * <li>{@link Graph.Iterators}</li>
+     * <li>{@link Property}</li>
+     * <li>{@link Vertex}</li>
+     * <li>{@link Vertex.Iterators}</li>
+     * <li>{@link VertexProperty}</li>
+     * <li>{@link VertexProperty.Iterators}</li>
+     * </ul>
+     * <br/>
+     * The remaining interfaces and classes should be registered however as failure to do so, might cause failures
+     * in the Groovy environment testing suite.
+     * <br/>
+     * Internally speaking, tests that make use of this method should bind in {@link #CORE_IMPLEMENTATIONS} to the
+     * {@link Set} because these represent {@code gremlin-core} implementations that are likely not registered
+     * by the vendor implementations.
      */
-    public default Set<Class> getImplementations() {
-        final Reflections reflections = new Reflections(this.getClass().getPackage().getName());
-
-        final Set<Class> implementations = new HashSet<>();
-        reflections.getSubTypesOf(Graph.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Property.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Element.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Traversal.class).forEach(implementations::add);
-        reflections.getSubTypesOf(Traverser.class).forEach(implementations::add);
-        reflections.getSubTypesOf(GraphTraversal.class).forEach(implementations::add);
-        reflections.getSubTypesOf(DefaultGraphTraversal.class).forEach(implementations::add);
-
-        return implementations.stream()
-                .filter(c -> !c.isInterface())
-                .collect(Collectors.toSet());
-    }
+    public Set<Class> getImplementations();
 }

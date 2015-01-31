@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -12,14 +12,19 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerTraversal;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strategy.TinkerElementStepStrategy;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strategy.TinkerGraphStepStrategy;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 /**
  * An in-sideEffects, reference implementation of the property graph interfaces provided by Gremlin3.
@@ -35,15 +40,25 @@ import java.util.Set;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_COMPUTER)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
-public class TinkerGraph implements Graph {
+public class TinkerGraph implements Graph, Graph.Iterators {
+
+    static {
+        try {
+            TraversalStrategies.GlobalCache.registerStrategies(TinkerGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(TinkerGraphStepStrategy.instance()));
+            TraversalStrategies.GlobalCache.registerStrategies(TinkerVertex.class, TraversalStrategies.GlobalCache.getStrategies(Vertex.class).clone().addStrategies(TinkerElementStepStrategy.instance()));
+            TraversalStrategies.GlobalCache.registerStrategies(TinkerEdge.class, TraversalStrategies.GlobalCache.getStrategies(Edge.class).clone().addStrategies(TinkerElementStepStrategy.instance()));
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, TinkerGraph.class.getName());
     }};
 
     protected Long currentId = -1l;
-    protected Map<Object, Vertex> vertices = new HashMap<>();
-    protected Map<Object, Edge> edges = new HashMap<>();
+    protected Map<Object, Vertex> vertices = new ConcurrentHashMap<>();
+    protected Map<Object, Edge> edges = new ConcurrentHashMap<>();
     protected TinkerGraphVariables variables = new TinkerGraphVariables();
     protected TinkerGraphView graphView = null;
 
@@ -91,41 +106,6 @@ public class TinkerGraph implements Graph {
     ////////////// STRUCTURE API METHODS //////////////////
 
     @Override
-    public Vertex v(final Object id) {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, null);
-        final Vertex vertex = this.vertices.get(id);
-        if (null == vertex)
-            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-        else
-            return vertex;
-    }
-
-    @Override
-    public Edge e(final Object id) {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, null);
-        final Edge edge = this.edges.get(id);
-        if (null == edge)
-            throw Graph.Exceptions.elementNotFound(Edge.class, id);
-        else
-            return edge;
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> V() {
-        return new TinkerGraphTraversal<>(Vertex.class, this);
-    }
-
-    @Override
-    public GraphTraversal<Edge, Edge> E() {
-        return new TinkerGraphTraversal<>(Edge.class, this);
-    }
-
-    @Override
-    public <S> GraphTraversal<S, S> of() {
-        return new TinkerTraversal<>(this);
-    }
-
-    @Override
     public Vertex addVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         Object idValue = ElementHelper.getIdValue(keyValues).orElse(null);
@@ -159,6 +139,7 @@ public class TinkerGraph implements Graph {
         return this.variables;
     }
 
+    @Override
     public String toString() {
         return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size());
     }
@@ -187,6 +168,33 @@ public class TinkerGraph implements Graph {
         return EMPTY_CONFIGURATION;
     }
 
+    @Override
+    public Iterators iterators() {
+        return this;
+    }
+
+    @Override
+    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+        if (0 == vertexIds.length) {
+            return this.vertices.values().iterator();
+        } else if (1 == vertexIds.length) {
+            final Vertex vertex = this.vertices.get(vertexIds[0]);
+            return null == vertex ? Collections.emptyIterator() : IteratorUtils.of(vertex);
+        } else
+            return Stream.of(vertexIds).map(this.vertices::get).filter(Objects::nonNull).iterator();
+    }
+
+    @Override
+    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+        if (0 == edgeIds.length) {
+            return this.edges.values().iterator();
+        } else if (1 == edgeIds.length) {
+            final Edge edge = this.edges.get(edgeIds[0]);
+            return null == edge ? Collections.emptyIterator() : IteratorUtils.of(edge);
+        } else
+            return Stream.of(edgeIds).map(this.edges::get).filter(Objects::nonNull).iterator();
+    }
+
     /**
      * Return TinkerGraph feature set.
      * <p/>
@@ -195,23 +203,28 @@ public class TinkerGraph implements Graph {
      */
     @Override
     public Features features() {
-        return new TinkerGraphFeatures();
+        return TinkerGraphFeatures.INSTANCE;
     }
 
     public static class TinkerGraphFeatures implements Features {
+
+        static final TinkerGraphFeatures INSTANCE = new TinkerGraphFeatures();
+
+        private TinkerGraphFeatures() {}
+
         @Override
         public GraphFeatures graph() {
-            return new TinkerGraphGraphFeatures();
+            return TinkerGraphGraphFeatures.INSTANCE;
         }
 
         @Override
         public EdgeFeatures edge() {
-            return new TinkerGraphEdgeFeatures();
+            return TinkerGraphEdgeFeatures.INSTANCE;
         }
 
         @Override
         public VertexFeatures vertex() {
-            return new TinkerGraphVertexFeatures();
+            return TinkerGraphVertexFeatures.INSTANCE;
         }
 
         @Override
@@ -221,6 +234,10 @@ public class TinkerGraph implements Graph {
     }
 
     public static class TinkerGraphVertexFeatures implements Features.VertexFeatures {
+        static final TinkerGraphVertexFeatures INSTANCE = new TinkerGraphVertexFeatures();
+
+        private TinkerGraphVertexFeatures() {}
+
         @Override
         public boolean supportsCustomIds() {
             return false;
@@ -228,6 +245,10 @@ public class TinkerGraph implements Graph {
     }
 
     public static class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {
+        static final TinkerGraphEdgeFeatures INSTANCE = new TinkerGraphEdgeFeatures();
+
+        private TinkerGraphEdgeFeatures(){}
+
         @Override
         public boolean supportsCustomIds() {
             return false;
@@ -235,6 +256,10 @@ public class TinkerGraph implements Graph {
     }
 
     public static class TinkerGraphGraphFeatures implements Features.GraphFeatures {
+        static final TinkerGraphGraphFeatures INSTANCE = new TinkerGraphGraphFeatures();
+
+        private TinkerGraphGraphFeatures() {}
+
         @Override
         public boolean supportsTransactions() {
             return false;

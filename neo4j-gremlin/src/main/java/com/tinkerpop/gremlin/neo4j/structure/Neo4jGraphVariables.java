@@ -29,7 +29,7 @@ public class Neo4jGraphVariables implements Graph.Variables {
         this.graph.tx().readWrite();
         final Set<String> keys = new HashSet<>();
         for (final String key : this.graphVariables.getPropertyKeys()) {
-            if (!Graph.System.isSystem(key))
+            if (!Graph.Hidden.isHidden(key))
                 keys.add(key);
         }
         return keys;

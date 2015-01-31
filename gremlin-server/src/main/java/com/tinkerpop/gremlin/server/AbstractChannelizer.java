@@ -25,6 +25,7 @@ import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
 
@@ -45,7 +46,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     protected GremlinExecutor gremlinExecutor;
     protected Optional<SSLEngine> sslEngine;
     protected Graphs graphs;
-    protected EventExecutorGroup gremlinGroup;
+    protected ExecutorService gremlinExecutorService;
     protected ScheduledExecutorService scheduledExecutorService;
 
     protected static final String PIPELINE_SSL = "ssl";
@@ -54,6 +55,10 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     protected static final String PIPELINE_OP_EXECUTOR = "op-executor";
 
     protected final Map<String, MessageSerializer> serializers = new HashMap<>();
+
+    private OpSelectorHandler opSelectorHandler;
+    private OpExecutorHandler opExecutorHandler;
+    private IteratorHandler iteratorHandler;
 
     /**
      * This method is called from within {@link #initChannel(io.netty.channel.socket.SocketChannel)} just after
@@ -71,12 +76,12 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     @Override
     public void init(final Settings settings, final GremlinExecutor gremlinExecutor,
-                     final EventExecutorGroup gremlinGroup,
+                     final ExecutorService gremlinExecutorService,
                      final Graphs graphs, final ScheduledExecutorService scheduledExecutorService) {
         this.settings = settings;
         this.gremlinExecutor = gremlinExecutor;
         this.graphs = graphs;
-        this.gremlinGroup = gremlinGroup;
+        this.gremlinExecutorService = gremlinExecutorService;
         this.scheduledExecutorService = scheduledExecutorService;
 
         // instantiate and configure the serializers that gremlin server will use - could error out here
@@ -84,6 +89,11 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         configureSerializers();
 
         this.sslEngine = settings.optionalSsl().isPresent() && settings.ssl.enabled ? Optional.ofNullable(createSslEngine()) : Optional.empty();
+
+        // these handlers don't share any state and can thus be initialized once per pipeline
+        this.opSelectorHandler = new OpSelectorHandler(settings, graphs, gremlinExecutor, scheduledExecutorService);
+        this.opExecutorHandler = new OpExecutorHandler(settings, graphs, gremlinExecutor, scheduledExecutorService);
+        this.iteratorHandler = new IteratorHandler(settings);
     }
 
     @Override
@@ -97,10 +107,9 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         // instance
         configure(pipeline);
 
-        pipeline.addLast(PIPELINE_OP_SELECTOR, new OpSelectorHandler(settings, graphs, gremlinExecutor, scheduledExecutorService));
-
-        pipeline.addLast(gremlinGroup, PIPELINE_RESULT_ITERATOR_HANDLER, new IteratorHandler(settings));
-        pipeline.addLast(gremlinGroup, PIPELINE_OP_EXECUTOR, new OpExecutorHandler(settings, graphs, gremlinExecutor, scheduledExecutorService));
+        pipeline.addLast(PIPELINE_OP_SELECTOR, opSelectorHandler);
+        pipeline.addLast(PIPELINE_RESULT_ITERATOR_HANDLER, iteratorHandler);
+        pipeline.addLast(PIPELINE_OP_EXECUTOR, opExecutorHandler);
 
         finalize(pipeline);
     }
@@ -116,14 +125,14 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
                 final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
                 if (config.config != null)
-                    serializer.configure(config.config);
+                    serializer.configure(config.config, graphs.getGraphs());
 
                 return Optional.ofNullable(serializer);
             } catch (ClassNotFoundException cnfe) {
                 logger.warn("Could not find configured serializer class - {} - it will not be available", config.className);
                 return Optional.<MessageSerializer>empty();
             } catch (Exception ex) {
-                logger.warn("Could not instantiate configured serializer class - {} - it will not be available.", config.className);
+                logger.warn("Could not instantiate configured serializer class - {} - it will not be available. {}", config.className, ex.getMessage());
                 return Optional.<MessageSerializer>empty();
             }
         }).filter(Optional::isPresent).map(Optional::get).flatMap(serializer ->

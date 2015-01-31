@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class CompareTest {
 
-    @Parameterized.Parameters(name = "{index}: {0}.test({1},{2}) = {3}")
+    @Parameterized.Parameters(name = "{0}.test({1},{2}) = {3}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {Compare.eq, null, null, true},

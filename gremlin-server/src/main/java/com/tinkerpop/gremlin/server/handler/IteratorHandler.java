@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.server.Settings;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
@@ -25,6 +26,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@ChannelHandler.Sharable
 public class IteratorHandler extends ChannelOutboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(IteratorHandler.class);
 

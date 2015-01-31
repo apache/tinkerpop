@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -21,9 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  * Serializer tests that cover non-lossy serialization/deserialization methods.
@@ -124,6 +123,23 @@ public class JsonMessageSerializerGremlinV1d0Test {
     }
 
     @Test
+    public void serializeEdgeProperty() throws Exception {
+        final Graph g = TinkerGraph.open();
+        final Vertex v1 = g.addVertex();
+        final Vertex v2 = g.addVertex();
+        final Edge e = v1.addEdge("test", v2);
+        e.property("abc", 123);
+
+        final Iterable<Property<Object>> iterable = e.properties("abc").toList();
+        final ResponseMessage response = convert(iterable);
+        assertCommon(response);
+
+        final List<Map<String, Object>> propertyList = (List<Map<String, Object>>) response.getResult().getData();
+        assertEquals(1, propertyList.size());
+        assertEquals(123, propertyList.get(0).get("value"));
+    }
+
+    @Test
     public void serializeVertexWithEmbeddedMap() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex();
@@ -153,7 +169,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final Map<String, Object> properties = (Map<String, Object>) deserializedVertex.get(GraphSONTokens.PROPERTIES);
         assertEquals(1, properties.size());
 
-        final List<Object> deserializedInnerList = (List<Object>) ((Map<String,Object>) ((List<Object>) properties.get("friends")).get(0)).get(GraphSONTokens.VALUE);
+        final List<Object> deserializedInnerList = (List<Object>) ((Map<String, Object>) ((List<Object>) properties.get("friends")).get(0)).get(GraphSONTokens.VALUE);
         assertEquals(3, deserializedInnerList.size());
         assertEquals("x", deserializedInnerList.get(0));
         assertEquals(5, deserializedInnerList.get(1));
@@ -168,7 +184,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
     public void serializeToJsonMapWithElementForKey() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
         final Map<Vertex, Integer> map = new HashMap<>();
-        map.put(g.V().<Vertex>has("name", Compare.eq, "marko").next(), 1000);
+        map.put(g.V().has("name", Compare.eq, "marko").next(), 1000);
 
         final ResponseMessage response = convert(map);
         assertCommon(response);
@@ -186,11 +202,11 @@ public class JsonMessageSerializerGremlinV1d0Test {
     public void serializeFullResponseMessage() throws Exception {
         final UUID id = UUID.randomUUID();
 
-        final Map<String,Object> metaData = new HashMap<>();
+        final Map<String, Object> metaData = new HashMap<>();
         metaData.put("test", "this");
         metaData.put("one", 1);
 
-        final Map<String,Object> attributes = new HashMap<>();
+        final Map<String, Object> attributes = new HashMap<>();
         attributes.put("test", "that");
         attributes.put("two", 2);
 

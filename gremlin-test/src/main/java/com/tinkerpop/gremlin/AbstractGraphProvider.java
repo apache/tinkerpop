@@ -9,7 +9,6 @@ import org.apache.commons.configuration.Configuration;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Map;
 
 /**
@@ -57,9 +56,11 @@ public abstract class AbstractGraphProvider implements GraphProvider {
     }
 
     @Override
-    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith) {
+    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith, final Class testClass, final String testName) {
         try {
-            readIntoGraph(g, loadGraphWith.value().location());
+            // loadGraphWith will be null if an annotation isn't assigned.  it simply means that the graph is
+            // created in an ad-hoc manner for the tests - just don't try to read any data into it.
+            if (loadGraphWith != null) readIntoGraph(g, loadGraphWith.value().location());
         } catch (IOException ioe) {
             throw new RuntimeException("Graph could not be loaded with data for test: " + ioe.getMessage());
         }
@@ -79,28 +80,22 @@ public abstract class AbstractGraphProvider implements GraphProvider {
 
         // overkill code, simply allowing us to detect when data dir is in use.  useful though because without it
         // tests may fail if a database is re-used in between tests somehow.  this directory really needs to be
-        // cleared between tests runs and this exception will make it clear if it is not.
-        if (directory.exists()) {
-            throw new RuntimeException("unable to delete directory " + directory.getAbsolutePath());
-        }
+        // cleared between tests runs and this exception will make it clear if it is not. this code used to
+        // throw an exception but that fails windows builds in some cases unecessarily - hopefully the print
+        // to screen is enough to hint failures due to the old directory still being in place.
+        if (directory.exists()) System.err.println("unable to delete directory " + directory.getAbsolutePath());
     }
 
     protected String getWorkingDirectory() {
-        return this.computeTestDataRoot().getAbsolutePath();
-    }
-
-    protected File computeTestDataRoot() {
-        final String clsUri = this.getClass().getName().replace('.', '/') + ".class";
-        final URL url = this.getClass().getClassLoader().getResource(clsUri);
-        final String clsPath = url.getPath();
-        final File root = new File(clsPath.substring(0, clsPath.length() - clsUri.length()));
-        return new File(root.getParentFile(), "test-data");
+        return TestHelper.makeTestDataPath(this.getClass(), "graph-provider-data").getAbsolutePath();
     }
 
     protected void readIntoGraph(final Graph g, final String path) throws IOException {
+        final File workingDirectory = TestHelper.makeTestDataPath(this.getClass(), "kryo-working-directory");
+        if (!workingDirectory.exists()) workingDirectory.mkdirs();
         final GraphReader reader = KryoReader.build()
-                .workingDirectory(File.separator + "tmp")
-                .custom(createConfiguredGremlinKryo())
+                .workingDirectory(workingDirectory.getAbsolutePath())
+                .mapper(g.io().kryoMapper().create())
                 .create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
             reader.readGraph(stream, g);

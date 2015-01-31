@@ -1,95 +1,70 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
- * A GraphStrategy which creates a logical subgraph to selectively include vertices and edges of a Graph according to
- * provided criteria.  A vertex is in the subgraph if it meets the specified {@link #vertexPredicate}.  An edge
- * is in the subgraph if it meets the specified {@link #edgePredicate} and its associated vertices meet the
- * specified {@link #vertexPredicate}.
+ * A {@link GraphStrategy} which creates a logical subgraph to selectively include vertices and edges of a
+ * {@link com.tinkerpop.gremlin.structure.Graph} according to provided criteria.  A vertex is in the subgraph if
+ * it meets the specified {@link #vertexPredicate}.  An edge is in the subgraph if it meets the specified
+ * {@link #edgePredicate} and its associated vertices meet the specified {@link #vertexPredicate}.
  *
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubgraphStrategy implements GraphStrategy {
+public final class SubgraphStrategy implements GraphStrategy {
 
-    protected Predicate<Vertex> vertexPredicate;
-    protected Predicate<Edge> edgePredicate;
+    private final Predicate<Vertex> vertexPredicate;
+    private final Predicate<Edge> edgePredicate;
     // TODO protected Predicate<VertexProperty> vertexPropertyPredicate;
 
-    public SubgraphStrategy(final Predicate<Vertex> vertexPredicate, final Predicate<Edge> edgePredicate) {
+    private SubgraphStrategy(final Predicate<Vertex> vertexPredicate, final Predicate<Edge> edgePredicate) {
         this.vertexPredicate = vertexPredicate;
         this.edgePredicate = edgePredicate;
     }
 
     @Override
-    public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> (id) -> {
-            final Vertex v = f.apply(id);
-            if (!this.testVertex(v)) {
-                throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-            }
-            return v;
-        };
-    }
-
-    @Override
-    public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> (id) -> {
-            final Edge e = f.apply(id);
-
-            if (!this.testEdge(e)) {
-                throw Graph.Exceptions.elementNotFound(Edge.class, id);
-            }
-
-            return e;
-        };
-    }
-
-    @Override
-    public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+    public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVertexIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (direction, labels) -> StreamFactory
-                .stream(ctx.getCurrent().edgeIterator(direction, labels))
+                .stream(ctx.getCurrent().getBaseVertex().iterators().edgeIterator(direction, labels))
                 .filter(this::testEdge)
                 .map(edge -> otherVertex(direction, ctx.getCurrent(), edge))
-                .filter(this::testVertex)
-                .map(v -> ((StrategyWrappedVertex) v).getBaseVertex()).iterator();
-        // TODO: why do we have to unwrap? Note that we are not doing f.apply() like the other methods. Is this bad?
+                .filter(this::testVertex).iterator();
+        // TODO: Note that we are not doing f.apply() like the other methods. Is this bad?
+        // by not calling f.apply() to get the iterator, we're possibly bypassing strategy methods that
+        // could have been sequenced
     }
 
     @Override
-    public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
-        return (f) -> (direction, labels) -> StreamFactory.stream(f.apply(direction, labels)).filter(this::testEdge).iterator();
+    public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
+        return (f) -> (direction, labels) -> IteratorUtils.filter(f.apply(direction, labels), this::testEdge);
     }
 
     @Override
-    public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
-        return (f) -> direction -> StreamFactory.stream(f.apply(direction)).filter(this::testVertex).iterator();
+    public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVertexIteratorStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
+        return (f) -> direction -> IteratorUtils.filter(f.apply(direction), this::testVertex);
     }
 
     @Override
-    public UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> () -> f.get().filter(t -> this.testVertex(t.get())); // TODO: we should make sure index hits go first.
+    public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
+        return (f) -> ids -> f.apply(ids).filter(t -> this.testVertex(t.get())); // TODO: we should make sure index hits go first.
     }
 
     @Override
-    public UnaryOperator<Supplier<GraphTraversal<Edge, Edge>>> getGraphEStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> () -> f.get().filter(t -> this.testEdge(t.get()));  // TODO: we should make sure index hits go first.
+    public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
+        return (f) -> ids -> f.apply(ids).filter(t -> this.testEdge(t.get()));  // TODO: we should make sure index hits go first.
     }
 
     // TODO: make this work for DSL -- we need Element predicate
@@ -111,10 +86,6 @@ public class SubgraphStrategy implements GraphStrategy {
                 : testVertex(edge.inV().next()) && testVertex(edge.outV().next()));
     }
 
-    private boolean testElement(final Element element) {
-        return element instanceof Vertex ? testVertex((Vertex) element) : testEdge((Edge) element);
-    }
-
     private static final Vertex otherVertex(final Direction direction, final Vertex start, final Edge edge) {
         if (direction.equals(Direction.BOTH)) {
             final Vertex inVertex = edge.iterators().vertexIterator(Direction.IN).next();
@@ -129,5 +100,32 @@ public class SubgraphStrategy implements GraphStrategy {
     @Override
     public String toString() {
         return StringFactory.graphStrategyString(this);
+    }
+
+    public static Builder build() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private Predicate<Vertex> vertexPredicate = v -> true;
+        private Predicate<Edge> edgePredicate = v -> true;
+
+        private Builder() {
+        }
+
+        public Builder vertexPredicate(final Predicate<Vertex> vertexPredicate) {
+            this.vertexPredicate = vertexPredicate;
+            return this;
+        }
+
+        public Builder edgePredicate(final Predicate<Edge> edgePredicate) {
+            this.edgePredicate = edgePredicate;
+            return this;
+        }
+
+        public SubgraphStrategy create() {
+            return new SubgraphStrategy(vertexPredicate, edgePredicate);
+        }
     }
 }

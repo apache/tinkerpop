@@ -22,6 +22,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * Client-side channel initializer interface.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Channelizer extends ChannelHandler {
@@ -35,8 +37,12 @@ public interface Channelizer extends ChannelHandler {
      * Called after the channel connects. The {@code Channelizer} may need to perform some functions, such as a
      * handshake.
      */
-    public default void connected() {};
+    public default void connected() {
+    }
 
+    /**
+     * Base implementation of the client side {@link Channelizer}.
+     */
     abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
         protected Connection connection;
         protected Cluster cluster;
@@ -49,6 +55,7 @@ public interface Channelizer extends ChannelHandler {
         }
 
         public abstract void configure(final ChannelPipeline pipeline);
+
         public void finalize(final ChannelPipeline pipeline) {
             // do nothing
         }
@@ -84,8 +91,21 @@ public interface Channelizer extends ChannelHandler {
         }
     }
 
+    /**
+     * WebSocket {@link Channelizer} implementation.
+     */
     class WebSocketChannelizer extends AbstractChannelizer {
         private WebSocketClientHandler handler;
+
+        private WebSocketGremlinRequestEncoder webSocketGremlinRequestEncoder;
+        private WebSocketGremlinResponseDecoder webSocketGremlinResponseDecoder;
+
+        @Override
+        public void init(final Connection connection) {
+            super.init(connection);
+            webSocketGremlinRequestEncoder = new WebSocketGremlinRequestEncoder(true, cluster.getSerializer());
+            webSocketGremlinResponseDecoder = new WebSocketGremlinResponseDecoder(cluster.getSerializer());
+        }
 
         @Override
         public boolean supportsSsl() {
@@ -110,8 +130,8 @@ public interface Channelizer extends ChannelHandler {
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
             pipeline.addLast("ws-handler", handler);
-            pipeline.addLast("gremlin-encoder", new WebSocketGremlinRequestEncoder(true, cluster.getSerializer()));
-            pipeline.addLast("gremlin-decoder", new WebSocketGremlinResponseDecoder(cluster.getSerializer()));
+            pipeline.addLast("gremlin-encoder", webSocketGremlinRequestEncoder);
+            pipeline.addLast("gremlin-decoder", webSocketGremlinResponseDecoder);
         }
 
         @Override
@@ -124,11 +144,22 @@ public interface Channelizer extends ChannelHandler {
         }
     }
 
+    /**
+     * NIO {@link Channelizer} implementation.
+     */
     class NioChannelizer extends AbstractChannelizer {
+        private NioGremlinRequestEncoder nioGremlinRequestEncoder;
+
+        @Override
+        public void init(final Connection connection) {
+            super.init(connection);
+            nioGremlinRequestEncoder = new NioGremlinRequestEncoder(true, cluster.getSerializer());
+        }
+
         @Override
         public void configure(ChannelPipeline pipeline) {
             pipeline.addLast("gremlin-decoder", new NioGremlinResponseDecoder(cluster.getSerializer()));
-            pipeline.addLast("gremlin-encoder", new NioGremlinRequestEncoder(true, cluster.getSerializer()));
+            pipeline.addLast("gremlin-encoder", nioGremlinRequestEncoder);
         }
     }
 }

@@ -5,22 +5,19 @@ import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
-import com.tinkerpop.gremlin.util.function.TriFunction;
-import org.javatuples.Pair;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.*;
 
 /**
@@ -67,10 +64,9 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertEquals("marko", v.value("name"));
                 assertEquals(34, v.property("age").value());
                 assertEquals(34, v.<Integer>value("age").intValue());
-                assertEquals(1, v.properties("name").count().next().intValue());
-                assertEquals(2, v.properties().count().next().intValue());
-                assertEquals(1, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
+                assertEquals(1, IteratorUtils.count(v.iterators().propertyIterator("name")));
+                assertEquals(2, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertVertexEdgeCounts(1, 0);
             });
 
             final VertexProperty<String> property = v.property("name", "marko a. rodriguez");
@@ -85,46 +81,38 @@ public class VertexPropertyTest extends AbstractGremlinTest {
 
             assertTrue(v.valueMap().next().get("name").contains("marko"));
             assertTrue(v.valueMap().next().get("name").contains("marko a. rodriguez"));
-            assertEquals(3, v.properties().count().next().intValue());
-            assertEquals(2, v.properties("name").count().next().intValue());
-            assertEquals(1, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
+            assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator()));
+            assertEquals(2, IteratorUtils.count(v.iterators().propertyIterator("name")));
+            assertVertexEdgeCounts(1, 0);
 
             assertEquals(v, v.property("name", "mrodriguez").element());
             tryCommit(g, g -> {
-                assertEquals(3, v.properties("name").count().next().intValue());
-                assertEquals(4, v.properties().count().next().intValue());
-                assertEquals(1, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
+                assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator("name")));
+                assertEquals(4, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertVertexEdgeCounts(1, 0);
             });
 
             v.<String>properties("name").sideEffect(meta -> {
                 meta.get().property("counter", meta.get().value().length());
-                meta.get().property(Graph.Key.hide("counter"), meta.get().value().length());
             }).iterate();
             tryCommit(g, g -> {
                 v.properties().forEachRemaining(meta -> {
                     assertEquals(meta.key(), meta.label());
                     assertTrue(meta.isPresent());
-                    assertFalse(meta.isHidden());
                     assertEquals(v, meta.element());
                     if (meta.key().equals("age")) {
                         assertEquals(meta.value(), 34);
-                        assertEquals(0, meta.properties().count().next().intValue());
+                        assertEquals(0, IteratorUtils.count(meta.iterators().propertyIterator()));
                     }
                     if (meta.key().equals("name")) {
                         assertEquals(((String) meta.value()).length(), meta.<Integer>value("counter").intValue());
-                        assertEquals(((String) meta.value()).length(), meta.<Integer>value(Graph.Key.hide("counter")).intValue());
-                        assertEquals(1, meta.properties().count().next().intValue());
+                        assertEquals(1, IteratorUtils.count(meta.iterators().propertyIterator()));
                         assertEquals(1, meta.keys().size());
                         assertTrue(meta.keys().contains("counter"));
-                        assertEquals(1, meta.hiddens().count().next().intValue());
-                        assertEquals(1, meta.hiddenKeys().size());
-                        assertTrue(meta.hiddenKeys().contains("counter"));
                     }
                 });
-                assertEquals(1, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
+
+                assertVertexEdgeCounts(1, 0);
             });
         }
 
@@ -137,40 +125,41 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         public void shouldHandleSingleVertexProperties() {
             final Vertex v = g.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
             tryCommit(g, g -> {
-                assertEquals(3, v.properties().count().next().intValue());
-                assertEquals(3, v.properties("name").count().next().intValue());
-                assertTrue(v.properties("name").value().toList().contains("marko"));
-                assertTrue(v.properties("name").value().toList().contains("marko a. rodriguez"));
-                assertTrue(v.properties("name").value().toList().contains("marko rodriguez"));
+                assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator("name")));
+                final List<String> values = IteratorUtils.list(v.iterators().valueIterator("name"));
+                assertTrue(values.contains("marko"));
+                assertTrue(values.contains("marko a. rodriguez"));
+                assertTrue(values.contains("marko rodriguez"));
             });
             v.properties("name").remove();
             tryCommit(g, g -> {
-                assertEquals(0, v.properties().count().next().intValue());
-                assertEquals(0, v.properties("name").count().next().intValue());
+                assertEquals(0, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertEquals(0, IteratorUtils.count(v.iterators().propertyIterator("name")));
             });
             v.property("name", "marko");
             v.property("name", "marko a. rodriguez");
             v.property("name", "marko rodriguez");
             tryCommit(g, g -> {
-                assertEquals(3, v.properties().count().next().intValue());
-                assertEquals(3, v.properties("name").count().next().intValue());
-                assertTrue(v.properties("name").value().toList().contains("marko"));
-                assertTrue(v.properties("name").value().toList().contains("marko a. rodriguez"));
-                assertTrue(v.properties("name").value().toList().contains("marko rodriguez"));
+                assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator("name")));
+                final List<String> values = IteratorUtils.list(v.iterators().valueIterator("name"));
+                assertTrue(values.contains("marko"));
+                assertTrue(values.contains("marko a. rodriguez"));
+                assertTrue(values.contains("marko rodriguez"));
             });
             v.singleProperty("name", "okram", "acl", "private", "date", 2014);
             tryCommit(g, g -> {
-                assertEquals(1, v.properties("name").count().next().intValue());
-                assertEquals(1, v.properties().count().next().intValue());
-                assertEquals(2, v.property("name").valueMap().next().size());
+                assertEquals(1, IteratorUtils.count(v.iterators().propertyIterator("name")));
+                assertEquals(1, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertEquals(2, IteratorUtils.count(v.iterators().propertyIterator("name").next().iterators().propertyIterator()));
                 assertEquals("private", v.property("name").valueMap().next().get("acl"));
                 assertEquals(2014, v.property("name").valueMap().next().get("date"));
             });
 
             v.remove();
             tryCommit(g, g -> {
-                assertEquals(0, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
+                assertVertexEdgeCounts(0, 0);
             });
 
             final Vertex u = g.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
@@ -178,13 +167,50 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             u.properties().remove();
             u.singleProperty("name", "okram", "acl", "private", "date", 2014);
             tryCommit(g, g -> {
-                assertEquals(1, u.properties("name").count().next().intValue());
-                assertEquals(1, u.properties().count().next().intValue());
-                assertEquals(2, u.property("name").valueMap().next().size());
+                assertEquals(1, IteratorUtils.count(u.iterators().propertyIterator("name")));
+                assertEquals(1, IteratorUtils.count(u.iterators().propertyIterator()));
+                assertEquals(2, IteratorUtils.count(u.iterators().propertyIterator("name").next().iterators().propertyIterator()));
                 assertEquals("private", u.property("name").valueMap().next().get("acl"));
                 assertEquals(2014, u.property("name").valueMap().next().get("date"));
             });
 
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_BOOLEAN_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        public void shouldRespectWhatAreEdgesAndWhatArePropertiesInMultiProperties() {
+
+            final Vertex marko = g.addVertex("name", "marko");
+            final Vertex stephen = g.addVertex("name", "stephen");
+            marko.addEdge("knows", stephen);
+            final VertexProperty santaFe = marko.property("location", "santa fe", "visible", false);
+            final VertexProperty newMexico = marko.property("location", "new mexico", "visible", true);
+
+            assertEquals(1, IteratorUtils.count(marko.iterators().edgeIterator(Direction.OUT)));
+            assertEquals(1, IteratorUtils.count(marko.iterators().edgeIterator(Direction.OUT, "knows")));
+            assertEquals(3, IteratorUtils.count(marko.iterators().propertyIterator()));
+            assertEquals(2, IteratorUtils.count(marko.iterators().propertyIterator("location")));
+            assertEquals(1, IteratorUtils.count(marko.iterators().propertyIterator("name")));
+
+            assertEquals(1, IteratorUtils.count(stephen.iterators().edgeIterator(Direction.IN)));
+            assertEquals(1, IteratorUtils.count(stephen.iterators().edgeIterator(Direction.IN, "knows")));
+            assertEquals(1, IteratorUtils.count(stephen.iterators().propertyIterator()));
+            assertEquals(1, IteratorUtils.count(stephen.iterators().propertyIterator("name")));
+
+            assertEquals(1, IteratorUtils.count(santaFe.iterators().propertyIterator()));
+            assertEquals(1, IteratorUtils.count(santaFe.iterators().propertyIterator("visible")));
+            assertEquals(0, IteratorUtils.count(santaFe.iterators().propertyIterator(T.key.getAccessor())));
+            assertEquals(0, IteratorUtils.count(santaFe.iterators().propertyIterator(T.value.getAccessor())));
+
+            assertEquals(1, IteratorUtils.count(newMexico.iterators().propertyIterator()));
+            assertEquals(1, IteratorUtils.count(newMexico.iterators().propertyIterator("visible")));
+            assertEquals(0, IteratorUtils.count(newMexico.iterators().propertyIterator(T.key.getAccessor())));
+            assertEquals(0, IteratorUtils.count(newMexico.iterators().propertyIterator(T.value.getAccessor())));
         }
     }
 
@@ -219,15 +245,15 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                     .sideEffect(vp -> vp.get().<Object>property("bKey", UUID.randomUUID().toString()))
                     .sideEffect(vp -> vp.get().<Object>property("cKey", UUID.randomUUID().toString())).iterate();
 
-            assertEquals(4, daniel.properties().count().next().longValue());
+            assertEquals(4, IteratorUtils.count(daniel.iterators().propertyIterator()));
             assertEquals(12, daniel.properties().properties().count().next().longValue());
 
             daniel.properties().properties().remove();
-            assertEquals(4, daniel.properties().count().next().longValue());
+            assertEquals(4, IteratorUtils.count(daniel.iterators().propertyIterator()));
             assertEquals(0, daniel.properties().properties().count().next().longValue());
 
             daniel.properties().remove();
-            assertEquals(0, daniel.properties().count().next().longValue());
+            assertEquals(0, IteratorUtils.count(daniel.iterators().propertyIterator()));
             assertEquals(0, daniel.properties().properties().count().next().longValue());
         }
 
@@ -244,38 +270,34 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             v.property("name", "marko rodriguez");
             v.property("name", "marko");
             tryCommit(g, g -> {
-                assertEquals(5, v.properties().count().next().intValue());
-                assertEquals(4, v.properties().has(T.key, "name").count().next().intValue());
-                assertEquals(4, v.properties("name").count().next().intValue());
-                assertEquals(1, v.properties("name").has(T.value, "marko a. rodriguez").count().next().intValue());
-                assertEquals(1, v.properties("name").has(T.value, "marko rodriguez").count().next().intValue());
-                assertEquals(2, v.properties("name").has(T.value, "marko").count().next().intValue());
-                assertEquals(1, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
+                assertEquals(5, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertEquals(4, IteratorUtils.count(v.iterators().propertyIterator("name")));
+                final List<String> values = IteratorUtils.list(v.iterators().valueIterator("name"));
+                assertThat(values, hasItem("marko a. rodriguez"));
+                assertThat(values, hasItem("marko rodriguez"));
+                assertThat(values, hasItem("marko"));
+                assertVertexEdgeCounts(1, 0);
             });
 
             v.properties().has(T.value, "marko").remove();
             tryCommit(g, g -> {
-                assertEquals(3, v.properties().count().next().intValue());
-                assertEquals(2, v.properties().has(T.key, "name").count().next().intValue());
-                assertEquals(1, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
+                assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertEquals(2, IteratorUtils.count(v.iterators().propertyIterator("name")));
+                assertVertexEdgeCounts(1, 0);
             });
 
             v.property("age").remove();
             tryCommit(g, g -> {
-                assertEquals(2, v.properties().count().next().intValue());
-                assertEquals(2, v.properties().has(T.key, "name").count().next().intValue());
-                assertEquals(1, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
+                assertEquals(2, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertEquals(2, IteratorUtils.count(v.iterators().propertyIterator("name")));
+                assertVertexEdgeCounts(1, 0);
             });
 
             v.properties("name").has(T.key, "name").remove();
             tryCommit(g, g -> {
-                assertEquals(0, v.properties().count().next().intValue());
-                assertEquals(0, v.properties().has(T.key, "name").count().next().intValue());
-                assertEquals(1, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
+                assertEquals(0, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertEquals(0, IteratorUtils.count(v.iterators().propertyIterator("name")));
+                assertVertexEdgeCounts(1, 0);
             });
         }
 
@@ -288,50 +310,43 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             final Vertex marko = g.addVertex("name", "marko", "name", "okram");
             final Vertex stephen = g.addVertex("name", "stephen", "name", "spmallette");
             tryCommit(g, g -> {
-                assertEquals(2, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
-                assertEquals(2, marko.properties("name").count().next().intValue());
-                assertEquals(2, stephen.properties("name").count().next().intValue());
-                assertEquals(2, marko.properties().count().next().intValue());
-                assertEquals(2, stephen.properties().count().next().intValue());
-                assertEquals(0, marko.properties("blah").count().next().intValue());
-                assertEquals(0, stephen.properties("blah").count().next().intValue());
-                assertEquals(2, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
+                assertVertexEdgeCounts(2, 0);
+                assertEquals(2, IteratorUtils.count(marko.iterators().propertyIterator("name")));
+                assertEquals(2, IteratorUtils.count(stephen.iterators().propertyIterator("name")));
+                assertEquals(2, IteratorUtils.count(marko.iterators().propertyIterator()));
+                assertEquals(2, IteratorUtils.count(stephen.iterators().propertyIterator()));
+                assertEquals(0, IteratorUtils.count(marko.iterators().propertyIterator("blah")));
+                assertEquals(0, IteratorUtils.count(stephen.iterators().propertyIterator("blah")));
             });
 
             stephen.remove();
             tryCommit(g, g -> {
-                assertEquals(1, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
-                assertEquals(2, marko.properties("name").count().next().intValue());
-                assertEquals(2, marko.properties().count().next().intValue());
-                assertEquals(0, marko.properties("blah").count().next().intValue());
+                assertVertexEdgeCounts(1, 0);
+                assertEquals(2, IteratorUtils.count(marko.iterators().propertyIterator("name")));
+                assertEquals(2, IteratorUtils.count(marko.iterators().propertyIterator()));
+                assertEquals(0, IteratorUtils.count(marko.iterators().propertyIterator("blah")));
             });
 
             for (int i = 0; i < 100; i++) {
                 marko.property("name", i);
             }
             tryCommit(g, g -> {
-                assertEquals(1, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
-                assertEquals(102, marko.properties("name").count().next().intValue());
-                assertEquals(102, marko.properties().count().next().intValue());
-                assertEquals(0, marko.properties("blah").count().next().intValue());
+                assertVertexEdgeCounts(1, 0);
+                assertEquals(102, IteratorUtils.count(marko.iterators().propertyIterator("name")));
+                assertEquals(102, IteratorUtils.count(marko.iterators().propertyIterator()));
+                assertEquals(0, IteratorUtils.count(marko.iterators().propertyIterator("blah")));
             });
 
             g.V().properties("name").has(T.value, (a, b) -> ((Class) b).isAssignableFrom(a.getClass()), Integer.class).remove();
             tryCommit(g, g -> {
-                assertEquals(1, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
-                assertEquals(2, marko.properties("name").count().next().intValue());
-                assertEquals(2, marko.properties().count().next().intValue());
-                assertEquals(0, marko.properties("blah").count().next().intValue());
+                assertVertexEdgeCounts(1, 0);
+                assertEquals(2, IteratorUtils.count(marko.iterators().propertyIterator("name")));
+                assertEquals(2, IteratorUtils.count(marko.iterators().propertyIterator()));
+                assertEquals(0, IteratorUtils.count(marko.iterators().propertyIterator("blah")));
             });
             marko.remove();
             tryCommit(g, g -> {
-                assertEquals(0, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
+                assertVertexEdgeCounts(0, 0);
             });
         }
     }
@@ -341,6 +356,13 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             "elementAlreadyRemoved"
     })
     public static class ExceptionConsistencyWhenVertexPropertyRemovedTest extends AbstractGremlinTest {
+
+        // todo: need to cover actual meta property assignment here as VertexTest doesn't check for that features
+        /*
+        {"v.property(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
+            v.property("k", "v");
+        })},
+        */
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
@@ -384,9 +406,8 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         public void shouldSupportPropertiesOnMultiProperties() {
             final Vertex v = g.addVertex("name", "marko", "age", 34);
             tryCommit(g, g -> {
-                assertEquals(2, g.V().properties().count().next().intValue());
-                assertEquals(1, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
+                assertEquals(2, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertVertexEdgeCounts(1, 0);
                 // TODO: Neo4j needs a better ID system for VertexProperties
                 assertEquals(v.property("name"), v.property("name").property("acl", "public").element());
                 assertEquals(v.property("age"), v.property("age").property("acl", "private").element());
@@ -395,37 +416,28 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             v.property("name").property("acl", "public");
             v.property("age").property("acl", "private");
             tryCommit(g, g -> {
-
-                assertEquals(2, g.V().properties().count().next().intValue());
-                assertEquals(1, g.V().properties("age").count().next().intValue());
-                assertEquals(1, g.V().properties("name").count().next().intValue());
-                assertEquals(1, g.V().properties("age").properties().count().next().intValue());
-                assertEquals(1, g.V().properties("name").properties().count().next().intValue());
-                assertEquals(1, g.V().properties("age").properties("acl").count().next().intValue());
-                assertEquals(1, g.V().properties("name").properties("acl").count().next().intValue());
-                assertEquals("private", g.V().properties("age").properties("acl").value().next());
-                assertEquals("public", g.V().properties("name").properties("acl").value().next());
-                assertEquals("private", g.V().properties("age").values("acl").next());
-                assertEquals("public", g.V().properties("name").values("acl").next());
-                assertEquals(1, g.V().count().next().intValue());
-                assertEquals(0, g.E().count().next().intValue());
+                assertEquals(2, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertEquals(1, IteratorUtils.count(v.iterators().propertyIterator("age")));
+                assertEquals(1, IteratorUtils.count(v.iterators().propertyIterator("name")));
+                assertEquals(1, IteratorUtils.count(v.property("age").iterators().propertyIterator()));
+                assertEquals(1, IteratorUtils.count(v.property("name").iterators().propertyIterator()));
+                assertEquals(1, IteratorUtils.count(v.property("age").iterators().propertyIterator("acl")));
+                assertEquals(1, IteratorUtils.count(v.property("name").iterators().propertyIterator("acl")));
+                assertEquals("private", v.property("age").iterators().valueIterator("acl").next());
+                assertEquals("public", v.property("name").iterators().valueIterator("acl").next());
+                assertVertexEdgeCounts(1, 0);
             });
 
             v.property("age").property("acl", "public");
             v.property("age").property("changeDate", 2014);
             tryCommit(g, g -> {
-                assertEquals("public", g.V().properties("age").values("acl").next());
-                assertEquals(2014, g.V().properties("age").values("changeDate").next());
-                assertEquals(1, v.properties("age").valueMap().count().next().intValue());
-                assertEquals(2, v.properties("age").valueMap().next().size());
-                assertTrue(v.properties("age").valueMap().next().containsKey("acl"));
-                assertTrue(v.properties("age").valueMap().next().containsKey("changeDate"));
-                assertEquals("public", v.properties("age").valueMap().next().get("acl"));
-                assertEquals(2014, v.properties("age").valueMap().next().get("changeDate"));
+                assertEquals("public", v.property("age").iterators().valueIterator("acl").next());
+                assertEquals(2014, v.property("age").iterators().valueIterator("changeDate").next());
+                assertEquals(1, IteratorUtils.count(v.iterators().propertyIterator("age")));
+                assertEquals(2, IteratorUtils.count(v.iterators().propertyIterator("age").next().iterators().propertyIterator()));
             });
         }
     }
-
 
     public static class VertexPropertyTraversals extends AbstractGremlinTest {
         @Test
@@ -436,90 +448,18 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         public void shouldHandleVertexPropertyTraversals() {
             final Vertex v = g.addVertex("i", 1, "i", 2, "i", 3);
             tryCommit(g, g -> {
-                assertEquals(3, v.properties().count().next().intValue());
-                assertEquals(3, v.properties("i").count().next().intValue());
+                assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator("i")));
             });
 
-            v.properties("i").sideEffect(m -> m.get().<Object>property("aKey", "aValue")).iterate();
-            v.properties("i").properties("aKey").forEachRemaining(p -> assertEquals("aValue", p.value()));
+            v.iterators().propertyIterator("i").forEachRemaining(p -> p.property("aKey", "aValue"));
+            v.iterators().propertyIterator("i").next().iterators().propertyIterator("aKey").forEachRemaining(p -> assertEquals("aValue", p.value()));
             tryCommit(g, g -> {
+                // validating over multi-properties and the whole graph - easier to just use traversal
                 assertEquals(3, v.properties("i").properties("aKey").count().next().intValue());
                 assertEquals(3, g.V().properties("i").properties("aKey").count().next().intValue());
                 assertEquals(1, g.V().properties("i").has(T.value, 1).properties("aKey").count().next().intValue());
                 assertEquals(3, g.V().properties("i").has(T.key, "i").properties().count().next().intValue());
-            });
-        }
-    }
-
-    @RunWith(Parameterized.class)
-    public static class VertexPropertiesShouldHideCorrectlyGivenMultiProperty extends AbstractGremlinTest {
-
-        @Parameterized.Parameters(name = "{index}: {0}")
-        public static Iterable<Object[]> data() {
-            final List<Pair<String, TriFunction<Graph, Vertex, Boolean, Boolean>>> tests = new ArrayList<>();
-            tests.add(Pair.with("v.property(\"age\").isPresent()", (Graph g, Vertex v, Boolean multi) -> v.property("age").isPresent()));
-            tests.add(Pair.with("v.value(\"age\").equals(16)", (Graph g, Vertex v, Boolean multi) -> v.value("age").equals(16)));
-            tests.add(Pair.with("v.properties(\"age\").count().next().intValue() == 1", (Graph g, Vertex v, Boolean multi) -> v.properties("age").count().next().intValue() == 1));
-            tests.add(Pair.with("v.properties(\"age\").value().next().equals(16)", (Graph g, Vertex v, Boolean multi) -> v.properties("age").value().next().equals(16)));
-            tests.add(Pair.with("v.hiddens(\"age\").count().next().intValue() == 2", (Graph g, Vertex v, Boolean multi) -> v.hiddens("age").count().next().intValue() == (multi ? 2 : 1)));
-            tests.add(Pair.with("v.hiddens(Graph.Key.hide(\"age\")).count().next().intValue() == 0", (Graph g, Vertex v, Boolean multi) -> v.hiddens(Graph.Key.hide("age")).count().next().intValue() == 0));
-            tests.add(Pair.with("v.properties(Graph.Key.hide(\"age\")).count().next() == 0", (Graph g, Vertex v, Boolean multi) -> v.properties(Graph.Key.hide("age")).count().next().intValue() == 0));
-            tests.add(Pair.with("v.propertyMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.propertyMap(Graph.Key.hide("age")).next().size() == 0));
-            tests.add(Pair.with("v.valueMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.valueMap(Graph.Key.hide("age")).next().size() == 0));
-            tests.add(Pair.with("v.propertyMap(\"age\").next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.propertyMap("age").next().size() == 1));
-            tests.add(Pair.with("v.valueMap(\"age\").next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.valueMap("age").next().size() == 1));
-            tests.add(Pair.with("v.hiddenMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.hiddenMap(Graph.Key.hide("age")).next().size() == 0));
-            tests.add(Pair.with("v.hiddenMap(\"age\").next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.hiddenMap("age").next().size() == 1));
-            tests.add(Pair.with("v.hiddenValueMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.hiddenValueMap(Graph.Key.hide("age")).next().size() == 0));
-            tests.add(Pair.with("v.hiddenValueMap(\"age\").next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.hiddenValueMap("age").next().size() == 1));
-            tests.add(Pair.with("v.hiddens(\"age\").value().toList().contains(34)", (Graph g, Vertex v, Boolean multi) -> multi ? v.hiddens("age").value().toList().contains(34) : v.hiddens("age").value().toList().contains(29)));
-            tests.add(Pair.with("v.hiddens(\"age\").value().toList().contains(29)", (Graph g, Vertex v, Boolean multi) -> v.hiddens("age").value().toList().contains(29)));
-            tests.add(Pair.with("v.hiddenKeys().size() == 2", (Graph g, Vertex v, Boolean multi) -> v.hiddenKeys().size() == 2));
-            tests.add(Pair.with("v.keys().size() == 3", (Graph g, Vertex v, Boolean multi) -> v.keys().size() == 3));
-            tests.add(Pair.with("v.keys().contains(\"age\")", (Graph g, Vertex v, Boolean multi) -> v.keys().contains("age")));
-            tests.add(Pair.with("v.keys().contains(\"name\")", (Graph g, Vertex v, Boolean multi) -> v.keys().contains("name")));
-            tests.add(Pair.with("v.hiddenKeys().contains(\"age\")", (Graph g, Vertex v, Boolean multi) -> v.hiddenKeys().contains("age")));
-            tests.add(Pair.with("v.property(Graph.Key.hide(\"color\")).key().equals(\"color\")", (Graph g, Vertex v, Boolean multi) -> v.property(Graph.Key.hide("color")).key().equals("color")));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide(\"color\"))).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide("color"))).count() == 0));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide(\"age\"))).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide("age"))).count() == 0));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(\"age\")).count() == 1", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().propertyIterator("age")).count() == 1));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"color\"))).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide("color"))).count() == 0));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"age\"))).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide("age"))).count() == 0));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"color\")).count() == 1", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator("color")).count() == 1));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"age\")).count() == 2", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator("age")).count() == (multi ? 2 : 1)));
-
-            return tests.stream().map(d -> {
-                final Object[] o = new Object[2];
-                o[0] = d.getValue0();
-                o[1] = d.getValue1();
-                return o;
-            }).collect(Collectors.toList());
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public String name;
-
-        @Parameterized.Parameter(value = 1)
-        public TriFunction<Graph, Vertex, Boolean, Boolean> streamGetter;
-
-        @Test
-        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
-        public void shouldHandleHiddenVertexMultiProperties() {
-            final Vertex v = g.addVertex(Graph.Key.hide("age"), 34, Graph.Key.hide("age"), 29, "age", 16, "name", "marko", "food", "taco", Graph.Key.hide("color"), "purple");
-            tryCommit(g, g -> {
-                assertTrue(streamGetter.apply(g, v, true));
-            });
-        }
-
-        @Test
-        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
-        public void shouldHandleHiddenVertexProperties() {
-            final Vertex v = g.addVertex(Graph.Key.hide("age"), 29, "age", 16, "name", "marko", "food", "taco", Graph.Key.hide("color"), "purple");
-            tryCommit(g, g -> {
-                assertTrue(streamGetter.apply(g, v, false));
             });
         }
     }

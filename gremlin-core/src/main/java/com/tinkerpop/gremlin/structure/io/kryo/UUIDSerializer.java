@@ -21,7 +21,8 @@ class UUIDSerializer extends Serializer<UUID> {
         output.writeLong(uuid.getLeastSignificantBits());
     }
 
-    @Override public UUID read(final Kryo kryo, final Input input, final Class<UUID> uuidClass) {
+    @Override
+    public UUID read(final Kryo kryo, final Input input, final Class<UUID> uuidClass) {
         return new UUID(input.readLong(), input.readLong());
     }
 }

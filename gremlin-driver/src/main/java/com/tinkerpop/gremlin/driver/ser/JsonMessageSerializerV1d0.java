@@ -1,10 +1,9 @@
 package com.tinkerpop.gremlin.driver.ser;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,15 +21,6 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     private static final Logger logger = LoggerFactory.getLogger(JsonMessageSerializerV1d0.class);
     private static final String MIME_TYPE = SerTokens.MIME_JSON;
 
-    /**
-     * ObjectMapper instance for JSON serialization via Jackson databind.  Uses custom serializers to write
-     * out {@link com.tinkerpop.gremlin.structure.Graph} objects and {@code toString} for unknown objects.
-     */
-    protected static final ObjectMapper mapper = GraphSONObjectMapper.build()
-            .customModule(new GremlinServerModule())
-            .embedTypes(false)
-            .create();
-
     private static byte[] header;
 
     static {
@@ -40,14 +30,23 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
         header = buffer.array();
     }
 
+    public JsonMessageSerializerV1d0() {
+        super();
+    }
+
+    public JsonMessageSerializerV1d0(final GraphSONMapper mapper) {
+        super(mapper);
+    }
+
     @Override
     public String[] mimeTypesSupported() {
         return new String[]{MIME_TYPE};
     }
 
     @Override
-    ObjectMapper obtainMapper() {
-        return mapper;
+    GraphSONMapper.Builder configureBuilder(GraphSONMapper.Builder builder) {
+        return builder.addCustomModule(new GremlinServerModule())
+                .embedTypes(false);
     }
 
     @Override
@@ -58,15 +57,15 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     @Override
     public ResponseMessage deserializeResponse(final String msg) throws SerializationException {
         try {
-            final Map<String, Object> responseData = obtainMapper().readValue(msg, mapTypeReference);
-            final Map<String, Object> status = (Map<String,Object>) responseData.get(SerTokens.TOKEN_STATUS);
-            final Map<String, Object> result = (Map<String,Object>) responseData.get(SerTokens.TOKEN_RESULT);
+            final Map<String, Object> responseData = mapper.readValue(msg, mapTypeReference);
+            final Map<String, Object> status = (Map<String, Object>) responseData.get(SerTokens.TOKEN_STATUS);
+            final Map<String, Object> result = (Map<String, Object>) responseData.get(SerTokens.TOKEN_RESULT);
             return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                     .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
                     .statusMessage(status.get(SerTokens.TOKEN_MESSAGE).toString())
-                    .statusAttributes((Map<String,Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
+                    .statusAttributes((Map<String, Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
                     .result(result.get(SerTokens.TOKEN_DATA))
-                    .responseMetaData((Map<String,Object>) result.get(SerTokens.TOKEN_META))
+                    .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))
                     .create();
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
@@ -91,7 +90,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
             message.put(SerTokens.TOKEN_RESULT, result);
             message.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
 
-            return obtainMapper().writeValueAsString(message);
+            return mapper.writeValueAsString(message);
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
             throw new RuntimeException("Error during serialization.", ex);
@@ -101,7 +100,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     @Override
     public RequestMessage deserializeRequest(final String msg) throws SerializationException {
         try {
-            return obtainMapper().readValue(msg, RequestMessage.class);
+            return mapper.readValue(msg, RequestMessage.class);
         } catch (Exception ex) {
             logger.warn("Request [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);
@@ -111,7 +110,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     @Override
     public String serializeRequestAsString(final RequestMessage requestMessage) throws SerializationException {
         try {
-            return obtainMapper().writeValueAsString(requestMessage);
+            return mapper.writeValueAsString(requestMessage);
         } catch (Exception ex) {
             logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
             throw new RuntimeException("Error during serialization.", ex);

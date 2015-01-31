@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.computer
 
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -124,9 +125,9 @@ public abstract class GroovyGraphComputerTest {
         @Override
         public GraphComputer get_g_compute_mapXageX_reduceXsumX_memoryXnextX_memoryKeyXageSumX() {
             g.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer> build()
-                    .map("gremlin-groovy", "if(a.property('age').isPresent()) b.emit(MapReduce.NullObject.instance(), a.value('age'))")
-                    .reduce("gremlin-groovy", "c.emit(MapReduce.NullObject.instance(), b.sum())")
-                    .memory("gremlin-groovy", "a.next().getValue1()")
+                    .map("gremlin-groovy", "if(a.property('age').isPresent()) b.emit(a.value('age'))")
+                    .reduce("gremlin-groovy", "c.emit(b.sum())")
+                    .memory("gremlin-groovy", "a.next().getValue()")
                     .memoryKey("ageSum").create());
         }
 
@@ -137,7 +138,7 @@ public abstract class GroovyGraphComputerTest {
                     .terminate("gremlin-groovy", "a.getIteration() > 8")
                     .elementComputeKeys(["counter"] as Set).create())
                     .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer> build()
-                    .map("gremlin-groovy", "b.emit(MapReduce.NullObject.instance(), a.value('counter'))")
+                    .map("gremlin-groovy", "b.emit(a.value('counter'))")
                     .reduce("gremlin-groovy",
                     """
                         int counter = 0;
@@ -146,13 +147,13 @@ public abstract class GroovyGraphComputerTest {
                         }
                         c.emit(MapReduce.NullObject.instance(), counter);
                         """)
-                    .memory("gremlin-groovy", "a.next().getValue1()")
+                    .memory("gremlin-groovy", "a.next().getValue()")
                     .memoryKey("a").create())
                     .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer> build()
-                    .map("gremlin-groovy", "b.emit(MapReduce.NullObject.instance(), a.value('counter'))")
-                    .combine("gremlin-groovy", "c.emit(MapReduce.NullObject.instance(), 1)")
-                    .reduce("gremlin-groovy", "c.emit(MapReduce.NullObject.instance(), 1)")
-                    .memory("gremlin-groovy", "a.next().getValue1()")
+                    .map("gremlin-groovy", "b.emit(a.value('counter'))")
+                    .combine("gremlin-groovy", "c.emit(1)")
+                    .reduce("gremlin-groovy", "c.emit(1)")
+                    .memory("gremlin-groovy", "a.next().getValue()")
                     .memoryKey("b").create());
 
         }
@@ -166,10 +167,17 @@ public abstract class GroovyGraphComputerTest {
                     .reduceKeySort("Comparator.reverseOrder()")
                     .memory("""
                         list = []
-                        a.forEachRemaining{list.add(it.getValue0())}
+                        a.forEachRemaining{list.add(it.getKey())}
                         list
                     """)
                     .create());
+        }
+
+        @Override
+        public GraphComputer get_g_compute_programXTraversalVertexProgram_build_traversalXg_V_both_hasXlabel_personX_age_groupCountXaXX_create() {
+            return g.compute().program(TraversalVertexProgram.build().
+                    traversal("GraphFactory.open(['gremlin.graph':'${g.metaClass.theClass.getCanonicalName()}']).V().both().has(label,'person').values('age').groupCount('a')").
+                    create());
         }
     }
 }

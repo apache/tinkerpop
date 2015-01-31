@@ -4,9 +4,6 @@ import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.server.op.session.Session;
 import io.netty.util.AttributeKey;
 
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

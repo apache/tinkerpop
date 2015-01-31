@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.neo4j.process.groovy;
 
-import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.neo4j.DefaultNeo4jGraphProvider;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import com.tinkerpop.gremlin.process.GroovyProcessStandardSuite;

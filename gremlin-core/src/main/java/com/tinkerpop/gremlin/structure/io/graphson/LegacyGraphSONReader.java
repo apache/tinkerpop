@@ -80,8 +80,8 @@ public class LegacyGraphSONReader implements GraphReader {
                         parser.nextToken();
                         while (parser.nextToken() != JsonToken.END_ARRAY) {
                             final JsonNode node = parser.readValueAsTree();
-                            final Vertex inV = graph.v(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._IN_V)));
-                            final Vertex outV = graph.v(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._OUT_V)));
+                            final Vertex inV = graph.iterators().vertexIterator(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._IN_V))).next();
+                            final Vertex outV = graph.iterators().vertexIterator(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._OUT_V))).next();
                             graphson.edgeFromJson(node, outV, inV);
                         }
                         break;
@@ -92,8 +92,6 @@ public class LegacyGraphSONReader implements GraphReader {
 
             graph.tx().commit();
         } catch (Exception ex) {
-            // rollback whatever portion failed
-            graph.tx().rollback();
             throw new IOException(ex);
         }
 
@@ -127,7 +125,7 @@ public class LegacyGraphSONReader implements GraphReader {
 
     public static class Builder {
         private boolean loadCustomModules = false;
-        private SimpleModule custom = null;
+        private List<SimpleModule> customModules = new ArrayList<>();
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
         private boolean embedTypes = false;
 
@@ -135,21 +133,22 @@ public class LegacyGraphSONReader implements GraphReader {
         }
 
         /**
-         * Supply a custom module for serialization/deserialization.
+         * Supply a mapper module for serialization/deserialization.
          */
-        public Builder customModule(final SimpleModule custom) {
-            this.custom = custom;
+        public Builder addCustomModule(final SimpleModule custom) {
+            this.customModules.add(custom);
             return this;
         }
 
         /**
          * Try to load {@code SimpleModule} instances from the current classpath.  These are loaded in addition to
-         * the one supplied to the {@link #customModule(com.fasterxml.jackson.databind.module.SimpleModule)};
+         * the one supplied to the {@link #addCustomModule(com.fasterxml.jackson.databind.module.SimpleModule)};
          */
         public Builder loadCustomModules(final boolean loadCustomModules) {
             this.loadCustomModules = loadCustomModules;
             return this;
         }
+
         /**
          * Number of mutations to perform before a commit is executed.
          */
@@ -158,12 +157,12 @@ public class LegacyGraphSONReader implements GraphReader {
             return this;
         }
 
-        public LegacyGraphSONReader build() {
-            final ObjectMapper mapper = GraphSONObjectMapper.build()
-                    .customModule(custom)
-                    .embedTypes(embedTypes)
+        public LegacyGraphSONReader create() {
+            final GraphSONMapper.Builder builder = GraphSONMapper.build();
+            customModules.forEach(builder::addCustomModule);
+            final GraphSONMapper mapper = builder.embedTypes(embedTypes)
                     .loadCustomModules(loadCustomModules).create();
-            return new LegacyGraphSONReader(mapper, batchSize);
+            return new LegacyGraphSONReader(mapper.createMapper(), batchSize);
         }
     }
 

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.graph.VertexPropertyTraversal;
-import com.tinkerpop.gremlin.structure.util.EmptyVertexProperty;
+import com.tinkerpop.gremlin.process.graph.traversal.VertexPropertyTraversal;
+import com.tinkerpop.gremlin.structure.util.empty.EmptyVertexProperty;
 
 import java.util.Iterator;
 
@@ -32,6 +32,7 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
      * {@inheritDoc}
      */
     @Override
+    @Graph.Helper
     public default Graph graph() {
         return this.element().graph();
     }
@@ -40,6 +41,7 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
      * {@inheritDoc}
      */
     @Override
+    @Graph.Helper
     public default String label() {
         return this.key();
     }
@@ -53,7 +55,7 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
 
     /**
      * Gets the {@link VertexProperty.Iterators} set.
-     *
+     * <p/>
      * {@inheritDoc}
      */
     @Override
@@ -69,12 +71,6 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
          */
         @Override
         public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys);
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public <U> Iterator<Property<U>> hiddenPropertyIterator(final String... propertyKeys);
     }
 
     /**

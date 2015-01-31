@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.groovy.loaders
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import com.tinkerpop.gremlin.process.Step
 import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.graph.GraphTraversal
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
 import com.tinkerpop.gremlin.structure.Edge
 import com.tinkerpop.gremlin.structure.Element
 import com.tinkerpop.gremlin.structure.Graph
@@ -28,7 +28,6 @@ class GremlinLoader {
     }
 
     public static void load() {
-        GraphLoader.load()
         ObjectLoader.load()
         StepLoader.load()
     }

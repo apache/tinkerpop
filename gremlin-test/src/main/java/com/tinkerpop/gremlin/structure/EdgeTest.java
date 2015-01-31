@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -30,9 +31,9 @@ public class EdgeTest {
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
             "labelCanNotBeNull",
             "labelCanNotBeEmpty",
-            "labelCanNotBeASystemKey"
+            "labelCanNotBeAHiddenKey"
     })
-    public static class BasicVertexTest extends AbstractGremlinTest {
+    public static class BasicEdgeTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
@@ -60,6 +61,19 @@ public class EdgeTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldHaveExceptionConsistencyWhenUsingNullVertex() {
+            final Vertex v = g.addVertex();
+            try {
+                v.addEdge("to-nothing", null);
+                fail("Call to Vertex.addEdge() should throw an exception when vertex is null");
+            } catch (Exception ex) {
+                validateException(Graph.Exceptions.argumentCanNotBeNull("vertex"), ex);
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldHaveExceptionConsistencyWhenUsingEmptyVertexLabel() {
             final Vertex v = g.addVertex();
             try {
@@ -74,20 +88,20 @@ public class EdgeTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldHaveExceptionConsistencyWhenUsingSystemVertexLabel() {
-            final String label = Graph.System.system("systemLabel");
+            final String label = Graph.Hidden.hide("systemLabel");
             final Vertex v = g.addVertex();
             try {
                 v.addEdge(label, v);
                 fail("Call to Vertex.addEdge() should throw an exception when label is a system key");
             } catch (Exception ex) {
-                validateException(Element.Exceptions.labelCanNotBeASystemKey(label), ex);
+                validateException(Element.Exceptions.labelCanNotBeAHiddenKey(label), ex);
             }
         }
 
         @Test(expected = NoSuchElementException.class)
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldThrowNoSuchElementExceptionIfEdgeWithIdNotPresent() {
-            g.e("this-id-should-not-be-in-the-modern-graph");
+            g.E("this-id-should-not-be-in-the-modern-graph").next();
         }
 
         @Test
@@ -220,12 +234,55 @@ public class EdgeTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_EDGES)
+        public void shouldNotHaveAConcurrentModificationExceptionWhenIteratingAndRemovingAddingEdges() {
+            final Vertex v1 = g.addVertex("name", "marko");
+            final Vertex v2 = g.addVertex("name", "puppy");
+            v1.addEdge("knows", v2, "since", 2010);
+            v1.addEdge("pets", v2);
+            v1.addEdge("walks", v2, "location", "arroyo");
+            v2.addEdge("knows", v1, "since", 2010);
+            assertEquals(4, v1.bothE().count().next().intValue());
+            assertEquals(4, v2.bothE().count().next().intValue());
+            v1.iterators().edgeIterator(Direction.BOTH).forEachRemaining(edge -> {
+                v1.addEdge("livesWith", v2);
+                v1.addEdge("walks", v2, "location", "river");
+                edge.remove();
+            });
+            //assertEquals(8, v1.outE().count().next().intValue());  TODO: Neo4j is not happy
+            //assertEquals(8, v2.outE().count().next().intValue());
+            v1.iterators().edgeIterator(Direction.BOTH).forEachRemaining(Edge::remove);
+            assertEquals(0, v1.bothE().count().next().intValue());
+            assertEquals(0, v2.bothE().count().next().intValue());
+        }
+
+        @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldReturnEmptyIteratorIfNoProperties() {
             final Vertex v = g.addVertex();
             final Edge e = v.addEdge("knows", v);
             assertEquals(0, e.properties().count().next().intValue());
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldReturnOutThenInOnVertexIterator() {
+            final Vertex a = g.addVertex();
+            final Vertex b = g.addVertex();
+            final Edge e = a.addEdge("knows", b);
+            assertEquals(a, e.iterators().vertexIterator(Direction.OUT).next());
+            assertEquals(b, e.iterators().vertexIterator(Direction.IN).next());
+            final Iterator<Vertex> iterator = e.iterators().vertexIterator(Direction.BOTH);
+            assertTrue(iterator.hasNext());
+            assertEquals(a, iterator.next());
+            assertTrue(iterator.hasNext());
+            assertEquals(b, iterator.next());
+            assertFalse(iterator.hasNext());
         }
     }
 
@@ -239,7 +296,7 @@ public class EdgeTest {
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {"property(k)", FunctionUtils.wrapConsumer((Edge e) -> e.property("x"))},
-                    {"e.remove()", FunctionUtils.wrapConsumer(Edge::remove)}});
+                    {"remove()", FunctionUtils.wrapConsumer(Edge::remove)}});
         }
 
         @Parameterized.Parameter(value = 0)

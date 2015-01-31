@@ -14,10 +14,11 @@ Building and Testing
 ~~~~~~~~~~~~~~~~~~~~
 
 * Build Project: `mvn clean install`
-** Specify specific tests in a TinkerPop Suite to run: `mvn test -Dgremlin.tests={test class 1, test class 2...}`
+** Specify specific tests in a TinkerPop Suite to run: `mvn test -Dgremlin.tests={test class 1, test class 2...}` - note that including a specific test may require its inner class implementation (e.g. `com.tinkerpop.gremlin....UnionTest$ComputerTest`)
 ** Fast-build (does not run `neo4j-gremlin` tests - use with caution): `mvn clean install -DfeelingLucky`
+** Clean the `.groovy/grapes/com.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
-* Build AsciiDocs: `mvn process-resources -Dasciidoc`
+* Build AsciiDocs: `docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc`
 * Build JavaDocs: `mvn process-resources -Djavadoc`
 * Deploy AsciiDocs: `mvn deploy -Dasciidoc`
 * Deploy JavaDocs: `mvn deploy -Djavadoc`
@@ -54,7 +55,7 @@ Release Process
 .. `mvn verify -DskipPerformanceTests=false`
 . Update `CHANGELOG.asciidoc` with release date.
 . `bin/bump.sh "version"` to update project files to reference the non-SNAPSHOT version.
-. `git diff` and review the updated files (expect all `pom.xml` files, `yaml` configuration file in Gremlin Server, and this README)
+. `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
 . `bin/publish-docs.sh`

@@ -8,7 +8,8 @@ import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.ReferenceCountUtil;
@@ -31,11 +32,11 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class KryoMessageSerializerV1d0 implements MessageSerializer {
-    private GremlinKryo gremlinKryo;
+    private KryoMapper kryoMapper;
     private ThreadLocal<Kryo> kryoThreadLocal = new ThreadLocal<Kryo>() {
         @Override
         protected Kryo initialValue() {
-            return gremlinKryo.createKryo();
+            return kryoMapper.createMapper();
         }
     };
 
@@ -47,36 +48,58 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
     private static final String TOKEN_EXTENDED_VERSION = "extendedVersion";
     private static final String TOKEN_CUSTOM = "custom";
     private static final String TOKEN_SERIALIZE_RESULT_TO_STRING = "serializeResultToString";
+    private static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
 
     private boolean serializeToString;
 
     /**
-     * Creates an instance with a standard {@link GremlinKryo} instance. Note that this instance
+     * Creates an instance with a standard {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} instance. Note that this instance
      * will be overriden by {@link #configure} is called.
      */
     public KryoMessageSerializerV1d0() {
-        gremlinKryo = GremlinKryo.build(GremlinKryo.Version.V_1_0_0).create();
+        kryoMapper = KryoMapper.build(KryoMapper.Version.V_1_0_0).create();
     }
 
     /**
-     * Creates an instance with a provided custom configured {@link GremlinKryo} instance. Note that this instance
+     * Creates an instance with a provided mapper configured {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} instance. Note that this instance
      * will be overriden by {@link #configure} is called.
      */
-    public KryoMessageSerializerV1d0(final GremlinKryo kryo) {
-        this.gremlinKryo = kryo;
+    public KryoMessageSerializerV1d0(final KryoMapper kryo) {
+        this.kryoMapper = kryo;
     }
 
     @Override
-    public void configure(final Map<String, Object> config) {
+    public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
         final byte extendedVersion;
         try {
-            extendedVersion = Byte.parseByte(config.getOrDefault(TOKEN_EXTENDED_VERSION, GremlinKryo.DEFAULT_EXTENDED_VERSION).toString());
+            extendedVersion = Byte.parseByte(config.getOrDefault(TOKEN_EXTENDED_VERSION, KryoMapper.DEFAULT_EXTENDED_VERSION).toString());
         } catch (Exception ex) {
             throw new IllegalStateException(String.format("Invalid configuration value of [%s] for [%s] setting on %s serialization configuration",
                     config.getOrDefault(TOKEN_EXTENDED_VERSION, ""), TOKEN_EXTENDED_VERSION, this.getClass().getName()), ex);
         }
 
-        final GremlinKryo.Builder builder = GremlinKryo.build(GremlinKryo.Version.V_1_0_0).extendedVersion(extendedVersion);
+        final KryoMapper.Builder initialBuilder;
+        final Object graphToUseForMapper = config.get(TOKEN_USE_MAPPER_FROM_GRAPH);
+        if (graphToUseForMapper != null) {
+            if (null == graphs) throw new IllegalStateException(String.format(
+                    "No graphs have been provided to the serializer and therefore %s is not a valid configuration", TOKEN_USE_MAPPER_FROM_GRAPH));
+
+            final Graph g = graphs.get(graphToUseForMapper.toString());
+            if (null == g) throw new IllegalStateException(String.format(
+                    "There is no graph named [%s] configured to be used in the %s setting",
+                    graphToUseForMapper, TOKEN_USE_MAPPER_FROM_GRAPH));
+
+            // a graph was found so use the mapper it constructs.  this allows kryo to be auto-configured with any
+            // custom classes that the implementation allows for
+            initialBuilder = g.io().kryoMapper();
+        } else {
+            // no graph was supplied so just use the default - this will likely be the case when using a graph
+            // with no custom classes or a situation where the user needs complete control like when using two
+            // distinct implementations each with their own custom classes.
+            initialBuilder = KryoMapper.build(KryoMapper.Version.V_1_0_0);
+        }
+
+        final KryoMapper.Builder builder = initialBuilder.extendedVersion(extendedVersion);
 
         final List<String> classNameList;
         try {
@@ -87,7 +110,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
         }
 
         if (!classNameList.isEmpty()) {
-            final List<Pair<Class, Function<Kryo,Serializer>>> classList = classNameList.stream().map(serializerDefinition -> {
+            final List<Pair<Class, Function<Kryo, Serializer>>> classList = classNameList.stream().map(serializerDefinition -> {
                 String className;
                 Optional<String> serializerName;
                 if (serializerDefinition.contains(";")) {
@@ -111,7 +134,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                     } else
                         serializer = null;
 
-                    return Pair.<Class, Function<Kryo,Serializer>>with(clazz, kryo -> serializer);
+                    return Pair.<Class, Function<Kryo, Serializer>>with(clazz, kryo -> serializer);
                 } catch (Exception ex) {
                     throw new IllegalStateException("Class could not be found", ex);
                 }
@@ -122,7 +145,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
 
         this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());
 
-        this.gremlinKryo = builder.create();
+        this.kryoMapper = builder.create();
     }
 
     @Override
@@ -138,12 +161,12 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
                 final Map<String, Object> responseData = (Map<String, Object>) kryo.readClassAndObject(input);
-                final Map<String, Object> status = (Map<String,Object>) responseData.get(SerTokens.TOKEN_STATUS);
-                final Map<String, Object> result = (Map<String,Object>) responseData.get(SerTokens.TOKEN_RESULT);
+                final Map<String, Object> status = (Map<String, Object>) responseData.get(SerTokens.TOKEN_STATUS);
+                final Map<String, Object> result = (Map<String, Object>) responseData.get(SerTokens.TOKEN_RESULT);
                 return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                         .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
                         .statusMessage(Optional.ofNullable((String) status.get(SerTokens.TOKEN_MESSAGE)).orElse(""))
-                        .statusAttributes((Map<String,Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
+                        .statusAttributes((Map<String, Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
                         .result(result.get(SerTokens.TOKEN_DATA))
                         .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))
                         .create();
@@ -258,7 +281,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
         // the IteratorHandler should return a collection so keep it as such
         final Object o = msg.getResult().getData();
         if (o instanceof Collection) {
-            return ((Collection) o).stream().map(Object::toString).collect(Collectors.toList());
+            return ((Collection) o).stream().map(d -> null == d ? "null" : d.toString()).collect(Collectors.toList());
         } else {
             return o.toString();
         }

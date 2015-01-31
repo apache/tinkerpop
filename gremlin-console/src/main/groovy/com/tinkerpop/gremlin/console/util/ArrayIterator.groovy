@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.console.util
 
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException
+import com.tinkerpop.gremlin.process.FastNoSuchElementException
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

@@ -1,9 +1,5 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jEdgeTraversal;
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
-import com.tinkerpop.gremlin.neo4j.process.graph.util.Neo4jGraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -11,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
@@ -19,17 +16,10 @@ import java.util.Iterator;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, WrappedEdge<Relationship>, Neo4jEdgeTraversal {
+public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, WrappedEdge<Relationship> {
 
     public Neo4jEdge(final Relationship relationship, final Neo4jGraph graph) {
-        super(graph);
-        this.baseElement = relationship;
-    }
-
-    @Override
-    public Neo4jTraversal<Edge, Edge> start() {
-        final Neo4jTraversal<Edge, Edge> traversal = new Neo4jGraphTraversal<>(this.graph);
-        return (Neo4jTraversal) traversal.addStep(new StartStep<>(traversal, this));
+        super(relationship, graph);
     }
 
     @Override
@@ -38,7 +28,7 @@ public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, Wra
         this.removed = true;
         this.graph.tx().readWrite();
         try {
-            ((Relationship) baseElement).delete();
+            ((Relationship) this.baseElement).delete();
         } catch (IllegalStateException | NotFoundException ignored) {
             // NotFoundException happens if the edge is committed
             // IllegalStateException happens if the edge is still chilling in the tx
@@ -71,13 +61,15 @@ public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, Wra
     }
 
     @Override
-    public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
-    }
-
-    @Override
     public Iterator<Vertex> vertexIterator(final Direction direction) {
-        graph.tx().readWrite();
-        return (Iterator) Neo4jHelper.getVertices(Neo4jEdge.this, direction);
+        this.graph.tx().readWrite();
+        switch (direction) {
+            case OUT:
+                return IteratorUtils.of(new Neo4jVertex(this.getBaseEdge().getStartNode(), this.graph));
+            case IN:
+                return IteratorUtils.of(new Neo4jVertex(this.getBaseEdge().getEndNode(), this.graph));
+            default:
+                return IteratorUtils.of(new Neo4jVertex(this.getBaseEdge().getStartNode(), this.graph), new Neo4jVertex(this.getBaseEdge().getEndNode(), this.graph));
+        }
     }
 }

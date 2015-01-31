@@ -1,1 +1,1 @@
-def sum(x, y) { x + y }
+def add(x, y) { x + y }

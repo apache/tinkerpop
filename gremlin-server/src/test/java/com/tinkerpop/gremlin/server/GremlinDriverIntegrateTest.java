@@ -8,9 +8,8 @@ import com.tinkerpop.gremlin.driver.exception.ResponseException;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.JsonBuilderKryoSerializer;
 import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
-import com.tinkerpop.gremlin.server.channel.NioChannelizer;
-import com.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
 import org.junit.Rule;
@@ -18,22 +17,19 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Integration tests for gremlin-driver configurations and settings.
@@ -114,6 +110,57 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         cluster.close();
     }
 
+    /**
+     * This test arose from this issue: https://github.com/tinkerpop/tinkerpop3/issues/515
+     * <br/>
+     * ResultSet.all returns a CompleteableFuture that blocks on the worker pool until isExausted returns false.
+     * isExausted in turn needs a thread on the worker pool to even return. So its totally possible to consume all
+     * threads on the worker pool waiting for .all to finish such that you can't even get one to wait for
+     * isExausted to run.
+     */
+    @Test
+    public void shouldAvoidDeadlockOnCallToResultSetDotAll() throws Exception {
+        final int workerPoolSizeForDriver = 2;
+
+        // the number of requests 4 times the size of the worker pool as this originally did produce the problem
+        // described above in the javadoc of the test (though an equivalent number also produced it), but this has
+        // been tested to much higher multiples and passes.  note that the maxWaitForConnection setting is high so
+        // that the client doesn't timeout waiting for an available connection. obviously this can also be fixed
+        // by increasing the maxConnectionPoolSize.
+        final int requests = workerPoolSizeForDriver * 4;
+        final Cluster cluster = Cluster.build()
+                .workerPoolSize(workerPoolSizeForDriver)
+                .maxWaitForConnection(300000)
+                .create();
+        final Client client = cluster.connect();
+
+        final CountDownLatch latch = new CountDownLatch(requests);
+        final AtomicReference[] refs = new AtomicReference[requests];
+        IntStream.range(0, requests).forEach(ix -> {
+            refs[ix] = new AtomicReference();
+            client.submitAsync("Thread.sleep(5000);[1,2,3,4,5,6,7,8,9]").thenAccept(rs ->
+                rs.all().thenAccept(refs[ix]::set).thenRun(latch::countDown));
+        });
+
+        // countdown should have reached zero as results should have eventually been all returned and processed
+        assertTrue(latch.await(20, TimeUnit.SECONDS));
+
+        final List<Integer> expected = IntStream.range(1, 10).boxed().collect(Collectors.toList());
+        IntStream.range(0, requests).forEach(r ->
+            assertTrue(expected.containsAll(((List<Result>) refs[r].get()).stream().map(resultItem -> new Integer(resultItem.getInt())).collect(Collectors.toList()))));
+    }
+
+    @Test
+    public void shouldHandleNullResult() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("g.V().remove()");
+        assertNull(results.all().get().get(0).getObject());
+
+        cluster.close();
+    }
+
     @Test
     public void shouldCloseWithServerDown() throws Exception {
         final Cluster cluster = Cluster.open();
@@ -175,7 +222,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Map<String, Object> m = new HashMap<>();
         m.put("serializeResultToString", true);
         final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0();
-        serializer.configure(m);
+        serializer.configure(m, null);
 
         final Cluster cluster = Cluster.build().serializer(serializer).create();
         final Client client = cluster.connect();
@@ -193,7 +240,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Map<String, Object> m = new HashMap<>();
         m.put("custom", Arrays.asList(String.format("%s;%s", JsonBuilder.class.getCanonicalName(), JsonBuilderKryoSerializer.class.getCanonicalName())));
         final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0();
-        serializer.configure(m);
+        serializer.configure(m, null);
 
         final Cluster cluster = Cluster.build().serializer(serializer).create();
         final Client client = cluster.connect();
@@ -257,6 +304,17 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldExecuteScriptInSessionAssumingDefaultedImports() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect(name.getMethodName());
+
+        final ResultSet results1 = client.submit("TinkerFactory.class.name");
+        assertEquals(TinkerFactory.class.getName(), results1.all().get().get(0).getString());
+
+        cluster.close();
+    }
+
+    @Test
     public void shouldExecuteScriptInSessionOnTransactionalGraph() throws Exception {
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect(name.getMethodName());
@@ -282,23 +340,23 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect(name.getMethodName());
 
-        final Map<String,Object> bindings1 = new HashMap<>();
+        final Map<String, Object> bindings1 = new HashMap<>();
         bindings1.put("a", 100);
         bindings1.put("b", 200);
         final ResultSet results1 = client.submit("x = a + b", bindings1);
         assertEquals(300, results1.one().getInt());
 
-        final Map<String,Object> bindings2 = new HashMap<>();
+        final Map<String, Object> bindings2 = new HashMap<>();
         bindings2.put("b", 100);
         final ResultSet results2 = client.submit("x + b + a", bindings2);
         assertEquals(500, results2.one().getInt());
 
-        final Map<String,Object> bindings3 = new HashMap<>();
+        final Map<String, Object> bindings3 = new HashMap<>();
         bindings3.put("x", 100);
         final ResultSet results3 = client.submit("x + b + a + 1", bindings3);
         assertEquals(301, results3.one().getInt());
 
-        final Map<String,Object> bindings4 = new HashMap<>();
+        final Map<String, Object> bindings4 = new HashMap<>();
         final ResultSet results4 = client.submit("x + b + a + 1", bindings4);
         assertEquals(301, results4.one().getInt());
 

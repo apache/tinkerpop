@@ -69,11 +69,11 @@ public interface GraphComputer {
             return true;
         }
 
-        public default boolean supportsGlobalMessageTypes() {
+        public default boolean supportsGlobalMessageScopes() {
             return true;
         }
 
-        public default boolean supportsLocalMessageTypes() {
+        public default boolean supportsLocalMessageScopes() {
             return true;
         }
 
@@ -109,14 +109,9 @@ public interface GraphComputer {
             return true;
         }
 
-        public default boolean supportsAdjacentVertexDeepReference() {
-            return true;
-        }
-
         public default boolean supportsIsolation(final Isolation isolation) {
             return true;
         }
-
     }
 
     public static class Exceptions {

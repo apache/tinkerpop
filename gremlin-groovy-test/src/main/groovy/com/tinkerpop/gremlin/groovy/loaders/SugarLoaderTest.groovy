@@ -5,12 +5,6 @@ import com.tinkerpop.gremlin.LoadGraphWith
 import com.tinkerpop.gremlin.groovy.util.SugarTestHelper
 import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.Vertex
-
-/*import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex*/
 import org.junit.Test
 
 import static org.junit.Assert.*
@@ -27,7 +21,7 @@ class SugarLoaderTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldNotAllowSugar() {
         SugarTestHelper.clearRegistry(graphProvider)
         try {
@@ -59,21 +53,21 @@ class SugarLoaderTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldAllowSugar() {
         SugarLoader.load()
-        assertEquals(g.V(), g.V)
-        assertEquals(g.V().out(), g.V.out)
-        assertEquals(g.V().out().values('name'), g.V.out.name)
-        assertEquals(g.v(1).out().out().values('name'), g.v(1).out.out.name);
-        g.v(1).name = 'okram'
-        assertEquals('okram', g.v(1).name);
-        g.v(1)['name'] = 'marko a. rodriguez'
-        assertEquals(g.v(1).values('name').toSet(), ["okram", "marko a. rodriguez"] as Set);
+        assertEquals(6, g.V.count.next())
+        assertEquals(6, g.V.out.count.next())
+        assertEquals(6, g.V.out.name.count.next())
+        assertEquals(2, g.V(1).out.out.name.count.next());
+        g.V(1).next().name = 'okram'
+        assertEquals('okram', g.V(1).next().name);
+        g.V(1).next()['name'] = 'marko a. rodriguez'
+        assertEquals(g.V(1).values('name').toSet(), ["okram", "marko a. rodriguez"] as Set);
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldUseTraverserCategoryCorrectly() {
         SugarLoader.load()
         g.V.as('a').out.as('x').name.as('b').back('x').has('age').map { [it.a, it.b, it.age] }.forEach {
@@ -85,7 +79,7 @@ class SugarLoaderTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void performanceTesting() {
         SugarLoader.load()
 
@@ -96,49 +90,40 @@ class SugarLoaderTest extends AbstractGremlinTest {
         println("g.V")
         println "  Java8-style:  " + clock(5000) { g.V() }
         println "  Groovy-style: " + clock(5000) { g.V }
-        assertEquals(g.V(), g.V)
 
         println("\ng.V.outE.inV")
         println "  Java8-style:  " + clock(5000) { g.V().outE().inV() }
         println "  Groovy-style: " + clock(5000) { g.V.outE.inV }
-        assertEquals(g.V().outE().inV(), g.V.outE.inV)
 
         println("\ng.V.outE.inV.outE.inV")
         println "  Java8-style:  " + clock(5000) { g.V().outE().inV().outE().inV() }
         println "  Groovy-style: " + clock(5000) { g.V.outE.inV.outE.inV }
-        assertEquals(g.V().outE().inV().outE().inV(), g.V.outE.inV.outE.inV)
 
         println("\ng.V.name")
         println "  Java8-style:  " + clock(5000) { g.V().values('name') }
         println "  Groovy-style: " + clock(5000) { g.V.name }
-        assertEquals(g.V().values('name'), g.V.name)
 
-        println("\ng.v(1).name")
-        println "  Java8-style:  " + clock(5000) { g.v(1).value('name') }
-        println "  Groovy-style: " + clock(5000) { g.v(1).name }
-        assertEquals(g.v(1).value('name'), g.v(1).name)
+        println("\ng.V(1).name")
+        println "  Java8-style:  " + clock(5000) { g.V(1).values('name') }
+        println "  Groovy-style: " + clock(5000) { g.V(1).name }
 
-        /*println("\ng.v(1)['name'] = 'okram'")
-        println "  Java8-style:  " + clock(5000) { g.v(1).property('name', 'okram') }
-        println "  Groovy-style: " + clock(5000) { g.v(1)['name'] = 'okram' }
+        /*println("\ng.V(1)['name'] = 'okram'")
+        println "  Java8-style:  " + clock(5000) { g.V(1).property('name', 'okram') }
+        println "  Groovy-style: " + clock(5000) { g.V(1)['name'] = 'okram' }
 
-        println("\ng.v(1).name = 'okram'")
-        println "  Java8-style:  " + clock(5000) { g.v(1).singleProperty('name', 'okram') }
-        println "  Groovy-style: " + clock(5000) { g.v(1).name = 'okram' }*/
+        println("\ng.V(1).name = 'okram'")
+        println "  Java8-style:  " + clock(5000) { g.V(1).singleProperty('name', 'okram') }
+        println "  Groovy-style: " + clock(5000) { g.V(1).name = 'okram' }*/
 
-        println("\ng.v(1).outE")
-        println "  Java8-style:  " + clock(5000) { g.v(1).outE() }
-        println "  Groovy-style: " + clock(5000) { g.v(1).outE }
-        assertEquals(g.v(1).outE().inV(), g.v(1).outE.inV)
+        println("\ng.V(1).outE")
+        println "  Java8-style:  " + clock(5000) { g.V(1).outE() }
+        println "  Groovy-style: " + clock(5000) { g.V(1).outE }
 
         println("\ng.V.as('a').map{[it.a.name, it.name]}")
         println "  Java8-style:  " + clock(5000) {
-            g.V().as('a').map { [it.get('a').value('name'), it.get().value('name')] }
+            g.V().as('a').map { [it.path('a').value('name'), it.get().value('name')] }
         }
         println "  Groovy-style: " + clock(5000) { g.V.as('a').map { [it.a.name, it.name] } }
-        assertEquals(g.V().as('a').map { [it.get('a').value('name'), it.get().value('name')] }, g.V.as('a').map {
-            [it.a.name, it.name]
-        })
 
     }
 

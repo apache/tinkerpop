@@ -1,13 +1,19 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.VertexProperty;
+
+import java.util.function.Function;
 
 /**
  * A collection of (T)okens which allows for more concise Traversal definitions.
+ * T implements {@link Function} can be used to map an element to its token value.
+ * For example, <code>T.id.apply(element)</code>.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum T {
+public enum T implements Function<Element, Object> {
     /**
      * Label (representing Element.label())
      */
@@ -15,6 +21,11 @@ public enum T {
         @Override
         public String getAccessor() {
             return LABEL;
+        }
+
+        @Override
+        public String apply(final Element element) {
+            return element.label();
         }
     },
     /**
@@ -25,6 +36,11 @@ public enum T {
         public String getAccessor() {
             return ID;
         }
+
+        @Override
+        public Object apply(final Element element) {
+            return element.id();
+        }
     },
     /**
      * Key (representing Property.key())
@@ -33,6 +49,11 @@ public enum T {
         @Override
         public String getAccessor() {
             return KEY;
+        }
+
+        @Override
+        public String apply(final Element element) {
+            return ((VertexProperty) element).key();
         }
     },
     /**
@@ -43,14 +64,22 @@ public enum T {
         public String getAccessor() {
             return VALUE;
         }
+
+        @Override
+        public Object apply(final Element element) {
+            return ((VertexProperty) element).value();
+        }
     };
 
-    private static final String LABEL = Graph.System.system("label");
-    private static final String ID = Graph.System.system("id");
-    private static final String KEY = Graph.System.system("key");
-    private static final String VALUE = Graph.System.system("value");
+    private static final String LABEL = Graph.Hidden.hide("label");
+    private static final String ID = Graph.Hidden.hide("id");
+    private static final String KEY = Graph.Hidden.hide("key");
+    private static final String VALUE = Graph.Hidden.hide("value");
 
     public abstract String getAccessor();
+
+    @Override
+    public abstract Object apply(final Element element);
 
     public static T fromString(final String accessor) {
         if (accessor.equals(LABEL))
@@ -62,7 +91,6 @@ public enum T {
         else if (accessor.equals(VALUE))
             return value;
         else
-            throw new IllegalArgumentException("The following accessor string is unknown: " + accessor);
+            throw new IllegalArgumentException("The following token string is unknown: " + accessor);
     }
-
 }

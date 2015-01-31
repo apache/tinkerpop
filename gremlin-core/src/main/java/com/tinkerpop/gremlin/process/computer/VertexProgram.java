@@ -5,6 +5,7 @@ import org.apache.commons.configuration.Configuration;
 
 import java.lang.reflect.Constructor;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -21,7 +22,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface VertexProgram<M> {
+public interface VertexProgram<M> extends Cloneable {
 
     public static final String VERTEX_PROGRAM = "gremlin.vertexProgram";
 
@@ -130,11 +131,28 @@ public interface VertexProgram<M> {
         return Collections.emptySet();
     }
 
-    /*
-     * DO NOT USE YET.
+    /**
+     * Combine the messages in route to a particular vertex. Useful to reduce the amount of data transmitted over the wire.
+     * For example, instead of sending two objects that will ultimately be merged at the vertex destination, merge/combine into one and send that object.
+     * If no message combiner is provider, then no messages will be combined.
+     * Furthermore, it is not guaranteed the all messages in route to the vertex will be combined and thus, combiner-state should not be used.
+     * The result of the vertex program algorithm should be the same regardless of whether message combining is executed or not.
+     *
+     * @return A optional denoting whether or not their is a message combine associated with the vertex program.
+     */
     public default Optional<MessageCombiner<M>> getMessageCombiner() {
         return Optional.empty();
-    }*/
+    }
+
+    /**
+     * This method returns all the {@link MessageScope} possibilities for a particular iteration of the vertex program.
+     * The returned messages scopes are the scopes that will be used to send messages during the stated iteration.
+     * It is not a requirement that all stated messages scopes be used, just that it is possible that they be used during the iteration.
+     *
+     * @param memory an immutable form of the {@link Memory}
+     * @return all possible message scopes during said vertex program iteration
+     */
+    public Set<MessageScope> getMessageScopes(final Memory memory);
 
     /**
      * The set of {@link MapReduce} jobs that are associated with the {@link VertexProgram}.
@@ -149,9 +167,19 @@ public interface VertexProgram<M> {
     }
 
     /**
+     * When multiple workers on a single machine need VertexProgram instances, it is possible to use clone.
+     * This will provide a speedier way of generating instances, over the {@link VertexProgram#storeState} and {@link VertexProgram#loadState} model.
+     * The default implementation simply returns the object as it assumes that the VertexProgram instance is a stateless singleton.
+     *
+     * @return A clone of the VertexProgram object
+     * @throws CloneNotSupportedException
+     */
+    public VertexProgram<M> clone() throws CloneNotSupportedException;
+
+    /**
      * A helper method to construct a {@link VertexProgram} given the content of the supplied configuration.
-     * The class of the VertexProgram is read from the GraphComputer.VERTEX_PROGRAM static configuration key.
-     * Once the VertexProgram is constructed, VertexProgram.loadState() method is called with the provided configuration.
+     * The class of the VertexProgram is read from the {@link VertexProgram#VERTEX_PROGRAM} static configuration key.
+     * Once the VertexProgram is constructed, {@link VertexProgram#loadState} method is called with the provided configuration.
      *
      * @param configuration A configuration with requisite information to build a vertex program
      * @param <V>           The vertex program type
@@ -184,11 +212,11 @@ public interface VertexProgram<M> {
     }
 
     public interface Features {
-        public default boolean requiresGlobalMessageTypes() {
+        public default boolean requiresGlobalMessageScopes() {
             return false;
         }
 
-        public default boolean requiresLocalMessageTypes() {
+        public default boolean requiresLocalMessageScopes() {
             return false;
         }
 
@@ -221,10 +249,6 @@ public interface VertexProgram<M> {
         }
 
         public default boolean requiresEdgePropertyRemoval() {
-            return false;
-        }
-
-        public default boolean requiresAdjacentVertexDeepReference() {
             return false;
         }
     }

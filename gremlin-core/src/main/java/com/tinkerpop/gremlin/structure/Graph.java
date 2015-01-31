@@ -3,11 +3,26 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.structure.io.DefaultIo;
+import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
+import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.strategy.SequenceStrategy;
+import com.tinkerpop.gremlin.structure.strategy.StrategyGraph;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
+import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Repeatable;
@@ -16,6 +31,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -34,62 +50,21 @@ public interface Graph extends AutoCloseable {
     public static final String GRAPH = "gremlin.graph";
 
     /**
-     * This should only be used by vendors to create keys in a namespace safe from users.
+     * This should only be used by vendors to create keys, labels, etc. in a namespace safe from users.
+     * Users are not allowed to generate property keys, step labels, etc. that are key'd "hidden".
      */
-    public class System {
+    public static class Hidden {
 
         /**
-         * The prefix to denote that a key is a system key.
-         */
-        private static final String SYSTEM_PREFIX = "^";
-        private static final int SYSTEM_PREFIX_LENGTH = SYSTEM_PREFIX.length();
-
-        /**
-         * Turn the provided key into a system key. If the key is already a system key, return key.
-         *
-         * @param key The key to make a system key
-         * @return The system key
-         */
-        public static String system(final String key) {
-            return isSystem(key) ? key : SYSTEM_PREFIX.concat(key);
-        }
-
-        /**
-         * Turn the provided system key into an non-system key. If the key is not a system key, return key.
-         *
-         * @param key The system key
-         * @return The non-system representation of the key
-         */
-        public static String unSystem(final String key) {
-            return isSystem(key) ? key.substring(SYSTEM_PREFIX_LENGTH) : key;
-        }
-
-        /**
-         * Determines whether the provided key is a system key or not.
-         *
-         * @param key The key to check for system status
-         * @return Whether the provided key is a system key or not
-         */
-        public static boolean isSystem(final String key) {
-            return key.startsWith(SYSTEM_PREFIX);
-        }
-    }
-
-    /**
-     * Key is a helper class for manipulating keys wherever they may be (e.g. properties, sideEffects, sideEffects, etc.)
-     */
-    public class Key {
-
-        /**
-         * The prefix to denote that a key is hidden.
+         * The prefix to denote that a key is a hidden key.
          */
         private static final String HIDDEN_PREFIX = "~";
         private static final int HIDDEN_PREFIX_LENGTH = HIDDEN_PREFIX.length();
 
         /**
-         * Turn the provided key into a hidden key. If the key is already hidden, return key.
+         * Turn the provided key into a hidden key. If the key is already a hidden key, return key.
          *
-         * @param key The key to hide
+         * @param key The key to make a hidden key
          * @return The hidden key
          */
         public static String hide(final String key) {
@@ -97,20 +72,20 @@ public interface Graph extends AutoCloseable {
         }
 
         /**
-         * Turn the provided hidden key into an unhidden key. If the key is not hidden, return key.
+         * Turn the provided hidden key into an non-hidden key. If the key is not a hidden key, return key.
          *
          * @param key The hidden key
-         * @return The unhidden representation of the key
+         * @return The non-hidden representation of the key
          */
         public static String unHide(final String key) {
             return isHidden(key) ? key.substring(HIDDEN_PREFIX_LENGTH) : key;
         }
 
         /**
-         * Determines whether the provided key is hidden or not.
+         * Determines whether the provided key is a hidden key or not.
          *
          * @param key The key to check for hidden status
-         * @return Whether the provided key is hidden or not
+         * @return Whether the provided key is a hidden key or not
          */
         public static boolean isHidden(final String key) {
             return key.startsWith(HIDDEN_PREFIX);
@@ -120,8 +95,7 @@ public interface Graph extends AutoCloseable {
     /**
      * Add a {@link Vertex} to the graph given an optional series of key/value pairs.  These key/values
      * must be provided in an even number where the odd numbered arguments are {@link String} property keys and the
-     * even numbered arguments are the related property values.  Hidden properties can be set by specifying
-     * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hide}.
+     * even numbered arguments are the related property values.
      *
      * @param keyValues The key/value pairs to turn into vertex properties
      * @return The newly created vertex
@@ -134,41 +108,34 @@ public interface Graph extends AutoCloseable {
      * @param label the label of the vertex
      * @return The newly created labeled vertex
      */
+    @Graph.Helper
     public default Vertex addVertex(final String label) {
         return this.addVertex(T.label, label);
     }
 
     /**
-     * Get a {@link Vertex} given its unique identifier.
+     * Starts a {@link GraphTraversal} over the vertices in the graph.
+     * If vertexIds are provided, then the traversal starts at those vertices, else all vertices in the graph.
      *
-     * @param id The unique identifier of the vertex to locate
-     * @throws NoSuchElementException if the vertex is not found.
+     * @param vertexIds the ids of the vertices to get (if none are provided, get all vertices)
+     * @return a graph traversal over the vertices of the graph
      */
-    public default Vertex v(final Object id) throws NoSuchElementException {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, null);
-        return (Vertex) this.V().has(T.id, id).next();
+    public default GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this.getClass());
+        return traversal.addStep(new GraphStep<>(traversal, this, Vertex.class, vertexIds));
     }
 
     /**
-     * Get a {@link Edge} given its unique identifier.
+     * Starts a {@link GraphTraversal} over the edges in the graph.
+     * If edgeIds are provided, then the traversal starts at those edges, else all edges in the graph.
      *
-     * @param id The unique identifier of the edge to locate
-     * @throws NoSuchElementException if the edge is not found.
+     * @param edgeIds the ids of the edges to get (if none are provided, get all edges)
+     * @return a graph traversal over the edges of the graph
      */
-    public default Edge e(final Object id) throws NoSuchElementException {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, null);
-        return (Edge) this.E().has(T.id, id).next();
+    public default GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(this.getClass());
+        return traversal.addStep(new GraphStep<>(traversal, this, Edge.class, edgeIds));
     }
-
-    /**
-     * Starts a {@link GraphTraversal} over all vertices in the graph.
-     */
-    public GraphTraversal<Vertex, Vertex> V();
-
-    /**
-     * Starts a {@link GraphTraversal} over all edges in the graph.
-     */
-    public GraphTraversal<Edge, Edge> E();
 
     /**
      * Constructs a new domain specific {@link Traversal} for this graph.
@@ -181,16 +148,6 @@ public interface Graph extends AutoCloseable {
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-    }
-
-    /**
-     * Constructs a new {@link GraphTraversal} for this graph.
-     *
-     * @param <S> The start class of the GraphTraversal
-     * @return The newly constructed GraphTraversal bound to this graph
-     */
-    public default <S> GraphTraversal<S, S> of() {
-        return GraphTraversal.of(this);
     }
 
     /**
@@ -207,6 +164,25 @@ public interface Graph extends AutoCloseable {
      * Configure and control the transactions for those graphs that support this feature.
      */
     public Transaction tx();
+
+    /**
+     * Provide input/output methods for serializing graph data.
+     */
+    public default Io io() {
+        return new DefaultIo(this);
+    }
+
+    /**
+     * Constructs a {@link StrategyGraph} from one or more {@link GraphStrategy} objects.  If more than one
+     * {@link GraphStrategy} is supplied they are folded into a single {@link SequenceStrategy}.
+     */
+    @Graph.Helper
+    public default StrategyGraph strategy(final GraphStrategy... strategies) {
+        if (strategies.length == 0)
+            throw new IllegalArgumentException("Provide at least one GraphStrategy implementation.");
+        final GraphStrategy graphStrategy = strategies.length == 1 ? strategies[0] : SequenceStrategy.build().sequence(strategies).create();
+        return new StrategyGraph(this, graphStrategy);
+    }
 
     /**
      * A collection of global {@link Variables} associated with the graph.
@@ -226,19 +202,206 @@ public interface Graph extends AutoCloseable {
     public Configuration configuration();
 
     /**
-     * Graph variables are a set of key/value pairs associated with the graph.
-     * The keys are String and the values are Objects.
+     * Get the {@link Graph.Iterators} associated with this graph.
+     *
+     * @return the graph iterators of this graph
+     */
+    public Iterators iterators();
+
+    /**
+     * An interface that provides access to iterators over {@link Vertex} objects and {@link Edge} objects of the graph
+     * without constructing a {@link com.tinkerpop.gremlin.process.Traversal} object.
+     */
+    public interface Iterators {
+        /**
+         * Get the {@link Vertex} objects in this graph with the provided vertex ids. If no ids are provided, get all vertices.
+         *
+         * @param vertexIds the ids of the vertices to get
+         * @return an {@link Iterator} of vertices that match the provided vertex ids
+         */
+        public Iterator<Vertex> vertexIterator(final Object... vertexIds);
+
+        /**
+         * Get the {@link Edge} objects in this graph with the provided edge ids. If no ids are provided, get all edges.
+         *
+         * @param edgeIds the ids of the edges to get
+         * @return an {@link Iterator} of edges that match the provided edge ids
+         */
+        public Iterator<Edge> edgeIterator(final Object... edgeIds);
+    }
+
+    /**
+     * Provides access to functions related to reading and writing graph data.  Implementers can override these
+     * methods to provider mapper configurations to the default {@link com.tinkerpop.gremlin.structure.io.GraphReader}
+     * and {@link com.tinkerpop.gremlin.structure.io.GraphWriter} implementations (i.e. to register mapper
+     * serialization classes).
+     */
+    public interface Io {
+        /**
+         * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for Kryo serializations. This
+         * method calls the {@link Io#kryoMapper} method to supply to
+         * {@link com.tinkerpop.gremlin.structure.io.kryo.KryoReader.Builder#mapper} which means that implementers
+         * should usually just override {@link Io#kryoMapper} to append in their mapper classes.
+         */
+        public default KryoReader.Builder kryoReader() {
+            return KryoReader.build().mapper(kryoMapper().create());
+        }
+
+        /**
+         * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphWriter} builder for Kryo serializations. This
+         * method calls the {@link Io#kryoMapper} method to supply to
+         * {@link com.tinkerpop.gremlin.structure.io.kryo.KryoWriter.Builder#mapper} which means that implementers
+         * should usually just override {@link Io#kryoMapper} to append in their mapper classes.
+         */
+        public default KryoWriter.Builder kryoWriter() {
+            return KryoWriter.build().mapper(kryoMapper().create());
+        }
+
+        /**
+         * Write a kryo file using the default configuration of the {@link KryoWriter}.
+         */
+        public void writeKryo(final String file) throws IOException;
+
+        /**
+         * Read a kryo file using the default configuration of the {@link KryoReader}.
+         */
+        public void readKryo(final String file) throws IOException;
+
+        /**
+         * By default, this method creates an instance of the most current version of {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} which is
+         * used to serialize data to and from the graph.   Implementers with mapper classes (e.g. a non-primitive
+         * class returned from {@link Element#id}) should override this method with those classes automatically
+         * registered to the returned {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper}.
+         * <br/>
+         * Implementers should respect versions.  Once a class is registered, the order of its registration should be
+         * maintained. Note that registering such classes will reduce the portability of the graph data as data
+         * written with {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} will not be readable without this serializer configuration.  It is
+         * considered good practice to make serialization classes generally available so that users may
+         * register these classes themselves if necessary when building up a mapper {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper}
+         * instance.
+         * <br/>
+         * Note that this method is meant to return current versions for serialization operations.  Users wishing
+         * to use an "older" version should construct this instance as well as their readers and writers manually.
+         */
+        public default KryoMapper.Builder kryoMapper() {
+            return KryoMapper.build();
+        }
+
+        /**
+         * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for GraphML serializations. GraphML
+         * is the most portable of all the formats, but comes at the price of the least flexibility.
+         * {@code Graph} implementations that have mapper classes that need to be serialized will not be able
+         * to properly use this format effectively.
+         */
+        public default GraphMLReader.Builder graphMLReader() {
+            return GraphMLReader.build();
+        }
+
+        /**
+         * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphWriter} builder for GraphML serializations. GraphML
+         * is the most portable of all the formats, but comes at the price of the least flexibility.
+         * {@code Graph} implementations that have mapper classes that need to be serialized will not be able
+         * to properly use this format effectively.
+         */
+        public default GraphMLWriter.Builder graphMLWriter() {
+            return GraphMLWriter.build();
+        }
+
+        /**
+         * Write a GraphML file using the default configuration of the {@link GraphMLWriter}.
+         */
+        public void writeGraphML(final String file) throws IOException;
+
+        /**
+         * Read a GraphML file using the default configuration of the {@link GraphMLReader}.
+         */
+        public void readGraphML(final String file) throws IOException;
+
+        /**
+         * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for GraphSON serializations.
+         * GraphSON is forgiving for implementers and will typically do a "reasonable" job in serializing most
+         * mapper classes.  This method by default uses the {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper} created by
+         * {@link #graphSONMapper}.  That method enables implementers to register mapper serialization
+         * modules for classes that do not serialize nicely by the default JSON serializers or completely
+         * fail to do so.
+         */
+        public default GraphSONReader.Builder graphSONReader() {
+            return GraphSONReader.build().mapper(graphSONMapper().create());
+        }
+
+        /**
+         * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphWriter} builder for GraphML serializations.
+         * GraphSON is forgiving for implementers and will typically do a "reasonable" job in serializing most
+         * mapper classes.  This method by default uses the {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper} created by
+         * {@link #graphSONMapper}. That method enables implementers to register mapper serialization
+         * modules for classes that do not serialize nicely by the default JSON serializers or completely
+         * fail to do so.
+         */
+        public default GraphSONWriter.Builder graphSONWriter() {
+            return GraphSONWriter.build().mapper(graphSONMapper().create());
+        }
+
+        /**
+         * Write a GraphSON file using the default configuration of the {@link GraphSONWriter}.
+         */
+        public void writeGraphSON(final String file) throws IOException;
+
+        /**
+         * Read a GraphSON file using the default configuration of the {@link GraphSONReader}.
+         */
+        public void readGraphSON(final String file) throws IOException;
+
+        /**
+         * By default, this method creates an instance of the most current version of
+         * {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper.Builder} which is can produce a
+         * {@link com.tinkerpop.gremlin.structure.io.Mapper} implementation for GraphSON to
+         * serialize data to and from the graph.   Implementers with custom classes (e.g. a
+         * non-primitive class returned from {@link Element#id}) should override this method with serialization
+         * modules added.
+         * <br/>
+         * It is considered good practice to make serialization classes generally available so that users may
+         * register these classes themselves if necessary when building up a mapper {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper}
+         * instance.
+         * <br/>
+         * Note that this method is meant to return a {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper.Builder} with default configuration
+         * for the current {@link Graph}.  Users can adjust and override such settings by altering the builder
+         * settings.
+         */
+        public default GraphSONMapper.Builder graphSONMapper() {
+            return GraphSONMapper.build();
+        }
+    }
+
+    /**
+     * Graph variables are a set of key/value pairs associated with the graph.The keys are String and the values
+     * are Objects.
      */
     public interface Variables {
 
+        /**
+         * Keys set for the available variables.
+         */
         public Set<String> keys();
 
+        /**
+         * Gets a variable.
+         */
         public <R> Optional<R> get(final String key);
 
+        /**
+         * Sets a variable.
+         */
         public void set(final String key, Object value);
 
+        /**
+         * Removes a variable.
+         */
         public void remove(final String key);
 
+        /**
+         * Gets the variables of the {@link Graph} as a {@code Map}.
+         */
+        @Graph.Helper
         public default Map<String, Object> asMap() {
             final Map<String, Object> map = keys().stream()
                     .map(key -> Pair.with(key, get(key).get()))
@@ -511,7 +674,7 @@ public interface Graph extends AutoCloseable {
             }
 
             /**
-             * Determines if an {@link Element} has custom identifiers where "custom" refers to an implementation
+             * Determines if an {@link Element} has mapper identifiers where "mapper" refers to an implementation
              * defined object.
              */
             @FeatureDescriptor(name = FEATURE_CUSTOM_IDS)
@@ -590,7 +753,7 @@ public interface Graph extends AutoCloseable {
             }
 
             /**
-             * Determines if an {@link VertexProperty} has custom identifiers where "custom" refers to an implementation
+             * Determines if an {@link VertexProperty} has mapper identifiers where "mapper" refers to an implementation
              * defined object.
              */
             @FeatureDescriptor(name = FEATURE_CUSTOM_IDS)
@@ -969,7 +1132,8 @@ public interface Graph extends AutoCloseable {
         public String test();
 
         /**
-         * The specific name of the test method to opt out of.
+         * The specific name of the test method to opt out of or asterisk to opt out of all methods in a
+         * {@link #test}.
          */
         public String method();
 
@@ -993,5 +1157,17 @@ public interface Graph extends AutoCloseable {
     @Inherited
     public @interface OptOuts {
         OptOut[] value();
+    }
+
+    /**
+     * Defines a method as a "helper method".  These methods will usually be default methods in the
+     * core structure interfaces.  Any method marked with this annotation represent methods that should not
+     * be implemented by vendors.  The test suite will enforce this convention and create a failure situation
+     * if violated.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @Inherited
+    public @interface Helper {
     }
 }

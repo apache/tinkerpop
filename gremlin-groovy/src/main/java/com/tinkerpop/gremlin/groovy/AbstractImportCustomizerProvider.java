@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.groovy;
 import com.tinkerpop.gremlin.algorithm.generator.AbstractGenerator;
 import com.tinkerpop.gremlin.groovy.function.GFunction;
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import com.tinkerpop.gremlin.process.Scope;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -10,8 +11,16 @@ import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressu
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
-import com.tinkerpop.gremlin.structure.*;
+import com.tinkerpop.gremlin.process.graph.traversal.step.TraversalOptionParent;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
+import com.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
+import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Contains;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Operator;
+import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
@@ -22,6 +31,7 @@ import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import com.tinkerpop.gremlin.util.Gremlin;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
+import com.tinkerpop.gremlin.util.tools.TimeUtils;
 import groovy.grape.Grape;
 import groovy.json.JsonBuilder;
 import org.apache.commons.configuration.Configuration;
@@ -56,6 +66,9 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         // graph process
         imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
         imports.add(GraphComputer.class.getPackage().getName() + DOT_STAR);
+        imports.add(GraphTraversal.class.getPackage().getName() + DOT_STAR);
+        staticImports.add(__.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(TraversalOptionParent.Pick.class.getCanonicalName() + DOT_STAR);
 
         // utils
         imports.add(Gremlin.class.getPackage().getName() + DOT_STAR);
@@ -89,6 +102,9 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         staticImports.add(Compare.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Contains.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Order.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(Operator.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(Scope.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(TimeUtils.class.getCanonicalName() + DOT_STAR);
     }
 
     @Override

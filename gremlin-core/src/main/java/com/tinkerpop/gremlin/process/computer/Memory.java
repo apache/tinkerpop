@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.computer;
 
+import com.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
 import org.javatuples.Pair;
 
 import java.util.Collections;
@@ -121,9 +122,17 @@ public interface Memory {
      */
     public interface Admin extends Memory {
 
-        public void incrIteration();
+        public default void incrIteration() {
+            this.setIteration(this.getIteration() + 1);
+        }
+
+        public void setIteration(final int iteration);
 
         public void setRuntime(final long runtime);
+
+        public default Memory asImmutable() {
+            return new ImmutableMemory(this);
+        }
     }
 
 
@@ -141,8 +150,8 @@ public interface Memory {
             return new IllegalArgumentException("Graph computer memory value can not be null");
         }
 
-        public static IllegalStateException memoryCompleteAndImmutable() {
-            return new IllegalStateException("Graph computer memory is complete and immutable");
+        public static IllegalStateException memoryIsCurrentlyImmutable() {
+            return new IllegalStateException("Graph computer memory is currently immutable");
         }
 
         public static IllegalArgumentException memoryDoesNotExist(final String key) {

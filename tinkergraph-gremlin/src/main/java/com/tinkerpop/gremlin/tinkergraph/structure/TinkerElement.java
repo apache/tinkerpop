@@ -4,7 +4,10 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +34,7 @@ public abstract class TinkerElement implements Element, Element.Iterators {
 
     @Override
     public int hashCode() {
-        return this.id.hashCode();
+        return ElementHelper.hashCode(this);
     }
 
     @Override
@@ -53,19 +56,12 @@ public abstract class TinkerElement implements Element, Element.Iterators {
     public Set<String> keys() {
         return TinkerHelper.inComputerMode(this.graph) ?
                 Element.super.keys() :
-                this.properties.keySet().stream().filter(key -> !Graph.Key.isHidden(key)).collect(Collectors.toSet());
-    }
-
-    @Override
-    public Set<String> hiddenKeys() {
-        return TinkerHelper.inComputerMode(this.graph) ?
-                Element.super.hiddenKeys() :
-                this.properties.keySet().stream().filter(Graph.Key::isHidden).map(Graph.Key::unHide).collect(Collectors.toSet());
+                this.properties.keySet();
     }
 
     @Override
     public <V> Property<V> property(final String key) {
-        if (removed) throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id);
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id);
         if (TinkerHelper.inComputerMode(this.graph)) {
             final List<Property> list = this.graph.graphView.getProperty(this, key);
             return list.size() == 0 ? Property.<V>empty() : list.get(0);
@@ -83,28 +79,21 @@ public abstract class TinkerElement implements Element, Element.Iterators {
     //////////////////////////////////////////////
 
     @Override
-    public <V> Iterator<? extends Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) (TinkerHelper.inComputerMode(this.graph) ?
-                this.graph.graphView.getProperties(TinkerElement.this).stream().filter(Property::isHidden).filter(p -> keyExists(p.key(), propertyKeys)).iterator() :
-                this.properties.values().stream().flatMap(list -> list.stream()).filter(Property::isHidden).filter(p -> keyExists(p.key(), propertyKeys)).collect(Collectors.toList()).iterator());
-    }
-
-    @Override
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) (TinkerHelper.inComputerMode(this.graph) ?
-                this.graph.graphView.getProperties(TinkerElement.this).stream().filter(p -> !p.isHidden()).filter(p -> keyExists(p.key(), propertyKeys)).iterator() :
-                this.properties.values().stream().flatMap(list -> list.stream()).filter(p -> !p.isHidden()).filter(p -> keyExists(p.key(), propertyKeys)).collect(Collectors.toList()).iterator());
-    }
-
-    private final boolean keyExists(final String key, final String... providedKeys) {
-        if (0 == providedKeys.length) return true;
-        if (1 == providedKeys.length) return key.equals(providedKeys[0]);
+        if (TinkerHelper.inComputerMode(this.graph))
+            return (Iterator) this.graph.graphView.getProperties(TinkerElement.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
         else {
-            for (final String temp : providedKeys) {
-                if (temp.equals(key))
-                    return true;
-            }
-            return false;
+            if (propertyKeys.length == 1) {
+                final List<Property> properties = this.properties.getOrDefault(propertyKeys[0], Collections.emptyList());
+                if (properties.size() == 1) {
+                    return IteratorUtils.of(properties.get(0));
+                } else if (properties.isEmpty()) {
+                    return Collections.emptyIterator();
+                } else {
+                    return (Iterator) new ArrayList<>(properties).iterator();
+                }
+            } else
+                return (Iterator) this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).flatMap(entry -> entry.getValue().stream()).collect(Collectors.toList()).iterator();
         }
     }
 }

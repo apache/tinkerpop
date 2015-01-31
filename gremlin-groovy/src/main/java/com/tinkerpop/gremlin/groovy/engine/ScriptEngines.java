@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ScriptEngines implements AutoCloseable {
-    private static final Logger logger = LoggerFactory.getLogger(GremlinExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScriptEngines.class);
 
     /**
      * {@code ScriptEngine} objects configured for the server keyed on the language name.
@@ -89,7 +90,7 @@ public class ScriptEngines implements AutoCloseable {
      * Reload a {@code ScriptEngine} with fresh imports.  Waits for any existing script evaluations to complete but
      * then blocks other operations until complete.
      */
-    public void reload(final String language, final Set<String> imports, final Set<String> staticImports, final Map<String,Object> config) {
+    public void reload(final String language, final Set<String> imports, final Set<String> staticImports, final Map<String, Object> config) {
         signalControlOp();
 
         try {
@@ -151,6 +152,10 @@ public class ScriptEngines implements AutoCloseable {
         getDependencyManagers().forEach(dm -> {
             try {
                 dm.loadPlugins(plugins);
+            } catch (IllegalEnvironmentException iee) {
+                logger.warn("Some plugins may not have been loaded to {} - {}", dm.getClass().getSimpleName(), iee.getMessage());
+            } catch (Exception ex) {
+                logger.error(String.format("Some plugins may not have been loaded to %s", dm.getClass().getSimpleName()), ex);
             } finally {
                 controlOperationExecuting = false;
             }
@@ -165,7 +170,10 @@ public class ScriptEngines implements AutoCloseable {
             scriptEngines.values().stream()
                     .filter(se -> se instanceof Closeable)
                     .map(se -> (Closeable) se).forEach(c -> {
-                try { c.close(); } catch (IOException ignored) {}
+                try {
+                    c.close();
+                } catch (IOException ignored) {
+                }
             });
             scriptEngines.clear();
         } finally {
@@ -247,8 +255,8 @@ public class ScriptEngines implements AutoCloseable {
     private static synchronized Optional<ScriptEngine> createScriptEngine(final String language,
                                                                           final Set<String> imports,
                                                                           final Set<String> staticImports,
-                                                                          final Map<String,Object> config) {
-        // gremlin-groovy gets special initialization for custom imports and such.  could implement this more
+                                                                          final Map<String, Object> config) {
+        // gremlin-groovy gets special initialization for mapper imports and such.  could implement this more
         // generically with the DependencyManager interface, but going to wait to see how other ScriptEngines
         // develop for TinkerPop3 before committing too deeply here to any specific way of doing this.
         if (language.equals(gremlinGroovyScriptEngineFactory.getLanguageName())) {

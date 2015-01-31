@@ -22,14 +22,30 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
 
     private final Map<Traverser.Admin<S>, Traverser.Admin<S>> map = new LinkedHashMap<>();
 
+    public TraverserSet() {
+
+    }
+
+    public TraverserSet(final Traverser.Admin<S> traverser) {
+        this.map.put(traverser, traverser);
+    }
+
     @Override
     public Iterator<Traverser.Admin<S>> iterator() {
-        return this.map.keySet().iterator();
+        return this.map.values().iterator();
+    }
+
+    public Traverser.Admin<S> get(final Traverser.Admin<S> traverser) {
+        return this.map.get(traverser);
     }
 
     @Override
     public int size() {
         return this.map.size();
+    }
+
+    public long bulkSize() {
+        return this.map.values().stream().map(Traverser::bulk).reduce(0l, (a, b) -> a + b);
     }
 
     @Override
@@ -49,7 +65,7 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
             this.map.put(traverser, traverser);
             return true;
         } else {
-            existing.setBulk(existing.bulk() + traverser.bulk());
+            existing.merge(traverser);
             return false;
         }
     }
@@ -61,7 +77,7 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
 
     @Override
     public Traverser.Admin<S> remove() {  // pop, exception if empty
-        return this.map.remove(this.iterator().next());
+        return this.map.remove(this.map.values().iterator().next());
     }
 
     @Override
@@ -91,16 +107,16 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
 
     @Override
     public Spliterator<Traverser.Admin<S>> spliterator() {
-        return this.map.keySet().spliterator();
+        return this.map.values().spliterator();
     }
 
     @Override
     public String toString() {
-        return this.map.keySet().toString();
+        return this.map.values().toString();
     }
 
     public void sort(final Comparator<Traverser<S>> comparator) {
-        final List<Traverser.Admin<S>> list = new ArrayList<>(this.map.keySet());
+        final List<Traverser.Admin<S>> list = new ArrayList<>(this.map.values());
         Collections.sort(list, comparator);
         this.map.clear();
         list.forEach(traverser -> this.map.put(traverser, traverser));

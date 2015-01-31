@@ -38,7 +38,7 @@ public class GremlinTraversalPerformanceTest extends AbstractGremlinServerPerfor
     public final static int DEFAULT_CONCURRENT_BENCHMARK_ROUNDS = 500;
     public final static int DEFAULT_CONCURRENT_WARMUP_ROUNDS = 10;
 
-    private final static Cluster cluster = Cluster.build("localhost").create();
+    private final static Cluster cluster = Cluster.build("localhost").maxWaitForConnection(30000).create();
     private final static AtomicReference<Client> client = new AtomicReference<>();
 
     @Rule
@@ -72,11 +72,11 @@ public class GremlinTraversalPerformanceTest extends AbstractGremlinServerPerfor
         final Map<String, Object> params = new HashMap<>();
         params.put("x", 16384l);
 
-        final CompletableFuture<ResultSet> future1 = client.get().submitAsync("g.v(x).out().out().next(512)", params);
-        final CompletableFuture<ResultSet> future2 = client.get().submitAsync("g.v(x).out().next(7)", params);
-        final CompletableFuture<ResultSet> future3 = client.get().submitAsync("g.v(16384l).out().out().next(10)");
-        final CompletableFuture<ResultSet> future4 = client.get().submitAsync("g.v(16432l).out().out().next(10)");
-        final CompletableFuture<ResultSet> future5 = client.get().submitAsync("g.v(14l).out().next(1)");
+        final CompletableFuture<ResultSet> future1 = client.get().submitAsync("g.V(x).out().out().next(512)", params);
+        final CompletableFuture<ResultSet> future2 = client.get().submitAsync("g.V(x).out().next(7)", params);
+        final CompletableFuture<ResultSet> future3 = client.get().submitAsync("g.V(16384l).out().out().next(10)");
+        final CompletableFuture<ResultSet> future4 = client.get().submitAsync("g.V(16432l).out().out().next(10)");
+        final CompletableFuture<ResultSet> future5 = client.get().submitAsync("g.V(14l).out().next(1)");
 
         assertEquals(512, future1.get().stream().count());
         assertEquals(7, future2.get().stream().count());

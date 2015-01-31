@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.util.function;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -27,6 +28,18 @@ public final class FunctionUtils {
         return (a) -> {
             try {
                 consumerThatThrows.accept(a);
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    public static <T,U> BiConsumer<T,U> wrapBiConsumer(final ThrowingBiConsumer<T,U> consumerThatThrows) {
+        return (a,b) -> {
+            try {
+                consumerThatThrows.accept(a,b);
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {

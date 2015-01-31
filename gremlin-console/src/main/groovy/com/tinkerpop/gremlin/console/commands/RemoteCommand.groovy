@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.console.commands
 
 import com.tinkerpop.gremlin.console.Mediator
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
+import com.tinkerpop.gremlin.groovy.plugin.RemoteException
 import org.codehaus.groovy.tools.shell.ComplexCommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 
@@ -19,54 +20,67 @@ class RemoteCommand extends ComplexCommandSupport {
     }
 
     def Object do_connect = { List<String> arguments ->
-        if (arguments.size() == 0) return "define the remote to configured (e.g. server)"
+        if (arguments.size() == 0) return "Define the remote to configured (e.g. tinkerpop.server)"
 
-        if (!mediator.availablePlugins.values().any{it.plugin.name==arguments[0]}) return "no plugin named ${arguments[0]}"
-        def plugin = mediator.availablePlugins.values().find{it.plugin.name==arguments[0]}.plugin
+        if (!mediator.availablePlugins.values().any {
+            it.plugin.name == arguments[0]
+        }) return "No plugin named ${arguments[0]}"
+
+        def pluggedIn = mediator.availablePlugins.values().find { it.plugin.name == arguments[0] }
+        if (!pluggedIn.activated) return "Plugin is available but not activated with ':plugin use ${arguments[0]}'"
+
+        def plugin = pluggedIn.plugin
         def Optional<RemoteAcceptor> remoteAcceptor = plugin.remoteAcceptor()
         if (!remoteAcceptor.isPresent()) return "${arguments[0]} does not accept remote configuration"
 
-        def remote = remoteAcceptor.get()
-
-        mediator.addRemote(remote)
-
-        return remote.connect(arguments.tail())
+        try {
+            def remote = remoteAcceptor.get()
+            def result = remote.connect(arguments.tail())
+            mediator.addRemote(remote)
+            return result
+        } catch (RemoteException re) {
+            return re.message
+        }
     }
 
     def Object do_config = { List<String> arguments ->
-        if (mediator.remotes.size() == 0) return "please add a remote first with [connect]"
-        return mediator.currentRemote().configure(arguments)
+        if (mediator.remotes.size() == 0) return "Please add a remote first with [connect]"
+        try {
+            return mediator.currentRemote().configure(arguments)
+        } catch (RemoteException re) {
+            return re.message
+        }
     }
 
     def Object do_current = {
-        if (mediator.remotes.size() == 0) return "please add a remote first with [connect]"
-        return "remote - ${mediator.currentRemote()}"
+        if (mediator.remotes.size() == 0) return "Please add a remote first with [connect]"
+        return "Remote - ${mediator.currentRemote()}"
     }
 
     def Object do_choose = { List<String> arguments ->
-        if (mediator.remotes.size() == 0) return "please add a remote first with [connect]"
-        if (arguments.size() != 1) return "specify the numeric index of the remote"
+        if (mediator.remotes.size() == 0) return "Please add a remote first with [connect]"
+        if (arguments.size() != 1) return "Specify the numeric index of the remote"
 
         def pos
         try {
             pos = Integer.parseInt(arguments.first())
         } catch (Exception ex) {
-            return "index must be an integer value"
+            return "Index must be an integer value"
         }
 
-        if (pos >= mediator.remotes.size() || pos < 0) return "index is out of range - use [list] to see indices available"
+        if (pos >= mediator.remotes.size() || pos < 0) return "Index is out of range - use [list] to see indices available"
 
         mediator.position = pos
         return mediator.currentRemote()
     }
 
     def Object do_next = {
-        if (mediator.remotes.size() == 0) return "please add a remote first with [connect]"
+        if (mediator.remotes.size() == 0) return "Please add a remote first with [connect]"
         mediator.nextRemote()
     }
 
     def Object do_prev = {
-        if (mediator.remotes.size() == 0) return "please add a remote first with [connect]"
+        if (mediator.remotes.size() == 0) return "Please add a remote first with [connect]"
         mediator.previousRemote()
     }
 
@@ -77,8 +91,9 @@ class RemoteCommand extends ComplexCommandSupport {
     }
 
     def Object do_close = {
+        if (mediator.remotes.size() == 0) return "Please add a remote first with [connect]"
         def removed = mediator.removeCurrent()
         removed.close()
-        return "removed - $removed"
+        return "Removed - $removed"
     }
 }

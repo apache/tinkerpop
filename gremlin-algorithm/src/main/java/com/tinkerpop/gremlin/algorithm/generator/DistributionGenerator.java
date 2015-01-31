@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.algorithm.generator;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,7 +100,7 @@ public class DistributionGenerator extends AbstractGenerator {
         private Builder(final Graph g) {
             super(Builder.class);
             this.g = g;
-            final List<Vertex> allVertices = g.V().toList();
+            final List<Vertex> allVertices = IteratorUtils.list(g.iterators().vertexIterator());
             this.out = allVertices;
             this.in = allVertices;
             this.expectedNumEdges = allVertices.size() * 2;

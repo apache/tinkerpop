@@ -2,13 +2,10 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
-import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
-import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
-import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
-import com.tinkerpop.gremlin.process.util.DefaultTraversal;
-import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.FlatMapStep;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.MapStep;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.process.traversal.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -66,12 +63,12 @@ public class TinkerFactory {
     }
 
     public static void generateTheCrew(final TinkerGraph g) {
-        final Vertex marko = g.addVertex(T.id, 1, T.label, "person", "name", "marko", Graph.Key.hide("visible"), true);
-        final Vertex stephen = g.addVertex(T.id, 7, T.label, "person", "name", "stephen", Graph.Key.hide("visible"), true);
-        final Vertex matthias = g.addVertex(T.id, 8, T.label, "person", "name", "matthias", Graph.Key.hide("visible"), true);
-        final Vertex daniel = g.addVertex(T.id, 9, T.label, "person", "name", "daniel", Graph.Key.hide("visible"), false);
-        final Vertex gremlin = g.addVertex(T.id, 10, T.label, "software", "name", "gremlin", Graph.Key.hide("visible"), true);
-        final Vertex tinkergraph = g.addVertex(T.id, 11, T.label, "software", "name", "tinkergraph", Graph.Key.hide("visible"), false);
+        final Vertex marko = g.addVertex(T.id, 1, T.label, "person", "name", "marko");
+        final Vertex stephen = g.addVertex(T.id, 7, T.label, "person", "name", "stephen");
+        final Vertex matthias = g.addVertex(T.id, 8, T.label, "person", "name", "matthias");
+        final Vertex daniel = g.addVertex(T.id, 9, T.label, "person", "name", "daniel");
+        final Vertex gremlin = g.addVertex(T.id, 10, T.label, "software", "name", "gremlin");
+        final Vertex tinkergraph = g.addVertex(T.id, 11, T.label, "software", "name", "tinkergraph");
 
         marko.property("location", "san diego", "startTime", 1997, "endTime", 2001);
         marko.property("location", "santa cruz", "startTime", 2001, "endTime", 2004);
@@ -108,22 +105,16 @@ public class TinkerFactory {
         daniel.addEdge("uses", gremlin, T.id, 24, "skill", 5);
         daniel.addEdge("uses", tinkergraph, T.id, 25, "skill", 3);
 
-        gremlin.addEdge("traverses", tinkergraph, T.id, 26, Graph.Key.hide("visible"), false);
+        gremlin.addEdge("traverses", tinkergraph, T.id, 26);
 
         g.variables().set("creator", "marko");
         g.variables().set("lastModified", 2014);
         g.variables().set("comment", "this graph was created to provide examples and test coverage for tinkerpop3 api advances");
     }
 
-    public interface SocialTraversal<S, E> extends Traversal<S, E> {
+    public interface SocialTraversal<S, E> extends Traversal.Admin<S,E> {
 
-        public default SocialTraversal<S, Vertex> people() {
-            return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("age")));
-        }
-
-        public default SocialTraversal<S, Vertex> people(String name) {
-            return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("name", name)));
-        }
+        public SocialTraversal<S, Vertex> people(final String name);
 
         public default SocialTraversal<S, Vertex> knows() {
             final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
@@ -144,21 +135,21 @@ public class TinkerFactory {
         }
 
         public static <S> SocialTraversal<S, S> of(final Graph graph) {
-            final SocialTraversal traversal = new DefaultSocialTraversal(graph);
-            return traversal;
+            return new DefaultSocialTraversal<>(graph);
         }
 
-        public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {
-
-            static {
-                final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
-                traversalStrategies.addStrategy(TraverserSourceStrategy.instance());
-                TraversalStrategies.GlobalCache.registerStrategies(DefaultSocialTraversal.class, traversalStrategies);
-            }
+        public class DefaultSocialTraversal<S, E> extends DefaultTraversal<S, E> implements SocialTraversal<S, E> {
+            private final Graph graph;
 
             public DefaultSocialTraversal(final Graph graph) {
-                super(graph);
+                super(Graph.class); // should be SocialGraph.class, SocialVertex.class, etc. Perhaps...
+                this.graph = graph;
             }
+
+            public SocialTraversal<S, Vertex> people(final String name) {
+                return (SocialTraversal) this.addStep(new StartStep<>(this, this.graph.V().has("name", name)));
+            }
+
         }
     }
 }

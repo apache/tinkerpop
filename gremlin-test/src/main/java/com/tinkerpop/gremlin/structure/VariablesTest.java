@@ -9,7 +9,6 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,9 +17,7 @@ import java.util.Map;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -38,6 +35,7 @@ public class VariablesTest {
      */
     public static class StringRepresentationTest extends AbstractGremlinTest {
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_VARIABLES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
         public void testVariables() {
             final Graph.Variables variables = g.variables();
@@ -59,26 +57,29 @@ public class VariablesTest {
             "variableKeyCanNotBeEmpty"
     })
     public static class VariableExceptionConsistencyTest extends AbstractGremlinTest {
-        @Parameterized.Parameters(name = "{index}: expect - {2}")
+        @Parameterized.Parameters(name = "expect({0})")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {"k", null, Graph.Variables.Exceptions.variableValueCanNotBeNull()},
-                    {null, "v", Graph.Variables.Exceptions.variableKeyCanNotBeNull()},
-                    {"", "v", Graph.Variables.Exceptions.variableKeyCanNotBeEmpty()}});
+                    {"variableValueCanNotBeNull", "k", null, Graph.Variables.Exceptions.variableValueCanNotBeNull()},
+                    {"variableKeyCanNotBeNull", null, "v", Graph.Variables.Exceptions.variableKeyCanNotBeNull()},
+                    {"variableKeyCanNotBeEmpty", "", "v", Graph.Variables.Exceptions.variableKeyCanNotBeEmpty()}});
         }
 
         @Parameterized.Parameter(value = 0)
-        public String key;
+        public String name;
 
         @Parameterized.Parameter(value = 1)
-        public String val;
+        public String key;
 
         @Parameterized.Parameter(value = 2)
+        public String val;
+
+        @Parameterized.Parameter(value = 3)
         public Exception expectedException;
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
-        public void testGraphAnnotationsSet() throws Exception {
+        public void testGraphVariablesSet() throws Exception {
             try {
                 g.variables().set(key, val);
                 fail(String.format("Setting an annotation with these arguments [key: %s value: %s] should throw an exception", key, val));
@@ -92,10 +93,11 @@ public class VariablesTest {
      * Ensure that the {@link com.tinkerpop.gremlin.structure.Graph.Variables#asMap()} method returns some basics.
      * Other tests will enforce that all types are properly covered in {@link com.tinkerpop.gremlin.structure.Graph.Variables}.
      */
-    public static class SideEffectsAsMapTest extends AbstractGremlinTest {
+    public static class VariableAsMapTest extends AbstractGremlinTest {
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_VARIABLES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
-        public void shouldHoldNone() {
+        public void shouldHoldVariableNone() {
             final Graph.Variables variables = g.variables();
             final Map<String, Object> mapOfAnnotations = variables.asMap();
             assertNotNull(mapOfAnnotations);
@@ -109,8 +111,9 @@ public class VariablesTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_VARIABLES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
-        public void shouldHoldMemoryString() {
+        public void shouldHoldVariableString() {
             final Graph.Variables variables = g.variables();
             variables.set("test1", "1");
             variables.set("test2", "2");
@@ -125,8 +128,9 @@ public class VariablesTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_VARIABLES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_INTEGER_VALUES)
-        public void shouldHoldMemoryInteger() {
+        public void shouldHoldVariableInteger() {
             final Graph.Variables variables = g.variables();
             variables.set("test1", 1);
             variables.set("test2", 2);
@@ -141,8 +145,9 @@ public class VariablesTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_VARIABLES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_LONG_VALUES)
-        public void shouldHoldMemoryLong() {
+        public void shouldHoldVariableLong() {
             final Graph.Variables variables = g.variables();
             variables.set("test1", 1l);
             variables.set("test2", 2l);
@@ -157,10 +162,11 @@ public class VariablesTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_VARIABLES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_INTEGER_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_LONG_VALUES)
-        public void shouldHoldMemoryMixed() {
+        public void shouldHoldVariableMixed() {
             final Graph.Variables variables = g.variables();
             variables.set("test1", "1");
             variables.set("test2", 2);
@@ -183,7 +189,7 @@ public class VariablesTest {
      */
     @RunWith(Parameterized.class)
     public static class GraphVariablesFeatureSupportTest extends AbstractGremlinTest {
-        private static final Map<String,Object> testMap = new HashMap<>();
+        private static final Map<String, Object> testMap = new HashMap<>();
 
         private static final ArrayList<Object> mixedList = new ArrayList<>();
 
@@ -206,7 +212,8 @@ public class VariablesTest {
             uniformIntegerList.add(300);
         }
 
-        @Parameterized.Parameters(name = "{index}: supports{0}({1})")
+
+        @Parameterized.Parameters(name = "supports{0}({1})")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {Graph.Features.VariableFeatures.FEATURE_BOOLEAN_VALUES, true},
@@ -254,6 +261,7 @@ public class VariablesTest {
         public Object value;
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
         public void shouldSetValueOnGraph() throws Exception {
             assumeThat(g.features().supports(Graph.Features.VariableFeatures.class, featureName), is(true));
             final Graph.Variables variables = g.variables();

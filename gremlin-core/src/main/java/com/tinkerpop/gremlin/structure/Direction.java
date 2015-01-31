@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.structure;
 /**
  * {@link Direction} is used to denote the direction of an {@link Edge} or location of a {@link Vertex} on an
  * {@link Edge}. For example:
- * <p>
+ * <p/>
  * <pre>
  * gremlin--knows-->rexster
  * </pre>

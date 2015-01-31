@@ -8,8 +8,8 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalScript;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 
@@ -26,14 +26,11 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
     protected String openGraphScript;
     protected String traversalScript;
     protected String withSugarScript;
-    protected String graphComputerScript;
 
     private GraphComputer graphComputer;
 
     private GroovyTraversalScript(final String traversalScript) {
-        this.traversalScript = "traversal = "
-                .concat(traversalScript.replaceAll("\\.v\\((.*)\\)\\.", ".V().has(id, $1).").replaceAll("\\.e\\((.*)\\)\\.", ".E().has(id, $1)."))
-                .concat("\n");
+        this.traversalScript = traversalScript.concat("\n");
     }
 
     public static <S, E> GroovyTraversalScript<S, E> of(final String traversalScript) {
@@ -53,7 +50,6 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
     @Override
     public GroovyTraversalScript<S, E> using(final GraphComputer graphComputer) {
         this.graphComputer = graphComputer;
-        this.graphComputerScript = "traversal.applyStrategies(" + TraversalEngine.class.getCanonicalName() + "." + TraversalEngine.COMPUTER + ")\n";
         return this;
     }
 
@@ -74,7 +70,7 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
             try {
                 final TraversalVertexProgram vertexProgram = this.program();
                 final ComputerResult result = this.graphComputer.program(vertexProgram).submit().get();
-                final GraphTraversal<S, S> traversal = result.graph().<S>of();
+                final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(result.graph().getClass());
                 return traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
@@ -95,9 +91,6 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
             builder.append(this.openGraphScript);
         if (null != this.traversalScript)
             builder.append(this.traversalScript);
-        if (null != this.graphComputerScript)
-            builder.append(this.graphComputerScript);
-        builder.append("traversal\n");
         return builder.toString();
     }
 }

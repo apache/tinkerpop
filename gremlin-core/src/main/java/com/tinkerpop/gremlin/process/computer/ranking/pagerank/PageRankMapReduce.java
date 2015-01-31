@@ -1,40 +1,41 @@
 package com.tinkerpop.gremlin.process.computer.ranking.pagerank;
 
-import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.KeyValue;
+import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
-import org.javatuples.Pair;
 
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PageRankMapReduce implements MapReduce<Object, Double, Object, Double, Iterator<Pair<Object, Double>>> {
+public class PageRankMapReduce extends StaticMapReduce<Object, Double, Object, Double, Iterator<KeyValue<Object, Double>>> {
 
-    public static final String PAGE_RANK_SIDE_EFFECT_KEY = "gremlin.pageRankMapReduce.sideEffectKey";
-    public static final String DEFAULT_SIDE_EFFECT_KEY = "pageRank";
+    public static final String PAGE_RANK_MEMORY_KEY = "gremlin.pageRankMapReduce.memoryKey";
+    public static final String DEFAULT_MEMORY_KEY = "pageRank";
 
-    private String sideEffectKey = DEFAULT_SIDE_EFFECT_KEY;
+    private String memoryKey = DEFAULT_MEMORY_KEY;
 
-    public PageRankMapReduce() {
+    private PageRankMapReduce() {
 
     }
 
-    public PageRankMapReduce(final String sideEffectKey) {
-        this.sideEffectKey = sideEffectKey;
+    private PageRankMapReduce(final String memoryKey) {
+        this.memoryKey = memoryKey;
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(PAGE_RANK_SIDE_EFFECT_KEY, this.sideEffectKey);
+        super.storeState(configuration);
+        configuration.setProperty(PAGE_RANK_MEMORY_KEY, this.memoryKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.sideEffectKey = configuration.getString(PAGE_RANK_SIDE_EFFECT_KEY, DEFAULT_SIDE_EFFECT_KEY);
+        this.memoryKey = configuration.getString(PAGE_RANK_MEMORY_KEY, DEFAULT_MEMORY_KEY);
     }
 
     @Override
@@ -51,17 +52,42 @@ public class PageRankMapReduce implements MapReduce<Object, Double, Object, Doub
     }
 
     @Override
-    public Iterator<Pair<Object, Double>> generateFinalResult(final Iterator<Pair<Object, Double>> keyValues) {
+    public Iterator<KeyValue<Object, Double>> generateFinalResult(final Iterator<KeyValue<Object, Double>> keyValues) {
         return keyValues;
     }
 
     @Override
     public String getMemoryKey() {
-        return this.sideEffectKey;
+        return this.memoryKey;
     }
 
     @Override
     public String toString() {
-        return StringFactory.mapReduceString(this, this.sideEffectKey);
+        return StringFactory.mapReduceString(this, this.memoryKey);
+    }
+
+    //////////////////////////////
+
+    public static Builder build() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private String memoryKey = DEFAULT_MEMORY_KEY;
+
+        private Builder() {
+
+        }
+
+        public Builder memoryKey(final String memoryKey) {
+            this.memoryKey = memoryKey;
+            return this;
+        }
+
+        public PageRankMapReduce create() {
+            return new PageRankMapReduce(this.memoryKey);
+        }
+
     }
 }

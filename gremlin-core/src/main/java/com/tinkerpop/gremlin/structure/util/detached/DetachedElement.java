@@ -6,11 +6,10 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -18,29 +17,26 @@ import java.util.stream.Collectors;
  */
 public abstract class DetachedElement<E> implements Element, Element.Iterators, Serializable, Attachable<E> {
 
-    Object id;
-    String label;
-    Map<String, List<? extends Property>> properties = new HashMap<>();
+    protected Object id;
+    protected String label;
+    protected Map<String, List<? extends Property>> properties = Collections.emptyMap();
 
     protected DetachedElement() {
 
-    }
-
-    protected DetachedElement(final Object id, final String label) {
-        if (null == id) throw Graph.Exceptions.argumentCanNotBeNull("id");
-        if (null == label) throw Graph.Exceptions.argumentCanNotBeNull("label");
-
-        this.id = id;
-        this.label = label;
     }
 
     protected DetachedElement(final Element element) {
         this(element.id(), element.label());
     }
 
+    protected DetachedElement(final Object id, final String label) {
+        this.id = id;
+        this.label = label;
+    }
+
     @Override
     public Graph graph() {
-        throw new UnsupportedOperationException("The element is no longer attached to a graph");
+        throw new UnsupportedOperationException("The detached element is no longer attached to a graph");
     }
 
     @Override
@@ -70,7 +66,7 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
 
     @Override
     public int hashCode() {
-        return this.id.hashCode();
+        return ElementHelper.hashCode(this);
     }
 
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
@@ -86,23 +82,6 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
 
     @Override
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) this.properties.values().stream().flatMap(list -> list.stream()).filter(p -> !p.isHidden()).filter(p -> keyExists(p.key(), propertyKeys)).iterator();
-    }
-
-    @Override
-    public <V> Iterator<? extends Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) this.properties.values().stream().flatMap(list -> list.stream()).filter(Property::isHidden).filter(p -> keyExists(p.key(), propertyKeys)).iterator();
-    }
-
-    private final boolean keyExists(final String key, final String... providedKeys) {
-        if (0 == providedKeys.length) return true;
-        if (1 == providedKeys.length) return key.equals(providedKeys[0]);
-        else {
-            for (final String temp : providedKeys) {
-                if (temp.equals(key))
-                    return true;
-            }
-            return false;
-        }
+        return (Iterator) this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).flatMap(entry -> entry.getValue().stream()).iterator();
     }
 }

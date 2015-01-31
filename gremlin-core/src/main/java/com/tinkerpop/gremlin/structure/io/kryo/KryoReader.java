@@ -37,10 +37,11 @@ import java.util.function.Function;
  * This implementation is not thread-safe.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class KryoReader implements GraphReader {
     private final Kryo kryo;
-    private final GremlinKryo.HeaderReader headerReader;
+    private final KryoMapper.HeaderReader headerReader;
 
     private final long batchSize;
     private final String vertexIdKey;
@@ -52,9 +53,9 @@ public class KryoReader implements GraphReader {
 
     private KryoReader(final File tempFile, final long batchSize,
                        final String vertexIdKey, final String edgeIdKey,
-                       final GremlinKryo gremlinKryo) {
-        this.kryo = gremlinKryo.createKryo();
-        this.headerReader = gremlinKryo.getHeaderReader();
+                       final KryoMapper kryoMapper) {
+        this.kryo = kryoMapper.createMapper();
+        this.headerReader = kryoMapper.getHeaderReader();
         this.vertexIdKey = vertexIdKey;
         this.edgeIdKey = edgeIdKey;
         this.tempFile = tempFile;
@@ -147,7 +148,6 @@ public class KryoReader implements GraphReader {
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
                     current.iterators().propertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
-                    current.iterators().hiddenPropertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, true));
 
                     // the gio file should have been written with a direction specified
                     final boolean hasDirectionSpecified = input.readBoolean();
@@ -189,8 +189,7 @@ public class KryoReader implements GraphReader {
         if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
             appendToArgList(propertyArgs, T.id, p.id());
         p.iterators().propertyIterator().forEachRemaining(it -> appendToArgList(propertyArgs, it.key(), it.value()));
-        p.iterators().hiddenPropertyIterator().forEachRemaining(it -> appendToArgList(propertyArgs, Graph.Key.hide(it.key()), it.value()));
-        v.property(hidden ? Graph.Key.hide(p.key()) : p.key(), p.value(), propertyArgs.toArray());
+        v.property(p.key(), p.value(), propertyArgs.toArray());
     }
 
     private static void appendToArgList(final List<Object> propertyArgs, final Object key, final Object val) {
@@ -294,11 +293,10 @@ public class KryoReader implements GraphReader {
             while (!next.equals(EdgeTerminator.INSTANCE)) {
                 final List<Object> edgeArgs = new ArrayList<>();
                 final DetachedEdge detachedEdge = (DetachedEdge) next;
-                final Vertex vOut = graphToWriteTo.v(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                final Vertex inV = graphToWriteTo.v(detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
+                final Vertex vOut = graphToWriteTo.iterators().vertexIterator(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()).next();
+                final Vertex inV = graphToWriteTo.iterators().vertexIterator(detachedEdge.iterators().vertexIterator(Direction.IN).next().id()).next();
 
                 detachedEdge.iterators().propertyIterator().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(p.key(), p.value())));
-                detachedEdge.iterators().hiddenPropertyIterator().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(Graph.Key.hide(p.key()), p.value())));
 
                 appendToArgList(edgeArgs, T.id, detachedEdge.id());
 
@@ -333,7 +331,7 @@ public class KryoReader implements GraphReader {
         /**
          * Always use the most recent kryo version by default
          */
-        private GremlinKryo gremlinKryo = GremlinKryo.build().create();
+        private KryoMapper kryoMapper = KryoMapper.build().create();
 
         private Builder() {
             this.tempFile = new File(UUID.randomUUID() + ".tmp");
@@ -349,10 +347,10 @@ public class KryoReader implements GraphReader {
         }
 
         /**
-         * Supply a custom {@link GremlinKryo} instance to use as the serializer for the {@code KryoWriter}.
+         * Supply a mapper {@link KryoMapper} instance to use as the serializer for the {@code KryoWriter}.
          */
-        public Builder custom(final GremlinKryo gremlinKryo) {
-            this.gremlinKryo = gremlinKryo;
+        public Builder mapper(final KryoMapper kryoMapper) {
+            this.kryoMapper = kryoMapper;
             return this;
         }
 
@@ -383,14 +381,14 @@ public class KryoReader implements GraphReader {
         public Builder workingDirectory(final String workingDirectory) {
             final File f = new File(workingDirectory);
             if (!f.exists() || !f.isDirectory())
-                throw new IllegalArgumentException("The workingDirectory is not a directory or does not exist");
+                throw new IllegalArgumentException(String.format("%s is not a directory or does not exist", workingDirectory));
 
             tempFile = new File(workingDirectory + File.separator + UUID.randomUUID() + ".tmp");
             return this;
         }
 
         public KryoReader create() {
-            return new KryoReader(tempFile, batchSize, this.vertexIdKey, this.edgeIdKey, this.gremlinKryo);
+            return new KryoReader(tempFile, batchSize, this.vertexIdKey, this.edgeIdKey, this.kryoMapper);
         }
     }
 }

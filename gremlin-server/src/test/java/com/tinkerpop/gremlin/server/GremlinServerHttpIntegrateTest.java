@@ -49,7 +49,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnGETWithGremlinQueryStringArgumentWithBindingsAndFunction() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=sum(Integer.parseInt(x),Integer.parseInt(y))&x=10&y=10");
+        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=addItUp(Integer.parseInt(x),Integer.parseInt(y))&x=10&y=10");
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(200, response.getStatusLine().getStatusCode());

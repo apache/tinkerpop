@@ -9,9 +9,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * All features should be prefixed with the word "supports" and return boolean.  Furthermore, all should have an
@@ -28,7 +26,7 @@ public class FeaturesConventionTest {
 
     private static final String ERROR_FIELD = "Feature [%s] must have a field declared with the name of the feature as 'public static final'";
 
-    @Parameterized.Parameters(name = "{index}: {0}.test() = follows conventions")
+    @Parameterized.Parameters(name = "{0}.test()")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {Graph.Features.EdgeFeatures.class},

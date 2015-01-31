@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Starts and stops one instance for all tests that extend from this class.
@@ -17,9 +17,10 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractGremlinServerPerformanceTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinServerPerformanceTest.class);
 
-    private static Thread thread;
     private static String host;
     private static String port;
+
+    private static CountDownLatch latchWaitForTestsToComplete = new CountDownLatch(1);
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -27,24 +28,37 @@ public abstract class AbstractGremlinServerPerformanceTest {
         final Settings settings = Settings.read(stream);
         final CompletableFuture<Void> serverReadyFuture = new CompletableFuture<>();
 
-        thread = new Thread(() -> {
+        new Thread(() -> {
+            GremlinServer gremlinServer = null;
             try {
-                new GremlinServer(settings, serverReadyFuture).run();
+                gremlinServer = new GremlinServer(settings);
+                gremlinServer.start().join();
+
+                // the server was started and is ready for tests
+                serverReadyFuture.complete(null);
+
+                logger.info("Waiting for performance tests to complete...");
+                latchWaitForTestsToComplete.await();
             } catch (InterruptedException ie) {
                 logger.info("Shutting down Gremlin Server");
             } catch (Exception ex) {
-                logger.error("Could not start Gremlin Server for performance tests", ex);
+                logger.error("Could not start Gremlin Server for performance tests.", ex);
+            } finally {
+                logger.info("Tests are complete - prepare to stop Gremlin Server.");
+                // reset the wait at this point
+                latchWaitForTestsToComplete = new CountDownLatch(1);
+                try {
+                    if (gremlinServer != null) gremlinServer.stop().join();
+                } catch (Exception ex) {
+                    logger.error("Could not stop Gremlin Server for performance tests", ex);
+                }
             }
-        });
-        thread.start();
+        }, "performance-test-server-startup").start();
 
-        // make sure gremlin server gets off the ground - longer than 30 seconds means that this didn't work somehow
-        try {
-            serverReadyFuture.get(30000, TimeUnit.SECONDS);
-        } catch (Exception ex) {
-            logger.error("Server did not start in the expected time or was otherwise interrupted.", ex);
-            return;
-        }
+        // block until gremlin server gets off the ground
+        logger.info("Performance test waiting for server to start up");
+        serverReadyFuture.join();
+        logger.info("Gremlin Server is started and ready for performance test to execute");
 
         host = System.getProperty("host", "localhost");
         port = System.getProperty("port", "8182");
@@ -52,16 +66,7 @@ public abstract class AbstractGremlinServerPerformanceTest {
 
     @AfterClass
     public static void tearDown() throws Exception {
-        stopServer();
-    }
-
-    public static void stopServer() throws Exception {
-        if (!thread.isInterrupted())
-            thread.interrupt();
-
-        while (thread.isAlive()) {
-            Thread.sleep(250);
-        }
+        latchWaitForTestsToComplete.countDown();
     }
 
     protected static String getHostPort() {

@@ -80,7 +80,7 @@ public class ElementHelperTest {
 
     @Test
     public void shouldAllowEvenNumberOfKeyValuesAndValidKeys() {
-        ElementHelper.legalPropertyKeyValueArray("aKey", "test", "value-for-this-one", 1, Graph.Key.hide("1"), "none");
+        ElementHelper.legalPropertyKeyValueArray("aKey", "test", "value-for-this-one", 1, "1", "none");
     }
 
     @Test
@@ -130,7 +130,7 @@ public class ElementHelperTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailCauseSystemLabelsAreNotAllowed() {
-        ElementHelper.getLabelValue("test", 321, T.label, Graph.System.system("systemLabel"), "testagain", "that");
+        ElementHelper.getLabelValue("test", 321, T.label, Graph.Hidden.hide("systemLabel"), "testagain", "that");
     }
 
     @Test(expected = IllegalArgumentException.class)

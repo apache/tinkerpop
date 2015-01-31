@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -11,8 +13,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -27,7 +29,7 @@ public class CommunityGeneratorTest {
     @RunWith(Parameterized.class)
     public static class DifferentDistributionsTest extends AbstractGeneratorTest {
 
-        @Parameterized.Parameters(name = "{index}: {0}.test({1},{2})")
+        @Parameterized.Parameters(name = "test({0},{1},{2})")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {new NormalDistribution(2), new PowerLawDistribution(2.4), 0.1},
@@ -61,15 +63,15 @@ public class CommunityGeneratorTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldGenerateRandomGraph() throws Exception {
+        public void shouldGenerateDifferentGraph() throws Exception {
             final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName());
             final Graph g1 = graphProvider.openTestGraph(configuration);
 
             try {
-                communityGeneratorTest(g, null);
+                communityGeneratorTest(g, () -> 123456789l);
 
                 afterLoadGraphWith(g1);
-                communityGeneratorTest(g1, null);
+                communityGeneratorTest(g1, () -> 987654321l);
 
                 assertTrue(g.E().count().next() > 0);
                 assertTrue(g.V().count().next() > 0);
@@ -104,7 +106,7 @@ public class CommunityGeneratorTest {
                 assertTrue(g.V().count().next() > 0);
                 assertTrue(g1.E().count().next() > 0);
                 assertTrue(g1.V().count().next() > 0);
-                assertEquals(g.E().count(), g1.E().count());
+                assertEquals(g.E().count().next(), g1.E().count().next());
 
                 // ensure that every vertex has the same number of edges between graphs.
                 assertTrue(same(g, g1));
@@ -127,7 +129,7 @@ public class CommunityGeneratorTest {
         protected Iterable<Vertex> verticesByOid(final Graph graph) {
             List<Vertex> vertices = graph.V().toList();
             Collections.sort(vertices,
-                (v1, v2) -> ((Integer)v1.value("oid")).compareTo((Integer)v2.value("oid")));
+                    (v1, v2) -> ((Integer) v1.value("oid")).compareTo((Integer) v2.value("oid")));
             return vertices;
         }
 
@@ -148,13 +150,13 @@ public class CommunityGeneratorTest {
                             .create();
                     final int numEdges = generator.generate();
                     assertTrue(numEdges > 0);
-                    tryCommit(graph, g -> assertEquals(new Long(numEdges), g.E().count().next()));
+                    tryCommit(graph, g -> assertEquals(new Long(numEdges), new Long(IteratorUtils.count(g.iterators().edgeIterator()))));
                     generated = true;
                 } catch (IllegalArgumentException iae) {
                     localCrossPcent = localCrossPcent - 0.005d;
                     generated = localCrossPcent < 0d;
 
-                    graph.V().remove();
+                    graph.iterators().vertexIterator().forEachRemaining(Vertex::remove);
                     tryCommit(graph);
                     afterLoadGraphWith(graph);
 
@@ -188,10 +190,10 @@ public class CommunityGeneratorTest {
             final long edgesGenerated = generator.generate();
             assertTrue(edgesGenerated > 0);
             tryCommit(g, g -> {
-                assertEquals(new Long(edgesGenerated), g.E().count().next());
-                assertTrue(g.V().count().next() > 0);
-                assertTrue(g.E().toList().stream().allMatch(e -> e.value("data").equals("test")));
-                assertTrue(g.V().toList().stream().allMatch(
+                assertEquals(new Long(edgesGenerated), new Long(IteratorUtils.count(g.iterators().edgeIterator())));
+                assertTrue(IteratorUtils.count(g.iterators().vertexIterator()) > 0);
+                assertTrue(StreamFactory.stream(g.iterators().edgeIterator()).allMatch(e -> e.value("data").equals("test")));
+                assertTrue(StreamFactory.stream(g.iterators().vertexIterator()).allMatch(
                         v -> v.value("test").equals("data") && v.property("communityIndex").isPresent()
                 ));
             });

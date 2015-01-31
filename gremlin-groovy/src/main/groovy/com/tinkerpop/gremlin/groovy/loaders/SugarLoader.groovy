@@ -1,10 +1,9 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.gremlin.process.traversers.PathTraverser
-import com.tinkerpop.gremlin.process.traversers.SimpleTraverser
 import com.tinkerpop.gremlin.process.Traverser
-import com.tinkerpop.gremlin.process.graph.GraphTraversal
-import com.tinkerpop.gremlin.process.util.TraversalHelper
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
+import com.tinkerpop.gremlin.process.graph.traversal.__
+import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper
 import com.tinkerpop.gremlin.structure.*
 
 /**
@@ -16,19 +15,26 @@ class SugarLoader {
 
         GremlinLoader.load();
 
-        [Traverser, PathTraverser, SimpleTraverser].forEach {
-            it.metaClass.getProperty = { final String key ->
-                TraverserCategory.get((Traverser) delegate, key);
-            }
-            // g.V.map{it.label()}
-            it.metaClass.methodMissing = { final String name, final def args ->
-                ((Traverser) delegate).get()."$name"(*args);
-            }
+        Traverser.metaClass.getProperty = { final String key ->
+            TraverserCategory.get((Traverser) delegate, key);
         }
-
+        // g.V.map{it.label()}
+        Traverser.metaClass.methodMissing = { final String name, final def args ->
+            ((Traverser) delegate).get()."$name"(*args);
+        }
+        // g.V.age
         GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
-            ((GraphTraversal) delegate).values(name);
+            ((GraphTraversal)delegate).values(name);
         }
+        // __.age and __.out
+        __.metaClass.static.propertyMissing = { final String name ->
+            return null != __.metaClass.getMetaMethod(name) ? __."$name"() : __.values(name);
+        }
+        /*
+        // out and age
+        Object.metaClass.propertyMissing = { final String name ->
+            __."$name"();
+        }*/
 
         Traverser.metaClass.mixin(TraverserCategory.class);
         GraphTraversal.metaClass.mixin(GraphTraversalCategory.class);
@@ -40,12 +46,13 @@ class SugarLoader {
 
     public static class TraverserCategory {
         public static final get(final Traverser traverser, final String key) {
-            return traverser.sideEffects().exists(key) ? traverser.sideEffects().get(key) : traverser.get()."$key";
+            return traverser.get()."$key";
         }
     }
 
     public static class ElementCategory {
-        public static final get(final Element element, final String key) {
+        public static final Object get(final Element element, final String key) {
+            // TODO: Weird:::: return element.property(key).orElseGet{vertex."$key"()};
             final Property property = element.property(key);
             if (property.isPresent())
                 return property.value();
@@ -59,7 +66,8 @@ class SugarLoader {
     }
 
     public static class VertexCategory {
-        public static final get(final Vertex vertex, final String key) {
+        public static final Object get(final Vertex vertex, final String key) {
+            // TODO: Weird:::: return vertex.property(key).orElseGet{vertex."$key"()};
             final Property property = vertex.property(key);
             if (property.isPresent())
                 return property.value();
@@ -93,12 +101,11 @@ class SugarLoader {
     public static class GraphTraversalCategory {
 
         public static final get(final GraphTraversal graphTraversal, final String key) {
-            // GraphTraversal.metaClass.getMetaMethod(key) ? graphTraversal."$key"() : graphTraversal.value(key);
             graphTraversal."$key"()
         }
 
         public static final getAt(final GraphTraversal graphTraversal, final Integer index) {
-            graphTraversal.range(index, index+1);
+            graphTraversal.range(index, index + 1);
         }
 
         public static final getAt(final GraphTraversal graphTraversal, final Range range) {

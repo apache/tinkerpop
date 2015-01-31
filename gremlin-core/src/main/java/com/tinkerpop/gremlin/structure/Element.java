@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -41,57 +41,41 @@ public abstract interface Element {
     public Graph graph();
 
     /**
-     * Get the keys from non-hidden properties.
+     * Get the keys of the properties associated with this element.
+     * The default implementation iterators the properties and stores the keys into a {@link HashSet}.
      *
-     * @return The non-hidden key set
+     * @return The property key set
      */
     public default Set<String> keys() {
         final Set<String> keys = new HashSet<>();
         this.iterators().propertyIterator().forEachRemaining(property -> keys.add(property.key()));
-        return keys;
+        return Collections.unmodifiableSet(keys);
     }
 
     /**
-     * Get the keys of hidden properties.
-     *
-     * @return The hidden key set
-     */
-    public default Set<String> hiddenKeys() {
-        final Set<String> hiddenKeys = new HashSet<>();
-        this.iterators().hiddenPropertyIterator().forEachRemaining(property -> hiddenKeys.add(Graph.Key.unHide(property.key())));
-        return hiddenKeys;
-    }
-
-    /**
-     * Get a {@link Property} for the {@code Element} given its key.  Hidden properties can be retrieved by specifying
-     * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hide}.
+     * Get a {@link Property} for the {@code Element} given its key.
+     * The default implementation calls the raw {@link Element#iterators#propertyIterator}.
      */
     public default <V> Property<V> property(final String key) {
-        final Iterator<? extends Property<V>> iterator = Graph.Key.isHidden(key) ?
-                this.iterators().hiddenPropertyIterator(Graph.Key.unHide(key)) :
-                this.iterators().propertyIterator(key);
+        final Iterator<? extends Property<V>> iterator = this.iterators().propertyIterator(key);
         return iterator.hasNext() ? iterator.next() : Property.<V>empty();
     }
 
     /**
-     * Add or set a property value for the {@code Element} given its key.  Hidden properties can be set by specifying
-     * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hide}.
+     * Add or set a property value for the {@code Element} given its key.
      */
     public <V> Property<V> property(final String key, final V value);
 
     /**
      * Get the value of a {@link Property} given it's key.
+     * The default implementation calls {@link Element#property} and then returns the associated value.
      *
      * @throws NoSuchElementException if the property does not exist on the {@code Element}.
      */
+    @Graph.Helper
     public default <V> V value(final String key) throws NoSuchElementException {
         final Property<V> property = this.property(key);
         return property.orElseThrow(() -> Property.Exceptions.propertyDoesNotExist(key));
-    }
-
-    public default <V> V value(final String key, final V orElse) {
-        final Property<V> property = this.property(key);
-        return property.orElse(orElse);
     }
 
     /**
@@ -113,50 +97,17 @@ public abstract interface Element {
     public interface Iterators {
 
         /**
-         * Get the values of non-hidden properties as a {@link Map} of keys and values.
+         * Get the values of properties as an {@link Iterator}.
          */
+        @Graph.Helper
         public default <V> Iterator<V> valueIterator(final String... propertyKeys) {
-            final Iterator<? extends Property<V>> iterator = this.propertyIterator(propertyKeys);
-            return new Iterator<V>() {
-                @Override
-                public boolean hasNext() {
-                    return iterator.hasNext();
-                }
-
-                @Override
-                public V next() {
-                    return iterator.next().value();
-                }
-            };
+            return IteratorUtils.map(this.<V>propertyIterator(propertyKeys), property -> property.value());
         }
 
         /**
-         * Get the values of hidden properties as a {@link Map} of keys and values.
-         */
-        public default <V> Iterator<V> hiddenValueIterator(final String... propertyKeys) {
-            final Iterator<? extends Property<V>> iterator = this.hiddenPropertyIterator(propertyKeys);
-            return new Iterator<V>() {
-                @Override
-                public boolean hasNext() {
-                    return iterator.hasNext();
-                }
-
-                @Override
-                public V next() {
-                    return iterator.next().value();
-                }
-            };
-        }
-
-        /**
-         * Get an {@link Iterator} of non-hidden properties.
+         * Get an {@link Iterator} of properties.
          */
         public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys);
-
-        /**
-         * Get an {@link Iterator} of hidden properties.
-         */
-        public <V> Iterator<? extends Property<V>> hiddenPropertyIterator(final String... propertyKeys);
     }
 
     /**
@@ -188,8 +139,8 @@ public abstract interface Element {
             return new IllegalArgumentException("Label can not be empty");
         }
 
-        public static IllegalArgumentException labelCanNotBeASystemKey(final String label) {
-            return new IllegalArgumentException("Label can not be a system key: " + label);
+        public static IllegalArgumentException labelCanNotBeAHiddenKey(final String label) {
+            return new IllegalArgumentException("Label can not be a hidden key: " + label);
         }
 
         public static IllegalStateException elementAlreadyRemoved(final Class<? extends Element> clazz, final Object id) {

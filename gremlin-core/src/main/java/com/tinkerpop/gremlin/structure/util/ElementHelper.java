@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,9 +41,15 @@ public class ElementHelper {
             throw Element.Exceptions.labelCanNotBeNull();
         if (label.isEmpty())
             throw Element.Exceptions.labelCanNotBeEmpty();
-        if (Graph.System.isSystem(label))
-            throw Element.Exceptions.labelCanNotBeASystemKey(label);
+        if (Graph.Hidden.isHidden(label))
+            throw Element.Exceptions.labelCanNotBeAHiddenKey(label);
     }
+
+    /*public static void validateLabels(final String... labels) throws IllegalArgumentException {
+        for (final String label : labels) {
+            validateLabel(label);
+        }
+    }*/
 
     /**
      * Check if the vertex, by ID, exists. If it does return it, else create it and return it.
@@ -54,11 +60,8 @@ public class ElementHelper {
      * @return a pre-existing vertex or a newly created vertex
      */
     public static Vertex getOrAddVertex(final Graph graph, final Object id, final String label) {
-        try {
-            return graph.v(id);
-        } catch (final NoSuchElementException e) {
-            return graph.addVertex(T.id, id, T.label, label);
-        }
+        final Iterator<Vertex> iterator = graph.iterators().vertexIterator(id);
+        return iterator.hasNext() ? iterator.next() : graph.addVertex(T.id, id, T.label, label);
     }
 
     /**
@@ -77,8 +80,8 @@ public class ElementHelper {
             throw Property.Exceptions.propertyKeyCanNotBeNull();
         if (key.isEmpty())
             throw Property.Exceptions.propertyKeyCanNotBeEmpty();
-        if (Graph.System.isSystem(key))
-            throw Property.Exceptions.propertyKeyCanNotBeASystemKey(key);
+        if (Graph.Hidden.isHidden(key))
+            throw Property.Exceptions.propertyKeyCanNotBeAHiddenKey(key);
     }
 
     /**
@@ -251,14 +254,13 @@ public class ElementHelper {
      * Retrieve the properties associated with a particular element.
      * The result is a Object[] where odd indices are String keys and even indices are the values.
      *
-     * @param element                the element to retrieve properties from
-     * @param includeId              include Element.ID in the key/value list
-     * @param includeLabel           include Element.LABEL in the key/value list
-     * @param propertiesToCopy       the properties to include with an empty list meaning copy all properties
-     * @param hiddenPropertiesToCopy the hidden properties to include with an empty list meaning copy all properties
+     * @param element          the element to retrieve properties from
+     * @param includeId        include Element.ID in the key/value list
+     * @param includeLabel     include Element.LABEL in the key/value list
+     * @param propertiesToCopy the properties to include with an empty list meaning copy all properties
      * @return a key/value array of properties where odd indices are String keys and even indices are the values.
      */
-    public static Object[] getProperties(final Element element, final boolean includeId, final boolean includeLabel, final Set<String> propertiesToCopy, final Set<String> hiddenPropertiesToCopy) {
+    public static Object[] getProperties(final Element element, final boolean includeId, final boolean includeLabel, final Set<String> propertiesToCopy) {
         final List<Object> keyValues = new ArrayList<>();
         if (includeId) {
             keyValues.add(T.id);
@@ -272,13 +274,6 @@ public class ElementHelper {
             if (propertiesToCopy.isEmpty() || propertiesToCopy.contains(key)) {
                 keyValues.add(key);
                 keyValues.add(element.value(key));
-            }
-        });
-        element.hiddenKeys().forEach(key -> {
-            if (hiddenPropertiesToCopy.isEmpty() || hiddenPropertiesToCopy.contains(key)) {
-                final String hidden = Graph.Key.hide(key);
-                keyValues.add(hidden);
-                keyValues.add(element.value(hidden));
             }
         });
         return keyValues.toArray(new Object[keyValues.size()]);
@@ -332,6 +327,27 @@ public class ElementHelper {
     }
 
     /**
+     * If two {@link Element} instances are equal, then they must have the same hash codes. This methods ensures consistent hashCode values.
+     *
+     * @param element the element to get the hashCode for
+     * @return the hash code of the element
+     */
+    public static int hashCode(final Element element) {
+        return element.id().hashCode();
+    }
+
+    /**
+     * If two {@link Property} instances are equal, then they must have the same hash codes. This methods ensures consistent hashCode values.
+     * For {@link VertexProperty} use {@link ElementHelper#hashCode(com.tinkerpop.gremlin.structure.Element)}.
+     *
+     * @param property the property to get the hashCode for
+     * @return the hash code of the property
+     */
+    public static int hashCode(final Property property) {
+        return property.key().hashCode() + property.value().hashCode();
+    }
+
+    /**
      * A standard method for determining if two {@link com.tinkerpop.gremlin.structure.Property} objects are equal. This method should be used by any
      * {@link Object#equals(Object)} implementation to ensure consistent behavior.
      *
@@ -357,90 +373,68 @@ public class ElementHelper {
 
     }
 
-    public static Map<String, Object> propertyValueMap(final Element element, final boolean getHiddens, final String... propertyKeys) {
+    public static Map<String, Object> propertyValueMap(final Element element, final String... propertyKeys) {
         final Map<String, Object> values = new HashMap<>();
-        if (propertyKeys.length == 0) {
-            (getHiddens ? element.iterators().hiddenPropertyIterator() : element.iterators().propertyIterator()).forEachRemaining(property -> values.put(property.key(), property.value()));
-        } else {
-            for (final String key : propertyKeys) {
-                if (!Graph.Key.isHidden(key)) {
-                    element.property(getHiddens ? Graph.Key.hide(key) : key).ifPresent(v -> values.put(key, v));
-                }
-            }
-        }
+        element.iterators().propertyIterator(propertyKeys).forEachRemaining(property -> values.put(property.key(), property.value()));
         return values;
     }
 
-    public static Map<String, Property> propertyMap(final Element element, final boolean getHiddens, final String... propertyKeys) {
+    public static Map<String, Property> propertyMap(final Element element, final String... propertyKeys) {
         final Map<String, Property> propertyMap = new HashMap<>();
-        if (propertyKeys.length == 0) {
-            (getHiddens ? element.iterators().hiddenPropertyIterator() : element.iterators().propertyIterator()).forEachRemaining(property -> propertyMap.put(property.key(), property));
-        } else {
-            for (final String key : propertyKeys) {
-                if (!Graph.Key.isHidden(key)) {
-                    final Property property = element.property(getHiddens ? Graph.Key.hide(key) : key);
-                    if (property.isPresent()) propertyMap.put(key, property);
-                }
-            }
-        }
+        element.iterators().propertyIterator(propertyKeys).forEachRemaining(property -> propertyMap.put(property.key(), property));
         return propertyMap;
     }
 
-    public static Map<String, List> vertexPropertyValueMap(final Vertex vertex, final boolean getHiddens, final String... propertyKeys) {
+    public static Map<String, List> vertexPropertyValueMap(final Vertex vertex, final String... propertyKeys) {
         final Map<String, List> valueMap = new HashMap<>();
-        if (propertyKeys.length == 0) {
-            (getHiddens ? vertex.iterators().hiddenPropertyIterator() : vertex.iterators().propertyIterator()).forEachRemaining(property -> {
-                if (valueMap.containsKey(property.key()))
-                    valueMap.get(property.key()).add(property.value());
-                else {
-                    final List list = new ArrayList();
-                    list.add(property.value());
-                    valueMap.put(property.key(), list);
-                }
-            });
-        } else {
-            for (final String key : propertyKeys) {
-                if (!Graph.Key.isHidden(key)) {
-                    if (valueMap.containsKey(key)) {
-                        final List list = valueMap.get(key);
-                        (getHiddens ? vertex.iterators().hiddenPropertyIterator(key) : vertex.iterators().propertyIterator(key)).forEachRemaining(property -> list.add(property.value()));
-                    } else {
-                        final List list = new ArrayList();
-                        (getHiddens ? vertex.iterators().hiddenPropertyIterator(key) : vertex.iterators().propertyIterator(key)).forEachRemaining(property -> list.add(property.value()));
-                        if (list.size() > 0)
-                            valueMap.put(key, list);
-                    }
-                }
+        vertex.iterators().propertyIterator(propertyKeys).forEachRemaining(property -> {
+            if (valueMap.containsKey(property.key()))
+                valueMap.get(property.key()).add(property.value());
+            else {
+                final List list = new ArrayList();
+                list.add(property.value());
+                valueMap.put(property.key(), list);
             }
-        }
+        });
         return valueMap;
     }
 
-    public static Map<String, List<VertexProperty>> vertexPropertyMap(final Vertex vertex, final boolean getHiddens, final String... propertyKeys) {
+    public static Map<String, List<VertexProperty>> vertexPropertyMap(final Vertex vertex, final String... propertyKeys) {
         final Map<String, List<VertexProperty>> propertyMap = new HashMap<>();
-        if (null == propertyKeys || propertyKeys.length == 0) {
-            (getHiddens ? vertex.iterators().hiddenPropertyIterator() : vertex.iterators().propertyIterator()).forEachRemaining(property -> {
-                if (propertyMap.containsKey(property.key()))
-                    propertyMap.get(property.key()).add(property);
-                else {
-                    final List list = new ArrayList();
-                    list.add(property);
-                    propertyMap.put(property.key(), list);
-                }
-            });
-        } else {
-            for (final String key : propertyKeys) {
-                if (propertyMap.containsKey(key)) {
-                    final List list = propertyMap.get(key);
-                    (getHiddens ? vertex.iterators().hiddenPropertyIterator(key) : vertex.iterators().propertyIterator(key)).forEachRemaining(list::add);
-                } else {
-                    final List list = new ArrayList();
-                    (getHiddens ? vertex.iterators().hiddenPropertyIterator(key) : vertex.iterators().propertyIterator(key)).forEachRemaining(list::add);
-                    if (list.size() > 0)
-                        propertyMap.put(key, list);
-                }
+        vertex.iterators().propertyIterator(propertyKeys).forEachRemaining(property -> {
+            if (propertyMap.containsKey(property.key()))
+                propertyMap.get(property.key()).add(property);
+            else {
+                final List<VertexProperty> list = new ArrayList<>();
+                list.add(property);
+                propertyMap.put(property.key(), list);
             }
-        }
+        });
         return propertyMap;
+    }
+
+    public static boolean keyExists(final String key, final String... providedKeys) {
+        if (Graph.Hidden.isHidden(key)) return false;
+        if (0 == providedKeys.length) return true;
+        if (1 == providedKeys.length) return key.equals(providedKeys[0]);
+        else {
+            for (final String temp : providedKeys) {
+                if (temp.equals(key))
+                    return true;
+            }
+            return false;
+        }
+    }
+
+    public static boolean idExists(final Object id, final Object... providedIds) {
+        if (0 == providedIds.length) return true;
+        if (1 == providedIds.length) return id.equals(providedIds[0]);
+        else {
+            for (final Object temp : providedIds) {
+                if (temp.equals(id))
+                    return true;
+            }
+            return false;
+        }
     }
 }

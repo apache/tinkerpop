@@ -60,13 +60,13 @@ public interface Transaction extends Closeable {
 
     /**
      * Describes how a transaction is started when a read or a write occurs.  This value can be set using standard
-     * behaviors defined in {@link READ_WRITE_BEHAVIOR} or a custom {@link Consumer} function.
+     * behaviors defined in {@link READ_WRITE_BEHAVIOR} or a mapper {@link Consumer} function.
      */
     public Transaction onReadWrite(final Consumer<Transaction> consumer);
 
     /**
      * Describes what happens to a transaction on a call to {@link com.tinkerpop.gremlin.structure.Graph#close()}.
-     * This value can be set using standard behavior defined in {@link CLOSE_BEHAVIOR} or a custom {@link Consumer}
+     * This value can be set using standard behavior defined in {@link CLOSE_BEHAVIOR} or a mapper {@link Consumer}
      * function.
      */
     public Transaction onClose(final Consumer<Transaction> consumer);
@@ -186,7 +186,7 @@ public interface Transaction extends Closeable {
         }
 
         /**
-         * Try to execute a {@link Workload} with a custom retry strategy.
+         * Try to execute a {@link Workload} with a mapper retry strategy.
          *
          * @param retryStrategy The first argument to this function is the Graph instance and the second is
          *                      the encapsulated work to be performed.  The function should ultimately return the
@@ -323,6 +323,11 @@ public interface Transaction extends Closeable {
                         }
 
                     try {
+                        // ensure that a transaction is open for this try. even if there was an open transaction
+                        // from the first try it would be rolled back on failure and unless automatic transactions
+                        // are used, the transaction would be closed on the next retry.
+                        if (!g.tx().isOpen()) g.tx().open();
+
                         returnValue = w.apply(g);
                         g.tx().commit();
 

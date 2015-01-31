@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.Serializer;
 import org.apache.commons.configuration.Configuration;
 
@@ -26,7 +26,7 @@ public class VertexProgramHelper {
         return (T) Serializer.deserializeObject(bytes);
     }
 
-    public static void verifyReversibility(final Traversal traversal) {
+    public static void verifyReversibility(final Traversal.Admin<?,?> traversal) {
         if (!TraversalHelper.isReversible(traversal))
             throw new IllegalArgumentException("The provided traversal is not reversible");
     }

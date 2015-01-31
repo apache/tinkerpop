@@ -2,11 +2,12 @@ package com.tinkerpop.gremlin.groovy.jsr223;
 
 import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
-import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
+import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.plugin.Artifact;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import com.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
 import groovy.grape.Grape;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
@@ -36,6 +37,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -151,13 +153,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     @Override
-    public void loadPlugins(final List<GremlinPlugin> plugins) {
-        plugins.forEach(it -> {
-            if (!loadedPlugins.contains(it.getName())) {
-                it.pluginTo(new ScriptEnginePluginAcceptor(this));
-                loadedPlugins.add(it.getName());
+    public void loadPlugins(final List<GremlinPlugin> plugins) throws GremlinPluginException {
+        for (GremlinPlugin gremlinPlugin : plugins) {
+            if (!loadedPlugins.contains(gremlinPlugin.getName())) {
+                gremlinPlugin.pluginTo(new ScriptEnginePluginAcceptor(this));
+                loadedPlugins.add(gremlinPlugin.getName());
             }
-        });
+        }
     }
 
     @Override
@@ -365,10 +367,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
         try {
             final Script scriptObject = InvokerHelper.createScript(scriptClass, binding);
-            Stream.of(scriptClass.getMethods()).forEach(m -> {
+            for (Method m : scriptClass.getMethods()) {
                 final String name = m.getName();
                 globalClosures.put(name, new MethodClosure(scriptObject, name));
-            });
+            };
 
             final MetaClass oldMetaClass = scriptObject.getMetaClass();
             scriptObject.setMetaClass(new DelegatingMetaClass(oldMetaClass) {

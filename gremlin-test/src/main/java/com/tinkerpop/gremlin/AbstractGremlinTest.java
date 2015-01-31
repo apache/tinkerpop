@@ -6,13 +6,13 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,20 +37,8 @@ import static org.junit.Assume.assumeThat;
 public abstract class AbstractGremlinTest {
     protected Graph g;
     protected Configuration config;
-    protected GraphStrategy strategyToTest;
+    protected GraphStrategy[] strategiesToTest;
     protected GraphProvider graphProvider;
-
-    protected static String tempPath;
-
-    static {
-        final String temp = System.getProperty("java.io.tmpdir", File.separator + "tmp").trim();
-        if (!temp.endsWith(File.separator))
-            tempPath = temp + File.separator;
-        else
-            tempPath = temp;
-
-        tempPath = tempPath + "tinkerpop-test/";
-    }
 
     @Rule
     public TestName name = new TestName();
@@ -59,8 +47,8 @@ public abstract class AbstractGremlinTest {
         this(null);
     }
 
-    public AbstractGremlinTest(final GraphStrategy strategyToTest) {
-        this.strategyToTest = strategyToTest;
+    public AbstractGremlinTest(final GraphStrategy... strategiesToTest) {
+        this.strategiesToTest = strategiesToTest;
     }
 
     @Before
@@ -73,7 +61,7 @@ public abstract class AbstractGremlinTest {
         graphProvider.clear(config);
 
         // not sure how the strategy can ever be null, but it seems to happen in the performance tests
-        g = graphProvider.openTestGraph(config, strategyToTest);
+        g = graphProvider.openTestGraph(config, strategiesToTest);
 
         final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
 
@@ -108,7 +96,8 @@ public abstract class AbstractGremlinTest {
         beforeLoadGraphWith(g);
 
         // load a graph with sample data if the annotation is present on the test
-        if (loadGraphWiths.length > 0) graphProvider.loadGraphData(g, loadGraphWiths[0]);
+        final LoadGraphWith loadGraphWith = loadGraphWiths.length == 0 ? null : loadGraphWiths[0];
+        graphProvider.loadGraphData(g, loadGraphWith, this.getClass(), name.getMethodName());
 
         afterLoadGraphWith(g);
     }
@@ -127,7 +116,7 @@ public abstract class AbstractGremlinTest {
             graphProvider.clear(g, config);
             g = null;
             config = null;
-            strategyToTest = null;
+            strategiesToTest = null;
             graphProvider = null;
         }
     }
@@ -215,14 +204,14 @@ public abstract class AbstractGremlinTest {
         final boolean muted = Boolean.parseBoolean(System.getProperty("muteTestLogs", "false"));
 
         if (!muted) System.out.println("Testing: " + traversal);
-        traversal.applyStrategies(TraversalEngine.STANDARD); // TODO!!!!
+        traversal.asAdmin().applyStrategies(TraversalEngine.STANDARD); // for GraphComputer, this will always be the ComputerResultStep traversal
         if (!muted) System.out.println("         " + traversal);
     }
 
     public static Consumer<Graph> assertVertexEdgeCounts(final int expectedVertexCount, final int expectedEdgeCount) {
         return (g) -> {
-            assertEquals(new Long(expectedVertexCount), g.V().count().next());
-            assertEquals(new Long(expectedEdgeCount), g.E().count().next());
+            assertEquals(expectedVertexCount, IteratorUtils.count(g.iterators().vertexIterator()));
+            assertEquals(expectedEdgeCount, IteratorUtils.count(g.iterators().edgeIterator()));
         };
     }
 

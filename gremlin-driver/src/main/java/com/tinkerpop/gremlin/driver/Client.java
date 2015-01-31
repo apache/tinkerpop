@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -51,7 +52,7 @@ public abstract class Client {
     protected abstract Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException;
 
     /**
-     * Asyncronous close of the {@code Client}.
+     * Asynchronous close of the {@code Client}.
      */
     public abstract CompletableFuture<Void> closeAsync();
 
@@ -136,6 +137,9 @@ public abstract class Client {
 
         @Override
         protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
+            final Iterator<Host> possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
+            if (!possibleHosts.hasNext()) throw new TimeoutException("Timed out waiting for an available host.");
+
             final Host bestHost = this.cluster.loadBalancingStrategy().select(msg).next();
             final ConnectionPool pool = hostConnectionPools.get(bestHost);
             return pool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
@@ -152,7 +156,7 @@ public abstract class Client {
                     this.cluster.loadBalancingStrategy().onNew(host);
                 } catch (Exception ex) {
                     // catch connection errors and prevent them from failing the creation
-                    logger.warn("Could not initialize connection pool for {}", host);
+                    logger.warn("Could not initialize connection pool for {} - will try later", host);
                 }
             });
         }

@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.op.session.Session;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
@@ -17,13 +18,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@ChannelHandler.Sharable
 public class WsGremlinResponseEncoder extends MessageToMessageEncoder<ResponseMessage> {
     private static final Logger logger = LoggerFactory.getLogger(WsGremlinResponseEncoder.class);
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));

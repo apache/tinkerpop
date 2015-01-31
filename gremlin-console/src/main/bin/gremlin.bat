@@ -1,19 +1,21 @@
 :: Windows launcher script for Gremlin Console
 
 @echo off
+SETLOCAL EnableDelayedExpansion
+set work=%CD%
 
-::cd ..\lib
+if [%work:~-3%]==[bin] cd ..
 
-::set LIBDIR=%CD%
+set LIBDIR=lib
+set EXTDIR=ext/*
 
-set LIBDIR=..\lib
+cd ext
 
-set OLD_CLASSPATH=%CLASSPATH%
-set CP=
+FOR /D /r %%i in (*) do (
+    set EXTDIR=!EXTDIR!;%%i/*
+)
 
-for %%i in (%LIBDIR%\*.jar) do call :concatsep %%i
-
-:: cd ..\..\..\
+cd ..
 
 set JAVA_OPTIONS=-Xms32m -Xmx512m
 
@@ -25,8 +27,7 @@ if "%1" == "-v" goto version
 
 :console
 
-set CLASSPATH=%CP%;%OLD_CLASSPATH%
-java %JAVA_OPTIONS% %JAVA_ARGS% com.tinkerpop.gremlin.console.Console %*
+java %JAVA_OPTIONS% %JAVA_ARGS% -cp %LIBDIR%/*;%EXTDIR%; com.tinkerpop.gremlin.console.Console %*
 
 set CLASSPATH=%OLD_CLASSPATH%
 goto :eof
@@ -39,17 +40,12 @@ FOR %%X IN (%*) DO (
 CALL :concat %%X %1 %2
 )
 
-set CLASSPATH=%CP%;%OLD_CLASSPATH%
-java %JAVA_OPTIONS% %JAVA_ARGS% com.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor %strg%
-set CLASSPATH=%OLD_CLASSPATH%
+java %JAVA_OPTIONS% %JAVA_ARGS% -cp %LIBDIR%/*;%EXTDIR%; com.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor %strg%
 goto :eof
 
 :version
+java %JAVA_OPTIONS% %JAVA_ARGS% -cp %LIBDIR%/*;%EXTDIR%; com.tinkerpop.gremlin.util.Gremlin
 
-set CLASSPATH=%CP%;%OLD_CLASSPATH%
-java %JAVA_OPTIONS% %JAVA_ARGS% com.tinkerpop.gremlin.Version
-
-set CLASSPATH=%OLD_CLASSPATH%
 goto :eof
 
 :concat

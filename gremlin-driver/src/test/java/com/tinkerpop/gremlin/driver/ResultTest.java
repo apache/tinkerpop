@@ -93,7 +93,7 @@ public class ResultTest {
 
     @Test
     public void shouldGetVertex() {
-        final Vertex v = g.v(1);
+        final Vertex v = g.V(1).next();
         final ResponseMessage msg = ResponseMessage.build(id).result(v).create();
         final Result result = new Result(msg);
 
@@ -105,7 +105,7 @@ public class ResultTest {
 
     @Test
     public void shouldGetEdge() {
-        final Edge e = g.e(11);
+        final Edge e = g.E(11).next();
         final ResponseMessage msg = ResponseMessage.build(id).result(e).create();
         final Result result = new Result(msg);
 

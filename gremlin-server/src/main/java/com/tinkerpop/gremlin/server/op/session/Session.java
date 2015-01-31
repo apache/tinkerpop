@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,9 +45,9 @@ public class Session {
      */
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    private final ConcurrentHashMap<String,Session> sessions;
+    private final ConcurrentHashMap<String, Session> sessions;
 
-    public Session(final String session, final Context context, final ConcurrentHashMap<String,Session> sessions) {
+    public Session(final String session, final Context context, final ConcurrentHashMap<String, Session> sessions) {
         logger.info("New session established for {}", session);
         this.session = session;
         this.bindings = new SimpleBindings();
@@ -60,7 +61,7 @@ public class Session {
                 .findAny().orElse(SessionOpProcessor.DEFAULT_SETTINGS);
         this.configuredSessionTimeout = Long.parseLong(processorSettings.config.get(SessionOpProcessor.CONFIG_SESSION_TIMEOUT).toString());
 
-        this.gremlinExecutor =  initializeGremlinExecutor().create();
+        this.gremlinExecutor = initializeGremlinExecutor().create();
     }
 
     public GremlinExecutor getGremlinExecutor() {
@@ -111,7 +112,7 @@ public class Session {
                     this.bindings.clear();
                     this.bindings.putAll(b);
                 })
-                .use(settings.use)
+                .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphs.getGraphsAsBindings())
                 .executorService(executor)
                 .scheduledExecutorService(scheduledExecutorService);

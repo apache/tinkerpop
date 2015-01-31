@@ -2,9 +2,12 @@ package com.tinkerpop.gremlin.process.computer;
 
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
-import org.javatuples.Pair;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Optional;
@@ -18,7 +21,9 @@ import java.util.Optional;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface MapReduce<MK, MV, RK, RV, R> {
+public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
+
+    public static final String MAP_REDUCE = "gremlin.mapReduce";
 
     /**
      * MapReduce is composed of three stages: map, combine, and reduce.
@@ -35,7 +40,7 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      * @param configuration the configuration to store the state of the MapReduce job in.
      */
     public default void storeState(final Configuration configuration) {
-
+        configuration.setProperty(MAP_REDUCE, this.getClass().getName());
     }
 
     /**
@@ -126,7 +131,7 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      * @param keyValues the key/value pairs that were emitted from reduce() (or map() in a map-only job)
      * @return the resultant object formed from the emitted key/values.
      */
-    public R generateFinalResult(final Iterator<Pair<RK, RV>> keyValues);
+    public R generateFinalResult(final Iterator<KeyValue<RK, RV>> keyValues);
 
     /**
      * The results of the MapReduce job are associated with a memory-key to ultimately be stored in {@link Memory}.
@@ -142,8 +147,39 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      * @param memory    the memory of the {@link GraphComputer}
      * @param keyValues the key/value pairs emitted from reduce() (or map() in a map only job).
      */
-    public default void addResultToMemory(final Memory memory, final Iterator<Pair<RK, RV>> keyValues) {
+    public default void addResultToMemory(final Memory.Admin memory, final Iterator<KeyValue<RK, RV>> keyValues) {
         memory.set(this.getMemoryKey(), this.generateFinalResult(keyValues));
+    }
+
+    /**
+     * When multiple workers on a single machine need MapReduce instances, it is possible to use clone.
+     * This will provide a speedier way of generating instances, over the {@link MapReduce#storeState} and {@link MapReduce#loadState} model.
+     * The default implementation simply returns the object as it assumes that the MapReduce instance is a stateless singleton.
+     *
+     * @return A clone of the MapReduce object
+     * @throws CloneNotSupportedException
+     */
+    public MapReduce<MK, MV, RK, RV, R> clone() throws CloneNotSupportedException;
+
+    /**
+     * A helper method to construct a {@link MapReduce} given the content of the supplied configuration.
+     * The class of the MapReduce is read from the {@link MapReduce#MAP_REDUCE} static configuration key.
+     * Once the MapReduce is constructed, {@link MapReduce#loadState} method is called with the provided configuration.
+     *
+     * @param configuration A configuration with requisite information to build a MapReduce
+     * @return the newly constructed MapReduce
+     */
+    public static <M extends MapReduce<MK, MV, RK, RV, R>, MK, MV, RK, RV, R> M createMapReduce(final Configuration configuration) {
+        try {
+            final Class<M> mapReduceClass = (Class) Class.forName(configuration.getString(MAP_REDUCE));
+            final Constructor<M> constructor = mapReduceClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            final M mapReduce = constructor.newInstance();
+            mapReduce.loadState(configuration);
+            return mapReduce;
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     //////////////////
@@ -195,7 +231,7 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      */
     public static class NullObject implements Comparable<NullObject>, Serializable {
         private static final NullObject INSTANCE = new NullObject();
-        private static final String NULL_OBJECT = "MapReduce$NullObject";
+        private static final String NULL_OBJECT = new String();
 
         public static NullObject instance() {
             return INSTANCE;
@@ -219,6 +255,14 @@ public interface MapReduce<MK, MV, RK, RV, R> {
         @Override
         public String toString() {
             return NULL_OBJECT;
+        }
+
+        private void readObject(final ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
+
+        }
+
+        private void writeObject(final ObjectOutputStream outputStream) throws IOException {
+
         }
     }
 }

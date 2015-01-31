@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import com.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ public interface DependencyManager {
      * <br/>
      * It is up to the caller to execute the
      * {@link GremlinPlugin#pluginTo(com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor)} method.  The reason for
-     * this has to do with conflicts that can occur with custom imports that are added via the
+     * this has to do with conflicts that can occur with mapper imports that are added via the
      * {@link com.tinkerpop.gremlin.groovy.ImportCustomizerProvider} and scripts executed through the
      * {@link com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor}. Generally speaking, all calls to this "use" method
      * should be complete prior to calling
@@ -33,8 +34,10 @@ public interface DependencyManager {
     /**
      * Load a list of {@link GremlinPlugin} instances.  These plugins are typically returned from calls to
      * {@link #use(String, String, String)}.
+     *
+     * @throws GremlinPluginException if there is a problem loading the plugin itself.
      */
-    void loadPlugins(final List<GremlinPlugin> plugins);
+    void loadPlugins(final List<GremlinPlugin> plugins) throws GremlinPluginException;
 
     /**
      * Perform class imports for the ScriptEngine.

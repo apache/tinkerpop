@@ -4,13 +4,15 @@ import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.traversers.TraverserGeneratorFactory;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import com.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,11 +22,18 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
+ * A {@link Traversal} represents a directed walk over a {@link Graph}.
+ * This is the base interface for all traversal's, where each extending interface is seen as a domain specific language.
+ * For example, {@link GraphTraversal} is a domain specific language for traversing a graph using "graph concepts" (e.g. vertices, edges).
+ * Another example may represent the graph using "social concepts" (e.g. people, cities, artifacts).
+ * A {@link Traversal} is evaluated in one of two ways: {@link TraversalEngine#STANDARD} (OLTP) and {@link TraversalEngine#COMPUTER} (OLAP).
+ * OLTP traversals leverage an iterator and are executed within a single JVM (with data access allowed to be remote).
+ * OLAP traversals leverage {@link GraphComputer} and are executed between multiple JVMs (and/or cores).
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Traversal<S, E> extends Iterator<E>, Cloneable {
@@ -35,105 +44,46 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     public static final String OF = "of";
 
     /**
-     * Get the {@link SideEffects} associated with the traversal.
+     * Get access to administrative methods of the traversal via its accompanying {@link Traversal.Admin}.
      *
-     * @return The traversal sideEffects
+     * @return the admin of this traversal
      */
-    public SideEffects sideEffects();
-
-    /**
-     * Add an iterator of {@link Traverser} objects to the head/start of the traversal.
-     * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep}.
-     *
-     * @param starts an iterators of traversers
-     */
-    public void addStarts(final Iterator<Traverser<S>> starts);
-
-    /**
-     * Add a single {@link Traverser} object to the head of the traversal.
-     * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep}.
-     *
-     * @param start a traverser to add to the traversal
-     */
-    public default void addStart(final Traverser<S> start) {
-        this.addStarts(new SingleIterator<>(start));
+    public default Traversal.Admin<S, E> asAdmin() {
+        return (Traversal.Admin<S, E>) this;
     }
-
-    /**
-     * Get the {@link Step} instances associated with this traversal.
-     * The steps are ordered according to their linked list structure as defined by {@link Step#getPreviousStep()} and {@link Step#getNextStep()}.
-     *
-     * @return the ordered steps of the traversal
-     */
-    public List<Step> getSteps();
-
-    public void applyStrategies(final TraversalEngine engine);
-
-    public boolean isLocked();
-
-    /**
-     * Add a {@link Step} to the end of the traversal.
-     * This method should automatically link the step accordingly. For example, see {@link TraversalHelper#insertStep}.
-     * If the {@link TraversalStrategies} have already been applied, then an {@link IllegalStateException} is throw stating the traversal is locked.
-     *
-     * @param step the step to add
-     * @param <E2> the output of the step
-     * @return the updated traversal
-     */
-    public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) throws IllegalStateException {
-        if (this.isLocked()) throw Exceptions.traversalIsLocked();
-        TraversalHelper.insertStep(step, this);
-        return (Traversal) this;
-    }
-
-    /**
-     * Cloning is used to duplicate the traversal typically in OLAP environments.
-     *
-     * @return The cloned traversal
-     */
-    public Traversal<S, E> clone();
 
     /**
      * Submit the traversal to a {@link GraphComputer} for OLAP execution.
-     * This method should apply the traversal strategies for {@link TraversalEngine#COMPUTER}.
-     * Then register and execute the traversal via {@link TraversalVertexProgram}.
-     * Then wrap the {@link ComputerResult} in a new {@link Traversal} containing a {@link ComputerResultStep}.
+     * This method should execute the traversal via {@link TraversalVertexProgram}.
+     * It should then wrap the {@link ComputerResult} in a new {@link Traversal} containing a {@link ComputerResultStep}.
      *
      * @param computer the GraphComputer to execute the traversal on
      * @return a new traversal with the starts being the results of the TraversalVertexProgram
      */
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
-            this.applyStrategies(TraversalEngine.COMPUTER);
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this::clone).create();
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this::asAdmin).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
-            final GraphTraversal<S, S> traversal = result.graph().of();
-            return traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
+            final Traversal.Admin<S, S> traversal = new DefaultTraversal<>(result.graph().getClass());
+            return traversal.asAdmin().addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
     /**
-     * Call the {@link Step#reset} method on every step in the traversal.
-     */
-    public default void reset() {
-        this.getSteps().forEach(Step::reset);
-    }
-
-    /**
-     * Assume the every {@link Step} implements {@link Reversible} and call {@link Reversible#reverse()} for each.
+     * Return an {@link Optional} of the next E object in the traversal.
+     * If the traversal is empty, then an {@link Optional#empty()} is returned.
      *
-     * @return the traversal with its steps reversed
+     * @return an optional of the next object in the traversal
      */
-    public default Traversal<S, E> reverse() throws IllegalStateException {
-        if (!TraversalHelper.isReversible(this)) throw Exceptions.traversalIsNotReversible();
-        this.getSteps().stream().forEach(step -> ((Reversible) step).reverse());
-        return this;
+    public default Optional<E> tryNext() {
+        return this.hasNext() ? Optional.of(this.next()) : Optional.empty();
     }
 
     /**
      * Get the next n-number of results from the traversal.
+     * If the traversal has less than n-results, then only that number of results are returned.
      *
      * @param amount the number of results to get
      * @return the n-results in a {@link List}
@@ -166,6 +116,16 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     }
 
     /**
+     * Put all the results into a {@link BulkSet}.
+     * This can reduce both time and space when aggregating results by ensuring a weighted set.
+     *
+     * @return the results in a bulk set
+     */
+    public default BulkSet<E> toBulkSet() {
+        return this.fill(new BulkSet<>());
+    }
+
+    /**
      * Add all the results of the traversal to the provided collection.
      *
      * @param collection the collection to fill
@@ -173,9 +133,10 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default <C extends Collection<E>> C fill(final C collection) {
         try {
-            this.applyStrategies(TraversalEngine.STANDARD);
+            if (!this.asAdmin().getEngine().isPresent())
+                this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
-            final Step<?, E> endStep = TraversalHelper.getEnd(this);
+            final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
                 final Traverser<E> traverser = endStep.next();
                 TraversalHelper.addToCollection(collection, traverser.get(), traverser.bulk());
@@ -192,17 +153,18 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      *
      * @return the fully drained traversal
      */
-    public default Traversal iterate() {
+    public default <A, B> Traversal<A, B> iterate() {
         try {
-            this.applyStrategies(TraversalEngine.STANDARD);
+            if (!this.asAdmin().getEngine().isPresent())
+                this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
-            final Step<?, E> endStep = TraversalHelper.getEnd(this);
+            final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
                 endStep.next();
             }
         } catch (final NoSuchElementException ignored) {
         }
-        return this;
+        return (Traversal<A, B>) this;
     }
 
     /**
@@ -229,7 +191,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     public static class Exceptions {
 
         public static IllegalStateException traversalIsLocked() {
-            return new IllegalStateException("The traversal strategies are complete and the traversal can no longer have steps added to it");
+            return new IllegalStateException("The traversal strategies are complete and the traversal can no longer be modulated");
         }
 
         public static IllegalStateException traversalIsNotReversible() {
@@ -237,197 +199,219 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         }
     }
 
-    public interface SideEffects {
-
-        public static final String SIDE_EFFECTS = Graph.Key.hide("gremlin.sideEffects");
-        public static final String GRAPH_KEY = Graph.System.system("g");
+    public interface Admin<S, E> extends Traversal<S, E> {
 
         /**
-         * Determines if the {@link Traversal.SideEffects} contains the respective key.
-         * If the key references a stored {@link Supplier}, then it should return true as it will be dynamically created on get().
+         * Add an iterator of {@link Traverser} objects to the head/start of the traversal.
+         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectStep}.
          *
-         * @param key the key to check for
-         * @return whether the key exists in the sideEffects
+         * @param starts an iterators of traversers
          */
-        public default boolean exists(final String key) {
-            return this.keys().contains(key);
+        public default void addStarts(final Iterator<Traverser<S>> starts) {
+            this.getStartStep().addStarts(starts);
         }
 
         /**
-         * Set the specified key to the specified value.
-         * If a {@link Supplier} is provided, it is NOT assumed to be a supplier as set by registerSupplier().
+         * Add a single {@link Traverser} object to the head of the traversal.
+         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectStep}.
          *
-         * @param key   the key
-         * @param value the value
+         * @param start a traverser to add to the traversal
          */
-        public void set(final String key, final Object value);
-
-        /**
-         * Get the sideEffect associated with the provided key.
-         * If the sideEffect contains an object for the key, return it.
-         * Else if the sideEffect has a registered {@link Supplier} for that key, generate the object, store the object in the sideEffects, and return it.
-         *
-         * @param key the key to get the value for
-         * @param <V> the type of the value to retrieve
-         * @return the value associated with key
-         * @throws IllegalArgumentException if the key does not reference an object or a registered supplier.
-         */
-        public <V> V get(final String key) throws IllegalArgumentException;
-
-        /**
-         * Return the value associated with the key or return the provided otherValue.
-         * The otherValue will not be stored in the sideEffect.
-         *
-         * @param key        the key to get the value for
-         * @param otherValue if not value is associated with key, return the other value.
-         * @param <V>        the type of the value to get
-         * @return the value associated with the key or the otherValue
-         */
-        public default <V> V orElse(final String key, final V otherValue) {
-            return this.exists(key) ? this.get(key) : otherValue;
+        public default void addStart(final Traverser<S> start) {
+            this.getStartStep().addStart(start);
         }
 
         /**
-         * If a value or registered {@link Supplier} exists for the provided key, consume it with the provided consumer.
+         * Get the {@link Step} instances associated with this traversal.
+         * The steps are ordered according to their linked list structure as defined by {@link Step#getPreviousStep()} and {@link Step#getNextStep()}.
          *
-         * @param key      the key to the value
-         * @param consumer the consumer to process the value
-         * @param <V>      the type of the value to consume
+         * @return the ordered steps of the traversal
          */
-        public default <V> void ifPresent(final String key, final Consumer<V> consumer) {
-            if (this.exists(key)) consumer.accept(this.get(key));
+        public List<Step> getSteps();
+
+        /**
+         * Add a {@link Step} to the end of the traversal. This method should link the step to its next and previous step accordingly.
+         *
+         * @param step the step to add
+         * @param <E2> the output of the step
+         * @return the updated traversal
+         * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
+         */
+        public default <E2> Traversal.Admin<S, E2> addStep(final Step<?, E2> step) throws IllegalStateException {
+            return this.addStep(this.getSteps().size(), step);
         }
 
         /**
-         * Remove both the value and registered {@link Supplier} associated with provided key.
+         * Add a {@link Step} to an arbitrary point in the traversal.
          *
-         * @param key the key of the value and registered supplier to remove
+         * @param index the location in the traversal to insert the step
+         * @param step  the step to add
+         * @param <S2>  the new start type of the traversal (if the added step was a start step)
+         * @param <E2>  the new end type of the traversal (if the added step was an end step)
+         * @return the newly modulated traversal
+         * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
          */
-        public void remove(final String key);
+        public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException;
 
         /**
-         * The keys of the sideEffect which includes registered {@link Supplier} keys.
-         * In essence, that which is possible to get().
+         * Remove a {@link Step} from the traversal.
          *
-         * @return the keys of the sideEffect
+         * @param step the step to remove
+         * @param <S2> the new start type of the traversal (if the removed step was a start step)
+         * @param <E2> the new end type of the traversal (if the removed step was an end step)
+         * @return the newly modulated traversal
+         * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
          */
-        public Set<String> keys();
-
-        ////////////
-
-        /**
-         * Register a {@link Supplier} with the provided key.
-         * When sideEffects get() are called, if no object exists and there exists a registered supplier for the key, the object is generated.
-         * Registered suppliers are used for the lazy generation of sideEffect data.
-         *
-         * @param key      the key to register the supplier with
-         * @param supplier the supplier that will generate an object when get() is called if it hasn't already been created
-         */
-        public void registerSupplier(final String key, final Supplier supplier);
-
-        /**
-         * Get the registered {@link Supplier} associated with the specified key.
-         *
-         * @param key the key associated with the supplier
-         * @param <V> The object type of the supplier
-         * @return A non-empty optional if the supplier exists
-         */
-        public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key);
-
-        /**
-         * A helper method to register a {@link Supplier} if it has not already been registered.
-         *
-         * @param key      the key of the supplier to register
-         * @param supplier the supplier to register if the key has not already been registered
-         */
-        public default void registerSupplierIfAbsent(final String key, final Supplier supplier) {
-            if (!this.getRegisteredSupplier(key).isPresent())
-                this.registerSupplier(key, supplier);
+        public default <S2, E2> Traversal.Admin<S2, E2> removeStep(final Step<?, ?> step) throws IllegalStateException {
+            return this.removeStep(this.getSteps().indexOf(step));
         }
 
         /**
-         * If the sideEffect contains an object associated with the key, return it.
-         * Else if a "with" supplier exists for the key, generate the object, store it in the sideEffects and return the object.
-         * Else use the provided supplier to generate the object, store it in the sideEffects and return the object.
-         * Note that if the orCreate supplier is used, it is NOT registered as a {@link Supplier}.
+         * Remove a {@link Step} from the traversal.
          *
-         * @param key      the key of the object to get
-         * @param orCreate if the object doesn't exist as an object or suppliable object, then generate it with the specified supplier
-         * @param <V>      the return type of the object
-         * @return the object that is either retrieved, generated, or supplier via orCreate
+         * @param index the location in the traversal of the step to be evicted
+         * @param <S2>  the new start type of the traversal (if the removed step was a start step)
+         * @param <E2>  the new end type of the traversal (if the removed step was an end step)
+         * @return the newly modulated traversal
+         * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
          */
-        public default <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
-            if (this.exists(key))
-                return this.<V>get(key);
-            final Optional<Supplier<V>> with = this.getRegisteredSupplier(key);
-            if (with.isPresent()) {
-                final V v = with.get().get();
-                this.set(key, v);
-                return v;
-            } else {
-                final V v = orCreate.get();
-                this.set(key, v);
-                return v;
-            }
-        }
+        public <S2, E2> Traversal.Admin<S2, E2> removeStep(final int index) throws IllegalStateException;
 
-        ////////////
-
-        public default boolean graphExists() {
-            return this.exists(GRAPH_KEY);
-        }
-
-        public default void setGraph(final Graph graph) {
-            this.set(GRAPH_KEY, graph);
-        }
-
-        public default Graph getGraph() {
-            if (this.exists(GRAPH_KEY))
-                return this.<Graph>get(GRAPH_KEY);
-            else
-                throw new IllegalStateException("There is no graph stored in these side effects");
-        }
-
-        public default void removeGraph() {
-            this.remove(GRAPH_KEY);
-        }
-
-        ////////////
-
-        public default <V> void forEach(final BiConsumer<String, V> biConsumer) {
-            this.keys().forEach(key -> biConsumer.accept(key, this.get(key)));
+        /**
+         * Get the start/head of the traversal. If the traversal is empty, then an {@link EmptyStep} instance is returned.
+         *
+         * @return the start step of the traversal
+         */
+        public default Step<S, ?> getStartStep() {
+            final List<Step> steps = this.getSteps();
+            return steps.isEmpty() ? EmptyStep.instance() : steps.get(0);
         }
 
         /**
-         * In a distributed {@link GraphComputer} traversal, the sideEffects of the traversal are not a single object within a single JVM.
-         * Instead, the sideEffects are distributed across the graph and the pieces are stored on the computing vertices.
-         * This method is necessary to call when the {@link Traversal} is processing the {@link Traverser}s at a particular {@link Vertex}.
+         * Get the end/tail of the traversal. If the traversal is empty, then an {@link EmptyStep} instance is returned.
          *
-         * @param vertex the vertex where the traversal is currently executing.
+         * @return the end step of the traversal
          */
-        public void setLocalVertex(final Vertex vertex);
-
-        public static class Exceptions {
-
-            public static IllegalArgumentException sideEffectKeyCanNotBeEmpty() {
-                return new IllegalArgumentException("Side effect key can not be the empty string");
-            }
-
-            public static IllegalArgumentException sideEffectKeyCanNotBeNull() {
-                return new IllegalArgumentException("Side effect key can not be null");
-            }
-
-            public static IllegalArgumentException sideEffectValueCanNotBeNull() {
-                return new IllegalArgumentException("Side effect value can not be null");
-            }
-
-            public static IllegalArgumentException sideEffectDoesNotExist(final String key) {
-                return new IllegalArgumentException("Side effects do not have a value for provided key: " + key);
-            }
-
-            public static UnsupportedOperationException dataTypeOfSideEffectValueNotSupported(final Object val) {
-                return new UnsupportedOperationException(String.format("Side effect value [%s] is of type %s is not supported", val, val.getClass()));
-            }
+        public default Step<?, E> getEndStep() {
+            final List<Step> steps = this.getSteps();
+            return steps.isEmpty() ? EmptyStep.instance() : steps.get(steps.size() - 1);
         }
+
+        /**
+         * Apply the registered {@link TraversalStrategies} to the traversal.
+         * Once the strategies are applied, the traversal is "locked" and can no longer have steps added to it.
+         * The order of operations for strategy applications should be: globally id steps, apply strategies to root traversal, then to nested traversals.
+         *
+         * @param engine the engine that will ultimately execute the traversal.
+         * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
+         */
+        public void applyStrategies(final TraversalEngine engine) throws IllegalStateException;
+
+        /**
+         * When the {@link TraversalStrategies} have been applied, the destined {@link TraversalEngine} has been declared.
+         * Once a traversal engine has been declared, the traversal can no longer be extended, only executed.
+         *
+         * @return whether the traversal engine has been defined or not.
+         */
+        public Optional<TraversalEngine> getEngine();
+
+        /**
+         * Get the {@link TraverserGenerator} associated with this traversal.
+         * The traversal generator creates {@link Traverser} instances that are respective of the traversal's {@link com.tinkerpop.gremlin.process.traverser.TraverserRequirement}.
+         *
+         * @return the generator of traversers
+         */
+        public default TraverserGenerator getTraverserGenerator() {
+            return this.getStrategies().getTraverserGeneratorFactory().getTraverserGenerator(this);
+        }
+
+        /**
+         * Get the set of all {@link TraverserRequirement}s for this traversal.
+         *
+         * @return the features of a traverser that are required to execute properly in this traversal
+         */
+        public default Set<TraverserRequirement> getTraverserRequirements() {
+            final Set<TraverserRequirement> requirements = this.getSteps().stream()
+                    .flatMap(step -> ((Step<?, ?>) step).getRequirements().stream())
+                    .collect(Collectors.toSet());
+            if (this.getSideEffects().keys().size() > 0)
+                requirements.add(TraverserRequirement.SIDE_EFFECTS);
+            if (this.getSideEffects().getSackInitialValue().isPresent())
+                requirements.add(TraverserRequirement.SACK);
+            if (this.getEngine().isPresent() && this.getEngine().get().equals(TraversalEngine.COMPUTER))
+                requirements.add(TraverserRequirement.BULK);
+            return requirements;
+        }
+
+        /**
+         * Call the {@link Step#reset} method on every step in the traversal.
+         */
+        public default void reset() {
+            this.getSteps().forEach(Step::reset);
+        }
+
+        /**
+         * Assume the every {@link Step} implements {@link Reversible} and call {@link Reversible#reverse()} for each.
+         *
+         * @return the traversal with its steps reversed
+         */
+        public default Traversal.Admin<S, E> reverse() throws IllegalStateException {
+            if (!TraversalHelper.isReversible(this)) throw Exceptions.traversalIsNotReversible();
+            this.getSteps().stream().forEach(step -> ((Reversible) step).reverse());
+            return this;
+        }
+
+        /**
+         * Set the {@link TraversalSideEffects} of this traversal.
+         *
+         * @param sideEffects the sideEffects to set for this traversal.
+         */
+        public void setSideEffects(final TraversalSideEffects sideEffects);
+
+        /**
+         * Get the {@link TraversalSideEffects} associated with the traversal.
+         *
+         * @return The traversal sideEffects
+         */
+        public TraversalSideEffects getSideEffects();
+
+        /**
+         * Set the {@link TraversalStrategies} to be used by this traversal at evaluation time.
+         *
+         * @param strategies the strategies to use on this traversal
+         */
+        public void setStrategies(final TraversalStrategies strategies);
+
+        /**
+         * Get the {@link TraversalStrategies} associated with this traversal.
+         *
+         * @return the strategies associated with this traversal
+         */
+        public TraversalStrategies getStrategies();
+
+        /**
+         * Set the {@link com.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is the parent of this traversal.
+         * Traversals can be nested and this is the means by which the traversal tree is connected.
+         *
+         * @param step the traversal holder parent step
+         */
+        public void setParent(final TraversalParent step);
+
+        /**
+         * Get the {@link com.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is the parent of this traversal.
+         * Traversals can be nested and this is the means by which the traversal tree is walked.
+         *
+         * @return the traversal holder parent step
+         */
+        public TraversalParent getParent();
+
+        /**
+         * Cloning is used to duplicate the traversal typically in OLAP environments.
+         *
+         * @return The cloned traversal
+         */
+        public Traversal.Admin<S, E> clone() throws CloneNotSupportedException;
+
     }
+
 }

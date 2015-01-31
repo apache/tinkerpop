@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.groovy;
 
-import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.junit.Test;
 

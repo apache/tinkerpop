@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,6 +33,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -65,12 +69,14 @@ public class GremlinExecutor implements AutoCloseable {
     private final Consumer<Bindings> afterSuccess;
     private final Consumer<Bindings> afterTimeout;
     private final BiConsumer<Bindings, Exception> afterFailure;
+    private final Set<String> enabledPlugins;
 
     private GremlinExecutor(final Map<String, EngineSettings> settings, final List<List<String>> use,
                             final long scriptEvaluationTimeout, final Bindings globalBindings,
                             final ExecutorService executorService, final ScheduledExecutorService scheduledExecutorService,
                             final Consumer<Bindings> beforeEval, final Consumer<Bindings> afterSuccess,
-                            final Consumer<Bindings> afterTimeout, final BiConsumer<Bindings, Exception> afterFailure) {
+                            final Consumer<Bindings> afterTimeout, final BiConsumer<Bindings, Exception> afterFailure,
+                            final Set<String> enabledPlugins) {
         this.executorService = executorService;
         this.scheduledExecutorService = scheduledExecutorService;
         this.beforeEval = beforeEval;
@@ -81,6 +87,7 @@ public class GremlinExecutor implements AutoCloseable {
         this.settings = settings;
         this.scriptEvaluationTimeout = scriptEvaluationTimeout;
         this.globalBindings = globalBindings;
+        this.enabledPlugins = enabledPlugins;
         this.scriptEngines = createScriptEngines();
     }
 
@@ -101,13 +108,23 @@ public class GremlinExecutor implements AutoCloseable {
     }
 
     public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Bindings boundVars) {
+        return eval(script, language, boundVars, null);
+    }
+
+    public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Map<String, Object> boundVars,
+                                          final Function<Object, Object> transformResult) {
+        return eval(script, language, new SimpleBindings(boundVars), transformResult);
+    }
+
+    public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Bindings boundVars,
+                                          final Function<Object, Object> transformResult) {
         final String lang = language.orElse("gremlin-groovy");
 
         logger.debug("Preparing to evaluate script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
         // select the gremlin threadpool to execute the script evaluation in
         final AtomicBoolean abort = new AtomicBoolean(false);
-        final CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
+        final CompletableFuture<Object> evaluationFuture = CompletableFuture.supplyAsync(() -> {
 
             final Bindings bindings = new SimpleBindings();
             bindings.putAll(this.globalBindings);
@@ -124,16 +141,19 @@ public class GremlinExecutor implements AutoCloseable {
                 else
                     afterSuccess.accept(bindings);
 
-                return o;
+                // apply a transformation before sending back the result - useful when trying to force serialization
+                // in the same thread that the eval took place given threadlocal nature of graphs as well as some
+                // transactional constraints
+                return null == transformResult ? o : transformResult.apply(o);
             } catch (Exception ex) {
                 afterFailure.accept(bindings, ex);
                 throw new RuntimeException(ex);
             }
         }, executorService);
 
-        scheduleTimeout(future, script, abort);
+        scheduleTimeout(evaluationFuture, script, abort);
 
-        return future;
+        return evaluationFuture;
     }
 
     public ScriptEngines getScriptEngines() {
@@ -154,7 +174,7 @@ public class GremlinExecutor implements AutoCloseable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Note that the executors are not closed by virtue of this operation.  Manage them manually.
      */
     @Override
@@ -176,13 +196,21 @@ public class GremlinExecutor implements AutoCloseable {
                 }
             }, scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
 
-            // Cancel the scheduled timeout if the eval future is complete.
-            evaluationFuture.thenRun(() -> sf.cancel(false));
+            // Cancel the scheduled timeout if the eval future is complete or the script evaluation failed
+            // with exception
+            evaluationFuture.handleAsync((v, t) -> {
+                logger.debug("Killing scheduled timeout on script evaluation as the eval completed (possibly with exception).");
+                return sf.cancel(true);
+            });
         }
     }
 
     private ScriptEngines createScriptEngines() {
-        final ScriptEngines scriptEngines = new ScriptEngines(se -> {
+        // plugins already on the path - ones static to the classpath
+        final List<GremlinPlugin> globalPlugins = new ArrayList<>();
+        ServiceLoader.load(GremlinPlugin.class).forEach(globalPlugins::add);
+
+        return new ScriptEngines(se -> {
             // this first part initializes the scriptengines Map
             for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
                 final String language = config.getKey();
@@ -191,7 +219,7 @@ public class GremlinExecutor implements AutoCloseable {
             }
 
             // use grabs dependencies and returns plugins to load
-            final List<GremlinPlugin> pluginsToLoad = new ArrayList<>();
+            final List<GremlinPlugin> pluginsToLoad = new ArrayList<>(globalPlugins);
             use.forEach(u -> {
                 if (u.size() != 3)
                     logger.warn("Could not resolve dependencies for [{}].  Each entry for the 'use' configuration must include [groupId, artifactId, version]", u);
@@ -202,8 +230,9 @@ public class GremlinExecutor implements AutoCloseable {
             });
 
             // now that all dependencies are in place, the imports can't get messed up if a plugin tries to execute
-            // a script (as the script engine appends the import list to the top of all scripts passed to the engine)
-            se.loadPlugins(pluginsToLoad);
+            // a script (as the script engine appends the import list to the top of all scripts passed to the engine).
+            // only enable those plugins that are configured to be enabled.
+            se.loadPlugins(pluginsToLoad.stream().filter(plugin -> enabledPlugins.contains(plugin.getName())).collect(Collectors.toList()));
 
             // initialization script eval can now be performed now that dependencies are present with "use"
             for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
@@ -250,8 +279,6 @@ public class GremlinExecutor implements AutoCloseable {
                 });
             }
         });
-
-        return scriptEngines;
     }
 
     /**
@@ -275,6 +302,7 @@ public class GremlinExecutor implements AutoCloseable {
         private Map<String, EngineSettings> settings = new HashMap<>();
         private ExecutorService executorService;
         private ScheduledExecutorService scheduledExecutorService;
+        private Set<String> enabledPlugins = new HashSet();
         private Consumer<Bindings> beforeEval = (b) -> {
         };
         private Consumer<Bindings> afterSuccess = (b) -> {
@@ -303,11 +331,11 @@ public class GremlinExecutor implements AutoCloseable {
          */
         public Builder addEngineSettings(final String engineName, final List<String> imports,
                                          final List<String> staticImports, final List<String> scripts,
-                                         final Map<String,Object> config) {
+                                         final Map<String, Object> config) {
             if (null == imports) throw new IllegalArgumentException("imports cannot be null");
             if (null == staticImports) throw new IllegalArgumentException("staticImports cannot be null");
             if (null == scripts) throw new IllegalArgumentException("scripts cannot be null");
-            final Map<String,Object> m = null == config ? Collections.emptyMap() : config;
+            final Map<String, Object> m = null == config ? Collections.emptyMap() : config;
 
             settings.put(engineName, new EngineSettings(imports, staticImports, scripts, m));
             return this;
@@ -395,9 +423,14 @@ public class GremlinExecutor implements AutoCloseable {
             return this;
         }
 
+        public Builder enabledPlugins(final Set<String> enabledPlugins) {
+            this.enabledPlugins = enabledPlugins;
+            return this;
+        }
+
         public GremlinExecutor create() {
             return new GremlinExecutor(settings, use, scriptEvaluationTimeout, globalBindings, executorService,
-                    scheduledExecutorService, beforeEval, afterSuccess, afterTimeout, afterFailure);
+                    scheduledExecutorService, beforeEval, afterSuccess, afterTimeout, afterFailure, enabledPlugins);
         }
     }
 
@@ -405,10 +438,10 @@ public class GremlinExecutor implements AutoCloseable {
         private List<String> imports;
         private List<String> staticImports;
         private List<String> scripts;
-        private Map<String,Object> config;
+        private Map<String, Object> config;
 
         public EngineSettings(final List<String> imports, final List<String> staticImports,
-                              final List<String> scripts, final Map<String,Object> config) {
+                              final List<String> scripts, final Map<String, Object> config) {
             this.imports = imports;
             this.staticImports = staticImports;
             this.scripts = scripts;

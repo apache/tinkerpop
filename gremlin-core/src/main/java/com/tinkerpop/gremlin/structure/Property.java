@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.structure.util.EmptyProperty;
+import com.tinkerpop.gremlin.structure.util.empty.EmptyProperty;
 
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
@@ -44,6 +44,7 @@ public interface Property<V> {
      *
      * @param consumer The consumer to process the existing value.
      */
+    @Graph.Helper
     public default void ifPresent(final Consumer<? super V> consumer) {
         if (this.isPresent())
             consumer.accept(this.value());
@@ -55,6 +56,7 @@ public interface Property<V> {
      * @param otherValue The value to return if the property is not present
      * @return A value
      */
+    @Graph.Helper
     public default V orElse(final V otherValue) {
         return this.isPresent() ? this.value() : otherValue;
     }
@@ -65,6 +67,7 @@ public interface Property<V> {
      * @param valueSupplier The supplier to use to generate a value if the property is not present
      * @return A value
      */
+    @Graph.Helper
     public default V orElseGet(final Supplier<? extends V> valueSupplier) {
         return this.isPresent() ? this.value() : valueSupplier.get();
     }
@@ -77,18 +80,12 @@ public interface Property<V> {
      * @return A value
      * @throws E if the property is not present, the exception is thrown
      */
+    @Graph.Helper
     public default <E extends Throwable> V orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
         if (this.isPresent()) return this.value();
         else
             throw exceptionSupplier.get();
     }
-
-    /**
-     * Whether the property has a hidden key or not.
-     *
-     * @return True if the property key is hidden
-     */
-    public boolean isHidden();
 
     /**
      * Get the element that this property is associated with.
@@ -129,8 +126,8 @@ public interface Property<V> {
             return new IllegalArgumentException("Property value can not be null");
         }
 
-        public static IllegalArgumentException propertyKeyCanNotBeASystemKey(final String key) {
-            return new IllegalArgumentException("Property key can not be a system key: " + key);
+        public static IllegalArgumentException propertyKeyCanNotBeAHiddenKey(final String key) {
+            return new IllegalArgumentException("Property key can not be a hidden key: " + key);
         }
 
         public static IllegalStateException propertyDoesNotExist() {
@@ -138,12 +135,11 @@ public interface Property<V> {
         }
 
         public static IllegalStateException propertyDoesNotExist(final String key) {
-            return Graph.Key.isHidden(key) ? new IllegalStateException("The hidden property does not exist as the key has no associated value: " + Graph.Key.unHide(key)) :
-                    new IllegalStateException("The property does not exist as the key has no associated value: " + key);
+            return new IllegalStateException("The property does not exist as the key has no associated value: " + key);
         }
 
-        public static UnsupportedOperationException dataTypeOfPropertyValueNotSupported(final Object val) {
-            return new UnsupportedOperationException(String.format("Property value [%s] is of type %s is not supported", val, val.getClass()));
+        public static IllegalArgumentException dataTypeOfPropertyValueNotSupported(final Object val) {
+            return new IllegalArgumentException(String.format("Property value [%s] is of type %s is not supported", val, val.getClass()));
         }
     }
 

@@ -1,7 +1,12 @@
 package com.tinkerpop.gremlin;
 
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.GraphTest;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -17,14 +22,16 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Base Gremlin test suite from which different classes of tests can be exposed to implementers.
@@ -32,6 +39,21 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinSuite extends Suite {
+
+    // todo: perhaps there is a test that validates against the implementations to be sure that the Graph constructed matches what's defined???
+    private static final Set<Class> STRUCTURE_INTERFACES = new HashSet<Class>() {{
+        add(Edge.class);
+        add(Edge.Iterators.class);
+        add(Element.class);
+        add(Element.Iterators.class);
+        add(Graph.class);
+        add(Graph.Variables.class);
+        add(Property.class);
+        add(Vertex.class);
+        add(Vertex.Iterators.class);
+        add(VertexProperty.class);
+        add(VertexProperty.Iterators.class);
+    }};
 
     /**
      * The GraphProvider instance that will be used to generate a Graph instance.
@@ -82,10 +104,60 @@ public abstract class AbstractGremlinSuite extends Suite {
         registerOptOuts(pair.getValue1());
 
         try {
-            GraphManager.set(pair.getValue0().newInstance());
+            final GraphProvider graphProvider = pair.getValue0().newInstance();
+            validateStructureInterfacesRegistered(graphProvider);
+            validateHelpersNotImplemented(graphProvider);
+
+            GraphManager.set(graphProvider);
         } catch (Exception ex) {
             throw new InitializationError(ex);
         }
+    }
+
+    /**
+     * Need to validate that structure interfaces are implemented so that checks to {@link Graph.Helper} can be
+     * properly enforced.
+     */
+    private void validateStructureInterfacesRegistered(final GraphProvider graphProvider) throws Exception {
+        final Set<Class> implementations = graphProvider.getImplementations();
+        final Set<Class> noImplementationRegistered = new HashSet<>();
+
+        final Configuration conf = graphProvider.newGraphConfiguration("prototype", AbstractGremlinSuite.class, "validateStructureInterfacesRegistered");
+        final Graph g = graphProvider.openTestGraph(conf);
+        final Set<Class> structureInterfaces = new HashSet<>(STRUCTURE_INTERFACES);
+
+        // not all graphs implement all features and therefore may not have implementations of certain "core" interfaces
+        if (!g.features().graph().variables().supportsVariables()) structureInterfaces.remove(Graph.Variables.class);
+        if (!g.features().vertex().supportsMultiProperties())
+            structureInterfaces.remove(VertexProperty.Iterators.class);
+
+        graphProvider.clear(g, conf);
+
+        final boolean missingImplementations = structureInterfaces.stream().anyMatch(iface -> {
+            final boolean noneMatch = implementations.stream().noneMatch(c -> iface.isAssignableFrom(c));
+            if (noneMatch) noImplementationRegistered.add(iface);
+            return noneMatch;
+        });
+
+        if (missingImplementations)
+            throw new RuntimeException(String.format(
+                    "Implementations must register their implementations for the following interfaces %s",
+                    String.join(",", noImplementationRegistered.stream().map(Class::getName).collect(Collectors.toList()))));
+    }
+
+    private void validateHelpersNotImplemented(final GraphProvider graphProvider) {
+        final List<String> overridenMethods = new ArrayList<>();
+        graphProvider.getImplementations().forEach(clazz ->
+                        Stream.of(clazz.getDeclaredMethods())
+                                .filter(AbstractGremlinSuite::isHelperMethodOverriden)
+                                .map(m -> m.getDeclaringClass().getName() + "." + m.getName())
+                                .forEach(overridenMethods::add)
+        );
+
+        if (overridenMethods.size() > 0)
+            throw new RuntimeException(String.format(
+                    "Implementations cannot override methods marked by @Helper annotation - check the following methods [%s]",
+                    String.join(",", overridenMethods)));
     }
 
     private void validateOptInToSuite(final Class<? extends Graph> klass) throws InitializationError {
@@ -124,7 +196,19 @@ public abstract class AbstractGremlinSuite extends Suite {
         return testsToExecute;
     }
 
-    public static Pair<Class<? extends GraphProvider>,Class<? extends Graph>> getGraphProviderClass(final Class<?> klass) throws InitializationError {
+    public static boolean isHelperMethodOverriden(final Method myMethod) {
+        final Class<?> declaringClass = myMethod.getDeclaringClass();
+        for (Class<?> iface : declaringClass.getInterfaces()) {
+            try {
+                return iface.getMethod(myMethod.getName(), myMethod.getParameterTypes()).isAnnotationPresent(Graph.Helper.class);
+            } catch (NoSuchMethodException ignored) {
+            }
+        }
+
+        return false;
+    }
+
+    public static Pair<Class<? extends GraphProvider>, Class<? extends Graph>> getGraphProviderClass(final Class<?> klass) throws InitializationError {
         final GraphProviderClass annotation = klass.getAnnotation(GraphProviderClass.class);
         if (null == annotation)
             throw new InitializationError(String.format("class '%s' must have a GraphProviderClass annotation", klass.getName()));
@@ -135,7 +219,7 @@ public abstract class AbstractGremlinSuite extends Suite {
         // sometimes test names change and since they are String representations they can easily break if a test
         // is renamed. this test will validate such things.  it is not possible to @OptOut of this test.
         final Graph.OptOut[] optOuts = klass.getAnnotationsByType(Graph.OptOut.class);
-        for(Graph.OptOut optOut : optOuts) {
+        for (Graph.OptOut optOut : optOuts) {
             final Class testClass;
             try {
                 testClass = Class.forName(optOut.test());
@@ -143,14 +227,15 @@ public abstract class AbstractGremlinSuite extends Suite {
                 throw new InitializationError(String.format("Invalid @OptOut on Graph instance.  Could not instantiate test class (it may have been renamed): %s", optOut.test()));
             }
 
-            if (!Arrays.stream(testClass.getMethods()).anyMatch(m -> m.getName().equals(optOut.method())))
+            if (!optOut.method().equals("*") && !Arrays.stream(testClass.getMethods()).anyMatch(m -> m.getName().equals(optOut.method())))
                 throw new InitializationError(String.format("Invalid @OptOut on Graph instance.  Could not match @OptOut test name %s on test class %s (it may have been renamed)", optOut.method(), optOut.test()));
         }
     }
 
     @Override
     protected void runChild(final Runner runner, final RunNotifier notifier) {
-        if (beforeTestExecution((Class<? extends AbstractGremlinTest>) runner.getDescription().getTestClass())) super.runChild(runner, notifier);
+        if (beforeTestExecution((Class<? extends AbstractGremlinTest>) runner.getDescription().getTestClass()))
+            super.runChild(runner, notifier);
         afterTestExecution((Class<? extends AbstractGremlinTest>) runner.getDescription().getTestClass());
     }
 
@@ -158,31 +243,49 @@ public abstract class AbstractGremlinSuite extends Suite {
      * Called just prior to test class execution.  Return false to ignore test class. By default this always returns
      * true.
      */
-    public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) { return true; }
+    public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
+        return true;
+    }
 
     /**
      * Called just after test class execution.
      */
-    public void afterTestExecution(final Class<? extends AbstractGremlinTest> testClass) {}
+    public void afterTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
+    }
 
     /**
      * Filter for tests in the suite which is controlled by the {@link Graph.OptOut} annotation.
      */
     public static class OptOutTestFilter extends Filter {
 
-        private final List<Description> testsToIgnore;
+        private final List<Description> individualTestsToIgnore;
+        private final List<Graph.OptOut> entireTestsToIgnore;
 
         public OptOutTestFilter(final Graph.OptOut[] optOuts) {
-            testsToIgnore = Arrays.stream(optOuts)
+            // split the tests to filter into two groups - true represents those that should ignore a whole
+            final Map<Boolean, List<Graph.OptOut>> split = Arrays.stream(optOuts).collect(
+                    Collectors.groupingBy(optOut -> optOut.method().equals("*")));
+
+            final List<Graph.OptOut> optOutsOfIndividualTests = split.getOrDefault(Boolean.FALSE, Collections.emptyList());
+            individualTestsToIgnore = optOutsOfIndividualTests.stream()
+                    .filter(ignoreTest -> !ignoreTest.method().equals("*"))
                     .<Pair>map(ignoreTest -> Pair.with(ignoreTest.test(), ignoreTest.specific().isEmpty() ? ignoreTest.method() : String.format("%s[%s]", ignoreTest.method(), ignoreTest.specific())))
                     .<Description>map(p -> Description.createTestDescription(p.getValue0().toString(), p.getValue1().toString()))
                     .collect(Collectors.toList());
+
+            entireTestsToIgnore = split.getOrDefault(Boolean.TRUE, Collections.emptyList());
         }
 
         @Override
         public boolean shouldRun(final Description description) {
+            // first check if all tests from a class should be ignored
+            if (!entireTestsToIgnore.isEmpty() && entireTestsToIgnore.stream()
+                    .anyMatch(optOut -> optOut.test().equals(description.getClassName()))) {
+                return false;
+            }
+
             if (description.isTest()) {
-                return !testsToIgnore.contains(description);
+                return !individualTestsToIgnore.contains(description);
             }
 
             // explicitly check if any children want to run
@@ -197,7 +300,7 @@ public abstract class AbstractGremlinSuite extends Suite {
         @Override
         public String describe() {
             return String.format("Method %s",
-                    String.join(",", testsToIgnore.stream().map(Description::getDisplayName).collect(Collectors.toList())));
+                    String.join(",", individualTestsToIgnore.stream().map(Description::getDisplayName).collect(Collectors.toList())));
         }
     }
 }

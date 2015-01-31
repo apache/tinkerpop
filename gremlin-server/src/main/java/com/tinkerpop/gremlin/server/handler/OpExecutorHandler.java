@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.server.Graphs;
 import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.ReferenceCountUtil;
@@ -19,6 +20,7 @@ import java.util.concurrent.ScheduledExecutorService;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@ChannelHandler.Sharable
 public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestMessage, ThrowingConsumer<Context>>> {
     private static final Logger logger = LoggerFactory.getLogger(OpExecutorHandler.class);
 

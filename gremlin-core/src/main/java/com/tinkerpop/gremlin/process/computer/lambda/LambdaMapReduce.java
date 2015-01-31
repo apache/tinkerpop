@@ -1,14 +1,15 @@
 package com.tinkerpop.gremlin.process.computer.lambda;
 
+import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
+import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.function.TriConsumer;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.javatuples.Pair;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -20,7 +21,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK, RV, R> {
+public class LambdaMapReduce<MK, MV, RK, RV, R> extends StaticMapReduce<MK, MV, RK, RV, R> {
 
     public static final String MAP_LAMBDA = "gremlin.lambdaMapReduce.mapLambda";
     public static final String MAP_KEY_SORT = "gremlin.lambdaMapReduce.mapKeySort";
@@ -35,8 +36,8 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
     private LambdaHolder<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>> combineLambdaHolder;
     private LambdaHolder<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>> reduceLambdaHolder;
     private LambdaHolder<Supplier<Comparator<RK>>> reduceKeySortLambdaHolder;
-    private LambdaHolder<Function<Iterator<Pair<RK, RV>>, R>> memoryLambdaHolder;
-    private String sideEffectKey;
+    private LambdaHolder<Function<Iterator<KeyValue<RK, RV>>, R>> memoryLambdaHolder;
+    private String memoryKey;
 
     private LambdaMapReduce() {
 
@@ -50,11 +51,12 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
         this.reduceLambdaHolder = LambdaHolder.loadState(configuration, REDUCE_LAMBDA);
         this.reduceKeySortLambdaHolder = LambdaHolder.loadState(configuration, REDUCE_KEY_SORT);
         this.memoryLambdaHolder = LambdaHolder.loadState(configuration, MEMORY_LAMBDA);
-        this.sideEffectKey = configuration.getString(MEMORY_KEY, null);
+        this.memoryKey = configuration.getString(MEMORY_KEY, null);
     }
 
     @Override
     public void storeState(final Configuration configuration) {
+        super.storeState(configuration);
         if (null != this.mapLambdaHolder)
             this.mapLambdaHolder.storeState(configuration);
         if (null != this.mapKeySortLambdaHolder)
@@ -67,7 +69,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
             this.reduceKeySortLambdaHolder.storeState(configuration);
         if (null != this.memoryLambdaHolder)
             this.memoryLambdaHolder.storeState(configuration);
-        configuration.setProperty(MEMORY_KEY, this.sideEffectKey);
+        configuration.setProperty(MEMORY_KEY, this.memoryKey);
     }
 
     @Override
@@ -106,18 +108,18 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
     }
 
     @Override
-    public R generateFinalResult(final Iterator<Pair<RK, RV>> keyValues) {
+    public R generateFinalResult(final Iterator<KeyValue<RK, RV>> keyValues) {
         return null == this.memoryLambdaHolder ? (R) keyValues : this.memoryLambdaHolder.get().apply(keyValues);
     }
 
     @Override
     public String getMemoryKey() {
-        return this.sideEffectKey;
+        return this.memoryKey;
     }
 
     @Override
     public String toString() {
-        return StringFactory.mapReduceString(this, this.sideEffectKey);
+        return StringFactory.mapReduceString(this, this.memoryKey);
     }
 
     //////////////////
@@ -235,12 +237,12 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
         ////////////
 
-        public Builder<MK, MV, RK, RV, R> memory(Function<Iterator<Pair<RK, RV>>, R> memoryLambda) {
+        public Builder<MK, MV, RK, RV, R> memory(Function<Iterator<KeyValue<RK, RV>>, R> memoryLambda) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, MEMORY_LAMBDA, memoryLambda);
             return this;
         }
 
-        public Builder<MK, MV, RK, RV, R> memory(Class<? extends Function<Iterator<Pair<RK, RV>>, R>> memoryClass) {
+        public Builder<MK, MV, RK, RV, R> memory(Class<? extends Function<Iterator<KeyValue<RK, RV>>, R>> memoryClass) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, MEMORY_LAMBDA, memoryClass);
             return this;
         }

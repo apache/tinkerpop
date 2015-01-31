@@ -2,36 +2,37 @@ package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
+import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
-import com.tinkerpop.gremlin.process.computer.MessageType;
+import com.tinkerpop.gremlin.process.computer.MessageCombiner;
+import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
-import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.util.DefaultTraversalSideEffects;
-import com.tinkerpop.gremlin.process.util.EmptyStep;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SideEffectCapStep;
+import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traversal.TraversalMatrix;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.Configuration;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 
@@ -46,52 +47,24 @@ import java.util.function.Supplier;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>> {
+public final class TraversalVertexProgram implements VertexProgram<TraverserSet<?>> {
 
-    // TODO: if not an adjacent traversal, use Local message type -- a dual messaging system.
-
-    public static final String HALTED_TRAVERSERS = Graph.Key.hide("gremlin.traversalVertexProgram.haltedTraversers");
+    public static final String HALTED_TRAVERSERS = "gremlin.traversalVertexProgram.haltedTraversers";
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalVertexProgram.traversalSupplier";
 
-    private LambdaHolder<Supplier<Traversal>> traversalSupplier;
-    private Traversal traversal;
+    // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
+    private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Arrays.asList(MessageScope.Global.instance()));
+    private static final Set<String> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, TraversalSideEffects.SIDE_EFFECTS));
+    private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VOTE_TO_HALT));
+
+    private LambdaHolder<Supplier<Traversal.Admin<?, ?>>> traversalSupplier;
+    private Traversal.Admin<?, ?> traversal;
+    private TraversalMatrix<?, ?> traversalMatrix;
+
     private final Set<MapReduce> mapReducers = new HashSet<>();
-    private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<String>() {{
-        add(VOTE_TO_HALT);
-    }};
-    private final Set<String> elementComputeKeys = new HashSet<String>() {{
-        add(HALTED_TRAVERSERS);
-        add(Traversal.SideEffects.SIDE_EFFECTS);
-    }};
 
     private TraversalVertexProgram() {
-    }
-
-    private TraversalVertexProgram(final Configuration configuration) {
-        this.traversalSupplier = LambdaHolder.loadState(configuration, TRAVERSAL_SUPPLIER);
-        this.traversal = this.traversalSupplier.get().get();
-        if (null == this.traversalSupplier) {
-            throw new IllegalArgumentException("The configuration does not have a traversal supplier");
-        }
-        final Traversal<?, ?> traversal = this.traversalSupplier.get().get();
-        traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
-            final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
-            this.mapReducers.add(mapReduce);
-        });
-
-        if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))
-            this.mapReducers.add(new TraverserMapReduce(TraversalHelper.getEnd(traversal)));
-    }
-
-    /**
-     * A helper method that yields a {@link com.tinkerpop.gremlin.process.Traversal.SideEffects} view of the distributed sideEffects within the currently processed {@link com.tinkerpop.gremlin.structure.Vertex}.
-     *
-     * @param localVertex the currently executing vertex
-     * @return a sideEffect API to get and put sideEffect data onto the vertex
-     */
-    public static Traversal.SideEffects getLocalSideEffects(final Vertex localVertex) {
-        return new DefaultTraversalSideEffects(localVertex);    // TODO: use a worker static object
     }
 
     /**
@@ -101,18 +74,28 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
      * @param configuration The configuration containing the public static TRAVERSAL_SUPPLIER key.
      * @return the traversal supplier in the configuration
      */
-    public static Supplier<Traversal> getTraversalSupplier(final Configuration configuration) {
-        return LambdaHolder.<Supplier<Traversal>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get();
+    public static Supplier<Traversal.Admin<?, ?>> getTraversalSupplier(final Configuration configuration) {
+        return LambdaHolder.<Supplier<Traversal.Admin<?, ?>>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get();
     }
 
-    public Traversal getTraversal() {
+    public Traversal.Admin<?, ?> getTraversal() {
         return this.traversal;
     }
 
     @Override
     public void loadState(final Configuration configuration) {
         this.traversalSupplier = LambdaHolder.loadState(configuration, TRAVERSAL_SUPPLIER);
+        if (null == this.traversalSupplier) {
+            throw new IllegalArgumentException("The configuration does not have a traversal supplier");
+        }
         this.traversal = this.traversalSupplier.get().get();
+        this.traversal.applyStrategies(TraversalEngine.COMPUTER);
+        this.traversalMatrix = new TraversalMatrix<>(this.traversal);
+        for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecurssively(MapReducer.class, this.traversal)) {
+            this.mapReducers.add(mapReducer.getMapReduce());
+        }
+        if (!(this.traversal.getEndStep() instanceof SideEffectCapStep))
+            this.mapReducers.add(new TraverserMapReduce(this.traversal.getEndStep()));
     }
 
     @Override
@@ -127,34 +110,42 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
     }
 
     @Override
-    public void execute(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, Memory memory) {
-        this.traversal.sideEffects().setLocalVertex(vertex);
+    public Set<MessageScope> getMessageScopes(final Memory memory) {
+        return MESSAGE_SCOPES;
+    }
+
+    @Override
+    public void execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final Memory memory) {
+        this.traversal.getSideEffects().setLocalVertex(vertex);
         if (memory.isInitialIteration()) {
             final TraverserSet<Object> haltedTraversers = new TraverserSet<>();
             vertex.property(HALTED_TRAVERSERS, haltedTraversers);
 
-            if (!(this.traversal.getSteps().get(0) instanceof GraphStep))
+            if (!(this.traversal.getStartStep() instanceof GraphStep))                              // TODO: make this generic to Traversal
                 throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
 
-            final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.getSteps().get(0);   // TODO: make this generic to Traversal
-            final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(this.traversal.getClass()).getTraverserGenerator(this.traversal, TraversalEngine.COMPUTER);
-            final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.HALT : startStep.getNextStep().getLabel();
-            final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-            final Iterator<? extends Element> starts = startStep.returnsVertices() ? new SingleIterator<>(vertex) : vertex.iterators().edgeIterator(Direction.OUT);
-            starts.forEachRemaining(element -> {
-                final Traverser.Admin<Element> traverser = traverserGenerator.generate(element, startStep);
-                traverser.setFuture(future);
-                traverser.detach();
-                if (traverser.isHalted())
-                    haltedTraversers.add((Traverser.Admin) traverser);
-                else {
-                    voteToHalt.set(false);
-                    messenger.sendMessage(MessageType.Global.of(vertex), traverser);
+            final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.getStartStep();
+            final TraverserGenerator traverserGenerator = this.traversal.getTraverserGenerator();
+            final String future = startStep.getNextStep().getId();
+            boolean voteToHalt = true;
+            final Iterator<? extends Element> starts = startStep.returnsVertices() ? IteratorUtils.of(vertex) : vertex.iterators().edgeIterator(Direction.OUT);
+            while (starts.hasNext()) {
+                final Element start = starts.next();
+                if (ElementHelper.idExists(start.id(), startStep.getIds())) {
+                    final Traverser.Admin<Element> traverser = traverserGenerator.generate(start, startStep, 1l);
+                    traverser.setStepId(future);
+                    traverser.detach();
+                    if (traverser.isHalted())
+                        haltedTraversers.add((Traverser.Admin) traverser);
+                    else {
+                        voteToHalt = false;
+                        messenger.sendMessage(MessageScope.Global.of(vertex), new TraverserSet<>(traverser));
+                    }
                 }
-            });
-            memory.and(VOTE_TO_HALT, voteToHalt.get());
+            }
+            memory.and(VOTE_TO_HALT, voteToHalt);
         } else {
-            memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversal));
+            memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversalMatrix));
         }
     }
 
@@ -171,7 +162,7 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
 
     @Override
     public Set<String> getElementComputeKeys() {
-        return this.elementComputeKeys;
+        return ELEMENT_COMPUTE_KEYS;
     }
 
     @Override
@@ -185,6 +176,19 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
     }
 
     @Override
+    public Optional<MessageCombiner<TraverserSet<?>>> getMessageCombiner() {
+        return (Optional) TraversalVertexProgramMessageCombiner.instance();
+    }
+
+    @Override
+    public TraversalVertexProgram clone() throws CloneNotSupportedException {
+        final TraversalVertexProgram clone = (TraversalVertexProgram) super.clone();
+        clone.traversal = this.traversal.clone();
+        clone.traversalMatrix = new TraversalMatrix<>(clone.traversal);
+        return clone;
+    }
+
+    @Override
     public String toString() {
         final String traversalString = this.traversal.toString().substring(1);
         return StringFactory.vertexProgramString(this, traversalString.substring(0, traversalString.length() - 1));
@@ -194,7 +198,7 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
     public Features getFeatures() {
         return new Features() {
             @Override
-            public boolean requiresGlobalMessageTypes() {
+            public boolean requiresGlobalMessageScopes() {
                 return true;
             }
 
@@ -226,21 +230,15 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
             return traversal(GREMLIN_GROOVY, traversalScript);
         }
 
-        public Builder traversal(final Supplier<Traversal> traversal) {
+        public Builder traversal(final Supplier<Traversal.Admin> traversal) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, TRAVERSAL_SUPPLIER, traversal);
             return this;
         }
 
-        public Builder traversal(final Class<Supplier<Traversal>> traversalClass) {
+        public Builder traversal(final Class<Supplier<Traversal.Admin>> traversalClass) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, TRAVERSAL_SUPPLIER, traversalClass);
             return this;
         }
-
-        @Override
-        public <P extends VertexProgram> P create() {
-            return (P) new TraversalVertexProgram(this.configuration);
-        }
-
 
         // TODO Builder resolveElements(boolean) to be fed to ComputerResultStep
     }

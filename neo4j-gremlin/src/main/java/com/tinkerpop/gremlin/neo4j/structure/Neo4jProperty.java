@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -35,7 +34,7 @@ public class Neo4jProperty<V> implements Property<V> {
 
     @Override
     public String key() {
-        return Graph.Key.unHide(this.key);
+        return this.key;
     }
 
     @Override
@@ -49,20 +48,18 @@ public class Neo4jProperty<V> implements Property<V> {
     }
 
     @Override
-    public boolean isHidden() {
-        return Graph.Key.isHidden(this.key);
-    }
-
     public String toString() {
         return StringFactory.propertyString(this);
     }
 
+    @Override
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);
     }
 
+    @Override
     public int hashCode() {
-        return this.key.hashCode() + this.value.hashCode() + this.element.hashCode();
+        return ElementHelper.hashCode(this);
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -15,6 +16,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -58,6 +60,8 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
     public abstract GraphComputer get_g_compute_executeXcounterX_terminateX8X_mapreduceXcounter_aX_mapreduceXcounter_bX();
 
     public abstract GraphComputer get_g_compute_mapXidX_reduceXidX_reduceKeySortXreverseX_memoryKeyXidsX();
+
+    public abstract GraphComputer get_g_compute_programXTraversalVertexProgram_build_traversalXg_V_both_hasXlabel_personX_age_groupCountXaXX_create();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -119,25 +123,25 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         try {
             results.memory().set("set", "test");
         } catch (Exception ex) {
-            validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
+            validateException(Memory.Exceptions.memoryIsCurrentlyImmutable(), ex);
         }
 
         try {
             results.memory().incr("incr", 1);
         } catch (Exception ex) {
-            validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
+            validateException(Memory.Exceptions.memoryIsCurrentlyImmutable(), ex);
         }
 
         try {
             results.memory().and("and", true);
         } catch (Exception ex) {
-            validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
+            validateException(Memory.Exceptions.memoryIsCurrentlyImmutable(), ex);
         }
 
         try {
             results.memory().or("or", false);
         } catch (Exception ex) {
-            validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
+            validateException(Memory.Exceptions.memoryIsCurrentlyImmutable(), ex);
         }
     }
 
@@ -283,12 +287,21 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         final ComputerResult results = get_g_compute_mapXidX_reduceXidX_reduceKeySortXreverseX_memoryKeyXidsX().submit().get();
         final List<Long> ids = results.memory().get("ids");
         assertEquals(6, ids.size());
-        assertEquals(Long.valueOf(6l), ids.get(0));
-        assertEquals(Long.valueOf(5l), ids.get(1));
-        assertEquals(Long.valueOf(4l), ids.get(2));
-        assertEquals(Long.valueOf(3l), ids.get(3));
-        assertEquals(Long.valueOf(2l), ids.get(4));
-        assertEquals(Long.valueOf(1l), ids.get(5));
+        for (int i = 1; i < ids.size(); i++) {
+            assertTrue(ids.get(i) < ids.get(i - 1));
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldSupportStringTraversalVertexProgramExecution() throws Exception {
+        final ComputerResult result = get_g_compute_programXTraversalVertexProgram_build_traversalXg_V_both_hasXlabel_personX_age_groupCountXaXX_create().submit().get();
+        final Map<Integer, Long> map = result.memory().get("a");
+        assertEquals(4, map.size());
+        assertEquals(3, map.get(32).intValue());
+        assertEquals(1, map.get(35).intValue());
+        assertEquals(1, map.get(27).intValue());
+        assertEquals(3, map.get(29).intValue());
     }
 
 
@@ -418,8 +431,8 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         public GraphComputer get_g_compute_mapXageX_reduceXsumX_memoryXnextX_memoryKeyXageSumX() {
             return g.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
                     .map((v, e) -> v.<Integer>property("age").ifPresent(age -> e.emit(MapReduce.NullObject.instance(), age)))
-                    .reduce((k, vv, e) -> e.emit(MapReduce.NullObject.instance(), StreamFactory.stream(vv).mapToInt(i -> i).sum()))
-                    .memory(i -> i.next().getValue1())
+                    .reduce((k, vv, e) -> e.emit(StreamFactory.stream(vv).mapToInt(i -> i).sum()))
+                    .memory(i -> i.next().getValue())
                     .memoryKey("ageSum").create());
         }
 
@@ -432,7 +445,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
                     .terminate(memory -> memory.getIteration() > 8)
                     .elementComputeKeys(new HashSet<>(Arrays.asList("counter"))).create())
                     .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
-                            .map((v, e) -> e.emit(MapReduce.NullObject.instance(), v.value("counter")))
+                            .map((v, e) -> e.emit(v.value("counter")))
                             .reduce((k, vv, e) -> {
                                 int counter = 0;
                                 while (vv.hasNext()) {
@@ -441,13 +454,13 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
                                 e.emit(MapReduce.NullObject.instance(), counter);
 
                             })
-                            .memory(i -> i.next().getValue1())
+                            .memory(i -> i.next().getValue())
                             .memoryKey("a").create())
                     .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
                             .map((v, e) -> e.emit(MapReduce.NullObject.instance(), v.value("counter")))
-                            .combine((k, vv, e) -> e.emit(MapReduce.NullObject.instance(), 1))
-                            .reduce((k, vv, e) -> e.emit(MapReduce.NullObject.instance(), 1))
-                            .memory(i -> i.next().getValue1())
+                            .combine((k, vv, e) -> e.emit(1))
+                            .reduce((k, vv, e) -> e.emit(1))
+                            .memory(i -> i.next().getValue())
                             .memoryKey("b").create());
 
         }
@@ -461,10 +474,17 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
                     .reduceKeySort(Comparator::reverseOrder)
                     .memory(itty -> {
                         final List<Long> list = new ArrayList<>();
-                        itty.forEachRemaining(id -> list.add(id.getValue0()));
+                        itty.forEachRemaining(id -> list.add(id.getKey()));
                         return list;
                     })
                     .create());
+        }
+
+        @Override
+        public GraphComputer get_g_compute_programXTraversalVertexProgram_build_traversalXg_V_both_hasXlabel_personX_age_groupCountXaXX_create() {
+            return g.compute().program(TraversalVertexProgram.build().
+                    traversal("GraphFactory.open(['gremlin.graph':'" + g.getClass().getCanonicalName() + "']).V().both().has(label,'person').values('age').groupCount('a')").
+                    create());
         }
 
     }

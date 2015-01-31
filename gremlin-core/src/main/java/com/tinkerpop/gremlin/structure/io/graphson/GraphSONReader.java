@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -29,9 +28,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * A @{link GraphReader} that constructs a graph from a JSON-based representation of a graph and its elements.
@@ -39,7 +36,7 @@ import java.util.stream.Collectors;
  * float will become a double, element IDs may not be retrieved in the format they were serialized, etc.).
  * {@link Edge} and {@link Vertex} objects are serialized to {@code Map} instances.  If an
  * {@link com.tinkerpop.gremlin.structure.Element} is used as a key, it is coerced to its identifier.  Other complex
- * objects are converted via {@link Object#toString()} unless there is a custom serializer supplied.
+ * objects are converted via {@link Object#toString()} unless there is a mapper serializer supplied.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -52,9 +49,9 @@ public class GraphSONReader implements GraphReader {
     final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {
     };
 
-    public GraphSONReader(final ObjectMapper mapper, final long batchSize,
+    public GraphSONReader(final GraphSONMapper mapper, final long batchSize,
                           final String vertexIdKey, final String edgeIdKey) {
-        this.mapper = mapper;
+        this.mapper = mapper.createMapper();
         this.batchSize = batchSize;
         this.vertexIdKey = vertexIdKey;
         this.edgeIdKey = edgeIdKey;
@@ -91,10 +88,9 @@ public class GraphSONReader implements GraphReader {
                     while (parser.nextToken() != JsonToken.END_ARRAY) {
                         final Map<String, Object> vertexData = parser.readValueAs(mapTypeReference);
                         readVertexData(vertexData, detachedVertex -> {
-                            final Vertex v = Optional.ofNullable(graph.v(detachedVertex.id())).orElse(
-                                    graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id()));
+                            final Iterator<Vertex> iterator = graph.iterators().vertexIterator(detachedVertex.id());
+                            final Vertex v = iterator.hasNext() ? iterator.next() : graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id());
                             detachedVertex.iterators().propertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
-                            detachedVertex.iterators().hiddenPropertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, true));
                             return v;
                         });
                     }
@@ -102,12 +98,11 @@ public class GraphSONReader implements GraphReader {
                     while (parser.nextToken() != JsonToken.END_ARRAY) {
                         final Map<String, Object> edgeData = parser.readValueAs(mapTypeReference);
                         readEdgeData(edgeData, detachedEdge -> {
-                            final Vertex vOut = graph.v(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                            final Vertex vIn = graph.v(detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
+                            final Vertex vOut = graph.iterators().vertexIterator(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()).next();
+                            final Vertex vIn = graph.iterators().vertexIterator(detachedEdge.iterators().vertexIterator(Direction.IN).next().id()).next();
                             // batchgraph checks for edge id support and uses it if possible.
                             final Edge e = vOut.addEdge(edgeData.get(GraphSONTokens.LABEL).toString(), vIn, T.id, detachedEdge.id());
                             detachedEdge.iterators().propertyIterator().forEachRemaining(p -> e.<Object>property(p.key(), p.value()));
-                            detachedEdge.iterators().hiddenPropertyIterator().forEachRemaining(p -> e.<Object>property(Graph.Key.hide(p.key()), p.value()));
                             return e;
                         });
                     }
@@ -162,8 +157,7 @@ public class GraphSONReader implements GraphReader {
         if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
             propertyArgs.addAll(Arrays.asList(T.id, p.id()));
         p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
-        p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
-        v.property(hidden ? Graph.Key.hide(p.key()) : p.key(), p.value(), propertyArgs.toArray());
+        v.property(p.key(), p.value(), propertyArgs.toArray());
     }
 
     private static void readVertexEdges(final Function<DetachedEdge, Edge> edgeMaker, final Map<String, Object> vertexData, final String direction) throws IOException {
@@ -175,11 +169,10 @@ public class GraphSONReader implements GraphReader {
 
     private static Edge readEdgeData(final Map<String, Object> edgeData, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         final Map<String, Object> properties = (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES);
-        final Map<String, Object> hiddens = ((Map<String, Object>) edgeData.get(GraphSONTokens.HIDDENS)).entrySet().stream().collect(Collectors.toMap((Map.Entry kv) -> Graph.Key.hide(kv.getKey().toString()), (Map.Entry kv) -> kv.getValue()));
 
         final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
                 edgeData.get(GraphSONTokens.LABEL).toString(),
-                properties, hiddens,
+                properties,
                 Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
                 Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
 
@@ -188,10 +181,9 @@ public class GraphSONReader implements GraphReader {
 
     private static Vertex readVertexData(final Map<String, Object> vertexData, final Function<DetachedVertex, Vertex> vertexMaker) throws IOException {
         final Map<String, Object> vertexProperties = (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES);
-        final Map<String, Object> hiddenVertexProperties = ((Map<String, Object>) vertexData.get(GraphSONTokens.HIDDENS)).entrySet().stream().collect(Collectors.toMap((Map.Entry kv) -> Graph.Key.hide(kv.getKey().toString()), (Map.Entry kv) -> kv.getValue()));
         final DetachedVertex vertex = new DetachedVertex(vertexData.get(GraphSONTokens.ID),
                 vertexData.get(GraphSONTokens.LABEL).toString(),
-                vertexProperties, hiddenVertexProperties);
+                vertexProperties);
 
         return vertexMaker.apply(vertex);
     }
@@ -201,12 +193,11 @@ public class GraphSONReader implements GraphReader {
     }
 
     public static class Builder {
-        private boolean loadCustomModules = false;
-        private SimpleModule custom = null;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
-        private boolean embedTypes = false;
         private String vertexIdKey = T.id.getAccessor();
         private String edgeIdKey = T.id.getAccessor();
+
+        private GraphSONMapper mapper = GraphSONMapper.build().create();
 
         private Builder() {
         }
@@ -232,32 +223,6 @@ public class GraphSONReader implements GraphReader {
         }
 
         /**
-         * Supply a custom module for serialization/deserialization.
-         */
-        public Builder customModule(final SimpleModule custom) {
-            this.custom = custom;
-            return this;
-        }
-
-        /**
-         * Try to load {@code SimpleModule} instances from the current classpath.  These are loaded in addition to
-         * the one supplied to the {@link #customModule(com.fasterxml.jackson.databind.module.SimpleModule)};
-         */
-        public Builder loadCustomModules(final boolean loadCustomModules) {
-            this.loadCustomModules = loadCustomModules;
-            return this;
-        }
-
-        /**
-         * If data types of objects were embedded into the JSON that is to be read, then this value must be set to
-         * true.
-         */
-        public Builder embedTypes(final boolean embedTypes) {
-            this.embedTypes = embedTypes;
-            return this;
-        }
-
-        /**
          * Number of mutations to perform before a commit is executed.
          */
         public Builder batchSize(final long batchSize) {
@@ -265,11 +230,17 @@ public class GraphSONReader implements GraphReader {
             return this;
         }
 
+        /**
+         * Override all of the {@link GraphSONMapper} builder
+         * options with this mapper.  If this value is set to something other than null then that value will be
+         * used to construct the writer.
+         */
+        public Builder mapper(final GraphSONMapper mapper) {
+            this.mapper = mapper;
+            return this;
+        }
+
         public GraphSONReader create() {
-            final ObjectMapper mapper = GraphSONObjectMapper.build()
-                    .customModule(custom)
-                    .embedTypes(embedTypes)
-                    .loadCustomModules(loadCustomModules).create();
             return new GraphSONReader(mapper, batchSize, vertexIdKey, edgeIdKey);
         }
     }

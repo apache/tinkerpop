@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.driver;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.ser.SerializationException;
+import com.tinkerpop.gremlin.structure.Graph;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.slf4j.Logger;
@@ -57,10 +58,12 @@ public interface MessageSerializer {
     public String[] mimeTypesSupported();
 
     /**
-     * Configure the serializer with custom settings as required.  The default implementation does not perform any
+     * Configure the serializer with mapper settings as required.  The default implementation does not perform any
      * function and it is up to the interface implementation to determine how the configuration will be executed
-     * and what its requirements are.
+     * and what its requirements are.  An implementation may choose to use the list of available graphs to help
+     * initialize a serializer.  The implementation should account for the possibility of a null value being
+     * provided for that parameter.
      */
-    public default void configure(final Map<String, Object> config) {
+    public default void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
     }
 }

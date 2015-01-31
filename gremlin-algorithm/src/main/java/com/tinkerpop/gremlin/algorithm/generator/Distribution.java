@@ -4,7 +4,7 @@ import java.util.Random;
 
 /**
  * Interface for a distribution over discrete values.
- * <p>
+ * <p/>
  * Used, for instance, by {@link DistributionGenerator} to define the in- and out-degree distributions and by
  * {@link CommunityGenerator} to define the community size distribution.
  *
@@ -15,7 +15,7 @@ public interface Distribution {
     /**
      * Initializes the distribution such that expectedTotal is equal to the expected sum of generated values
      * after the given number of invocatiosn.
-     * <p>
+     * <p/>
      * Since most distributions have an element of randomness, these values are the expected values.
      *
      * @return A new distribution configured to match the expected total for the number of invocations.
@@ -25,7 +25,7 @@ public interface Distribution {
     /**
      * Returns the next value. If this value is randomly generated, the randomness must be drawn from
      * the provided random generator.
-     * <p>
+     * <p/>
      * DO NOT use your own internal random generator as this makes the generated values non-reproducible and leads
      * to faulty behavior.
      *
@@ -36,9 +36,9 @@ public interface Distribution {
 
     /**
      * Returns the next value conditional on another given value.
-     * <p>
+     * <p/>
      * This can be used, for instance, to define conditional degree distributions where the in-degree is conditional on the out-degree.
-     * <p>
+     * <p/>
      * If this value is randomly generated, the randomness must be drawn from the provided random generator.
      * DO NOT use your own internal random generator as this makes the generated values non-reproducible and leads
      * to faulty behavior.

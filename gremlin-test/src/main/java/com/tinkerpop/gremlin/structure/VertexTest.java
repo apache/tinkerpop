@@ -11,11 +11,13 @@ import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +45,7 @@ public class VertexTest {
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
             "labelCanNotBeNull",
             "labelCanNotBeEmpty",
-            "labelCanNotBeASystemKey"
+            "labelCanNotBeAHiddenKey"
     })
     public static class BasicVertexTest extends AbstractGremlinTest {
         @Test
@@ -93,31 +95,37 @@ public class VertexTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldHaveExceptionConsistencyWhenUsingSystemVertexLabel() {
-            final String label = Graph.System.system("systemLabel");
+            final String label = Graph.Hidden.hide("systemLabel");
             try {
                 g.addVertex(T.label, label);
                 fail("Call to Graph.addVertex() should throw an exception when label is a system key");
             } catch (Exception ex) {
-                validateException(Element.Exceptions.labelCanNotBeASystemKey(label), ex);
+                validateException(Element.Exceptions.labelCanNotBeAHiddenKey(label), ex);
             }
         }
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldHaveExceptionConsistencyWhenUsingSystemVertexLabelOnOverload() {
-            final String label = Graph.System.system("systemLabel");
+            final String label = Graph.Hidden.hide("systemLabel");
             try {
                 g.addVertex(label);
                 fail("Call to Graph.addVertex() should throw an exception when label is a system key");
             } catch (Exception ex) {
-                validateException(Element.Exceptions.labelCanNotBeASystemKey(label), ex);
+                validateException(Element.Exceptions.labelCanNotBeAHiddenKey(label), ex);
             }
         }
 
         @Test(expected = NoSuchElementException.class)
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldThrowNoSuchElementExceptionIfVertexWithIdNotPresent() {
-            g.v("this-id-should-not-be-in-the-modern-graph");
+        public void shouldThrowNoSuchElementExceptionIfVertexWithIdNotPresentViaTraversal() {
+            g.V("this-id-should-not-be-in-the-modern-graph").next();
+        }
+
+        @Test(expected = NoSuchElementException.class)
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldThrowNoSuchElementExceptionIfVertexWithIdNotPresentViaIterators() {
+            g.iterators().vertexIterator("this-id-should-not-be-in-the-modern-graph").next();
         }
 
         @Test
@@ -226,9 +234,18 @@ public class VertexTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-        public void shouldEvaluateVerticesEquivalentWithSuppliedIds() {
+        public void shouldEvaluateVerticesEquivalentWithSuppliedIdsViaTraversal() {
             final Vertex v = g.addVertex(T.id, GraphManager.get().convertId("1"));
-            final Vertex u = g.v(GraphManager.get().convertId("1"));
+            final Vertex u = g.V(GraphManager.get().convertId("1")).next();
+            assertEquals(v, u);
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+        public void shouldEvaluateVerticesEquivalentWithSuppliedIdsViaIterators() {
+            final Vertex v = g.addVertex(T.id, GraphManager.get().convertId("1"));
+            final Vertex u = g.iterators().vertexIterator(GraphManager.get().convertId("1")).next();
             assertEquals(v, u);
         }
 
@@ -238,13 +255,13 @@ public class VertexTest {
             final Vertex v = g.addVertex();
             assertNotNull(v);
 
-            final Vertex u = g.v(v.id());
+            final Vertex u = g.iterators().vertexIterator(v.id()).next();
             assertNotNull(u);
             assertEquals(v, u);
 
-            assertEquals(g.v(u.id()), g.v(u.id()));
-            assertEquals(g.v(v.id()), g.v(u.id()));
-            assertEquals(g.v(v.id()), g.v(v.id()));
+            assertEquals(g.iterators().vertexIterator(u.id()).next(), g.iterators().vertexIterator(u.id()).next());
+            assertEquals(g.iterators().vertexIterator(v.id()).next(), g.iterators().vertexIterator(u.id()).next());
+            assertEquals(g.iterators().vertexIterator(v.id()).next(), g.iterators().vertexIterator(v.id()).next());
         }
 
         @Test
@@ -252,7 +269,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
             final Vertex v = g.addVertex(T.id, GraphManager.get().convertId("1"));
-            final Vertex u = g.v(GraphManager.get().convertId("1"));
+            final Vertex u = g.iterators().vertexIterator(GraphManager.get().convertId("1")).next();
             assertEquals(v, u);
 
             final Set<Vertex> set = new HashSet<>();
@@ -260,8 +277,8 @@ public class VertexTest {
             set.add(v);
             set.add(u);
             set.add(u);
-            set.add(g.v(GraphManager.get().convertId("1")));
-            set.add(g.v(GraphManager.get().convertId("1")));
+            set.add(g.iterators().vertexIterator(GraphManager.get().convertId("1")).next());
+            set.add(g.iterators().vertexIterator(GraphManager.get().convertId("1")).next());
 
             assertEquals(1, set.size());
             assertEquals(v.hashCode(), u.hashCode());
@@ -378,11 +395,13 @@ public class VertexTest {
             for (int i = 0; i < 25; i++) {
                 g.addVertex("myId", i);
             }
-            g.V().forEachRemaining(v -> g.V().forEachRemaining(u -> v.addEdge("knows", u, "myEdgeId", 12)));
+            g.V().forEachRemaining(v -> g.iterators().vertexIterator().forEachRemaining(u -> v.addEdge("knows", u, "myEdgeId", 12)));
 
             tryCommit(g, assertVertexEdgeCounts(25, 625));
 
-            for (Vertex v : g.V().toList()) {
+            final List<Vertex> vertices = new ArrayList<>();
+            IteratorUtils.fill(g.iterators().vertexIterator(), vertices);
+            for (Vertex v : vertices) {
                 v.remove();
                 tryCommit(g);
             }
@@ -408,7 +427,15 @@ public class VertexTest {
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {"property(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.property("name"))},
-                    {"v.remove()", FunctionUtils.wrapConsumer(Vertex::remove)}});
+                    {"remove()", FunctionUtils.wrapConsumer(Vertex::remove)},
+                    {"addEdge()", FunctionUtils.wrapConsumer((Vertex v) -> v.addEdge("self", v))},
+                    {"property(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
+                        v.property("k", "v");
+                    })},
+                    {"singleProperty(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
+                        v.singleProperty("k", "v");
+                    })},
+                    {"value(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.value("name"))}});
         }
 
         @Parameterized.Parameter(value = 0)

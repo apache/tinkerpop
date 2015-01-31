@@ -3,36 +3,25 @@ package com.tinkerpop.gremlin.structure.util.detached;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DetachedVertexPropertyTest extends AbstractGremlinTest {
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldNotConstructWithNullProperty() {
-        DetachedVertexProperty.detach(null);
-    }
-
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotConstructNewWithSomethingAlreadyDetached() {
         final Vertex v = g.addVertex();
         final VertexProperty vp = v.property("test", "this");
-        final DetachedVertexProperty dvp = DetachedVertexProperty.detach(vp);
-        assertSame(dvp, DetachedVertexProperty.detach(dvp));
+        final DetachedVertexProperty dvp = DetachedFactory.detach(vp, true);
+        assertSame(dvp, DetachedFactory.detach(dvp, true));
     }
 
     @Test
@@ -40,10 +29,9 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldConstructDetachedPropertyWithPropertyFromVertex() {
         final Vertex v = g.addVertex();
         final VertexProperty vp = v.property("test", "this");
-        final DetachedVertexProperty mp = DetachedVertexProperty.detach(vp);
+        final DetachedVertexProperty mp = DetachedFactory.detach(vp, true);
         assertEquals("test", mp.key());
         assertEquals("this", mp.value());
-        assertFalse(mp.isHidden());
         assertEquals(DetachedVertex.class, mp.element().getClass());
     }
 
@@ -51,11 +39,10 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldConstructDetachedPropertyWithHiddenFromVertex() {
         final Vertex v = g.addVertex();
-        final VertexProperty vp = v.property(Graph.Key.hide("test"), "this");
-        final DetachedVertexProperty mp = DetachedVertexProperty.detach(vp);
+        final VertexProperty vp = v.property("test", "this");
+        final DetachedVertexProperty mp = DetachedFactory.detach(vp, true);
         assertEquals("test", mp.key());
         assertEquals("this", mp.value());
-        assertTrue(mp.isHidden());
         assertEquals(DetachedVertex.class, mp.element().getClass());
     }
 
@@ -64,7 +51,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldNotSupportRemove() {
         final Vertex v = g.addVertex();
         final VertexProperty vp = v.property("test", "this");
-        DetachedVertexProperty.detach(vp).remove();
+        DetachedFactory.detach(vp, true).remove();
     }
 
     @Test
@@ -72,8 +59,8 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldBeEqualsPropertiesAsIdIsTheSame() {
         final Vertex v = g.addVertex();
         final VertexProperty vp = v.property("test", "this");
-        final DetachedVertexProperty mp1 = DetachedVertexProperty.detach(vp);
-        final DetachedVertexProperty mp2 = DetachedVertexProperty.detach(vp);
+        final DetachedVertexProperty mp1 = DetachedFactory.detach(vp, true);
+        final DetachedVertexProperty mp2 = DetachedFactory.detach(vp, true);
         assertTrue(mp1.equals(mp2));
     }
 
@@ -82,9 +69,9 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldNotBeEqualsPropertiesAsIdIsDifferent() {
         final Vertex v = g.addVertex();
         final VertexProperty vp1 = v.property("test", "this");
-        final DetachedVertexProperty mp1 = DetachedVertexProperty.detach(vp1);
+        final DetachedVertexProperty mp1 = DetachedFactory.detach(vp1, true);
         final VertexProperty vp2 = v.property("testing", "this");
-        final DetachedVertexProperty mp2 = DetachedVertexProperty.detach(vp2);
+        final DetachedVertexProperty mp2 = DetachedFactory.detach(vp2, true);
         assertFalse(mp1.equals(mp2));
     }
 
@@ -93,7 +80,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldDetachMultiPropertiesAndMetaProperties() {
         final Vertex v1 = convertToVertex(g, "marko");
         v1.iterators().propertyIterator("location").forEachRemaining(vp -> {
-            final DetachedVertexProperty detached = DetachedVertexProperty.detach(vp);
+            final DetachedVertexProperty detached = DetachedFactory.detach(vp, true);
             if (detached.value().equals("san diego")) {
                 assertEquals(1997, (int) detached.value("startTime"));
                 assertEquals(2001, (int) detached.value("endTime"));
@@ -115,4 +102,28 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
         });
     }
 
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldAttachToGraph() {
+        final Vertex v = g.addVertex();
+        final VertexProperty toDetach = v.property("test", "this");
+        final DetachedVertexProperty detached = DetachedFactory.detach(toDetach, true);
+        final VertexProperty attached = detached.attach(g);
+
+        assertEquals(toDetach, attached);
+        assertFalse(attached instanceof DetachedVertexProperty);
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldAttachToVertex() {
+        final Vertex v = g.addVertex();
+        final VertexProperty toDetach = v.property("test", "this");
+        final DetachedVertexProperty detached = DetachedFactory.detach(toDetach, true);
+        final VertexProperty attached = detached.attach(v);
+
+        assertEquals(toDetach, attached);
+        assertEquals(toDetach.getClass(), attached.getClass());
+        assertFalse(attached instanceof DetachedVertexProperty);
+    }
 }

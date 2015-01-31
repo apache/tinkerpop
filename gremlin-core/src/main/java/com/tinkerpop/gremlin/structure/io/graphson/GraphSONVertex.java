@@ -5,13 +5,14 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -58,19 +59,15 @@ class GraphSONVertex {
             m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
 
-            final Object properties = StreamFactory.stream(vertex.iterators().propertyIterator())
-                    .collect(Collectors.groupingBy(vp -> vp.key()));
-            final Object hiddens = StreamFactory.stream(vertex.iterators().hiddenPropertyIterator())
-                    .collect(Collectors.groupingBy(vp -> vp.key()));
+            final Object properties = IteratorUtils.groupBy(vertex.iterators().propertyIterator(), Property::key);
             m.put(GraphSONTokens.PROPERTIES, properties);
-            m.put(GraphSONTokens.HIDDENS, hiddens);
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
-                m.put(GraphSONTokens.OUT_E, StreamFactory.stream(vertex.iterators().edgeIterator(Direction.OUT)).collect(Collectors.toList()));
+                m.put(GraphSONTokens.OUT_E, IteratorUtils.fill(vertex.iterators().edgeIterator(Direction.OUT), new ArrayList()));
             }
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.IN) {
-                m.put(GraphSONTokens.IN_E, StreamFactory.stream(vertex.iterators().edgeIterator(Direction.IN)).collect(Collectors.toList()));
+                m.put(GraphSONTokens.IN_E, IteratorUtils.fill(vertex.iterators().edgeIterator(Direction.IN), new ArrayList()));
             }
 
             jsonGenerator.writeObject(m);

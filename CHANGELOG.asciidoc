@@ -6,9 +6,209 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 
-TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
+TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Traversal.Admin` is consistent internal to steps, traversals, strategies, etc. For the user, `Traversal` is all they see.
+* `TraversalHolder` is now called `TraversalParent` with the child/parent terminology used throughout.
+* A massive `process/` package reorganization -- class names are still the same, just in new packages.
+* Steps now only operate with traversals -- no more lambdas. Lambda->`Traversal` conversion utilities added.
+* `SideEffectStep` always requires a `Consumer`. Steps that were consumer-less simply extends `AbstractStep`.
+* Simplified the `Neo4jGraph` implementation by now allowing `cypher()` mid-traversal. Only available via `g.cypher() -> GraphTraversal`.
+* Moved `clock()` out of the Utility plugin. It is now available in Groovy and Java.
+* Changed the `OptOut` annotation to allow for ignoring an entire test case using a wildcard.
+* Added `AndStep` and `OrStep` filters to support arbitrary conjunction of traversals.
+* `__` is now a class with static `GraphTraversal` methods and thus `repeat(out())` is possible.
+* Added `IsStep` / `.is()` that allows filtering of scalar values.
+* Added `Compare.inside` and `Compare.outside` for testing ranges. Removed `between()` as now its `has('age',inside,[10,30])`.
+* `GraphTraversal.has()` no longer requires the element type to be cast in the traversal definition.
+* Fixed a `ConcurrentModificationException` bug in TinkerGraph that occurred when doing full vertex/edge scans and removing elements along the way.
+* Added `Scope.local` and `Scope.global` in support of `OrderLocalStep` and `OrderGlobalStep` via `order(scope)`.
+* Added `Order.keyIncr`, `Order.keyDecr`, `Order.valueIncr`, and `Order.valueDecr` in support of `Map` sorting.
+* Added `Order.shuffle` and removed `shuffle()` in favor of `order().by(shuffle)`.
+* Changed `Order implements Comparator<Comparable>` to `Order implements Comparator<Object>` as its now generalized to multiple types of objects.
+* The `maxContentLength` setting in Gremlin Server is now respected by the HTTP/REST Gremlin endpoint.
+* Fixed resource leak in the HTTP/REST Gremlin endpoint of Gremlin Server.
+* Refactored Gremlin Server `start` and `stop` functions to return `CompletableFuture`.
+* HTTP REST error response JSON objects from Gremlin Server should no longer have issues with control characters, line feeds, etc.
+* Added `MeanStep`, `mean()`, and `MeanNumber` for calculating number averages in a traversal.
+* Greatly simplified all the traversal `MapReduce` implementations due to the introduction of `VertexTraversalSideEffects`.
+* Added `VertexTraversalSideEffects` as a cheap, static way to get a sideEffect-view of a vertex in OLAP.
+* Added `TraversalHelper.isLocalStarGraph()` which determines if a traversal is contained within the local star graph.
+* Added `TraversalVerificationStrategy` to verify if the traversal can be executed on respective engine.
+* Refactored `GraphTraversal.cap()` to `GraphTraversal.cap(String...)` to support multi-sideEffect grabs.
+* Added GraphSON serialization for `Path`.
+* Added `Traversal.Admin.getTraverserRequirements()` and removed `TraversalHelper.getTraverserRequirements(Traversal)`.
+* `Traversal.equals()` is no longer computed by determining if the objects returned are equal.
+* Altered messaging in Gremlin Console when using a remote that is not yet activated.
+* Fixed potential for deadlock in Gremlin Driver when waiting for results from the server.
+* Added the `useMapperFromGraph` serializer option to the Gremlin Server configuration file to allow auto-registration of serialization classes.
+* Refactored Netty pipeline structure to not have a second "Gremlin" executor group and instead used a standard `ExecutorService`.
+* Refactored the `GremlinExecutor` to take an optional transformation function so as to allow manipulation of results from `eval` in the same thread of execution.
+* Fixed issue with the `HttpGremlinEndpointHandler` where requests were getting blocked when `keep-alive` was on.
+* Added `MinStep` and `MaxStep` with respective `min()` and `max()`.
+* `CountStep` and `SumStep` now extend `ReducingBarrierStep` and no longer are sideEffect steps.
+* `SideEffectCapStep` now extends `SupplyingBarrier` and is much simpler than before.
+* Added `SupplyingBarrier` which simply drains the traversal and emits the value of a provided supplier.
+* Added `TraversalLambda` which implements function, predicate, and consumer over a provided traversal.
+* Any non-core `Step` that takes a function or predicate can now take a traversal which maps to `traversal.next()` (function) and `traversal.hasNext()` (predicate).
+* `CollectingBarrierStep` is no longer abstract and added `GraphTraversal.barrier()` which is analogous to `fold().unfold()`, though cheaper.
+* Added `TraversalOptionHolder` for branching steps to index works with corresponding `GraphTraversal.option()`.
+* `BranchStep` is now a proper generalization of `UnionStep` and `ChooseStep`.
+* `SubgraphStep` has changed in support of in-traversal filtering and removing the need for path-based traversers.
+* Added `HasTraversalStep` which takes an anonymous traversal to determine whether or not to filter the current object.
+* Added `Traversal.Admin.getStartStep()` and `Traversal.Admin.getEndStep()`. Removed `TraversalHelper.getStart()` and `TraversalHelper.getEnd()`.
+* Refactored `profile()` to use injected steps. `ProfileStep` can now be used without any special JVM command line parameters.
+* Added `ReducingBarrierStep` which acts like `CollectingBarrierStep` but operates on a seed with a bi-function.
+* Added a preprocessor for AsciiDocs. Documentation code examples are executed and the results are dynamically inserted into the doc file.
+* `LocalStep` traversal is treated as a branch, not an isolated traversal. Moreover, moved `LocalStep` to `branch/`.
+* Traversal strategies are now applied when the `TraversalVertexProgram` state is loaded, not when submitted. Less error prone as it guarantees strategy application.
+* Reworked `TraversalHolder` where there are "local traversals" and "global traversals". Local traversals are not subject to OLAP message passing.
+* Fixed a bug in `DedupStep` that made itself apparent in `DedupOptimizerStrategy`.
+* Added `RepeatStep.RepeatEndStep` in order to reduce the complexity of the code on OLAP when the predicates are not at the start of `RepeatStep`.
+
+TinkerPop 3.0.0.M7 (Release Date: January 19, 2015)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Added `SideEffectRegistrar` interface and `SideEffectRegistrationStrategy` for allowing steps to register sideEffects at strategy application time.
+* Renamed `Traverser.Admin.setFuture()` and `Traverser.Admin.getFuture()` to `setStepId()` and `getStepId()`, respectively.
+* Added `TraversalMatrix` for random access to steps in a traversal by their step id. Used by `TraversalVertexProgram`.
+* Added unique identifies to `Step` that are not the user provided labels. `Step.getLabel()` now returns an `Optional<String>`.
+* Removed `UnionLinearStrategy`, `ChooseLinearStrategy`, and `RepeatLinearStrategy` as nested traversals are now natively supported in OLAP.
+* Fixed `Neo4jGraph` around manual transaction behavior on `commit` and `rollback` such that they would throw exceptions if a transaction was not open.
+* Redesigned the hidden step labeling mechanism so its consistent across a cluster, easier for rewrite strategies, and will enable nested OLAP traversals.
+* `Traverser.incrLoops()` now takes a string step label to enable nested looping constructs (i.e. loop stacks).
+* Added `Traversal.tryNext()` which returns an `Optional`, where the provided default method should be sufficient for all vendors.
+* Removed `PathConsumer` in favor of `TraverserRequirement.PATH`-model via `Step.getRequirements()`.
+* `Step.getRequirements()` returns a `Set<TraverserRequirement>` which is what is required of the `Traverser` by the `Step`.
+* `Traverser` now extends `Cloneable` and `Traverser.clone()` is used to good effect in `Traverser.split()`.
+* Added `AbstractTraverser` for which all traversers extend.
+* Moved `Traversal.SideEffects` to `TraversalSideEffects` as sideEffects are not necessarily tied to the traversal.
+* Removed `Graph.of()` for generating anonymous graph traversals -- replaced by `__`-model.
+* Removed `Graph` being stored in `Traversal.SideEffects`. Too dangerous when moving between OLTP and OLAP and its limited uses were worked around easily.
+* No need for `DefaultXXXGraphTraversal` unless the vendor is extending with new methods (e.g. `DefaultNeo4jGraphTraversal`).
+* Reworked `TraversalStrategies` such that the are "emanating object class"-dependant, not `Traversal` dependent.
+* Moved `Traverser.sideEffects()` to `Traverser.asAdmin().getSideEffects()`. Users should use `Traverser.sideEffects(key)` and `Traverser.sideEffects(key,value)`.
+* Added `SerializationTest` to the `StructureStandardSuite` in `gremlin-test` which validates serialization at a lower level than `IoTest`.
+* Removed `IntervalStep` and renamed `interval()` to `between()` which is simply an alias to a `has().has()` chain.
+* Added `__` static interface which allows for `__.out().out()`-style construction of anonymous traversals (instead of `g.of()`).
+* The only `GraphTraversal` steps that operate on `Traverser` are the base lambdas and `repeat()` (i.e. `emit()` and `until()`).
+* Removed dependency on the `reflections` library in `gremlin-test` which removed the default implementation of `GraphProvider.getImplementations()` - vendors now need to implement this method themselves.
+* Relaxed the `<S>` typing requirement for anonymous traversals when applied to `choose()`, `repeat()`, `union()`, etc.
+* Removed `LoopStep` and `UntilStep` in favor of the new `RepeatStep` model of looping in Gremlin3.
+* `BranchStep` is now exposed in `GraphTraversal` via `branch(function)`.
+* `UnionStep` now implements `TraversalHolder`.
+* Added `RepeatStep` as the new looping construct supporting do/while, while/do, and emit semantics.
+* Moved `Traversal.sideEffects()` to `Traversal.Admin.getSideEffects()` as `cap()` should be used to access the sideEffect data of a traversal.
+* Renamed vendor `XXXTraversal` to `XXXGraphTraversal` (interface) and `XXXGraphTraversal` to `DefaultXXXGraphTraversal` (implementation class).
+* Modified packaging for console plugins to be more consistent by moving them to the `com.tinkerpop.gremlin.console.groovy.plugin` namespace.
+* Removed all TinkerPop specific dependencies to Guava to avoid user version conflicts.
+* Added support for `-e` (script file execution) and `-v` (version display) options on `gremlin.sh`.
+* GraphSON supports the assignment of multiple custom serialization modules.
+* `Traverser.get(stepLabel/sideEffectKey)` no longer exists. There now exists: `Traverser.path(stepLabel)` and `Traverser.sideEffects(sideEffectKey)`.
+* `SimpleTraverser` now supports "path" but in a very loose, global cache way. Added `SparsePath` as a `Map`-backed `Path` implementation.
+* Provided Neo4j multi-label support in Neo4j-Gremlin. Added three `Neo4jVertex`-specific methods: `addLabel()`, `removeLabel()`, `labels()`.
+* Bumped to Groovy 2.3.9.
+* Added `Graph.Io` interface which allows for simplified helper methods for end users and a way for vendors to override `GraphReader` and `GraphWriter` initial construction when custom serializers are needed.
+* Removed methods from `GraphProvider` related to customizing serializers in `IoTest` from the test suite as the new `Graph.Io` interface now serves that purpose.
+* Added `Neo4jGraph.checkElementsInTransaction(boolean)` which will (or not) verify whether elements retrieved via Neo4j global graph operations are transactionally consistent.
+* Added `ScriptInputFormat` and `ScriptOutputFormat` to Hadoop-Gremlin for reading and writing a file according to an arbitrary parsing script.
+* Added `TimeLimitStep.getTimedOut()` to determine if the step timed out or there were no more objects to process.
+* `Graph.System` is now `Graph.Hidden` with "hidden" being the vendor namespace and the key prefix being `~`.
+* Much better `toString()` handling in `Step` and `Traversal`.
+* `ComparatorHolder<V>` interface returns a `List<Comparator<V>>` instead of a `Comparator<V>[]`.
+* `T` now implements `Function<Element,Object>`.
+* Added `ElementValueComparator` and `ElementFunctionComparator` in support of vendor introspection on `ComparatorHolder`-steps.
+* Renamed `Comparing` marker interface to `ComparatorHolder`.
+* `FunctionHolder` interface provides vendor introspection via `ElementValueFunction`.
+* Removed `OrderByStep` as it is now just `order()` with a `by()`-based comparator.
+* Added `SampleStep` (`sample()`) to allow for sampling the set of previous objects. Useful for doing random walks with `local()`.
+* Renamed `random()` to `coin()` to better express that the filter is a random coin toss.
+* Added `by()`-projection to modulate the meaning of post-processing steps like `aggregate()`, `groupCount()`, `path()`, `order()`, etc.
+* Removed the `Strategy` interface and gave `StrategyGraph` direct access to the `GraphStrategy`.
+* Added `Graph.strategy()` to help instantiate `StrategyGraph` instances.
+* Modified the signature of all `GraphStrategy` methods to include an parameter that contains a reference to the "composing strategy".
+* `PartitionStrategy` hides the specified partition key from view when iterating properties, keys, etc.
+* Change construction of `GraphStrategy` implementations to be consistent with singleton instances and builder pattern.
+* Added `Graph.Helper` annotation to "protected" certain default interface methods from implementation by vendors.
+* Transaction retry functions now work with "manual" transactions.
+* Improved error messaging when importing "legacy" GraphSON that was not generated with "extended" properties.
+* Renamed "iterator" related methods in the `GraphStrategy` interface to be consistent with the method names they represent.
+* `PropertyMapStep` (`valueMap()`) now takes a boolean to state if the tokens of the element are desired along with its properties.
+* `HadoopGraph` now connected to the `StructureProcessSuite`.
+* `HadoopGraph` no longer supports `Graph.Variables` as they were in-memory. A persistence mechanism can be introduced in the future.
+* Hidden properties removed in favor of using `GraphStrategy` for such features.
+* `Edge.iterators().vertexIterator(BOTH)` now guarantees `OUT` then `IN` vertex iterator order.
+* `Graph.v(Object)` and `Graph.e(Object)` no longer exist. Instead, use `Graph.V(Object... ids)` and `Graph.E(Object... ids)`.
+* Added `Graph.Iterators` to allow access to vertex and edge iterators based on element ids and bypassing `GraphTraversal`.
+* Renamed `GraphStrategy` implementations to be less verbose - removed the word "Graph" from their names (e.g. `IdGraphStrategy` simply changed to `IdStrategy`).
+* Removed `Step.NO_OBJECT` as the problem is solves can be solved with proper use of `flatMap` and `EmptyTraverser`.
+* `Path` is now part of `GraphSerializer` and thus, not specific to a particular implementation of `Path`.
+* Added messaging to show files being downloaded when using the Gremlin Server "install" command.
+* Added test name and class arguments to the `GraphProvider.loadGraphWith` method.
+* Merged `ReferencedXXX` and `DetachedXXX` so that all migration of graph element data is via `DetachedXXX`.
+* Added `StaticVertexProgram` and `StaticMapReduce` which simply return `this` on `clone()`.
+* `VertexProgram` and `MapReduce` now implement `Cloneable` and is used for fast copying across workers within the same machine.
+* Added `TraversalHolder` interface which extends `PathConsumer` to determine recursively if nested traversals require path calculations turned on.
+* Reworked how a `TraverserGenerator` is retrieved and utilized.
+* Added `Traversal.toBulkSet()` to make getting resultant data more efficiently for traversals with repeated data.
+* Provided a helper `LocalStep.isLocalStarGraph()` so `GraphComputer` implementers know the requisite data boundaries.
+* Created `Traversal.Admin` to hide administrative methods. Added `Traversal.asAdmin()` to get at `Traversal.Admin`.
+* Fixed up all `Step` cloning operations realizing that Java8 lambdas are always bound to the calling class (no delegates).
+* Usage of `:remote close` without configured remotes shows a reasonable message rather than a stack trace.
+* Provided `LocalStep` to signify that the internal traversal is locally bound to the incoming object.
+* Failed script evaluation in Gremlin Server now triggers the cancel of the process attempting to timeout the script if it were to run too long.
+* Greatly increased the speed of `ScriptEngineLambda` by making use of a static `ScriptEngine` cache.
+* Fixed a general bug in all sideEffect using steps where the sideEffect should be accessed via the `Traverser` not `Traversal`.
+* `GremlinPlugin` interface no longer has the `additionalDependencies` method - those dependencies are now defined by an entry in the manifest file for the jar called `Gremlin-Plugin-Dependencies`.
+* Added `TinkerWorkerPool` which is used for resource efficient threading in `TinkerGraphComputer`.
+* `MapReduce.createMapReduce(Configuration)` now exists and serves the same purpose as `VertexProgram.createVertexProgram(Configuration)`.
+* Enabled SessionOps to be extended. Added eval handler hook.
+* Setting a property with an unsupported data type throw `IllegalArgumentException` instead of `UnsupportedOperationException` as the operation is supported, but the argument is not.
+
+TinkerPop 3.0.0.M6 (Release Date: December 2, 2014)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* `javatuples.Pair` avoided on `MapReduce` API in favor of a new `KeyValue` class.
+* Renamed `Gremlin-Plugin` manifest entry for plugins to `Gremlin-Plugin-Paths`.
+* Added `Gremlin-Plugin-Dependencies` manifest entry to list other dependencies that should be retrieved with a plugin jar.
+* `Memory.Admin.asImmutable()` yields an immutable representation of the GraphComputer `Memory`.
+* Fixed host selection in `gremlin-driver` by properly accounting for all hosts being marked unavailable at the instantiation of a `Client`.
+* Removed Giraph-Gremlin in favor of new Hadoop-Gremlin with `GiraphGraphComputer` support. Future support for `MapReduceGraphComputer`.
+* Greatly simplified the `InputFormat` and `OutputFormat` model for working with Giraph (and Hadoop).
+* Added a serializer for `Property` for GraphSON correcting format of serialization of a single `Property` on an `Edge`.
+* Fixed bug in Gremlin Console that prevented assignments to empty `List` objects.
+* Added `VertexProgram.getMessageScopes()` to allow vendors to know which `MessageScopes` at a particular `Memory` state.
+* Reduced the number of methods in `MessageScope.Local` as its up to vendors to inspect provided incident `Traversal` accordingly.
+* Renamed `MessagesType` to `MessageScope` to make it less ambiguous regarding the class of the messages being sent.
+* Changed the message type of `TraversalVertexProgram` to `TraverserSet` to support message combining.
+* Added `VertexProgram.getMessageCombiner()` to support the combining of messages in route to a vertex.
+* Reduced object creation in `TraversalVertexProgram` around vertex-local traversal sideEffects.
+* Renamed `Traverser.Admin.makeChild()` and `Traverser.Admin.makeSibling()` to `Traverser.Admin.split()` to correspond with `merge()`.
+* Added `Traverser.Admin.merge(Traverser)` method so that the merging algorithm is with the `Traverser`.
+* Added `Operator` enum that contains sack-helpful `BinaryOperators`: sum, minus, mult, div, max, min, etc.
+* Added `GraphTraversal.withSack()` and renamed `trackPaths()` and `with()` to `withPath()` and `withSideEffect()`, respectively.
+* Added the "Gremlin Sacks" feature to allow a `Traverser` to carry local information along its walk.
+* GraphSON format no longer makes use of `hiddens` JSON key. Its all just `properties`.
+* Added `DoubleIterator` to make vendor implementations of `Edge.iterators().vertexIterator()` efficient.
+* `PropertiesStep` is smart about hiddens vs. properties.
+* `Element.iterators().hiddenProperties()` no longer exists. For vendors, simply provide an iterator of properties.
+* `GIRAPH_GREMLIN_LIBS` supports colon separated directories for loading jars from multiple paths.
+* Introduced method to control the location of dependencies dynamically loaded to the Gremlin Console as part of the `:install` command.
+* Fixed problem with the Neo4j Gremlin Plugin not loading properly after Gremlin Console restart.
+* Removed the "use" configuration from Gremlin Server.
+* Moved `SugarGremlinPlugin` from `gremlin-console` to `gremlin-groovy` so that it could be shared with Gremlin Server.
+* Fixed bug in serialization of `null` results returned to the Gremlin Console when serializing to strings.
+* Moved the `GremlinPlugin` for `TinkerGraph` to `tinkergraph-gremlin` module (it is no longer in `gremlin-console`).
+* Added a `plugin-info.txt` file to Gremlin Console `/ext/{module}` subdirectories to identify the module that was originally requested.
+* Gremlin Server now allows for the explicit configuration of plugin activation.
+* Refactored `GremlinPlugin` and `AbstractGremlinPlugin` to better account for plugins that run on the server and those that run in the console.
+* Added a `plugins` configuration to Gremlin Server to control the plugins that are enabled on initialization.
+* Added a builder option to `GremlinExecutor` to control the plugins that are enabled on initialization.
+* Added `RemoteException` for usage with `RemoteAcceptor` implementations for the Gremlin Console so as to better standardize their development.
+* Standardized all text being written to the Gremlin Console using starting upper case letter.
+* Prevented error in the Console when `:submit` is called but no remotes were configured.
+* Provided a way to clean the `grapes` directory as part of a standard build with `mvn clean install`.
 
 TinkerPop 3.0.0.M5 (Release Date: November 7, 2014)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -258,7 +458,7 @@ TinkerPop 3.0.0.M2 (Release Date: September 23, 2014)
 * Fixed `GiraphMemory` to be fully consistent with GraphComputer specification.
 * Removed fatJar assembly from Giraph-Graph as it is no longed needed with distributed cache model.
 * Reworked `GiraphRemoteAcceptor` to provide a `result` variable back to the console with `ComputerResult`.
-* `VertexProgram` is not longer `Serializable` (use `loadState` and `storeState` for wire-propagation).
+* `VertexProgram` is no longer `Serializable` (use `loadState` and `storeState` for wire-propagation).
 * Moved `GiraphGraph.getOutputGraph()` to `GiraphHelper`.
 * Changed `GIRAPH_GREMLIN_HOME` to `GIRAPH_GREMLIN_LIB` to reference directory where jars are to be loaded.
 * Updated README with release instructions.

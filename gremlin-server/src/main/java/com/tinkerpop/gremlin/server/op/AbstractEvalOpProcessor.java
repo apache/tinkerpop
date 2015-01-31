@@ -62,7 +62,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         }
 
         if (message.optionalArgs(Tokens.ARGS_BINDINGS).isPresent()) {
-            final Map<String,Object> bindings = (Map<String, Object>) message.getArgs().get(Tokens.ARGS_BINDINGS);
+            final Map<String, Object> bindings = (Map<String, Object>) message.getArgs().get(Tokens.ARGS_BINDINGS);
             if (bindings.keySet().stream().anyMatch(invalidBindingsKeys::contains)) {
                 final String msg = String.format("The [%s] message is using at least one of the invalid binding key of [%s]. It conflicts with standard static imports to Gremlin Server.", Tokens.OPS_EVAL, invalidBindingKeysJoined);
                 throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());

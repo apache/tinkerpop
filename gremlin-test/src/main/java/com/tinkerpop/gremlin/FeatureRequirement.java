@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * A FeatureRequirement annotation defines a feature to check for a test in the Gremlin  Test Suite.  The
  * annotation needs to be added to each test that requires a check for feature support.  Multiple sideEffects may
  * be added for each feature to check.
- * <p>
+ * <p/>
  * Tests should not directly test for features using the FeatureSet classes/methods with if/then type statements in
  * the tests themselves as the logic for whether the test gets executed is lost in the code and auto-passes tests
  * when the check for the feature has a negative result.  Extracting such logic for feature support for a test into

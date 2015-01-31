@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.algorithm.generator;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Triplet;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class AbstractGeneratorTest extends AbstractGremlinTest {
      * attach to the same IN/OUT vertices given their "oid" properties.
      */
     protected boolean same(final Graph g1, final Graph g2) {
-        return g1.V().toList().stream()
+        return StreamFactory.stream(g1.iterators().vertexIterator())
                 .map(v -> Triplet.<Integer, List<Vertex>, List<Vertex>>with(v.value("oid"), v.in().toList(), v.out().toList()))
                 .allMatch(p -> {
                     final Vertex v = (Vertex) g2.V().has("oid", p.getValue0()).next();

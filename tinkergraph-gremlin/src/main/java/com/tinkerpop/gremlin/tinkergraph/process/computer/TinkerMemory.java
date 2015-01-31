@@ -25,7 +25,6 @@ public class TinkerMemory implements Memory.Admin {
     public Map<String, Object> currentMap;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
-    private boolean complete = false;
 
     public TinkerMemory(final VertexProgram<?> vertexProgram, final Set<MapReduce> mapReducers) {
         this.currentMap = new ConcurrentHashMap<>();
@@ -52,13 +51,17 @@ public class TinkerMemory implements Memory.Admin {
     }
 
     @Override
+    public void setIteration(final int iteration) {
+        this.iteration.set(iteration);
+    }
+
+    @Override
     public int getIteration() {
         return this.iteration.get();
     }
 
     @Override
     public void setRuntime(final long runTime) {
-        if (this.complete) throw Memory.Exceptions.memoryCompleteAndImmutable();
         this.runtime.set(runTime);
     }
 
@@ -69,7 +72,6 @@ public class TinkerMemory implements Memory.Admin {
 
     protected void complete() {
         this.iteration.decrementAndGet();
-        this.complete = true;
         this.previousMap = this.currentMap;
     }
 
@@ -95,31 +97,22 @@ public class TinkerMemory implements Memory.Admin {
     @Override
     public long incr(final String key, final long delta) {
         checkKeyValue(key, delta);
-        final Long currentValue = (Long) this.currentMap.getOrDefault(key, 0l);
-        this.currentMap.put(key, delta + currentValue);
-
-        final Long previousValue = (Long) this.previousMap.getOrDefault(key, 0l);
-        return previousValue + delta;
+        this.currentMap.compute(key, (k, v) -> null == v ? delta : delta + (Long) v);
+        return (Long) this.previousMap.getOrDefault(key, 0l) + delta;
     }
 
     @Override
     public boolean and(final String key, final boolean bool) {
         checkKeyValue(key, bool);
-        final Boolean currentValue = (Boolean) this.currentMap.getOrDefault(key, true);
-        this.currentMap.put(key, bool && currentValue);
-
-        final Boolean previousValue = (Boolean) this.previousMap.getOrDefault(key, true);
-        return previousValue && bool;
+        this.currentMap.compute(key, (k, v) -> null == v ? bool : bool && (Boolean) v);
+        return (Boolean) this.previousMap.getOrDefault(key, true) && bool;
     }
 
     @Override
     public boolean or(final String key, final boolean bool) {
         checkKeyValue(key, bool);
-        final Boolean currentValue = (Boolean) this.currentMap.getOrDefault(key, true);
-        this.currentMap.put(key, bool || currentValue);
-
-        final Boolean previousValue = (Boolean) this.previousMap.getOrDefault(key, true);
-        return previousValue || bool;
+        this.currentMap.compute(key, (k, v) -> null == v ? bool : bool || (Boolean) v);
+        return (Boolean) this.previousMap.getOrDefault(key, true) || bool;
     }
 
     @Override
@@ -134,7 +127,6 @@ public class TinkerMemory implements Memory.Admin {
     }
 
     private void checkKeyValue(final String key, final Object value) {
-        if (this.complete) throw Memory.Exceptions.memoryCompleteAndImmutable();
         if (!this.memoryKeys.contains(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);

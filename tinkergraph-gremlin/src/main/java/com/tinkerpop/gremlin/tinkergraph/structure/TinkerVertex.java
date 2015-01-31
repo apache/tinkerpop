@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -10,7 +9,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,6 +62,7 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
 
     @Override
     public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         final Optional<Object> optionalId = ElementHelper.getIdValue(keyValues);
         if (TinkerHelper.inComputerMode(this.graph)) {
@@ -86,26 +85,21 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
 
     @Override
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
-        if (null == vertex) Graph.Exceptions.argumentCanNotBeNull("vertex");
+        if (null == vertex) throw Graph.Exceptions.argumentCanNotBeNull("vertex");
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
         return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) vertex, label, keyValues);
     }
 
     @Override
     public void remove() {
-        if (this.removed)
-            throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
         final List<Edge> edges = new ArrayList<>();
         this.iterators().edgeIterator(Direction.BOTH).forEachRemaining(edges::add);
-        edges.stream().filter(edge -> !((TinkerEdge)edge).removed).forEach(Edge::remove);
+        edges.stream().filter(edge -> !((TinkerEdge) edge).removed).forEach(Edge::remove);
         this.properties.clear();
         this.graph.vertexIndex.removeElement(this);
         this.graph.vertices.remove(this.id);
         this.removed = true;
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> start() {
-        return new TinkerElementTraversal<>(this, this.graph);
     }
 
     @Override
@@ -126,17 +120,12 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
     }
 
     @Override
-    public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
-    }
-
-    @Override
     public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
-        return (Iterator) TinkerHelper.getEdges(TinkerVertex.this, direction, edgeLabels);
+        return (Iterator) TinkerHelper.getEdges(this, direction, edgeLabels);
     }
 
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels) {
-        return (Iterator) TinkerHelper.getVertices(TinkerVertex.this, direction, edgeLabels);
+        return (Iterator) TinkerHelper.getVertices(this, direction, edgeLabels);
     }
 }

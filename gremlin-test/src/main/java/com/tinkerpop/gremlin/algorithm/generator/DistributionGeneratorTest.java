@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -11,11 +13,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -26,7 +28,7 @@ public class DistributionGeneratorTest {
     @RunWith(Parameterized.class)
     public static class DifferentDistributionsTest extends AbstractGeneratorTest {
 
-        @Parameterized.Parameters(name = "{index}: test({0},{1})")
+        @Parameterized.Parameters(name = "test({0},{1})")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {new NormalDistribution(2), new NormalDistribution(2)},
@@ -48,7 +50,7 @@ public class DistributionGeneratorTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldGenerateRandomGraph() throws Exception {
+        public void shouldGenerateDifferentGraph() throws Exception {
             int executions = 0;
             boolean same = true;
 
@@ -63,11 +65,11 @@ public class DistributionGeneratorTest {
 
                 try {
                     afterLoadGraphWith(g1);
-                    final DistributionGenerator generator = makeGenerator(g1).create();
+                    final DistributionGenerator generator = makeGenerator(g1).seedGenerator(() -> 123456789l).create();
                     distributionGeneratorTest(g1, generator);
 
                     afterLoadGraphWith(g2);
-                    final DistributionGenerator generator1 = makeGenerator(g2).create();
+                    final DistributionGenerator generator1 = makeGenerator(g2).seedGenerator(() -> 987654321l).create();
                     distributionGeneratorTest(g2, generator1);
 
                     same = same(g1, g2);
@@ -123,7 +125,7 @@ public class DistributionGeneratorTest {
         protected Iterable<Vertex> verticesByOid(final Graph graph) {
             List<Vertex> vertices = graph.V().toList();
             Collections.sort(vertices,
-                (v1, v2) -> ((Integer)v1.value("oid")).compareTo((Integer)v2.value("oid")));
+                    (v1, v2) -> ((Integer) v1.value("oid")).compareTo((Integer) v2.value("oid")));
             return vertices;
         }
 
@@ -150,9 +152,9 @@ public class DistributionGeneratorTest {
             final int edgesGenerated = generator.generate();
             assertTrue(edgesGenerated > 0);
             tryCommit(g, g -> {
-                assertEquals(new Long(edgesGenerated), g.E().count().next());
-                assertTrue(g.V().count().next() > 0);
-                assertTrue(g.E().toList().stream().allMatch(e -> e.value("data").equals("test")));
+                assertEquals(new Long(edgesGenerated), new Long(IteratorUtils.count(g.iterators().edgeIterator())));
+                assertTrue(IteratorUtils.count(g.iterators().vertexIterator()) > 0);
+                assertTrue(StreamFactory.stream(g.iterators().edgeIterator()).allMatch(e -> e.value("data").equals("test")));
             });
         }
 

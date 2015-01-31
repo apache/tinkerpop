@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import static com.codahale.metrics.MetricRegistry.name;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@ChannelHandler.Sharable
 public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMessage> {
     private static final Logger logger = LoggerFactory.getLogger(NioGremlinResponseEncoder.class);
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));

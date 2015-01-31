@@ -33,7 +33,7 @@ public @interface FeatureRequirementSet {
          */
         VERTICES_ONLY;
 
-        private static final List<FeatureRequirement> featuresRequiredBySimple = new ArrayList<FeatureRequirement>(){{
+        private static final List<FeatureRequirement> featuresRequiredBySimple = new ArrayList<FeatureRequirement>() {{
             add(FeatureRequirement.Factory.create(Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES, Graph.Features.VertexFeatures.class));
             add(FeatureRequirement.Factory.create(Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES, Graph.Features.EdgeFeatures.class));
             add(FeatureRequirement.Factory.create(Graph.Features.VertexPropertyFeatures.FEATURE_ADD_PROPERTY, Graph.Features.VertexPropertyFeatures.class));
@@ -42,7 +42,7 @@ public @interface FeatureRequirementSet {
             add(FeatureRequirement.Factory.create(Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY, Graph.Features.EdgeFeatures.class));
         }};
 
-        private static final List<FeatureRequirement> featuresRequiredByVerticesOnly = new ArrayList<FeatureRequirement>(){{
+        private static final List<FeatureRequirement> featuresRequiredByVerticesOnly = new ArrayList<FeatureRequirement>() {{
             add(FeatureRequirement.Factory.create(Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES, Graph.Features.VertexFeatures.class));
             add(FeatureRequirement.Factory.create(Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES, Graph.Features.VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(Graph.Features.VertexPropertyFeatures.FEATURE_ADD_PROPERTY, Graph.Features.VertexPropertyFeatures.class));
