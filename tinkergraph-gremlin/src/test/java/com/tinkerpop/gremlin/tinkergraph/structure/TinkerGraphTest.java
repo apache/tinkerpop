@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -126,10 +128,11 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().or(
-                has("age", Compare.gt, 27),
-                outE().count().is(Compare.gte, 2l)).
-                    values("name");
+        GraphTraversal t = g.V().has(T.label, "software")
+                .in("created")
+                .choose(out("knows"),
+                        __.<Vertex>emit().repeat(out("knows")).times(1).fold(),
+                        identity());
         System.out.println(t.toString());
         t.forEachRemaining(System.out::println);
         System.out.println(t.toString());

@@ -121,6 +121,19 @@ import java.util.function.UnaryOperator;
  */
 public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
+    public interface Admin<S, E> extends Traversal.Admin<S, E>, GraphTraversal<S, E> {
+
+        @Override
+        public default <E2> GraphTraversal.Admin<S, E2> addStep(final Step<?, E2> step) {
+            return (GraphTraversal.Admin<S,E2>) Traversal.Admin.super.addStep((Step) step);
+        }
+
+        @Override
+        public default GraphTraversal<S, E> iterate() {
+            return GraphTraversal.super.iterate();
+        }
+    }
+
     @Override
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
         try {
@@ -136,19 +149,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     @Override
     public default GraphTraversal.Admin<S, E> asAdmin() {
         return (GraphTraversal.Admin<S, E>) this;
-    }
-
-    public interface Admin<S, E> extends Traversal.Admin<S, E>, GraphTraversal<S, E> {
-
-        @Override
-        public default <E2> GraphTraversal.Admin<S, E2> addStep(final Step<?, E2> step) {
-            return (GraphTraversal.Admin) Traversal.Admin.super.addStep((Step) step);
-        }
-
-        @Override
-        public default GraphTraversal<S, E> iterate() {
-            return GraphTraversal.super.iterate();
-        }
     }
 
     ///////////////////// MAP STEPS /////////////////////
@@ -274,7 +274,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startLabel, final Traversal... traversals) {
-        return (GraphTraversal) this.asAdmin().addStep(new MatchStep<S, Map<String, E2>>(this.asAdmin(), startLabel, traversals));
+        return (GraphTraversal) this.asAdmin().addStep(new MatchStep<E, Map<String, E2>>(this.asAdmin(), startLabel, traversals));
     }
 
     public default <E2> GraphTraversal<S, E2> sack() {

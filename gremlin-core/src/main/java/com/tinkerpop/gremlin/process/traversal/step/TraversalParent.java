@@ -45,9 +45,9 @@ public interface TraversalParent {
         this.getLocalChildren().forEach(traversal -> traversal.setStrategies(strategies));
     }
 
-    public default Set<TraverserRequirement> getSelfAndChildRequirements(final TraverserRequirement... currentStepRequirements) {
+    public default Set<TraverserRequirement> getSelfAndChildRequirements(final TraverserRequirement... selfRequirements) {
         final Set<TraverserRequirement> requirements = new HashSet<>();
-        Collections.addAll(requirements, currentStepRequirements);
+        Collections.addAll(requirements, selfRequirements);
         for (final Traversal.Admin<?, ?> local : this.getLocalChildren()) {
             requirements.addAll(local.getTraverserRequirements());
         }
