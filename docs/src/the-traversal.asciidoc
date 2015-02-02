@@ -154,6 +154,21 @@ g.V().out('knows').aggregate()
 g.V().out('knows').aggregate().by('name')
 ----
 
+[[as-step]]
+As Step
+~~~~~~~
+
+The `as()`-step is not a real step, but a "step modulator" similar to <<by-step,`by()`>> and <<option-step,`option()`>>. With `as()`, it is possible to provide a label to the step that can later be accessed by steps and data structures that make use of such labels -- e.g., <<select-step,`select()`>>, <<match-step,`match()`>>, and path.
+
+[gremlin-groovy,modern]
+----
+g.V().as('a').out('created').as('b').select()            <1>
+g.V().as('a').out('created').as('b').select().by('name') <2>
+----
+
+<1> Select the objects labeled "a" and "b" from the path.
+<2> Select the objects labeled "a" and "b" from the path and, for each object, project its name value.
+
 [[back-step]]
 Back Step
 ~~~~~~~~~
@@ -161,13 +176,30 @@ Back Step
 link:http://en.wikipedia.org/wiki/Functional_programming[Functional languages] make use of function composition and lazy evaluation to create complex computations from primitive operations. This is exactly what Gremlin `GraphTraversal` does. One of the differentiating aspects of Gremlin's data flow approach to graph processing is that the flow need not always go "forward," but in fact, can go back to a previously seen area of computation. Examples include <<repeat-step,`repeat()`>> as well as the `back()`-step (*map*).
 
 [gremlin-groovy,modern]
----
+----
 g.V().out().out()
 g.V().out().out().path()
 g.V().as('x').out().out().back('x')
 g.V().out().as('x').out().back('x')
 g.V().out().out().as('x').back('x') // pointless
 ----
+
+[[by-step]]
+By Step
+~~~~~~~
+
+The `by()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and <<option-step,`option()`>>. If a step is able to accept traversals, functions, comparators, etc. then `by()` is the means by which they are added. The general pattern is `step().by()...by()`. Some steps can only accept one `by()` while others, and arbitrary amount.
+
+[gremlin-groovy,modern]
+----
+g.V().group().by(bothE().count())                              <1>
+g.V().group().by(bothE().count()).by('name')                   <2>
+g.V().group().by(bothE().count()).by('name').by{it.size()}     <3>
+----
+
+<1> `by(outE().count())` will group the elements by their edge count (*traversal*).
+<2> `by('name')` will process the grouped elements by their name (*element property projection*).
+<3> `by{it.size()}` will count the number of elements in each group (*function*).
 
 [[count-step]]
 Count Step
@@ -190,38 +222,26 @@ g.V().has(label,'person').outE('created').count().map{it.get() * 10}.map{it.get(
 Choose Step
 ~~~~~~~~~~~
 
-The `choose()`-step (*branch*) allows for the current traverser to select which traversal branch to take. With `choose()`, it is possible to implement if/else-based semantics. The first set of examples below provide information about the vertices of the graph so its easier to understand the `choose()` examples to follow.
-
-[gremlin-groovy,modern]
-----
-g.V().has(label,'person').values('name').map {[it.get(), it.get().length()]}
-g.V().has(label,'person').filter {
-    it.get().value('name').length() == 5
-}.in().values('name')
-g.V().has(label,'person').filter {
-    it.get().value('name').length() == 4
-}.out().values('name')
-----
-
-Given the facts above, the following examples show how to use `choose()` to select the values.
-
 image::choose-step.png[width=700]
+
+The `choose()`-step (*branch*) routes the current traverser to a particular traversal branch option. With `choose()`, it is possible to implement if/else-based semantics as well as more complicated selections.
 
 [gremlin-groovy,modern]
 ----
 g.V().has(label,'person').
-      choose({ it.value('name').length() == 5},
-               __.in(), out()).values('name') <1>
+      choose({it.value('name').length() == 5},
+        __.in(),
+        __.out()).values('name') <1>
 g.V().has(label,'person').
       choose {it.value('name').length()}.
         option(5, __.in()).
-        option(4, out()).values('name') <2>
+        option(4, __.out()).values('name') <2>
 ----
 
-<1> If the predicate is true, then do `in`, else do `out`.
-<2> Use the result of the function as a key to the map of traversal choices.
+<1> If the predicate is true, then do `in`, else do `out` (i.e. predicate-based option selection).
+<2> Use the result of the function as a key to the map of traversal options (i.e. function-based option selection).
 
-However, note that `choose()` can have an arbitrary number of options and moreover, can take a anonymous traversal as its choice function.
+However, note that `choose()` can have an arbitrary number of options and moreover, can take an anonymous traversal as its choice function.
 
 [gremlin-groovy,modern]
 ----
@@ -231,6 +251,16 @@ g.V().has(label,'person').
         option('josh', values('name')).
         option('vadas', valueMap()).
         option('peter', label())
+----
+
+The `choose()`-step can leverage the `Pick.none` option match. For anything that does not match a specified option, the `none`-option is taken.
+
+[gremlin-groovy,modern]
+----
+g.V().has(label,'person').
+      choose(values('name')).
+        option('marko', values('age')).
+        option(none, values('name'))
 ----
 
 [[coin-step]]
