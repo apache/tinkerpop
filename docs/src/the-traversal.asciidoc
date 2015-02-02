@@ -188,7 +188,7 @@ g.V().out().out().as('x').back('x') // pointless
 By Step
 ~~~~~~~
 
-The `by()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and <<option-step,`option()`>>. If a step is able to accept traversals, functions, comparators, etc. then `by()` is the means by which they are added. The general pattern is `step().by()...by()`. Some steps can only accept one `by()` while others, and arbitrary amount.
+The `by()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and <<option-step,`option()`>>. If a step is able to accept traversals, functions, comparators, etc. then `by()` is the means by which they are added. The general pattern is `step().by()...by()`. Some steps can only accept one `by()` while others can take an arbitrary amount.
 
 [gremlin-groovy,modern]
 ----
