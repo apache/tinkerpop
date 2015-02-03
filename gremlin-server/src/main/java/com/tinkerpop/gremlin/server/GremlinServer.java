@@ -101,13 +101,18 @@ public class GremlinServer {
             b.bind(settings.host, settings.port).addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(final ChannelFuture channelFuture) throws Exception {
-                    ch = channelFuture.channel();
+                    if (channelFuture.isSuccess()) {
+                        ch = channelFuture.channel();
 
-                    logger.info("Gremlin Server configured with worker thread pool of {}, gremlin pool of {} and boss thread pool of {}.",
-                            settings.threadPoolWorker, settings.gremlinPool, settings.threadPoolBoss);
-                    logger.info("Channel started at port {}.", settings.port);
+                        logger.info("Gremlin Server configured with worker thread pool of {}, gremlin pool of {} and boss thread pool of {}.",
+                                settings.threadPoolWorker, settings.gremlinPool, settings.threadPoolBoss);
+                        logger.info("Channel started at port {}.", settings.port);
 
-                    serverReadyFuture.complete(null);
+                        serverReadyFuture.complete(null);
+                    } else {
+                        serverReadyFuture.completeExceptionally(new IOException(
+                                String.format("Could not bind to %s and %s - perhaps something else is bound to that address.", settings.host, settings.port)));
+                    }
                 }
             });
         } catch (Exception ex) {
