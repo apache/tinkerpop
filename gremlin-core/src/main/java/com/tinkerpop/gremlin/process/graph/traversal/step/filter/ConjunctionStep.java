@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -37,8 +36,6 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
             final Traverser.Admin<S> start = this.starts.next();
             boolean found = false;
             for (final Traversal.Admin<S, ?> traversal : this.conjunctionTraversals) {
-                if (!traversal.getEngine().isPresent())
-                    traversal.applyStrategies(TraversalEngine.STANDARD); // TODO: because of XXXMarker compilation issue
                 traversal.addStart(start.split());
                 found = traversal.hasNext();
                 traversal.reset();

@@ -106,11 +106,13 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public void addStart(final Traverser<S> start) {
+        if (!this.locked) this.applyStrategies(TraversalEngine.STANDARD);
         if (!this.steps.isEmpty()) this.steps.get(0).addStart(start);
     }
 
     @Override
     public void addStarts(final Iterator<Traverser<S>> starts) {
+        if (!this.locked) this.applyStrategies(TraversalEngine.STANDARD);
         if (!this.steps.isEmpty()) this.steps.get(0).addStarts(starts);
     }
 
