@@ -17,7 +17,7 @@ public final class AndStep<S> extends ConjunctionStep<S> implements TraversalPar
 
     }
 
-    public static class AndMarker<S> extends AbstractStep<S, S> {
+    public static final class AndMarker<S> extends AbstractStep<S, S> {
         public AndMarker(final Traversal.Admin traversal) {
             super(traversal);
         }

@@ -70,7 +70,7 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_andXoutE__hasXlabel_personX_and_hasXage_gte_32XX_name() {
-            return g.V().and(outE(), has(T.label, "person").and().has("age", Compare.gte, 32)).<String>values("name"); // .submit(g.compute());
+            return g.V().and(outE(), has(T.label, "person").and().has("age", Compare.gte, 32)).<String>values("name").submit(g.compute());
         }
     }
 }

@@ -38,8 +38,7 @@ public abstract class GroovyOrTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_orXoutEXknowsX__hasXlabel_softwareX_or_hasXage_gte_35XX_name() {
-            g.V.or(outE('knows'), has(T.label, 'software').or.has('age', gte, 35)).name
-           // ComputerTestHelper.compute("g.V.or(outE('knows'), has(T.label, 'software').or.has('age', gte, 35)).name", g)
+            ComputerTestHelper.compute("g.V.or(outE('knows'), has(T.label, 'software').or.has('age', gte, 35)).name", g)
         }
     }
 }

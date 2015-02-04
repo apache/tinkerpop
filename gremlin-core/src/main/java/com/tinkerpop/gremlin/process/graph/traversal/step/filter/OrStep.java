@@ -17,7 +17,7 @@ public final class OrStep<S> extends ConjunctionStep<S> implements TraversalPare
 
     }
 
-    public static class OrMarker<S> extends AbstractStep<S, S> {
+    public static final class OrMarker<S> extends AbstractStep<S, S> {
         public OrMarker(final Traversal.Admin traversal) {
             super(traversal);
         }
