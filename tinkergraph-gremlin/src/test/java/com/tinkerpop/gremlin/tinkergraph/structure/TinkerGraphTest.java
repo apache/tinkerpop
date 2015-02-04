@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.traversal.__;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -128,17 +127,18 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        GraphTraversal t = g.V().has(T.label, "software")
-                .in("created")
-                .choose(out("knows"),
-                        __.<Vertex>emit().repeat(out("knows")).times(1).fold(),
-                        identity());
-        System.out.println(t.toString());
+
+        GraphTraversal t = g.V().and(outE(), has(T.label, "person").and().has("age", Compare.gte, 32)).values("name").submit(g.compute());
+
+        /*GraphTraversal t = g.V().
+                outE().
+                or().
+                has(T.label, "software").and().has("lang", "java").
+                values("name");*/
+
+        //System.out.println(t.toString());
         t.forEachRemaining(System.out::println);
         System.out.println(t.toString());
-        System.out.println(t.hasNext());
-        // System.out.println(t.next().doubleValue() > 10.0d);
-
     }
 
     @Test

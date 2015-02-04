@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
+import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.Traverser
 import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
 import com.tinkerpop.gremlin.process.graph.traversal.__
@@ -24,7 +25,7 @@ class SugarLoader {
         }
         // g.V.age
         GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
-            ((GraphTraversal)delegate).values(name);
+            ((GraphTraversal) delegate).values(name);
         }
         // __.age and __.out
         __.metaClass.static.propertyMissing = { final String name ->
@@ -111,6 +112,14 @@ class SugarLoader {
         public static final getAt(final GraphTraversal graphTraversal, final Range range) {
             graphTraversal.range(range.getFrom() as Integer, range.getTo() as Integer);
         }
+
+        /*public static final or(final GraphTraversal leftTraversal, final Traversal rightTraversal) {
+            leftTraversal.or();
+            rightTraversal.asAdmin().getSteps().forEach { step ->
+                System.out.println(step.toString() + "!!!" + leftTraversal.toString());
+                leftTraversal.asAdmin().addStep(step.clone());
+            }
+        }*/
 
         public String toString() {
             return TraversalHelper.makeTraversalString(this.metaClass.owner);

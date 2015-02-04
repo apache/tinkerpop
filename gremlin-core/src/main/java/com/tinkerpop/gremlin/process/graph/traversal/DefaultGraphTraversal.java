@@ -20,4 +20,9 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
     public GraphTraversal<S, E> iterate() {
         return GraphTraversal.Admin.super.iterate();
     }
+
+    @Override
+    public DefaultGraphTraversal<S, E> clone() throws CloneNotSupportedException {
+        return (DefaultGraphTraversal<S, E>) super.clone();
+    }
 }

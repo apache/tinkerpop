@@ -34,7 +34,7 @@ public class __ {
 
     //////////////////////////////////////////////////////////////////////
 
-    private static <A> GraphTraversal<A, A> start() {
+    public static <A> GraphTraversal<A, A> start() {
         return new DefaultGraphTraversal<>(__.class);
     }
 

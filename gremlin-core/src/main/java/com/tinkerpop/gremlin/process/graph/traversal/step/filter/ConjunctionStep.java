@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,8 +64,8 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
     public ConjunctionStep<S> clone() throws CloneNotSupportedException {
         final ConjunctionStep<S> clone = (ConjunctionStep<S>) super.clone();
         clone.conjunctionTraversals = new ArrayList<>();
-        for (final Traversal.Admin<S, ?> andTraversal : this.conjunctionTraversals) {
-            clone.conjunctionTraversals.add(clone.integrateChild(andTraversal.clone(), TYPICAL_LOCAL_OPERATIONS));
+        for (final Traversal.Admin<S, ?> conjunctionTraversal : this.conjunctionTraversals) {
+            clone.conjunctionTraversals.add(clone.integrateChild(conjunctionTraversal.clone(), TYPICAL_LOCAL_OPERATIONS));
         }
         return clone;
     }

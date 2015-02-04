@@ -125,13 +125,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         @Override
         public default <E2> GraphTraversal.Admin<S, E2> addStep(final Step<?, E2> step) {
-            return (GraphTraversal.Admin<S,E2>) Traversal.Admin.super.addStep((Step) step);
+            return (GraphTraversal.Admin<S, E2>) Traversal.Admin.super.addStep((Step) step);
         }
 
         @Override
         public default GraphTraversal<S, E> iterate() {
             return GraphTraversal.super.iterate();
         }
+
+        @Override
+        public GraphTraversal.Admin<S, E> clone() throws CloneNotSupportedException;
     }
 
     @Override
@@ -330,11 +333,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> or(final Traversal<?, ?>... orTraversals) {
-        return this.asAdmin().addStep(new OrStep(this.asAdmin(), Arrays.copyOf(orTraversals, orTraversals.length, Traversal.Admin[].class)));
+        return this.asAdmin().addStep(0 == orTraversals.length ?
+                new OrStep.OrMarker<>(this.asAdmin()) :
+                new OrStep(this.asAdmin(), Arrays.copyOf(orTraversals, orTraversals.length, Traversal.Admin[].class)));
     }
 
     public default GraphTraversal<S, E> and(final Traversal<?, ?>... andTraversals) {
-        return this.asAdmin().addStep(new AndStep(this.asAdmin(), Arrays.copyOf(andTraversals, andTraversals.length, Traversal.Admin[].class)));
+        return this.asAdmin().addStep(0 == andTraversals.length ?
+                new AndStep.AndMarker<>(this.asAdmin()) :
+                new AndStep(this.asAdmin(), Arrays.copyOf(andTraversals, andTraversals.length, Traversal.Admin[].class)));
     }
 
     public default GraphTraversal<S, E> inject(final E... injections) {
