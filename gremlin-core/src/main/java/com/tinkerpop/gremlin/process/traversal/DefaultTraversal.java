@@ -56,6 +56,9 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     globalChild.applyStrategies(engine);
                 }
+                /*for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                    localChild.applyStrategies(TraversalEngine.STANDARD);
+                }*/
             }
         }
         this.traversalEngine = Optional.of(engine);

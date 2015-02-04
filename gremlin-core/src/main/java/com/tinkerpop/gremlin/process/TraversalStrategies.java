@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.process.graph.traversal.__;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.ComparatorHolderRemovalStrategy;
+import com.tinkerpop.gremlin.process.graph.traversal.strategy.ConjunctionStrategy;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.DedupOptimizerStrategy;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.EngineDependentStrategy;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.IdentityRemovalStrategy;
@@ -12,8 +13,8 @@ import com.tinkerpop.gremlin.process.graph.traversal.strategy.ReducingStrategy;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.SideEffectRegistrationStrategy;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategy;
-import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.traversal.DefaultTraversalStrategies;
+import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -156,8 +157,8 @@ public interface TraversalStrategies extends Cloneable {
                     EngineDependentStrategy.instance(),
                     ProfileStrategy.instance(),
                     SideEffectRegistrationStrategy.instance(),
-                    TraversalVerificationStrategy.instance());
-
+                    TraversalVerificationStrategy.instance(),
+                    ConjunctionStrategy.instance());
             try {
                 CACHE.put(Graph.class, coreStrategies.clone());
                 CACHE.put(Vertex.class, coreStrategies.clone());
