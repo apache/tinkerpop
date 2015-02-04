@@ -24,6 +24,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
+ * This handler helps in scenarios where iteration is not being already handled later in the Netty pipeline. It is
+ * important that if this handler is used at all, that it not block, thus ensure that if {@link Iterator} instances
+ * are passed to it, they do not contain large result sets or iterates over objects that require network calls.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @ChannelHandler.Sharable
