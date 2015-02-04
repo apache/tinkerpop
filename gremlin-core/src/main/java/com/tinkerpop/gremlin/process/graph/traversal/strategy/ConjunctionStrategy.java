@@ -23,8 +23,8 @@ public class ConjunctionStrategy extends AbstractTraversalStrategy implements Tr
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine traversalEngine) {
-        TraversalHelper.getStepsOfAssignableClass(OrStep.OrMarker.class, traversal).forEach(orMarkerStep -> {
 
+        TraversalHelper.getStepsOfClass(OrStep.OrMarker.class, traversal).forEach(orMarkerStep -> {
             Step<?, ?> currentStep = orMarkerStep.getNextStep();
             final Traversal.Admin<?, ?> rightTraversal = __.start().asAdmin();
             while (legalCurrentStep(currentStep)) {
@@ -48,8 +48,7 @@ public class ConjunctionStrategy extends AbstractTraversalStrategy implements Tr
         });
 
         //////////////////////
-
-        TraversalHelper.getStepsOfAssignableClass(AndStep.AndMarker.class, traversal).forEach(andMarkerStep -> {
+        TraversalHelper.getStepsOfClass(AndStep.AndMarker.class, traversal).forEach(andMarkerStep -> {
             Step<?, ?> currentStep = andMarkerStep.getNextStep();
             final Traversal.Admin<?, ?> rightTraversal = __.start().asAdmin();
             while (legalCurrentStep(currentStep)) {
@@ -79,4 +78,20 @@ public class ConjunctionStrategy extends AbstractTraversalStrategy implements Tr
     public static ConjunctionStrategy instance() {
         return INSTANCE;
     }
+
+    /*private void print(final Traversal.Admin<?,?> traversal) {
+                  Step<?,?> step = traversal.getStartStep();
+        System.out.println();
+        while(!(step instanceof EmptyStep)) {
+            System.out.print(step + "-->");
+            step = step.getNextStep();
+        }
+         System.out.println() ;
+        step = traversal.getEndStep();
+        while(!(step instanceof EmptyStep)) {
+            System.out.print(step + "<--");
+            step = step.getPreviousStep();
+        }
+        System.out.println();
+    }*/
 }

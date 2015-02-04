@@ -128,7 +128,13 @@ public class TinkerGraphTest {
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
 
-        GraphTraversal t = g.V().and(outE(),has(T.label, "person").and().has("age", Compare.gte, 32)).values("name").submit(g.compute());
+       GraphTraversal t = g.V().and(outE(), has(T.label, "person").and().has("age", Compare.gte, 32)).values("name").submit(g.compute());
+
+        /*GraphTraversal t = g.V().
+                outE().
+                or().
+                has(T.label, "software").and().has("lang", "java").
+                values("name");*/
 
         System.out.println(t.toString());
         t.forEachRemaining(System.out::println);

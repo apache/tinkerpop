@@ -56,9 +56,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     globalChild.applyStrategies(engine);
                 }
-                /*for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
-                    localChild.applyStrategies(TraversalEngine.STANDARD);
-                }*/
             }
         }
         this.traversalEngine = Optional.of(engine);
@@ -190,11 +187,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public <S2, E2> Traversal.Admin<S2, E2> removeStep(final int index) throws IllegalStateException {
         if (this.locked) throw Exceptions.traversalIsLocked();
-        final Step<?, ?> removedStep = this.steps.remove(index);
-        final Step previousStep = removedStep.getPreviousStep();
-        final Step nextStep = removedStep.getNextStep();
-        previousStep.setNextStep(nextStep);
-        nextStep.setPreviousStep(previousStep);
+        final Step previousStep = this.steps.size() > 0 && index != 0 ? steps.get(index - 1) : null;
+        final Step nextStep = this.steps.size() > index + 1 ? steps.get(index + 1) : null;
+        this.steps.remove(index);
+        if (null != previousStep) previousStep.setNextStep(null == nextStep ? EmptyStep.instance() : nextStep);
+        if (null != nextStep) nextStep.setPreviousStep(null == previousStep ? EmptyStep.instance() : previousStep);
         return (Traversal.Admin<S2, E2>) this;
     }
 
