@@ -38,7 +38,7 @@ public class ConjunctionStrategy extends AbstractTraversalStrategy implements Tr
             final Traversal.Admin<?, ?> leftTraversal = __.start().asAdmin();
             while (legalCurrentStep(currentStep)) {
                 final Step<?, ?> previousStep = currentStep.getPreviousStep();
-                leftTraversal.addStep(currentStep);
+                leftTraversal.addStep(0, currentStep);
                 traversal.removeStep(currentStep);
                 currentStep = previousStep;
             }
@@ -62,7 +62,7 @@ public class ConjunctionStrategy extends AbstractTraversalStrategy implements Tr
             final Traversal.Admin<?, ?> leftTraversal = __.start().asAdmin();
             while (legalCurrentStep(currentStep)) {
                 final Step<?, ?> previousStep = currentStep.getPreviousStep();
-                leftTraversal.addStep(currentStep);
+                leftTraversal.addStep(0, currentStep);
                 traversal.removeStep(currentStep);
                 currentStep = previousStep;
             }
