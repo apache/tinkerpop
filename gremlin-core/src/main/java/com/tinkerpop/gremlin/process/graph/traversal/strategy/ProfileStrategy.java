@@ -28,7 +28,6 @@ public class ProfileStrategy extends AbstractTraversalStrategy {
         PRIORS.add(LabeledEndStepStrategy.class);
         PRIORS.add(MatchWhereStrategy.class);
         PRIORS.add(ReducingStrategy.class);
-        PRIORS.add(RouteStrategy.class);
         PRIORS.add(SideEffectCapStrategy.class);
         PRIORS.add(SideEffectRegistrationStrategy.class);
     }
