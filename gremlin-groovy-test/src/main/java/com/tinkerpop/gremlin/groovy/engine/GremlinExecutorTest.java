@@ -1,7 +1,10 @@
 package com.tinkerpop.gremlin.groovy.engine;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.TestHelper;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
+import com.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 
@@ -11,11 +14,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +34,7 @@ import static org.junit.Assert.*;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinExecutorTest {
+public class GremlinExecutorTest extends AbstractGremlinTest {
     public static Map<String, String> PATHS = new HashMap<>();
 
     static {
@@ -163,6 +168,36 @@ public class GremlinExecutorTest {
         assertFalse(timeoutCalled.get());
         assertTrue(successCalled.get());
         assertFalse(failureCalled.get());
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldAllowTraversalToIterateInDifferentThreadThanOriginallyEvaluated() {
+        // this test sort of simulates Gremlin Server interaction where a Traversal is eval'd in one Thread, but
+        // then iterated in another.  note that Gremlin Server configures the script engine to auto-commit
+        // after evaluation.  gremlin server assumes graphs are configured to use auto-transactions when in
+        // sessionless mode.
+        final ExecutorService evalExecutor = Executors.newSingleThreadExecutor();
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .afterSuccess(b -> {
+                    final Graph graph = (Graph) b.get("g");
+                    if (graph.features().graph().supportsTransactions())
+                        graph.tx().commit();
+                })
+                .executorService(evalExecutor).create();
+
+        final Map<String,Object> bindings = new HashMap<>();
+        bindings.put("g", g);
+
+        final AtomicInteger vertexCount = new AtomicInteger(0);
+
+        final ExecutorService iterationExecutor = Executors.newSingleThreadExecutor();
+        gremlinExecutor.eval("g.V().out()", bindings).thenAcceptAsync(o -> {
+            final Iterator itty = (Iterator) o;
+            itty.forEachRemaining(v -> vertexCount.incrementAndGet());
+        }, iterationExecutor).join();
+
+        assertEquals(6, vertexCount.get());
     }
 
     @Test
