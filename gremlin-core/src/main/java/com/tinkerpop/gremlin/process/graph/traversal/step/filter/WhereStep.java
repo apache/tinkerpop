@@ -39,7 +39,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         this.secondKey = null;
         this.biPredicate = null;
         this.constraint = constraint;
-        this.integrateChild(this.constraint, Child.SET_HOLDER);
+        this.integrateChild(this.constraint, Child.SET_PARENT);
         WhereStep.generatePredicate(this);
     }
 

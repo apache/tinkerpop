@@ -38,8 +38,7 @@ public abstract class GroovyAndTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_andXoutE__hasXlabel_personX_and_hasXage_gte_32XX_name() {
-            g.V.and(outE(), has(T.label, 'person').and.has('age', gte, 32)).name
-            // ComputerTestHelper.compute("g.V.and(outE(), has(T.label, 'person').and.has('age', gte, 32)).name", g)
+            ComputerTestHelper.compute("g.V.and(outE(), has(T.label, 'person').and.has('age', gte, 32)).name", g)
         }
     }
 }

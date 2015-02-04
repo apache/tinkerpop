@@ -30,7 +30,7 @@ import java.util.function.Function;
  */
 public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> implements TraversalParent {
 
-    private static final Child[] CHILD_OPERATIONS = new Child[]{Child.SET_HOLDER}; // TODO: Nest.SET/MERGE_SIDE_EFFECTS?
+    private static final Child[] CHILD_OPERATIONS = new Child[]{Child.SET_PARENT}; // TODO: Nest.SET/MERGE_SIDE_EFFECTS?
 
     static final BiConsumer<String, Object> TRIVIAL_CONSUMER = (s, t) -> {
     };

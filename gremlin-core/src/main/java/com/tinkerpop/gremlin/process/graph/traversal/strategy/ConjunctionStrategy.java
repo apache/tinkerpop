@@ -78,20 +78,4 @@ public class ConjunctionStrategy extends AbstractTraversalStrategy implements Tr
     public static ConjunctionStrategy instance() {
         return INSTANCE;
     }
-
-    /*private void print(final Traversal.Admin<?,?> traversal) {
-                  Step<?,?> step = traversal.getStartStep();
-        System.out.println();
-        while(!(step instanceof EmptyStep)) {
-            System.out.print(step + "-->");
-            step = step.getNextStep();
-        }
-         System.out.println() ;
-        step = traversal.getEndStep();
-        while(!(step instanceof EmptyStep)) {
-            System.out.print(step + "<--");
-            step = step.getPreviousStep();
-        }
-        System.out.println();
-    }*/
 }
