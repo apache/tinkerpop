@@ -547,6 +547,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
     }
 
     public static class DenyAll extends GroovyValueFilter {
+        @Override
         public Object filter(final Object o) {
             throw new SecurityException("Denied!");
         }
@@ -560,6 +561,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
             add(Class.class);
         }};
 
+        @Override
         public Object filter(final Object o) {
             if (null == o || ALLOWED_TYPES.contains(o.getClass()))
                 return o;
