@@ -1,11 +1,15 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.structure.*;
+import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Operator;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
@@ -18,8 +22,14 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
@@ -117,30 +127,16 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        GraphTraversal t = g.V().coalesce(outE("knows"), outE("created")).otherV().path().by("name").by(T.label);
-        Map<String, Integer> first = new HashMap<>();
-        Map<String, Integer> last = new HashMap<>();
-        int counter = 0;
-        while (t.hasNext()) {
-            counter++;
-            Path path = (Path)t.next();
-            first.compute(path.<String>get(0), (k, v) -> v != null ? v + 1 : 1);
-            last.compute(path.<String>get(2), (k, v) -> v != null ? v + 1 : 1);
-            assertEquals(3, path.size());
-            assertTrue((path.<String>get(0).equals("marko") && path.<String>get(1).equals("knows") && path.<String>get(2).equals("vadas"))
-                    || (path.<String>get(0).equals("marko") && path.<String>get(1).equals("knows") && path.<String>get(2).equals("josh"))
-                    || (path.<String>get(0).equals("josh") && path.<String>get(1).equals("created") && path.<String>get(2).equals("lop"))
-                    || (path.<String>get(0).equals("josh") && path.<String>get(1).equals("created") && path.<String>get(2).equals("ripple"))
-                    || (path.<String>get(0).equals("peter") && path.<String>get(1).equals("created") && path.<String>get(2).equals("lop")));
-        }
-        assertEquals(5, counter);
-        assertEquals(2, (int) first.<Integer>get("marko"));
-        assertEquals(2, (int) first.<Integer>get("josh"));
-        assertEquals(1, (int) first.<Integer>get("peter"));
-        assertEquals(1, (int) last.<Integer>get("josh"));
-        assertEquals(1, (int) last.<Integer>get("vadas"));
-        assertEquals(2, (int) last.<Integer>get("lop"));
-        assertEquals(1, (int) last.<Integer>get("ripple"));
+
+        GraphTraversal t = g.V().and(outE(), has(T.label, "person").and().has("age", Compare.gte, 32)).values("name").submit(g.compute());
+
+        /*GraphTraversal t = g.V().
+                outE().
+                or().
+                has(T.label, "software").and().has("lang", "java").
+                values("name");*/
+
+        //System.out.println(t.toString());
         t.forEachRemaining(System.out::println);
         System.out.println(t.toString());
     }
