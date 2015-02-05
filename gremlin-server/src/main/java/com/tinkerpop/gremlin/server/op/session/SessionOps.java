@@ -74,15 +74,15 @@ public final class SessionOps {
         // parameter bindings override session bindings
         bindings.putAll(requestBindings);
 
-        final CompletableFuture<Object> future = session.getGremlinExecutor().eval(script, language, bindings);
-        future.handle((v, t) -> timerContext.stop());
-        future.exceptionally(se -> {
+        final CompletableFuture<Object> evalFuture = session.getGremlinExecutor().eval(script, language, bindings);
+        evalFuture.handle((v, t) -> timerContext.stop());
+        evalFuture.exceptionally(se -> {
             logger.warn(String.format("Exception processing a script on request [%s].", msg), se);
             ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(se.getMessage()).create());
             return null;
         });
 
-        final CompletableFuture<Void> iterationFuture = future.thenAcceptAsync(o -> {
+        final CompletableFuture<Void> iterationFuture = evalFuture.thenAcceptAsync(o -> {
             final Iterator itty = IteratorUtils.convertToIterator(o);
             // the batch size can be overriden by the request
             final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE).orElse(settings.resultIterationBatchSize);

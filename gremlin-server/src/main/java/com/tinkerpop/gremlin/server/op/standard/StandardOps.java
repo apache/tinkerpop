@@ -60,7 +60,7 @@ final class StandardOps {
 
         final CompletableFuture<Void> iterationFuture = evalFuture.thenAcceptAsync(o -> {
             final Iterator itty = IteratorUtils.convertToIterator(o);
-            // the batch size can be overriden by the request
+            // the batch size can be overridden by the request
             final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE).orElse(settings.resultIterationBatchSize);
 
             // timer for the total serialization time
