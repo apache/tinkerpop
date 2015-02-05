@@ -802,13 +802,103 @@ image:gremlin-sugar.png[width=120,float=left] In previous versions of Gremlin-Gr
 
 IMPORTANT: It is important that the sugar plugin is loaded in a Gremlin Console session prior to any manipulations of the respective TinkerPop3 objects as Groovy will cache unavailable methods and properties.
 
+Graph Traversal Methods
+^^^^^^^^^^^^^^^^^^^^^^^
+
+If a `GraphTraversal` property is unknown and there is a corresponding method with said name off of `GraphTraversal` then the property is assumed to be a method call. This enables the user to omit `( )` from the method name. However, if the property does not reference a `GraphTraversal` method, then it is assumed to be a call to `values(property)`.
+
 [source,groovy]
-gremlin> :plugin use tinkerpop.sugar
-==>tinkerpop.sugar activated
-gremlin> g.V(1).values('name')  // conventional
+gremlin> g.V ////<1>
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+gremlin> g.V.name ////<2>
 ==>marko
-gremlin> g.V(1).name  // sugar
+==>vadas
+==>lop
+==>josh
+==>ripple
+==>peter
+gremlin> g.V.outE.weight ////<3>
+==>0.4
+==>0.5
+==>1.0
+==>1.0
+==>0.4
+==>0.2
+
+<1> There is no need for the parentheses in `g.V()`.
+<2> The traversal is interpreted as `g.V().values('name')`.
+<3> A chain of zero-argument step calls with a property value call.
+
+Range Queries
+^^^^^^^^^^^^^
+
+The `[x]` and `[x..y]` range operators in Groovy translate to `RangeStep` calls.
+
+[source,groovy]
+gremlin> g.V[0..2]
+==>v[1]
+==>v[2]
+gremlin> g.V[0..<2]
+==>v[1]
+gremlin> g.V[2]
+==>v[3]
+
+Logical Operators
+^^^^^^^^^^^^^^^^^
+
+The `&` and `|` operator are overloaded in `SugarGremlinPlugin`. When used, they introduce the `AndStep.AndMarker` and `OrStep.OrStep` markers into the traversal. See <<and-step,`and()`>> and <<or-step,`or()`>> for more information.
+
+[source,groovy]
+gremlin> g.V.has(outE('knows') & outE('created')).name ////<1>
 ==>marko
+gremlin> t = g.V.has(outE('knows') | inE('created')).name; null ////<2>
+==>null
+gremlin> t.toString()
+==>[GraphStep(vertex), HasTraversalStep([VertexStep(OUT,[knows],edge), OrMarker, VertexStep(IN,[created],edge)]), PropertiesStep([name],value)]
+gremlin> t
+==>marko
+==>lop
+==>ripple
+gremlin> t.toString()
+==>[TinkerGraphStep(vertex), HasTraversalStep([OrStep([[VertexStep(OUT,[knows],edge)], [VertexStep(IN,[created],edge)]])]), PropertiesStep([name],value)]
+
+<1> Introducing the `AndStep` with the `&` operator.
+<2> Introducing the `OrStep` with the `|` operator.
+
+Comparators
+^^^^^^^^^^^
+
+Unfortunately, Groovy does not support comparator overloading -- `>`, `<=`, `==`, etc. However, the `Compare` enums are available as methods in `SugarGremlinPlugin`.
+
+[source,groovy]
+gremlin> g.V.has(outE('created').count.gt(1l) | __.age.lt(30)).name ////<1>
+==>marko
+==>vadas
+==>josh
+gremlin> t = g.V.has(outE('created').count.gt(1l) | __.age.lt(30) & outE('knows')).name; null ////<2>
+==>null
+gremlin> t.toString()
+==>[GraphStep(vertex), HasTraversalStep([VertexStep(OUT,[created],edge), CountStep, IsStep(gt,1), OrMarker, PropertiesStep([age],value), IsStep(lt,30), AndMarker, VertexStep(OUT,[knows],edge)]), PropertiesStep([name],value)]
+gremlin> t
+==>marko
+==>josh
+gremlin> t.toString()
+==>[TinkerGraphStep(vertex), HasTraversalStep([OrStep([[VertexStep(OUT,[created],edge), CountStep, IsStep(gt,1)], [AndStep([[PropertiesStep([age],value), IsStep(lt,30)], [VertexStep(OUT,[knows],edge)]])]])]), PropertiesStep([name],value)]
+
+<1> Using `gt(x)` in place of `is(gt,x)`.
+<2> A complex and/or chain with `IsStep` substitutions.
+
+Traverser Methods
+^^^^^^^^^^^^^^^^^
+
+It is rare that a user will ever interact with a `Traverser` directly. However, if they do, some method redirects exist to make it easy.
+
+[source,groovy]
 gremlin> g.V().map{it.get().value('name')}  // conventional
 ==>marko
 ==>vadas
@@ -823,13 +913,6 @@ gremlin> g.V.map{it.name}  // sugar
 ==>josh
 ==>ripple
 ==>peter
-
-The examples above are generalized below:
-
-. Missing element fields: if a vertex or edge's instance field is selected and that field does not exist, then it is assumed the user means `values('fieldName')`.
-. Missing traverser method: if a traverser method is called and that method doesn't exist, then it is assumed that the method is on the wrapped object of the traverser.
-. Missing traverser field: if a traverser field is called and that field doesn't exist, then it is assumed that the field is on the wrapped object of the traverser.
-. Missing traversal field: if a traversal field is called and that field doesn't exist, then it is assumed either a step() or defaults to `values('step')`.
 
 [[utilities-plugin]]
 Utilities Plugin
