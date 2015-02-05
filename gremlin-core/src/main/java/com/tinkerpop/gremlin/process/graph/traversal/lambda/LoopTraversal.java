@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
  */
 public final class LoopTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
 
-    private long maxLoops;
+    private final long maxLoops;
     private boolean allow = false;
 
     public LoopTraversal(final long maxLoops) {

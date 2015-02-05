@@ -31,8 +31,5 @@ public class GroovyTinkerGraphTest {
         System.out.println(t.toString());
         t.forEachRemaining { System.out.println(it) };
         System.out.println(t.toString());
-        System.out.println(t.hasNext());
-        // System.out.println(t.next().doubleValue() > 10.0d);
-
     }
 }

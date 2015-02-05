@@ -1,13 +1,13 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map.match;
 
+import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
-import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
@@ -29,8 +29,6 @@ import java.util.function.Function;
  * @author Joshua Shinavier (http://fortytwo.net)
  */
 public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> implements TraversalParent {
-
-    private static final Child[] CHILD_OPERATIONS = new Child[]{Child.SET_PARENT}; // TODO: Nest.SET/MERGE_SIDE_EFFECTS?
 
     static final BiConsumer<String, Object> TRIVIAL_CONSUMER = (s, t) -> {
     };
@@ -61,7 +59,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
         this.currentStart = new B_O_PA_S_SE_SL_Traverser<>(null, this);
         for (final Traversal tl : traversals) {
             addTraversalPrivate(tl);
-            this.integrateChild(tl.asAdmin(), CHILD_OPERATIONS);
+            this.integrateChild(tl.asAdmin(), TYPICAL_LOCAL_OPERATIONS);
             this.traversals.add(tl);
         }
         checkSolvability();
@@ -88,7 +86,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     public void addTraversal(final Traversal<S, S> traversal) {
         addTraversalPrivate(traversal);
         this.traversals.add(traversal);
-        this.integrateChild(traversal.asAdmin(), CHILD_OPERATIONS);
+        this.integrateChild(traversal.asAdmin(), TYPICAL_LOCAL_OPERATIONS);
         checkSolvability();
     }
 
