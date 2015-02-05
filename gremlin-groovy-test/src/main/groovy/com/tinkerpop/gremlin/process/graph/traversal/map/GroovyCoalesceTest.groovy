@@ -24,23 +24,23 @@ public abstract class GroovyCoalesceTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX() {
-            return g.V(1).coalesce(out('knows'), out('created')).values('name');
+        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX(final Object v1Id) {
+            return g.V(v1Id).coalesce(out('knows'), out('created')).values('name');
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX() {
-            return g.V(1).coalesce(out('created'), out('knows')).values('name');
+        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX(final Object v1Id) {
+            return g.V(v1Id).coalesce(out('created'), out('knows')).values('name');
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX() {
-            return g.V().coalesce(out('likes'), out('knows'), out('created')).groupCount().by('name').cap();
+            return g.V.coalesce(out('likes'), out('knows'), out('created')).groupCount().by('name').cap();
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX() {
-            return g.V().coalesce(outE('knows'), outE('created')).otherV().path().by('name').by(T.label);
+            return g.V.coalesce(outE('knows'), outE('created')).otherV.path.by('name').by(T.label);
         }
     }
 
@@ -52,13 +52,13 @@ public abstract class GroovyCoalesceTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX() {
-            ComputerTestHelper.compute("g.V(1).coalesce(out('knows'), out('created')).values('name')", g)
+        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX(final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).coalesce(out('knows'), out('created')).values('name')", g)
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX() {
-            ComputerTestHelper.compute("g.V(1).coalesce(out('created'), out('knows')).values('name')", g)
+        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX(final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).coalesce(out('created'), out('knows')).values('name')", g)
         }
 
         @Override

@@ -2,12 +2,12 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import com.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -24,15 +24,6 @@ public class CoalesceStep<S, E> extends FlatMapStep<S, E> implements TraversalPa
         for (final Traversal.Admin<S, ?> conjunctionTraversal : this.coalesceTraversals) {
             this.integrateChild(conjunctionTraversal, TYPICAL_LOCAL_OPERATIONS);
         }
-        this.setFunction(traverser -> {
-            for (final Traversal.Admin<S, E> coalesceTraversal : this.coalesceTraversals) {
-                coalesceTraversal.reset();
-                coalesceTraversal.addStart(traverser);
-                if (coalesceTraversal.hasNext())
-                    return coalesceTraversal;
-            }
-            return EmptyTraversal.instance();
-        });
         CoalesceStep.generateFunction(this);
     }
 
@@ -43,7 +34,7 @@ public class CoalesceStep<S, E> extends FlatMapStep<S, E> implements TraversalPa
 
     @Override
     public List<Traversal.Admin<S, E>> getLocalChildren() {
-        return this.coalesceTraversals;
+        return Collections.unmodifiableList(this.coalesceTraversals);
     }
 
     @Override
@@ -62,15 +53,17 @@ public class CoalesceStep<S, E> extends FlatMapStep<S, E> implements TraversalPa
         return TraversalHelper.makeStepString(this, this.coalesceTraversals);
     }
 
+    //////////////////////////
+
     private static <S, E> void generateFunction(final CoalesceStep<S, E> coalesceStep) {
         coalesceStep.setFunction(traverser -> {
             for (final Traversal.Admin<S, E> coalesceTraversal : coalesceStep.coalesceTraversals) {
                 coalesceTraversal.reset();
-                coalesceTraversal.addStart(traverser);
+                coalesceTraversal.addStart(traverser.asAdmin().split());
                 if (coalesceTraversal.hasNext())
                     return coalesceTraversal;
             }
-            return EmptyTraversal.instance();
+            return Collections.emptyIterator();
         });
     }
 }

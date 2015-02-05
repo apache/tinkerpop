@@ -24,9 +24,9 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_coalesceXoutXfooX_outXbarXX();
 
-    public abstract Traversal<Vertex, String> get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX();
+    public abstract Traversal<Vertex, String> get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX(final Object v1Id);
 
-    public abstract Traversal<Vertex, String> get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX();
+    public abstract Traversal<Vertex, String> get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX(final Object v1Id);
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX();
 
@@ -43,7 +43,7 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX() {
-        Traversal<Vertex, String> traversal = get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX();
+        Traversal<Vertex, String> traversal = get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList("josh", "vadas"), traversal);
     }
@@ -51,7 +51,7 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX() {
-        Traversal<Vertex, String> traversal = get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX();
+        Traversal<Vertex, String> traversal = get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals("lop", traversal.next());
@@ -117,13 +117,13 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX() {
-            return g.V(1).coalesce(out("knows"), out("created")).values("name");
+        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX(final Object v1Id) {
+            return g.V(v1Id).coalesce(out("knows"), out("created")).values("name");
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX() {
-            return g.V(1).coalesce(out("created"), out("knows")).values("name");
+        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX(final Object v1Id) {
+            return g.V(v1Id).coalesce(out("created"), out("knows")).values("name");
         }
 
         @Override
@@ -149,13 +149,13 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX() {
-            return super.get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX().submit(g.compute());
+        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX(final Object v1Id) {
+            return super.get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX(v1Id).submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX() {
-            return super.get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX().submit(g.compute());
+        public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX(final Object v1Id) {
+            return super.get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX(v1Id).submit(g.compute());
         }
 
         @Override
