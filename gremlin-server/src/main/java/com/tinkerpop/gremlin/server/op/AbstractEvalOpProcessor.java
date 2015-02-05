@@ -34,6 +34,9 @@ import java.util.function.Supplier;
 import static com.codahale.metrics.MetricRegistry.name;
 
 /**
+ * A base {@link com.tinkerpop.gremlin.server.OpProcessor} implementation that helps with operations that deal
+ * with script evaluation functions.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractEvalOpProcessor implements OpProcessor {
@@ -50,6 +53,9 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             T.label.getAccessor(), T.value.getAccessor());
     private static final String invalidBindingKeysJoined = String.join(",", invalidBindingsKeys);
 
+    /**
+     * Provides an operation for evaluating a Gremlin script.
+     */
     public abstract ThrowingConsumer<Context> getEvalOp();
 
     @Override
@@ -90,6 +96,17 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         return Optional.empty();
     }
 
+    /**
+     * A generalized implementation of the "eval" operation.  It handles script evaluation and iteration of results
+     * so as to write {@link ResponseMessage} objects down the Netty pipeline.  It also handles script timeouts,
+     * iteration timeouts, metrics and building bindings.
+     *
+     * @param context The current Gremlin Server {@link Context}
+     * @param gremlinExecutorSupplier A function that returns the {@link GremlinExecutor} to use in executing the
+     *                                script evaluation.
+     * @param bindingsSupplier A function that returns the {@link Bindings} to provide to the
+     *                         {@link GremlinExecutor#eval} method.
+     */
     public static void evalOp(final Context context, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
                               final Supplier<Bindings> bindingsSupplier) throws OpProcessorException {
         final Timer.Context timerContext = evalOpTimer.time();
