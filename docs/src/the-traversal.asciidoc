@@ -224,6 +224,20 @@ g.V().group().by(bothE().count()).by('name').by{it.size()}     <3>
 <2> `by('name')` will process the grouped elements by their name (*element property projection*).
 <3> `by{it.size()}` will count the number of elements in each group (*function*).
 
+[[coalesce-step]]
+Coalesce Step
+~~~~~~~~~~~~~
+
+The `coalesce()`-step evaluates the provided traversals in order and returns the first traversal that emits at least one element.
+
+[gremlin-groovy,modern]
+----
+g.V(1).coalesce(outE('knows'), outE('created')).inV().path().by('name').by(label)
+g.V(1).coalesce(outE('created'), outE('knows')).inV().path().by('name').by(label)
+g.V(1).next().property('nickname', 'okram')
+g.V().has(label, 'person').coalesce(values('nickname'), values('name'))
+----
+
 [[count-step]]
 Count Step
 ~~~~~~~~~~
