@@ -95,13 +95,13 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
                     || (path.<String>get(0).equals("peter") && path.<String>get(1).equals("created") && path.<String>get(2).equals("lop")));
         }
         assertEquals(5, counter);
-        assertEquals(2, (int) first.<Integer>get("marko"));
-        assertEquals(2, (int) first.<Integer>get("josh"));
-        assertEquals(1, (int) first.<Integer>get("peter"));
-        assertEquals(1, (int) last.<Integer>get("josh"));
-        assertEquals(1, (int) last.<Integer>get("vadas"));
-        assertEquals(2, (int) last.<Integer>get("lop"));
-        assertEquals(1, (int) last.<Integer>get("ripple"));
+        assertEquals(2, (int) first.get("marko"));
+        assertEquals(2, (int) first.get("josh"));
+        assertEquals(1, (int) first.get("peter"));
+        assertEquals(1, (int) last.get("josh"));
+        assertEquals(1, (int) last.get("vadas"));
+        assertEquals(2, (int) last.get("lop"));
+        assertEquals(1, (int) last.get("ripple"));
         assertFalse(traversal.hasNext());
     }
 
