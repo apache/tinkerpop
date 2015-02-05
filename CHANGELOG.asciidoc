@@ -10,6 +10,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Added `CoalesceStep` / `.coalesce()` that emits the first traversal which emits at least one element.
+* Added more syntactic sugar tricks to the Gremlin sugar plugin -- `&`, `|`, `select from`, `gt`, etc.
 * `Traversal.Admin` is consistent internal to steps, traversals, strategies, etc. For the user, `Traversal` is all they see.
 * `TraversalHolder` is now called `TraversalParent` with the child/parent terminology used throughout.
 * A massive `process/` package reorganization -- class names are still the same, just in new packages.
@@ -21,6 +22,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `AndStep` and `OrStep` filters to support arbitrary conjunction of traversals.
 * `__` is now a class with static `GraphTraversal` methods and thus `repeat(out())` is possible.
 * Added `IsStep` / `.is()` that allows filtering of scalar values.
+* `Neo4jGraph` and `TinkerGraph` no lnger create new `Feature` instances on each feature check.
 * Added `Compare.inside` and `Compare.outside` for testing ranges. Removed `between()` as now its `has('age',inside,[10,30])`.
 * `GraphTraversal.has()` no longer requires the element type to be cast in the traversal definition.
 * Fixed a `ConcurrentModificationException` bug in TinkerGraph that occurred when doing full vertex/edge scans and removing elements along the way.

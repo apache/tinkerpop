@@ -139,7 +139,8 @@ public class SerializationTest {
         public void shouldSerializePathAsDetached() throws Exception {
             final KryoMapper kryoMapper = g.io().kryoMapper().create();
             final Kryo kryo = kryoMapper.createMapper();
-            final Path p = g.V(convertToVertexId("marko")).as("a").outE().as("b").inV().as("c").path().next();
+            final Path p = g.V(convertToVertexId("marko")).as("a").outE().as("b").inV().as("c").path()
+                    .filter(t -> ((Vertex) t.get().objects().get(2)).value("name").equals("lop")).next();
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
             final Output output = new Output(stream);
             kryo.writeObject(output, p);
@@ -257,7 +258,8 @@ public class SerializationTest {
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializePath() throws Exception {
             final ObjectMapper mapper = g.io().graphSONMapper().create().createMapper();
-            final Path p = g.V(convertToVertexId("marko")).as("a").outE().as("b").inV().as("c").path().next();
+            final Path p = g.V(convertToVertexId("marko")).as("a").outE().as("b").inV().as("c").path()
+                    .filter(t -> ((Vertex) t.get().objects().get(2)).value("name").equals("lop")).next();
             final String json = mapper.writeValueAsString(p);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 

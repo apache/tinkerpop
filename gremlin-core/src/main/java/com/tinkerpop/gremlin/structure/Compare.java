@@ -107,4 +107,12 @@ public enum Compare implements BiPredicate<Object, Object> {
      * Produce the opposite representation of the current {@code Compare} enum.
      */
     public abstract Compare opposite();
+
+    public static final boolean hasCompare(final String name) {
+        for(final Compare compare : Compare.values()) {
+            if(compare.name().equals(name))
+                return true;
+        }
+        return false;
+    }
 }

@@ -15,14 +15,14 @@ import java.util.Set;
  */
 public interface TraversalParent {
 
-    public enum Child {
+    public enum Operation {
         SET_PARENT,
         SET_SIDE_EFFECTS,
         MERGE_IN_SIDE_EFFECTS,
     }
 
-    public static Child[] TYPICAL_GLOBAL_OPERATIONS = {Child.SET_PARENT, Child.MERGE_IN_SIDE_EFFECTS, Child.SET_SIDE_EFFECTS};
-    public static Child[] TYPICAL_LOCAL_OPERATIONS = {Child.SET_PARENT};
+    public static final Operation[] TYPICAL_GLOBAL_OPERATIONS = {Operation.SET_PARENT, Operation.MERGE_IN_SIDE_EFFECTS, Operation.SET_SIDE_EFFECTS};
+    public static final Operation[] TYPICAL_LOCAL_OPERATIONS = {Operation.SET_PARENT};
 
     public default <S, E> List<Traversal.Admin<S, E>> getGlobalChildren() {
         return Collections.emptyList();
@@ -61,8 +61,8 @@ public interface TraversalParent {
         return (Step<?, ?>) this;
     }
 
-    public default <S, E> Traversal.Admin<S, E> integrateChild(final Traversal.Admin<?, ?> childTraversal, final TraversalParent.Child... operations) {
-        for (final Child operation : operations) {
+    public default <S, E> Traversal.Admin<S, E> integrateChild(final Traversal.Admin<?, ?> childTraversal, final Operation... operations) {
+        for (final Operation operation : operations) {
             switch (operation) {
                 case SET_PARENT:
                     childTraversal.setParent(this);

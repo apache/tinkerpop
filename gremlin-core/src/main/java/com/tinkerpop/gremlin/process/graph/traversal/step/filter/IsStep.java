@@ -15,16 +15,18 @@ import java.util.function.BiPredicate;
 public final class IsStep<S> extends FilterStep<S> implements Reversible {
 
     private final Object value;
+    private final BiPredicate<S,Object> predicate;
 
     public IsStep(final Traversal.Admin traversal, final BiPredicate<S, Object> predicate, final Object value) {
         super(traversal);
         this.value = value;
-        this.setPredicate(traverser -> predicate.test(traverser.get(), this.value));
+        this.predicate = predicate;
+        this.setPredicate(traverser -> this.predicate.test(traverser.get(), this.value));
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.value);
+        return TraversalHelper.makeStepString(this, this.predicate, this.value);
     }
 
     @Override

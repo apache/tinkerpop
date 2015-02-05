@@ -16,7 +16,6 @@ import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import groovy.json.JsonBuilder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -32,7 +31,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
-import jdk.nashorn.internal.parser.JSONParser;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.javatuples.Triplet;
 import org.slf4j.Logger;
@@ -47,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -135,20 +134,24 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 final ChannelPromise promise = ctx.channel().newPromise();
                 final AtomicReference<Object> resultHolder = new AtomicReference<>();
                 promise.addListener(future -> {
-                    logger.debug("Preparing HTTP response for request with script [{}] and bindings of [{}] with result of [{}] on [{}]",
-                            requestArguments.getValue0(), requestArguments.getValue1(), resultHolder.get(), Thread.currentThread().getName());
-                    final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, (ByteBuf) resultHolder.get());
-                    response.headers().set(CONTENT_TYPE, accept);
-                    response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
+                    // if failed then the error was already written back to the client as part of the eval future
+                    // processing of the exception
+                    if (future.isSuccess()) {
+                        logger.debug("Preparing HTTP response for request with script [{}] and bindings of [{}] with result of [{}] on [{}]",
+                                requestArguments.getValue0(), requestArguments.getValue1(), resultHolder.get(), Thread.currentThread().getName());
+                        final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, (ByteBuf) resultHolder.get());
+                        response.headers().set(CONTENT_TYPE, accept);
+                        response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
 
-                    // handle cors business
-                    if (origin != null) response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+                        // handle cors business
+                        if (origin != null) response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
 
-                    if (!keepAlive) {
-                        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-                    } else {
-                        response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-                        ctx.writeAndFlush(response);
+                        if (!keepAlive) {
+                            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+                        } else {
+                            response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+                            ctx.writeAndFlush(response);
+                        }
                     }
                 });
 
@@ -156,7 +159,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 // provide a transform function to serialize to message - this will force serialization to occur
                 // in the same thread as the eval. after the CompletableFuture is returned from the eval the result
                 // is ready to be written as a ByteBuf directly to the response.  nothing should be blocking here.
-                gremlinExecutor.eval(requestArguments.getValue0(), requestArguments.getValue2(), requestArguments.getValue1(),
+                final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(requestArguments.getValue0(), requestArguments.getValue2(), requestArguments.getValue1(),
                         FunctionUtils.wrapFunction(o -> {
                             // stopping the timer here is roughly equivalent to where the timer would have been stopped for
                             // this metric in other contexts.  we just want to measure eval time not serialization time.
@@ -168,7 +171,15 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                                     .code(ResponseStatusCode.SUCCESS)
                                     .result(IteratorUtils.convertToList(o)).create();
                             return (Object) Unpooled.wrappedBuffer(serializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
-                        })).thenAcceptAsync(r -> {
+                        }));
+
+                evalFuture.exceptionally(t -> {
+                    sendError(ctx, INTERNAL_SERVER_ERROR, String.format("Error encountered evaluating script: %s", requestArguments.getValue0()));
+                    promise.setFailure(t);
+                    return null;
+                });
+
+                evalFuture.thenAcceptAsync(r -> {
                     // now that the eval/serialization is done in the same thread - complete the promise so we can
                     // write back the HTTP response on the same thread as the original request
                     resultHolder.set(r);

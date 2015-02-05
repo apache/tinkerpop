@@ -12,6 +12,10 @@ import com.tinkerpop.gremlin.structure.*
  */
 class SugarLoader {
 
+    private static final String NAME = "name";
+    private static final String FROM = "from";
+    private static final String SELECT = "select";
+
     public static void load() {
 
         GremlinLoader.load();
@@ -25,17 +29,30 @@ class SugarLoader {
         }
         // g.V.age
         GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
-            ((GraphTraversal) delegate).values(name);
+            if (name.equals(FROM))
+                return ((GraphTraversal.Admin) args[0]).addStep(((GraphTraversal.Admin) delegate).getSteps()[0]);
+            else if (Compare.hasCompare(name))
+                return ((GraphTraversal) delegate).is(Compare.valueOf(name), *args);
+            else
+                return ((GraphTraversal) delegate).values(name);
         }
         // __.age and __.out
         __.metaClass.static.propertyMissing = { final String name ->
             return null != __.metaClass.getMetaMethod(name) ? __."$name"() : __.values(name);
         }
-        /*
         // out and age
-        Object.metaClass.propertyMissing = { final String name ->
-            __."$name"();
+        /*Object.metaClass.propertyMissing = { final String name ->
+            if (name.equals(NAME))
+                return __.values(NAME);
+            else
+                return __."$name";
         }*/
+
+        // select x,y from ...
+        Object.metaClass.methodMissing = { final String name, final def args ->
+            if (name.equals(SELECT)) return __.select(*args)
+            throw new MissingMethodException(name, delegate.getClass(), args);
+        }
 
         Traverser.metaClass.mixin(TraverserCategory.class);
         GraphTraversal.metaClass.mixin(GraphTraversalCategory.class);
@@ -113,13 +130,21 @@ class SugarLoader {
             graphTraversal.range(range.getFrom() as Integer, range.getTo() as Integer);
         }
 
-        /*public static final or(final GraphTraversal leftTraversal, final Traversal rightTraversal) {
+        public static final or(final GraphTraversal.Admin leftTraversal, final Traversal.Admin rightTraversal) {
             leftTraversal.or();
-            rightTraversal.asAdmin().getSteps().forEach { step ->
-                System.out.println(step.toString() + "!!!" + leftTraversal.toString());
-                leftTraversal.asAdmin().addStep(step.clone());
+            rightTraversal.getSteps().forEach { step ->
+                leftTraversal.addStep(step);
             }
-        }*/
+            return leftTraversal;
+        }
+
+        public static final and(final GraphTraversal.Admin leftTraversal, final Traversal.Admin rightTraversal) {
+            leftTraversal.and();
+            rightTraversal.getSteps().forEach { step ->
+                leftTraversal.addStep(step);
+            }
+            return leftTraversal;
+        }
 
         public String toString() {
             return TraversalHelper.makeTraversalString(this.metaClass.owner);

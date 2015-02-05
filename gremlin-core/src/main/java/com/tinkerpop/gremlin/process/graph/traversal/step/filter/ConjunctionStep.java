@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -56,7 +57,7 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
 
     @Override
     public List<Traversal.Admin<S, ?>> getLocalChildren() {
-        return this.conjunctionTraversals;
+        return Collections.unmodifiableList(this.conjunctionTraversals);
     }
 
     @Override
@@ -72,5 +73,19 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
     @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.conjunctionTraversals);
+    }
+
+    ////////
+
+    public static class ConjunctionMarker<S> extends AbstractStep<S, S> {
+
+        public ConjunctionMarker(final Traversal.Admin traversal) {
+            super(traversal);
+        }
+
+        @Override
+        protected Traverser<S> processNextStart() throws NoSuchElementException {
+            throw new IllegalStateException("This step should have been removed via a strategy: " + this.getClass().getCanonicalName());
+        }
     }
 }
