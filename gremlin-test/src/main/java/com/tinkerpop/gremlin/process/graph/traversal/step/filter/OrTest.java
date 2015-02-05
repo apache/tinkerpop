@@ -21,14 +21,14 @@ import static com.tinkerpop.gremlin.structure.Compare.gte;
  */
 public abstract class OrTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gt_2X_name();
+    public abstract Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name();
 
     public abstract Traversal<Vertex, String> get_g_V_orXoutEXknowsX__hasXlabel_softwareX_or_hasXage_gte_35XX_name();
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_orXhasXage_gt_27X__outE_count_gt_2X_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_orXhasXage_gt_27X__outE_count_gt_2X_name();
+    public void g_V_orXhasXage_gt_27X__outE_count_gte_2X_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("marko", "josh", "peter"), traversal);
     }
@@ -48,7 +48,7 @@ public abstract class OrTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gt_2X_name() {
+        public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name() {
             return g.V().or(has("age", gt, 27), outE().count().is(gte, 2l)).values("name");
         }
 
@@ -64,7 +64,7 @@ public abstract class OrTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gt_2X_name() {
+        public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name() {
             return g.V().or(has("age", gt, 27), outE().count().is(gte, 2l)).<String>values("name").submit(g.compute());
         }
 
