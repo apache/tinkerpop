@@ -40,6 +40,10 @@ class SugarLoader {
         __.metaClass.static.propertyMissing = { final String name ->
             return null != __.metaClass.getMetaMethod(name) ? __."$name"() : __.values(name);
         }
+        // __.name
+        __.metaClass.static.getName = {
+            return __.values(NAME);
+        }
         // out and age
         /*Object.metaClass.propertyMissing = { final String name ->
             if (name.equals(NAME))
