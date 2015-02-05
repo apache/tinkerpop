@@ -422,6 +422,10 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().union(traversals);
     }
 
+    public default <E2> GraphTraversal<A, E2> coalesce(final Traversal<?, E2>... traversals) {
+        return this.start().coalesce(traversals);
+    }
+
     public default GraphTraversal<A, A> repeat(final Traversal<?, A> traversal) {
         return this.start().repeat(traversal);
     }

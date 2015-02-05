@@ -36,6 +36,7 @@ import com.tinkerpop.gremlin.process.graph.traversal.step.filter.SimplePathStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.filter.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.filter.WhereStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.BackStep;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.CoalesceStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.CountStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
@@ -578,6 +579,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... unionTraversals) {
         return this.asAdmin().addStep(new UnionStep(this.asAdmin(), Arrays.copyOf(unionTraversals, unionTraversals.length, Traversal.Admin[].class)));
+    }
+
+    public default <E2> GraphTraversal<S, E2> coalesce(final Traversal<?, E2>... coalesceTraversals) {
+        return this.asAdmin().addStep(new CoalesceStep(this.asAdmin(), Arrays.copyOf(coalesceTraversals, coalesceTraversals.length, Traversal.Admin[].class)));
     }
 
     public default GraphTraversal<S, E> repeat(final Traversal<?, E> repeatTraversal) {

@@ -6,45 +6,10 @@ import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
-import com.tinkerpop.gremlin.process.graph.traversal.branch.GroovyBranchTest;
-import com.tinkerpop.gremlin.process.graph.traversal.branch.GroovyChooseTest;
-import com.tinkerpop.gremlin.process.graph.traversal.branch.GroovyLocalTest;
-import com.tinkerpop.gremlin.process.graph.traversal.branch.GroovyRepeatTest;
-import com.tinkerpop.gremlin.process.graph.traversal.branch.GroovyUnionTest;
-import com.tinkerpop.gremlin.process.graph.traversal.filter.GroovyAndTest;
-import com.tinkerpop.gremlin.process.graph.traversal.filter.GroovyCoinTest;
-import com.tinkerpop.gremlin.process.graph.traversal.filter.GroovyCyclicPathTest;
-import com.tinkerpop.gremlin.process.graph.traversal.filter.GroovyFilterTest;
-import com.tinkerpop.gremlin.process.graph.traversal.filter.GroovyHasNotTest;
-import com.tinkerpop.gremlin.process.graph.traversal.filter.GroovyHasTest;
-import com.tinkerpop.gremlin.process.graph.traversal.filter.GroovyIsTest;
-import com.tinkerpop.gremlin.process.graph.traversal.filter.GroovyOrTest;
-import com.tinkerpop.gremlin.process.graph.traversal.filter.GroovySampleTest;
-import com.tinkerpop.gremlin.process.graph.traversal.filter.GroovySimplePathTest;
-import com.tinkerpop.gremlin.process.graph.traversal.filter.GroovyWhereTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovyBackTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovyCountTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovyFoldTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovyMapTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovyMaxTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovyMeanTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovyMinTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovyOrderTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovyPathTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovyPropertiesTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovySelectTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovyUnfoldTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovyValueMapTest;
-import com.tinkerpop.gremlin.process.graph.traversal.map.GroovyVertexTest;
-import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.GroovyAggregateTest;
-import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.GroovyGroupCountTest;
-import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.GroovyGroupTest;
-import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.GroovyInjectTest;
-import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.GroovyProfileTest;
-import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.GroovySackTest;
-import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.GroovySideEffectCapTest;
-import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.GroovyStoreTest;
-import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.GroovyTreeTest;
+import com.tinkerpop.gremlin.process.graph.traversal.branch.*;
+import com.tinkerpop.gremlin.process.graph.traversal.filter.*;
+import com.tinkerpop.gremlin.process.graph.traversal.map.*;
+import com.tinkerpop.gremlin.process.graph.traversal.sideEffect.*;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -101,6 +66,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyUnfoldTest.ComputerTest.class,
             GroovyValueMapTest.ComputerTest.class,
             GroovyVertexTest.ComputerTest.class,
+            GroovyCoalesceTest.ComputerTest.class,
 
             // sideEffect
             // TODO: GroovyAddEdgeTest.ComputerTest.class,

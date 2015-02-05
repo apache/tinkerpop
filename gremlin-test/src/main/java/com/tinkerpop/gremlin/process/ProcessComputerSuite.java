@@ -4,47 +4,10 @@ import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategyTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.branch.BranchTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.branch.ChooseTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.branch.LocalTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.branch.RepeatTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.branch.UnionTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.AndTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.CoinTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.CyclicPathTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.ExceptTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.FilterTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.HasNotTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.HasTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.IsTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.OrTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.RetainTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.SampleTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.SimplePathTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.WhereTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.BackTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.CountTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.FoldTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.MapTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.MaxTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.MeanTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.MinTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.OrderTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.PathTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.SelectTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.UnfoldTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.ValueMapTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.VertexTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AggregateTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupCountTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.ProfileTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SackTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SideEffectCapTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StoreTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.TreeTest;
+import com.tinkerpop.gremlin.process.graph.traversal.step.branch.*;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.*;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.*;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.*;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -127,6 +90,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             UnfoldTest.ComputerTest.class,
             ValueMapTest.ComputerTest.class,
             VertexTest.ComputerTest.class,
+            CoalesceTest.ComputerTest.class,
 
             // sideEffect
             // TODO: AddEdgeTest.ComputerTest.class,
@@ -200,6 +164,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             UnfoldTest.class,
             ValueMapTest.class,
             VertexTest.class,
+            CoalesceTest.class,
 
 
             // sideEffect

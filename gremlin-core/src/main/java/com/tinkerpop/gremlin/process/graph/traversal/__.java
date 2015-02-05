@@ -452,6 +452,10 @@ public class __ {
         return __.<A>start().union(traversals);
     }
 
+    public static <A, E2> GraphTraversal<A, E2> coalesce(final Traversal<?, E2>... traversals) {
+        return __.<A>start().coalesce(traversals);
+    }
+
     public static <A> GraphTraversal<A, A> repeat(final Traversal<?, A> traversal) {
         return __.<A>start().repeat(traversal);
     }
