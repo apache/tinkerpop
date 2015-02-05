@@ -54,9 +54,9 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
         this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMap<K, Collection<V>>::new);
     }
 
-    private static <S, K, V> void doGroup(final Traverser.Admin<S> traverser, final Map<K, Collection<V>> groupMap, final Traversal.Admin<S, K> keyFunction, final Traversal.Admin<S, V> valueFunction) {
-        final K key = TraversalUtil.apply(traverser, keyFunction);
-        final V value = TraversalUtil.apply(traverser, valueFunction);
+    private static <S, K, V> void doGroup(final Traverser.Admin<S> traverser, final Map<K, Collection<V>> groupMap, final Traversal.Admin<S, K> keyTraversal, final Traversal.Admin<S, V> valueTraversal) {
+        final K key = TraversalUtil.apply(traverser, keyTraversal);
+        final V value = TraversalUtil.apply(traverser, valueTraversal);
         Collection<V> values = groupMap.get(key);
         if (null == values) {
             values = new BulkSet<>();
@@ -65,8 +65,8 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
         TraversalHelper.addToCollectionUnrollIterator(values, value, traverser.bulk());
     }
 
-    private static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final Traversal.Admin<Collection<V>, R> reduceFunction) {
-        groupMap.forEach((k, vv) -> reduceMap.put(k, TraversalUtil.apply(vv, reduceFunction)));
+    private static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final Traversal.Admin<Collection<V>, R> reduceTraversal) {
+        groupMap.forEach((k, vv) -> reduceMap.put(k, TraversalUtil.apply(vv, reduceTraversal)));
     }
 
     @Override

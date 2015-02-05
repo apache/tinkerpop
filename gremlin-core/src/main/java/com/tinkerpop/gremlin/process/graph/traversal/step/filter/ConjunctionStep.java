@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -56,7 +57,7 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
 
     @Override
     public List<Traversal.Admin<S, ?>> getLocalChildren() {
-        return this.conjunctionTraversals;
+        return Collections.unmodifiableList(this.conjunctionTraversals);
     }
 
     @Override
