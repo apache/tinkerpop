@@ -172,11 +172,11 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldAllowTraversalToIterateInDifferentThreadThanOriginallyEvaluated() {
+    public void shouldAllowTraversalToIterateInDifferentThreadThanOriginallyEvaluatedWithAutoCommit() {
         // this test sort of simulates Gremlin Server interaction where a Traversal is eval'd in one Thread, but
         // then iterated in another.  note that Gremlin Server configures the script engine to auto-commit
-        // after evaluation.  gremlin server assumes graphs are configured to use auto-transactions when in
-        // sessionless mode.
+        // after evaluation.  this basically tests the state of the Gremlin Server GremlinExecutor when
+        // being used in sessionless mode
         final ExecutorService evalExecutor = Executors.newSingleThreadExecutor();
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .afterSuccess(b -> {
@@ -185,6 +185,29 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
                         graph.tx().commit();
                 })
                 .executorService(evalExecutor).create();
+
+        final Map<String,Object> bindings = new HashMap<>();
+        bindings.put("g", g);
+
+        final AtomicInteger vertexCount = new AtomicInteger(0);
+
+        final ExecutorService iterationExecutor = Executors.newSingleThreadExecutor();
+        gremlinExecutor.eval("g.V().out()", bindings).thenAcceptAsync(o -> {
+            final Iterator itty = (Iterator) o;
+            itty.forEachRemaining(v -> vertexCount.incrementAndGet());
+        }, iterationExecutor).join();
+
+        assertEquals(6, vertexCount.get());
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldAllowTraversalToIterateInDifferentThreadThanOriginallyEvaluatedWithoutAutoCommit() {
+        // this test sort of simulates Gremlin Server interaction where a Traversal is eval'd in one Thread, but
+        // then iterated in another.  this basically tests the state of the Gremlin Server GremlinExecutor when
+        // being used in session mode
+        final ExecutorService evalExecutor = Executors.newSingleThreadExecutor();
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().executorService(evalExecutor).create();
 
         final Map<String,Object> bindings = new HashMap<>();
         bindings.put("g", g);
