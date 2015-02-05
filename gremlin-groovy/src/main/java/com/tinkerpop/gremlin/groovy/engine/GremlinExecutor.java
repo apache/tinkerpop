@@ -302,7 +302,7 @@ public class GremlinExecutor implements AutoCloseable {
         private Map<String, EngineSettings> settings = new HashMap<>();
         private ExecutorService executorService;
         private ScheduledExecutorService scheduledExecutorService;
-        private Set<String> enabledPlugins = new HashSet();
+        private Set<String> enabledPlugins = new HashSet<>();
         private Consumer<Bindings> beforeEval = (b) -> {
         };
         private Consumer<Bindings> afterSuccess = (b) -> {
@@ -400,7 +400,7 @@ public class GremlinExecutor implements AutoCloseable {
         }
 
         /**
-         * A {@link Consumer} to execute if the script timesout
+         * A {@link Consumer} to execute if the script times out.
          */
         public Builder afterTimeout(final Consumer<Bindings> afterTimeout) {
             this.afterTimeout = afterTimeout;
@@ -423,6 +423,9 @@ public class GremlinExecutor implements AutoCloseable {
             return this;
         }
 
+        /**
+         * Set of the names of plugins that should be enabled for the engine.
+         */
         public Builder enabledPlugins(final Set<String> enabledPlugins) {
             this.enabledPlugins = enabledPlugins;
             return this;
