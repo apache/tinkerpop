@@ -74,4 +74,18 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
     public String toString() {
         return TraversalHelper.makeStepString(this, this.conjunctionTraversals);
     }
+
+    ////////
+
+    public static class ConjunctionMarker<S> extends AbstractStep<S, S> {
+
+        public ConjunctionMarker(final Traversal.Admin traversal) {
+            super(traversal);
+        }
+
+        @Override
+        protected Traverser<S> processNextStart() throws NoSuchElementException {
+            throw new IllegalStateException("This step should have been removed via a strategy: " + this.getClass().getCanonicalName());
+        }
+    }
 }
