@@ -23,6 +23,9 @@ final class StandardOps {
 
     public static void evalOp(final Context context) throws OpProcessorException {
         final RequestMessage msg = context.getRequestMessage();
+
+        logger.debug("Sessionless request {} for eval in thread {}", msg.getRequestId(), Thread.currentThread().getName());
+
         AbstractEvalOpProcessor.evalOp(context, context::getGremlinExecutor, () -> {
             final Bindings bindings = new SimpleBindings();
             Optional.ofNullable((Map<String, Object>) msg.getArgs().get(Tokens.ARGS_BINDINGS)).ifPresent(bindings::putAll);
