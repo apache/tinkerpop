@@ -61,6 +61,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
         this.setProperty(Graph.GRAPH, Neo4jGraph.class.getName());
     }};
 
+    private final Features features = new Neo4jGraphFeatures();
 
     private GraphDatabaseService baseGraph;
     private BaseConfiguration configuration = new BaseConfiguration();
@@ -305,7 +306,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
 
     @Override
     public Features features() {
-        return new Neo4jGraphFeatures();
+        return features;
     }
 
     @Override
@@ -452,34 +453,23 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     }
 
     public class Neo4jGraphFeatures implements Features {
+        private final GraphFeatures graphFeatures = new Neo4jGraphGraphFeatures();
+        private final VertexFeatures vertexFeatures = new Neo4jVertexFeatures();
+        private final EdgeFeatures edgeFeatures = new Neo4jEdgeFeatures();
+
         @Override
         public GraphFeatures graph() {
-            return new GraphFeatures() {
-                @Override
-                public boolean supportsComputer() {
-                    return false;
-                }
-
-                @Override
-                public VariableFeatures variables() {
-                    return new Neo4jGraphVariables.Neo4jVariableFeatures();
-                }
-
-                @Override
-                public boolean supportsThreadedTransactions() {
-                    return false;
-                }
-            };
+            return graphFeatures;
         }
 
         @Override
         public VertexFeatures vertex() {
-            return new Neo4jVertexFeatures();
+            return vertexFeatures;
         }
 
         @Override
         public EdgeFeatures edge() {
-            return new Neo4jEdgeFeatures();
+            return edgeFeatures;
         }
 
         @Override
@@ -487,10 +477,37 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
             return StringFactory.featureString(this);
         }
 
+        public class Neo4jGraphGraphFeatures implements GraphFeatures {
+
+            private VariableFeatures variableFeatures = new Neo4jGraphVariables.Neo4jVariableFeatures();
+
+            Neo4jGraphGraphFeatures() {}
+
+            @Override
+            public boolean supportsComputer() {
+                return false;
+            }
+
+            @Override
+            public VariableFeatures variables() {
+                return variableFeatures;
+            }
+
+            @Override
+            public boolean supportsThreadedTransactions() {
+                return false;
+            }
+        }
+
         public class Neo4jVertexFeatures extends Neo4jElementFeatures implements VertexFeatures {
+
+            private final VertexPropertyFeatures vertexPropertyFeatures = new Neo4jVertexPropertyFeatures();
+
+            Neo4jVertexFeatures() {}
+
             @Override
             public VertexPropertyFeatures properties() {
-                return new Neo4jVertexPropertyFeatures();
+                return vertexPropertyFeatures;
             }
 
             @Override
@@ -505,13 +522,21 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
         }
 
         public class Neo4jEdgeFeatures extends Neo4jElementFeatures implements EdgeFeatures {
+
+            private final EdgePropertyFeatures edgePropertyFeatures = new Neo4jEdgePropertyFeatures();
+
+            Neo4jEdgeFeatures() {}
+
             @Override
             public EdgePropertyFeatures properties() {
-                return new Neo4jEdgePropertyFeatures();
+                return edgePropertyFeatures;
             }
         }
 
         public class Neo4jElementFeatures implements ElementFeatures {
+
+            Neo4jElementFeatures() {}
+
             @Override
             public boolean supportsUserSuppliedIds() {
                 return false;
@@ -539,6 +564,9 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
         }
 
         public class Neo4jVertexPropertyFeatures implements VertexPropertyFeatures {
+
+            Neo4jVertexPropertyFeatures() {}
+
             @Override
             public boolean supportsMapValues() {
                 return false;
@@ -566,6 +594,9 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
         }
 
         public class Neo4jEdgePropertyFeatures implements EdgePropertyFeatures {
+
+            Neo4jEdgePropertyFeatures() {}
+
             @Override
             public boolean supportsMapValues() {
                 return false;
