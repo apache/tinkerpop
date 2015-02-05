@@ -33,6 +33,7 @@ public class CoalesceStep<S, E> extends FlatMapStep<S, E> implements TraversalPa
             }
             return EmptyTraversal.instance();
         });
+        CoalesceStep.generateFunction(this);
     }
 
     @Override
@@ -52,11 +53,24 @@ public class CoalesceStep<S, E> extends FlatMapStep<S, E> implements TraversalPa
         for (final Traversal.Admin<S, ?> conjunctionTraversal : this.coalesceTraversals) {
             clone.coalesceTraversals.add(clone.integrateChild(conjunctionTraversal.clone(), TYPICAL_LOCAL_OPERATIONS));
         }
+        CoalesceStep.generateFunction(clone);
         return clone;
     }
 
     @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.coalesceTraversals);
+    }
+
+    private static <S, E> void generateFunction(final CoalesceStep<S, E> coalesceStep) {
+        coalesceStep.setFunction(traverser -> {
+            for (final Traversal.Admin<S, E> coalesceTraversal : coalesceStep.coalesceTraversals) {
+                coalesceTraversal.reset();
+                coalesceTraversal.addStart(traverser);
+                if (coalesceTraversal.hasNext())
+                    return coalesceTraversal;
+            }
+            return EmptyTraversal.instance();
+        });
     }
 }
