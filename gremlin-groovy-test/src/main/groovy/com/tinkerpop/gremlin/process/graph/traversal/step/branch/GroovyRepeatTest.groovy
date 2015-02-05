@@ -87,12 +87,12 @@ public abstract class GroovyRepeatTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
-            g.V(v1Id).emit(__.has(T.label, 'person')).repeat(__.out).name
+            g.V(v1Id).emit(has(T.label, 'person')).repeat(__.out).name
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
-            g.V.repeat(__.groupCount('m').by('name').out).times(2).cap('m')
+            g.V.repeat(groupCount('m').by('name').out).times(2).cap('m')
         }
     }
 
@@ -168,12 +168,12 @@ public abstract class GroovyRepeatTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).emit(__.has(T.label, 'person')).repeat(__.out).name", g)
+            ComputerTestHelper.compute("g.V(${v1Id}).emit(has(T.label, 'person')).repeat(__.out).name", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
-            ComputerTestHelper.compute("g.V.repeat(__.groupCount('m').by('name').out).times(2).cap('m')", g)
+            ComputerTestHelper.compute("g.V.repeat(groupCount('m').by('name').out).times(2).cap('m')", g)
         }
     }
 }

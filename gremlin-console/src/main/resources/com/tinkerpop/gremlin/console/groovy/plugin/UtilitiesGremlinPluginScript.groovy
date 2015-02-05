@@ -12,21 +12,22 @@ describeGraph = { Class<? extends com.tinkerpop.gremlin.structure.Graph> c ->
     def optInCount = optIns != null ? optIns.size() : 0
     def optOutCount = optOuts != null ? optOuts.size() : 0
     def suitesSupported = optIns != null && optIns.size() > 0 ? optIns.collect { "> " + it.value() }.join(lf) : "> none"
-    def testsOptedOut = optOuts != null && optOuts.size() > 0 ? optOuts.collect {
-        "> " + it.test() + "#" + it.method() + "${lf}\t\"" + it.reason() + "\""
-    }.join(lf) : "> none"
-    """
-IMPLEMENTATION - ${c.getCanonicalName()}
-TINKERPOP TEST SUITE
-- Compliant with ($optInCount of 8 suites)
-$suitesSupported
-- Opts out of $optOutCount individual tests
-$testsOptedOut${lf}
-- NOTE -
-The describeGraph() function shows information about a Graph implementation.
-It uses information found in Java Annotations on the implementation itself to
-determine this output and does not assess the actual code of the test cases of
-the implementation itself.  Compliant implementations will faithfully and
-honestly supply these Annotations to provide the most accurate depiction of
-their support."""
+    def testsOptedOut = optOuts != null && optOuts.size() > 0 ? optOuts.collect { "> " + it.test() + "#" + it.method() + "${lf}\t\"" + it.reason() + "\"" }.join(lf) : "> none";
+
+    // not the use of {lf} here rather than triple quoted string is that groovy 2.4.0 seems to have trouble
+    // parsing that into groovysh - note the bug report here: https://jira.codehaus.org/browse/GROOVY-7290
+    return "${lf}" +
+"IMPLEMENTATION - ${c.getCanonicalName()} ${lf}" +
+"TINKERPOP TEST SUITE ${lf}" +
+"- Compliant with ($optInCount of 8 suites) + ${lf}" +
+"$suitesSupported ${lf}" +
+"- Opts out of $optOutCount individual tests ${lf}" +
+"$testsOptedOut ${lf}" +
+"- NOTE - ${lf}" +
+"The describeGraph() function shows information about a Graph implementation. ${lf}" +
+"It uses information found in Java Annotations on the implementation itself to ${lf}" +
+"determine this output and does not assess the actual code of the test cases of ${lf}" +
+"the implementation itself.  Compliant implementations will faithfully and ${lf}" +
+"honestly supply these Annotations to provide the most accurate depiction of ${lf}" +
+"their support."
 }

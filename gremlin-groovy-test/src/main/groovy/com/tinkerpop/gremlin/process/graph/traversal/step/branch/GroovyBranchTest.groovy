@@ -18,7 +18,7 @@ public abstract class GroovyBranchTest {
             g.V.branch { it.label() == 'person' ? 'a' : 'b' }
                     .option('a', __.age)
                     .option('b', __.lang)
-                    .option('b', __.values('name'))
+                    .option('b', __.name)
         }
 
         @Override
@@ -26,7 +26,7 @@ public abstract class GroovyBranchTest {
             g.V.branch(__.label)
                     .option('person', __.age)
                     .option('software', __.lang)
-                    .option('software', __.values('name'));
+                    .option('software', __.name);
         }
     }
 
@@ -34,7 +34,7 @@ public abstract class GroovyBranchTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
-            ComputerTestHelper.compute("g.V.branch { it.label() == 'person' ? 'a' : 'b' }.option('a', __.age).option('b', __.lang).option('b',__.values('name'))", g);
+            ComputerTestHelper.compute("g.V.branch { it.label() == 'person' ? 'a' : 'b' }.option('a', __.age).option('b', __.lang).option('b',__.name)", g);
         }
 
         @Override
@@ -43,7 +43,7 @@ public abstract class GroovyBranchTest {
             g.V.branch(__.label)
                     .option('person', __.age)
                     .option('software', __.lang)
-                    .option('software', __.values('name'))
+                    .option('software', __.name)
             """, g)
         }
     }

@@ -14,6 +14,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 * `Traversal.Admin` is consistent internal to steps, traversals, strategies, etc. For the user, `Traversal` is all they see.
 * `TraversalHolder` is now called `TraversalParent` with the child/parent terminology used throughout.
 * A massive `process/` package reorganization -- class names are still the same, just in new packages.
+* Bump to Groovy 2.4.0.
 * Steps now only operate with traversals -- no more lambdas. Lambda->`Traversal` conversion utilities added.
 * `SideEffectStep` always requires a `Consumer`. Steps that were consumer-less simply extends `AbstractStep`.
 * Simplified the `Neo4jGraph` implementation by now allowing `cypher()` mid-traversal. Only available via `g.cypher() -> GraphTraversal`.

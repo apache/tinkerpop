@@ -154,6 +154,29 @@ g.V().out('knows').aggregate()
 g.V().out('knows').aggregate().by('name')
 ----
 
+[[and-step]]
+And Step
+~~~~~~~~
+
+The `and()`-step ensures that all provided traversals yield a result (*filter*). Please see <<or-step,`or()`>> for or-semantics.
+
+[gremlin-groovy,modern]
+----
+g.V().and(
+   outE('knows'),
+   values('age').is(lt,30)).
+     values('name')
+----
+
+The `and()`-step can take an arbitrary number of traversals. All traversals must produce at least one output for the original traverser to pass to the next step.
+
+An link:http://en.wikipedia.org/wiki/Infix_notation[infix notion] can be used as well. Though, with infix notation, only two traversals can be and'd together.
+
+[gremlin-groovy,modern]
+----
+g.V().has(outE('created').and().outE('knows')).values('name')
+----
+
 [[as-step]]
 As Step
 ~~~~~~~
@@ -730,6 +753,29 @@ The `min()`-step (*map*) operates on a stream of numbers and determines which is
 ----
 g.V().values('age').min()
 g.V().repeat(both()).times(3).values('age').min()
+----
+
+[[or-step]]
+Or Step
+~~~~~~~
+
+The `or()`-step ensures that at least one of the provided traversals yield a result (*filter*). Please see <<and-step,`and()`>> for and-semantics.
+
+[gremlin-groovy,modern]
+----
+g.V().or(
+   __.outE('created'),
+   __.inE('created').count().is(gt,1l)).
+     values('name')
+----
+
+The `or()`-step can take an arbitrary number of traversals. At least one of the traversals must produce at least one output for the original traverser to pass to the next step.
+
+An link:http://en.wikipedia.org/wiki/Infix_notation[infix notion] can be used as well. Though, with infix notation, only two traversals can be or'd together.
+
+[gremlin-groovy,modern]
+----
+g.V().has(outE('created').or().outE('knows')).values('name')
 ----
 
 [[order-step]]
