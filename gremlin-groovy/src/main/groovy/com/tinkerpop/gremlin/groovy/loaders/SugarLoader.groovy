@@ -29,7 +29,7 @@ class SugarLoader {
         }
         // g.V.age
         GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
-            if (name.equals(FROM))
+            if (name.toLowerCase().equals(FROM))
                 return ((GraphTraversal.Admin) args[0]).addStep(((GraphTraversal.Admin) delegate).getSteps()[0]);
             else if (Compare.hasCompare(name))
                 return ((GraphTraversal) delegate).is(Compare.valueOf(name), *args);
@@ -54,7 +54,7 @@ class SugarLoader {
 
         // select x,y from ...
         Object.metaClass.methodMissing = { final String name, final def args ->
-            if (name.equals(SELECT)) return __.select(*args)
+            if (name.toLowerCase().equals(SELECT)) return __.select(*args)
             throw new MissingMethodException(name, delegate.getClass(), args);
         }
 

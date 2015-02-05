@@ -242,6 +242,8 @@ g.V().has(label, 'person').coalesce(values('nickname'), values('name'))
 Count Step
 ~~~~~~~~~~
 
+image::count-step.png[width=195]
+
 The `count()`-step (*map*) counts the total number of represented traversers in the streams (i.e. the bulk count).
 
 [gremlin-groovy,modern]

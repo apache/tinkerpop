@@ -20,7 +20,7 @@ public class GroovyTinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        GraphTraversal t = select('a', 'b') from g.V.as('a').has(__.name & __.age.gt(29) | __.inE.count.gt(1l) & __.lang).name.as('b');
+        GraphTraversal t = SELECT 'a', 'b' FROM g.V.as('a').has(__.name & __.age.gt(29) | __.inE.count.gt(1l) & __.lang).'name'.as('b');
 
         System.out.println(t.toString());
         t.forEachRemaining { System.out.println(it) };
