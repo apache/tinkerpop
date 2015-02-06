@@ -102,7 +102,7 @@ public class TinkerGraphTest {
     @Ignore
     public void benchmarkStandardTraversals() throws Exception {
         Graph g = TinkerGraph.open();
-        g.io().readGraphML("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
+        g.io().readGraphML("../data/grateful-dead.xml");
         final List<Supplier<Traversal>> traversals = Arrays.asList(
                 () -> g.V().outE().inV().outE().inV().outE().inV(),
                 () -> g.V().out().out().out(),
