@@ -475,7 +475,7 @@ g.V().has('age',outside,[20,30]).values('age') <2>
 <1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
 <2> Find all vertices whose ages are not between 20 (inclusive) and 30 (exclusive).
 
-It is also possible to filter any arbitrary object based on an anonymous traversal.
+It is also possible to filter any arbitrary object based on a anonymous traversal yielding at least one result.
 
 [gremlin-groovy,modern]
 ----
