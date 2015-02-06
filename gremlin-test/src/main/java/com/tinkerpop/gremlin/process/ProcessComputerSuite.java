@@ -18,24 +18,27 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * The ProcessComputerStandardSuite is a mapper JUnit test runner that executes the Gremlin Test Suite over a Graph
- * implementation.  This specialized test suite and runner is for use by Gremlin implementers to test their
- * Graph implementations.  The StructureStandardSuite ensures consistency and validity of the implementations that they
- * test.
+ * The {@code ProcessComputerStandardSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
+ * {@link com.tinkerpop.gremlin.structure.Graph} implementation.  This specialized test suite and runner is for use
+ * by Gremlin implementers to test their {@link com.tinkerpop.gremlin.structure.Graph} implementations.  The
+ * {@code ProcessComputerStandardSuite} ensures consistency and validity of the implementations that they test.
  * <p/>
- * To use the ProcessComputerStandardSuite define a class in a test module.  Simple naming would expect the name of the
- * implementation followed by "ProcessComputerStandardSuite".  This class should be annotated as follows (note that the "Suite"
- * implements ProcessComputerStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):
+ * To use the {@code ProcessComputerStandardSuite} define a class in a test module.  Simple naming would expect the
+ * name of the implementation followed by "ProcessComputerStandardSuite".  This class should be annotated as follows
+ * (note that the "Suite" implements ProcessComputerStandardSuite.GraphProvider as a convenience only. It could be
+ * implemented in a separate class file):
  * <code>
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(ProcessComputerSuite.class)
  * @ProcessComputerSuite.GraphProviderClass(TinkerGraphProcessComputerTest.class) public class TinkerGraphProcessComputerTest implements GraphProvider {
  * }
  * </code>
- * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the ProcessComputerStandardSuite to
- * instantiate Graph instances from the implementation being tested to inject into tests in the suite.  The
- * ProcessStandardSuite will utilized Features defined in the suite to determine which tests will be executed.
+ * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the {@code ProcessComputerStandardSuite}
+ * to instantiate {@link com.tinkerpop.gremlin.structure.Graph} instances from the implementation being tested to
+ * inject into tests in the suite.  The {@code ProcessComputerStandardSuite} will utilized Features defined in the
+ * suite to determine which tests will be executed.
+ * <br/>
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProcessComputerSuite extends AbstractGremlinSuite {
 
