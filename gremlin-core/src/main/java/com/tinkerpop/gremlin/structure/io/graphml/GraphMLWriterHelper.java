@@ -229,7 +229,7 @@ class GraphMLWriterHelper {
         public void setIndentStep(int indentStep) {
             final StringBuilder s = new StringBuilder();
             for (; indentStep > 0; indentStep--) s.append(' ');
-            setIndentStep(s.toString());
+            this.indentStep = s.toString();
         }
 
         public void setIndentStep(final String s) {

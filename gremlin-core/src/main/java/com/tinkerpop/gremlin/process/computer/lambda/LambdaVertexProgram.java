@@ -25,7 +25,7 @@ import java.util.function.Predicate;
  */
 public class LambdaVertexProgram<M extends Serializable> extends StaticVertexProgram<M> {
 
-    private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Arrays.asList(MessageScope.Global.instance()));
+    private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Collections.singletonList(MessageScope.Global.instance()));
 
     private static final String SETUP_LAMBDA = "gremlin.lambdaVertexProgram.setupLambda";
     private static final String EXECUTE_LAMBDA = "gremlin.lambdaVertexProgram.executeLambda";

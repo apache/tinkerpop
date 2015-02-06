@@ -1,11 +1,7 @@
 package com.tinkerpop.gremlin.structure.io.graphml;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.*;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import com.tinkerpop.gremlin.structure.util.Comparators;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -16,14 +12,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * GraphMLWriter writes a Graph to a GraphML OutputStream. Note that this format is lossy, in the sense that data
@@ -90,8 +79,8 @@ public class GraphMLWriter implements GraphWriter {
      */
     @Override
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
-        final Map<String, String> identifiedVertexKeyTypes = this.vertexKeyTypes.orElseGet(() -> this.determineVertexTypes(g));
-        final Map<String, String> identifiedEdgeKeyTypes = this.edgeKeyTypes.orElseGet(() -> this.determineEdgeTypes(g));
+        final Map<String, String> identifiedVertexKeyTypes = this.vertexKeyTypes.orElseGet(() -> GraphMLWriter.determineVertexTypes(g));
+        final Map<String, String> identifiedEdgeKeyTypes = this.edgeKeyTypes.orElseGet(() -> GraphMLWriter.determineEdgeTypes(g));
 
         if (identifiedEdgeKeyTypes.containsKey(this.edgeLabelKey))
             throw new IllegalStateException(String.format("The edgeLabelKey value of[%s] conflicts with the name of an existing property key to be included in the GraphML", this.edgeLabelKey));
@@ -180,8 +169,7 @@ public class GraphMLWriter implements GraphWriter {
                 writer.writeCharacters(edge.label());
                 writer.writeEndElement();
 
-                final List<String> keys = new ArrayList<>();
-                keys.addAll(edge.keys());
+                final List<String> keys = new ArrayList<>(edge.keys());
                 Collections.sort(keys);
 
                 for (String key : keys) {
@@ -306,7 +294,7 @@ public class GraphMLWriter implements GraphWriter {
                 GraphMLTokens.GRAPHML_XMLNS + " " + this.xmlSchemaLocation.orElse(GraphMLTokens.DEFAULT_GRAPHML_SCHEMA_LOCATION));
     }
 
-    private Map<String, String> determineVertexTypes(final Graph graph) {
+    private static Map<String, String> determineVertexTypes(final Graph graph) {
         final Map<String, String> vertexKeyTypes = new HashMap<>();
         for (Vertex vertex : graph.V().toList()) {
             for (String key : vertex.keys()) {
@@ -319,7 +307,7 @@ public class GraphMLWriter implements GraphWriter {
         return vertexKeyTypes;
     }
 
-    private Map<String, String> determineEdgeTypes(final Graph graph) {
+    private static Map<String, String> determineEdgeTypes(final Graph graph) {
         final Map<String, String> edgeKeyTypes = new HashMap<>();
         for (Edge edge : graph.E().toList()) {
             for (String key : edge.keys()) {

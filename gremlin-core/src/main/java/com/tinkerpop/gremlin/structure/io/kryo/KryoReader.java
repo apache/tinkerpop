@@ -4,28 +4,14 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.structure.*;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
@@ -140,13 +126,14 @@ public class KryoReader implements GraphReader {
 
             final boolean hasSomeVertices = input.readBoolean();
             if (hasSomeVertices) {
+                final List<Object> vertexArgs = new ArrayList<>();
                 while (!input.eof()) {
-                    final List<Object> vertexArgs = new ArrayList<>();
                     final DetachedVertex current = (DetachedVertex) kryo.readClassAndObject(input);
                     appendToArgList(vertexArgs, T.id, current.id());
                     appendToArgList(vertexArgs, T.label, current.label());
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
+                    vertexArgs.clear();
                     current.iterators().propertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
 
                     // the gio file should have been written with a direction specified
@@ -287,11 +274,11 @@ public class KryoReader implements GraphReader {
      * Read the edges from the temp file and load them to the graph.
      */
     private void readFromTempEdges(final Input input, final Graph graphToWriteTo) {
+        final List<Object> edgeArgs = new ArrayList<>();
         while (!input.eof()) {
             // in this case the outId is the id assigned by the graph
             Object next = kryo.readClassAndObject(input);
             while (!next.equals(EdgeTerminator.INSTANCE)) {
-                final List<Object> edgeArgs = new ArrayList<>();
                 final DetachedEdge detachedEdge = (DetachedEdge) next;
                 final Vertex vOut = graphToWriteTo.iterators().vertexIterator(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()).next();
                 final Vertex inV = graphToWriteTo.iterators().vertexIterator(detachedEdge.iterators().vertexIterator(Direction.IN).next().id()).next();
@@ -302,6 +289,7 @@ public class KryoReader implements GraphReader {
 
                 vOut.addEdge(detachedEdge.label(), inV, edgeArgs.toArray());
 
+                edgeArgs.clear();
                 next = kryo.readClassAndObject(input);
             }
 

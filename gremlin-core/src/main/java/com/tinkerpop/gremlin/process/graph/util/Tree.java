@@ -1,12 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.util;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -35,8 +30,7 @@ public class Tree<T> extends HashMap<T, Tree<T>> implements Serializable {
 
 
     public List<Tree<T>> getTreesAtDepth(final int depth) {
-        final List<Tree<T>> branches = new ArrayList<Tree<T>>();
-        List<Tree<T>> currentDepth = Arrays.asList(this);
+        List<Tree<T>> currentDepth = Collections.singletonList(this);
         for (int i = 0; i < depth; i++) {
             if (i == depth - 1) {
                 return currentDepth;
@@ -48,7 +42,7 @@ public class Tree<T> extends HashMap<T, Tree<T>> implements Serializable {
                 currentDepth = temp;
             }
         }
-        return branches;
+        return Collections.emptyList();
     }
 
     public List<T> getObjectsAtDepth(final int depth) {
@@ -61,7 +55,7 @@ public class Tree<T> extends HashMap<T, Tree<T>> implements Serializable {
 
     public List<Tree<T>> getLeafTrees() {
         final List<Tree<T>> leaves = new ArrayList<>();
-        List<Tree<T>> currentDepth = Arrays.asList(this);
+        List<Tree<T>> currentDepth = Collections.singletonList(this);
         boolean allLeaves = false;
         while (!allLeaves) {
             allLeaves = true;
@@ -108,7 +102,7 @@ public class Tree<T> extends HashMap<T, Tree<T>> implements Serializable {
 
     public List<Tree<T>> splitParents() {
         if (this.keySet().size() == 1) {
-            return Arrays.asList(this);
+            return Collections.singletonList(this);
         } else {
             final List<Tree<T>> parents = new ArrayList<>();
             this.forEach((k, t) -> {

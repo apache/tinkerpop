@@ -8,11 +8,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 
 /**
  * A @{link GraphWriter} that writes a graph and its elements to a JSON-based representation. This implementation
@@ -54,11 +50,12 @@ public class GraphSONWriter implements GraphWriter {
     @Override
     public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
         final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-        while (traversal.hasNext()) {
-            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            while (traversal.hasNext()) {
                 writeVertex(baos, traversal.next(), direction);
                 writer.write(new String(baos.toByteArray()));
                 writer.newLine();
+                baos.reset();
             }
         }
 
@@ -68,11 +65,12 @@ public class GraphSONWriter implements GraphWriter {
     @Override
     public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal) throws IOException {
         final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-        while (traversal.hasNext()) {
-            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            while (traversal.hasNext()) {
                 writeVertex(baos, traversal.next());
                 writer.write(new String(baos.toByteArray()));
                 writer.newLine();
+                baos.reset();
             }
         }
 

@@ -107,7 +107,7 @@ public final class PartitionStrategy implements GraphStrategy {
         return (f) -> ids -> {
             final GraphTraversal<Vertex, Vertex> traversal = this.generateTraversal(ctx.getStrategyGraph().getBaseGraph().getClass());
             traversal.asAdmin().getStrategies().setTraverserGeneratorFactory(DefaultTraverserGeneratorFactory.instance());
-            TraversalHelper.insertTraversal(0, f.apply(ids).has(getPartitionKey(), Contains.within, getReadPartitions()).asAdmin(), traversal.asAdmin());
+            TraversalHelper.insertTraversal(0, f.apply(ids).has(this.partitionKey, Contains.within, getReadPartitions()).asAdmin(), traversal.asAdmin());
             return traversal.filter(vertex -> testVertex(vertex.get()));
         };
     }
@@ -117,7 +117,7 @@ public final class PartitionStrategy implements GraphStrategy {
         return (f) -> ids -> {
             final GraphTraversal<Edge, Edge> traversal = this.generateTraversal(ctx.getStrategyGraph().getBaseGraph().getClass());
             traversal.asAdmin().getStrategies().setTraverserGeneratorFactory(DefaultTraverserGeneratorFactory.instance());
-            TraversalHelper.insertTraversal(0, f.apply(ids).has(getPartitionKey(), Contains.within, getReadPartitions()).asAdmin(), traversal.asAdmin());
+            TraversalHelper.insertTraversal(0, f.apply(ids).has(this.partitionKey, Contains.within, getReadPartitions()).asAdmin(), traversal.asAdmin());
             return traversal.filter(edge -> testEdge(edge.get()));
         };
     }
@@ -191,7 +191,9 @@ public final class PartitionStrategy implements GraphStrategy {
 
     @Override
     public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
-        return (f) -> (keys) -> IteratorUtils.filter(f.apply(keys), property -> !getPartitionKey().equals(property.key()));
+        return (f) -> (keys) -> IteratorUtils.filter(f.apply(keys), property -> {
+            return !this.partitionKey.equals(property.key());
+        });
     }
 
     @Override
@@ -201,22 +203,30 @@ public final class PartitionStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
-        return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !getPartitionKey().equals(key)), new HashSet<>());
+        return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> {
+            return !this.partitionKey.equals(key);
+        }), new HashSet<>());
     }
 
     @Override
     public <V> UnaryOperator<Function<String, VertexProperty<V>>> getVertexGetPropertyStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
-        return (f) -> k -> k.equals(getPartitionKey()) ? VertexProperty.<V>empty() : f.apply(k);
+        return (f) -> k -> {
+            return k.equals(this.partitionKey) ? VertexProperty.<V>empty() : f.apply(k);
+        };
     }
 
     @Override
     public <V> UnaryOperator<Function<String, Property<V>>> getEdgeGetPropertyStrategy(StrategyContext<StrategyEdge> ctx, GraphStrategy composingStrategy) {
-        return (f) -> k -> k.equals(getPartitionKey()) ? Property.<V>empty() : f.apply(k);
+        return (f) -> k -> {
+            return k.equals(this.partitionKey) ? Property.<V>empty() : f.apply(k);
+        };
     }
 
     @Override
     public <V> UnaryOperator<Function<String[], Iterator<Property<V>>>> getEdgeIteratorsPropertyIteratorStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
-        return (f) -> (keys) -> IteratorUtils.filter(f.apply(keys), property -> !getPartitionKey().equals(property.key()));
+        return (f) -> (keys) -> IteratorUtils.filter(f.apply(keys), property -> {
+            return !this.partitionKey.equals(property.key());
+        });
     }
 
     @Override
@@ -226,7 +236,9 @@ public final class PartitionStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Supplier<Set<String>>> getEdgeKeysStrategy(final StrategyContext<StrategyEdge> ctx, final GraphStrategy composingStrategy) {
-        return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> !getPartitionKey().equals(key)), new HashSet<>());
+        return (f) -> () -> IteratorUtils.fill(IteratorUtils.filter(f.get().iterator(), key -> {
+            return !this.partitionKey.equals(key);
+        }), new HashSet<>());
     }
 
     @Override

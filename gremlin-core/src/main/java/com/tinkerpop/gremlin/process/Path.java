@@ -58,7 +58,7 @@ public interface Path extends Cloneable {
                 } else if (object instanceof List) {
                     ((List) object).add(objects.get(i));
                 } else {
-                    final List list = new ArrayList();
+                    final List list = new ArrayList(2);
                     list.add(object);
                     list.add(objects.get(i));
                     object = list;

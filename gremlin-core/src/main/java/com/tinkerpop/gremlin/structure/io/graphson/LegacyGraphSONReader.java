@@ -82,7 +82,7 @@ public class LegacyGraphSONReader implements GraphReader {
                             final JsonNode node = parser.readValueAsTree();
                             final Vertex inV = graph.iterators().vertexIterator(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._IN_V))).next();
                             final Vertex outV = graph.iterators().vertexIterator(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._OUT_V))).next();
-                            graphson.edgeFromJson(node, outV, inV);
+                            GraphSONUtility.edgeFromJson(node, outV, inV);
                         }
                         break;
                     default:
@@ -187,7 +187,7 @@ public class LegacyGraphSONReader implements GraphReader {
             return v;
         }
 
-        public Edge edgeFromJson(final JsonNode json, final Vertex out, final Vertex in) throws IOException {
+        public static Edge edgeFromJson(final JsonNode json, final Vertex out, final Vertex in) throws IOException {
             final Map<String, Object> props = GraphSONUtility.readProperties(json);
 
             final Object edgeId = getTypedValueFromJsonNode(json.get(GraphSONTokens._ID));

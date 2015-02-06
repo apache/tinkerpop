@@ -193,8 +193,8 @@ public final class IdStrategy implements GraphStrategy {
 
         private Builder(final String idKey) {
             this.idKey = idKey;
-            this.edgeIdSupplier = this::supplyStringId;
-            this.vertexIdSupplier = this::supplyStringId;
+            this.edgeIdSupplier = Builder::supplyStringId;
+            this.vertexIdSupplier = Builder::supplyStringId;
             this.supportsEdgeId = true;
             this.supportsVertexId = true;
 
@@ -250,7 +250,7 @@ public final class IdStrategy implements GraphStrategy {
             return this;
         }
 
-        private String supplyStringId() {
+        private static String supplyStringId() {
             return UUID.randomUUID().toString();
         }
     }

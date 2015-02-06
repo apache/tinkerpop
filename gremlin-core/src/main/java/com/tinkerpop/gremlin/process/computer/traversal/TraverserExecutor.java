@@ -7,11 +7,7 @@ import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.traversal.TraversalMatrix;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.*;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,8 +34,8 @@ public final class TraverserExecutor {
         });
 
         // while there are still local traversers, process them until they leave the vertex or halt (i.e. isHalted()).
+        final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
         while (!aliveTraversers.isEmpty()) {
-            final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
             // process all the local objects and send messages or store locally again
             aliveTraversers.forEach(traverser -> {
                 if (traverser.get() instanceof Element || traverser.get() instanceof Property) {      // GRAPH OBJECT
@@ -68,6 +64,8 @@ public final class TraverserExecutor {
                         aliveTraversers.add((Traverser.Admin) end);
                 });
             });
+
+            toProcessTraversers.clear();
         }
         return voteToHalt.get();
     }
