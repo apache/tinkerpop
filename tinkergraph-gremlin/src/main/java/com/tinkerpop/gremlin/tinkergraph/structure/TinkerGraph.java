@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_PERFORMANCE)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_PERFORMANCE)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_COMPUTER)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
