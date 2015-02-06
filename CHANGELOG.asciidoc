@@ -20,7 +20,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Steps now only operate with traversals -- no more lambdas. Lambda->`Traversal` conversion utilities added.
 * `SideEffectStep` always requires a `Consumer`. Steps that were consumer-less simply extends `AbstractStep`.
 * Simplified the `Neo4jGraph` implementation by now allowing `cypher()` mid-traversal. Only available via `g.cypher() -> GraphTraversal`.
-* Moved `clock()` out of the Utility plugin. It is now available in Groovy and Java.
+* Moved `clock()` out of the Utility plugin. It is now available to both Groovy and Java.
 * Changed the `OptOut` annotation to allow for ignoring an entire test case using a wildcard.
 * Added `AndStep` and `OrStep` filters to support arbitrary conjunction of traversals.
 * `__` is now a class with static `GraphTraversal` methods and thus `repeat(out())` is possible.
