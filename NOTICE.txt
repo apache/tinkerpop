@@ -1,5 +1,5 @@
-TinkerPop: A Graph Computing Framework
-    http://tinkerpop.com
+Apache TinkerPop: A Graph Computing Framework
+    http://tinkerpop.incubator.apache.org/
 
 TinkerPop3 directly depends on the following open source projects:
 
