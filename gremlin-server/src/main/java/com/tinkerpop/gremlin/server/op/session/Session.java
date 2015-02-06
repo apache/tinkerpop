@@ -89,7 +89,7 @@ public class Session {
                         // have to execute the rollback in the executor because the transaction is associated with
                         // that thread of execution from this session
                         this.executor.execute(() -> {
-                            logger.info("Rolling back any open transactions from session: {}", this.session);
+                            logger.info("Rolling back any open transactions before killing idle session: {}", this.session);
                             if (g.tx().isOpen()) g.tx().rollback();
                         });
                     }
