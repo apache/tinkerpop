@@ -14,7 +14,7 @@ import java.util.Set;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class CoalesceStep<S, E> extends FlatMapStep<S, E> implements TraversalParent {
+public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements TraversalParent {
 
     private List<Traversal.Admin<S, E>> coalesceTraversals;
 

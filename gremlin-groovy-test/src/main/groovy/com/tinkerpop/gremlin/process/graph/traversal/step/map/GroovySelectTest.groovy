@@ -1,10 +1,11 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map
 
-import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.ComputerTestHelper
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.SelectTest
+import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Order
 import com.tinkerpop.gremlin.structure.Vertex
+
+import static com.tinkerpop.gremlin.process.graph.traversal.__.values
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -54,6 +55,11 @@ public abstract class GroovySelectTest {
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
             g.V.has('name', 'gremlin').inE('uses').order.by('skill', Order.incr).as('a').outV.as('b').select.by('skill').by('name')
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select() {
+            return g.V.has(values('name').is('marko')).as('a').select
+        }
     }
 
     public static class ComputerTest extends SelectTest {
@@ -101,6 +107,11 @@ public abstract class GroovySelectTest {
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
             g.V.has('name', 'gremlin').inE('uses').order.by('skill', Order.incr).as('a').outV.as('b').select.by('skill').by('name')
             // TODO: computer
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select() {
+            ComputerTestHelper.compute("g.V.has(values('name').is('marko')).as('a').select", g)
         }
     }
 }

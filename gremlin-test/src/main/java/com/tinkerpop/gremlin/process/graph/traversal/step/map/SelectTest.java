@@ -13,6 +13,7 @@ import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.values;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -37,6 +38,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by();
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -145,6 +148,16 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         checkResults(expected, traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXname_isXmarkoXX_asXaX_select() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasXname_isXmarkoXX_asXaX_select();
+        printTraversalForm(traversal);
+        final List<Map<String, Object>> expected = makeMapList(1, "a", g.V(convertToVertexId("marko")).next());
+        checkResults(expected, traversal);
+    }
+
+
     public static class StandardTest extends SelectTest {
         public StandardTest() {
             requiresGraphComputer = false;
@@ -188,6 +201,11 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
             return g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.incr).as("a").outV().as("b").select().by("skill").by("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select() {
+            return g.V().has(values("name").is("marko")).as("a").select();
         }
     }
 
@@ -240,6 +258,11 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
             // TODO: Micro elements do not store properties
             return g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.incr).as("a").outV().as("b").select().by("skill").by("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select() {
+            return g.V().has(values("name").is("marko")).as("a").select().submit(g.compute());
         }
     }
 }
