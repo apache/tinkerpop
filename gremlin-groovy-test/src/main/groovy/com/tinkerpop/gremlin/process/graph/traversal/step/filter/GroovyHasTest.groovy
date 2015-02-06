@@ -52,8 +52,8 @@ public abstract class GroovyHasTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_hasXid_2X(final Object v1Id, final Object v2Id) {
-            g.V(v1Id).out.has(T.id, v2Id)
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2X(final Object v1Id, final Object v2Id) {
+            g.V(v1Id).out.hasId(v2Id)
         }
 
         @Override
@@ -62,23 +62,23 @@ public abstract class GroovyHasTest {
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_EX7X_hasXlabelXknowsX(final Object e7Id) {
-            g.E(e7Id).has(T.label, 'knows')
+        public Traversal<Edge, Edge> get_g_EX7X_hasLabelXknowsX(final Object e7Id) {
+            g.E(e7Id).hasLabel('knows')
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX() {
-            g.E.has(T.label, 'knows')
+        public Traversal<Edge, Edge> get_g_E_hasLabelXknowsX() {
+            g.E.hasLabel('knows')
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX() {
-            g.E.has(T.label, Contains.within, ['uses', 'traverses'])
+        public Traversal<Edge, Edge> get_g_E_hasLabelXuses_traversesX() {
+            g.E.hasLabel('uses', 'traverses')
         }
 
         @Override
-        Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX() {
-            g.V.has(T.label, Contains.within, ["person", "software", 'blah']);
+        Traversal<Vertex, Vertex> get_g_V_hasLabelXperson_software_blahX() {
+            g.V.hasLabel("person", "software", 'blah');
         }
 
         @Override
@@ -135,8 +135,8 @@ public abstract class GroovyHasTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_hasXid_2X(final Object v1Id, final Object v2Id) {
-            ComputerTestHelper.compute(" g.V(${v1Id}).out.has(T.id, ${v2Id})", g);
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2X(final Object v1Id, final Object v2Id) {
+            ComputerTestHelper.compute(" g.V(${v1Id}).out.hasId(${v2Id})", g);
         }
 
         @Override
@@ -145,23 +145,23 @@ public abstract class GroovyHasTest {
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_EX7X_hasXlabelXknowsX(final Object e7Id) {
-            ComputerTestHelper.compute(" g.E(${e7Id}).has(T.label, 'knows')", g);
+        public Traversal<Edge, Edge> get_g_EX7X_hasLabelXknowsX(final Object e7Id) {
+            ComputerTestHelper.compute(" g.E(${e7Id}).hasLabel('knows')", g);
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX() {
-            ComputerTestHelper.compute("g.E.has(T.label, 'knows')", g);
+        public Traversal<Edge, Edge> get_g_E_hasLabelXknowsX() {
+            ComputerTestHelper.compute("g.E.hasLabel('knows')", g);
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX() {
-            ComputerTestHelper.compute("g.E.has(T.label, Contains.within, ['uses', 'traverses'])", g);
+        public Traversal<Edge, Edge> get_g_E_hasLabelXuses_traversesX() {
+            ComputerTestHelper.compute("g.E.hasLabel('uses', 'traverses')", g);
         }
 
         @Override
-        Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX() {
-            ComputerTestHelper.compute("g.V.has(T.label, Contains.within, ['person', 'software', 'blah'])", g);
+        Traversal<Vertex, Vertex> get_g_V_hasLabelXperson_software_blahX() {
+            ComputerTestHelper.compute("g.V.hasLabel('person', 'software', 'blah')", g);
         }
 
         @Override

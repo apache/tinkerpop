@@ -413,6 +413,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(key, Contains.without)));
     }
 
+    public default GraphTraversal<S, E> hasLabel(final String... labels) {
+        return labels.length == 1 ? this.has(T.label, labels[0]) : this.has(T.label, Contains.within, Arrays.asList(labels));
+    }
+
+    public default GraphTraversal<S, E> hasId(final Object... ids) {
+        return ids.length == 1 ? this.has(T.id, ids[0]) : this.has(T.id, Contains.within, Arrays.asList(ids));
+    }
+
+    public default GraphTraversal<S, E> hasKey(final String... keys) {
+        return keys.length == 1 ? this.has(T.key, keys[0]) : this.has(T.key, Contains.within, Arrays.asList(keys));
+    }
+
+    public default GraphTraversal<S, E> hasValue(final Object... values) {
+        return values.length == 1 ? this.has(T.value, values[0]) : this.has(T.value, Contains.within, Arrays.asList(values));
+    }
+
     public default GraphTraversal<S, E> is(final Object value) {
         return this.is(Compare.eq, value);
     }

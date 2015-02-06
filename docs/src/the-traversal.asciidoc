@@ -66,7 +66,7 @@ image:filter-lambda.png[width=160,float=right]
 [gremlin-groovy,modern]
 ----
 g.V().filter {it.get().label() == 'person'} <1>
-g.V().has(label,'person') <2>
+g.V().hasLabel('person') <2>
 ----
 
 <1> A filter that only allows the vertex to pass if it has an age-property.
@@ -76,7 +76,7 @@ g.V().has(label,'person') <2>
 image:side-effect-lambda.png[width=175,float=right]
 [gremlin-groovy,modern]
 ----
-g.V().has(label,'person').sideEffect(System.out.&println) <1>
+g.V().hasLabel('person').sideEffect(System.out.&println) <1>
 ----
 
 <1> Whatever enters `sideEffect()` is passed to the next step, but some intervening process can occur.
@@ -235,7 +235,7 @@ The `coalesce()`-step evaluates the provided traversals in order and returns the
 g.V(1).coalesce(outE('knows'), outE('created')).inV().path().by('name').by(label)
 g.V(1).coalesce(outE('created'), outE('knows')).inV().path().by('name').by(label)
 g.V(1).next().property('nickname', 'okram')
-g.V().has(label, 'person').coalesce(values('nickname'), values('name'))
+g.V().hasLabel('person').coalesce(values('nickname'), values('name'))
 ----
 
 [[count-step]]
@@ -249,9 +249,9 @@ The `count()`-step (*map*) counts the total number of represented traversers in 
 [gremlin-groovy,modern]
 ----
 g.V().count()
-g.V().has(label,'person').count()
-g.V().has(label,'person').outE('created').count().path()  <1>
-g.V().has(label,'person').outE('created').count().map{it.get() * 10}.map{it.get() + 2}.path() <2>
+g.V().hasLabel('person').count()
+g.V().hasLabel('person').outE('created').count().path()  <1>
+g.V().hasLabel('person').outE('created').count().map{it.get() * 10}.map{it.get() + 2}.path() <2>
 ----
 
 <1> `count()`-step is a <<a-note-on-barrier-steps,reducing barrier step>> meaning that all of the previous traversers are folded into a new traverser.
@@ -267,11 +267,11 @@ The `choose()`-step (*branch*) routes the current traverser to a particular trav
 
 [gremlin-groovy,modern]
 ----
-g.V().has(label,'person').
+g.V().hasLabel('person').
       choose({it.value('name').length() == 5},
         __.in(),
         __.out()).values('name') <1>
-g.V().has(label,'person').
+g.V().hasLabel('person').
       choose {it.value('name').length()}.
         option(5, __.in()).
         option(4, __.out()).values('name') <2>
@@ -284,7 +284,7 @@ However, note that `choose()` can have an arbitrary number of options and moreov
 
 [gremlin-groovy,modern]
 ----
-g.V().has(label,'person').
+g.V().hasLabel('person').
       choose(values('name')).
         option('marko', values('age')).
         option('josh', values('name')).
@@ -296,7 +296,7 @@ The `choose()`-step can leverage the `Pick.none` option match. For anything that
 
 [gremlin-groovy,modern]
 ----
-g.V().has(label,'person').
+g.V().hasLabel('person').
       choose(values('name')).
         option('marko', values('age')).
         option(none, values('name'))
@@ -423,8 +423,8 @@ When it is important to know how many times a particular object has been at a pa
 
 [gremlin-groovy,modern]
 ----
-g.V().has(label,'person').values('age').groupCount()
-g.V().has(label,'person').groupCount().by('age') <1>
+g.V().hasLabel('person').values('age').groupCount()
+g.V().hasLabel('person').groupCount().by('age') <1>
 ----
 
 <1> You can also supply a pre-group projection.
@@ -450,22 +450,30 @@ Has Step
 
 image::has-step.png[width=670]
 
-It is possible to filter vertices, edges, and vertex properties based on their properties using `has()`-step (*filter*).
+It is possible to filter vertices, edges, and vertex properties based on their properties using `has()`-step (*filter*). There are numerous variations on `has()` including:
+
+  * `has(key,value)`: Remove the traverser if its element does not have the provided key/value property.
+  * `has(key,bi-predicate,object)`: Remove the traverser if its element does not have a key value that satisfies the bi-predicate.
+  * `hasLabel(labels...)`: Remove the traverser if its element does not have any of the labels.
+  * `hasId(ids...)`: Remove the traverser if its element does not have any of the ids.
+  * `hasKey(keys...)`: Remove the traverser if its property does not have any of the keys.
+  * `hasValue(values...)`: Remove the traverser if its property does not have any of the values.
+  * `has(key)`: Remove the traverser if its element has a value for the key.
+  * `hasNot(key)`: Remove the traverser if its element does not have a value for the  key.
+  * `has(traversal)`: Remove the traverser if its object does not yield a result through the traversal.
 
 [gremlin-groovy,modern]
 ----
-g.V().has(label,'person')
-g.V().has(label,'person').out().has('name',within,['vadas','josh'])
-g.V().has(label,'person').out().has('name',within,['vadas','josh']).
-      outE().has(label,'created')
+g.V().hasLabel('person')
+g.V().hasLabel('person').out().has('name',within,['vadas','josh'])
+g.V().hasLabel('person').out().has('name',within,['vadas','josh']).
+      outE().hasLabel('created')
 g.V().has('age',inside,[20,30]).values('age') <1>
 g.V().has('age',outside,[20,30]).values('age') <2>
 ----
 
 <1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
 <2> Find all vertices whose ages are not between 20 (inclusive) and 30 (exclusive).
-
-There are accessors available in the `T` "tokens" class. They include `label`, `id`, `key`, and `value`. Thus, it is possible to use `has()`-step to also filter on these aspects of an element.
 
 It is also possible to filter any arbitrary object based on an anonymous traversal.
 
@@ -514,7 +522,7 @@ IMPORTANT: Note that a standalone anonymous traversal is a common use case which
 ----
 gremlin> g = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> software = g.V().has(label, 'software').toList()
+gremlin> software = g.V().hasLabel('software').toList()
 ==>v[3]
 ==>v[5]
 gremlin> inject(software).unfold().groupCount().by('lang')
@@ -532,7 +540,7 @@ TraversalStrategies.GlobalCache.registerStrategies(__, <1>
     TraversalStrategies.GlobalCache.getStrategies(__).addStrategies(
         SideEffectCapStrategy.instance(),
         SideEffectRegistrationStrategy.instance()))
-software = g.V().has(label, 'software').toList()
+software = g.V().hasLabel('software').toList()
 inject(software).unfold().groupCount().by('lang')
 ----
 
@@ -542,7 +550,7 @@ inject(software).unfold().groupCount().by('lang')
 ----
 import com.tinkerpop.gremlin.process.graph.traversal.__
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.*
-software = g.V().has(label, "software").toList()
+software = g.V().hasLabel('software').toList()
 t = inject(software).unfold().groupCount().by("lang"); null <1>
 t.getStrategies().addStrategies(
     SideEffectCapStrategy.instance(),
@@ -832,9 +840,9 @@ The `order()`-step allows the user to provide an arbitrary number of comparators
 
 [gremlin-groovy,modern]
 ----
-g.V().has(label,'person').order().by('name') {a,b -> a[1] <=> b[1]}.
+g.V().hasLabel('person').order().by('name') {a,b -> a[1] <=> b[1]}.
                                   by('age',incr).values('name')
-g.V().has(label,'person').order().by('name') {a,b -> a[1] <=> b[1]}.
+g.V().hasLabel('person').order().by('name') {a,b -> a[1] <=> b[1]}.
                                   by('age',decr).values('name')
 ----
 
@@ -880,7 +888,7 @@ Finally, because `by()`-based post-processing, nothing prevents triggering yet a
 [gremlin-groovy,modern]
 ----
 g.V().out().out().path().by(
-                   choose(has(label,'person'),
+                   choose(hasLabel('person'),
                                  out('created').values('name'),
                                  __.in('created').values('name')).fold())
 ----
@@ -920,7 +928,7 @@ WARNING: Profiling a Traversal will impede the Traversal's performance. This ove
 
 [gremlin-groovy,modern]
 ----
-g.V().out('created').repeat(both()).times(3).has(label,'person').values('age').sum().profile().cap(TraversalMetrics.METRICS_KEY)
+g.V().out('created').repeat(both()).times(3).hasLabel('person').values('age').sum().profile().cap(TraversalMetrics.METRICS_KEY)
 ----
 
 The `profile()`-step generates a `TraversalMetrics` sideEffect object that contains the following information:
@@ -1004,8 +1012,8 @@ Finally, note that both `emit()` and `until()` can take a traversal and in such,
 
 [gremlin-groovy,modern]
 ----
-g.V(1).repeat(out()).until(has(label,'software')).path().by('name') <1>
-g.V(1).emit(has(label,'person')).repeat(out()).path().by('name') <2>
+g.V(1).repeat(out()).until(hasLabel('software')).path().by('name') <1>
+g.V(1).emit(hasLabel('person')).repeat(out()).path().by('name') <2>
 g.V(1).repeat(out()).until(outE().count().retain(0L)).path().by('name') <3>
 g.V(1).repeat(out()).until {!it.get().outE().hasNext()}.path().by('name') <4>
 ----
@@ -1202,7 +1210,7 @@ Extracting a portion of a graph from a larger one for analysis, visualization or
 
 [gremlin-groovy,modern]
 ----
-sg = g.E().has(label,'knows').subgraph().next() <1>
+sg = g.E().hasLabel('knows').subgraph().next() <1>
 sg.E() <2>
 ----
 
@@ -1356,9 +1364,9 @@ If the `id`, `label`, `key`, and `value` of the `Element` is desired, then a boo
 
 [gremlin-groovy,theCrew]
 ----
-g.V().has(label,'person').valueMap(true)
-g.V().has(label,'person').valueMap(true,'name')
-g.V().has(label,'person').properties('location').valueMap(true)
+g.V().hasLabel('person').valueMap(true)
+g.V().hasLabel('person').valueMap(true,'name')
+g.V().hasLabel('person').properties('location').valueMap(true)
 ----
 
 [[vertex-steps]]

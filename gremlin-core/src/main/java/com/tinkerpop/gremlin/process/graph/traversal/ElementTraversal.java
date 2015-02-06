@@ -250,6 +250,22 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().hasNot(key);
     }
 
+    public default GraphTraversal<A, A> hasLabel(final String... labels) {
+        return this.start().hasLabel(labels);
+    }
+
+    public default GraphTraversal<A, A> hasId(final Object... ids) {
+        return this.start().hasId(ids);
+    }
+
+    public default GraphTraversal<A, A> hasKey(final String... keys) {
+        return this.start().hasKey(keys);
+    }
+
+    public default GraphTraversal<A, A> hasValue(final Object... values) {
+        return this.start().hasValue(values);
+    }
+
     public default <E2> GraphTraversal<A, Map<String, E2>> where(final String firstKey, final String secondKey, final BiPredicate predicate) {
         return this.start().where(firstKey, secondKey, predicate);
     }

@@ -42,17 +42,17 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_hasXage_gt_30X(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_hasXid_2X(final Object v1Id, final Object v2Id);
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2X(final Object v1Id, final Object v2Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X();
 
-    public abstract Traversal<Edge, Edge> get_g_EX7X_hasXlabelXknowsX(final Object e7Id);
+    public abstract Traversal<Edge, Edge> get_g_EX7X_hasLabelXknowsX(final Object e7Id);
 
-    public abstract Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX();
+    public abstract Traversal<Edge, Edge> get_g_E_hasLabelXknowsX();
 
-    public abstract Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX();
+    public abstract Traversal<Edge, Edge> get_g_E_hasLabelXuses_traversesX();
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXperson_software_blahX();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX();
 
@@ -136,7 +136,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_hasXid_2X() {
-        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_hasXid_2X(convertToVertexId("marko"), convertToVertexId("vadas"));
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_hasIdX2X(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals(convertToVertexId("vadas"), traversal.next().id());
@@ -156,7 +156,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_EX7X_hasXlabelXknowsX() {
         //System.out.println(convertToEdgeId("marko", "knows", "vadas"));
-        Traversal<Edge, Edge> traversal = get_g_EX7X_hasXlabelXknowsX(convertToEdgeId("marko", "knows", "vadas"));
+        Traversal<Edge, Edge> traversal = get_g_EX7X_hasLabelXknowsX(convertToEdgeId("marko", "knows", "vadas"));
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -169,7 +169,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_E_hasXlabelXknowsX() {
-        final Traversal<Edge, Edge> traversal = get_g_E_hasXlabelXknowsX();
+        final Traversal<Edge, Edge> traversal = get_g_E_hasLabelXknowsX();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -182,7 +182,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CREW)
     public void g_E_hasXlabelXuses_traversesX() {
-        final Traversal<Edge, Edge> traversal = get_g_E_hasXlabelXuses_traversesX();
+        final Traversal<Edge, Edge> traversal = get_g_E_hasLabelXuses_traversesX();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -196,7 +196,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CREW)
     public void g_V_hasXlabelXperson_software_blahX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXlabelXperson_software_blahX();
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasLabelXperson_software_blahX();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -278,8 +278,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_hasXid_2X(final Object v1Id, final Object v2Id) {
-            return g.V(v1Id).out().has(T.id, v2Id);
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2X(final Object v1Id, final Object v2Id) {
+            return g.V(v1Id).out().hasId(v2Id);
         }
 
         @Override
@@ -288,23 +288,23 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_EX7X_hasXlabelXknowsX(final Object e7Id) {
-            return g.E(e7Id).has(T.label, "knows");
+        public Traversal<Edge, Edge> get_g_EX7X_hasLabelXknowsX(final Object e7Id) {
+            return g.E(e7Id).hasLabel("knows");
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX() {
-            return g.E().has(T.label, "knows");
+        public Traversal<Edge, Edge> get_g_E_hasLabelXknowsX() {
+            return g.E().hasLabel("knows");
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX() {
-            return g.E().has(T.label, Contains.within, Arrays.asList("uses", "traverses"));
+        public Traversal<Edge, Edge> get_g_E_hasLabelXuses_traversesX() {
+            return g.E().hasLabel("uses", "traverses");
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX() {
-            return g.V().has(T.label, Contains.within, Arrays.asList("person", "software", "blah"));
+        public Traversal<Vertex, Vertex> get_g_V_hasLabelXperson_software_blahX() {
+            return g.V().hasLabel("person", "software", "blah");
         }
 
         @Override
@@ -364,8 +364,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_hasXid_2X(final Object v1Id, final Object v2Id) {
-            return g.V(v1Id).out().has(T.id, v2Id).submit(g.compute());
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2X(final Object v1Id, final Object v2Id) {
+            return g.V(v1Id).out().hasId(v2Id).submit(g.compute());
         }
 
         @Override
@@ -374,23 +374,23 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_EX7X_hasXlabelXknowsX(final Object e7Id) {
-            return g.E(e7Id).has(T.label, "knows").submit(g.compute());
+        public Traversal<Edge, Edge> get_g_EX7X_hasLabelXknowsX(final Object e7Id) {
+            return g.E(e7Id).hasLabel("knows").submit(g.compute());
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX() {
-            return g.E().has(T.label, "knows").submit(g.compute());
+        public Traversal<Edge, Edge> get_g_E_hasLabelXknowsX() {
+            return g.E().hasLabel("knows").submit(g.compute());
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX() {
-            return g.E().has(T.label, Contains.within, Arrays.asList("uses", "traverses")).submit(g.compute());
+        public Traversal<Edge, Edge> get_g_E_hasLabelXuses_traversesX() {
+            return g.E().hasLabel("uses", "traverses").submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX() {
-            return g.V().has(T.label, Contains.within, Arrays.asList("person", "software", "blah"));
+        public Traversal<Vertex, Vertex> get_g_V_hasLabelXperson_software_blahX() {
+            return g.V().hasLabel("person", "software", "blah");
         }
 
         @Override

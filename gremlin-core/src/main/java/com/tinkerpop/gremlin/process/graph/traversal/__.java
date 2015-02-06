@@ -280,6 +280,22 @@ public class __ {
         return __.<A>start().hasNot(key);
     }
 
+    public static <A> GraphTraversal<A, A> hasLabel(final String... labels) {
+        return __.<A>start().hasLabel(labels);
+    }
+
+    public static <A> GraphTraversal<A, A> hasId(final Object... ids) {
+        return __.<A>start().hasId(ids);
+    }
+
+    public static <A> GraphTraversal<A, A> hasKey(final String... keys) {
+        return __.<A>start().hasKey(keys);
+    }
+
+    public static <A> GraphTraversal<A, A> hasValue(final Object... values) {
+        return __.<A>start().hasValue(values);
+    }
+
     public static <A, E2> GraphTraversal<A, Map<String, E2>> where(final String firstKey, final String secondKey, final BiPredicate predicate) {
         return __.<A>start().where(firstKey, secondKey, predicate);
     }
