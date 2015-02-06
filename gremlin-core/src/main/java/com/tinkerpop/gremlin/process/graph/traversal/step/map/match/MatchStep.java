@@ -309,9 +309,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
         }
     }
 
-    /**
-     * Applies a visitor, skipping anonymous variables
-     */
+    // applies a visitor, skipping anonymous variables
     static <T> void visit(final String name,
                           final T value,
                           final BiConsumer<String, T> visitor) {
