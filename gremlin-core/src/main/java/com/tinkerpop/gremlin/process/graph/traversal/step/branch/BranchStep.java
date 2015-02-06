@@ -8,13 +8,7 @@ import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -123,15 +117,17 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     @Override
     public BranchStep<S, E, M> clone() throws CloneNotSupportedException {
         final BranchStep<S, E, M> clone = (BranchStep<S, E, M>) super.clone();
-        clone.traversalOptions = new HashMap<>();
+        clone.traversalOptions = new HashMap<>(this.traversalOptions.size());
         for (final Map.Entry<M, List<Traversal.Admin<S, E>>> entry : this.traversalOptions.entrySet()) {
-            for (final Traversal.Admin<S, E> traversal : entry.getValue()) {
-                final Traversal.Admin<S, E> clonedTraversal = traversal.clone();
-                if (clone.traversalOptions.containsKey(entry.getKey()))
-                    clone.traversalOptions.get(entry.getKey()).add(clonedTraversal);
-                else
-                    clone.traversalOptions.put(entry.getKey(), new ArrayList<>(Collections.singletonList(clonedTraversal)));
-                clone.integrateChild(clonedTraversal, TYPICAL_GLOBAL_OPERATIONS);
+            final List<Traversal.Admin<S, E>> traversals = entry.getValue();
+            if (traversals.size() > 0) {
+                final List<Traversal.Admin<S, E>> clonedTraversals = clone.traversalOptions.compute(entry.getKey(), (k, v) ->
+                        (v == null) ? new ArrayList<>(traversals.size()) : v);
+                for (final Traversal.Admin<S, E> traversal : traversals) {
+                    final Traversal.Admin<S, E> clonedTraversal = traversal.clone();
+                    clonedTraversals.add(clonedTraversal);
+                    clone.integrateChild(clonedTraversal, TYPICAL_GLOBAL_OPERATIONS);
+                }
             }
         }
         clone.branchTraversal = this.branchTraversal.clone();

@@ -18,11 +18,7 @@ import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -32,8 +28,8 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
 
     private MessageScope.Local<?> voteScope = MessageScope.Local.of(__::outE);
     private MessageScope.Local<?> countScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.voteScope));
-    private final Set<MessageScope> VOTE_SCOPE = new HashSet<>(Arrays.asList(this.voteScope));
-    private final Set<MessageScope> COUNT_SCOPE = new HashSet<>(Arrays.asList(this.countScope));
+    private final Set<MessageScope> VOTE_SCOPE = new HashSet<>(Collections.singletonList(this.voteScope));
+    private final Set<MessageScope> COUNT_SCOPE = new HashSet<>(Collections.singletonList(this.countScope));
 
     public static final String CLUSTER = "gremlin.peerPressureVertexProgram.cluster";
     public static final String VOTE_STRENGTH = "gremlin.peerPressureVertexProgram.voteStrength";
@@ -48,7 +44,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     private boolean distributeVote = false;
 
     private static final Set<String> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(CLUSTER, VOTE_STRENGTH));
-    private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VOTE_TO_HALT));
+    private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Collections.singletonList(VOTE_TO_HALT));
 
     private PeerPressureVertexProgram() {
 

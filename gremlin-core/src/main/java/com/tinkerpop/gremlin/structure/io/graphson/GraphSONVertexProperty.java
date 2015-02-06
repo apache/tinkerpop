@@ -48,7 +48,7 @@ public class GraphSONVertexProperty {
             ser(property, jsonGenerator);
         }
 
-        private void ser(final GraphSONVertexProperty graphSONVertexProperty, final JsonGenerator jsonGenerator) throws IOException {
+        private static void ser(final GraphSONVertexProperty graphSONVertexProperty, final JsonGenerator jsonGenerator) throws IOException {
             final VertexProperty property = graphSONVertexProperty.getToSerialize();
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, property.id());
@@ -58,7 +58,7 @@ public class GraphSONVertexProperty {
             jsonGenerator.writeObject(m);
         }
 
-        private Map<String, Object> props(final VertexProperty property) {
+        private static Map<String, Object> props(final VertexProperty property) {
             if (property instanceof DetachedVertexProperty) {
                 try {
                     return IteratorUtils.collectMap(property.iterators().propertyIterator(), Property::key, Property::value);

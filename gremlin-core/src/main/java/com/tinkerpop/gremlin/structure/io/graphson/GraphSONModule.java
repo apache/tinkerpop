@@ -54,7 +54,7 @@ public class GraphSONModule extends SimpleModule {
             ser(property, jsonGenerator);
         }
 
-        private void ser(final VertexProperty property, final JsonGenerator jsonGenerator) throws IOException {
+        private static void ser(final VertexProperty property, final JsonGenerator jsonGenerator) throws IOException {
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, property.id());
             m.put(GraphSONTokens.VALUE, property.value());
@@ -64,7 +64,7 @@ public class GraphSONModule extends SimpleModule {
             jsonGenerator.writeObject(m);
         }
 
-        private Map<String, Object> props(final VertexProperty property) {
+        private static Map<String, Object> props(final VertexProperty property) {
             if (property instanceof DetachedVertexProperty) {
                 try {
                     return IteratorUtils.collectMap(property.iterators().propertyIterator(), Property::key, Property::value);
@@ -96,7 +96,7 @@ public class GraphSONModule extends SimpleModule {
             ser(property, jsonGenerator);
         }
 
-        private void ser(final Property property, final JsonGenerator jsonGenerator) throws IOException {
+        private static void ser(final Property property, final JsonGenerator jsonGenerator) throws IOException {
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.VALUE, property.value());
             jsonGenerator.writeObject(m);
@@ -121,7 +121,7 @@ public class GraphSONModule extends SimpleModule {
             ser(edge, jsonGenerator);
         }
 
-        private void ser(final Edge edge, final JsonGenerator jsonGenerator) throws IOException {
+        private static void ser(final Edge edge, final JsonGenerator jsonGenerator) throws IOException {
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, edge.id());
             m.put(GraphSONTokens.LABEL, edge.label());
@@ -161,7 +161,7 @@ public class GraphSONModule extends SimpleModule {
 
         }
 
-        private void ser(final Vertex vertex, final JsonGenerator jsonGenerator)
+        private static void ser(final Vertex vertex, final JsonGenerator jsonGenerator)
                 throws IOException {
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, vertex.id());
@@ -196,7 +196,7 @@ public class GraphSONModule extends SimpleModule {
             ser(path, jsonGenerator);
         }
 
-        private void ser(final Path path, final JsonGenerator jsonGenerator)
+        private static void ser(final Path path, final JsonGenerator jsonGenerator)
                 throws IOException {
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.LABELS, path.labels());
@@ -223,7 +223,7 @@ public class GraphSONModule extends SimpleModule {
             serializeInternal(property, jsonGenerator);
         }
 
-        private void serializeInternal(final TraversalMetrics traversalMetrics, final JsonGenerator jsonGenerator) throws IOException {
+        private static void serializeInternal(final TraversalMetrics traversalMetrics, final JsonGenerator jsonGenerator) throws IOException {
             final Map<String, Object> m = new HashMap<>();
 
             m.put(GraphSONTokens.DURATION, traversalMetrics.getDuration(TimeUnit.MILLISECONDS));
@@ -234,7 +234,7 @@ public class GraphSONModule extends SimpleModule {
             jsonGenerator.writeObject(m);
         }
 
-        private Map<String, Object> metricsToMap(final Metrics metrics) {
+        private static Map<String, Object> metricsToMap(final Metrics metrics) {
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, metrics.getId());
             m.put(GraphSONTokens.NAME, metrics.getName());

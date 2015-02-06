@@ -220,7 +220,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
         }
     }
 
-    private void checkAs(final String as) {
+    private static void checkAs(final String as) {
         // note: this won't happen so long as the anon prefix is the same as Traversal.UNDERSCORE
         if (isAnonymousAs(as)) {
             throw new IllegalArgumentException("The step named '" + as + "' uses reserved prefix '"
@@ -276,10 +276,10 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
         }
     }
 
-    private <T> Enumerator<T> crossJoin(final Enumerator<T> left,
-                                        final Enumerator<T> right,
-                                        final Set<String> leftLabels,
-                                        final Set<String> rightLabels) {
+    private static <T> Enumerator<T> crossJoin(final Enumerator<T> left,
+                                               final Enumerator<T> right,
+                                               final Set<String> leftLabels,
+                                               final Set<String> rightLabels) {
         Set<String> shared = new HashSet<>();
         for (String s : rightLabels) {
             if (leftLabels.contains(s)) {

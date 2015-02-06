@@ -52,7 +52,7 @@ class GraphSONVertex {
             ser(directionalVertex, jsonGenerator);
         }
 
-        public void ser(final GraphSONVertex directionalVertex, final JsonGenerator jsonGenerator) throws IOException {
+        public static void ser(final GraphSONVertex directionalVertex, final JsonGenerator jsonGenerator) throws IOException {
             final Vertex vertex = directionalVertex.getVertexToSerialize();
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, vertex.id());

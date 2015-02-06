@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.Path;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,11 +15,16 @@ import java.util.stream.Stream;
  */
 public class MutablePath implements Path, Serializable {
 
-    protected List<Object> objects = new ArrayList<>();
-    protected List<Set<String>> labels = new ArrayList<>();
+    final protected List<Object> objects;
+    final protected List<Set<String>> labels;
 
     protected MutablePath() {
+        this(0);
+    }
 
+    private MutablePath(final int capacity) {
+        this.objects = new ArrayList<>(capacity);
+        this.labels = new ArrayList<>(capacity);
     }
 
     public static Path make() {
@@ -29,15 +33,13 @@ public class MutablePath implements Path, Serializable {
 
     @Override
     public MutablePath clone() throws CloneNotSupportedException {
-        final MutablePath clone = new MutablePath();
+        final MutablePath clone = new MutablePath(this.objects.size());
         // TODO: Why is this not working Hadoop serialization-wise?... Its cause DetachedPath's clone needs to detach on clone.
         /*final MutablePath clone = (MutablePath) super.clone();
         clone.objects = new ArrayList<>();
         clone.labels = new ArrayList<>();*/
-        for (int i = 0; i < this.objects.size(); i++) {
-            clone.objects.add(this.objects.get(i));
-            clone.labels.add(new HashSet<>(this.labels.get(i)));
-        }
+        clone.objects.addAll(this.objects);
+        clone.labels.addAll(this.labels);
         return clone;
     }
 

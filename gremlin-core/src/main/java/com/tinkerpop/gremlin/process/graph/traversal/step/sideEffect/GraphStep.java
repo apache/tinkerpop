@@ -30,9 +30,9 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
         this.graph = graph;
         this.returnClass = returnClass;
         this.ids = ids;
-        this.setIteratorSupplier(() -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ?
-                this.graph.iterators().vertexIterator(this.ids) :
-                this.graph.iterators().edgeIterator(this.ids)));
+        this.iteratorSupplier = () -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ?
+                this.graph.iterators().<S>vertexIterator(this.ids) :
+                this.graph.iterators().edgeIterator(this.ids));
     }
 
     public String toString() {
@@ -65,8 +65,9 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
 
     @Override
     public void onEngine(final TraversalEngine traversalEngine) {
-        if (traversalEngine.equals(TraversalEngine.COMPUTER))
-            this.setIteratorSupplier(Collections::emptyIterator);
+        if (traversalEngine.equals(TraversalEngine.COMPUTER)) {
+            this.iteratorSupplier = Collections::emptyIterator;
+        }
     }
 
     @Override

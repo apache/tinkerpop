@@ -7,12 +7,7 @@ import com.tinkerpop.gremlin.process.graph.traversal.step.util.SupplyingBarrierS
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -33,7 +28,7 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
 
     public void registerSideEffects() {
         if (this.sideEffectKeys.isEmpty())
-            this.sideEffectKeys = Arrays.asList(((SideEffectCapable) this.getPreviousStep()).getSideEffectKey());
+            this.sideEffectKeys = Collections.singletonList(((SideEffectCapable) this.getPreviousStep()).getSideEffectKey());
         SideEffectCapStep.generateSupplier(this);
     }
 
