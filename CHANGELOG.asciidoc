@@ -24,7 +24,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Changed the `OptOut` annotation to allow for ignoring an entire test case using a wildcard.
 * Added `AndStep` and `OrStep` filters to support arbitrary conjunction of traversals.
 * `__` is now a class with static `GraphTraversal` methods and thus `repeat(out())` is possible.
-* Added `IsStep` / `.is()` that allows filtering of scalar values.
+* Added `IsStep` / `.is()` that supports filtering scalar values.
 * `Neo4jGraph` and `TinkerGraph` no longer create new `Feature` instances on each feature check.
 * Added `Compare.inside` and `Compare.outside` for testing ranges. Removed `between()` as now its `has('age',inside,[10,30])`.
 * `GraphTraversal.has()` no longer requires the element type to be cast in the traversal definition.
