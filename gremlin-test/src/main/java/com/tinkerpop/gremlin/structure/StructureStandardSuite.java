@@ -22,28 +22,30 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * The StructureStandardSuite is a mapper JUnit test runner that executes the Gremlin Test Suite over a Graph
- * implementation.  This specialized test suite and runner is for use by Gremlin implementers to test their
- * Graph implementations.  The ProcessStandardSuite ensures consistency and validity of the implementations that they
- * test.
+ * The {@code StructureStandardSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
+ * {@link com.tinkerpop.gremlin.structure.Graph} implementation.  This specialized test suite and runner is for use by
+ * Gremlin implementers to test their {@link com.tinkerpop.gremlin.structure.Graph} implementations.  The
+ * {@code StructureStandardSuite} ensures consistency and validity of the implementations that they test.
  * <p/>
- * To use the StructureStandardSuite define a class in a test module.  Simple naming would expect the name of the
- * implementation followed by "StructureStandardSuite".  This class should be annotated as follows (note that the "Suite"
- * implements StructureStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class
- * file):
+ * To use the {@code StructureStandardSuite} define a class in a test module.  Simple naming would expect the name of
+ * the implementation followed by "StructureStandardSuite".  This class should be annotated as follows (note that the
+ * "Suite" implements {@link com.tinkerpop.gremlin.GraphProvider} as a convenience only. It could be implemented in a
+ * separate class file):
  * <code>
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(StructureStandardSuite.class)
  * @StructureStandardSuite.GraphProviderClass(TinkerGraphStructureStandardTest.class) public class TinkerGraphStructureStandardTest implements GraphProvider {
  * }
  * </code>
- * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the StructureStandardSuite to
- * instantiate Graph instances from the implementation being tested to inject into tests in the suite.  The
- * StructureStandardSuite will utilized Features defined in the suite to determine which tests will be executed.
+ * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the {@code StructureStandardSuite} to
+ * instantiate {@link com.tinkerpop.gremlin.structure.Graph} instances from the implementation being tested to inject
+ * into tests in the suite.  The {@code StructureStandardSuite} will utilized Features defined in the suite to
+ * determine which tests will be executed.
  * <br/>
  * Set the {@code gremlin.structure.tests} environment variable to a comma separated list of test classes to execute.
  * This setting can be helpful to restrict execution of tests to specific ones being focused on during development.
+ * <br/>
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StructureStandardSuite extends AbstractGremlinSuite {
 
