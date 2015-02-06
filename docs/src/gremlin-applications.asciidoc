@@ -802,6 +802,10 @@ image:gremlin-sugar.png[width=120,float=left] In previous versions of Gremlin-Gr
 
 IMPORTANT: It is important that the sugar plugin is loaded in a Gremlin Console session prior to any manipulations of the respective TinkerPop3 objects as Groovy will cache unavailable methods and properties.
 
+[source,groovy]
+gremlin> :plugin use tinkerpop.sugar
+==>tinkerpop.sugar activated
+
 Graph Traversal Methods
 ^^^^^^^^^^^^^^^^^^^^^^^
 
