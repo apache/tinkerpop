@@ -17,9 +17,9 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Bumped `neo4j-graph` to Neo4j 2.1.6.
 * Bumped to Groovy 2.4.0.
 * Added a new "performance" test suite for Gremlin Process.
-* Steps now only operate with traversals -- no more lambdas. Lambda->`Traversal` conversion utilities added.
+* Steps now only operate with traversals -- no more lambdas. Lambda->`Traversal` conversion utilities  added.
 * `SideEffectStep` always requires a `Consumer`. Steps that were consumer-less simply extends `AbstractStep`.
-* Simplified the `Neo4jGraph` implementation by now allowing `cypher()` mid-traversal. Only available via `g.cypher() -> GraphTraversal`.
+* Simplified the `Neo4jGraph` implementation by now allowing `cypher()` mid-traversal. Only available via `g.cypher()`.
 * Moved `clock()` out of the Utility plugin. It is now available to both Groovy and Java.
 * Changed the `OptOut` annotation to allow for ignoring an entire test case using a wildcard.
 * Added `AndStep` and `OrStep` filters to support arbitrary conjunction of traversals.
