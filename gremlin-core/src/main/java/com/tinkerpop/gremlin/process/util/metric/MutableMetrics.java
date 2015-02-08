@@ -61,7 +61,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
                 final List<String> existingValues = Arrays.asList(existing.split(","));
                 if (!existingValues.contains(p.getValue())) {
                     // New value. Append to comma-separated list.
-                    this.annotations.put(p.getKey(), existing + "," + p.getValue());
+                    this.annotations.put(p.getKey(), existing + ',' + p.getValue());
                 }
             } else {
                 this.annotations.put(p.getKey(), p.getValue());

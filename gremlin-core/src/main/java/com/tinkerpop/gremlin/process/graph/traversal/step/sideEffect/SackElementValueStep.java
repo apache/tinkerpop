@@ -1,12 +1,11 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Element;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 
@@ -15,10 +14,10 @@ import java.util.function.BinaryOperator;
  */
 public final class SackElementValueStep<S extends Element, V> extends SideEffectStep<S> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.SACK,
             TraverserRequirement.OBJECT
-    ));
+    );
 
     private BinaryOperator<V> operator;
     private final String propertyKey;

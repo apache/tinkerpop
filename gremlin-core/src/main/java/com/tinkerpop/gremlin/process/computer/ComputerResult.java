@@ -37,6 +37,6 @@ public final class ComputerResult {
     }
 
     public String toString() {
-        return "result[" + this.graph + "," + this.memory + "]";
+        return "result[" + this.graph + ',' + this.memory + ']';
     }
 }

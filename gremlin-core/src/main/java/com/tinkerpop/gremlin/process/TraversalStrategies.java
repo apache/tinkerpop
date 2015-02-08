@@ -132,7 +132,7 @@ public interface TraversalStrategies extends Cloneable {
                 boolean s2Before = MultiMap.containsEntry(dependencyMap, s2.getClass(), s1.getClass());
                 if (s1Before && s2Before)
                     throw new IllegalStateException("Cyclic dependency between traversal strategies: ["
-                            + s1.getClass().getName() + ", " + s2.getClass().getName() + "]");
+                            + s1.getClass().getName() + ", " + s2.getClass().getName() + ']');
                 if (s1Before) return -1;
                 else if (s2Before) return 1;
                 else return 0;

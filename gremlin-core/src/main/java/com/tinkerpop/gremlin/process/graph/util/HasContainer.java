@@ -88,8 +88,8 @@ public final class HasContainer {
     public String toString() {
         return this.value == null ?
                 (this.predicate == Contains.within ?
-                        "[" + this.key + "]" :
-                        "[!" + this.key + "]") :
-                "[" + this.key + "," + this.predicate + "," + this.value + "]";
+                        '[' + this.key + ']' :
+                        "[!" + this.key + ']') :
+                '[' + this.key + ',' + this.predicate + ',' + this.value + ']';
     }
 }

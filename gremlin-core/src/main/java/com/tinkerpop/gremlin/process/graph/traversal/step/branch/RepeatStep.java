@@ -92,11 +92,11 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     }
 
     private final String untilString() {
-        return null == this.untilTraversal ? "until(false)" : "until(" + this.untilTraversal + ")";
+        return null == this.untilTraversal ? "until(false)" : "until(" + this.untilTraversal + ')';
     }
 
     private final String emitString() {
-        return null == this.emitTraversal ? "emit(false)" : "emit(" + this.emitTraversal + ")";
+        return null == this.emitTraversal ? "emit(false)" : "emit(" + this.emitTraversal + ')';
     }
 
     /////////////////////////

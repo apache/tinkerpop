@@ -70,14 +70,17 @@ public final class TraverserExecutor {
         return voteToHalt.get();
     }
 
-    private final static Vertex getHostingVertex(final Object object) {
-        if (object instanceof Vertex)
-            return (Vertex) object;
-        else if (object instanceof Edge)
-            return ((Edge) object).iterators().vertexIterator(Direction.OUT).next();
-        else if (object instanceof Property)
-            return getHostingVertex(((Property) object).element());
-        else
-            throw new IllegalStateException("The host of the object is unknown: " + object.toString() + ":" + object.getClass().getCanonicalName());
+    private static Vertex getHostingVertex(final Object object) {
+        Object obj = object;
+        while (true) {
+            if (obj instanceof Vertex)
+                return (Vertex) obj;
+            else if (obj instanceof Edge)
+                return ((Edge) obj).iterators().vertexIterator(Direction.OUT).next();
+            else if (obj instanceof Property)
+                obj = ((Property) obj).element();
+            else
+                throw new IllegalStateException("The host of the object is unknown: " + obj.toString() + ':' + obj.getClass().getCanonicalName());
+        }
     }
 }

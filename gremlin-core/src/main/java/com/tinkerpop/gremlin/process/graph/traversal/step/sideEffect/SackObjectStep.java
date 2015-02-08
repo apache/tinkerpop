@@ -3,8 +3,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.BiFunction;
 
@@ -13,10 +12,10 @@ import java.util.function.BiFunction;
  */
 public final class SackObjectStep<S, V> extends SideEffectStep<S> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.SACK,
             TraverserRequirement.OBJECT
-    ));
+    );
 
     private BiFunction<V, S, V> operator;
 

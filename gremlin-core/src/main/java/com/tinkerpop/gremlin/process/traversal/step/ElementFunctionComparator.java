@@ -33,6 +33,6 @@ public class ElementFunctionComparator<V> implements Comparator<Element> {
 
     @Override
     public String toString() {
-        return this.elementFunction + "(" + this.valueComparator + ")";
+        return this.elementFunction + "(" + this.valueComparator + ')';
     }
 }

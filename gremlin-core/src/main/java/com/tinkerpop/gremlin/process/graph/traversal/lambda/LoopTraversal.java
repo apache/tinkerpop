@@ -27,6 +27,6 @@ public final class LoopTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
 
     @Override
     public String toString() {
-        return "loops(" + this.maxLoops + ")";
+        return "loops(" + this.maxLoops + ')';
     }
 }

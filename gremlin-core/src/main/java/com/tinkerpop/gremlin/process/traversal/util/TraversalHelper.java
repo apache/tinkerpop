@@ -148,11 +148,11 @@ public final class TraversalHelper {
                     return string.contains("$") ? "lambda" : string;
                 }).collect(Collectors.toList());
         if (strings.size() > 0) {
-            builder.append("(");
+            builder.append('(');
             builder.append(String.join(",", strings));
-            builder.append(")");
+            builder.append(')');
         }
-        step.getLabel().ifPresent(label -> builder.append("@").append(label));
+        step.getLabel().ifPresent(label -> builder.append('@').append(label));
         // builder.append("^").append(step.getId());
         return builder.toString();
     }

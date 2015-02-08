@@ -31,6 +31,6 @@ public final class ElementValueTraversal<V> extends AbstractLambdaTraversal<Elem
 
     @Override
     public String toString() {
-        return "value(" + this.propertyKey + ")";
+        return "value(" + this.propertyKey + ')';
     }
 }

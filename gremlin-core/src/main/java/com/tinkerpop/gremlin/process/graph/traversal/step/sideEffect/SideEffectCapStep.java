@@ -2,10 +2,10 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
-import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.SupplyingBarrierStep;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.*;
 
@@ -14,10 +14,10 @@ import java.util.*;
  */
 public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> implements SideEffectRegistrar {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.SIDE_EFFECTS,
             TraverserRequirement.OBJECT
-    ));
+    );
 
     private List<String> sideEffectKeys;
 

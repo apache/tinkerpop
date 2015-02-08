@@ -32,6 +32,6 @@ public class ElementValueComparator<V> implements Comparator<Element> {
 
     @Override
     public String toString() {
-        return this.propertyKey + "(" + this.valueComparator + ")";
+        return this.propertyKey + '(' + this.valueComparator + ')';
     }
 }

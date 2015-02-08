@@ -32,9 +32,9 @@ public class Bindings<T> {
         for (Map.Entry<String, T> entry : map.entrySet()) {
             if (first) first = false;
             else sb.append(", ");
-            sb.append(entry.getKey()).append(":").append(entry.getValue());
+            sb.append(entry.getKey()).append(':').append(entry.getValue());
         }
-        sb.append("}");
+        sb.append('}');
         return sb.toString();
     }
 

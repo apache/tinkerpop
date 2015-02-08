@@ -136,7 +136,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
                 .append(this.startLabel)
                 .append("\":\t")
                 .append(findCost(this.startLabel))
-                .append("\n");
+                .append('\n');
         summarize(this.startLabel, sb, new HashSet<>(), 1);
         return sb.toString();
     }
@@ -150,11 +150,11 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
             final List<TraversalWrapper<S, S>> outs = traversalsByStartAs.get(outLabel);
             if (null != outs) {
                 for (final TraversalWrapper<S, S> w : outs) {
-                    for (int i = 0; i < indent; i++) sb.append("\t");
+                    for (int i = 0; i < indent; i++) sb.append('\t');
                     sb.append(outLabel).append("->").append(w.endLabel).append(":\t");
                     sb.append(findCost(w));
-                    sb.append("\t").append(w);
-                    sb.append("\n");
+                    sb.append('\t').append(w);
+                    sb.append('\n');
                     summarize(w.endLabel, sb, visited, indent + 1);
                 }
             }
@@ -202,7 +202,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
                         countTraversals++;
                         if (pathSet.contains(tw.endLabel)) {
                             throw new IllegalArgumentException("The provided traversal set contains a cycle due to '"
-                                    + tw.endLabel + "'");
+                                    + tw.endLabel + '\'');
                         }
                         stack.push(tw.endLabel);
                     }
@@ -224,7 +224,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
         // note: this won't happen so long as the anon prefix is the same as Traversal.UNDERSCORE
         if (isAnonymousAs(as)) {
             throw new IllegalArgumentException("The step named '" + as + "' uses reserved prefix '"
-                    + ANON_LABEL_PREFIX + "'");
+                    + ANON_LABEL_PREFIX + '\'');
         }
     }
 

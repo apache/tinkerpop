@@ -231,7 +231,7 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
      */
     public static class NullObject implements Comparable<NullObject>, Serializable {
         private static final NullObject INSTANCE = new NullObject();
-        private static final String NULL_OBJECT = new String();
+        private static final String NULL_OBJECT = "";
 
         public static NullObject instance() {
             return INSTANCE;

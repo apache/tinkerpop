@@ -23,7 +23,7 @@ public final class RangeStep<S> extends FilterStep<S> implements Ranging {
     public RangeStep(final Traversal.Admin traversal, final long low, final long high) {
         super(traversal);
         if (low != -1 && high != -1 && low > high) {
-            throw new IllegalArgumentException("Not a legal range: [" + low + ", " + high + "]");
+            throw new IllegalArgumentException("Not a legal range: [" + low + ", " + high + ']');
         }
         this.low = low;
         this.high = high;

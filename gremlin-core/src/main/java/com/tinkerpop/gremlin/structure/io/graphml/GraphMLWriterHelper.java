@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.structure.io.graphml;
 
+import org.apache.commons.lang.StringUtils;
+
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -227,9 +229,7 @@ class GraphMLWriterHelper {
          * @deprecated Should use the version that takes string.
          */
         public void setIndentStep(int indentStep) {
-            final StringBuilder s = new StringBuilder();
-            for (; indentStep > 0; indentStep--) s.append(' ');
-            this.indentStep = s.toString();
+            this.indentStep = StringUtils.repeat(" ", indentStep);
         }
 
         public void setIndentStep(final String s) {

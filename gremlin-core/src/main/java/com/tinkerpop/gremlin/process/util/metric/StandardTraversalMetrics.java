@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.process.util.metric;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -77,17 +79,13 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
         // Build a pretty table of metrics data.
 
         // Append headers
-        final StringBuilder sb = new StringBuilder();
-        sb.append("Traversal Metrics\n").append(String.format("%28s %21s %11s %15s %8s", HEADERS));
+        final StringBuilder sb = new StringBuilder("Traversal Metrics\n")
+                .append(String.format("%28s %21s %11s %15s %8s", HEADERS));
 
         // Append each StepMetric's row. indexToLabelMap values are ordered by index.
         for (String label : indexToLabelMap.values()) {
             final ImmutableMetrics s = computedMetrics.get(label);
-            String rowName = s.getName();
-
-            if (rowName.length() > 28)
-                rowName = rowName.substring(0, 28 - 3) + "...";
-
+            final String rowName = StringUtils.abbreviate(s.getName(), 28);
             final long itemCount = s.getNested(ELEMENT_COUNT_ID).getCount();
 
             sb.append(String.format("%n%28s %21d %11d %15.3f %8.2f",

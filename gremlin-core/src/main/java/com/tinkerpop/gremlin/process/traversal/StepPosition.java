@@ -22,11 +22,11 @@ public final class StepPosition {
     }
 
     public String nextXId() {
-        return this.x++ + "." + this.y + "." + this.z + "(" + this.parentId + ")";
+        return this.x++ + "." + this.y + '.' + this.z + '(' + this.parentId + ')';
     }
 
     @Override
     public String toString() {
-        return this.x + "." + this.y + "." + this.z + "(" + this.parentId + ")";
+        return this.x + "." + this.y + '.' + this.z + '(' + this.parentId + ')';
     }
 }

@@ -4,8 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Set;
 
 /**
@@ -14,14 +13,14 @@ import java.util.Set;
 public class B_O_P_PA_S_SE_SL_TraverserGenerator implements TraverserGenerator {
 
     private static final B_O_P_PA_S_SE_SL_TraverserGenerator INSTANCE = new B_O_P_PA_S_SE_SL_TraverserGenerator();
-    private static final Set<TraverserRequirement> REQUIREMENTS = new HashSet<>(Arrays.asList(
+    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.OBJECT,
             TraverserRequirement.BULK,
             TraverserRequirement.SINGLE_LOOP,
             TraverserRequirement.PATH_ACCESS,
             TraverserRequirement.PATH,
             TraverserRequirement.SACK,
-            TraverserRequirement.SIDE_EFFECTS));
+            TraverserRequirement.SIDE_EFFECTS);
 
     private B_O_P_PA_S_SE_SL_TraverserGenerator() {
     }

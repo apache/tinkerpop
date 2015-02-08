@@ -62,6 +62,6 @@ public class IntervalVertexRange<V extends Comparable<V>> implements VertexRange
 
     @Override
     public String toString() {
-        return "ElementRange[start=" + startRange + ", end=" + endRange + "]";
+        return "ElementRange[start=" + startRange + ", end=" + endRange + ']';
     }
 }

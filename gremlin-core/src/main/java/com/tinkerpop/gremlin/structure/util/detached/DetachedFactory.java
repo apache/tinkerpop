@@ -39,7 +39,7 @@ public class DetachedFactory {
         else if (element instanceof VertexProperty)
             return detach((VertexProperty) element, withProperties);
         else
-            throw new IllegalArgumentException("The provided argument is an unknown element: " + element + ":" + element.getClass());
+            throw new IllegalArgumentException("The provided argument is an unknown element: " + element + ':' + element.getClass());
     }
 
     public static <D> D detach(final Object object, final boolean withProperties) {

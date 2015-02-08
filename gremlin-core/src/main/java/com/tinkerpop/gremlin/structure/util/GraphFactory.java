@@ -93,7 +93,7 @@ public class GraphFactory {
 
         try {
             final String fileName = configurationFile.getName();
-            final String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1);
+            final String fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
 
             switch (fileExtension) {
                 case "yml":

@@ -287,11 +287,11 @@ public class GraphMLWriter implements GraphWriter {
         writer.writeAttribute(GraphMLTokens.XMLNS, GraphMLTokens.GRAPHML_XMLNS);
 
         //XML Schema instance namespace definition (xsi)
-        writer.writeAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":" + GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG,
+        writer.writeAttribute(XMLConstants.XMLNS_ATTRIBUTE + ':' + GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG,
                 XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
         //XML Schema location
-        writer.writeAttribute(GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG + ":" + GraphMLTokens.XML_SCHEMA_LOCATION_ATTRIBUTE,
-                GraphMLTokens.GRAPHML_XMLNS + " " + this.xmlSchemaLocation.orElse(GraphMLTokens.DEFAULT_GRAPHML_SCHEMA_LOCATION));
+        writer.writeAttribute(GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG + ':' + GraphMLTokens.XML_SCHEMA_LOCATION_ATTRIBUTE,
+                GraphMLTokens.GRAPHML_XMLNS + ' ' + this.xmlSchemaLocation.orElse(GraphMLTokens.DEFAULT_GRAPHML_SCHEMA_LOCATION));
     }
 
     private static Map<String, String> determineVertexTypes(final Graph graph) {

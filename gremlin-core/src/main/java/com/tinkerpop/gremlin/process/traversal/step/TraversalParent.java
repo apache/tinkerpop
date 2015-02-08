@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +46,7 @@ public interface TraversalParent {
     }
 
     public default Set<TraverserRequirement> getSelfAndChildRequirements(final TraverserRequirement... selfRequirements) {
-        final Set<TraverserRequirement> requirements = new HashSet<>();
+        final Set<TraverserRequirement> requirements = EnumSet.noneOf(TraverserRequirement.class);
         Collections.addAll(requirements, selfRequirements);
         for (final Traversal.Admin<?, ?> local : this.getLocalChildren()) {
             requirements.addAll(local.getTraverserRequirements());
