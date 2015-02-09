@@ -2,6 +2,8 @@
 Introduction to Graph Computing
 ===============================
 
+image::graph-computing.png[width=350]
+
 [source,xml]
 <dependency>
   <groupId>com.tinkerpop</groupId>
