@@ -442,7 +442,7 @@ TinkerPop 3.0.0.M2 (Release Date: September 23, 2014)
 * Corrected issues with the "branch factor" related traversals under `SubgraphStrategy`.  This change also altered the semantics of the `SubgraphStrategy` a bit as it became more restrictive around `Edge` inclusion (requires both vertices to be in the subgraph).
 * The Gephi Plugin now visualizes traversals and has numerous configuration options.
 * Add more specific features around the types of "identifiers" a graph can support.
-* Add a new test graph called `MODERN` that is copy of the `CLASSIC` graph, but represents floats as doubles.  This graph will be the default graph for testing going forward.
+* Added a new test graph called `MODERN` that is copy of the `CLASSIC` graph, but represents floats as doubles.  This graph will be the default graph for testing going forward.
 * Fix bug in `Neo4jGraph` that was not processing multiple vertex labels properly when doing a `has()` step with `IN`.
 * Changed semantics of `@LoadGraphWith` in gremlin-test to only refer to the ability of a test implementation to process the data types of the test graph (not to actually load it).
 * `StartStep` is a `SideEffect` as it is a process to get data into the stream (like a keyboard) and more efficient as such.
