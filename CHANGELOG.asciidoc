@@ -380,7 +380,7 @@ TinkerPop 3.0.0.M3 (Release Date: October 6, 2014)
 * `GiraphGraph` OLTP tested against Gremlin-Java8 and Gremlin-Groovy -- OLAP tested against Gremlin-Groovy.
 * `Neo4jGraph` is now tested against both Gremlin-Java8 and Gremlin-Groovy.
 * Renamed the test cases in `ProcessTestSuite` to be consistent with other Gremlin language variants.
-* Add a `gremlin-groovy-test` suite that can be used to validate implementations against the Groovy variant of Gremlin.
+* Added a `gremlin-groovy-test` suite that can be used to validate implementations against the Groovy variant of Gremlin.
 * `TinkerGraph` is no longer serializable, use a `GraphReader`/`GraphWriter` to serialize the graph data.
 * Removed `implements Serializable` on numerous classes to ensure safety and proper usage of utilities for cloning.
 * `Traversal` now implements `Cloneable` as this is the means that inter-JVM threads are able to get sibling `Traversals`.
