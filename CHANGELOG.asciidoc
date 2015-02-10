@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `VertexProperty.Cardinality` with `list`, `set`, and `single`. No more `Vertex.singleProperty()` method.
 * Added `FilterByCountOptimizerStrategy` that adds a `RangeStep` in front of `.count().is(<predicate>, <value>)` to minimize the amount of fetched elements.
 * Added `CoalesceStep` / `.coalesce()` that emits the first traversal which emits at least one element.
 * Added more syntactic sugar tricks to the Gremlin sugar plugin -- `&`, `|`, `select from`, `gt`, etc.
