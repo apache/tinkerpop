@@ -1,3 +1,0 @@
-hosts: [localhost]
-port: 8182
-serializer: { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0, config: { serializeResultToString: true }}
