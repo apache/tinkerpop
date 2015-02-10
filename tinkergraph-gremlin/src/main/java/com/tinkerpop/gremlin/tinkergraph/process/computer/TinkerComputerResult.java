@@ -22,7 +22,6 @@ import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -35,6 +34,6 @@ public class TinkerComputerResult extends DefaultComputerResult {
 
     @Override
     public void close() {
-        TinkerHelper.dropView((TinkerGraph) this.graph);
+        ((TinkerGraph) this.graph).close();
     }
 }

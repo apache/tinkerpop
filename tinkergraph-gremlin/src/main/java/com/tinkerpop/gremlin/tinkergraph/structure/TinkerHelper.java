@@ -87,10 +87,6 @@ public class TinkerHelper {
         edges.add(edge);
     }
 
-    public static void dropView(final TinkerGraph graph) {
-        graph.graphView = null;
-    }
-
     public static List<TinkerVertex> queryVertexIndex(final TinkerGraph graph, final String key, final Object value) {
         return graph.vertexIndex.get(key, value);
     }

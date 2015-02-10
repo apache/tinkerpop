@@ -174,7 +174,7 @@ public class TinkerGraph implements Graph, Graph.Iterators {
 
     @Override
     public void close() {
-
+       this.graphView = null;
     }
 
     @Override
