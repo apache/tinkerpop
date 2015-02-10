@@ -21,6 +21,7 @@ package com.tinkerpop.gremlin.structure.util;
 import com.tinkerpop.gremlin.process.TraversalSideEffects;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
+import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
@@ -143,6 +144,10 @@ public class StringFactory {
 
     public static String memoryString(final Memory memory) {
         return "memory" + L_BRACKET + "size:" + memory.keys().size() + R_BRACKET;
+    }
+
+    public static String computeResultString(final ComputerResult computerResult) {
+        return "result" + L_BRACKET + computerResult.graph() + ',' + computerResult.memory() + R_BRACKET;
     }
 
     public static String graphComputerString(final GraphComputer graphComputer) {

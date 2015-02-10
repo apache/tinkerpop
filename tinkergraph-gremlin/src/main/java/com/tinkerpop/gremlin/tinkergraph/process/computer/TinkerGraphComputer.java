@@ -161,7 +161,7 @@ public class TinkerGraphComputer implements GraphComputer {
             // update runtime and return the newly computed graph
             this.memory.setRuntime(System.currentTimeMillis() - time);
             this.memory.complete();
-            return new ComputerResult(sg, this.memory.asImmutable());
+            return new TinkerComputerResult(sg, this.memory.asImmutable());
         });
     }
 

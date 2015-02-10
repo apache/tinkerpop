@@ -73,7 +73,7 @@ public interface GraphComputer {
     /**
      * Submit the {@link VertexProgram} and the set of {@link MapReduce} jobs for execution by the {@link GraphComputer}.
      *
-     * @return a {@link Future} denoting a reference to the asynchronous computation and where to get the {@link ComputerResult} when its is complete.
+     * @return a {@link Future} denoting a reference to the asynchronous computation and where to get the {@link com.tinkerpop.gremlin.process.computer.util.DefaultComputerResult} when its is complete.
      */
     public Future<ComputerResult> submit();
 

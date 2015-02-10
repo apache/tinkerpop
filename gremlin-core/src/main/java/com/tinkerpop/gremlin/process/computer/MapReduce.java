@@ -159,7 +159,7 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
     public String getMemoryKey();
 
     /**
-     * The final result can be generated and added to {@link Memory} and accessible via {@link ComputerResult}.
+     * The final result can be generated and added to {@link Memory} and accessible via {@link com.tinkerpop.gremlin.process.computer.util.DefaultComputerResult}.
      * The default simply takes the object from generateFinalResult() and adds it to the Memory given getMemoryKey().
      *
      * @param memory    the memory of the {@link GraphComputer}

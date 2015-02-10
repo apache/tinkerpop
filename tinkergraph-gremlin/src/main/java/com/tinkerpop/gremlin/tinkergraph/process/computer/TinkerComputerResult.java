@@ -16,36 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer;
+package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
+import com.tinkerpop.gremlin.process.computer.Memory;
+import com.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface ComputerResult extends AutoCloseable {
+public class TinkerComputerResult extends DefaultComputerResult {
 
-    /**
-     * Get the view of the original {@link Graph} computed on by the GraphComputer.
-     *
-     * @return The computed graph
-     */
-    public Graph graph();
+    public TinkerComputerResult(final Graph graph, final Memory memory) {
+        super(graph, memory);
+    }
 
-    /**
-     * Get the computational sideEffects called {@link Memory} of the GraphComputer.
-     *
-     * @return the computed memory
-     */
-    public Memory memory();
-
-    /**
-     * Close the computed {@link GraphComputer} result. The semantics of "close" differ depending on the underlying implementation.
-     * In general, when a {@link ComputerResult} is closed, the computed values are no longer available to the user.
-     *
-     * @throws Exception
-     */
     @Override
-    public void close() throws Exception;
-
+    public void close() {
+        TinkerHelper.dropView((TinkerGraph) this.graph);
+    }
 }

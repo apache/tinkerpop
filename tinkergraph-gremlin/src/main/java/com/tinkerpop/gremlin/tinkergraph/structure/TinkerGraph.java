@@ -229,7 +229,8 @@ public class TinkerGraph implements Graph, Graph.Iterators {
 
         static final TinkerGraphFeatures INSTANCE = new TinkerGraphFeatures();
 
-        private TinkerGraphFeatures() {}
+        private TinkerGraphFeatures() {
+        }
 
         @Override
         public GraphFeatures graph() {
@@ -255,7 +256,8 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     public static class TinkerGraphVertexFeatures implements Features.VertexFeatures {
         static final TinkerGraphVertexFeatures INSTANCE = new TinkerGraphVertexFeatures();
 
-        private TinkerGraphVertexFeatures() {}
+        private TinkerGraphVertexFeatures() {
+        }
 
         @Override
         public boolean supportsCustomIds() {
@@ -266,7 +268,8 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     public static class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {
         static final TinkerGraphEdgeFeatures INSTANCE = new TinkerGraphEdgeFeatures();
 
-        private TinkerGraphEdgeFeatures(){}
+        private TinkerGraphEdgeFeatures() {
+        }
 
         @Override
         public boolean supportsCustomIds() {
@@ -277,7 +280,8 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     public static class TinkerGraphGraphFeatures implements Features.GraphFeatures {
         static final TinkerGraphGraphFeatures INSTANCE = new TinkerGraphGraphFeatures();
 
-        private TinkerGraphGraphFeatures() {}
+        private TinkerGraphGraphFeatures() {
+        }
 
         @Override
         public boolean supportsTransactions() {
@@ -348,12 +352,5 @@ public class TinkerGraph implements Graph, Graph.Iterators {
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
-    }
-
-    /**
-     * {@link TinkerGraphComputer} generates a view of the original graph. When the view is no longer needed, it can be dropped.
-     */
-    public void dropGraphView() {
-        this.graphView = null;
     }
 }
