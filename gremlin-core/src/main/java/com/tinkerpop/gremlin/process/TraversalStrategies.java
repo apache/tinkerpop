@@ -19,18 +19,7 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.process.graph.traversal.__;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.ComparatorHolderRemovalStrategy;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.ConjunctionStrategy;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.DedupOptimizerStrategy;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.EngineDependentStrategy;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.IdentityRemovalStrategy;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.LabeledEndStepStrategy;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.MatchWhereStrategy;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.ProfileStrategy;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.ReducingStrategy;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.SideEffectCapStrategy;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.SideEffectRegistrationStrategy;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategy;
+import com.tinkerpop.gremlin.process.graph.traversal.strategy.*;
 import com.tinkerpop.gremlin.process.traversal.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -166,6 +155,7 @@ public interface TraversalStrategies extends Cloneable {
             final TraversalStrategies coreStrategies = new DefaultTraversalStrategies();
             coreStrategies.addStrategies(
                     DedupOptimizerStrategy.instance(),
+                    FilterByCountOptimizerStrategy.instance(),
                     IdentityRemovalStrategy.instance(),
                     SideEffectCapStrategy.instance(),
                     MatchWhereStrategy.instance(),
