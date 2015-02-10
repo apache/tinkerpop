@@ -46,7 +46,10 @@ import java.util.stream.Stream;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ElementHelper {
+public final class ElementHelper {
+
+    private ElementHelper() {
+    }
 
     /**
      * Determine whether the Element label can be legally set. This is typically used as a pre-condition check.

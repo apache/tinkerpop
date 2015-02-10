@@ -52,7 +52,7 @@ import java.util.stream.Stream;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StringFactory {
+public final class StringFactory {
 
     private static final String V = "v";
     private static final String E = "e";
@@ -73,6 +73,9 @@ public class StringFactory {
 
     private static final String featuresStartWith = "supports";
     private static final int prefixLength = featuresStartWith.length();
+
+    private StringFactory() {
+    }
 
     /**
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Vertex}.

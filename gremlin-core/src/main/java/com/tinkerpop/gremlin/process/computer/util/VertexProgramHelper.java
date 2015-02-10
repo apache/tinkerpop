@@ -29,7 +29,10 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexProgramHelper {
+public final class VertexProgramHelper {
+
+    private VertexProgramHelper() {
+    }
 
     public static void serialize(final Object object, final Configuration configuration, final String key) throws IOException {
         configuration.setProperty(key, Serializer.serializeObject(object));
@@ -44,7 +47,7 @@ public class VertexProgramHelper {
         return (T) Serializer.deserializeObject(bytes);
     }
 
-    public static void verifyReversibility(final Traversal.Admin<?,?> traversal) {
+    public static void verifyReversibility(final Traversal.Admin<?, ?> traversal) {
         if (!TraversalHelper.isReversible(traversal))
             throw new IllegalArgumentException("The provided traversal is not reversible");
     }

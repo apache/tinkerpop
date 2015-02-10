@@ -40,7 +40,10 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerHelper {
+public final class TinkerHelper {
+
+    private TinkerHelper() {
+    }
 
     protected final synchronized static long getNextId(final TinkerGraph graph) {
         return Stream.generate(() -> (++graph.currentId)).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findAny().get();

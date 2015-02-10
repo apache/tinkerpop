@@ -32,7 +32,10 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphComputerHelper {
+public final class GraphComputerHelper {
+
+    private GraphComputerHelper() {
+    }
 
     public static void validateProgramOnComputer(final GraphComputer computer, final VertexProgram vertexProgram) {
         if (vertexProgram.getMemoryComputeKeys().contains(null))

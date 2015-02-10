@@ -23,7 +23,10 @@ import com.tinkerpop.gremlin.process.computer.Memory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MemoryHelper {
+public final class MemoryHelper {
+
+    public MemoryHelper() {
+    }
 
     public static void validateValue(final Object value) throws IllegalArgumentException {
         if (null == value)

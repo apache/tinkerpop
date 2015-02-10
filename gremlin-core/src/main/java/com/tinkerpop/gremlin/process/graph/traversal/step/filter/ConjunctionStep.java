@@ -18,8 +18,10 @@
  */
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -93,6 +95,20 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
         return TraversalHelper.makeStepString(this, this.conjunctionTraversals);
     }
 
+    /*public List<HasContainer> getHasContainers() {
+        final List<HasContainer> hasContainers = new ArrayList<>();
+        for (final Traversal.Admin<S, ?> conjunctionTraversal : this.conjunctionTraversals) {
+            for (final Step<?, ?> step : conjunctionTraversal.getSteps()) {
+                if (step instanceof HasStep) {
+                    hasContainers.addAll(((HasStep) step).getHasContainers());
+                } else if(step instanceof TraversalParent) {
+
+                }
+            }
+        }
+    }*/
+
+
     ////////
 
     public static class ConjunctionMarker<S> extends AbstractStep<S, S> {
@@ -106,4 +122,5 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
             throw new IllegalStateException("This step should have been removed via a strategy: " + this.getClass().getCanonicalName());
         }
     }
+
 }

@@ -51,7 +51,10 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapReduceHelper {
+public final class MapReduceHelper {
+
+    private MapReduceHelper() {
+    }
 
     private static final String SEQUENCE_WARNING = "The " + Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT
             + " is not " + SequenceFileOutputFormat.class.getCanonicalName()
