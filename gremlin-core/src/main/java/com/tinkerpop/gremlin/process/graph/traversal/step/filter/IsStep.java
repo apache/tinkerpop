@@ -51,4 +51,12 @@ public final class IsStep<S> extends FilterStep<S> implements Reversible {
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
+
+    public Object getValue() {
+        return value;
+    }
+
+    public BiPredicate<S, Object> getPredicate() {
+        return predicate;
+    }
 }
