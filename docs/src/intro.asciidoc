@@ -4,7 +4,7 @@ Introduction to Graph Computing
 
 [source,xml]
 <dependency>
-  <groupId>com.tinkerpop</groupId>
+  <groupId>org.apache.tinkerpop</groupId>
   <artifactId>gremlin-core</artifactId>
   <version>x.y.z</version>
 </dependency>

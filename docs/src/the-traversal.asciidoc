@@ -534,8 +534,8 @@ You have two options to get around this limitation. Either explicitly apply all 
 
 [gremlin-groovy,modern]
 ----
-import com.tinkerpop.gremlin.process.graph.traversal.__
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.*
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.*
 TraversalStrategies.GlobalCache.registerStrategies(__, <1>
     TraversalStrategies.GlobalCache.getStrategies(__).addStrategies(
         SideEffectCapStrategy.instance(),
@@ -548,8 +548,8 @@ inject(software).unfold().groupCount().by('lang')
 
 [gremlin-groovy,modern]
 ----
-import com.tinkerpop.gremlin.process.graph.traversal.__
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.*
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.*
 software = g.V().hasLabel('software').toList()
 t = inject(software).unfold().groupCount().by("lang"); null <1>
 t.getStrategies().addStrategies(
@@ -1615,7 +1615,7 @@ This traversal definition can now be used as follows.
 
 [gremlin-groovy,modern]
 ----
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
 g.of(SocialTraversal).people("marko").knows().name()
 ----
 
