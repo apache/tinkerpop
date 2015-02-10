@@ -50,6 +50,8 @@ import java.util.stream.Stream;
  * "Suite" implements {@link com.tinkerpop.gremlin.GraphProvider} as a convenience only. It could be implemented in a
  * separate class file):
  * <code>
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(StructureStandardSuite.class)
  * @StructureStandardSuite.GraphProviderClass(TinkerGraphStructureStandardTest.class) public class TinkerGraphStructureStandardTest implements GraphProvider {
  * }
@@ -62,8 +64,6 @@ import java.util.stream.Stream;
  * Set the {@code gremlin.structure.tests} environment variable to a comma separated list of test classes to execute.
  * This setting can be helpful to restrict execution of tests to specific ones being focused on during development.
  * <br/>
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StructureStandardSuite extends AbstractGremlinSuite {
 

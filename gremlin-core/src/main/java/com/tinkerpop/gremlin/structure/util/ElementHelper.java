@@ -264,7 +264,7 @@ public class ElementHelper {
 
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
             if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
-                vertex.singleProperty((String) propertyKeyValues[i], propertyKeyValues[i + 1]);
+                vertex.property(VertexProperty.Cardinality.single, (String) propertyKeyValues[i], propertyKeyValues[i + 1]);
         }
     }
 

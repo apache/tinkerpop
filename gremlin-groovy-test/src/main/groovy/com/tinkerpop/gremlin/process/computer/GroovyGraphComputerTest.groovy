@@ -76,7 +76,7 @@ public abstract class GroovyGraphComputerTest {
                             a.property("nameLengthCounter", a.<String>value("name").length());
                             c.incr("b", a.<String>value("name").length());
                         } else {
-                            a.singleProperty("nameLengthCounter", a.<String>value("name").length() + a.<Integer>value("nameLengthCounter"));
+                            a.property(VertexProperty.Cardinality.single,"nameLengthCounter", a.<String>value("name").length() + a.<Integer>value("nameLengthCounter"));
                         }
                     """).terminate("gremlin-groovy", "a.getIteration() == 1")
                     .elementComputeKeys("nameLengthCounter").
@@ -152,7 +152,7 @@ public abstract class GroovyGraphComputerTest {
         @Override
         public GraphComputer get_g_compute_executeXcounterX_terminateX8X_mapreduceXcounter_aX_mapreduceXcounter_bX() {
             return g.compute().program(LambdaVertexProgram.build()
-                    .execute("gremlin-groovy", "a.singleProperty('counter', c.isInitialIteration() ? 1 : a.value('counter') + 1)")
+                    .execute("gremlin-groovy", "a.property(VertexProperty.Cardinality.single,'counter', c.isInitialIteration() ? 1 : a.value('counter') + 1)")
                     .terminate("gremlin-groovy", "a.getIteration() > 8")
                     .elementComputeKeys(["counter"] as Set).create())
                     .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer> build()
@@ -184,9 +184,9 @@ public abstract class GroovyGraphComputerTest {
                     .memoryKey("ids")
                     .reduceKeySort("Comparator.reverseOrder()")
                     .memory("""
-                        list = []
-                        a.forEachRemaining{list.add(it.getKey())}
-                        list
+                        temp = []
+                        a.forEachRemaining{temp.add(it.getKey())}
+                        temp
                     """)
                     .create());
         }

@@ -84,9 +84,25 @@ public interface Vertex extends Element, VertexTraversal {
         return vertexProperty;
     }
 
-    public default <V> VertexProperty<V> singleProperty(final String key, final V value, final Object... keyValues) {
-        this.iterators().propertyIterator(key).forEachRemaining(VertexProperty::remove);
-        return this.property(key, value, keyValues);
+    public default <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
+        if (cardinality.equals(VertexProperty.Cardinality.list))
+            return this.property(key, value, keyValues);
+        else if (cardinality.equals(VertexProperty.Cardinality.single)) {
+            this.iterators().propertyIterator(key).forEachRemaining(VertexProperty::remove);
+            return this.property(key, value, keyValues);
+        } else if (cardinality.equals(VertexProperty.Cardinality.set)) {
+            final Iterator<VertexProperty<V>> iterator = this.iterators().propertyIterator(key);
+            while (iterator.hasNext()) {
+                final VertexProperty<V> property = iterator.next();
+                if (property.value().equals(value)) {
+                    ElementHelper.attachProperties(property, keyValues);
+                    return property;
+                }
+            }
+            return this.property(key, value, keyValues);
+        } else {
+            throw new IllegalArgumentException("The provided cardinality is unknown: " + cardinality);
+        }
     }
 
     /**

@@ -116,7 +116,7 @@ class SugarLoader {
         }
 
         public static final set(final Vertex vertex, final String key, final Object value) {
-            vertex.singleProperty(key, value);
+            vertex.property(VertexProperty.Cardinality.single, key, value);
         }
 
         public static final putAt(final Vertex vertex, final String key, final Object value) {

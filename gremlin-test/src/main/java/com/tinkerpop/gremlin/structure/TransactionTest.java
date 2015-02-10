@@ -234,7 +234,7 @@ public class TransactionTest extends AbstractGremlinTest {
         assertEquals("marko", v1.<String>value("name"));
         assertEquals("marko", g.iterators().vertexIterator(v1.id()).next().<String>value("name"));
 
-        v1.singleProperty("name", "stephen");
+        v1.property(VertexProperty.Cardinality.single, "name", "stephen");
 
         assertEquals("stephen", v1.<String>value("name"));
         assertEquals("stephen", g.iterators().vertexIterator(v1.id()).next().<String>value("name"));
@@ -275,7 +275,7 @@ public class TransactionTest extends AbstractGremlinTest {
         assertEquals("marko", v1.<String>value("name"));
         assertEquals("marko", g.iterators().vertexIterator(v1.id()).next().<String>value("name"));
 
-        v1.singleProperty("name", "stephen");
+        v1.property(VertexProperty.Cardinality.single, "name", "stephen");
 
         assertEquals("stephen", v1.<String>value("name"));
         assertEquals("stephen", g.iterators().vertexIterator(v1.id()).next().<String>value("name"));
@@ -509,11 +509,11 @@ public class TransactionTest extends AbstractGremlinTest {
         latch.await(10000, TimeUnit.MILLISECONDS);
 
         // threaded transaction is not yet committed so g should not reflect any change
-        assertVertexEdgeCounts(0,0);
+        assertVertexEdgeCounts(0, 0);
         threadedG.tx().commit();
 
         // there should be one vertex for each thread
-        assertVertexEdgeCounts(numberOfThreads,0);
+        assertVertexEdgeCounts(numberOfThreads, 0);
     }
 
 

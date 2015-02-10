@@ -40,6 +40,10 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
 
     public static final String DEFAULT_LABEL = "vertexProperty";
 
+    public enum Cardinality {
+        single, list, set
+    }
+
     /**
      * Gets the {@link Vertex} that owns this {@code VertexProperty}.
      */

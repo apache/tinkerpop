@@ -507,7 +507,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         vertex.property("name", "marko");
         assertEquals("marko", vertex.value("name"));
         tryCommit(g, g -> validateCounts(g, 1, 0, 1, 0));
-        vertex.singleProperty("name", "okram");
+        vertex.property(VertexProperty.Cardinality.single, "name", "okram");
         tryCommit(g, g -> {
             validateCounts(g, 1, 0, 1, 0);
             assertEquals("okram", vertex.value("name"));
@@ -576,7 +576,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 assertEquals("virginia", b.getBaseVertex().getProperty("location"));
             });
 
-            a.singleProperty("name", "the marko");
+            a.property(VertexProperty.Cardinality.single, "name", "the marko");
             tryCommit(g, g -> {
                 assertEquals(2, g.V().count().next().intValue());
                 assertEquals(1, a.properties().count().next().intValue());
@@ -606,7 +606,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
             });
 
-            a.singleProperty("name", "the marko", "acl", "private");
+            a.property(VertexProperty.Cardinality.single, "name", "the marko", "acl", "private");
             tryCommit(g, g -> {
                 assertEquals(2, g.V().count().next().intValue());
                 assertEquals(1, a.properties("name").count().next().intValue());
@@ -652,7 +652,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             a.property("name", "okram", "acl", "public");
             // TODO tx.commit() THIS IS REQUIRED: ?! Why does Neo4j not delete vertices correctly?
             g.tx().commit();
-            a.singleProperty("name", "the marko", "acl", "private");
+            a.property(VertexProperty.Cardinality.single, "name", "the marko", "acl", "private");
             tryCommit(g, g -> {
                 assertEquals(2, g.V().count().next().intValue());
                 assertEquals(1, a.properties("name").count().next().intValue());

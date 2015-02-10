@@ -26,6 +26,7 @@ import com.tinkerpop.gremlin.process.computer.util.MapMemory;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.strategy.StrategyVertex;
@@ -88,7 +89,7 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
             final MapMemory mapMemory = new MapMemory();
             memory.asMap().forEach(mapMemory::set);
             mapMemory.setIteration(memory.getIteration() - 1);
-            this.wrappedVertex.singleProperty(Constants.MAP_MEMORY, mapMemory);  // TODO: this is a "computer key"
+            this.wrappedVertex.property(VertexProperty.Cardinality.single, Constants.MAP_MEMORY, mapMemory);  // TODO: this is a "computer key"
         }
     }
 

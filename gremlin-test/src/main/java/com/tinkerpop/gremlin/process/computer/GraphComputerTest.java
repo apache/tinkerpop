@@ -25,6 +25,7 @@ import com.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
@@ -382,7 +383,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
                             vertex.property("nameLengthCounter", vertex.<String>value("name").length());
                             memory.incr("b", vertex.<String>value("name").length());
                         } else {
-                            vertex.singleProperty("nameLengthCounter", vertex.<String>value("name").length() + vertex.<Integer>value("nameLengthCounter"));
+                            vertex.property(VertexProperty.Cardinality.single, "nameLengthCounter", vertex.<String>value("name").length() + vertex.<Integer>value("nameLengthCounter"));
                         }
                     }).
                     terminate(memory -> memory.getIteration() == 1).
@@ -458,7 +459,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         public GraphComputer get_g_compute_executeXcounterX_terminateX8X_mapreduceXcounter_aX_mapreduceXcounter_bX() {
             return g.compute().program(LambdaVertexProgram.build()
                     .execute((vertex, messenger, memory) -> {
-                        vertex.singleProperty("counter", memory.isInitialIteration() ? 1 : vertex.<Integer>value("counter") + 1);
+                        vertex.property(VertexProperty.Cardinality.single, "counter", memory.isInitialIteration() ? 1 : vertex.<Integer>value("counter") + 1);
                     })
                     .terminate(memory -> memory.getIteration() > 8)
                     .elementComputeKeys(new HashSet<>(Arrays.asList("counter"))).create())
