@@ -363,8 +363,8 @@ public class GremlinExecutor implements AutoCloseable {
     public static class Builder {
         private long scriptEvaluationTimeout = 8000;
         private Map<String, EngineSettings> settings = new HashMap<>();
-        private ExecutorService executorService;
-        private ScheduledExecutorService scheduledExecutorService;
+        private ExecutorService executorService = null;
+        private ScheduledExecutorService scheduledExecutorService = null;
         private Set<String> enabledPlugins = new HashSet<>();
         private Consumer<Bindings> beforeEval = (b) -> {
         };
@@ -377,13 +377,7 @@ public class GremlinExecutor implements AutoCloseable {
         private List<List<String>> use = new ArrayList<>();
         private Bindings globalBindings = new SimpleBindings();
 
-        private boolean suppliedExecutor = false;
-        private boolean suppliedScheduledExecutor = false;
-
         private Builder() {
-            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-executor-%d").build();
-            this.scheduledExecutorService = Executors.newScheduledThreadPool(4, threadFactory);
-            this.executorService = scheduledExecutorService;
         }
 
         /**
@@ -438,7 +432,6 @@ public class GremlinExecutor implements AutoCloseable {
          */
         public Builder executorService(final ExecutorService executorService) {
             this.executorService = executorService;
-            this.suppliedExecutor = true;
             return this;
         }
 
@@ -447,7 +440,6 @@ public class GremlinExecutor implements AutoCloseable {
          */
         public Builder scheduledExecutorService(final ScheduledExecutorService scheduledExecutorService) {
             this.scheduledExecutorService = scheduledExecutorService;
-            this.suppliedScheduledExecutor = true;
             return this;
         }
 
@@ -500,9 +492,29 @@ public class GremlinExecutor implements AutoCloseable {
         }
 
         public GremlinExecutor create() {
-            return new GremlinExecutor(settings, use, scriptEvaluationTimeout, globalBindings, executorService,
-                    scheduledExecutorService, beforeEval, afterSuccess, afterTimeout, afterFailure, enabledPlugins,
-                    suppliedExecutor, suppliedScheduledExecutor);
+            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-executor-XXX-%d").build();
+
+            final AtomicBoolean poolCreatedByBuilder = new AtomicBoolean();
+            final AtomicBoolean suppliedExecutor = new AtomicBoolean(true);
+            final AtomicBoolean suppliedScheduledExecutor = new AtomicBoolean(true);
+
+            final ExecutorService es = Optional.ofNullable(executorService).orElseGet(() -> {
+                poolCreatedByBuilder.set(true);
+                suppliedExecutor.set(false);
+                return Executors.newScheduledThreadPool(4, threadFactory);
+            });
+
+            final ScheduledExecutorService ses = Optional.ofNullable(scheduledExecutorService).orElseGet(() -> {
+                // if the pool is created by the builder and we need another just re-use it, otherwise create
+                // a new one of those guys
+                suppliedScheduledExecutor.set(false);
+                return (poolCreatedByBuilder.get()) ?
+                        (ScheduledExecutorService) es : Executors.newScheduledThreadPool(4, threadFactory);
+            });
+
+            return new GremlinExecutor(settings, use, scriptEvaluationTimeout, globalBindings, es,
+                    ses, beforeEval, afterSuccess, afterTimeout, afterFailure, enabledPlugins,
+                    suppliedExecutor.get(), suppliedScheduledExecutor.get());
         }
     }
 
