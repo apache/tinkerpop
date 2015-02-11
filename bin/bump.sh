@@ -34,7 +34,7 @@ pushd "$PROJECT_DIR" > /dev/null
 
 # update pom.xml
 for pom in $(find . -name pom.xml); do
-  cat "$pom" | grep -n -A2 -B2 '<groupId>com.tinkerpop</groupId>' \
+  cat "$pom" | grep -n -A2 -B2 '<groupId>com.apache.tinkerpop</groupId>' \
              | grep -A2 -B2 '<artifactId>tinkerpop</artifactId>'  \
              | grep '<version>' | cut -f1 -d '-' | xargs -n1 -I{} sed -i.bak "{}s@>.*<@>${VERSION}<@" "$pom" && rm -f "${pom}.bak"
 done

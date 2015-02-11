@@ -309,7 +309,7 @@ The same OLAP traversal can be executed using the standard `g.compute()` model, 
 
 [gremlin-groovy,modern]
 ----
-result = g.compute().program(TraversalVertexProgram.build().traversal("com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.open().V().both().hasLabel('person').values('age').groupCount('a')").create()).submit().get()
+result = g.compute().program(TraversalVertexProgram.build().traversal("com.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.open().V().both().hasLabel('person').values('age').groupCount('a')").create()).submit().get()
 result.memory().a
 result.memory().iteration
 result.memory().runtime

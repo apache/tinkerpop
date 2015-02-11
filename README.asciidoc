@@ -1,7 +1,7 @@
 TinkerPop3
 ----------
 
-image:https://raw.githubusercontent.com/tinkerpop/tinkerpop3/master/docs/static/images/tinkerpop3-splash.png[TinkerPop3]
+image:https://raw.githubusercontent.com/apache/tinkerpop/tinkerpop3/master/docs/static/images/tinkerpop3-splash.png[TinkerPop3]
 
 Documentation
 ~~~~~~~~~~~~~
@@ -14,9 +14,9 @@ Building and Testing
 ~~~~~~~~~~~~~~~~~~~~
 
 * Build Project: `mvn clean install`
-** Specify specific tests in a TinkerPop Suite to run: `mvn test -Dgremlin.tests={test class 1, test class 2...}` - note that including a specific test may require its inner class implementation (e.g. `com.tinkerpop.gremlin....UnionTest$ComputerTest`)
+** Specify specific tests in a TinkerPop Suite to run: `mvn test -Dgremlin.tests={test class 1, test class 2...}` - note that including a specific test may require its inner class implementation (e.g. `com.apache.tinkerpop.gremlin....UnionTest$ComputerTest`)
 ** Fast-build (does not run `neo4j-gremlin` tests - use with caution): `mvn clean install -DfeelingLucky`
-** Clean the `.groovy/grapes/com.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
+** Clean the `.groovy/grapes/com.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 * Build AsciiDocs: `docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc`
 * Build JavaDocs: `mvn process-resources -Djavadoc`

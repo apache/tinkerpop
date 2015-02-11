@@ -220,7 +220,7 @@ Validating with Gremlin-Test
 
 [source,xml]
 <dependency>
-  <groupId>com.tinkerpop</groupId>
+  <groupId>com.apache.tinkerpop</groupId>
   <artifactId>gremlin-test</artifactId>
   <version>x.y.z</version>
 </dependency>
@@ -272,19 +272,19 @@ There are times when there may be a specific test in the suite that the implemen
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest",
+        test = "com.apache.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest",
         method = "g_V_matchXa_hasXname_GarciaX__a_inXwrittenByX_b__a_inXsungByX_bX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest",
+        test = "com.apache.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest",
         method = "g_V_matchXa_inXsungByX_b__a_inXsungByX_c__b_outXwrittenByX_d__c_outXwrittenByX_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
+        test = "com.apache.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldNotAllowBadMemoryKeys",
         reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
+        test = "com.apache.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldRequireRegisteringMemoryKeys",
         reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 public class HadoopGraph implements Graph {
@@ -333,8 +333,8 @@ With the above plugin implementations, users can now download respective binarie
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 No such property: Neo4jGraph for class: groovysh_evaluate
 Display stack trace? [yN]
-gremlin> :install com.tinkerpop neo4j-gremlin x.y.z
-==>loaded: [com.tinkerpop, neo4j-gremlin, …]
+gremlin> :install com.apache.tinkerpop neo4j-gremlin x.y.z
+==>loaded: [com.apache.tinkerpop, neo4j-gremlin, …]
 gremlin> :plugin use tinkerpop.neo4j
 ==>tinkerpop.neo4j activated
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
@@ -356,7 +356,7 @@ TinkerGraph-Gremlin
 [source,xml]
 ----
 <dependency>
-   <groupId>com.tinkerpop</groupId>
+   <groupId>com.apache.tinkerpop</groupId>
    <artifactId>tinkergraph-gremlin</artifactId>
    <version>x.y.z</version>
 </dependency>
@@ -413,7 +413,7 @@ Neo4j-Gremlin
 [source,xml]
 ----
 <dependency>
-   <groupId>com.tinkerpop</groupId>
+   <groupId>com.apache.tinkerpop</groupId>
    <artifactId>neo4j-gremlin</artifactId>
    <version>x.y.z</version>
 </dependency>
@@ -425,8 +425,8 @@ CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licen
 
 [source,groovy]
 ----
-gremlin> :install com.tinkerpop neo4j-gremlin x.y.z
-==>loaded: [com.tinkerpop, neo4j-gremlin, x.y.z]
+gremlin> :install com.apache.tinkerpop neo4j-gremlin x.y.z
+==>loaded: [com.apache.tinkerpop, neo4j-gremlin, x.y.z]
 gremlin> :plugin use tinkerpop.neo4j
 ==>tinkerpop.neo4j activated
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
@@ -437,7 +437,7 @@ For those leveraging Neo4j High Availability, configure `Neo4jGraph` for "HA mod
 
 IMPORTANT: `Neo4jGraph` supports both meta- and multi-properties (see <<_vertex_properties,vertex properties>>). However, these are implemented by making use of "hidden" Neo4j nodes. For example, when a vertex has multiple "name" properties, each property is a new node (multi-properties) which can have properties attached to it (meta-properties). As such, the underlying representation may become difficult to query directly using another graph language such as Cypher. The default setting is to disable multi- and meta-properties. However, if this feature is desired, then it can be activated via `gremlin.neo4j.metaProperties` and `gremlin.neo4j.multiProperties` configurations being set to `true`. Once the configuration is set, it can not be changed for the lifetime of the graph.
 
-TIP: To host Neo4j in Gremlin Server, the dependencies must first be "installed" or otherwise copied to the Gremlin Server path.  The automated method for doing this would be to execute `bin/gremlin-server.sh -i com.tinkerpop neo4j-gremlin x.y.z`.
+TIP: To host Neo4j in Gremlin Server, the dependencies must first be "installed" or otherwise copied to the Gremlin Server path.  The automated method for doing this would be to execute `bin/gremlin-server.sh -i com.apache.tinkerpop neo4j-gremlin x.y.z`.
 
 Indices
 ~~~~~~~
@@ -593,7 +593,7 @@ Hadoop-Gremlin
 [source,xml]
 ----
 <dependency>
-   <groupId>com.tinkerpop</groupId>
+   <groupId>com.apache.tinkerpop</groupId>
    <artifactId>hadoop-gremlin</artifactId>
    <version>x.y.z</version>
 </dependency>
@@ -623,8 +623,8 @@ $ bin/gremlin.sh
 plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
-gremlin> :install com.tinkerpop hadoop-gremlin x.y.z
-==>loaded: [com.tinkerpop, hadoop-gremlin, x.y.z] - restart the console to use [tinkerpop.hadoop]
+gremlin> :install com.apache.tinkerpop hadoop-gremlin x.y.z
+==>loaded: [com.apache.tinkerpop, hadoop-gremlin, x.y.z] - restart the console to use [tinkerpop.hadoop]
 gremlin> :q
 $ bin/gremlin.sh
 
@@ -645,15 +645,15 @@ Properties Files
 `HadoopGraph` makes heavy use of properties files which ultimately get turned into Apache Configurations and Hadoop configurations. The properties file presented below is located at `conf/hadoop-kryo.properties'.
 
 [source,text]
-gremlin.graph=com.tinkerpop.gremlin.hadoop.structure.HadoopGraph
+gremlin.graph=com.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
 gremlin.hadoop.inputLocation=tinkerpop-modern-vertices.gio
-gremlin.hadoop.graphInputFormat=com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat
+gremlin.hadoop.graphInputFormat=com.apache.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat
 gremlin.hadoop.outputLocation=output
-gremlin.hadoop.graphOutputFormat=com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoOutputFormat
+gremlin.hadoop.graphOutputFormat=com.apache.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoOutputFormat
 gremlin.hadoop.memoryOutputFormat=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
-gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
+gremlin.vertexProgram=com.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 gremlin.traversalVertexProgram.traversalSupplier.type=CLASS
-gremlin.traversalVertexProgram.traversalSupplier.object=com.tinkerpop.gremlin.hadoop.process.computer.example.TraversalSupplier1
+gremlin.traversalVertexProgram.traversalSupplier.object=com.apache.tinkerpop.gremlin.hadoop.process.computer.example.TraversalSupplier1
 gremlin.hadoop.jarsInDistributedCache=true
 gremlin.hadoop.deriveMemory=false
 giraph.minWorkers=2
@@ -736,32 +736,32 @@ WARNING: The maximum number of workers can be no larger than the number of map-s
 gremlin> :remote connect tinkerpop.hadoop ../../../hadoop-gremlin/conf/hadoop-kryo.properties
 ==>hadoopgraph[kryoinputformat->kryooutputformat]
 gremlin> :> g.V().count()
-INFO  com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[HadoopGraphStep(vertex), CountStep, SideEffectCapStep]
+INFO  com.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[HadoopGraphStep(vertex), CountStep, SideEffectCapStep]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0037
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
-INFO  com.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: CountMapReduce
+INFO  com.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: CountMapReduce
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0038
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>6
 gremlin> :> g.V().out().out().values('name')
-INFO  com.tinkerpop.gremlin.giraph.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[HadoopGraphStep(vertex), VertexStep(OUT), VertexStep(OUT), ElementValueStep(name)]
+INFO  com.apache.tinkerpop.gremlin.giraph.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[HadoopGraphStep(vertex), VertexStep(OUT), VertexStep(OUT), ElementValueStep(name)]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0031
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
-INFO  com.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: TraversalResultMapReduce
+INFO  com.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: TraversalResultMapReduce
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0032
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>ripple
 ==>lop
 gremlin> :> g.V().group('a').by{it.value('name')[1]}.by{it.value('name')}
-INFO  com.tinkerpop.gremlin.giraph.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[HadoopGraphStep(vertex), GroupByStep@a, SideEffectCapStep(a)]
+INFO  com.apache.tinkerpop.gremlin.giraph.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[HadoopGraphStep(vertex), GroupByStep@a, SideEffectCapStep(a)]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0039
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
-INFO  com.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: GroupByMapReduce[a]
+INFO  com.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: GroupByMapReduce[a]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0040
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
@@ -787,7 +787,7 @@ The `TraversalSupplier1` class mentioned in the `hadoop-kryo.properties` file is
 [source,java]
 ----
 // gremlin.traversalVertexProgram.traversalSupplier.type=CLASS
-// gremlin.traversalVertexProgram.traversalSupplier.object=com.tinkerpop.gremlin.hadoop.process.computer.example.TraversalSupplier1
+// gremlin.traversalVertexProgram.traversalSupplier.object=com.apache.tinkerpop.gremlin.hadoop.process.computer.example.TraversalSupplier1
 
 public class TraversalSupplier1 implements SSupplier<Traversal> {
     public Traversal get() {
@@ -859,7 +859,7 @@ $ hadoop fs -copyFromLocal data/tinkerpop-modern-vertices.ldjson tinkerpop-moder
 $ hadoop fs -ls
 Found 2 items
 -rw-r--r--   1 marko supergroup       2356 2014-07-28 13:00 /user/marko/tinkerpop-modern-vertices.ldjson
-$ hadoop jar target/hadoop-gremlin-x.y.z-job.jar com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer conf/hadoop-graphson.properties
+$ hadoop jar target/hadoop-gremlin-x.y.z-job.jar com.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer conf/hadoop-graphson.properties
 14/07/29 12:08:27 INFO giraph.GiraphGraphComputer: HadoopGremlin(Giraph): PageRankVertexProgram[alpha=0.85,iterations=30]
 14/07/29 12:08:28 INFO mapred.JobClient: Running job: job_201407281259_0041
 14/07/29 12:08:29 INFO mapred.JobClient:  map 0% reduce 0%

@@ -19,7 +19,7 @@ limitations under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.tinkerpop</groupId>
+        <groupId>com.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
         <version>3.0.0-SNAPSHOT</version>
     </parent>
@@ -27,17 +27,17 @@ limitations under the License.
     <name>Gremlin Server: Gremlin on the Server</name>
     <dependencies>
         <dependency>
-            <groupId>com.tinkerpop</groupId>
+            <groupId>com.apache.tinkerpop</groupId>
             <artifactId>tinkergraph-gremlin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tinkerpop</groupId>
+            <groupId>com.apache.tinkerpop</groupId>
             <artifactId>gremlin-driver</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tinkerpop</groupId>
+            <groupId>com.apache.tinkerpop</groupId>
             <artifactId>gremlin-groovy</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -61,13 +61,13 @@ limitations under the License.
         </dependency>
         <!-- TESTING -->
         <dependency>
-            <groupId>com.tinkerpop</groupId>
+            <groupId>com.apache.tinkerpop</groupId>
             <artifactId>gremlin-test</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.tinkerpop</groupId>
+            <groupId>com.apache.tinkerpop</groupId>
             <artifactId>neo4j-gremlin</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -137,7 +137,7 @@ limitations under the License.
                     <tarLongFileMode>warn</tarLongFileMode>
                     <archive>
                         <manifest>
-                            <mainClass>com.tinkerpop.gremlin.server.GremlinServer</mainClass>
+                            <mainClass>com.apache.tinkerpop.gremlin.server.GremlinServer</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

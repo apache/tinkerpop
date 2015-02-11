@@ -12,8 +12,8 @@ scriptEngines: {
   gremlin-groovy: {
     imports: []}}
 serializers:
-  - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
-  - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0 }
+  - { className: com.apache.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
+  - { className: com.apache.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0 }
 metrics: {
   slf4jReporter: {enabled: true, interval: 180000}}
 threadPoolBoss: 1

@@ -4,7 +4,7 @@ threadPoolWorker: 1
 gremlinPool: 8
 scriptEvaluationTimeout: 30000
 serializedResponseTimeout: 30000
-channelizer: com.tinkerpop.gremlin.server.channel.HttpChannelizer
+channelizer: com.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
   g: conf/tinkergraph-empty.properties}
 plugins:
@@ -15,8 +15,8 @@ scriptEngines: {
     staticImports: [java.lang.Math.PI],
     scripts: [scripts/generate-modern.groovy]}}
 serializers:
-  - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
-  - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0 }
+  - { className: com.apache.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
+  - { className: com.apache.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0 }
 metrics: {
   slf4jReporter: {enabled: true, interval: 180000}}
 threadPoolBoss: 1

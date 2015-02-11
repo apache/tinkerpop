@@ -6,7 +6,7 @@ image::graph-computing.png[width=350]
 
 [source,xml]
 <dependency>
-  <groupId>com.tinkerpop</groupId>
+  <groupId>com.apache.tinkerpop</groupId>
   <artifactId>gremlin-core</artifactId>
   <version>x.y.z</version>
 </dependency>
