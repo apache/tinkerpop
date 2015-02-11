@@ -41,14 +41,13 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     private E lastEnd = null;
     private long lastEndCount = 0l;
-    private boolean locked = false; // an optimization so getEngine().isEmpty() isn't required on each next()/hasNext()
     private Step<?, E> finalEndStep = EmptyStep.instance();
     private final StepPosition stepPosition = new StepPosition();
 
     protected List<Step> steps = new ArrayList<>();
     protected TraversalStrategies strategies;
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
-    protected Optional<TraversalEngine> traversalEngine = Optional.empty();
+    protected TraversalEngine traversalEngine = null;
 
     protected TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
 
@@ -63,8 +62,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public void applyStrategies(final TraversalEngine engine) throws IllegalStateException {
-        if (this.locked)
-            throw Traversal.Exceptions.traversalIsLocked();
+        if (null != this.traversalEngine) throw Traversal.Exceptions.traversalIsLocked();
 
         TraversalHelper.reIdSteps(this.stepPosition, this);
         this.strategies.applyStrategies(this, engine);
@@ -79,14 +77,13 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 }
             }
         }
-        this.traversalEngine = Optional.of(engine);
-        this.locked = true;
+        this.traversalEngine = engine;
         this.finalEndStep = this.getEndStep();
     }
 
     @Override
     public Optional<TraversalEngine> getEngine() {
-        return this.traversalEngine;
+        return Optional.ofNullable(this.traversalEngine);
     }
 
     @Override
@@ -96,13 +93,13 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public boolean hasNext() {
-        if (!this.locked) this.applyStrategies(TraversalEngine.STANDARD);
+        if (null == this.traversalEngine) this.applyStrategies(TraversalEngine.STANDARD);
         return this.lastEndCount > 0l || this.finalEndStep.hasNext();
     }
 
     @Override
     public E next() {
-        if (!this.locked) this.applyStrategies(TraversalEngine.STANDARD);
+        if (null == this.traversalEngine) this.applyStrategies(TraversalEngine.STANDARD);
         if (this.lastEndCount > 0l) {
             this.lastEndCount--;
             return this.lastEnd;
@@ -127,13 +124,13 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public void addStart(final Traverser<S> start) {
-        if (!this.locked) this.applyStrategies(TraversalEngine.STANDARD);
+        if (null == this.traversalEngine) this.applyStrategies(TraversalEngine.STANDARD);
         if (!this.steps.isEmpty()) this.steps.get(0).addStart(start);
     }
 
     @Override
     public void addStarts(final Iterator<Traverser<S>> starts) {
-        if (!this.locked) this.applyStrategies(TraversalEngine.STANDARD);
+        if (null == this.traversalEngine) this.applyStrategies(TraversalEngine.STANDARD);
         if (!this.steps.isEmpty()) this.steps.get(0).addStarts(starts);
     }
 
@@ -196,7 +193,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
-        if (this.locked) throw Exceptions.traversalIsLocked();
+        if (null != this.traversalEngine) throw Exceptions.traversalIsLocked();
         step.setId(this.stepPosition.nextXId());
         this.steps.add(index, step);
         final Step previousStep = this.steps.size() > 0 && index != 0 ? steps.get(index - 1) : null;
@@ -210,7 +207,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public <S2, E2> Traversal.Admin<S2, E2> removeStep(final int index) throws IllegalStateException {
-        if (this.locked) throw Exceptions.traversalIsLocked();
+        if (null != this.traversalEngine) throw Exceptions.traversalIsLocked();
         final Step previousStep = this.steps.size() > 0 && index != 0 ? steps.get(index - 1) : null;
         final Step nextStep = this.steps.size() > index + 1 ? steps.get(index + 1) : null;
         this.steps.remove(index);

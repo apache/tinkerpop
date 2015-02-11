@@ -40,8 +40,8 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
 
     protected Map<String, Object> objectMap = new HashMap<>();
     protected Map<String, Supplier> supplierMap = new HashMap<>();
-    protected Optional<UnaryOperator> sackSplitOperator = Optional.empty();
-    protected Optional<Supplier> sackInitialValue = Optional.empty();
+    protected UnaryOperator sackSplitOperator = null;
+    protected Supplier sackInitialValue = null;
 
     public DefaultTraversalSideEffects() {
 
@@ -74,18 +74,18 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
 
     @Override
     public <S> void setSack(final Supplier<S> initialValue, final Optional<UnaryOperator<S>> splitOperator) {
-        this.sackInitialValue = Optional.ofNullable(initialValue);
-        this.sackSplitOperator = (Optional) splitOperator;
+        this.sackInitialValue = initialValue;
+        this.sackSplitOperator = splitOperator.orElse(null);
     }
 
     @Override
     public <S> Optional<Supplier<S>> getSackInitialValue() {
-        return (Optional) this.sackInitialValue;
+        return Optional.ofNullable(this.sackInitialValue);
     }
 
     @Override
     public <S> Optional<UnaryOperator<S>> getSackSplitOperator() {
-        return (Optional) this.sackSplitOperator;
+        return Optional.ofNullable(this.sackSplitOperator);
     }
 
     /**
