@@ -157,11 +157,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
         clone.steps = new ArrayList<>();
         clone.sideEffects = this.sideEffects.clone();
-        clone.strategies = this.strategies.clone();
+        clone.strategies = this.strategies.clone(); // TODO: does this need to be cloned?
         clone.lastEnd = null;
         clone.lastEndCount = 0l;
-        clone.traversalEngine = this.traversalEngine.isPresent() ? Optional.of(this.traversalEngine.get()) : Optional.empty();
-        clone.locked = !clone.traversalEngine.isPresent();
+        //clone.traversalEngine = this.traversalEngine.isPresent() ? Optional.of(this.traversalEngine.get()) : Optional.empty();
+        //clone.locked = this.traversalEngine.isPresent();
         for (final Step<?, ?> step : this.steps) {
             final Step<?, ?> clonedStep = step.clone();
             clonedStep.setTraversal(clone);
@@ -170,6 +170,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             previousStep.setNextStep(clonedStep);
             clone.steps.add(clonedStep);
         }
+        clone.finalEndStep = clone.getEndStep();
         return clone;
     }
 

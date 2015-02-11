@@ -270,17 +270,17 @@ public final class TraversalHelper {
         Traversal.Admin<?, ?> current = traversal;
         while (!(current instanceof EmptyTraversal)) {
             stepPosition.y++;
-            final TraversalParent holder = current.getParent();
-            if (null == stepPosition.parentId && !(holder instanceof EmptyStep))
-                stepPosition.parentId = holder.asStep().getId();
+            final TraversalParent parent = current.getParent();
+            if (null == stepPosition.parentId && !(parent instanceof EmptyStep))
+                stepPosition.parentId = parent.asStep().getId();
             if (-1 == stepPosition.z) {
-                for (int i = 0; i < holder.getGlobalChildren().size(); i++) {
-                    if (holder.getGlobalChildren().get(i) == current) {
+                for (int i = 0; i < parent.getGlobalChildren().size(); i++) {
+                    if (parent.getGlobalChildren().get(i) == current) {
                         stepPosition.z = i;
                     }
                 }
             }
-            current = holder.asStep().getTraversal();
+            current = parent.asStep().getTraversal();
         }
         if (-1 == stepPosition.z) stepPosition.z = 0;
         if (null == stepPosition.parentId) stepPosition.parentId = "";
