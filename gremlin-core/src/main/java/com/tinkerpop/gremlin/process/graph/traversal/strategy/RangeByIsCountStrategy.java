@@ -37,7 +37,7 @@ import java.util.function.BiPredicate;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class RangeByIsCountStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
+public final class RangeByIsCountStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final Set<Compare> RANGE_PREDICATES = EnumSet.of(Compare.inside, Compare.outside);
     private static final Set<Compare> INCREASED_OFFSET_PREDICATES =

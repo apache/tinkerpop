@@ -32,7 +32,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 
-public class SideEffectCapStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
+public final class SideEffectCapStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final SideEffectCapStrategy INSTANCE = new SideEffectCapStrategy();
     private static final Set<Class<? extends TraversalStrategy>> POSTS = Collections.singleton(LabeledEndStepStrategy.class);

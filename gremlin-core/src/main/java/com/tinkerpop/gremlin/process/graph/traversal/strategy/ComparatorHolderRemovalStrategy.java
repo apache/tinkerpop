@@ -27,7 +27,7 @@ import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ComparatorHolderRemovalStrategy extends AbstractTraversalStrategy {
+public final class ComparatorHolderRemovalStrategy extends AbstractTraversalStrategy {
 
     private static final ComparatorHolderRemovalStrategy INSTANCE = new ComparatorHolderRemovalStrategy();
 

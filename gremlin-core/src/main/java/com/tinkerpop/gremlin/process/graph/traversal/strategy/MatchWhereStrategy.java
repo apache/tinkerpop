@@ -35,7 +35,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MatchWhereStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
+public final class MatchWhereStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final MatchWhereStrategy INSTANCE = new MatchWhereStrategy();
     private static final Set<Class<? extends TraversalStrategy>> PRIORS = new HashSet<>();

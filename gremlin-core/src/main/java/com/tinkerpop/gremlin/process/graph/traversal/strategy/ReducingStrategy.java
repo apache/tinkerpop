@@ -29,7 +29,7 @@ import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReducingStrategy extends AbstractTraversalStrategy {
+public final class ReducingStrategy extends AbstractTraversalStrategy {
 
     private static final ReducingStrategy INSTANCE = new ReducingStrategy();
 

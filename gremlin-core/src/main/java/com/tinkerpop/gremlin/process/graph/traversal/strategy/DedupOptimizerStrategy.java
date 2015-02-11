@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DedupOptimizerStrategy extends AbstractTraversalStrategy {
+public final class DedupOptimizerStrategy extends AbstractTraversalStrategy {
 
     private static final DedupOptimizerStrategy INSTANCE = new DedupOptimizerStrategy();
 

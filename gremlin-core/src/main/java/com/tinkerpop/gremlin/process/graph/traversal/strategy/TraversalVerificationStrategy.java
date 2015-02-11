@@ -33,7 +33,7 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalVerificationStrategy extends AbstractTraversalStrategy {
+public final class TraversalVerificationStrategy extends AbstractTraversalStrategy {
 
     private static final TraversalVerificationStrategy INSTANCE = new TraversalVerificationStrategy();
 

@@ -26,7 +26,7 @@ import com.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EngineDependentStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
+public final class EngineDependentStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final EngineDependentStrategy INSTANCE = new EngineDependentStrategy();
 

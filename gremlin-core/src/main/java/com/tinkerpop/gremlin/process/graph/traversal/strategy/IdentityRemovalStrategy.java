@@ -26,7 +26,7 @@ import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IdentityRemovalStrategy extends AbstractTraversalStrategy {
+public final class IdentityRemovalStrategy extends AbstractTraversalStrategy {
 
     private static final IdentityRemovalStrategy INSTANCE = new IdentityRemovalStrategy();
 

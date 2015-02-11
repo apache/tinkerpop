@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public class ProfileStrategy extends AbstractTraversalStrategy {
+public final class ProfileStrategy extends AbstractTraversalStrategy {
 
     private static final ProfileStrategy INSTANCE = new ProfileStrategy();
     private static final Set<Class<? extends TraversalStrategy>> PRIORS = new HashSet<>();

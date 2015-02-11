@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SideEffectRegistrationStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
+public final class SideEffectRegistrationStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final SideEffectRegistrationStrategy INSTANCE = new SideEffectRegistrationStrategy();
 
