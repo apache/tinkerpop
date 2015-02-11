@@ -25,8 +25,7 @@ import org.junit.Test;
 
 import java.util.Iterator;
 
-import static com.tinkerpop.gremlin.process.graph.traversal.__.and;
-import static com.tinkerpop.gremlin.process.graph.traversal.__.has;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -59,5 +58,11 @@ public class ConjunctionStepTest {
         assertEquals("lang", entry.<HasContainer>getValue().key);
         assertEquals(Compare.eq, entry.<HasContainer>getValue().predicate);
         assertEquals("java", entry.<HasContainer>getValue().value);
+    }
+
+    @Test
+    public void shouldNotGetHasContainers() {
+        final GraphTraversal.Admin<?, ?> traversal = and(has("name"), has("age", Compare.gt, 30).or(has("lang", "java"), out().has("name","josh"))).asAdmin();
+        assertFalse(((ConjunctionStep) traversal.getStartStep()).isConjunctionHasTree());
     }
 }
