@@ -61,9 +61,9 @@ public class StartStep<S> extends AbstractStep<S, S> implements Reversible {
         if (this.first) {
             if (null != this.start) {
                 if (this.start instanceof Iterator)
-                    this.starts.add(this.getTraversal().asAdmin().getTraverserGenerator().generateIterator((Iterator<S>) this.start, this, 1l));
+                    this.starts.add(this.getTraversal().getTraverserGenerator().generateIterator((Iterator<S>) this.start, this, 1l));
                 else
-                    this.starts.add(this.getTraversal().asAdmin().getTraverserGenerator().generate((S) this.start, this, 1l));
+                    this.starts.add(this.getTraversal().getTraverserGenerator().generate((S) this.start, this, 1l));
             }
             this.first = false;
         }

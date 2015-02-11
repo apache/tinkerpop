@@ -1119,6 +1119,7 @@ public interface Graph extends AutoCloseable {
         public static String SUITE_GROOVY_PROCESS_COMPUTER = "com.tinkerpop.gremlin.process.GroovyProcessComputerSuite";
         public static String SUITE_GROOVY_ENVIRONMENT = "com.tinkerpop.gremlin.groovy.GroovyEnvironmentSuite";
         public static String SUITE_GROOVY_ENVIRONMENT_INTEGRATE = "com.tinkerpop.gremlin.groovy.GroovyEnvironmentIntegrateSuite";
+        public static String SUITE_GROOVY_ENVIRONMENT_PERFORMANCE = "com.tinkerpop.gremlin.groovy.GroovyEnvironmentPerformanceSuite";
 
         /**
          * The test suite class to opt in to.

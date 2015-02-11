@@ -138,7 +138,8 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        g.V().has(T.label, "person").choose(t -> t.<String>value("name").length()).option(5, in()).option(4, out()).option(3, both()).values("name").submit(g.compute());
+        Traversal t = g.V().has("name","marko");
+        t.next();
     }
 
     @Test

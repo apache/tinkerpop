@@ -226,6 +226,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @param starts an iterators of traversers
          */
         public default void addStarts(final Iterator<Traverser<S>> starts) {
+            if(!this.getEngine().isPresent()) this.applyStrategies(TraversalEngine.STANDARD);
             this.getStartStep().addStarts(starts);
         }
 
@@ -236,6 +237,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @param start a traverser to add to the traversal
          */
         public default void addStart(final Traverser<S> start) {
+            if(!this.getEngine().isPresent()) this.applyStrategies(TraversalEngine.STANDARD);
             this.getStartStep().addStart(start);
         }
 

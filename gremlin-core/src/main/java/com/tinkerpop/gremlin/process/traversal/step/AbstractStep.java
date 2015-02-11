@@ -33,8 +33,7 @@ import java.util.Optional;
  */
 public abstract class AbstractStep<S, E> implements Step<S, E> {
 
-    protected Optional<String> label = Optional.empty();
-    private boolean hasLabel = false;
+    protected String label = null;
     protected String id = Traverser.Admin.HALT;
     protected Traversal.Admin traversal;
     protected ExpandableStepIterator<S> starts;
@@ -62,13 +61,13 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     @Override
     public void setLabel(final String label) {
-        this.label = Optional.of(label);
-        this.hasLabel = true;
+        Objects.nonNull(label);
+        this.label = label;
     }
 
     @Override
     public Optional<String> getLabel() {
-        return this.label;
+        return Optional.ofNullable(this.label);
     }
 
     @Override
@@ -172,7 +171,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     private final Traverser<E> prepareTraversalForNextStep(final Traverser<E> traverser) {
         if (!this.traverserStepIdSetByChild) ((Traverser.Admin<E>) traverser).setStepId(this.nextStep.getId());
-        if (this.hasLabel) traverser.path().addLabel(this.label.get());
+        if (null != this.label) traverser.path().addLabel(this.label);
         return traverser;
     }
 
