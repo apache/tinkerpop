@@ -60,7 +60,7 @@ public abstract class RetainTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_retainXaX_name() {
+    public void g_VX1X_asXaX_outXcreatedX_inXcreatedX_retainXaX_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_retainXaX_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertEquals("marko", traversal.next());
