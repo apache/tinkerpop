@@ -22,15 +22,18 @@ package com.tinkerpop.gremlin.process.graph.traversal.strategy;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.HasTraversalStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
-import java.util.stream.Stream;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
@@ -40,15 +43,11 @@ import static org.junit.Assert.assertEquals;
  */
 public abstract class RangeByIsCountStrategyTest extends AbstractGremlinProcessTest {
 
-    final Traversal generateTraversal(final BiPredicate predicate, final Object value) {
-        return g.V().count().is(predicate, value);
-    }
-
     public static class StandardTest extends RangeByIsCountStrategyTest {
 
         private void runTest(final BiPredicate predicate, final Object value, final long expectedHighRange) {
             final AtomicInteger counter = new AtomicInteger(0);
-            Traversal traversal = generateTraversal(predicate, value);
+            Traversal traversal = g.V().count().is(predicate, value);
             traversal.iterate();
             TraversalHelper.getStepsOfClass(RangeStep.class, traversal.asAdmin()).stream().forEach(step -> {
                 assertEquals(0, step.getLowRange());
@@ -109,11 +108,21 @@ public abstract class RangeByIsCountStrategyTest extends AbstractGremlinProcessT
 
     public static class ComputerTest extends RangeByIsCountStrategyTest {
         @Test
+        @Ignore // TODO: include when #558 is solved
         @LoadGraphWith(MODERN)
-        public void shouldNotModifyTheTraversal() {
-            final Traversal traversal = generateTraversal(Compare.eq, 0l).submit(g.compute()).iterate();
-            final Stream<RangeStep> rangeSteps = TraversalHelper.getStepsOfClass(RangeStep.class, traversal.asAdmin()).stream();
-            assertEquals(0, rangeSteps.count());
+        public void nestedCountEqualsNullShouldLimitToOne() {
+            final AtomicInteger counter = new AtomicInteger(0);
+            final Traversal traversal = g.V().has(__.outE("created").count().is(0)).submit(g.compute()).iterate();
+            final ComputerResultStep crs = (ComputerResultStep) traversal.asAdmin().getSteps().iterator().next();
+            final Traversal ct = crs.getComputerTraversal();
+            final HasTraversalStep hasStep = TraversalHelper.getStepsOfClass(HasTraversalStep.class, ct.asAdmin()).stream().findFirst().get();
+            final Traversal nestedTraversal = (Traversal) hasStep.getLocalChildren().get(0);
+            TraversalHelper.getStepsOfClass(RangeStep.class, nestedTraversal.asAdmin()).stream().forEach(step -> {
+                assertEquals(0, step.getLowRange());
+                assertEquals(1, step.getHighRange());
+                counter.incrementAndGet();
+            });
+            assertEquals(1, counter.get());
         }
     }
 }

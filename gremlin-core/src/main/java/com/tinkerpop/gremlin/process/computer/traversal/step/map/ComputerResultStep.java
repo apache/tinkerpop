@@ -92,4 +92,8 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
     public Set<TraverserRequirement> getRequirements() {
         return this.computerTraversal.getTraverserRequirements();
     }
+
+    public Traversal.Admin<?, ?> getComputerTraversal() {
+        return this.computerTraversal;
+    }
 }
