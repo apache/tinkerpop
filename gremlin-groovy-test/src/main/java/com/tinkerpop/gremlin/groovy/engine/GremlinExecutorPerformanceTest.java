@@ -8,14 +8,28 @@ import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 import com.carrotsearch.junitbenchmarks.annotation.LabelType;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
+import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Order;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.Gremlin;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.commons.configuration.Configuration;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -27,13 +41,36 @@ import static org.junit.Assert.assertEquals;
 @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-gremlin-executor")
 public class GremlinExecutorPerformanceTest extends AbstractGremlinTest  {
 
+    private static final Random rand = new Random(9585834534l);
     private static final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
+    private GremlinGenerator generator;
+    private Graph syntaxGraph = null;
+    private Configuration syntaxGraphConfig = null;
 
     @Rule
     public TestRule benchmarkRun = new BenchmarkRule();
 
+    @Rule
+    public TestName testName = new TestName();
+
     public final static int DEFAULT_BENCHMARK_ROUNDS = 500;
     public final static int DEFAULT_WARMUP_ROUNDS = 10;
+
+
+    @Override
+    public void setup() throws Exception {
+        super.setup();
+        syntaxGraphConfig = graphProvider.newGraphConfiguration("gremlin-executor-test",
+                GremlinExecutorPerformanceTest.class, testName.getMethodName());
+        syntaxGraph = graphProvider.openTestGraph(syntaxGraphConfig);
+        generator = new GremlinGenerator(syntaxGraph, rand);
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        if (syntaxGraph != null)  graphProvider.clear(syntaxGraph, syntaxGraphConfig);
+        super.tearDown();
+    }
 
     @BenchmarkOptions(benchmarkRounds = DEFAULT_BENCHMARK_ROUNDS, warmupRounds = DEFAULT_WARMUP_ROUNDS, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
     @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
@@ -42,16 +79,102 @@ public class GremlinExecutorPerformanceTest extends AbstractGremlinTest  {
         final Map<String, Object> params = new HashMap<>();
         params.put("g", g);
 
-        final CompletableFuture<Object> future1 = gremlinExecutor.eval("g.V().outE().inV().outE().inV().outE().inV().next(512)", params);
-        final CompletableFuture<Object> future2 = gremlinExecutor.eval("g.V().local(out().out().values(\"name\").fold()).next(7)", params);
-        final CompletableFuture<Object> future3 = gremlinExecutor.eval("g.V().repeat(out()).times(3).next(10)", params);
-        final CompletableFuture<Object> future4 = gremlinExecutor.eval("g.V().repeat(out()).times(2).next(10)", params);
-        final CompletableFuture<Object> future5 = gremlinExecutor.eval("g.V().out().out().out().path().next(1)", params);
+        final String traversal = generator.generateGremlin();
+        final int resultsToNextOut = rand.nextInt(512) + 1;
+        final String nextedTraversal = traversal + ".next(" + resultsToNextOut + ")";
+        final CompletableFuture<Object> future1 = gremlinExecutor.eval(nextedTraversal, params);
+        future1.join();
+    }
 
-        assertEquals(512, IteratorUtils.count(IteratorUtils.convertToIterator(future1.join())));
-        assertEquals(7, IteratorUtils.count(IteratorUtils.convertToIterator(future2.join())));
-        assertEquals(10, IteratorUtils.count(IteratorUtils.convertToIterator(future3.join())));
-        assertEquals(10, IteratorUtils.count(IteratorUtils.convertToIterator(future4.join())));
-        assertEquals(1, IteratorUtils.count(IteratorUtils.convertToIterator(future5.join())));
+    public static class GremlinGenerator {
+        private final Random rand;
+
+        private final Graph syntaxGraph;
+
+        public GremlinGenerator(final Graph syntaxGraph, final Random rand) {
+            this.rand = rand;
+            this.syntaxGraph = syntaxGraph;
+            loadGraph(this.syntaxGraph);
+        }
+
+        public String generateGremlin() {
+            final int targetStepCount = rand.nextInt(10);
+            final StringBuilder sb = new StringBuilder("g.V()");
+            final Vertex start = syntaxGraph.V().has("starter", true).order().by(this::shuffle).next();
+            sb.append((String) start.value("step"));
+
+            start.times(targetStepCount - 1).repeat(
+                    __.local(__.outE().has("weight", Compare.gte, rand.nextDouble())
+                    .inV().order().by(this::shuffle).limit(1)).sideEffect(t -> sb.append((String) t.get().value("step")))
+            ).iterate();
+
+            return sb.toString();
+        }
+
+        private int shuffle(final Object o1, final Object o2) {
+            return rand.nextBoolean() ? -1 : 1;
+        }
+
+        private static void loadGraph(final Graph syntaxGraph) {
+            final Vertex vOutStep = syntaxGraph.addVertex("step", ".out()", "starter", true);
+            final Vertex vInStep = syntaxGraph.addVertex("step", ".in()", "starter", true);
+            final Vertex vBothStep = syntaxGraph.addVertex("step", ".both()", "starter", true);
+            final Vertex vInEStep = syntaxGraph.addVertex("step", ".inE()", "starter", true);
+            final Vertex vOutEStep = syntaxGraph.addVertex("step", ".outE()", "starter", true);
+            final Vertex vBothEStep = syntaxGraph.addVertex("step", ".bothE()", "starter", true);
+            final Vertex vInVStep = syntaxGraph.addVertex("step", ".inV()", "starter", false);
+            final Vertex vOutVStep = syntaxGraph.addVertex("step", ".outV()", "starter", false);
+            final Vertex vOtherVStep = syntaxGraph.addVertex("step", ".otherV()", "starter", false);
+
+            vOutStep.addEdge("followedBy", vOutStep, "weight", 1.0d);
+            vOutStep.addEdge("followedBy", vInStep, "weight", 0.15d);
+            vOutStep.addEdge("followedBy", vBothStep, "weight", 0.15d);
+            vOutStep.addEdge("followedBy", vOutEStep, "weight", 0.75d);
+            vOutStep.addEdge("followedBy", vInEStep, "weight", 0.1d);
+            vOutStep.addEdge("followedBy", vBothEStep, "weight", 0.1d);
+
+            vInStep.addEdge("followedBy", vOutStep, "weight", 0.15d);
+            vInStep.addEdge("followedBy", vInStep, "weight", 1.0d);
+            vInStep.addEdge("followedBy", vBothStep, "weight", 0.15d);
+            vInStep.addEdge("followedBy", vOutEStep, "weight", 0.1d);
+            vInStep.addEdge("followedBy", vInEStep, "weight", 0.75d);
+            vInStep.addEdge("followedBy", vBothEStep, "weight", 0.1d);
+
+            vOtherVStep.addEdge("followedBy", vOutStep, "weight", 0.15d);
+            vOtherVStep.addEdge("followedBy", vInStep, "weight", 1.0d);
+            vOtherVStep.addEdge("followedBy", vBothStep, "weight", 0.15d);
+            vOtherVStep.addEdge("followedBy", vOutEStep, "weight", 0.1d);
+            vOtherVStep.addEdge("followedBy", vInEStep, "weight", 0.75d);
+            vOtherVStep.addEdge("followedBy", vBothEStep, "weight", 0.1d);
+
+            vBothStep.addEdge("followedBy", vOutStep, "weight", 1.0d);
+            vBothStep.addEdge("followedBy", vInStep, "weight", 1.0d);
+            vBothStep.addEdge("followedBy", vBothStep, "weight", 0.1d);
+            vBothStep.addEdge("followedBy", vOutEStep, "weight", 0.15d);
+            vBothStep.addEdge("followedBy", vInEStep, "weight", 0.15d);
+            vBothStep.addEdge("followedBy", vBothEStep, "weight", 0.1d);
+
+            vInEStep.addEdge("followedBy", vOutVStep, "weight", 1.0d);
+            vInEStep.addEdge("followedBy", vInVStep, "weight", 0.1d);
+
+            vOutEStep.addEdge("followedBy", vInVStep, "weight", 1.0d);
+            vInEStep.addEdge("followedBy", vOutVStep, "weight", 0.1d);
+
+            vBothEStep.addEdge("followedBy", vOtherVStep, "weight", 1.0d);
+
+            vInVStep.addEdge("followedBy", vOutStep, "weight", 1.0d);
+            vInVStep.addEdge("followedBy", vInStep, "weight", 0.25d);
+            vInVStep.addEdge("followedBy", vBothStep, "weight", 0.1d);
+            vInVStep.addEdge("followedBy", vOutEStep, "weight", 1.0d);
+            vInVStep.addEdge("followedBy", vInEStep, "weight", 0.25d);
+            vInVStep.addEdge("followedBy", vBothEStep, "weight", 0.1d);
+
+            vOutVStep.addEdge("followedBy", vOutStep, "weight", 0.25d);
+            vOutVStep.addEdge("followedBy", vInStep, "weight", 1.0d);
+            vOutVStep.addEdge("followedBy", vBothStep, "weight", 0.1d);
+            vOutVStep.addEdge("followedBy", vOutEStep, "weight", 0.25d);
+            vOutVStep.addEdge("followedBy", vInEStep, "weight", 1.0d);
+            vOutVStep.addEdge("followedBy", vBothEStep, "weight", 0.1d);
+        }
     }
 }
