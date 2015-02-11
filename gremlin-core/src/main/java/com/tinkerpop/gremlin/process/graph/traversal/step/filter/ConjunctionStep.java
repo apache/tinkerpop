@@ -132,8 +132,8 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
 
     public static class ConjunctionTree implements Iterable<ConjunctionTree.Entry> {
 
-        private List<Entry> tree = new ArrayList<>();
-        private boolean isAnd;
+        private final List<Entry> tree = new ArrayList<>();
+        private final boolean isAnd;
 
         public ConjunctionTree(final ConjunctionStep<?> conjunctionStep) {
             this.isAnd = conjunctionStep.isAnd;
@@ -142,9 +142,9 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
                     if (step instanceof HasStep) {
                         (((HasStep<?>) step).getHasContainers()).forEach(container -> this.tree.add(new Entry(HasContainer.class, container)));
                     } else if (step instanceof ConjunctionStep) {
-                        tree.add(new Entry(ConjunctionTree.class, ((ConjunctionStep) step).getConjunctionHasTree()));
+                        this.tree.add(new Entry(ConjunctionTree.class, ((ConjunctionStep) step).getConjunctionHasTree()));
                     } else {
-                        throw new IllegalStateException("This conjunction supports more complex steps than HasStep");
+                        throw new IllegalArgumentException("This conjunction supports more complex steps than HasStep");
                     }
                 }
             }
@@ -178,11 +178,11 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
             }
 
             public boolean isHasContainer() {
-                return entryClass.equals(HasContainer.class);
+                return this.entryClass.equals(HasContainer.class);
             }
 
             public boolean isConjunctionTree() {
-                return entryClass.equals(ConjunctionTree.class);
+                return this.entryClass.equals(ConjunctionTree.class);
             }
 
             public String toString() {
