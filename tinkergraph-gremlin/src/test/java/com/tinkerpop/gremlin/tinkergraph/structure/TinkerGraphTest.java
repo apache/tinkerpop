@@ -21,6 +21,9 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategy;
+import com.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import com.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.*;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
@@ -174,37 +177,23 @@ public class TinkerGraphTest {
     public void testPlayDK() throws Exception {
 
         Graph g = TinkerFactory.createModern();
-        Traversal t;
-
-        System.out.println("g.V().has(out(\"created\").count().is(0l))");
-        t = g.V().has(out("created").count().is(0l));
+        Traversal t = g.V().count().is(0l).profile().cap(TraversalMetrics.METRICS_KEY);
         System.out.println(t.toString());
-        t.forEachRemaining(System.out::println);
-        System.out.println(t.toString() + "\n");
-
-        System.out.println("g.V().has(out(\"created\").count().is(lt, 2l))");
-        t = g.V().has(out("created").count().is(Compare.lt, 2l));
+        t.iterate();
         System.out.println(t.toString());
-        t.forEachRemaining(System.out::println);
-        System.out.println(t.toString() + "\n");
+        System.out.println("--");
 
-        System.out.println("g.V().has(out(\"created\").count().is(gt, 1l))");
-        t = g.V().has(out("created").count().is(Compare.gt, 1l));
+        t = g.V().count().is(0l).profile().cap(TraversalMetrics.METRICS_KEY);
+        ((DefaultTraversal) t).getStrategies().removeStrategies(RangeByIsCountStrategy.class);
         System.out.println(t.toString());
-        t.forEachRemaining(System.out::println);
-        System.out.println(t.toString() + "\n");
+        t.iterate();
+        System.out.println(t.toString());
+        System.out.println("--");
 
-        System.out.println("g.V().has(out(\"created\").count().is(inside, [1l,4l]))");
-        t = g.V().has(out("created").count().is(Compare.inside, Arrays.asList(1l, 4l)));
+        t = g.V().count().is(0l).profile().cap(TraversalMetrics.METRICS_KEY);
         System.out.println(t.toString());
-        t.forEachRemaining(System.out::println);
-        System.out.println(t.toString() + "\n");
-
-        System.out.println("g.V().has(out(\"created\").count().is(outside, [1l,4l]))");
-        t = g.V().has(out("created").count().is(Compare.outside, Arrays.asList(1l, 4l)));
+        t.iterate();
         System.out.println(t.toString());
-        t.forEachRemaining(System.out::println);
-        System.out.println(t.toString() + "\n");
     }
 
     /**

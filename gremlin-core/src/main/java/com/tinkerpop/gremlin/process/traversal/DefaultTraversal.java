@@ -18,21 +18,12 @@
  */
 package com.tinkerpop.gremlin.process.traversal;
 
-import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.TraversalSideEffects;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
-import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.*;
 import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -53,7 +44,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
 
     public DefaultTraversal(final Class emanatingClass) {
-        this.strategies = TraversalStrategies.GlobalCache.getStrategies(emanatingClass);
+        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(emanatingClass));
     }
 
     @Override
@@ -186,7 +177,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public void setStrategies(final TraversalStrategies strategies) {
-        this.strategies = strategies;
+        try {
+            this.strategies = strategies.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override
