@@ -130,7 +130,7 @@ class SugarLoaderTest extends AbstractGremlinTest {
         println "  Groovy-style: " + clock(5000) { g.V(1)['name'] = 'okram' }
 
         println("\ng.V(1).name = 'okram'")
-        println "  Java8-style:  " + clock(5000) { g.V(1).singleProperty('name', 'okram') }
+        println "  Java8-style:  " + clock(5000) { g.V(1).property(single,'name', 'okram') }
         println "  Groovy-style: " + clock(5000) { g.V(1).name = 'okram' }*/
 
         println("\ng.V(1).outE")

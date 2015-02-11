@@ -74,6 +74,9 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     globalChild.applyStrategies(engine);
                 }
+                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                    localChild.applyStrategies(TraversalEngine.STANDARD);
+                }
             }
         }
         this.traversalEngine = Optional.of(engine);
@@ -157,8 +160,8 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         clone.strategies = this.strategies.clone();
         clone.lastEnd = null;
         clone.lastEndCount = 0l;
-        //clone.traversalEngine = Optional.empty();
-        //clone.locked = false;
+        clone.traversalEngine = this.traversalEngine.isPresent() ? Optional.of(this.traversalEngine.get()) : Optional.empty();
+        clone.locked = !clone.traversalEngine.isPresent();
         for (final Step<?, ?> step : this.steps) {
             final Step<?, ?> clonedStep = step.clone();
             clonedStep.setTraversal(clone);

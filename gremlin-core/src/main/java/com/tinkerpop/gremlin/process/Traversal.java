@@ -73,7 +73,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     /**
      * Submit the traversal to a {@link GraphComputer} for OLAP execution.
      * This method should execute the traversal via {@link TraversalVertexProgram}.
-     * It should then wrap the {@link ComputerResult} in a new {@link Traversal} containing a {@link ComputerResultStep}.
+     * It should then wrap the {@link com.tinkerpop.gremlin.process.computer.util.DefaultComputerResult} in a new {@link Traversal} containing a {@link ComputerResultStep}.
      *
      * @param computer the GraphComputer to execute the traversal on
      * @return a new traversal with the starts being the results of the TraversalVertexProgram

@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -75,7 +76,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
-        public void shouldAddMultiProperties() {
+        public void shouldHandleListVertexProperties() {
             final Vertex v = g.addVertex("name", "marko", "age", 34);
             tryCommit(g, g -> {
                 assertEquals("marko", v.property("name").value());
@@ -166,7 +167,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertTrue(values.contains("marko a. rodriguez"));
                 assertTrue(values.contains("marko rodriguez"));
             });
-            v.singleProperty("name", "okram", "acl", "private", "date", 2014);
+            v.property(VertexProperty.Cardinality.single, "name", "okram", "acl", "private", "date", 2014);
             tryCommit(g, g -> {
                 assertEquals(1, IteratorUtils.count(v.iterators().propertyIterator("name")));
                 assertEquals(1, IteratorUtils.count(v.iterators().propertyIterator()));
@@ -183,7 +184,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             final Vertex u = g.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
             tryCommit(g);
             u.properties().remove();
-            u.singleProperty("name", "okram", "acl", "private", "date", 2014);
+            u.property(VertexProperty.Cardinality.single, "name", "okram", "acl", "private", "date", 2014);
             tryCommit(g, g -> {
                 assertEquals(1, IteratorUtils.count(u.iterators().propertyIterator("name")));
                 assertEquals(1, IteratorUtils.count(u.iterators().propertyIterator()));
@@ -193,6 +194,69 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             });
 
         }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
+        public void shouldHandleSetVertexProperties() {
+            final Vertex v = g.addVertex("name", "marko", "name", "marko a. rodriguez");
+            tryCommit(g, g -> {
+                assertEquals(2, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertEquals(2, IteratorUtils.count(v.iterators().propertyIterator("name")));
+                final List<String> values = IteratorUtils.list(v.iterators().valueIterator("name"));
+                assertTrue(values.contains("marko"));
+                assertTrue(values.contains("marko a. rodriguez"));
+            });
+            v.property(VertexProperty.Cardinality.set, "name", "marko rodriguez", "acl", "private");
+            tryCommit(g, g -> {
+                assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator("name")));
+                final List<String> values = IteratorUtils.list(v.iterators().valueIterator("name"));
+                assertTrue(values.contains("marko"));
+                assertTrue(values.contains("marko a. rodriguez"));
+                assertTrue(values.contains("marko rodriguez"));
+                final Iterator<VertexProperty<String>> iterator = v.iterators().propertyIterator("name");
+                while (iterator.hasNext()) {
+                    final VertexProperty<String> property = iterator.next();
+                    if (property.value().equals("marko rodriguez")) {
+                        assertEquals(1, IteratorUtils.count(property.iterators().propertyIterator()));
+                        assertEquals("acl", property.iterators().propertyIterator().next().key());
+                        assertEquals("private", property.iterators().propertyIterator().next().value());
+                    } else {
+                        assertEquals(0, IteratorUtils.count(property.iterators().propertyIterator()));
+                    }
+                }
+            });
+            ///
+            v.property(VertexProperty.Cardinality.set, "name", "marko rodriguez", "acl", "public", "creator", "stephen");
+            tryCommit(g, g -> {
+                assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator()));
+                assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator("name")));
+                final List<String> values = IteratorUtils.list(v.iterators().valueIterator("name"));
+                assertTrue(values.contains("marko"));
+                assertTrue(values.contains("marko a. rodriguez"));
+                assertTrue(values.contains("marko rodriguez"));
+                final Iterator<VertexProperty<String>> iterator = v.iterators().propertyIterator("name");
+                while (iterator.hasNext()) {
+                    final VertexProperty<String> property = iterator.next();
+                    if (property.value().equals("marko rodriguez")) {
+                        assertEquals(2, IteratorUtils.count(property.iterators().propertyIterator()));
+                        assertEquals("acl", property.iterators().propertyIterator("acl").next().key());
+                        assertEquals("public", property.iterators().propertyIterator("acl").next().value());
+                        assertEquals("creator", property.iterators().propertyIterator("creator").next().key());
+                        assertEquals("stephen", property.iterators().propertyIterator("creator").next().value());
+                    } else {
+                        assertEquals(0, IteratorUtils.count(property.iterators().propertyIterator()));
+                    }
+                }
+            });
+
+
+        }
+
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
@@ -470,7 +534,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertEquals(3, IteratorUtils.count(v.iterators().propertyIterator("i")));
             });
 
-            v.iterators().propertyIterator("i").forEachRemaining(p -> p.property("aKey", "aValue"));
+            v.iterators().propertyIterator("i").forEachRemaining(p -> p.<String>property("aKey", "aValue"));
             v.iterators().propertyIterator("i").next().iterators().propertyIterator("aKey").forEachRemaining(p -> assertEquals("aValue", p.value()));
             tryCommit(g, g -> {
                 // validating over multi-properties and the whole graph - easier to just use traversal

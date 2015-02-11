@@ -31,6 +31,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategy;
+import com.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.computer.util.MapMemory;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -147,7 +148,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
             this.memory.setRuntime(System.currentTimeMillis() - startTime);
 
             final Graph outputGraph = HadoopHelper.getOutputGraph(this.hadoopGraph);
-            return new ComputerResult(null == this.vertexProgram ? outputGraph : ComputerDataStrategy.wrapGraph(outputGraph, this.vertexProgram), this.memory.asImmutable());
+            return new DefaultComputerResult(null == this.vertexProgram ? outputGraph : ComputerDataStrategy.wrapGraph(outputGraph, this.vertexProgram), this.memory.asImmutable());
         });
     }
 

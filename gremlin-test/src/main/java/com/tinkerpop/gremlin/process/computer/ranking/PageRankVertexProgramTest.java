@@ -21,6 +21,7 @@ package com.tinkerpop.gremlin.process.computer.ranking;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
+import com.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.junit.Test;
 

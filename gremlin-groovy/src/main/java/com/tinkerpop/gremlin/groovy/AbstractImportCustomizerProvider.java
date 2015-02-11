@@ -29,9 +29,9 @@ import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressu
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.graph.traversal.step.TraversalOptionParent;
 import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.traversal.__;
+import com.tinkerpop.gremlin.process.graph.traversal.step.TraversalOptionParent;
 import com.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -39,6 +39,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Operator;
 import com.tinkerpop.gremlin.structure.Order;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
@@ -123,6 +124,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         staticImports.add(Operator.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Scope.class.getCanonicalName() + DOT_STAR);
         staticImports.add(TimeUtils.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(VertexProperty.Cardinality.class.getCanonicalName() + DOT_STAR);
     }
 
     @Override

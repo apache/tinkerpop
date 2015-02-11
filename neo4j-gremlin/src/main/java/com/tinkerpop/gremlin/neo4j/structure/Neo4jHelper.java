@@ -30,7 +30,10 @@ import org.neo4j.graphdb.RelationshipType;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Neo4jHelper {
+public final class Neo4jHelper {
+
+    private Neo4jHelper() {
+    }
 
     public static ExecutionEngine getCypher(final Neo4jGraph graph) {
         return graph.cypher;

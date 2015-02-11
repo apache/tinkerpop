@@ -23,9 +23,9 @@ import com.tinkerpop.gremlin.neo4j.process.graph.traversal.step.util.Neo4jCypher
 import com.tinkerpop.gremlin.neo4j.process.graph.traversal.strategy.Neo4jGraphStepStrategy;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
-import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
@@ -63,8 +63,13 @@ import java.util.stream.Stream;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-@Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.structure.VertexTest$ExceptionConsistencyWhenVertexRemovedTest",
+        method = "shouldThrowExceptionIfVertexWasRemovedWhenCallingProperty",
+        specific = "property(single,k,v)",
+        reason = "Neo4j throws a NodeNotFoundException instead of the desired IllegalStateException")
 public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDatabaseService> {
 
     static {
@@ -499,7 +504,8 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
 
             private VariableFeatures variableFeatures = new Neo4jGraphVariables.Neo4jVariableFeatures();
 
-            Neo4jGraphGraphFeatures() {}
+            Neo4jGraphGraphFeatures() {
+            }
 
             @Override
             public boolean supportsComputer() {
@@ -521,7 +527,8 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
 
             private final VertexPropertyFeatures vertexPropertyFeatures = new Neo4jVertexPropertyFeatures();
 
-            Neo4jVertexFeatures() {}
+            Neo4jVertexFeatures() {
+            }
 
             @Override
             public VertexPropertyFeatures properties() {
@@ -543,7 +550,8 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
 
             private final EdgePropertyFeatures edgePropertyFeatures = new Neo4jEdgePropertyFeatures();
 
-            Neo4jEdgeFeatures() {}
+            Neo4jEdgeFeatures() {
+            }
 
             @Override
             public EdgePropertyFeatures properties() {
@@ -553,7 +561,8 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
 
         public class Neo4jElementFeatures implements ElementFeatures {
 
-            Neo4jElementFeatures() {}
+            Neo4jElementFeatures() {
+            }
 
             @Override
             public boolean supportsUserSuppliedIds() {
@@ -583,7 +592,8 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
 
         public class Neo4jVertexPropertyFeatures implements VertexPropertyFeatures {
 
-            Neo4jVertexPropertyFeatures() {}
+            Neo4jVertexPropertyFeatures() {
+            }
 
             @Override
             public boolean supportsMapValues() {
@@ -613,7 +623,8 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
 
         public class Neo4jEdgePropertyFeatures implements EdgePropertyFeatures {
 
-            Neo4jEdgePropertyFeatures() {}
+            Neo4jEdgePropertyFeatures() {
+            }
 
             @Override
             public boolean supportsMapValues() {

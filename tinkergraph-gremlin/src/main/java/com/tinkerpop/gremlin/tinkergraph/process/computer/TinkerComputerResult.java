@@ -16,27 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer.util;
+package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.Memory;
+import com.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MemoryHelper {
+public class TinkerComputerResult extends DefaultComputerResult {
 
-    public MemoryHelper() {
+    public TinkerComputerResult(final Graph graph, final Memory memory) {
+        super(graph, memory);
     }
 
-    public static void validateValue(final Object value) throws IllegalArgumentException {
-        if (null == value)
-            throw Memory.Exceptions.memoryValueCanNotBeNull();
-    }
-
-    public static void validateKey(final String key) throws IllegalArgumentException {
-        if (null == key)
-            throw Memory.Exceptions.memoryKeyCanNotBeNull();
-        if (key.isEmpty())
-            throw Memory.Exceptions.memoryKeyCanNotBeEmpty();
+    @Override
+    public void close() {
+        ((TinkerGraph) this.graph).close();
     }
 }

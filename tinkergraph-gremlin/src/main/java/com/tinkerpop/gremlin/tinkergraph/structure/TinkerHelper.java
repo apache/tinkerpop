@@ -40,7 +40,10 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerHelper {
+public final class TinkerHelper {
+
+    private TinkerHelper() {
+    }
 
     protected final synchronized static long getNextId(final TinkerGraph graph) {
         return Stream.generate(() -> (++graph.currentId)).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findAny().get();
@@ -85,10 +88,6 @@ public class TinkerHelper {
             vertex.inEdges.put(label, edges);
         }
         edges.add(edge);
-    }
-
-    public static void dropView(final TinkerGraph graph) {
-        graph.graphView = null;
     }
 
     public static List<TinkerVertex> queryVertexIndex(final TinkerGraph graph, final String key, final Object value) {

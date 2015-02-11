@@ -117,38 +117,6 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     }
 
     @Override
-    public <V> VertexProperty<V> singleProperty(final String key, final V value, final Object... keyValues) {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.getBaseVertex().getId());
-        if (!this.graph.supportsMultiProperties) {
-            this.getBaseVertex().setProperty(key, value);
-            return new Neo4jVertexProperty<>(this, key, value);
-        } else {
-            ElementHelper.legalPropertyKeyValueArray(keyValues);
-            this.graph.tx().readWrite();
-            final String prefixedKey = Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key);
-            this.getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(prefixedKey)).forEach(relationship -> {
-                final Node multiPropertyNode = relationship.getEndNode();
-                relationship.delete();
-                multiPropertyNode.delete();
-            });
-            if (keyValues.length == 0) {
-                this.getBaseVertex().setProperty(key, value);
-                return new Neo4jVertexProperty<>(this, key, value);
-            } else {
-                this.getBaseVertex().setProperty(key, Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN);
-                final Node node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(key));
-                node.setProperty(T.key.getAccessor(), key);
-                node.setProperty(T.value.getAccessor(), value);
-                for (int i = 0; i < keyValues.length; i = i + 2) {
-                    node.setProperty((String) keyValues[i], keyValues[i + 1]);
-                }
-                this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
-                return new Neo4jVertexProperty<>(this, node);
-            }
-        }
-    }
-
-    @Override
     public void remove() {
         if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.getBaseVertex().getId());
         this.removed = true;

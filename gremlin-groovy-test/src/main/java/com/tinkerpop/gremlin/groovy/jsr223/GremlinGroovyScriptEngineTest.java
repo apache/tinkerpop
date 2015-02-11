@@ -64,9 +64,9 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         final ScriptEngine engine = new GremlinGroovyScriptEngine();
         final List list = new ArrayList();
         engine.put("g", g);
-        engine.put("list", list);
+        engine.put("temp", list);
         assertEquals(list.size(), 0);
-        engine.eval("g.V(1).out().fill(list)");
+        engine.eval("g.V(1).out().fill(temp)");
         assertEquals(list.size(), 3);
     }
 

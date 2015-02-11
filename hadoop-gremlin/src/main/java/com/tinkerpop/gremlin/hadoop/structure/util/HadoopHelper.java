@@ -25,7 +25,10 @@ import org.apache.commons.configuration.BaseConfiguration;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopHelper {
+public final class HadoopHelper {
+
+    private HadoopHelper() {
+    }
 
     public static HadoopGraph getOutputGraph(final HadoopGraph hadoopGraph) {
         final BaseConfiguration newConfiguration = new BaseConfiguration();

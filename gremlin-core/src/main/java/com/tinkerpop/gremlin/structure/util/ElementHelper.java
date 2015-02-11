@@ -46,7 +46,10 @@ import java.util.stream.Stream;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ElementHelper {
+public final class ElementHelper {
+
+    private ElementHelper() {
+    }
 
     /**
      * Determine whether the Element label can be legally set. This is typically used as a pre-condition check.
@@ -264,7 +267,7 @@ public class ElementHelper {
 
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
             if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
-                vertex.singleProperty((String) propertyKeyValues[i], propertyKeyValues[i + 1]);
+                vertex.property(VertexProperty.Cardinality.single, (String) propertyKeyValues[i], propertyKeyValues[i + 1]);
         }
     }
 

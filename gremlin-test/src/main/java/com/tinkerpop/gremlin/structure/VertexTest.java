@@ -450,8 +450,8 @@ public class VertexTest {
                     {"property(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
                         v.property("k", "v");
                     })},
-                    {"singleProperty(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
-                        v.singleProperty("k", "v");
+                    {"property(single,k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
+                        v.property(VertexProperty.Cardinality.single, "k", "v");
                     })},
                     {"value(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.value("name"))}});
         }

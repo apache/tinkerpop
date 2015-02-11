@@ -18,8 +18,10 @@
  */
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.util.HasContainer;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -28,6 +30,7 @@ import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -93,6 +96,24 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
         return TraversalHelper.makeStepString(this, this.conjunctionTraversals);
     }
 
+    public boolean isConjunctionHasTree() {
+        for (final Traversal.Admin<S, ?> conjunctionTraversal : this.conjunctionTraversals) {
+            for (final Step<?, ?> step : conjunctionTraversal.getSteps()) {
+                if (step instanceof ConjunctionStep) {
+                    if (!((ConjunctionStep) step).isConjunctionHasTree())
+                        return false;
+                } else if (!(step instanceof HasStep))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    public ConjunctionTree getConjunctionHasTree() {
+        return new ConjunctionTree(this);
+    }
+
+
     ////////
 
     public static class ConjunctionMarker<S> extends AbstractStep<S, S> {
@@ -104,6 +125,69 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
         @Override
         protected Traverser<S> processNextStart() throws NoSuchElementException {
             throw new IllegalStateException("This step should have been removed via a strategy: " + this.getClass().getCanonicalName());
+        }
+    }
+
+    ////////
+
+    public static class ConjunctionTree implements Iterable<ConjunctionTree.Entry> {
+
+        private final List<Entry> tree = new ArrayList<>();
+        private final boolean isAnd;
+
+        public ConjunctionTree(final ConjunctionStep<?> conjunctionStep) {
+            this.isAnd = conjunctionStep.isAnd;
+            for (final Traversal.Admin<?, ?> conjunctionTraversal : conjunctionStep.conjunctionTraversals) {
+                for (final Step<?, ?> step : conjunctionTraversal.getSteps()) {
+                    if (step instanceof HasStep) {
+                        (((HasStep<?>) step).getHasContainers()).forEach(container -> this.tree.add(new Entry(HasContainer.class, container)));
+                    } else if (step instanceof ConjunctionStep) {
+                        this.tree.add(new Entry(ConjunctionTree.class, ((ConjunctionStep) step).getConjunctionHasTree()));
+                    } else {
+                        throw new IllegalArgumentException("This conjunction supports more complex steps than HasStep");
+                    }
+                }
+            }
+        }
+
+        @Override
+        public String toString() {
+            return (this.isAnd ? "and" : "or") + this.tree.toString();
+        }
+
+        public boolean isAnd() {
+            return this.isAnd;
+        }
+
+        @Override
+        public Iterator<Entry> iterator() {
+            return this.tree.iterator();
+        }
+
+        public static class Entry {
+            private Class entryClass;
+            private Object entryValue;
+
+            public Entry(final Class entryClass, final Object entryValue) {
+                this.entryClass = entryClass;
+                this.entryValue = entryValue;
+            }
+
+            public <V> V getValue() {
+                return (V) this.entryValue;
+            }
+
+            public boolean isHasContainer() {
+                return this.entryClass.equals(HasContainer.class);
+            }
+
+            public boolean isConjunctionTree() {
+                return this.entryClass.equals(ConjunctionTree.class);
+            }
+
+            public String toString() {
+                return this.entryValue.toString();
+            }
         }
     }
 }
