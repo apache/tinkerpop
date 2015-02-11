@@ -169,6 +169,44 @@ public class TinkerGraphTest {
         });
     }
 
+    @Test
+    @Ignore
+    public void testPlayDK() throws Exception {
+
+        Graph g = TinkerFactory.createModern();
+        Traversal t;
+
+        System.out.println("g.V().has(out(\"created\").count().is(0l))");
+        t = g.V().has(out("created").count().is(0l));
+        System.out.println(t.toString());
+        t.forEachRemaining(System.out::println);
+        System.out.println(t.toString() + "\n");
+
+        System.out.println("g.V().has(out(\"created\").count().is(lt, 2l))");
+        t = g.V().has(out("created").count().is(Compare.lt, 2l));
+        System.out.println(t.toString());
+        t.forEachRemaining(System.out::println);
+        System.out.println(t.toString() + "\n");
+
+        System.out.println("g.V().has(out(\"created\").count().is(gt, 1l))");
+        t = g.V().has(out("created").count().is(Compare.gt, 1l));
+        System.out.println(t.toString());
+        t.forEachRemaining(System.out::println);
+        System.out.println(t.toString() + "\n");
+
+        System.out.println("g.V().has(out(\"created\").count().is(inside, [1l,4l]))");
+        t = g.V().has(out("created").count().is(Compare.inside, Arrays.asList(1l, 4l)));
+        System.out.println(t.toString());
+        t.forEachRemaining(System.out::println);
+        System.out.println(t.toString() + "\n");
+
+        System.out.println("g.V().has(out(\"created\").count().is(outside, [1l,4l]))");
+        t = g.V().has(out("created").count().is(Compare.outside, Arrays.asList(1l, 4l)));
+        System.out.println(t.toString());
+        t.forEachRemaining(System.out::println);
+        System.out.println(t.toString() + "\n");
+    }
+
     /**
      * No assertions.  Just write out the graph for convenience.
      */

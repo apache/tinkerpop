@@ -24,6 +24,7 @@ import com.tinkerpop.gremlin.process.graph.traversal.step.filter.*;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.*;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.*;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.TraversalSideEffectsTest;
+import com.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategyTest;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
 import com.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import com.tinkerpop.gremlin.process.util.PathTest;
@@ -47,6 +48,8 @@ import java.util.stream.Stream;
  * separate class file):
  * <p/>
  * <code>
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(ProcessStandardSuite.class)
  * @ProcessStandardSuite.GraphProviderClass(TinkerGraphProcessStandardTest.class) public class TinkerGraphProcessStandardTest implements GraphProvider {
  * }
@@ -57,8 +60,6 @@ import java.util.stream.Stream;
  * into tests in the suite.  The ProcessStandardSuite will utilized
  * {@link com.tinkerpop.gremlin.structure.Graph.Features} defined in the suite to determine which tests will be executed.
  * <br/>
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProcessStandardSuite extends AbstractGremlinSuite {
 
@@ -131,7 +132,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             PathTest.class,
 
             // strategy
-            TraversalVerificationStrategyTest.StandardTest.class
+            TraversalVerificationStrategyTest.StandardTest.class,
+            RangeByIsCountStrategyTest.StandardTest.class
 
             // algorithms
             // PageRankVertexProgramTest.class
@@ -207,7 +209,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // PageRankVertexProgramTest.class
 
             // strategy
-            TraversalVerificationStrategyTest.class
+            TraversalVerificationStrategyTest.class,
+            RangeByIsCountStrategyTest.class
     };
 
     /**

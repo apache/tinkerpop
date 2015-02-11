@@ -27,6 +27,7 @@ import com.tinkerpop.gremlin.process.graph.traversal.step.filter.*;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.*;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.*;
 import com.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
+import com.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategyTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -134,7 +135,8 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             ComputerDataStrategyTest.class,
 
             // strategy
-            TraversalVerificationStrategyTest.ComputerTest.class
+            TraversalVerificationStrategyTest.ComputerTest.class,
+            RangeByIsCountStrategyTest.ComputerTest.class
     };
 
     /**
@@ -208,7 +210,8 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // strategy
             ComputerDataStrategyTest.class,
-            TraversalVerificationStrategyTest.class
+            TraversalVerificationStrategyTest.class,
+            RangeByIsCountStrategyTest.class
     };
 
     /**

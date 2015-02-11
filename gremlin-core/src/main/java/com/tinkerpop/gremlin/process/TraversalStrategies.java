@@ -155,7 +155,7 @@ public interface TraversalStrategies extends Cloneable {
             final TraversalStrategies coreStrategies = new DefaultTraversalStrategies();
             coreStrategies.addStrategies(
                     DedupOptimizerStrategy.instance(),
-                    FilterByCountOptimizerStrategy.instance(),
+                    RangeByIsCountStrategy.instance(),
                     IdentityRemovalStrategy.instance(),
                     SideEffectCapStrategy.instance(),
                     MatchWhereStrategy.instance(),
