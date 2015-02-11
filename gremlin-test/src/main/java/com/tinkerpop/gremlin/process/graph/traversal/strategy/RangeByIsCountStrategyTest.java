@@ -28,7 +28,7 @@ import com.tinkerpop.gremlin.process.graph.traversal.step.filter.HasTraversalSte
 import com.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
-import org.junit.Ignore;
+import com.tinkerpop.gremlin.structure.Contains;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -103,6 +103,18 @@ public abstract class RangeByIsCountStrategyTest extends AbstractGremlinProcessT
         @LoadGraphWith(MODERN)
         public void countOutsideTwoAndFourShouldLimitToFive() {
             runTest(Compare.outside, Arrays.asList(2l, 4l), 5l);
+        }
+
+        @Test
+        @LoadGraphWith(MODERN)
+        public void countWithinTwoSixFourShouldLimitToSeven() {
+            runTest(Contains.within, Arrays.asList(2l, 6l, 4l), 7l);
+        }
+
+        @Test
+        @LoadGraphWith(MODERN)
+        public void countWithoutTwoSixFourShouldLimitToSix() {
+            runTest(Contains.without, Arrays.asList(2l, 6l, 4l), 6l);
         }
     }
 

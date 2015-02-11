@@ -27,11 +27,9 @@ import com.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.CountStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Contains;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiPredicate;
 
 /**
@@ -39,9 +37,14 @@ import java.util.function.BiPredicate;
  */
 public final class RangeByIsCountStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
-    private static final Set<Compare> RANGE_PREDICATES = EnumSet.of(Compare.inside, Compare.outside);
-    private static final Set<Compare> INCREASED_OFFSET_PREDICATES =
-            EnumSet.of(Compare.eq, Compare.neq, Compare.lte, Compare.gt, Compare.outside);
+    private static final Map<BiPredicate, Long> RANGE_PREDICATES = new HashMap<BiPredicate, Long>() {{
+        put(Compare.inside, 0L);
+        put(Compare.outside, 1L);
+        put(Contains.within, 1L);
+        put(Contains.without, 0L);
+    }};
+    private static final Set<Compare> INCREASED_OFFSET_SCALAR_PREDICATES =
+            EnumSet.of(Compare.eq, Compare.neq, Compare.lte, Compare.gt);
 
     private static final RangeByIsCountStrategy INSTANCE = new RangeByIsCountStrategy();
 
@@ -60,18 +63,15 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy impl
                     final IsStep isStep = (IsStep) next;
                     final Object value = isStep.getValue();
                     final BiPredicate predicate = isStep.getPredicate();
-                    final long highRangeOffset = INCREASED_OFFSET_PREDICATES.contains(predicate) ? 1L : 0L;
                     if (value instanceof Number) {
+                        final long highRangeOffset = INCREASED_OFFSET_SCALAR_PREDICATES.contains(predicate) ? 1L : 0L;
                         final long highRange = ((Number) value).longValue() + highRangeOffset;
                         TraversalHelper.insertBeforeStep(new RangeStep<>(traversal, 0L, highRange), curr, traversal);
-                    }
-                    if (value instanceof Collection && RANGE_PREDICATES.contains(predicate)) {
-                        final Iterator iterator = ((Collection) value).iterator();
-                        if (iterator.hasNext()) iterator.next();
-                        else continue;
-                        if (iterator.hasNext()) {
-                            final Object high = iterator.next();
-                            if (high instanceof Number && !iterator.hasNext()) {
+                    } else {
+                        final Long highRangeOffset = RANGE_PREDICATES.get(predicate);
+                        if (value instanceof Collection && highRangeOffset != null) {
+                            final Object high = Collections.max((Collection) value);
+                            if (high instanceof Number) {
                                 final long highRange = ((Number) high).longValue() + highRangeOffset;
                                 TraversalHelper.insertBeforeStep(new RangeStep<>(traversal, 0L, highRange), curr, traversal);
                             }
