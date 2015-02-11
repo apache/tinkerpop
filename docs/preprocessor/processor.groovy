@@ -1,9 +1,9 @@
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-import com.tinkerpop.gremlin.process.computer.util.ScriptEngineCache
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
+import org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineCache
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
 
 import javax.script.ScriptContext
 
@@ -14,13 +14,13 @@ def STATEMENT_PREFIX = "gremlin> "
 def STATEMENT_CONTINUATION_PREFIX = "         "
 
 def header = """
-    import com.tinkerpop.gremlin.process.graph.traversal.strategy.*
-    import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
-    import com.tinkerpop.gremlin.tinkergraph.structure.*
+    import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.*
+    import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
+    import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
     import static java.util.Comparator.*
 """
 
-def imports = new com.tinkerpop.gremlin.console.ConsoleImportCustomizerProvider()
+def imports = new org.apache.tinkerpop.gremlin.console.ConsoleImportCustomizerProvider()
 def skipNextRead = false
 def inCodeSection = false
 def engine

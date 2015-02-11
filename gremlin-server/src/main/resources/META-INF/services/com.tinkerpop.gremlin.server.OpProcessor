@@ -1,3 +1,0 @@
-com.tinkerpop.gremlin.server.op.standard.StandardOpProcessor
-com.tinkerpop.gremlin.server.op.control.ControlOpProcessor
-com.tinkerpop.gremlin.server.op.session.SessionOpProcessor
