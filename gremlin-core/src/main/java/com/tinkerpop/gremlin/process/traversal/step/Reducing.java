@@ -18,6 +18,7 @@
  */
 package com.tinkerpop.gremlin.process.traversal.step;
 
+import java.io.Serializable;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -30,7 +31,7 @@ public interface Reducing<A, B> {
 
     //////////
 
-    public class Reducer<A, B> {
+    public class Reducer<A, B> implements Serializable {
         private final Supplier<A> seedSupplier;
         private final BiFunction<A, B, A> biFunction;
         private final boolean onTraverser;
