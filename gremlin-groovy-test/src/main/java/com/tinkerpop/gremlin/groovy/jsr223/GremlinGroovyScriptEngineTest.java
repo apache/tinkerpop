@@ -230,7 +230,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         final Random random = new Random();
 
         for (int i = 0; i < runs; i++) {
-            new Thread() {
+            new Thread("test-thread-safe-" + i) {
                 public void run() {
                     String name = names.get(random.nextInt(names.size() - 1));
                     try {
@@ -264,7 +264,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         final Random random = new Random();
 
         for (int i = 0; i < runs; i++) {
-            new Thread() {
+            new Thread("test-thread-safety-on-compiled-script-" + i) {
                 public void run() {
                     String name = names.get(random.nextInt(names.size() - 1));
                     try {
@@ -459,7 +459,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
                 se.printStackTrace();
                 fail.set(true);
             }
-        });
+        }, "test-reload-classloader-1");
 
         t.start();
 
@@ -473,7 +473,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
             }};
             scriptEngine.addImports(imports);
             latch.countDown();
-        }).start();
+        }, "test-reload-classloader-2").start();
 
         t.join();
 

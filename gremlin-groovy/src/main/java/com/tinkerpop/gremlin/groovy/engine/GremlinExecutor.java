@@ -52,7 +52,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -88,13 +87,15 @@ public class GremlinExecutor implements AutoCloseable {
     private final Consumer<Bindings> afterTimeout;
     private final BiConsumer<Bindings, Exception> afterFailure;
     private final Set<String> enabledPlugins;
+    private final boolean suppliedExecutor;
+    private final boolean suppliedScheduledExecutor;
 
     private GremlinExecutor(final Map<String, EngineSettings> settings, final List<List<String>> use,
                             final long scriptEvaluationTimeout, final Bindings globalBindings,
                             final ExecutorService executorService, final ScheduledExecutorService scheduledExecutorService,
                             final Consumer<Bindings> beforeEval, final Consumer<Bindings> afterSuccess,
                             final Consumer<Bindings> afterTimeout, final BiConsumer<Bindings, Exception> afterFailure,
-                            final Set<String> enabledPlugins) {
+                            final Set<String> enabledPlugins, final boolean suppliedExecutor, final boolean suppliedScheduledExecutor) {
         this.executorService = executorService;
         this.scheduledExecutorService = scheduledExecutorService;
         this.beforeEval = beforeEval;
@@ -107,6 +108,8 @@ public class GremlinExecutor implements AutoCloseable {
         this.globalBindings = globalBindings;
         this.enabledPlugins = enabledPlugins;
         this.scriptEngines = createScriptEngines();
+        this.suppliedExecutor = suppliedExecutor;
+        this.suppliedScheduledExecutor = suppliedScheduledExecutor;
     }
 
     public CompletableFuture<Object> eval(final String script) {
@@ -193,17 +196,59 @@ public class GremlinExecutor implements AutoCloseable {
     /**
      * {@inheritDoc}
      * <p/>
-     * Note that the executors are not closed by virtue of this operation.  Manage them manually.
+     * Executors are only closed if they were not supplied externally in the
+     * {@link com.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder}
      */
     @Override
     public void close() throws Exception {
-        // leave pools running as they are supplied externally.  let the sender be responsible for shutting them down
-        scriptEngines.close();
+        closeAsync().join();
+    }
+
+    /**
+     * Executors are only closed if they were not supplied externally in the
+     * {@link com.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder}
+     */
+    public CompletableFuture<Void> closeAsync() throws Exception {
+        final CompletableFuture<Void> future = new CompletableFuture<>();
+
+        new Thread(() -> {
+            // leave pools running if they are supplied externally.  let the sender be responsible for shutting them down
+            if (!suppliedExecutor) {
+                executorService.shutdown();
+                try {
+                    if (!executorService.awaitTermination(180000, TimeUnit.MILLISECONDS))
+                        logger.warn("Timeout while waiting for ExecutorService of GremlinExecutor to shutdown.");
+                } catch (InterruptedException ie) {
+                    logger.warn("ExecutorService on GremlinExecutor may not have shutdown properly as shutdown thread terminated early.");
+                }
+            }
+
+            // calls to shutdown are idempotent so no problems calling it twice if the pool is shared
+            if (!suppliedScheduledExecutor) {
+                scheduledExecutorService.shutdown();
+                try {
+                    if (!scheduledExecutorService.awaitTermination(180000, TimeUnit.MILLISECONDS))
+                        logger.warn("Timeout while waiting for ScheduledExecutorService of GremlinExecutor to shutdown.");
+                } catch (InterruptedException ie) {
+                    logger.warn("ScheduledExecutorService on GremlinExecutor may not have shutdown properly as shutdown thread terminated early.");
+                }
+            }
+
+            try {
+                scriptEngines.close();
+            } catch (Exception ex) {
+                logger.warn("Error while shutting down the ScriptEngines in the GremlinExecutor", ex);
+            }
+
+            future.complete(null);
+        }, "gremlin-executor-close").start();
+
+        return future;
     }
 
     private void scheduleTimeout(final CompletableFuture<Object> evaluationFuture, final String script, final AtomicBoolean abort) {
         if (scriptEvaluationTimeout > 0) {
-            // Schedule a timeout in the io threadpool for future execution - killing an eval is cheap
+            // Schedule a timeout in the threadpool for future execution - killing an eval is cheap
             final ScheduledFuture<?> sf = scheduledExecutorService.schedule(() -> {
                 logger.info("Timing out script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
@@ -332,6 +377,9 @@ public class GremlinExecutor implements AutoCloseable {
         private List<List<String>> use = new ArrayList<>();
         private Bindings globalBindings = new SimpleBindings();
 
+        private boolean suppliedExecutor = false;
+        private boolean suppliedScheduledExecutor = false;
+
         private Builder() {
             final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-executor-%d").build();
             this.scheduledExecutorService = Executors.newScheduledThreadPool(4, threadFactory);
@@ -390,6 +438,7 @@ public class GremlinExecutor implements AutoCloseable {
          */
         public Builder executorService(final ExecutorService executorService) {
             this.executorService = executorService;
+            this.suppliedExecutor = true;
             return this;
         }
 
@@ -398,6 +447,7 @@ public class GremlinExecutor implements AutoCloseable {
          */
         public Builder scheduledExecutorService(final ScheduledExecutorService scheduledExecutorService) {
             this.scheduledExecutorService = scheduledExecutorService;
+            this.suppliedScheduledExecutor = true;
             return this;
         }
 
@@ -451,7 +501,8 @@ public class GremlinExecutor implements AutoCloseable {
 
         public GremlinExecutor create() {
             return new GremlinExecutor(settings, use, scriptEvaluationTimeout, globalBindings, executorService,
-                    scheduledExecutorService, beforeEval, afterSuccess, afterTimeout, afterFailure, enabledPlugins);
+                    scheduledExecutorService, beforeEval, afterSuccess, afterTimeout, afterFailure, enabledPlugins,
+                    suppliedExecutor, suppliedScheduledExecutor);
         }
     }
 

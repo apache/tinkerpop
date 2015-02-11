@@ -23,6 +23,7 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.TestHelper;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
 import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.junit.Test;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 
@@ -54,6 +55,7 @@ import static org.junit.Assert.*;
  */
 public class GremlinExecutorTest extends AbstractGremlinTest {
     public static Map<String, String> PATHS = new HashMap<>();
+    private final BasicThreadFactory testingThreadFactory = new BasicThreadFactory.Builder().namingPattern("test-gremlin-executor-%d").build();
 
     static {
         try {
@@ -70,6 +72,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
     public void shouldEvalScript() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
         assertEquals(2, gremlinExecutor.eval("1+1").get());
+        gremlinExecutor.close();
     }
 
     @Test
@@ -81,6 +84,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         assertEquals(5, gremlinExecutor.eval("1+4").get());
         assertEquals(6, gremlinExecutor.eval("1+5").get());
         assertEquals(7, gremlinExecutor.eval("1+6").get());
+        gremlinExecutor.close();
     }
 
     @Test
@@ -89,6 +93,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         final Bindings b = new SimpleBindings();
         b.put("x", 1);
         assertEquals(2, gremlinExecutor.eval("1+x", b).get());
+        gremlinExecutor.close();
     }
 
     @Test
@@ -97,6 +102,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         b.put("x", 1);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build().globalBindings(b).create();
         assertEquals(2, gremlinExecutor.eval("1+x").get());
+        gremlinExecutor.close();
     }
 
     @Test
@@ -107,6 +113,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         final Bindings b = new SimpleBindings();
         b.put("y", 1);
         assertEquals(2, gremlinExecutor.eval("y+x", b).get());
+        gremlinExecutor.close();
     }
 
     @Test
@@ -117,6 +124,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         final Bindings b = new SimpleBindings();
         b.put("x", 10);
         assertEquals(11, gremlinExecutor.eval("x+1", b).get());
+        gremlinExecutor.close();
     }
 
     @Test
@@ -143,6 +151,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         assertFalse(successCalled.get());
         assertFalse(failureCalled.get());
         assertEquals(0, timeOutCount.getCount());
+        gremlinExecutor.close();
     }
 
     @Test
@@ -167,6 +176,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         assertFalse(timeoutCalled.get());
         assertFalse(successCalled.get());
         assertTrue(failureCalled.get());
+        gremlinExecutor.close();
     }
 
     @Test
@@ -186,16 +196,17 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         assertFalse(timeoutCalled.get());
         assertTrue(successCalled.get());
         assertFalse(failureCalled.get());
+        gremlinExecutor.close();
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldAllowTraversalToIterateInDifferentThreadThanOriginallyEvaluatedWithAutoCommit() {
+    public void shouldAllowTraversalToIterateInDifferentThreadThanOriginallyEvaluatedWithAutoCommit() throws Exception {
         // this test sort of simulates Gremlin Server interaction where a Traversal is eval'd in one Thread, but
         // then iterated in another.  note that Gremlin Server configures the script engine to auto-commit
         // after evaluation.  this basically tests the state of the Gremlin Server GremlinExecutor when
         // being used in sessionless mode
-        final ExecutorService evalExecutor = Executors.newSingleThreadExecutor();
+        final ExecutorService evalExecutor = Executors.newSingleThreadExecutor(testingThreadFactory);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .afterSuccess(b -> {
                     final Graph graph = (Graph) b.get("g");
@@ -209,22 +220,28 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
 
         final AtomicInteger vertexCount = new AtomicInteger(0);
 
-        final ExecutorService iterationExecutor = Executors.newSingleThreadExecutor();
+        final ExecutorService iterationExecutor = Executors.newSingleThreadExecutor(testingThreadFactory);
         gremlinExecutor.eval("g.V().out()", bindings).thenAcceptAsync(o -> {
             final Iterator itty = (Iterator) o;
             itty.forEachRemaining(v -> vertexCount.incrementAndGet());
         }, iterationExecutor).join();
 
         assertEquals(6, vertexCount.get());
+
+        gremlinExecutor.close();
+        evalExecutor.shutdown();
+        evalExecutor.awaitTermination(30000, TimeUnit.MILLISECONDS);
+        iterationExecutor.shutdown();
+        iterationExecutor.awaitTermination(30000, TimeUnit.MILLISECONDS);
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldAllowTraversalToIterateInDifferentThreadThanOriginallyEvaluatedWithoutAutoCommit() {
+    public void shouldAllowTraversalToIterateInDifferentThreadThanOriginallyEvaluatedWithoutAutoCommit() throws Exception {
         // this test sort of simulates Gremlin Server interaction where a Traversal is eval'd in one Thread, but
         // then iterated in another.  this basically tests the state of the Gremlin Server GremlinExecutor when
         // being used in session mode
-        final ExecutorService evalExecutor = Executors.newSingleThreadExecutor();
+        final ExecutorService evalExecutor = Executors.newSingleThreadExecutor(testingThreadFactory);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build().executorService(evalExecutor).create();
 
         final Map<String,Object> bindings = new HashMap<>();
@@ -232,13 +249,19 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
 
         final AtomicInteger vertexCount = new AtomicInteger(0);
 
-        final ExecutorService iterationExecutor = Executors.newSingleThreadExecutor();
+        final ExecutorService iterationExecutor = Executors.newSingleThreadExecutor(testingThreadFactory);
         gremlinExecutor.eval("g.V().out()", bindings).thenAcceptAsync(o -> {
             final Iterator itty = (Iterator) o;
             itty.forEachRemaining(v -> vertexCount.incrementAndGet());
         }, iterationExecutor).join();
 
         assertEquals(6, vertexCount.get());
+
+        gremlinExecutor.close();
+        evalExecutor.shutdown();
+        evalExecutor.awaitTermination(30000, TimeUnit.MILLISECONDS);
+        iterationExecutor.shutdown();
+        iterationExecutor.awaitTermination(30000, TimeUnit.MILLISECONDS);
     }
 
     @Test
@@ -278,13 +301,16 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         assertEquals(2, i2.get());
         assertFalse(b1.get());
         assertFalse(b2.get());
+
+        gremlinExecutor.close();
+
     }
 
     @Test
     public void shouldNotExhaustThreads() throws Exception {
         // this is not representative of how the GremlinExecutor should be configured.  A single thread executor
         // shared will create odd behaviors, but it's good for this test.
-        final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(testingThreadFactory);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .executorService(executorService)
                 .scheduledExecutorService(executorService).create();
@@ -301,6 +327,9 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         }));
 
         assertEquals(1000, count.intValue());
+
+        executorService.shutdown();
+        executorService.awaitTermination(30000, TimeUnit.MILLISECONDS);
     }
 
     @Test
@@ -341,6 +370,8 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
 
         assertTrue(successes.intValue() > 0);
         assertTrue(failures.intValue() >= 500);
+
+        gremlinExecutor.close();
     }
 
     @Test
@@ -354,6 +385,8 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
                 .create();
 
         assertEquals(2, gremlinExecutor.eval("add(1,1)").get());
+
+        gremlinExecutor.close();
     }
 
     @Test
@@ -422,5 +455,20 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         gremlinExecutor.getScriptEngines().reset();
 
         assertEquals(2, gremlinExecutor.eval("add(1,1)").get());
+
+        gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldNotShutdownExecutorServicesSuppliedToGremlinExecutor() throws Exception {
+        final ScheduledExecutorService service = Executors.newScheduledThreadPool(4, testingThreadFactory);
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .executorService(service)
+                .scheduledExecutorService(service).create();
+
+        gremlinExecutor.close();
+        assertFalse(service.isShutdown());
+        service.shutdown();
+        service.awaitTermination(30000, TimeUnit.MILLISECONDS);
     }
 }
