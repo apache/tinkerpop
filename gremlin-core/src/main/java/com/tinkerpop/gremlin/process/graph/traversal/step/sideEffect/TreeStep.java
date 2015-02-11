@@ -20,14 +20,15 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
-import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
-import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
-import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.TreeMapReduce;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
+import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -48,7 +49,19 @@ public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRe
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         this.traversalRing = new TraversalRing<>();
-        TreeStep.generateConsumer(this);
+    }
+
+    @Override
+    protected void sideEffect(final Traverser.Admin<S> traverser) {
+        Tree depth = traverser.sideEffects(this.sideEffectKey);
+        final Path path = traverser.path();
+        for (int i = 0; i < path.size(); i++) {
+            final Object object = TraversalUtil.apply(path.<Object>get(i), this.traversalRing.next());
+            if (!depth.containsKey(object))
+                depth.put(object, new Tree<>());
+            depth = (Tree) depth.get(object);
+        }
+        this.traversalRing.reset();
     }
 
     @Override
@@ -85,7 +98,6 @@ public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRe
         for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {
             clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone(), TYPICAL_LOCAL_OPERATIONS));
         }
-        TreeStep.generateConsumer(clone);
         return clone;
     }
 
@@ -102,21 +114,5 @@ public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRe
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
-    }
-
-    /////////////////////////
-
-    private static final <S> void generateConsumer(final TreeStep<S> treeStep) {
-        treeStep.setConsumer(traverser -> {
-            Tree depth = traverser.sideEffects(treeStep.sideEffectKey);
-            final Path path = traverser.path();
-            for (int i = 0; i < path.size(); i++) {
-                final Object object = TraversalUtil.apply(path.<Object>get(i), treeStep.traversalRing.next());
-                if (!depth.containsKey(object))
-                    depth.put(object, new Tree<>());
-                depth = (Tree) depth.get(object);
-            }
-            treeStep.traversalRing.reset();
-        });
     }
 }

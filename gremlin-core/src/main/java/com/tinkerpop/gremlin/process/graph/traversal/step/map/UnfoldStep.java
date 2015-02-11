@@ -19,6 +19,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -34,17 +35,19 @@ public final class UnfoldStep<S, E> extends FlatMapStep<S, E> {
 
     public UnfoldStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setFunction(traverser -> {
-            final S s = traverser.get();
-            if (s instanceof Iterator)
-                return (Iterator) s;
-            else if (s instanceof Iterable)
-                return ((Iterable) s).iterator();
-            else if (s instanceof Map)
-                return ((Map) s).entrySet().iterator();
-            else
-                return IteratorUtils.of((E) s);
-        });
+    }
+
+    @Override
+    protected Iterator<E> flatMap(final Traverser.Admin<S> traverser) {
+        final S s = traverser.get();
+        if (s instanceof Iterator)
+            return (Iterator) s;
+        else if (s instanceof Iterable)
+            return ((Iterable) s).iterator();
+        else if (s instanceof Map)
+            return ((Map) s).entrySet().iterator();
+        else
+            return IteratorUtils.of((E) s);
     }
 
     @Override

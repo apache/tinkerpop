@@ -19,14 +19,15 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
-import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
-import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
-import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.StoreMapReduce;
 import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -48,7 +49,14 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     public StoreStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        StoreStep.generateConsumer(this);
+    }
+
+    @Override
+    protected void sideEffect(final Traverser.Admin<S> traverser) {
+        TraversalHelper.addToCollection(
+                traverser.sideEffects(this.sideEffectKey),
+                TraversalUtil.apply(traverser.asAdmin(), this.storeTraversal),
+                traverser.bulk());
     }
 
     @Override
@@ -91,16 +99,6 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     public StoreStep<S> clone() throws CloneNotSupportedException {
         final StoreStep<S> clone = (StoreStep<S>) super.clone();
         clone.storeTraversal = clone.integrateChild(this.storeTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
-        StoreStep.generateConsumer(clone);
         return clone;
-    }
-
-    /////////////////////////
-
-    private static final <S> void generateConsumer(final StoreStep<S> storeStep) {
-        storeStep.setConsumer(traverser -> TraversalHelper.addToCollection(
-                traverser.sideEffects(storeStep.sideEffectKey),
-                TraversalUtil.apply(traverser.asAdmin(), storeStep.storeTraversal),
-                traverser.bulk()));
     }
 }

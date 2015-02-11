@@ -22,9 +22,9 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import com.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -40,19 +40,45 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements TraversalParent, EngineDependent {
+public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements TraversalParent, EngineDependent {
 
     protected TraversalRing<Object, Object> traversalRing = new TraversalRing<>();
     private final List<String> selectLabels;
     private final boolean wasEmpty;
     private boolean requiresPaths = false;
-    protected Function<Traverser<S>, Map<String, E>> selectFunction;
 
     public SelectStep(final Traversal.Admin traversal, final String... selectLabels) {
         super(traversal);
         this.wasEmpty = selectLabels.length == 0;
         this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal) : Arrays.asList(selectLabels);
-        SelectStep.generateFunction(this);
+    }
+
+    @Override
+    protected Map<String, E> map(final Traverser.Admin<S> traverser) {
+        final S start = traverser.get();
+        final Map<String, E> bindings = new LinkedHashMap<>();
+
+        ////// PROCESS STEP BINDINGS
+        final Path path = traverser.path();
+        this.selectLabels.forEach(label -> {
+            if (path.hasLabel(label))
+                bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), this.traversalRing.next()));
+        });
+
+        ////// PROCESS MAP BINDINGS
+        if (start instanceof Map) {
+            if (this.wasEmpty)
+                ((Map<String, Object>) start).forEach((k, v) -> bindings.put(k, (E) TraversalUtil.apply(v, this.traversalRing.next())));
+            else
+                this.selectLabels.forEach(label -> {
+                    if (((Map) start).containsKey(label)) {
+                        bindings.put(label, (E) TraversalUtil.apply(((Map) start).get(label), this.traversalRing.next()));
+                    }
+                });
+        }
+
+        this.traversalRing.reset();
+        return bindings;
     }
 
     @Override
@@ -84,7 +110,6 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Trav
         for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {
             clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone(), TYPICAL_LOCAL_OPERATIONS));
         }
-        SelectStep.generateFunction(clone);
         return clone;
     }
 
@@ -103,37 +128,5 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Trav
         final Set<TraverserRequirement> requirements = this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.PATH_ACCESS);
         if (this.requiresPaths) requirements.add(TraverserRequirement.PATH);
         return requirements;
-    }
-
-    //////////////////////
-
-    private static final <S, E> void generateFunction(final SelectStep<S, E> selectStep) {
-        selectStep.selectFunction = traverser -> {
-            final S start = traverser.get();
-            final Map<String, E> bindings = new LinkedHashMap<>();
-
-            ////// PROCESS STEP BINDINGS
-            final Path path = traverser.path();
-            selectStep.selectLabels.forEach(label -> {
-                if (path.hasLabel(label))
-                    bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), selectStep.traversalRing.next()));
-            });
-
-            ////// PROCESS MAP BINDINGS
-            if (start instanceof Map) {
-                if (selectStep.wasEmpty)
-                    ((Map<String, Object>) start).forEach((k, v) -> bindings.put(k, (E) TraversalUtil.apply(v, selectStep.traversalRing.next())));
-                else
-                    selectStep.selectLabels.forEach(label -> {
-                        if (((Map) start).containsKey(label)) {
-                            bindings.put(label, (E) TraversalUtil.apply(((Map) start).get(label), selectStep.traversalRing.next()));
-                        }
-                    });
-            }
-
-            selectStep.traversalRing.reset();
-            return bindings;
-        };
-        selectStep.setFunction(selectStep.selectFunction);
     }
 }

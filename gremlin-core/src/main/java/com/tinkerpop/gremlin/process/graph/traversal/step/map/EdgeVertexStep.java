@@ -19,14 +19,16 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.step.Reversible;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -39,9 +41,14 @@ public final class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements R
     public EdgeVertexStep(final Traversal.Admin traversal, final Direction direction) {
         super(traversal);
         this.direction = direction;
-        this.setFunction(traverser -> traverser.get().iterators().vertexIterator(this.direction));
     }
 
+    @Override
+    protected Iterator<Vertex> flatMap(final Traverser.Admin<Edge> traverser) {
+        return traverser.get().iterators().vertexIterator(this.direction);
+    }
+
+    @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.direction);
     }

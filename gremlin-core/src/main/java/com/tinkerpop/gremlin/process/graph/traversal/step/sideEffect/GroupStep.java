@@ -58,7 +58,18 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     public GroupStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        GroupStep.generateConsumer(this);
+    }
+
+    @Override
+    protected void sideEffect(final Traverser.Admin<S> traverser) {
+        final Map<K, Collection<V>> groupByMap = null == this.tempGroupByMap ? traverser.sideEffects(this.sideEffectKey) : this.tempGroupByMap; // for nested traversals and not !starts.hasNext()
+        doGroup(traverser.asAdmin(), groupByMap, this.keyTraversal, this.valueTraversal);
+        if (!this.onGraphComputer && null != this.reduceTraversal && !this.starts.hasNext()) {
+            this.tempGroupByMap = groupByMap;
+            final Map<K, R> reduceMap = new HashMap<>();
+            doReduce(groupByMap, reduceMap, this.reduceTraversal);
+            traverser.sideEffects(this.sideEffectKey, reduceMap);
+        }
     }
 
     @Override
@@ -139,22 +150,6 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
         clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
         if (null != this.reduceTraversal)
             clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
-        GroupStep.generateConsumer(clone);
         return clone;
-    }
-
-    /////////////////////////
-
-    private static final <S, K, V, R> void generateConsumer(final GroupStep<S, K, V, R> groupStep) {
-        groupStep.setConsumer(traverser -> {
-            final Map<K, Collection<V>> groupByMap = null == groupStep.tempGroupByMap ? traverser.sideEffects(groupStep.sideEffectKey) : groupStep.tempGroupByMap; // for nested traversals and not !starts.hasNext()
-            doGroup(traverser.asAdmin(), groupByMap, groupStep.keyTraversal, groupStep.valueTraversal);
-            if (!groupStep.onGraphComputer && null != groupStep.reduceTraversal && !groupStep.starts.hasNext()) {
-                groupStep.tempGroupByMap = groupByMap;
-                final Map<K, R> reduceMap = new HashMap<>();
-                doReduce(groupByMap, reduceMap, groupStep.reduceTraversal);
-                traverser.sideEffects(groupStep.sideEffectKey, reduceMap);
-            }
-        });
     }
 }

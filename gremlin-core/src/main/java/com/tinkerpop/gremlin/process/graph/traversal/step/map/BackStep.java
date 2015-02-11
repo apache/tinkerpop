@@ -20,9 +20,10 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.step.EngineDependent;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Collections;
 import java.util.Set;
@@ -38,7 +39,11 @@ public final class BackStep<S, E> extends MapStep<S, E> implements EngineDepende
     public BackStep(final Traversal.Admin traversal, final String stepLabel) {
         super(traversal);
         this.stepLabel = stepLabel;
-        this.setFunction(traverser -> traverser.path(this.stepLabel));
+    }
+
+    @Override
+    protected E map(final Traverser.Admin<S> traverser) {
+        return traverser.path(this.stepLabel);
     }
 
     @Override

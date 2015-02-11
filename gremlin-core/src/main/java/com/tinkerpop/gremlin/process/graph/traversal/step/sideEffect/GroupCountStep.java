@@ -19,14 +19,15 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
-import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
-import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
-import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.GroupCountMapReduce;
 import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -50,7 +51,12 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
     public GroupCountStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        GroupCountStep.generateConsumer(this);
+    }
+
+    @Override
+    protected void sideEffect(final Traverser.Admin<S> traverser) {
+        final Map<Object, Long> groupCountMap = traverser.sideEffects(this.sideEffectKey);
+        MapHelper.incr(groupCountMap, TraversalUtil.apply(traverser.asAdmin(), this.groupTraversal), traverser.bulk());
     }
 
     @Override
@@ -93,16 +99,6 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
     public GroupCountStep<S> clone() throws CloneNotSupportedException {
         final GroupCountStep<S> clone = (GroupCountStep<S>) super.clone();
         clone.groupTraversal = this.integrateChild(this.groupTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
-        GroupCountStep.generateConsumer(clone);
         return clone;
-    }
-
-    /////////////////////////
-
-    private static final <S> void generateConsumer(final GroupCountStep<S> groupCountStep) {
-        groupCountStep.setConsumer(traverser -> {
-            final Map<Object, Long> groupCountMap = traverser.sideEffects(groupCountStep.sideEffectKey);
-            MapHelper.incr(groupCountMap, TraversalUtil.apply(traverser.asAdmin(), groupCountStep.groupTraversal), traverser.bulk());
-        });
     }
 }

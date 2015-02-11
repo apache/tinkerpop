@@ -27,25 +27,21 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FilterStep<S> extends AbstractStep<S, S> {
-
-    private Predicate<Traverser<S>> predicate = null;
+public abstract class FilterStep<S> extends AbstractStep<S, S> {
 
     public FilterStep(final Traversal.Admin traversal) {
         super(traversal);
-    }
-
-    public void setPredicate(final Predicate<Traverser<S>> predicate) {
-        this.predicate = predicate;
     }
 
     @Override
     protected Traverser<S> processNextStart() {
         while (true) {
             final Traverser.Admin<S> traverser = this.starts.next();
-            if (this.predicate.test(traverser)) {
+            if (this.filter(traverser)) {
                 return traverser;
             }
         }
     }
+
+    protected abstract boolean filter(final Traverser.Admin<S> traverser);
 }

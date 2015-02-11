@@ -19,6 +19,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Element;
@@ -44,8 +45,13 @@ public final class SackElementValueStep<S extends Element, V> extends SideEffect
         super(traversal);
         this.operator = operator;
         this.propertyKey = propertyKey;
-        SackElementValueStep.generateConsumer(this);
+    }
 
+    @Override
+    protected void sideEffect(final Traverser.Admin<S> traverser) {
+        traverser.get().iterators().valueIterator(this.propertyKey).forEachRemaining(value -> {
+            traverser.sack(this.operator.apply(traverser.sack(), (V) value));
+        });
     }
 
     @Override
@@ -56,22 +62,5 @@ public final class SackElementValueStep<S extends Element, V> extends SideEffect
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
-    }
-
-    @Override
-    public SackElementValueStep<S, V> clone() throws CloneNotSupportedException {
-        final SackElementValueStep<S, V> clone = (SackElementValueStep<S, V>) super.clone();
-        SackElementValueStep.generateConsumer(clone);
-        return clone;
-    }
-
-    /////////////////////////
-
-    private static final <S extends Element, V> void generateConsumer(final SackElementValueStep<S, V> sackElementValueStep) {
-        sackElementValueStep.setConsumer(traverser -> {
-            traverser.get().iterators().valueIterator(sackElementValueStep.propertyKey).forEachRemaining(value -> {
-                traverser.sack(sackElementValueStep.operator.apply(traverser.sack(), (V) value));
-            });
-        });
     }
 }

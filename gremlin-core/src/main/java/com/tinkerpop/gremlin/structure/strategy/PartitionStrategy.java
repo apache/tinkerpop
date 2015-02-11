@@ -19,6 +19,7 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.process.Step;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.traversal.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
@@ -198,8 +199,12 @@ public final class PartitionStrategy implements GraphStrategy {
             @Override
             public GraphTraversal<S, E> has(final String key, final BiPredicate predicate, final Object value) {
                 final HasContainer hasContainer = new HasContainer(key, predicate, value);
-                final HasStep<Element> hasStep = new HasStep<>(this, hasContainer);
-                hasStep.setPredicate(element -> hasContainer.test(((StrategyElement) element.get()).getBaseElement()));
+                final HasStep<Element> hasStep = new HasStep(this, hasContainer) {
+                    @Override
+                    protected boolean filter(final Traverser.Admin traverser) {
+                        return hasContainer.test(((StrategyElement) traverser.get()).getBaseElement());
+                    }
+                };
                 return this.asAdmin().addStep((Step) hasStep);
             }
         };

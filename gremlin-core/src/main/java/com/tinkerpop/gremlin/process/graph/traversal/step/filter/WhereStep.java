@@ -20,6 +20,8 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.traversal.step.util.MarkerIdentityStep;
 import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -37,7 +39,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
 
     private final String firstKey;
     private final String secondKey;
-    private BiPredicate biPredicate;
+    private final BiPredicate biPredicate;
     private Traversal.Admin constraint;
 
 
@@ -47,8 +49,6 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         this.secondKey = secondKey;
         this.biPredicate = biPredicate;
         this.constraint = null;
-        WhereStep.generatePredicate(this);
-
     }
 
     public WhereStep(final Traversal.Admin traversal, final Traversal.Admin constraint) {
@@ -58,7 +58,54 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         this.biPredicate = null;
         this.constraint = constraint;
         this.integrateChild(this.constraint, Operation.SET_PARENT);
-        WhereStep.generatePredicate(this);
+    }
+
+    @Override
+    protected boolean filter(final Traverser.Admin<Map<String, E>> traverser) {
+        if (null == this.constraint) {
+            final Map<String, E> map = traverser.get();
+            if (!map.containsKey(this.firstKey))
+                throw new IllegalArgumentException("The provided key is not in the current map: " + this.firstKey);
+            if (!map.containsKey(this.secondKey))
+                throw new IllegalArgumentException("The provided key is not in the current map: " + this.secondKey);
+            return this.biPredicate.test(map.get(this.firstKey), map.get(this.secondKey));
+        } else {
+            final Step<?, ?> startStep = this.constraint.getStartStep();
+            Step<?, ?> endStep = this.constraint.getEndStep();
+            if (endStep instanceof MarkerIdentityStep) // DAH!
+                endStep = endStep.getPreviousStep();
+
+            final Map<String, E> map = traverser.get();
+            if (!map.containsKey(startStep.getLabel().get()))
+                throw new IllegalArgumentException("The provided key is not in the current map: " + startStep.getLabel().get());
+            final Object startObject = map.get(startStep.getLabel().get());
+            final Object endObject;
+            if (endStep.getLabel().isPresent()) {
+                if (!map.containsKey(endStep.getLabel().get()))
+                    throw new IllegalArgumentException("The provided key is not in the current map: " + endStep.getLabel().get());
+                endObject = map.get(endStep.getLabel().get());
+            } else
+                endObject = null;
+
+            startStep.addStart(this.getTraversal().asAdmin().getTraverserGenerator().generate(startObject, (Step) startStep, traverser.bulk()));
+            if (null == endObject) {
+                if (this.constraint.hasNext()) {
+                    this.constraint.reset();
+                    return true;
+                } else {
+                    return false;
+                }
+
+            } else {
+                while (this.constraint.hasNext()) {
+                    if (this.constraint.next().equals(endObject)) {
+                        this.constraint.reset();
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
     }
 
     @Override
@@ -76,62 +123,11 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         final WhereStep<E> clone = (WhereStep<E>) super.clone();
         if (null != this.constraint)
             clone.constraint = clone.integrateChild(this.constraint.clone(), TYPICAL_LOCAL_OPERATIONS);
-        WhereStep.generatePredicate(clone);
         return clone;
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
-    }
-
-    /////////////////////////
-
-    private static final <E> void generatePredicate(final WhereStep<E> whereStep) {
-        if (null == whereStep.constraint) {
-            whereStep.setPredicate(traverser -> {
-                final Map<String, E> map = traverser.get();
-                if (!map.containsKey(whereStep.firstKey))
-                    throw new IllegalArgumentException("The provided key is not in the current map: " + whereStep.firstKey);
-                if (!map.containsKey(whereStep.secondKey))
-                    throw new IllegalArgumentException("The provided key is not in the current map: " + whereStep.secondKey);
-                return whereStep.biPredicate.test(map.get(whereStep.firstKey), map.get(whereStep.secondKey));
-            });
-        } else {
-            final Step<?, ?> startStep = whereStep.constraint.getStartStep();
-            final Step<?, ?> endStep = whereStep.constraint.getEndStep();
-            whereStep.setPredicate(traverser -> {
-                final Map<String, E> map = traverser.get();
-                if (!map.containsKey(startStep.getLabel().get()))
-                    throw new IllegalArgumentException("The provided key is not in the current map: " + startStep.getLabel().get());
-                final Object startObject = map.get(startStep.getLabel().get());
-                final Object endObject;
-                if (endStep.getLabel().isPresent()) {
-                    if (!map.containsKey(endStep.getLabel().get()))
-                        throw new IllegalArgumentException("The provided key is not in the current map: " + endStep.getLabel().get());
-                    endObject = map.get(endStep.getLabel().get());
-                } else
-                    endObject = null;
-
-                startStep.addStart(whereStep.getTraversal().asAdmin().getTraverserGenerator().generate(startObject, (Step) startStep, traverser.bulk()));
-                if (null == endObject) {
-                    if (whereStep.constraint.hasNext()) {
-                        whereStep.constraint.reset();
-                        return true;
-                    } else {
-                        return false;
-                    }
-
-                } else {
-                    while (whereStep.constraint.hasNext()) {
-                        if (whereStep.constraint.next().equals(endObject)) {
-                            whereStep.constraint.reset();
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            });
-        }
     }
 }

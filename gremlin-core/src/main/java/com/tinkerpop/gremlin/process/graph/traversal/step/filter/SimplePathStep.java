@@ -20,6 +20,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
@@ -33,7 +34,11 @@ public final class SimplePathStep<S> extends FilterStep<S> implements Reversible
 
     public SimplePathStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setPredicate(traverser -> traverser.path().isSimple());
+    }
+
+    @Override
+    protected boolean filter(final Traverser.Admin<S> traverser) {
+        return traverser.path().isSimple();
     }
 
     @Override

@@ -19,6 +19,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Property;
 
@@ -32,7 +33,11 @@ public final class PropertyValueStep<E> extends MapStep<Property<E>, E> {
 
     public PropertyValueStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setFunction(traverser -> traverser.get().value());
+    }
+
+    @Override
+    protected E map(final Traverser.Admin<Property<E>> traverser) {
+        return traverser.get().value();
     }
 
     @Override

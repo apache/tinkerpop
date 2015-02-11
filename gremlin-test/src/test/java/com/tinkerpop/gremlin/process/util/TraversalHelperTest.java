@@ -21,12 +21,12 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.traversal.__;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.filter.HasStep;
+import com.tinkerpop.gremlin.process.graph.traversal.step.filter.LambdaFilterStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.IdentityStep;
-import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import com.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import org.junit.Test;
@@ -49,9 +49,7 @@ public class TraversalHelperTest {
         assertTrue(TraversalHelper.isReversible(inE().outV().outE().inV().asAdmin()));
         assertTrue(TraversalHelper.isReversible(outE().has("since").inV().asAdmin()));
         assertTrue(TraversalHelper.isReversible(outE().as("x").asAdmin()));
-
         assertFalse(TraversalHelper.isReversible(__.as("a").outE().back("a").asAdmin()));
-
     }
 
     @Test
@@ -59,14 +57,14 @@ public class TraversalHelperTest {
         Traversal.Admin traversal = new DefaultTraversal<>(Object.class);
         traversal.asAdmin().addStep(new IdentityStep(traversal));
         traversal.asAdmin().addStep(new HasStep(traversal, null));
-        traversal.asAdmin().addStep(new FilterStep(traversal));
+        traversal.asAdmin().addStep(new LambdaFilterStep(traversal, traverser -> true));
         validateToyTraversal(traversal);
     }
 
     @Test
     public void shouldAddStepsCorrectly() {
         Traversal.Admin traversal = new DefaultTraversal<>(Object.class);
-        traversal.asAdmin().addStep(0, new FilterStep(traversal));
+        traversal.asAdmin().addStep(0, new LambdaFilterStep(traversal, traverser -> true));
         traversal.asAdmin().addStep(0, new HasStep(traversal, null));
         traversal.asAdmin().addStep(0, new IdentityStep(traversal));
         validateToyTraversal(traversal);
@@ -74,7 +72,7 @@ public class TraversalHelperTest {
         traversal = new DefaultTraversal<>(Object.class);
         traversal.asAdmin().addStep(0, new IdentityStep(traversal));
         traversal.asAdmin().addStep(1, new HasStep(traversal, null));
-        traversal.asAdmin().addStep(2, new FilterStep(traversal));
+        traversal.asAdmin().addStep(2, new LambdaFilterStep(traversal, traverser -> true));
         validateToyTraversal(traversal);
     }
 
@@ -83,7 +81,7 @@ public class TraversalHelperTest {
         Traversal.Admin traversal = new DefaultTraversal<>(Object.class);
         traversal.asAdmin().addStep(new IdentityStep(traversal));
         traversal.asAdmin().addStep(new HasStep(traversal, null));
-        traversal.asAdmin().addStep(new FilterStep(traversal));
+        traversal.asAdmin().addStep(new LambdaFilterStep(traversal, traverser -> true));
 
         traversal.asAdmin().addStep(new PropertiesStep(traversal, PropertyType.VALUE, "marko"));
         traversal.asAdmin().removeStep(3);
@@ -101,29 +99,29 @@ public class TraversalHelperTest {
     private static void validateToyTraversal(final Traversal traversal) {
         assertEquals(traversal.asAdmin().getSteps().size(), 3);
 
-        assertEquals(traversal.asAdmin().getSteps().get(0).getClass(), IdentityStep.class);
-        assertEquals(traversal.asAdmin().getSteps().get(1).getClass(), HasStep.class);
-        assertEquals(traversal.asAdmin().getSteps().get(2).getClass(), FilterStep.class);
+        assertEquals(IdentityStep.class, traversal.asAdmin().getSteps().get(0).getClass());
+        assertEquals(HasStep.class, traversal.asAdmin().getSteps().get(1).getClass());
+        assertEquals(LambdaFilterStep.class, traversal.asAdmin().getSteps().get(2).getClass());
 
         // IDENTITY STEP
-        assertEquals(((Step) traversal.asAdmin().getSteps().get(0)).getPreviousStep().getClass(), EmptyStep.class);
-        assertEquals(((Step) traversal.asAdmin().getSteps().get(0)).getNextStep().getClass(), HasStep.class);
-        assertEquals(((Step) traversal.asAdmin().getSteps().get(0)).getNextStep().getNextStep().getClass(), FilterStep.class);
-        assertEquals(((Step) traversal.asAdmin().getSteps().get(0)).getNextStep().getNextStep().getNextStep().getClass(), EmptyStep.class);
+        assertEquals(EmptyStep.class, ((Step) traversal.asAdmin().getSteps().get(0)).getPreviousStep().getClass());
+        assertEquals(HasStep.class, ((Step) traversal.asAdmin().getSteps().get(0)).getNextStep().getClass());
+        assertEquals(LambdaFilterStep.class, ((Step) traversal.asAdmin().getSteps().get(0)).getNextStep().getNextStep().getClass());
+        assertEquals(EmptyStep.class, ((Step) traversal.asAdmin().getSteps().get(0)).getNextStep().getNextStep().getNextStep().getClass());
 
         // HAS STEP
-        assertEquals(((Step) traversal.asAdmin().getSteps().get(1)).getPreviousStep().getClass(), IdentityStep.class);
-        assertEquals(((Step) traversal.asAdmin().getSteps().get(1)).getPreviousStep().getPreviousStep().getClass(), EmptyStep.class);
-        assertEquals(((Step) traversal.asAdmin().getSteps().get(1)).getNextStep().getClass(), FilterStep.class);
-        assertEquals(((Step) traversal.asAdmin().getSteps().get(1)).getNextStep().getNextStep().getClass(), EmptyStep.class);
+        assertEquals(IdentityStep.class, ((Step) traversal.asAdmin().getSteps().get(1)).getPreviousStep().getClass());
+        assertEquals(EmptyStep.class, ((Step) traversal.asAdmin().getSteps().get(1)).getPreviousStep().getPreviousStep().getClass());
+        assertEquals(LambdaFilterStep.class, ((Step) traversal.asAdmin().getSteps().get(1)).getNextStep().getClass());
+        assertEquals(EmptyStep.class, ((Step) traversal.asAdmin().getSteps().get(1)).getNextStep().getNextStep().getClass());
 
         // FILTER STEP
-        assertEquals(((Step) traversal.asAdmin().getSteps().get(2)).getPreviousStep().getClass(), HasStep.class);
-        assertEquals(((Step) traversal.asAdmin().getSteps().get(2)).getPreviousStep().getPreviousStep().getClass(), IdentityStep.class);
-        assertEquals(((Step) traversal.asAdmin().getSteps().get(2)).getPreviousStep().getPreviousStep().getPreviousStep().getClass(), EmptyStep.class);
-        assertEquals(((Step) traversal.asAdmin().getSteps().get(2)).getNextStep().getClass(), EmptyStep.class);
+        assertEquals(HasStep.class, ((Step) traversal.asAdmin().getSteps().get(2)).getPreviousStep().getClass());
+        assertEquals(IdentityStep.class, ((Step) traversal.asAdmin().getSteps().get(2)).getPreviousStep().getPreviousStep().getClass());
+        assertEquals(EmptyStep.class, ((Step) traversal.asAdmin().getSteps().get(2)).getPreviousStep().getPreviousStep().getPreviousStep().getClass());
+        assertEquals(EmptyStep.class, ((Step) traversal.asAdmin().getSteps().get(2)).getNextStep().getClass());
 
-        assertEquals(traversal.asAdmin().getSteps().size(), 3);
+        assertEquals(3, traversal.asAdmin().getSteps().size());
     }
 
     @Test

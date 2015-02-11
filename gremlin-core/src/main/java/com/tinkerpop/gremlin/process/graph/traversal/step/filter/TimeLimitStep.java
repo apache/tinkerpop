@@ -18,9 +18,10 @@
  */
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.FastNoSuchElementException;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,9 +42,20 @@ public final class TimeLimitStep<S> extends FilterStep<S> implements Reversible 
     public TimeLimitStep(final Traversal.Admin traversal, final long timeLimit) {
         super(traversal);
         this.timeLimit = timeLimit;
-        TimeLimitStep.generatePredicate(this);
     }
 
+    @Override
+    protected boolean filter(final Traverser.Admin<S> traverser) {
+        if (this.startTime.get() == -1l)
+            this.startTime.set(System.currentTimeMillis());
+        if ((System.currentTimeMillis() - this.startTime.get()) >= this.timeLimit) {
+            this.timedOut.set(true);
+            throw FastNoSuchElementException.instance();
+        }
+        return true;
+    }
+
+    @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.timeLimit);
     }
@@ -64,21 +76,6 @@ public final class TimeLimitStep<S> extends FilterStep<S> implements Reversible 
         final TimeLimitStep<S> clone = (TimeLimitStep<S>) super.clone();
         clone.timedOut = new AtomicBoolean(this.timedOut.get());
         clone.startTime = new AtomicLong(this.startTime.get());
-        TimeLimitStep.generatePredicate(clone);
         return clone;
-    }
-
-    ///////
-
-    public static <S> void generatePredicate(final TimeLimitStep<S> timeLimitStep) {
-        timeLimitStep.setPredicate(traverser -> {
-            if (timeLimitStep.startTime.get() == -1l)
-                timeLimitStep.startTime.set(System.currentTimeMillis());
-            if ((System.currentTimeMillis() - timeLimitStep.startTime.get()) >= timeLimitStep.timeLimit) {
-                timeLimitStep.timedOut.set(true);
-                throw FastNoSuchElementException.instance();
-            }
-            return true;
-        });
     }
 }

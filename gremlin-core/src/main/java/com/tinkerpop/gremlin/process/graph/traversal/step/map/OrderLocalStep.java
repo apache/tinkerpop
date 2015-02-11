@@ -22,9 +22,8 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.traversal.step.ComparatorHolder;
 import com.tinkerpop.gremlin.process.traversal.step.Reversible;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Order;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,36 +40,27 @@ import java.util.Set;
 public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Reversible, ComparatorHolder<M> {
 
     private final List<Comparator<M>> comparators = new ArrayList<>();
+    private Comparator<M> chainedComparator = null;
 
     public OrderLocalStep(final Traversal.Admin traversal) {
         super(traversal);
-        super.setFunction(Traverser::get);
-        ///
-        this.setFunction(traverser -> {
-            final Object object = traverser.get();
-            if (object instanceof Collection)
-                return (S) OrderLocalStep.sortCollection((List) object, Order.incr);
-            else if (object instanceof Map)
-                return (S) OrderLocalStep.sortMap((Map) object, Order.valueIncr);
-            else
-                throw new IllegalArgumentException("The provided object can not be ordered: " + object);
-        });
+    }
+
+    @Override
+    protected S map(final Traverser.Admin<S> traverser) {
+        final Object object = traverser.get();
+        if (object instanceof Collection)
+            return (S) OrderLocalStep.sortCollection((List) object, this.chainedComparator);
+        else if (object instanceof Map)
+            return (S) OrderLocalStep.sortMap((Map) object, this.chainedComparator);
+        else
+            throw new IllegalArgumentException("The provided object can not be ordered: " + object);
     }
 
     @Override
     public void addComparator(final Comparator<M> comparator) {
         this.comparators.add(comparator);
-        final Comparator<M> chainedComparator = this.comparators.stream().reduce((a, b) -> a.thenComparing(b)).get();
-        ///
-        this.setFunction(traverser -> {
-            final Object object = traverser.get();
-            if (object instanceof Collection)
-                return (S) OrderLocalStep.sortCollection((List) object, chainedComparator);
-            else if (object instanceof Map)
-                return (S) OrderLocalStep.sortMap((Map) object, chainedComparator);
-            else
-                throw new IllegalArgumentException("The provided object can not be ordered: " + object);
-        });
+        this.chainedComparator = this.comparators.stream().reduce((a, b) -> a.thenComparing(b)).get();
     }
 
     @Override

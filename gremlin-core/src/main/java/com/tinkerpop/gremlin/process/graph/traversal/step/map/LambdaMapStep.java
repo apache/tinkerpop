@@ -16,50 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
+package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traversal.step.Reversible;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
-import java.util.Collections;
-import java.util.Random;
-import java.util.Set;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CoinStep<S> extends FilterStep<S> implements Reversible {
+public class LambdaMapStep<S, E> extends MapStep<S, E> {
 
-    private static final Random RANDOM = new Random();
-    private final double probability;
+    private final Function<Traverser<S>, E> function;
 
-    public CoinStep(final Traversal.Admin traversal, final double probability) {
+    public LambdaMapStep(final Traversal.Admin traversal, final Function<Traverser<S>, E> function) {
         super(traversal);
-        this.probability = probability;
+        this.function = function;
     }
 
     @Override
-    protected boolean filter(final Traverser.Admin<S> traverser) {
-        long newBulk = 0l;
-        for (int i = 0; i < traverser.bulk(); i++) {
-            if (this.probability >= RANDOM.nextDouble())
-                newBulk++;
-        }
-        if (0 == newBulk) return false;
-        traverser.setBulk(newBulk);
-        return true;
+    protected E map(final Traverser.Admin<S> traverser) {
+        return this.function.apply(traverser);
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.probability);
-    }
-
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.BULK);
+        return TraversalHelper.makeStepString(this, this.function);
     }
 }

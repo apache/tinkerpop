@@ -19,6 +19,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.EnumSet;
@@ -35,30 +36,20 @@ public final class SackObjectStep<S, V> extends SideEffectStep<S> {
             TraverserRequirement.OBJECT
     );
 
-    private BiFunction<V, S, V> operator;
+    private final BiFunction<V, S, V> operator;
 
     public SackObjectStep(final Traversal.Admin traversal, final BiFunction<V, S, V> operator) {
         super(traversal);
         this.operator = operator;
-        SackObjectStep.generateConsumer(this);
+    }
 
+    @Override
+    protected void sideEffect(final Traverser.Admin<S> traverser) {
+        traverser.sack(this.operator.apply(traverser.sack(), traverser.get()));
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
-    }
-
-    @Override
-    public SackObjectStep<S, V> clone() throws CloneNotSupportedException {
-        final SackObjectStep<S, V> clone = (SackObjectStep<S, V>) super.clone();
-        SackObjectStep.generateConsumer(clone);
-        return clone;
-    }
-
-    /////////////////////////
-
-    private static final <S, V> void generateConsumer(final SackObjectStep<S, V> sackObjectStep) {
-        sackObjectStep.setConsumer(traverser -> traverser.sack(sackObjectStep.operator.apply(traverser.sack(), traverser.get())));
     }
 }

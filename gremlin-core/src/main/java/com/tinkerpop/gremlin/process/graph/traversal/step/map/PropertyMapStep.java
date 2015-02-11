@@ -20,8 +20,9 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -36,7 +37,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
+public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {   // TODO: Map<Object,E> cause of T.
 
     protected final String[] propertyKeys;
     protected final PropertyType returnType;
@@ -47,30 +48,31 @@ public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
         this.includeTokens = includeTokens;
         this.propertyKeys = propertyKeys;
         this.returnType = propertyType;
+    }
 
-        if (this.returnType.forValues()) {
-            this.setFunction(traverser -> {
-                final Element element = traverser.get();
-                final Map map = traverser.get() instanceof Vertex ?
-                        (Map) ElementHelper.vertexPropertyValueMap((Vertex) element, propertyKeys) :
-                        (Map) ElementHelper.propertyValueMap(element, propertyKeys);
-                if (includeTokens) {
-                    if (element instanceof VertexProperty) {
-                        map.put(T.id, element.id());
-                        map.put(T.key, ((VertexProperty) element).key());
-                        map.put(T.value, ((VertexProperty) element).value());
-                    } else {
-                        map.put(T.id, element.id());
-                        map.put(T.label, element.label());
-                    }
+    @Override
+    protected Map<String, E> map(final Traverser.Admin<Element> traverser) {
+        if (this.returnType.equals(PropertyType.VALUE)) {
+            final Element element = traverser.get();
+            final Map map = traverser.get() instanceof Vertex ?
+                    (Map) ElementHelper.vertexPropertyValueMap((Vertex) element, propertyKeys) :
+                    (Map) ElementHelper.propertyValueMap(element, propertyKeys);
+            if (includeTokens) {
+                if (element instanceof VertexProperty) {
+                    map.put(T.id, element.id());
+                    map.put(T.key, ((VertexProperty) element).key());
+                    map.put(T.value, ((VertexProperty) element).value());
+                } else {
+                    map.put(T.id, element.id());
+                    map.put(T.label, element.label());
                 }
-                return map;
-            });
+            }
+            return map;
+
         } else {
-            this.setFunction(traverser ->
-                    traverser.get() instanceof Vertex ?
-                            (Map) ElementHelper.vertexPropertyMap((Vertex) traverser.get(), propertyKeys) :
-                            (Map) ElementHelper.propertyMap(traverser.get(), propertyKeys));
+            return traverser.get() instanceof Vertex ?
+                    (Map) ElementHelper.vertexPropertyMap((Vertex) traverser.get(), propertyKeys) :
+                    (Map) ElementHelper.propertyMap(traverser.get(), propertyKeys);
         }
     }
 

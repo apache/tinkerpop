@@ -19,6 +19,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Element;
 
@@ -32,7 +33,11 @@ public final class IdStep<S extends Element> extends MapStep<S, Object> {
 
     public IdStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setFunction(traverser -> traverser.get().id());
+    }
+
+    @Override
+    protected Object map(final Traverser.Admin<S> traverser) {
+        return traverser.get().id();
     }
 
     @Override

@@ -20,6 +20,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalRing;
@@ -41,7 +42,19 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
     public PathStep(final Traversal.Admin traversal) {
         super(traversal);
         this.traversalRing = new TraversalRing<>();
-        PathStep.generateFunction(this);
+    }
+
+    @Override
+    protected Path map(final Traverser.Admin<S> traverser) {
+        final Path path;
+        if (this.traversalRing.isEmpty())
+            path = traverser.path();
+        else {
+            path = MutablePath.make();
+            traverser.path().forEach((object, labels) -> path.extend(TraversalUtil.apply(object, this.traversalRing.next()), labels.toArray(new String[labels.size()])));
+        }
+        this.traversalRing.reset();
+        return path;
     }
 
     @Override
@@ -51,7 +64,6 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
         for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {
             clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone(), TYPICAL_LOCAL_OPERATIONS));
         }
-        PathStep.generateFunction(clone);
         return clone;
     }
 
@@ -79,21 +91,5 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.PATH);
-    }
-
-    /////////////////////////
-
-    private static final <S> void generateFunction(final PathStep<S> pathStep) {
-        pathStep.setFunction(traverser -> {
-            final Path path;
-            if (pathStep.traversalRing.isEmpty())
-                path = traverser.path();
-            else {
-                path = MutablePath.make();
-                traverser.path().forEach((object, labels) -> path.extend(TraversalUtil.apply(object, pathStep.traversalRing.next()), labels.toArray(new String[labels.size()])));
-            }
-            pathStep.traversalRing.reset();
-            return path;
-        });
     }
 }

@@ -19,6 +19,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -33,18 +34,22 @@ import java.util.function.BiPredicate;
 public final class IsStep<S> extends FilterStep<S> implements Reversible {
 
     private final Object value;
-    private final BiPredicate<S,Object> predicate;
+    private final BiPredicate<S,Object> biPredicate;
 
-    public IsStep(final Traversal.Admin traversal, final BiPredicate<S, Object> predicate, final Object value) {
+    public IsStep(final Traversal.Admin traversal, final BiPredicate<S, Object> biPredicate, final Object value) {
         super(traversal);
         this.value = value;
-        this.predicate = predicate;
-        this.setPredicate(traverser -> this.predicate.test(traverser.get(), this.value));
+        this.biPredicate = biPredicate;
+    }
+
+    @Override
+    protected boolean filter(final Traverser.Admin<S> traverser) {
+        return this.biPredicate.test(traverser.get(), this.value);
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.predicate, this.value);
+        return TraversalHelper.makeStepString(this, this.biPredicate, this.value);
     }
 
     @Override
@@ -57,6 +62,6 @@ public final class IsStep<S> extends FilterStep<S> implements Reversible {
     }
 
     public BiPredicate<S, Object> getPredicate() {
-        return predicate;
+        return biPredicate;
     }
 }

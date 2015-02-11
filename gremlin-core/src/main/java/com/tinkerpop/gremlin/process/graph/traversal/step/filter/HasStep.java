@@ -19,11 +19,12 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.traversal.step.HasContainerHolder;
-import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.graph.util.HasContainer;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Element;
 
 import java.util.Collections;
@@ -33,14 +34,18 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder, Reversible {
+public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder, Reversible {   // TODO: make final when graph strategies are fixed up
 
     private final HasContainer hasContainer;
 
     public HasStep(final Traversal.Admin traversal, final HasContainer hasContainer) {
         super(traversal);
         this.hasContainer = hasContainer;
-        this.setPredicate(traverser -> this.hasContainer.test(traverser.get()));
+    }
+
+    @Override
+    protected boolean filter(final Traverser.Admin<S> traverser) {
+        return this.hasContainer.test(traverser.get());
     }
 
     @Override

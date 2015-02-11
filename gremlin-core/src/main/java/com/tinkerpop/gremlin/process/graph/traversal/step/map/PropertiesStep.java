@@ -19,9 +19,10 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.step.Reversible;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.PropertyType;
 
@@ -42,10 +43,13 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Revers
         super(traversal);
         this.returnType = propertyType;
         this.propertyKeys = propertyKeys;
-        if (this.returnType.forValues())
-            this.setFunction(traverser -> (Iterator) traverser.get().iterators().valueIterator(this.propertyKeys));
-        else
-            this.setFunction(traverser -> (Iterator) traverser.get().iterators().propertyIterator(this.propertyKeys));
+    }
+
+    @Override
+    protected Iterator<E> flatMap(final Traverser.Admin<Element> traverser) {
+        return this.returnType.equals(PropertyType.VALUE) ?
+                traverser.get().iterators().valueIterator(this.propertyKeys) :
+                (Iterator) traverser.get().iterators().propertyIterator(this.propertyKeys);
     }
 
     public PropertyType getReturnType() {

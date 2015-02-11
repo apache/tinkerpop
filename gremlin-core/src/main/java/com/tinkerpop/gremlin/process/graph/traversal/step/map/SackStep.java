@@ -19,6 +19,7 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Collections;
@@ -31,7 +32,11 @@ public final class SackStep<S, E> extends MapStep<S, E> {
 
     public SackStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setFunction(traverser -> traverser.sack());
+    }
+
+    @Override
+    protected E map(final Traverser.Admin<S> traverser) {
+        return traverser.sack();
     }
 
     @Override

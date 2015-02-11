@@ -19,10 +19,11 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -42,7 +43,12 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
 
     public DedupStep(final Traversal.Admin traversal) {
         super(traversal);
-        DedupStep.generatePredicate(this);
+    }
+
+    @Override
+    protected boolean filter(final Traverser.Admin<S> traverser) {
+        traverser.setBulk(1);
+        return this.duplicateSet.add(TraversalUtil.apply(traverser, this.dedupTraversal));
     }
 
 
@@ -69,7 +75,6 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
         final DedupStep<S> clone = (DedupStep<S>) super.clone();
         clone.duplicateSet = new HashSet<>();
         clone.dedupTraversal = clone.integrateChild(this.dedupTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
-        DedupStep.generatePredicate(clone);
         return clone;
     }
 
@@ -87,14 +92,5 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.SIDE_EFFECTS);
-    }
-
-    /////////////////////////
-
-    private static final <S> void generatePredicate(final DedupStep<S> dedupStep) {
-        dedupStep.setPredicate(traverser -> {
-            traverser.asAdmin().setBulk(1);
-            return dedupStep.duplicateSet.add(TraversalUtil.apply(traverser.asAdmin(), dedupStep.dedupTraversal));
-        });
     }
 }

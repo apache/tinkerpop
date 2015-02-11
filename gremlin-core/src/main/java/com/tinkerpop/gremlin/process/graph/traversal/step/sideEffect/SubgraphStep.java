@@ -20,6 +20,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
 import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
@@ -55,14 +56,16 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
     public SubgraphStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.setConsumer(traverser -> {
-            if (null == this.subgraph) {
-                this.subgraph = traverser.sideEffects(this.sideEffectKey);
-                if (!this.subgraph.features().vertex().supportsUserSuppliedIds() || !this.subgraph.features().edge().supportsUserSuppliedIds())
-                    throw new IllegalArgumentException("The provided subgraph must support user supplied ids for vertices and edges: " + this.subgraph);
-            }
-            SubgraphStep.addEdgeToSubgraph(this.subgraph, traverser.get());
-        });
+    }
+
+    @Override
+    protected void sideEffect(final Traverser.Admin<Edge> traverser) {
+        if (null == this.subgraph) {
+            this.subgraph = traverser.sideEffects(this.sideEffectKey);
+            if (!this.subgraph.features().vertex().supportsUserSuppliedIds() || !this.subgraph.features().edge().supportsUserSuppliedIds())
+                throw new IllegalArgumentException("The provided subgraph must support user supplied ids for vertices and edges: " + this.subgraph);
+        }
+        SubgraphStep.addEdgeToSubgraph(this.subgraph, traverser.get());
     }
 
     @Override

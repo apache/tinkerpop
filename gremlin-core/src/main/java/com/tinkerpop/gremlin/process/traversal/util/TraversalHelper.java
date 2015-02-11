@@ -171,7 +171,7 @@ public final class TraversalHelper {
             builder.append(')');
         }
         step.getLabel().ifPresent(label -> builder.append('@').append(label));
-        // builder.append("^").append(step.getId());
+        //builder.append("^").append(step.getId());
         return builder.toString();
     }
 

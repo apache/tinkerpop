@@ -19,9 +19,10 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.step.Reversible;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -45,10 +46,13 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
         this.direction = direction;
         this.edgeLabels = edgeLabels;
         this.returnClass = returnClass;
-        if (Vertex.class.isAssignableFrom(this.returnClass))
-            this.setFunction(traverser -> (Iterator<E>) traverser.get().iterators().vertexIterator(this.direction, this.edgeLabels));
-        else
-            this.setFunction(traverser -> (Iterator<E>) traverser.get().iterators().edgeIterator(this.direction, this.edgeLabels));
+    }
+
+    @Override
+    protected Iterator<E> flatMap(final Traverser.Admin<Vertex> traverser) {
+        return Vertex.class.isAssignableFrom(this.returnClass) ?
+                (Iterator<E>) traverser.get().iterators().vertexIterator(this.direction, this.edgeLabels) :
+                (Iterator<E>) traverser.get().iterators().edgeIterator(this.direction, this.edgeLabels);
     }
 
     @Override

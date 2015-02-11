@@ -23,6 +23,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.traversal.step.filter.WhereStep;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.SelectOneStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.map.match.MatchStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.IdentityStep;
@@ -56,7 +57,7 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy implemen
         for (final MatchStep matchStep : matchSteps) {
             boolean foundWhereWithNoTraversal = false;
             Step currentStep = matchStep.getNextStep();
-            while (currentStep instanceof WhereStep || currentStep instanceof SelectStep || currentStep instanceof IdentityStep) {
+            while (currentStep instanceof WhereStep || currentStep instanceof SelectStep || currentStep instanceof SelectOneStep || currentStep instanceof IdentityStep) {
                 if (currentStep instanceof WhereStep) {
                     if (!((WhereStep) currentStep).getLocalChildren().isEmpty()) {
                         matchStep.addTraversal(((WhereStep<?>) currentStep).getLocalChildren().get(0));
@@ -67,7 +68,11 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy implemen
                 } else if (currentStep instanceof SelectStep) {
                     if (!((SelectStep) currentStep).getLocalChildren().isEmpty() || foundWhereWithNoTraversal)
                         break;
-                }  // else is the identity step
+                } else if (currentStep instanceof SelectOneStep) {
+                    if (!((SelectOneStep) currentStep).getLocalChildren().isEmpty() || foundWhereWithNoTraversal)
+                        break;
+                }
+                // else is the identity step
                 currentStep = currentStep.getNextStep();
             }
         }

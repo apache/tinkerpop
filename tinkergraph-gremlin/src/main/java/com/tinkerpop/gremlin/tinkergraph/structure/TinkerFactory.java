@@ -20,8 +20,8 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.FlatMapStep;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.MapStep;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.LambdaFlatMapStep;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.LambdaMapStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.traversal.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -130,26 +130,20 @@ public class TinkerFactory {
         g.variables().set("comment", "this graph was created to provide examples and test coverage for tinkerpop3 api advances");
     }
 
-    public interface SocialTraversal<S, E> extends Traversal.Admin<S,E> {
+    public interface SocialTraversal<S, E> extends Traversal.Admin<S, E> {
 
         public SocialTraversal<S, Vertex> people(final String name);
 
         public default SocialTraversal<S, Vertex> knows() {
-            final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
-            flatMapStep.setFunction(v -> v.get().out("knows"));
-            return (SocialTraversal) this.addStep(flatMapStep);
+            return (SocialTraversal) this.addStep(new LambdaFlatMapStep<Vertex, Vertex>(this, v -> v.get().out("knows")));
         }
 
         public default SocialTraversal<S, Vertex> created() {
-            final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
-            flatMapStep.setFunction(v -> v.get().out("created"));
-            return (SocialTraversal) this.addStep(flatMapStep);
+            return (SocialTraversal) this.addStep(new LambdaFlatMapStep<Vertex, Vertex>(this, v -> v.get().out("created")));
         }
 
         public default SocialTraversal<S, String> name() {
-            MapStep<Vertex, String> mapStep = new MapStep<>(this);
-            mapStep.setFunction(v -> v.get().<String>value("name"));
-            return (SocialTraversal) this.addStep(mapStep);
+            return (SocialTraversal) this.addStep(new LambdaMapStep<Vertex, String>(this, v -> v.get().<String>value("name")));
         }
 
         public static <S> SocialTraversal<S, S> of(final Graph graph) {

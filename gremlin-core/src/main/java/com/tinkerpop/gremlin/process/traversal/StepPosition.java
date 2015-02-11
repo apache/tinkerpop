@@ -28,6 +28,11 @@ public final class StepPosition {
     public int z; // breadth in traversal siblings
     public String parentId; // the traversal holder id
 
+    private static final String DOT = ".";
+    private static final String LEFT_PARENTHESES = "(";
+    private static final String RIGHT_PARENTHESES = ")";
+    private static final String EMPTY_STRING = "";
+
     private StepPosition(final int x, final int y, final int z, final String parentId) {
         this.x = x;
         this.y = y;
@@ -36,15 +41,15 @@ public final class StepPosition {
     }
 
     public StepPosition() {
-        this(0, 0, 0, "");
+        this(0, 0, 0, EMPTY_STRING);
     }
 
     public String nextXId() {
-        return this.x++ + "." + this.y + '.' + this.z + '(' + this.parentId + ')';
+        return this.x++ + DOT + this.y + DOT + this.z + LEFT_PARENTHESES + this.parentId + RIGHT_PARENTHESES;
     }
 
     @Override
     public String toString() {
-        return this.x + "." + this.y + '.' + this.z + '(' + this.parentId + ')';
+        return this.x + DOT + this.y + DOT + this.z + LEFT_PARENTHESES + this.parentId + RIGHT_PARENTHESES;
     }
 }

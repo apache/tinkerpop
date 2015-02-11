@@ -19,9 +19,10 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.step.Reversible;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -35,33 +36,53 @@ import java.util.stream.Stream;
 public final class RetainStep<S> extends FilterStep<S> implements Reversible {
 
     private final String sideEffectKeyOrPathLabel;
+    private final Collection<S> retainCollection;
+    private final S retainObject;
+    private final short choice;
 
     public RetainStep(final Traversal.Admin traversal, final String sideEffectKeyOrPathLabel) {
         super(traversal);
         this.sideEffectKeyOrPathLabel = sideEffectKeyOrPathLabel;
-        this.setPredicate(traverser -> {
-            final Object retain = traverser.asAdmin().getSideEffects().exists(this.sideEffectKeyOrPathLabel) ?
-                    traverser.sideEffects(this.sideEffectKeyOrPathLabel) :
-                    traverser.path(this.sideEffectKeyOrPathLabel);
-            return retain instanceof Collection ?
-                    ((Collection) retain).contains(traverser.get()) :
-                    retain.equals(traverser.get());
-
-        });
+        this.retainCollection = null;
+        this.retainObject = null;
+        this.choice = 0;
     }
 
     public RetainStep(final Traversal.Admin traversal, final Collection<S> retainCollection) {
         super(traversal);
         this.sideEffectKeyOrPathLabel = null;
-        this.setPredicate(traverser -> retainCollection.contains(traverser.get()));
+        this.retainCollection = retainCollection;
+        this.retainObject = null;
+        this.choice = 1;
     }
 
     public RetainStep(final Traversal.Admin traversal, final S retainObject) {
         super(traversal);
         this.sideEffectKeyOrPathLabel = null;
-        this.setPredicate(traverser -> retainObject.equals(traverser.get()));
+        this.retainCollection = null;
+        this.retainObject = retainObject;
+        this.choice = 2;
     }
 
+    @Override
+    protected boolean filter(final Traverser.Admin<S> traverser) {
+        switch (this.choice) {
+            case 0: {
+                final Object retain = traverser.asAdmin().getSideEffects().exists(this.sideEffectKeyOrPathLabel) ?
+                        traverser.sideEffects(this.sideEffectKeyOrPathLabel) :
+                        traverser.path(this.sideEffectKeyOrPathLabel);
+                return retain instanceof Collection ?
+                        ((Collection) retain).contains(traverser.get()) :
+                        retain.equals(traverser.get());
+            }
+            case 1:
+                return this.retainCollection.contains(traverser.get());
+            default:
+                return this.retainObject.equals(traverser.get());
+        }
+    }
+
+    @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.sideEffectKeyOrPathLabel);
     }
