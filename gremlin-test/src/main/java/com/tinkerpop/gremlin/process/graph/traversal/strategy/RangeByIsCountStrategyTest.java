@@ -108,7 +108,6 @@ public abstract class RangeByIsCountStrategyTest extends AbstractGremlinProcessT
 
     public static class ComputerTest extends RangeByIsCountStrategyTest {
         @Test
-        @Ignore // TODO: include when #558 is solved
         @LoadGraphWith(MODERN)
         public void nestedCountEqualsNullShouldLimitToOne() {
             final AtomicInteger counter = new AtomicInteger(0);
