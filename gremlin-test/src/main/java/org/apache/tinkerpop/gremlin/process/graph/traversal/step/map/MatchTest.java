@@ -16,24 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.step.map;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
-import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.traversal.__;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.match.Bindings;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.match.CrossJoinEnumerator;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.match.Enumerator;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.match.InnerJoinEnumerator;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.match.IteratorEnumerator;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.match.MatchStep;
-import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
-import com.tinkerpop.gremlin.process.util.MapHelper;
-import com.tinkerpop.gremlin.structure.Compare;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.Bindings;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.CrossJoinEnumerator;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.Enumerator;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.InnerJoinEnumerator;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.IteratorEnumerator;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.util.MapHelper;
+import org.apache.tinkerpop.gremlin.structure.Compare;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -49,10 +49,10 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.traversal.__.as;
-import static com.tinkerpop.gremlin.process.graph.traversal.__.out;
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.as;
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.out;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

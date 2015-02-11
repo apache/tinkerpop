@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.step.map
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
-import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.ComputerTestHelper
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.VertexTest
-import com.tinkerpop.gremlin.structure.Compare
-import com.tinkerpop.gremlin.structure.Direction
-import com.tinkerpop.gremlin.structure.Edge
-import com.tinkerpop.gremlin.structure.Vertex
+import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexTest
+import org.apache.tinkerpop.gremlin.structure.Compare
+import org.apache.tinkerpop.gremlin.structure.Direction
+import org.apache.tinkerpop.gremlin.structure.Edge
+import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

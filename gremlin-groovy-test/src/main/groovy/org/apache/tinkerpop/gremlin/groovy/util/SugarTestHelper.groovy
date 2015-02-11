@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.util
+package org.apache.tinkerpop.gremlin.groovy.util
 
-import com.tinkerpop.gremlin.GraphProvider
+import org.apache.tinkerpop.gremlin.GraphProvider
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

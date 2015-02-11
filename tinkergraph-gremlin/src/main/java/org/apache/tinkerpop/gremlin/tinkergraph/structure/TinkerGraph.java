@@ -16,23 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.tinkergraph.structure;
+package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.process.TraversalStrategies;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Transaction;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
-import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strategy.TinkerElementStepStrategy;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strategy.TinkerGraphStepStrategy;
-import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strategy.TinkerElementStepStrategy;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strategy.TinkerGraphStepStrategy;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
@@ -86,7 +86,7 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
     /**
-     * An empty private constructor that initializes {@link TinkerGraph} with no {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.  Primarily
+     * An empty private constructor that initializes {@link TinkerGraph} with no {@link org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy}.  Primarily
      * used for purposes of serialization issues.
      */
     private TinkerGraph() {
@@ -95,7 +95,7 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     /**
      * Open a new {@link TinkerGraph} instance.
      * <p/>
-     * <b>Reference Implementation Help:</b> If a {@link com.tinkerpop.gremlin.structure.Graph } implementation does not require a
+     * <b>Reference Implementation Help:</b> If a {@link org.apache.tinkerpop.gremlin.structure.Graph } implementation does not require a
      * {@link org.apache.commons.configuration.Configuration} (or perhaps has a default configuration) it can choose to implement a zero argument
      * open() method. This is an optional constructor method for TinkerGraph. It is not enforced by the Gremlin
      * Test Suite.
@@ -108,16 +108,16 @@ public class TinkerGraph implements Graph, Graph.Iterators {
      * Open a new {@link TinkerGraph} instance.
      * <p/>
      * <b>Reference Implementation Help:</b> This method is the one use by the
-     * {@link com.tinkerpop.gremlin.structure.util.GraphFactory} to instantiate
-     * {@link com.tinkerpop.gremlin.structure.Graph} instances.  This method must be overridden for the Blueprint Test
+     * {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory} to instantiate
+     * {@link org.apache.tinkerpop.gremlin.structure.Graph} instances.  This method must be overridden for the Blueprint Test
      * Suite to pass. Implementers have latitude in terms of how exceptions are handled within this method.  Such
      * exceptions will be considered implementation specific by the test suite as all test generate graph instances
-     * by way of {@link com.tinkerpop.gremlin.structure.util.GraphFactory}. As such, the exceptions get generalized
-     * behind that facade and since {@link com.tinkerpop.gremlin.structure.util.GraphFactory} is the preferred method
+     * by way of {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}. As such, the exceptions get generalized
+     * behind that facade and since {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory} is the preferred method
      * to opening graphs it will be consistent at that level.
      *
      * @param configuration the configuration for the instance
-     * @return a newly opened {@link com.tinkerpop.gremlin.structure.Graph}
+     * @return a newly opened {@link org.apache.tinkerpop.gremlin.structure.Graph}
      */
     public static TinkerGraph open(final Configuration configuration) {
         return new TinkerGraph();

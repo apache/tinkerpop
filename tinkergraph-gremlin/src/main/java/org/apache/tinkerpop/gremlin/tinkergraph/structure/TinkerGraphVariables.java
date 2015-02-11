@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.tinkergraph.structure;
+package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.util.GraphVariableHelper;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.GraphVariableHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Map;
 import java.util.Optional;

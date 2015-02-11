@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server.util;
+package org.apache.tinkerpop.gremlin.server.util;
 
-import com.tinkerpop.gremlin.groovy.plugin.Artifact;
-import com.tinkerpop.gremlin.groovy.util.DependencyGrabber;
+import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
+import org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber;
 import groovy.lang.GroovyClassLoader;
 
 /**

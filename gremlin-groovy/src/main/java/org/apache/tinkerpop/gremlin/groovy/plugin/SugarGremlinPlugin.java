@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.plugin;
+package org.apache.tinkerpop.gremlin.groovy.plugin;
 
-import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
+import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

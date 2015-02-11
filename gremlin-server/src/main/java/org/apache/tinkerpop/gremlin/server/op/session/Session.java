@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server.op.session;
+package org.apache.tinkerpop.gremlin.server.op.session;
 
-import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import com.tinkerpop.gremlin.server.Context;
-import com.tinkerpop.gremlin.server.Graphs;
-import com.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.server.Context;
+import org.apache.tinkerpop.gremlin.server.Graphs;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

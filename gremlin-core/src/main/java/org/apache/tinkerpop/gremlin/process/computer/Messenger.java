@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer;
+package org.apache.tinkerpop.gremlin.process.computer;
 
 /**
  * The {@link Messenger} serves as the routing system for messages between vertices. For distributed systems,

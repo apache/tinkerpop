@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server.channel;
+package org.apache.tinkerpop.gremlin.server.channel;
 
-import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import com.tinkerpop.gremlin.server.AbstractChannelizer;
-import com.tinkerpop.gremlin.server.Graphs;
-import com.tinkerpop.gremlin.server.Settings;
-import com.tinkerpop.gremlin.server.handler.NioGremlinBinaryRequestDecoder;
-import com.tinkerpop.gremlin.server.handler.NioGremlinResponseEncoder;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
+import org.apache.tinkerpop.gremlin.server.Graphs;
+import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.handler.NioGremlinBinaryRequestDecoder;
+import org.apache.tinkerpop.gremlin.server.handler.NioGremlinResponseEncoder;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * A {@link com.tinkerpop.gremlin.server.Channelizer} that exposes an NIO-based Gremlin endpoint with a custom
+ * A {@link org.apache.tinkerpop.gremlin.server.Channelizer} that exposes an NIO-based Gremlin endpoint with a custom
  * protocol.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.util
+package org.apache.tinkerpop.gremlin.groovy.util
 
-import com.tinkerpop.gremlin.groovy.plugin.Artifact
+import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact
 import groovy.grape.Grape
 import org.apache.commons.lang3.SystemUtils
 

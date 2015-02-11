@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.traversal.step;
+package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.util.iterator.MultiIterator;
-import com.tinkerpop.gremlin.process.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.Step;
+import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.util.iterator.MultiIterator;
+import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
 
 import java.io.Serializable;
 import java.util.Iterator;

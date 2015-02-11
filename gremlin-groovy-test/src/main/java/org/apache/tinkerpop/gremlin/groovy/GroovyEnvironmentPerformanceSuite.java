@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy;
+package org.apache.tinkerpop.gremlin.groovy;
 
-import com.tinkerpop.gremlin.AbstractGremlinSuite;
-import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.GraphManager;
-import com.tinkerpop.gremlin.groovy.engine.GremlinExecutorPerformanceTest;
-import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
-import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
+import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.GraphManager;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutorPerformanceTest;
+import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
+import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 

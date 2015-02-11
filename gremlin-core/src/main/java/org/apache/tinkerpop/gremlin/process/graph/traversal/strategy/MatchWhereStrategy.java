@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.strategy;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 
-import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.WhereStep;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.SelectOneStep;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.SelectStep;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.match.MatchStep;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.IdentityStep;
-import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.Step;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SelectOneStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SelectStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.MatchStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.IdentityStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.HashSet;
 import java.util.List;

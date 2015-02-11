@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.io;
+package org.apache.tinkerpop.gremlin.structure.io;
 
 /**
  * Represents a low-level serialization class that can be used to map classes to serializers.  These implementation

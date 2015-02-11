@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server.util;
+package org.apache.tinkerpop.gremlin.server.util;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;

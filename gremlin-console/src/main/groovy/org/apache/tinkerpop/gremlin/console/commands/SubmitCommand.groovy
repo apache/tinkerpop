@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console.commands
+package org.apache.tinkerpop.gremlin.console.commands
 
-import com.tinkerpop.gremlin.console.Mediator
+import org.apache.tinkerpop.gremlin.console.Mediator
 import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 

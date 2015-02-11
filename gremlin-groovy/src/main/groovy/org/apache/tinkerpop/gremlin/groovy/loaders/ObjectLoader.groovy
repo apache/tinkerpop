@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.loaders
+package org.apache.tinkerpop.gremlin.groovy.loaders
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.strategy;
+package org.apache.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Transaction;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
-import com.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
+import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.Iterator;
@@ -38,8 +38,8 @@ import java.util.function.UnaryOperator;
 /**
  * A wrapper class for {@link Graph} instances that host and apply a {@link GraphStrategy}.  The wrapper implements
  * {@link Graph} itself and intercepts calls made to the hosted instance and then applies the strategy.  Methods
- * that return an extension of {@link com.tinkerpop.gremlin.structure.Element} or a
- * {@link com.tinkerpop.gremlin.structure.Property} will be automatically wrapped in a {@link StrategyWrapped}
+ * that return an extension of {@link org.apache.tinkerpop.gremlin.structure.Element} or a
+ * {@link org.apache.tinkerpop.gremlin.structure.Property} will be automatically wrapped in a {@link StrategyWrapped}
  * implementation.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -73,7 +73,7 @@ public class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, W
     }
 
     /**
-     * Gets the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} for the {@link com.tinkerpop.gremlin.structure.Graph}.
+     * Gets the {@link org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy} for the {@link org.apache.tinkerpop.gremlin.structure.Graph}.
      */
     public GraphStrategy getStrategy() {
         return this.strategy;
@@ -83,7 +83,7 @@ public class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, W
      * Return a {@link GraphStrategy} function that takes the base function of the form denoted by {@code T} as
      * an argument and returns back a function with {@code T}.
      *
-     * @param f    a function to execute if a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
+     * @param f    a function to execute if a {@link org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
      * @param impl the base implementation of an operation.
      * @return a function that will be applied in the Gremlin Structure implementation
      */

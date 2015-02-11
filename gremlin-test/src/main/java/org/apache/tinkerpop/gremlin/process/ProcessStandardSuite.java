@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process;
+package org.apache.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.AbstractGremlinSuite;
-import com.tinkerpop.gremlin.process.graph.traversal.step.branch.*;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.*;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.*;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.*;
-import com.tinkerpop.gremlin.process.graph.traversal.step.util.TraversalSideEffectsTest;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategyTest;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
-import com.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
-import com.tinkerpop.gremlin.process.util.PathTest;
+import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.*;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.*;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.*;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.*;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.TraversalSideEffectsTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategyTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
+import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
+import org.apache.tinkerpop.gremlin.process.util.PathTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -38,13 +38,13 @@ import java.util.stream.Stream;
 
 /**
  * The {@code ProcessStandardSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
- * {@link com.tinkerpop.gremlin.structure.Graph} implementation.  This specialized test suite and runner is for use
- * by Gremlin implementers to test their {@link com.tinkerpop.gremlin.structure.Graph} implementations.  The
+ * {@link org.apache.tinkerpop.gremlin.structure.Graph} implementation.  This specialized test suite and runner is for use
+ * by Gremlin implementers to test their {@link org.apache.tinkerpop.gremlin.structure.Graph} implementations.  The
  * {@code ProcessStandardSuite} ensures consistency and validity of the implementations that they test.
  * <p/>
  * To use the {@code ProcessStandardSuite} define a class in a test module.  Simple naming would expect the name of the
  * implementation followed by "ProcessStandardSuite".  This class should be annotated as follows (note that the "Suite"
- * implements {@link com.tinkerpop.gremlin.GraphProvider} as a convenience only. It could be implemented in a
+ * implements {@link org.apache.tinkerpop.gremlin.GraphProvider} as a convenience only. It could be implemented in a
  * separate class file):
  * <p/>
  * <code>
@@ -55,10 +55,10 @@ import java.util.stream.Stream;
  * }
  * </code>
  * <p/>
- * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the {@code ProcessStandardSuite} to
- * instantiate {@link com.tinkerpop.gremlin.structure.Graph} instances from the implementation being tested to inject
+ * Implementing {@link org.apache.tinkerpop.gremlin.GraphProvider} provides a way for the {@code ProcessStandardSuite} to
+ * instantiate {@link org.apache.tinkerpop.gremlin.structure.Graph} instances from the implementation being tested to inject
  * into tests in the suite.  The ProcessStandardSuite will utilized
- * {@link com.tinkerpop.gremlin.structure.Graph.Features} defined in the suite to determine which tests will be executed.
+ * {@link org.apache.tinkerpop.gremlin.structure.Graph.Features} defined in the suite to determine which tests will be executed.
  * <br/>
  */
 public class ProcessStandardSuite extends AbstractGremlinSuite {
@@ -102,7 +102,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             MeanTest.StandardTest.class,
             MinTest.StandardTest.class,
             OrderTest.StandardTest.class,
-            com.tinkerpop.gremlin.process.graph.traversal.step.map.PathTest.StandardTest.class,
+            org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PathTest.StandardTest.class,
             PropertiesTest.StandardTest.class,
             SelectTest.StandardTest.class,
             VertexTest.StandardTest.class,
@@ -177,7 +177,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             MeanTest.class,
             MinTest.class,
             OrderTest.class,
-            com.tinkerpop.gremlin.process.graph.traversal.step.map.PathTest.class,
+            org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PathTest.class,
             SelectTest.class,
             VertexTest.class,
             UnfoldTest.class,

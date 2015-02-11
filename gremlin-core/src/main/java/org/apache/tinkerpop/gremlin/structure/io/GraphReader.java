@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.io;
+package org.apache.tinkerpop.gremlin.structure.io;
 
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,7 +71,7 @@ public interface GraphReader {
 
     /**
      * Reads a set of vertices from an {@link InputStream} which were written by
-     * {@link GraphWriter#writeVertices(java.io.OutputStream, com.tinkerpop.gremlin.process.Traversal)}.  This method
+     * {@link GraphWriter#writeVertices(java.io.OutputStream, org.apache.tinkerpop.gremlin.process.Traversal)}.  This method
      * will read vertex properties as well as edges given the direction supplied as an argument.
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}

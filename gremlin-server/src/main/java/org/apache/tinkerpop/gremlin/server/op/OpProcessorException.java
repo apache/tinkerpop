@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server.op;
+package org.apache.tinkerpop.gremlin.server.op;
 
-import com.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

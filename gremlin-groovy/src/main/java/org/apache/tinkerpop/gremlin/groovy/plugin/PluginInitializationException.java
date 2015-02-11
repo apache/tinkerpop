@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.plugin;
+package org.apache.tinkerpop.gremlin.groovy.plugin;
 
 /**
  * An exception that occurs as a result of plugin initialization, typically triggered by a bad evaluation in the

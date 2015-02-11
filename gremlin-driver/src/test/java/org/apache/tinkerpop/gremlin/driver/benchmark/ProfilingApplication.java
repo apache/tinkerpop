@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.driver.benchmark;
+package org.apache.tinkerpop.gremlin.driver.benchmark;
 
-import com.tinkerpop.gremlin.driver.Client;
-import com.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.Client;
+import org.apache.tinkerpop.gremlin.driver.Cluster;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;

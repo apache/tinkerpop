@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.step.map
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
-import com.tinkerpop.gremlin.process.ComputerTestHelper
-import com.tinkerpop.gremlin.process.Path
-import com.tinkerpop.gremlin.process.T
-import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.structure.Vertex
+import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.Path
+import org.apache.tinkerpop.gremlin.process.T
+import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.structure.Vertex
 
-import static com.tinkerpop.gremlin.process.graph.traversal.__.out
-import static com.tinkerpop.gremlin.process.graph.traversal.__.outE
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.out
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.outE
 
 /**
  *

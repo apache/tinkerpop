@@ -16,27 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.util;
+package org.apache.tinkerpop.gremlin.structure.util;
 
-import com.tinkerpop.gremlin.process.TraversalSideEffects;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.computer.ComputerResult;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.Memory;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import com.tinkerpop.gremlin.structure.strategy.StrategyElement;
-import com.tinkerpop.gremlin.structure.strategy.StrategyProperty;
-import com.tinkerpop.gremlin.structure.strategy.StrategyVariables;
-import com.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.Memory;
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import org.apache.tinkerpop.gremlin.structure.strategy.StrategyElement;
+import org.apache.tinkerpop.gremlin.structure.strategy.StrategyProperty;
+import org.apache.tinkerpop.gremlin.structure.strategy.StrategyVariables;
+import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.javatuples.Pair;
 
 import java.lang.reflect.Method;
@@ -78,14 +78,14 @@ public final class StringFactory {
     }
 
     /**
-     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Vertex}.
+     * Construct the representation for a {@link org.apache.tinkerpop.gremlin.structure.Vertex}.
      */
     public static String vertexString(final Vertex vertex) {
         return V + L_BRACKET + vertex.id() + R_BRACKET;
     }
 
     /**
-     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Edge}.
+     * Construct the representation for a {@link org.apache.tinkerpop.gremlin.structure.Edge}.
      */
     public static String edgeString(final Edge edge) {
         final Vertex inV = edge.iterators().vertexIterator(Direction.IN).next();
@@ -94,7 +94,7 @@ public final class StringFactory {
     }
 
     /**
-     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Property} or {@link com.tinkerpop.gremlin.structure.VertexProperty}.
+     * Construct the representation for a {@link org.apache.tinkerpop.gremlin.structure.Property} or {@link org.apache.tinkerpop.gremlin.structure.VertexProperty}.
      */
     public static String propertyString(final Property property) {
         if (property instanceof VertexProperty) {
@@ -109,7 +109,7 @@ public final class StringFactory {
     }
 
     /**
-     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Graph}.
+     * Construct the representation for a {@link org.apache.tinkerpop.gremlin.structure.Graph}.
      *
      * @param internalString a mapper {@link String} that appends to the end of the standard representation
      */
@@ -118,7 +118,7 @@ public final class StringFactory {
     }
 
     /**
-     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
+     * Construct the representation for a {@link org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
      */
 
     public static String graphStrategyString(final GraphStrategy graphStrategy) {

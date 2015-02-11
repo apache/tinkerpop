@@ -16,24 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.util.batch;
+package org.apache.tinkerpop.gremlin.structure.util.batch;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.traversal.VertexTraversal;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Transaction;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
-import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.VertexTraversal;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
@@ -54,7 +54,7 @@ import java.util.function.Function;
  * {@code BatchGraph} is ONLY meant for loading data and does not support any retrieval or removal operations.
  * That is, BatchGraph only supports the following methods:
  * - {@link #addVertex(Object...)} for adding vertices
- * - {@link Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)} for adding edges
+ * - {@link Vertex#addEdge(String, org.apache.tinkerpop.gremlin.structure.Vertex, Object...)} for adding edges
  * - {@link #V(Object...)} to be used when adding edges
  * - Property getter, setter and removal methods for vertices and edges.
  * <br />
@@ -65,13 +65,13 @@ import java.util.function.Function;
  * {@code BatchGraph} can also automatically set the provided element ids as properties on the respective element. Use
  * {@link Builder#vertexIdKey(String)} and {@link Builder#edgeIdKey(String)} to set the keys
  * for the vertex and edge properties respectively. This allows to make the loaded baseGraph compatible for later
- * operation with {@link com.tinkerpop.gremlin.structure.strategy.IdStrategy}.
+ * operation with {@link org.apache.tinkerpop.gremlin.structure.strategy.IdStrategy}.
  * <br/>
- * Note that {@code BatchGraph} itself is not a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} because
+ * Note that {@code BatchGraph} itself is not a {@link org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy} because
  * it requires that the {@link Vertex} implementation not hold on to the underlying {@link Vertex} reference and
- * {@link com.tinkerpop.gremlin.structure.strategy.StrategyVertex} does that by it's very nature.  While it might
+ * {@link org.apache.tinkerpop.gremlin.structure.strategy.StrategyVertex} does that by it's very nature.  While it might
  * be possible to work around this issue, it is likely better for performance to simply leave this as a "half-wrapper"
- * implementation, instead of forcing it into a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
+ * implementation, instead of forcing it into a {@link org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
  *
  * @author Matthias Broecheler (http://www.matthiasb.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -593,7 +593,7 @@ public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
         }
 
         /**
-         * Number of mutations to perform between calls to {@link com.tinkerpop.gremlin.structure.Transaction#commit}.
+         * Number of mutations to perform between calls to {@link org.apache.tinkerpop.gremlin.structure.Transaction#commit}.
          */
         public Builder bufferSize(long bufferSize) {
             if (bufferSize <= 0) throw new IllegalArgumentException("BufferSize must be positive");

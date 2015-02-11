@@ -16,20 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.jsr223;
+package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.FeatureRequirementSet;
-import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
-import com.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
-import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.StreamFactory;
-import com.tinkerpop.gremlin.util.config.YamlConfiguration;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
+import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.util.config.YamlConfiguration;
 import groovy.lang.Closure;
 import groovy.lang.Script;
 import org.junit.Assert;
@@ -129,7 +129,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
             assertTrue(se instanceof ScriptException);
         }
 
-        engine.addImports(new HashSet<>(Arrays.asList("import com.tinkerpop.gremlin.structure.Vertex")));
+        engine.addImports(new HashSet<>(Arrays.asList("import org.apache.tinkerpop.gremlin.structure.Vertex")));
         assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
     }
 

@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.traverser.util;
+package org.apache.tinkerpop.gremlin.process.traverser.util;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraverserGenerator;
-import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_TraverserGenerator;
-import com.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_TraverserGenerator;
-import com.tinkerpop.gremlin.process.traverser.B_O_TraverserGenerator;
-import com.tinkerpop.gremlin.process.traverser.O_TraverserGenerator;
-import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traverser.B_O_TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traverser.O_TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Set;
 

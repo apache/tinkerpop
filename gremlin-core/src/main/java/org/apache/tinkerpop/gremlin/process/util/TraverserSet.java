@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.util;
+package org.apache.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.Traverser;
 
 import java.io.Serializable;
 import java.util.AbstractSet;

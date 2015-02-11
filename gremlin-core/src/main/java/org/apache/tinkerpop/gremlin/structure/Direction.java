@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
 /**
  * {@link Direction} is used to denote the direction of an {@link Edge} or location of a {@link Vertex} on an

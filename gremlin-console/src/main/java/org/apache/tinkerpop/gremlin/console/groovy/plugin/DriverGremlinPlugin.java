@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console.groovy.plugin;
+package org.apache.tinkerpop.gremlin.console.groovy.plugin;
 
-import com.tinkerpop.gremlin.driver.Cluster;
-import com.tinkerpop.gremlin.driver.exception.ConnectionException;
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
-import com.tinkerpop.gremlin.driver.ser.SerTokens;
-import com.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
-import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
-import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
-import com.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
-import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
+import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.ser.SerTokens;
+import org.apache.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
+import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
+import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
+import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 
 import java.util.HashSet;
 import java.util.Optional;

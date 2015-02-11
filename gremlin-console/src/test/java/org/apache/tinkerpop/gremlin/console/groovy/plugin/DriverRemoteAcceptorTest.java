@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console.groovy.plugin;
+package org.apache.tinkerpop.gremlin.console.groovy.plugin;
 
-import com.tinkerpop.gremlin.TestHelper;
-import com.tinkerpop.gremlin.groovy.plugin.RemoteException;
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.junit.After;
 import org.junit.Before;

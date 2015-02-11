@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.strategy.process.graph.step.sideEffect;
+package org.apache.tinkerpop.gremlin.structure.strategy.process.graph.step.sideEffect;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.strategy.StrategyEdge;
-import com.tinkerpop.gremlin.structure.strategy.StrategyGraph;
-import com.tinkerpop.gremlin.structure.strategy.StrategyVertex;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.strategy.StrategyEdge;
+import org.apache.tinkerpop.gremlin.structure.strategy.StrategyGraph;
+import org.apache.tinkerpop.gremlin.structure.strategy.StrategyVertex;
 
 import java.util.Iterator;
 

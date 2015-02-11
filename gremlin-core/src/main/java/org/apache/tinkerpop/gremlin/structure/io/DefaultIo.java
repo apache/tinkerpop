@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.io;
+package org.apache.tinkerpop.gremlin.structure.io;
 
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

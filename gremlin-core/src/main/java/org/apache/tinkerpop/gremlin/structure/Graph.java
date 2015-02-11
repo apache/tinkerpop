@@ -16,27 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
-import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.structure.io.DefaultIo;
-import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
-import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
-import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import com.tinkerpop.gremlin.structure.strategy.SequenceStrategy;
-import com.tinkerpop.gremlin.structure.strategy.StrategyGraph;
-import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.io.DefaultIo;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import org.apache.tinkerpop.gremlin.structure.strategy.SequenceStrategy;
+import org.apache.tinkerpop.gremlin.structure.strategy.StrategyGraph;
+import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
@@ -212,7 +212,7 @@ public interface Graph extends AutoCloseable {
 
     /**
      * Get the {@link org.apache.commons.configuration.Configuration} associated with the construction of this graph.
-     * Whatever configuration was passed to {@link com.tinkerpop.gremlin.structure.util.GraphFactory#open(org.apache.commons.configuration.Configuration)}
+     * Whatever configuration was passed to {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory#open(org.apache.commons.configuration.Configuration)}
      * is what should be returned by this method.
      *
      * @return the configuration used during graph construction.
@@ -228,7 +228,7 @@ public interface Graph extends AutoCloseable {
 
     /**
      * An interface that provides access to iterators over {@link Vertex} objects and {@link Edge} objects of the graph
-     * without constructing a {@link com.tinkerpop.gremlin.process.Traversal} object.
+     * without constructing a {@link org.apache.tinkerpop.gremlin.process.Traversal} object.
      */
     public interface Iterators {
         /**
@@ -250,15 +250,15 @@ public interface Graph extends AutoCloseable {
 
     /**
      * Provides access to functions related to reading and writing graph data.  Implementers can override these
-     * methods to provider mapper configurations to the default {@link com.tinkerpop.gremlin.structure.io.GraphReader}
-     * and {@link com.tinkerpop.gremlin.structure.io.GraphWriter} implementations (i.e. to register mapper
+     * methods to provider mapper configurations to the default {@link org.apache.tinkerpop.gremlin.structure.io.GraphReader}
+     * and {@link org.apache.tinkerpop.gremlin.structure.io.GraphWriter} implementations (i.e. to register mapper
      * serialization classes).
      */
     public interface Io {
         /**
-         * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for Kryo serializations. This
+         * Creates a {@link org.apache.tinkerpop.gremlin.structure.io.GraphReader} builder for Kryo serializations. This
          * method calls the {@link Io#kryoMapper} method to supply to
-         * {@link com.tinkerpop.gremlin.structure.io.kryo.KryoReader.Builder#mapper} which means that implementers
+         * {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader.Builder#mapper} which means that implementers
          * should usually just override {@link Io#kryoMapper} to append in their mapper classes.
          */
         public default KryoReader.Builder kryoReader() {
@@ -266,9 +266,9 @@ public interface Graph extends AutoCloseable {
         }
 
         /**
-         * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphWriter} builder for Kryo serializations. This
+         * Creates a {@link org.apache.tinkerpop.gremlin.structure.io.GraphWriter} builder for Kryo serializations. This
          * method calls the {@link Io#kryoMapper} method to supply to
-         * {@link com.tinkerpop.gremlin.structure.io.kryo.KryoWriter.Builder#mapper} which means that implementers
+         * {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter.Builder#mapper} which means that implementers
          * should usually just override {@link Io#kryoMapper} to append in their mapper classes.
          */
         public default KryoWriter.Builder kryoWriter() {
@@ -286,16 +286,16 @@ public interface Graph extends AutoCloseable {
         public void readKryo(final String file) throws IOException;
 
         /**
-         * By default, this method creates an instance of the most current version of {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} which is
+         * By default, this method creates an instance of the most current version of {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper} which is
          * used to serialize data to and from the graph.   Implementers with mapper classes (e.g. a non-primitive
          * class returned from {@link Element#id}) should override this method with those classes automatically
-         * registered to the returned {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper}.
+         * registered to the returned {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper}.
          * <br/>
          * Implementers should respect versions.  Once a class is registered, the order of its registration should be
          * maintained. Note that registering such classes will reduce the portability of the graph data as data
-         * written with {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} will not be readable without this serializer configuration.  It is
+         * written with {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper} will not be readable without this serializer configuration.  It is
          * considered good practice to make serialization classes generally available so that users may
-         * register these classes themselves if necessary when building up a mapper {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper}
+         * register these classes themselves if necessary when building up a mapper {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper}
          * instance.
          * <br/>
          * Note that this method is meant to return current versions for serialization operations.  Users wishing
@@ -306,7 +306,7 @@ public interface Graph extends AutoCloseable {
         }
 
         /**
-         * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for GraphML serializations. GraphML
+         * Creates a {@link org.apache.tinkerpop.gremlin.structure.io.GraphReader} builder for GraphML serializations. GraphML
          * is the most portable of all the formats, but comes at the price of the least flexibility.
          * {@code Graph} implementations that have mapper classes that need to be serialized will not be able
          * to properly use this format effectively.
@@ -316,7 +316,7 @@ public interface Graph extends AutoCloseable {
         }
 
         /**
-         * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphWriter} builder for GraphML serializations. GraphML
+         * Creates a {@link org.apache.tinkerpop.gremlin.structure.io.GraphWriter} builder for GraphML serializations. GraphML
          * is the most portable of all the formats, but comes at the price of the least flexibility.
          * {@code Graph} implementations that have mapper classes that need to be serialized will not be able
          * to properly use this format effectively.
@@ -336,9 +336,9 @@ public interface Graph extends AutoCloseable {
         public void readGraphML(final String file) throws IOException;
 
         /**
-         * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphReader} builder for GraphSON serializations.
+         * Creates a {@link org.apache.tinkerpop.gremlin.structure.io.GraphReader} builder for GraphSON serializations.
          * GraphSON is forgiving for implementers and will typically do a "reasonable" job in serializing most
-         * mapper classes.  This method by default uses the {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper} created by
+         * mapper classes.  This method by default uses the {@link org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper} created by
          * {@link #graphSONMapper}.  That method enables implementers to register mapper serialization
          * modules for classes that do not serialize nicely by the default JSON serializers or completely
          * fail to do so.
@@ -348,9 +348,9 @@ public interface Graph extends AutoCloseable {
         }
 
         /**
-         * Creates a {@link com.tinkerpop.gremlin.structure.io.GraphWriter} builder for GraphML serializations.
+         * Creates a {@link org.apache.tinkerpop.gremlin.structure.io.GraphWriter} builder for GraphML serializations.
          * GraphSON is forgiving for implementers and will typically do a "reasonable" job in serializing most
-         * mapper classes.  This method by default uses the {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper} created by
+         * mapper classes.  This method by default uses the {@link org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper} created by
          * {@link #graphSONMapper}. That method enables implementers to register mapper serialization
          * modules for classes that do not serialize nicely by the default JSON serializers or completely
          * fail to do so.
@@ -371,17 +371,17 @@ public interface Graph extends AutoCloseable {
 
         /**
          * By default, this method creates an instance of the most current version of
-         * {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper.Builder} which is can produce a
-         * {@link com.tinkerpop.gremlin.structure.io.Mapper} implementation for GraphSON to
+         * {@link org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper.Builder} which is can produce a
+         * {@link org.apache.tinkerpop.gremlin.structure.io.Mapper} implementation for GraphSON to
          * serialize data to and from the graph.   Implementers with custom classes (e.g. a
          * non-primitive class returned from {@link Element#id}) should override this method with serialization
          * modules added.
          * <br/>
          * It is considered good practice to make serialization classes generally available so that users may
-         * register these classes themselves if necessary when building up a mapper {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper}
+         * register these classes themselves if necessary when building up a mapper {@link org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper}
          * instance.
          * <br/>
-         * Note that this method is meant to return a {@link com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper.Builder} with default configuration
+         * Note that this method is meant to return a {@link org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper.Builder} with default configuration
          * for the current {@link Graph}.  Users can adjust and override such settings by altering the builder
          * settings.
          */
@@ -500,7 +500,7 @@ public interface Graph extends AutoCloseable {
 
             /**
              * Determines if the {@code Graph} implementation supports
-             * {@link com.tinkerpop.gremlin.process.computer.GraphComputer} based processing.
+             * {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer} based processing.
              */
             @FeatureDescriptor(name = FEATURE_COMPUTER)
             public default boolean supportsComputer() {
@@ -528,7 +528,7 @@ public interface Graph extends AutoCloseable {
 
             /**
              * Determines if the {@code Graph} implementation supports threaded transactions which allow a transaction
-             * to be executed across multiple threads via {@link com.tinkerpop.gremlin.structure.Transaction#create()}.
+             * to be executed across multiple threads via {@link org.apache.tinkerpop.gremlin.structure.Transaction#create()}.
              */
             @FeatureDescriptor(name = FEATURE_THREADED_TRANSACTIONS)
             public default boolean supportsThreadedTransactions() {
@@ -817,13 +817,13 @@ public interface Graph extends AutoCloseable {
         }
 
         /**
-         * Features for {@link com.tinkerpop.gremlin.structure.Graph.Variables}.
+         * Features for {@link org.apache.tinkerpop.gremlin.structure.Graph.Variables}.
          */
         public interface VariableFeatures extends DataTypeFeatures {
             public static final String FEATURE_VARIABLES = "Variables";
 
             /**
-             * If any of the features on {@link com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures} is
+             * If any of the features on {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures} is
              * true then this value must be true.
              */
             @FeatureDescriptor(name = FEATURE_VARIABLES)
@@ -1110,16 +1110,16 @@ public interface Graph extends AutoCloseable {
     @Repeatable(OptIns.class)
     @Inherited
     public @interface OptIn {
-        public static String SUITE_STRUCTURE_STANDARD = "com.tinkerpop.gremlin.structure.StructureStandardSuite";
-        public static String SUITE_STRUCTURE_PERFORMANCE = "com.tinkerpop.gremlin.structure.StructurePerformanceSuite";
-        public static String SUITE_PROCESS_COMPUTER = "com.tinkerpop.gremlin.process.ProcessComputerSuite";
-        public static String SUITE_PROCESS_STANDARD = "com.tinkerpop.gremlin.process.ProcessStandardSuite";
-        public static String SUITE_PROCESS_PERFORMANCE = "com.tinkerpop.gremlin.process.ProcessPerformanceSuite";
-        public static String SUITE_GROOVY_PROCESS_STANDARD = "com.tinkerpop.gremlin.process.GroovyProcessStandardSuite";
-        public static String SUITE_GROOVY_PROCESS_COMPUTER = "com.tinkerpop.gremlin.process.GroovyProcessComputerSuite";
-        public static String SUITE_GROOVY_ENVIRONMENT = "com.tinkerpop.gremlin.groovy.GroovyEnvironmentSuite";
-        public static String SUITE_GROOVY_ENVIRONMENT_INTEGRATE = "com.tinkerpop.gremlin.groovy.GroovyEnvironmentIntegrateSuite";
-        public static String SUITE_GROOVY_ENVIRONMENT_PERFORMANCE = "com.tinkerpop.gremlin.groovy.GroovyEnvironmentPerformanceSuite";
+        public static String SUITE_STRUCTURE_STANDARD = "org.apache.tinkerpop.gremlin.structure.StructureStandardSuite";
+        public static String SUITE_STRUCTURE_PERFORMANCE = "org.apache.tinkerpop.gremlin.structure.StructurePerformanceSuite";
+        public static String SUITE_PROCESS_COMPUTER = "org.apache.tinkerpop.gremlin.process.ProcessComputerSuite";
+        public static String SUITE_PROCESS_STANDARD = "org.apache.tinkerpop.gremlin.process.ProcessStandardSuite";
+        public static String SUITE_PROCESS_PERFORMANCE = "org.apache.tinkerpop.gremlin.process.ProcessPerformanceSuite";
+        public static String SUITE_GROOVY_PROCESS_STANDARD = "org.apache.tinkerpop.gremlin.process.GroovyProcessStandardSuite";
+        public static String SUITE_GROOVY_PROCESS_COMPUTER = "org.apache.tinkerpop.gremlin.process.GroovyProcessComputerSuite";
+        public static String SUITE_GROOVY_ENVIRONMENT = "org.apache.tinkerpop.gremlin.groovy.GroovyEnvironmentSuite";
+        public static String SUITE_GROOVY_ENVIRONMENT_INTEGRATE = "org.apache.tinkerpop.gremlin.groovy.GroovyEnvironmentIntegrateSuite";
+        public static String SUITE_GROOVY_ENVIRONMENT_PERFORMANCE = "org.apache.tinkerpop.gremlin.groovy.GroovyEnvironmentPerformanceSuite";
 
         /**
          * The test suite class to opt in to.

@@ -64,10 +64,10 @@ if [ -z "${SCRIPT_DEBUG:-}" ]; then
 fi
 
 # Process options
-MAIN_CLASS=com.tinkerpop.gremlin.console.Console
+MAIN_CLASS=org.apache.tinkerpop.gremlin.console.Console
 while getopts "elv" opt; do
     case "$opt" in
-    e) MAIN_CLASS=com.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor
+    e) MAIN_CLASS=org.apache.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor
        # For compatibility with behavior pre-Titan-0.5.0, stop
        # processing gremlin.sh arguments as soon as the -e switch is
        # seen; everything following -e becomes arguments to the
@@ -80,7 +80,7 @@ while getopts "elv" opt; do
 	   SCRIPT_DEBUG=y
        fi
        ;;
-    v) MAIN_CLASS=com.tinkerpop.gremlin.util.Gremlin
+    v) MAIN_CLASS=org.apache.tinkerpop.gremlin.util.Gremlin
     esac
 done
 

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.graph.traversal.EdgeTraversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.EdgeTraversal;
 
 import java.util.Iterator;
 
@@ -55,7 +55,7 @@ public interface Edge extends Element, EdgeTraversal {
 
     /**
      * An interface that provides access to iterators over properties and vertices, without constructing a
-     * {@link com.tinkerpop.gremlin.process.Traversal} object.
+     * {@link org.apache.tinkerpop.gremlin.process.Traversal} object.
      */
     public interface Iterators extends Element.Iterators {
 

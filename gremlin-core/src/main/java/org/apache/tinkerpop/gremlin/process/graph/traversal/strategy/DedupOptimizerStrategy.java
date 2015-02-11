@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.strategy;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 
-import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.DedupStep;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.OrderGlobalStep;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.IdentityStep;
-import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
-import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.Step;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.DedupStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.OrderGlobalStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.IdentityStep;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Arrays;
 import java.util.List;

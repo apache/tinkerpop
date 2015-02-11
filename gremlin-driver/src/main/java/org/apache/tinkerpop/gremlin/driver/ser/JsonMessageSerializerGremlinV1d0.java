@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.driver.ser;
+package org.apache.tinkerpop.gremlin.driver.ser;
 
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 
 import java.nio.ByteBuffer;
 

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.process.computer.mapreduce;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.mapreduce;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

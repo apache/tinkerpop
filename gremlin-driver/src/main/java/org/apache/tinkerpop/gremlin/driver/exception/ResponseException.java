@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.driver.exception;
+package org.apache.tinkerpop.gremlin.driver.exception;
 
-import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

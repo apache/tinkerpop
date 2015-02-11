@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.groovy.plugin
+package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin
 
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.HiddenFileFilter
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.TextIterator
-import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable
-import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator
-import com.tinkerpop.gremlin.util.StreamFactory
+import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools
+import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HiddenFileFilter
+import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.TextIterator
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator
+import org.apache.tinkerpop.gremlin.util.StreamFactory
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.*
 import org.apache.hadoop.io.IOUtils

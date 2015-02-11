@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process;
+package org.apache.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.AbstractGremlinSuite;
-import com.tinkerpop.gremlin.structure.GraphReadPerformanceTest;
-import com.tinkerpop.gremlin.structure.GraphWritePerformanceTest;
+import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.structure.GraphReadPerformanceTest;
+import org.apache.tinkerpop.gremlin.structure.GraphWritePerformanceTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -31,7 +31,7 @@ import org.junit.runners.model.RunnerBuilder;
  * <p/>
  * To use the {@code ProcessPerformanceSuite} define a class in a test module.  Simple naming would expect the name of
  * the implementation followed by "ProcessPerformanceTest".  This class should be annotated as follows (note that
- * the "Suite" implements {@link com.tinkerpop.gremlin.GraphProvider} as a convenience only. It could be implemented in
+ * the "Suite" implements {@link org.apache.tinkerpop.gremlin.GraphProvider} as a convenience only. It could be implemented in
  * a separate class file):
  * <code>
  * @RunWith(ProcessPerformanceSuite.class)
@@ -39,10 +39,10 @@ import org.junit.runners.model.RunnerBuilder;
  * public class TinkerGraphProcessPerformanceTest implements GraphProvider {
  * }
  * </code>
- * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the {@code ProcessPerformanceSuite} to
- * instantiate {@link com.tinkerpop.gremlin.structure.Graph} instances from the implementation being tested to inject
+ * Implementing {@link org.apache.tinkerpop.gremlin.GraphProvider} provides a way for the {@code ProcessPerformanceSuite} to
+ * instantiate {@link org.apache.tinkerpop.gremlin.structure.Graph} instances from the implementation being tested to inject
  * into tests in the suite.  The {@code ProcessPerformanceSuite} will utilized
- * {@link com.tinkerpop.gremlin.structure.Graph.Features} defined in the suite to determine which tests will be
+ * {@link org.apache.tinkerpop.gremlin.structure.Graph.Features} defined in the suite to determine which tests will be
  * executed.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

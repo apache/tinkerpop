@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer;
+package org.apache.tinkerpop.gremlin.process.computer;
 
 /**
  * A MessageCombiner allows two messages in route to the same vertex to be aggregated into a single message.

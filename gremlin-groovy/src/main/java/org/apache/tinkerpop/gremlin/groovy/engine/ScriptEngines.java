@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.engine;
+package org.apache.tinkerpop.gremlin.groovy.engine;
 
-import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
-import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
-import com.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
-import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
-import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
+import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
+import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

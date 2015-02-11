@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.strategy;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 
-import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.IsStep;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeStep;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.CountStep;
-import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Compare;
-import com.tinkerpop.gremlin.structure.Contains;
+import org.apache.tinkerpop.gremlin.process.Step;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.IsStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Compare;
+import org.apache.tinkerpop.gremlin.structure.Contains;
 
 import java.util.*;
 import java.util.function.BiPredicate;

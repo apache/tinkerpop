@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.step.branch;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.traversal.lambda.HasNextTraversal;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.HasNextTraversal;
 
 /**
  * A step which offers a choice of two or more Traversals to take.

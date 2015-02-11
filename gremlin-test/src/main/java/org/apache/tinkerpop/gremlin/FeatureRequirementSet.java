@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin;
+package org.apache.tinkerpop.gremlin;
 
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -30,8 +30,8 @@ import java.util.List;
 
 /**
  * Logically grouped features used to simplify test annotations.  This annotation can be used in conjunction
- * with {@link com.tinkerpop.gremlin.FeatureRequirement} and features automatically added by
- * {@link com.tinkerpop.gremlin.LoadGraphWith}.
+ * with {@link org.apache.tinkerpop.gremlin.FeatureRequirement} and features automatically added by
+ * {@link org.apache.tinkerpop.gremlin.LoadGraphWith}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

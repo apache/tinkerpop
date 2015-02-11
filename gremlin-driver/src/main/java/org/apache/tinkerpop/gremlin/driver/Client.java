@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.driver;
+package org.apache.tinkerpop.gremlin.driver;
 
-import com.tinkerpop.gremlin.driver.exception.ConnectionException;
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +52,7 @@ public abstract class Client {
     /**
      * Makes any final changes to the builder and returns the constructed {@link RequestMessage}.  Implementers
      * may choose to override this message to append data to the request before sending.  By default, this method
-     * will simply call the {@link com.tinkerpop.gremlin.driver.message.RequestMessage.Builder#create()} and return
+     * will simply call the {@link org.apache.tinkerpop.gremlin.driver.message.RequestMessage.Builder#create()} and return
      * the {@link RequestMessage}.
      */
     public RequestMessage buildMessage(final RequestMessage.Builder builder) {
@@ -142,7 +142,7 @@ public abstract class Client {
 
     /**
      * A {@code Client} implementation that does not operate in a session.  Requests are sent to multiple servers
-     * given a {@link com.tinkerpop.gremlin.driver.LoadBalancingStrategy}.  Transactions are automatically committed
+     * given a {@link org.apache.tinkerpop.gremlin.driver.LoadBalancingStrategy}.  Transactions are automatically committed
      * (or rolled-back on error) after each request.
      */
     public static class ClusteredClient extends Client {

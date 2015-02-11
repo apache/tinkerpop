@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.engine;
+package org.apache.tinkerpop.gremlin.groovy.engine;
 
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -197,7 +197,7 @@ public class GremlinExecutor implements AutoCloseable {
      * {@inheritDoc}
      * <p/>
      * Executors are only closed if they were not supplied externally in the
-     * {@link com.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder}
+     * {@link org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder}
      */
     @Override
     public void close() throws Exception {
@@ -206,7 +206,7 @@ public class GremlinExecutor implements AutoCloseable {
 
     /**
      * Executors are only closed if they were not supplied externally in the
-     * {@link com.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder}
+     * {@link org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder}
      */
     public CompletableFuture<Void> closeAsync() throws Exception {
         final CompletableFuture<Void> future = new CompletableFuture<>();

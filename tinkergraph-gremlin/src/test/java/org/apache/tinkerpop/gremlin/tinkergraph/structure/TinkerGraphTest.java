@@ -16,22 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.tinkergraph.structure;
+package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategy;
-import com.tinkerpop.gremlin.process.traversal.DefaultTraversal;
-import com.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
-import com.tinkerpop.gremlin.structure.*;
-import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
+import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.io.FileUtils;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -616,13 +616,13 @@ public class TinkerGraphTest {
     public void shouldWriteGratefulDead() throws IOException {
         final Graph g = TinkerGraph.open();
         final GraphReader reader = KryoReader.build().create();
-        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/io/kryo/grateful-dead.gio")) {
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/kryo/grateful-dead.gio")) {
             reader.readGraph(stream, g);
         }
 
         /* keep this hanging around because changes to kryo format will need grateful dead generated from json so you can generate the gio
         final GraphReader reader = GraphSONReader.build().embedTypes(true).create();
-        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/io/graphson/grateful-dead.json")) {
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/graphson/grateful-dead.json")) {
             reader.readGraph(stream, g);
         }
         */

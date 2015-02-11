@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.jsr223;
+package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
-import com.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
-import com.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
-import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
-import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
-import com.tinkerpop.gremlin.groovy.plugin.Artifact;
-import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
-import com.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
+import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
+import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
 import groovy.grape.Grape;
 import groovy.lang.Binding;
 import groovy.lang.Closure;

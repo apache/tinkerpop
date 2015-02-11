@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.util.tools;
+package org.apache.tinkerpop.gremlin.util.tools;
 
 import java.util.stream.IntStream;
 

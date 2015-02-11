@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.util.iterator;
+package org.apache.tinkerpop.gremlin.util.iterator;
 
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.FastNoSuchElementException;
 
 import java.io.Serializable;
 import java.util.Iterator;

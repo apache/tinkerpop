@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer;
+package org.apache.tinkerpop.gremlin.process.computer;
 
-import com.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
+import org.apache.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
 import org.javatuples.Pair;
 
 import java.util.Collections;

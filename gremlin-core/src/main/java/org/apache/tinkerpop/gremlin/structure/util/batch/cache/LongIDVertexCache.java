@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.util.batch.cache;
+package org.apache.tinkerpop.gremlin.structure.util.batch.cache;
 
 import com.carrotsearch.hppc.LongArrayList;
 import com.carrotsearch.hppc.LongObjectMap;
 import com.carrotsearch.hppc.LongObjectOpenHashMap;
 import com.carrotsearch.hppc.procedures.LongProcedure;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @author Matthias Broecheler (http://www.matthiasb.com)

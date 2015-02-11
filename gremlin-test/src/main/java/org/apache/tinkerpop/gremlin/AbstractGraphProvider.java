@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin;
+package org.apache.tinkerpop.gremlin;
 
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
@@ -38,7 +38,7 @@ import java.util.Map;
 public abstract class AbstractGraphProvider implements GraphProvider {
 
     /**
-     * Provides a basic configuration for a particular {@link com.tinkerpop.gremlin.structure.Graph} instance and used
+     * Provides a basic configuration for a particular {@link org.apache.tinkerpop.gremlin.structure.Graph} instance and used
      * the {@code graphName} to ensure that the instance is unique.  It is up to the Gremlin implementation
      * to determine how best to use the {@code graphName} to ensure uniqueness.  For example, Neo4j, might use the
      * {@code graphName} might be used to create a different sub-directory where the graph is stored.

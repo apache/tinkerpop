@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.process.computer.giraph.io;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.io;
 
-import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphComputeVertex;
-import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphComputeVertex;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexWriter;
 import org.apache.hadoop.io.NullWritable;

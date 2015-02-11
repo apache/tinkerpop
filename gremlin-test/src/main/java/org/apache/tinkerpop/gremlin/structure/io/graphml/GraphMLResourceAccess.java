@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.io.graphml;
+package org.apache.tinkerpop.gremlin.structure.io.graphml;
 
 /**
  * Provides path access to test data resources.

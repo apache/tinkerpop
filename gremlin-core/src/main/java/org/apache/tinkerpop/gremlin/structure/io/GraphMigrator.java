@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.io;
+package org.apache.tinkerpop.gremlin.structure.io;
 
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -42,7 +42,7 @@ public final class GraphMigrator {
      * Use Kryo to pipe the data from one graph to another graph.  Uses all default settings for reader/writers.
      * Refer to {@link KryoReader} and {@link KryoWriter} for those settings.  To use features like incremental
      * loading, construct the reader/writers manually and utilize
-     * {@link #migrateGraph(com.tinkerpop.gremlin.structure.Graph, com.tinkerpop.gremlin.structure.Graph, GraphReader, GraphWriter)}
+     * {@link #migrateGraph(org.apache.tinkerpop.gremlin.structure.Graph, org.apache.tinkerpop.gremlin.structure.Graph, GraphReader, GraphWriter)}
      */
     public static void migrateGraph(final Graph fromGraph, final Graph toGraph) throws IOException {
         migrateGraph(fromGraph, toGraph, defaultKryoReader, defaultKryoWriter);

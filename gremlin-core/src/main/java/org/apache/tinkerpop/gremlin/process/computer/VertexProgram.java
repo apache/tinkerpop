@@ -17,9 +17,9 @@
  * under the License.
  */
 
-package com.tinkerpop.gremlin.process.computer;
+package org.apache.tinkerpop.gremlin.process.computer;
 
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
 import java.lang.reflect.Constructor;
@@ -129,7 +129,7 @@ public interface VertexProgram<M> extends Cloneable {
     }
 
     /**
-     * The {@link com.tinkerpop.gremlin.structure.Element} properties that will be mutated during the computation.
+     * The {@link org.apache.tinkerpop.gremlin.structure.Element} properties that will be mutated during the computation.
      * All properties in the graph are readable, but only the keys specified here are writable.
      * The default is an empty set.
      *

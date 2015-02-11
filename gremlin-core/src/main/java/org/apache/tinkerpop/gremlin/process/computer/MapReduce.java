@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer;
+package org.apache.tinkerpop.gremlin.process.computer;
 
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
@@ -32,7 +32,7 @@ import java.util.Optional;
 
 /**
  * A MapReduce is composed of map(), combine(), and reduce() stages.
- * The map() stage processes the vertices of the {@link com.tinkerpop.gremlin.structure.Graph} in a logically parallel manner.
+ * The map() stage processes the vertices of the {@link org.apache.tinkerpop.gremlin.structure.Graph} in a logically parallel manner.
  * The combine() stage aggregates the values of a particular map emitted key prior to sending across the cluster.
  * The reduce() stage aggregates the values of the combine/map emitted keys for the keys that hash to the current machine in the cluster.
  * The interface presented here is nearly identical to the interface popularized by Hadoop save the the map() is over the vertices of the graph.
@@ -159,7 +159,7 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
     public String getMemoryKey();
 
     /**
-     * The final result can be generated and added to {@link Memory} and accessible via {@link com.tinkerpop.gremlin.process.computer.util.DefaultComputerResult}.
+     * The final result can be generated and added to {@link Memory} and accessible via {@link org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult}.
      * The default simply takes the object from generateFinalResult() and adds it to the Memory given getMemoryKey().
      *
      * @param memory    the memory of the {@link GraphComputer}
@@ -213,7 +213,7 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
         public void emit(final K key, final V value);
 
         /**
-         * A default method that assumes the key is {@link com.tinkerpop.gremlin.process.computer.MapReduce.NullObject}.
+         * A default method that assumes the key is {@link org.apache.tinkerpop.gremlin.process.computer.MapReduce.NullObject}.
          *
          * @param value the value to emit.
          */
@@ -233,7 +233,7 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
         public void emit(final OK key, OV value);
 
         /**
-         * A default method that assumes the key is {@link com.tinkerpop.gremlin.process.computer.MapReduce.NullObject}.
+         * A default method that assumes the key is {@link org.apache.tinkerpop.gremlin.process.computer.MapReduce.NullObject}.
          *
          * @param value the value to emit.
          */

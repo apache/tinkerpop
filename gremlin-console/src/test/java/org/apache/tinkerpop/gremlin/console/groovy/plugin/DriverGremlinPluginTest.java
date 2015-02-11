@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console.groovy.plugin;
+package org.apache.tinkerpop.gremlin.console.groovy.plugin;
 
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
@@ -41,7 +41,7 @@ public class DriverGremlinPluginTest {
         plugin.pluginTo(spy);
 
         assertEquals(4, spy.getImports().size());
-        spy.getImports().forEach(importString -> assertThat(importString, containsString("com.tinkerpop.gremlin.driver")));
+        spy.getImports().forEach(importString -> assertThat(importString, containsString("org.apache.tinkerpop.gremlin.driver")));
     }
 
     @Test

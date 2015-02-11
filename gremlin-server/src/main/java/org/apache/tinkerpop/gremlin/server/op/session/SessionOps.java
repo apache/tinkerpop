@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server.op.session;
+package org.apache.tinkerpop.gremlin.server.op.session;
 
-import com.tinkerpop.gremlin.driver.Tokens;
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
-import com.tinkerpop.gremlin.server.Context;
-import com.tinkerpop.gremlin.server.GremlinServer;
-import com.tinkerpop.gremlin.server.handler.StateKey;
-import com.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
-import com.tinkerpop.gremlin.server.op.OpProcessorException;
-import com.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.server.Context;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.handler.StateKey;
+import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
+import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
+import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

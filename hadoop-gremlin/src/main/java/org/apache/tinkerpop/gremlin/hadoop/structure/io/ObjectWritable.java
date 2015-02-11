@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.structure.io;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
-import com.tinkerpop.gremlin.util.Serializer;
+import org.apache.tinkerpop.gremlin.util.Serializer;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
 

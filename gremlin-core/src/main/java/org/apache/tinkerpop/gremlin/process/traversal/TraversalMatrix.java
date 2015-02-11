@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.traversal;
+package org.apache.tinkerpop.gremlin.process.traversal;
 
-import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.Step;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * A TraversalMatrix provides random, non-linear access to the steps of a traversal by their step id.
  * This is useful in situations where traversers becomes detached from their traversal (and step) and later need to be re-attached.
- * A classic use case is {@link com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram} on {@link com.tinkerpop.gremlin.process.computer.GraphComputer}.
+ * A classic use case is {@link org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram} on {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

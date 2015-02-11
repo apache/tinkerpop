@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console
+package org.apache.tinkerpop.gremlin.console
 
-import com.tinkerpop.gremlin.console.plugin.PluggedIn
-import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
+import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 
 import java.util.concurrent.CompletableFuture
 

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.driver.message;
+package org.apache.tinkerpop.gremlin.driver.message;
 
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.util.HashMap;
 import java.util.Map;

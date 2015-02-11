@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer.ranking.pagerank;
+package org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank;
 
-import com.tinkerpop.gremlin.process.computer.MessageCombiner;
+import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 
 import java.util.Optional;
 

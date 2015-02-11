@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy;
+package org.apache.tinkerpop.gremlin.groovy;
 
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * This {@link com.tinkerpop.gremlin.groovy.ImportCustomizerProvider} is empty and comes with no pre-defined imports
+ * This {@link org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider} is empty and comes with no pre-defined imports
  * at all.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process;
+package org.apache.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -108,7 +108,7 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
     /**
      * Cloning is used to duplicate steps for the purpose of traversal optimization and OLTP replication.
      * When cloning a step, it is important that the steps, the cloned step is equivalent to the state of the step when reset() is called.
-     * Moreover, the previous and next steps should be set to {@link com.tinkerpop.gremlin.process.traversal.step.EmptyStep}.
+     * Moreover, the previous and next steps should be set to {@link org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep}.
      *
      * @return The cloned step
      * @throws CloneNotSupportedException
@@ -147,7 +147,7 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
     public String getId();
 
     /**
-     * Provide the necessary {@link com.tinkerpop.gremlin.process.traverser.TraverserRequirement} that must be met by the traverser in order for the step to function properly.
+     * Provide the necessary {@link org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement} that must be met by the traverser in order for the step to function properly.
      * The provided default implements returns an empty set.
      *
      * @return the set of requirements

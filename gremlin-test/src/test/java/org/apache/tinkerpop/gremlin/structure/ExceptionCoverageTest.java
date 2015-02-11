@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.ExceptionCoverage;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
+import org.apache.tinkerpop.gremlin.ExceptionCoverage;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -62,12 +62,12 @@ public class ExceptionCoverageTest {
         // like the first set listed (and labelled as such) below in the list assignments.
         final Set<String> ignore = new HashSet<String>() {{
             // this is a general exception to be used as needed. it is not explicitly tested:
-            add("com.tinkerpop.gremlin.structure.Graph$Exceptions#argumentCanNotBeNull");
+            add("org.apache.tinkerpop.gremlin.structure.Graph$Exceptions#argumentCanNotBeNull");
 
             // todo: need to write consistency tests for the following items still...........
-            add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
-            add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
-            add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
+            add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
+            add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
+            add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
         }};
 
         // register test classes here that contain @ExceptionCoverage annotations

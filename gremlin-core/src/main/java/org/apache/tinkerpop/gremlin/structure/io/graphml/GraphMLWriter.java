@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.io.graphml;
+package org.apache.tinkerpop.gremlin.structure.io.graphml;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.*;
-import com.tinkerpop.gremlin.structure.io.GraphWriter;
-import com.tinkerpop.gremlin.structure.util.Comparators;
-import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.util.Comparators;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLOutputFactory;
@@ -402,7 +402,7 @@ public class GraphMLWriter implements GraphWriter {
 
         /**
          * Location of the GraphML schema which is defaulted to
-         * {@link com.tinkerpop.gremlin.structure.io.graphml.GraphMLTokens#DEFAULT_GRAPHML_SCHEMA_LOCATION}.
+         * {@link org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLTokens#DEFAULT_GRAPHML_SCHEMA_LOCATION}.
          */
         public Builder xmlSchemaLocation(final String xmlSchemaLocation) {
             this.xmlSchemaLocation = xmlSchemaLocation;
@@ -411,7 +411,7 @@ public class GraphMLWriter implements GraphWriter {
 
         /**
          * Set the name of the edge label in the GraphML. This value is defaulted to {@link GraphMLTokens#LABEL_E}.
-         * The value of {@link com.tinkerpop.gremlin.structure.Edge#label()} is written as a data element on the edge
+         * The value of {@link org.apache.tinkerpop.gremlin.structure.Edge#label()} is written as a data element on the edge
          * and the appropriate key element is added to define it in the GraphML.  It is important that when reading
          * this GraphML back in with the reader that this label key is set appropriately to properly read the edge
          * labels.
@@ -425,7 +425,7 @@ public class GraphMLWriter implements GraphWriter {
 
         /**
          * Set the name of the vertex label in the GraphML. This value is defaulted to {@link GraphMLTokens#LABEL_V}.
-         * The value of {@link com.tinkerpop.gremlin.structure.Vertex#label()} is written as a data element on the
+         * The value of {@link org.apache.tinkerpop.gremlin.structure.Vertex#label()} is written as a data element on the
          * vertex and the appropriate key element is added to define it in the GraphML.  It is important that when
          * reading this GraphML back in with the reader that this label key is set appropriately to properly read the
          * vertex labels.

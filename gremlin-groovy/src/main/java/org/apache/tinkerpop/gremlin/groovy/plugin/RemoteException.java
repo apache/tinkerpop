@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.plugin;
+package org.apache.tinkerpop.gremlin.groovy.plugin;
 
 /**
  * A mapper {@link Exception} to be thrown when there are problems with processing a command given to a
- * {@link com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor}.  The message provided to the exception will
+ * {@link org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor}.  The message provided to the exception will
  * be displayed to the user in the Console.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

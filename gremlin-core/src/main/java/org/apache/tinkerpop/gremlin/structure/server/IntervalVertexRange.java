@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.server;
+package org.apache.tinkerpop.gremlin.structure.server;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

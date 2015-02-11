@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.step;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step;
 
-import com.tinkerpop.gremlin.process.graph.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.graph.util.HasContainer;
 
 import java.util.List;
 

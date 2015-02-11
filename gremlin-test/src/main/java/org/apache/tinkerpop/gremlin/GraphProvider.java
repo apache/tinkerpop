@@ -16,25 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin;
+package org.apache.tinkerpop.gremlin;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.traversal.__;
-import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
-import com.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser;
-import com.tinkerpop.gremlin.process.traverser.B_O_Traverser;
-import com.tinkerpop.gremlin.process.traverser.O_Traverser;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import com.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traverser.B_O_Traverser;
+import org.apache.tinkerpop.gremlin.process.traverser.O_Traverser;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.Collections;
@@ -73,7 +73,7 @@ public interface GraphProvider {
     }};
 
     /**
-     * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance using the default
+     * Creates a new {@link org.apache.tinkerpop.gremlin.structure.Graph} instance using the default
      * {@link org.apache.commons.configuration.Configuration} from {@link #standardGraphConfiguration(Class, String)}.
      * The default implementation converts the passes the
      */
@@ -82,8 +82,8 @@ public interface GraphProvider {
     }
 
     /**
-     * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using
-     * {@link com.tinkerpop.gremlin.structure.util.GraphFactory}. The assumption here is that the {@code Configuration}
+     * Creates a new {@link org.apache.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using
+     * {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}. The assumption here is that the {@code Configuration}
      * has been created by one of the {@link #newGraphConfiguration(String, Class, String)} methods and has therefore
      * already been modified by the implementation as necessary for {@link Graph} creation.
      */
@@ -92,8 +92,8 @@ public interface GraphProvider {
     }
 
     /**
-     * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using
-     * {@link com.tinkerpop.gremlin.structure.util.GraphFactory}. The assumption here is that the {@code Configuration}
+     * Creates a new {@link org.apache.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using
+     * {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}. The assumption here is that the {@code Configuration}
      * has been created by one of the {@link #newGraphConfiguration(String, Class, String)} methods and has therefore
      * already been modified by the implementation as necessary for {@link Graph} creation.
      */
@@ -103,10 +103,10 @@ public interface GraphProvider {
     }
 
     /**
-     * Gets the {@link org.apache.commons.configuration.Configuration} object that can construct a {@link com.tinkerpop.gremlin.structure.Graph} instance from {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
-     * Note that this method should create a {@link com.tinkerpop.gremlin.structure.Graph} using the {@code graphName} of "standard", meaning it
-     * should always return a configuration instance that generates the same {@link com.tinkerpop.gremlin.structure.Graph} from the
-     * {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
+     * Gets the {@link org.apache.commons.configuration.Configuration} object that can construct a {@link org.apache.tinkerpop.gremlin.structure.Graph} instance from {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}.
+     * Note that this method should create a {@link org.apache.tinkerpop.gremlin.structure.Graph} using the {@code graphName} of "standard", meaning it
+     * should always return a configuration instance that generates the same {@link org.apache.tinkerpop.gremlin.structure.Graph} from the
+     * {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}.
      */
     default public Configuration standardGraphConfiguration(final Class<?> test, final String testMethodName) {
         return newGraphConfiguration("standard", test, testMethodName, Collections.<String, Object>emptyMap());
@@ -115,7 +115,7 @@ public interface GraphProvider {
     /**
      * If possible (usually with persisted graph) clear the space on disk given the configuration that would be used
      * to construct the graph.  The default implementation simply calls
-     * {@link #clear(com.tinkerpop.gremlin.structure.Graph, org.apache.commons.configuration.Configuration)} with
+     * {@link #clear(org.apache.tinkerpop.gremlin.structure.Graph, org.apache.commons.configuration.Configuration)} with
      * a null graph argument.
      */
     public default void clear(final Configuration configuration) throws Exception {
@@ -123,7 +123,7 @@ public interface GraphProvider {
     }
 
     /**
-     * Clears a {@link com.tinkerpop.gremlin.structure.Graph} of all data and settings.  Implementations will have
+     * Clears a {@link org.apache.tinkerpop.gremlin.structure.Graph} of all data and settings.  Implementations will have
      * different ways of handling this. For a brute force approach, implementers can simply delete data directories
      * provided in the configuration. Implementers may choose a more elegant approach if it exists.
      * <br/>
@@ -180,7 +180,7 @@ public interface GraphProvider {
     }
 
     /**
-     * Tests are annotated with a {@link com.tinkerpop.gremlin.LoadGraphWith} annotation. These annotations tell
+     * Tests are annotated with a {@link org.apache.tinkerpop.gremlin.LoadGraphWith} annotation. These annotations tell
      * the test what kind of data to preload into the graph instance.  It is up to the implementation to load the
      * graph with the data specified by that annotation. This method also represents the place where indices should
      * be configured according the the {@link Graph} implementation's API. Implementers can use the {@code testClass}
@@ -197,9 +197,9 @@ public interface GraphProvider {
     /**
      * Converts the GraphSON representation of an identifier to the implementation's representation of an identifier.
      * When serializing a mapper identifier type to GraphSON an implementer will typically specify a mapper serializer
-     * in {@link com.tinkerpop.gremlin.structure.Graph.Io}.  That will serialize the identifier to a GraphSON representation.
+     * in {@link org.apache.tinkerpop.gremlin.structure.Graph.Io}.  That will serialize the identifier to a GraphSON representation.
      * When the GraphSON is deserialized, the identifier is written to an
-     * {@link com.tinkerpop.gremlin.structure.util.detached.Attachable} object where it is passed to a user supplied
+     * {@link org.apache.tinkerpop.gremlin.structure.util.detached.Attachable} object where it is passed to a user supplied
      * conversion {@link java.util.function.Function} that ultimately processes it.  It is in this conversion process
      * that vendor specific identifier conversion would occur (if desired).  This method mimics that conversion by
      * providing the mechanism that a test can use to do the conversion.
@@ -226,9 +226,9 @@ public interface GraphProvider {
      * <li>{@link Graph.Variables}</li>
      * <li>{@link Graph.Iterators}</li>
      * <li>{@link GraphTraversal}</li>
-     * <li>{@link com.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser}</li>
+     * <li>{@link org.apache.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser}</li>
      * <li>{@link Property}</li>
-     * <li>{@link com.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser}</li>
+     * <li>{@link org.apache.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser}</li>
      * <li>{@link Traversal}</li>
      * <li>{@link Traverser}</li>
      * <li>{@link Vertex}</li>

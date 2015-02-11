@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.strategy;
+package org.apache.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.util.StreamFactory;
-import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
 import java.util.function.BiFunction;
@@ -35,7 +35,7 @@ import java.util.function.UnaryOperator;
 
 /**
  * A {@link GraphStrategy} which creates a logical subgraph to selectively include vertices and edges of a
- * {@link com.tinkerpop.gremlin.structure.Graph} according to provided criteria.  A vertex is in the subgraph if
+ * {@link org.apache.tinkerpop.gremlin.structure.Graph} according to provided criteria.  A vertex is in the subgraph if
  * it meets the specified {@link #vertexPredicate}.  An edge is in the subgraph if it meets the specified
  * {@link #edgePredicate} and its associated vertices meet the specified {@link #vertexPredicate}.
  *

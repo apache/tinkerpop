@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.tinkergraph.process;
+package org.apache.tinkerpop.gremlin.tinkergraph.process;
 
-import com.tinkerpop.gremlin.process.ProcessStandardSuite;
-import com.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
+import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.runner.RunWith;
 
 /**

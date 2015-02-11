@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.traversal.step;
+package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import com.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

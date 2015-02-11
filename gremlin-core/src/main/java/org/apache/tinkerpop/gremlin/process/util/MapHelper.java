@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.util;
+package org.apache.tinkerpop.gremlin.process.util;
 
 import java.util.ArrayList;
 import java.util.List;

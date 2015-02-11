@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.io.graphml;
+package org.apache.tinkerpop.gremlin.structure.io.graphml;
 
 /**
  * A collection of tokens used for GraphML related data.

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.algorithm.generator;
+package org.apache.tinkerpop.gremlin.algorithm.generator;
 
 import java.util.Collection;
 import java.util.Iterator;

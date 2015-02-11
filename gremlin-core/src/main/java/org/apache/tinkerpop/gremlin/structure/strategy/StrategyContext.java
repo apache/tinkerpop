@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.strategy;
+package org.apache.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
  * The {@link StrategyContext} object is provided to the methods of {@link GraphStrategy} so that the strategy functions
@@ -46,7 +46,7 @@ public final class StrategyContext<T extends StrategyWrapped> {
     }
 
     /**
-     * Gets the current {@link com.tinkerpop.gremlin.structure.strategy.StrategyGraph} instance.
+     * Gets the current {@link org.apache.tinkerpop.gremlin.structure.strategy.StrategyGraph} instance.
      */
     public StrategyGraph getStrategyGraph() {
         return g;

@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.loaders
+package org.apache.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
-import com.tinkerpop.gremlin.process.Step
-import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
-import com.tinkerpop.gremlin.structure.Edge
-import com.tinkerpop.gremlin.structure.Element
-import com.tinkerpop.gremlin.structure.Graph
-import com.tinkerpop.gremlin.structure.Vertex
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
+import org.apache.tinkerpop.gremlin.process.Step
+import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
+import org.apache.tinkerpop.gremlin.structure.Edge
+import org.apache.tinkerpop.gremlin.structure.Element
+import org.apache.tinkerpop.gremlin.structure.Graph
+import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.traverser.util;
+package org.apache.tinkerpop.gremlin.process.traverser.util;
 
-import com.tinkerpop.gremlin.process.Path;
-import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.TraversalSideEffects;
-import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.util.path.EmptyPath;
-import com.tinkerpop.gremlin.process.traversal.util.EmptyTraversalSideEffects;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import org.apache.tinkerpop.gremlin.process.Path;
+import org.apache.tinkerpop.gremlin.process.Step;
+import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.util.path.EmptyPath;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

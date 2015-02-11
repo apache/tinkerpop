@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.strategy;
+package org.apache.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.util.function.TriFunction;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -352,7 +352,7 @@ public final class SequenceStrategy implements GraphStrategy {
         /**
          * Provide the sequence of {@link GraphStrategy} implementations to execute.  If this value is not set,
          * then a {@code SequenceStrategy} is initialized with a single
-         * {@link com.tinkerpop.gremlin.structure.strategy.IdentityStrategy} instance.
+         * {@link org.apache.tinkerpop.gremlin.structure.strategy.IdentityStrategy} instance.
          */
         public Builder sequence(final GraphStrategy... strategies) {
             this.strategies = new ArrayList<>(Arrays.asList(strategies));

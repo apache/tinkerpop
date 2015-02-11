@@ -16,20 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.ExceptionCoverage;
-import com.tinkerpop.gremlin.FeatureRequirement;
-import com.tinkerpop.gremlin.FeatureRequirementSet;
-import com.tinkerpop.gremlin.GraphManager;
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
-import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures;
-import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
-import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.ExceptionCoverage;
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
+import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
+import org.apache.tinkerpop.gremlin.GraphManager;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
+import org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
+import org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures;
+import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
+import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
+import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -39,10 +39,10 @@ import org.junit.runners.Parameterized;
 import java.util.Date;
 import java.util.UUID;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.*;
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.*;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.*;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.*;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
@@ -68,7 +68,7 @@ public class FeatureSupportTest {
     }
 
     /**
-     * Feature checks that test {@link com.tinkerpop.gremlin.structure.Graph} functionality to determine if a feature should be on when it is marked
+     * Feature checks that test {@link org.apache.tinkerpop.gremlin.structure.Graph} functionality to determine if a feature should be on when it is marked
      * as not supported.
      */
     @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
@@ -90,8 +90,8 @@ public class FeatureSupportTest {
         }
 
         /**
-         * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_COMPUTER} must call
-         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#graphComputerNotSupported()}.
+         * A {@link org.apache.tinkerpop.gremlin.structure.Graph} that does not support {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_COMPUTER} must call
+         * {@link org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#graphComputerNotSupported()}.
          */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_COMPUTER, supported = false)
@@ -105,8 +105,8 @@ public class FeatureSupportTest {
         }
 
         /**
-         * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_TRANSACTIONS} must call
-         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#transactionsNotSupported()}.
+         * A {@link org.apache.tinkerpop.gremlin.structure.Graph} that does not support {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_TRANSACTIONS} must call
+         * {@link org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#transactionsNotSupported()}.
          */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_TRANSACTIONS, supported = false)
@@ -120,8 +120,8 @@ public class FeatureSupportTest {
         }
 
         /**
-         * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures#FEATURE_VARIABLES} must call
-         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#variablesNotSupported()}.
+         * A {@link org.apache.tinkerpop.gremlin.structure.Graph} that does not support {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures#FEATURE_VARIABLES} must call
+         * {@link org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#variablesNotSupported()}.
          */
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES, supported = false)
@@ -148,7 +148,7 @@ public class FeatureSupportTest {
     }
 
     /**
-     * Feature checks that test {@link com.tinkerpop.gremlin.structure.Vertex} functionality to determine if a feature
+     * Feature checks that test {@link org.apache.tinkerpop.gremlin.structure.Vertex} functionality to determine if a feature
      * should be on when it is marked as not supported.
      */
     @ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
@@ -317,7 +317,7 @@ public class FeatureSupportTest {
     }
 
     /**
-     * Feature checks that test {@link com.tinkerpop.gremlin.structure.Edge} functionality to determine if a feature
+     * Feature checks that test {@link org.apache.tinkerpop.gremlin.structure.Edge} functionality to determine if a feature
      * should be on when it is marked as not supported.
      */
     @ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
@@ -508,7 +508,7 @@ public class FeatureSupportTest {
     }
 
     /**
-     * Feature checks that test {@link com.tinkerpop.gremlin.structure.Element} {@link com.tinkerpop.gremlin.structure.Property} functionality to determine if a feature should be on
+     * Feature checks that test {@link org.apache.tinkerpop.gremlin.structure.Element} {@link org.apache.tinkerpop.gremlin.structure.Property} functionality to determine if a feature should be on
      * when it is marked as not supported.
      */
     @RunWith(Parameterized.class)
@@ -564,7 +564,7 @@ public class FeatureSupportTest {
     }
 
     /**
-     * Feature checks that tests if {@link com.tinkerpop.gremlin.structure.Graph.Variables}
+     * Feature checks that tests if {@link org.apache.tinkerpop.gremlin.structure.Graph.Variables}
      * functionality to determine if a feature should be on when it is marked as not supported.
      */
     @RunWith(Parameterized.class)

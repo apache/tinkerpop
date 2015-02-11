@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.jsr223;
+package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
-import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
+import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;

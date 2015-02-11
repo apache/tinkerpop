@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console
+package org.apache.tinkerpop.gremlin.console
 
-import com.tinkerpop.gremlin.groovy.AbstractImportCustomizerProvider
+import org.apache.tinkerpop.gremlin.groovy.AbstractImportCustomizerProvider
 import groovy.sql.Sql
 import groovyx.net.http.HTTPBuilder
 
