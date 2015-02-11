@@ -15,6 +15,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added more syntactic sugar tricks to the Gremlin sugar plugin -- `&`, `|`, `select from`, `gt`, etc.
 * `Traversal.Admin` is consistent internal to steps, traversals, strategies, etc. For the user, `Traversal` is all they see.
 * `TraversalHolder` is now called `TraversalParent` with the child/parent terminology used throughout.
+* Added `GroovyEnvironmentPerformanceSuite`.
 * A massive `process/` package reorganization -- class names are still the same, just in new packages.
 * Bumped `neo4j-graph` to Neo4j 2.1.6.
 * Bumped to Groovy 2.4.0.
