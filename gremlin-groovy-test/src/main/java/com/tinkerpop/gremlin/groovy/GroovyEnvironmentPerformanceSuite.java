@@ -22,7 +22,6 @@ import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutorPerformanceTest;
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineIntegrateTest;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.junit.runners.model.InitializationError;
