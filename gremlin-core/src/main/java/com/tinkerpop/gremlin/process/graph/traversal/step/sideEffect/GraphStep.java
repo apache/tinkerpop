@@ -27,6 +27,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,8 +41,8 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
 
     protected final Class<S> returnClass;
     protected final Object[] ids;
-    protected final Graph graph;
-    protected Supplier<Iterator<S>> iteratorSupplier;
+    protected transient Graph graph;
+    protected transient Supplier<Iterator<S>> iteratorSupplier;
 
     public GraphStep(final Traversal.Admin traversal, final Graph graph, final Class<S> returnClass, final Object... ids) {
         super(traversal);
@@ -90,7 +91,8 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
 
     @Override
     protected Traverser<S> processNextStart() {
-        if (this.first) this.start = this.iteratorSupplier.get();
+        if (this.first)
+            this.start = null == this.iteratorSupplier ? EmptyIterator.instance() : this.iteratorSupplier.get();
         return super.processNextStart();
     }
 }

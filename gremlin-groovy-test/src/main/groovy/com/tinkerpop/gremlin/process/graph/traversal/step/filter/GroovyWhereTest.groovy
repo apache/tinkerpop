@@ -38,8 +38,8 @@ public abstract class GroovyWhereTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_b_neqX() {
-            g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', 'b') { a, b -> !a.equals(b) };
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX() {
+            g.V.has('age').as('a').out.in.has('age').as('b').select().where('a',Compare.neq, 'b');
         }
 
         @Override
@@ -60,8 +60,8 @@ public abstract class GroovyWhereTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_b_neqX() {
-            ComputerTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', 'b') { a, b -> !a.equals(b) }", g);
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX() {
+            ComputerTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', Compare.neq, 'b')", g);
         }
 
         @Override

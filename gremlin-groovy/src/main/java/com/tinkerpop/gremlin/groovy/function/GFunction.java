@@ -25,7 +25,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GFunction<A, B> implements Function<A, B> {
+public final class GFunction<A, B> implements Function<A, B> {
 
     private final Closure closure;
 

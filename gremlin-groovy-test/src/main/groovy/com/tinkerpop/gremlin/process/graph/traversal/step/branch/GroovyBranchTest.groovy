@@ -24,6 +24,9 @@ import com.tinkerpop.gremlin.process.graph.traversal.step.branch.BranchTest
 import com.tinkerpop.gremlin.structure.Vertex
 
 import com.tinkerpop.gremlin.process.graph.traversal.__
+
+import static com.tinkerpop.gremlin.process.graph.traversal.__.label
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -33,10 +36,10 @@ public abstract class GroovyBranchTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
-            g.V.branch { it.label() == 'person' ? 'a' : 'b' }
-                    .option('a', __.age)
-                    .option('b', __.lang)
-                    .option('b', __.name)
+            g.V.branch(__.label.is('person').count)
+                    .option(1L, __.age)
+                    .option(0L, __.lang)
+                    .option(0L, __.name)
         }
 
         @Override
@@ -52,7 +55,7 @@ public abstract class GroovyBranchTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
-            ComputerTestHelper.compute("g.V.branch { it.label() == 'person' ? 'a' : 'b' }.option('a', __.age).option('b', __.lang).option('b',__.name)", g);
+            ComputerTestHelper.compute("g.V.branch(__.label.is('person').count).option(1L, __.age).option(0L, __.lang).option(0L,__.name)", g);
         }
 
         @Override

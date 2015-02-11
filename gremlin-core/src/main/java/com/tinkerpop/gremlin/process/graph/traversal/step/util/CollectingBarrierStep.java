@@ -20,28 +20,24 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
+import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CollectingBarrierStep<S> extends AbstractStep<S, S> {
+public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> {
     private TraverserSet<S> traverserSet = new TraverserSet<>();
-    private Consumer<TraverserSet<S>> barrierConsumer;
 
     public CollectingBarrierStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
-    public void setConsumer(final Consumer<TraverserSet<S>> barrierConsumer) {
-        this.barrierConsumer = barrierConsumer;
-    }
+    public abstract void barrierConsumer(final TraverserSet<S> traverserSet);
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
@@ -52,7 +48,7 @@ public class CollectingBarrierStep<S> extends AbstractStep<S, S> {
     public Traverser<S> processNextStart() {
         if (this.starts.hasNext()) {
             this.starts.forEachRemaining(this.traverserSet::add);
-            if (null != this.barrierConsumer) this.barrierConsumer.accept(this.traverserSet);
+            this.barrierConsumer(this.traverserSet);
         }
         return this.traverserSet.remove();
     }

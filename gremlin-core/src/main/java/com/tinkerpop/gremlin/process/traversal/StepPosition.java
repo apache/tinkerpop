@@ -18,10 +18,12 @@
  */
 package com.tinkerpop.gremlin.process.traversal;
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StepPosition {
+public final class StepPosition implements Serializable {
 
     public int x; // step in traversal length
     public int y; // depth in traversal nested tree

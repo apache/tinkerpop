@@ -92,7 +92,7 @@ public abstract class RetainTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_retainXg_v2X(final Object v1Id, final Object v2Id) {
-            return g.V(v1Id).out().retain(g.V(v2Id).next()).submit(g.compute());
+            return g.V(v1Id).out().retain(g.V(v2Id).next());// TODO: .submit(g.compute());
         }
 
         @Override

@@ -23,9 +23,12 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
 import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.util.function.ConstantSupplier;
 
+import java.io.Serializable;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -36,8 +39,8 @@ public final class CountStep<S> extends ReducingBarrierStep<S, Long> implements 
 
     public CountStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier(() -> 0l);
-        this.setBiFunction((seed, start) -> seed + start.bulk());
+        this.setSeedSupplier(new ConstantSupplier<>(0L));
+        this.setBiFunction(CountBiFunction.<S>instance());
     }
 
 
@@ -49,5 +52,25 @@ public final class CountStep<S> extends ReducingBarrierStep<S, Long> implements 
     @Override
     public Reducer<Long, Traverser<S>> getReducer() {
         return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true);
+    }
+
+    /////
+
+    private static class CountBiFunction<S> implements BiFunction<Long, Traverser<S>, Long>, Serializable {
+
+        private static final CountBiFunction INSTANCE = new CountBiFunction();
+
+        private CountBiFunction() {
+
+        }
+
+        @Override
+        public Long apply(final Long mutatingSeed, final Traverser<S> traverser) {
+            return mutatingSeed + traverser.bulk();
+        }
+
+        public final static <S> CountBiFunction<S> instance() {
+            return INSTANCE;
+        }
     }
 }

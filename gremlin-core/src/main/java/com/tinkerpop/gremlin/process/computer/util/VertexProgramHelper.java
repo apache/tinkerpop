@@ -34,17 +34,25 @@ public final class VertexProgramHelper {
     private VertexProgramHelper() {
     }
 
-    public static void serialize(final Object object, final Configuration configuration, final String key) throws IOException {
-        configuration.setProperty(key, Serializer.serializeObject(object));
+    public static void serialize(final Object object, final Configuration configuration, final String key) {
+        try {
+            configuration.setProperty(key, Serializer.serializeObject(object));
+        } catch (final IOException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
     }
 
-    public static <T> T deserialize(final Configuration configuration, final String key) throws IOException, ClassNotFoundException {
-        final List byteList = configuration.getList(key);
-        byte[] bytes = new byte[byteList.size()];
-        for (int i = 0; i < byteList.size(); i++) {
-            bytes[i] = Byte.valueOf(byteList.get(i).toString().replace("[", "").replace("]", ""));
+    public static <T> T deserialize(final Configuration configuration, final String key) {
+        try {
+            final List byteList = configuration.getList(key);
+            byte[] bytes = new byte[byteList.size()];
+            for (int i = 0; i < byteList.size(); i++) {
+                bytes[i] = Byte.valueOf(byteList.get(i).toString().replace("[", "").replace("]", ""));
+            }
+            return (T) Serializer.deserializeObject(bytes);
+        } catch (final IOException | ClassNotFoundException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
         }
-        return (T) Serializer.deserializeObject(bytes);
     }
 
     public static void verifyReversibility(final Traversal.Admin<?, ?> traversal) {

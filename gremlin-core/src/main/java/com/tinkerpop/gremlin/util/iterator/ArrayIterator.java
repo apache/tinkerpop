@@ -20,12 +20,13 @@ package com.tinkerpop.gremlin.util.iterator;
 
 import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ArrayIterator<T> implements Iterator<T> {
+public final class ArrayIterator<T> implements Iterator<T>, Serializable {
 
     private final T[] array;
     private int current = 0;

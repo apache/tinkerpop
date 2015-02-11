@@ -18,12 +18,11 @@
  */
 package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
-import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.ComputerTestHelper
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupTest
+import com.tinkerpop.gremlin.process.Traversal
+import com.tinkerpop.gremlin.process.graph.traversal.__
 import com.tinkerpop.gremlin.structure.Vertex
 
-import com.tinkerpop.gremlin.process.graph.traversal.__
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -42,13 +41,13 @@ public abstract class GroovyGroupTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXsizeX() {
-            g.V.has('lang').group.by('lang').by { 1 }.by { it.size() }
+        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXunfold_countX() {
+            g.V.has('lang').group.by('lang').by(__.inject(1)).by(__.unfold().count());
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX() {
-            g.V.repeat(__.out.group('a').by('name').by.by { it.size() }).times(2).cap('a')
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX() {
+            g.V.repeat(__.out.group('a').by('name').by.by(__.unfold().count())).times(2).cap('a')
         }
 
         @Override
@@ -70,13 +69,13 @@ public abstract class GroovyGroupTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXsizeX() {
-            ComputerTestHelper.compute("g.V.has('lang').group.by('lang').by{1}.by{it.size()}", g)
+        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXunfold_countX() {
+            ComputerTestHelper.compute("g.V.has('lang').group.by('lang').by(__.inject(1)).by(__.unfold().count())", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Integer>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX() {
-            ComputerTestHelper.compute("g.V.repeat(__.out.group('a').by('name').by.by { it.size() }).times(2).cap('a')", g)
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX() {
+            ComputerTestHelper.compute("g.V.repeat(__.out.group('a').by('name').by.by(__.unfold().count())).times(2).cap('a')", g)
         }
 
         @Override

@@ -16,37 +16,34 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.util.iterator;
-
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
+package com.tinkerpop.gremlin.util.function;
 
 import java.io.Serializable;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class SingleIterator<T> implements Iterator<T>,Serializable {
+public final class CloningUnaryOperator<A> implements UnaryOperator<A>, Serializable {
 
-    private final T t;
-    private boolean alive = true;
+    private static final CloningUnaryOperator INSTANCE = new CloningUnaryOperator();
 
-    protected SingleIterator(final T t) {
-        this.t = t;
+    private CloningUnaryOperator() {
     }
 
     @Override
-    public boolean hasNext() {
-        return this.alive;
+    public A apply(final A a) {
+        if (a instanceof HashMap)
+            return (A) ((HashMap) a).clone();
+        else if (a instanceof HashSet)
+            return (A) ((HashSet) a).clone();
+        else
+            throw new IllegalArgumentException("The provided class is not registered for cloning: " + a.getClass());
     }
 
-    @Override
-    public T next() {
-        if (!this.alive)
-            throw FastNoSuchElementException.instance();
-        else {
-            this.alive = false;
-            return t;
-        }
+    public static <A> CloningUnaryOperator<A> instance() {
+        return INSTANCE;
     }
 }

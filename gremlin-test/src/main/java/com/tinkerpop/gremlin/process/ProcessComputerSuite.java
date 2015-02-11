@@ -70,7 +70,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
     private static final Class<?>[] allTests = new Class<?>[]{
 
             // basic api semantics testing
-            GraphComputerTest.ComputerTest.class,   // todo: not sure this should be here as it forces retest of GraphComputer without an "implementation"
+           // GraphComputerTest.ComputerTest.class,   // todo: not sure this should be here as it forces retest of GraphComputer without an "implementation"
 
             // branch
             BranchTest.ComputerTest.class,

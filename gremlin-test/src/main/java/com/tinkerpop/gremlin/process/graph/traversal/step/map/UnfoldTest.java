@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.outE;
 import static org.junit.Assert.*;
 
 /**
@@ -38,14 +39,14 @@ import static org.junit.Assert.*;
  */
 public abstract class UnfoldTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold();
+    public abstract Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold();
 
     public abstract Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX();
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_mapXoutEX_unfold() {
-        final Traversal<Vertex, Edge> traversal = get_g_V_mapXoutEX_unfold();
+    public void g_V_localXoutE_foldX_unfold() {
+        final Traversal<Vertex, Edge> traversal = get_g_V_localXoutE_foldX_unfold();
         printTraversalForm(traversal);
         int counter = 0;
         final Set<Edge> edges = new HashSet<>();
@@ -90,8 +91,8 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
     public static class StandardTest extends UnfoldTest {
 
         @Override
-        public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {
-            return g.V().map(v -> v.get().outE()).unfold();
+        public Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold() {
+            return g.V().local(outE().fold()).unfold();
         }
 
         @Override
@@ -107,13 +108,13 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {
-            return (Traversal) g.V().map(v -> v.get().outE()).unfold().submit(g.compute());
+        public Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold() {
+            return (Traversal) g.V().local(outE().fold()).unfold().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX() {
-            return g.V().valueMap().<Map.Entry<String, List>>unfold().map(m -> m.get().getKey()).submit(g.compute());
+            return g.V().valueMap().<Map.Entry<String, List>>unfold().map(m -> m.get().getKey()); // TODO: .submit(g.compute());
         }
     }
 }

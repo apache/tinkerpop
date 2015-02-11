@@ -217,37 +217,37 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
-            return g.V().filter(v -> false).submit(g.compute());
+            return g.V().filter(v -> false);// TODO: .submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXtrueX() {
-            return g.V().filter(v -> true).submit(g.compute());
+            return g.V().filter(v -> true);// TODO: .submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX() {
-            return g.V().filter(v -> v.get().<String>property("lang").orElse("none").equals("java")).submit(g.compute());
+            return g.V().filter(v -> v.get().<String>property("lang").orElse("none").equals("java"));// TODO: .submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_filterXage_gt_30X(final Object v1Id) {
-            return g.V(v1Id).filter(v -> v.get().<Integer>property("age").orElse(0) > 30).submit(g.compute());
+            return g.V(v1Id).filter(v -> v.get().<Integer>property("age").orElse(0) > 30);// TODO: .submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_filterXage_gt_30X(final Object v1Id) {
-            return g.V(v1Id).out().filter(v -> v.get().<Integer>property("age").orElse(0) > 30).submit(g.compute());
+            return g.V(v1Id).out().filter(v -> v.get().<Integer>property("age").orElse(0) > 30);// TODO: .submit(g.compute());
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_filterXfalseX() {
-            return g.E().filter(v -> false).submit(g.compute());
+            return g.E().filter(v -> false);// TODO: .submit(g.compute());
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_filterXtrueX() {
-            return g.E().filter(v -> true).submit(g.compute());
+            return g.E().filter(v -> true);// TODO: .submit(g.compute());
         }
 
         @Override
@@ -255,7 +255,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
             return g.V().filter(v -> {
                 final String name = v.get().value("name");
                 return name.startsWith("m") || name.startsWith("p");
-            }).submit(g.compute());
+            });// TODO: .submit(g.compute());
         }
     }
 }

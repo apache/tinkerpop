@@ -16,37 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.util.iterator;
+package com.tinkerpop.gremlin.hadoop.process;
 
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
-
-import java.io.Serializable;
-import java.util.Iterator;
+import com.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import com.tinkerpop.gremlin.process.ProcessComputerSuite;
+import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class SingleIterator<T> implements Iterator<T>,Serializable {
-
-    private final T t;
-    private boolean alive = true;
-
-    protected SingleIterator(final T t) {
-        this.t = t;
-    }
-
-    @Override
-    public boolean hasNext() {
-        return this.alive;
-    }
-
-    @Override
-    public T next() {
-        if (!this.alive)
-            throw FastNoSuchElementException.instance();
-        else {
-            this.alive = false;
-            return t;
-        }
-    }
+@RunWith(ProcessComputerSuite.class)
+@ProcessComputerSuite.GraphProviderClass(provider = HadoopGraphProvider.class, graph = HadoopGraph.class)
+public class HadoopGraphProcessComputerIntegrateTest {
 }

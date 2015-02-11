@@ -16,37 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.util.iterator;
-
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
+package com.tinkerpop.gremlin.util.function;
 
 import java.io.Serializable;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class SingleIterator<T> implements Iterator<T>,Serializable {
+public final class HashMapSupplier<K, V> implements Supplier<Map<K, V>>, Serializable {
 
-    private final T t;
-    private boolean alive = true;
+    private static final HashMapSupplier INSTANCE = new HashMapSupplier();
 
-    protected SingleIterator(final T t) {
-        this.t = t;
+    private HashMapSupplier() {
     }
 
     @Override
-    public boolean hasNext() {
-        return this.alive;
+    public HashMap<K, V> get() {
+        return new HashMap<>();
     }
 
-    @Override
-    public T next() {
-        if (!this.alive)
-            throw FastNoSuchElementException.instance();
-        else {
-            this.alive = false;
-            return t;
-        }
+    public static <K, V> HashMapSupplier<K, V> instance() {
+        return INSTANCE;
     }
 }

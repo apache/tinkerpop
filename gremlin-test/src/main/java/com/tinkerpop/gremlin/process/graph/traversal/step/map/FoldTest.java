@@ -21,13 +21,14 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Operator;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
@@ -95,7 +96,7 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
-            return g.V().<Integer>values("age").fold(0, (seed, age) -> seed + age);
+            return g.V().<Integer>values("age").fold(0, (BinaryOperator) Operator.sum);
         }
     }
 
@@ -117,7 +118,7 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
-            return g.V().<Integer>values("age").fold(0, (seed, age) -> seed + age).submit(g.compute());
+            return g.V().<Integer>values("age").fold(0, (BinaryOperator) Operator.sum).submit(g.compute());
         }
     }
 }

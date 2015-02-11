@@ -45,8 +45,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_name_order();
 
-    public abstract Traversal<Vertex, String> get_g_V_name_order_byXabX();
-
     public abstract Traversal<Vertex, String> get_g_V_name_order_byXa1_b1X_byXb2_a2X();
 
     public abstract Traversal<Vertex, String> get_g_V_order_byXname_incrX_name();
@@ -78,22 +76,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_name_orderXabX() {
-        final Traversal<Vertex, String> traversal = get_g_V_name_order_byXabX();
-        printTraversalForm(traversal);
-        final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
-        assertEquals(names.size(), 6);
-        assertEquals("josh", names.get(5));
-        assertEquals("lop", names.get(4));
-        assertEquals("marko", names.get(3));
-        assertEquals("peter", names.get(2));
-        assertEquals("ripple", names.get(1));
-        assertEquals("vadas", names.get(0));
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_name_orderXa1_b1__a2_b2X() {
+    public void g_V_name_order_byXa1_b1X_byXb2_a2X() {
         final Traversal<Vertex, String> traversal = get_g_V_name_order_byXa1_b1X_byXb2_a2X();
         printTraversalForm(traversal);
         final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
@@ -108,7 +91,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_orderByXname_incrX_name() {
+    public void g_V_order_byXname_incrX_name() {
         Arrays.asList(get_g_V_order_byXname_incrX_name(), get_g_V_order_byXnameX_name()).forEach(traversal -> {
             printTraversalForm(traversal);
             final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
@@ -124,7 +107,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_outE_orderXweight_decrX_weight() {
+    public void g_V_outE_order_byXweight_decrX_weight() {
         final Traversal<Vertex, Double> traversal = get_g_V_outE_order_byXweight_decrX_weight();
         printTraversalForm(traversal);
         final List<Double> weights = StreamFactory.stream(traversal).collect(Collectors.toList());
@@ -140,7 +123,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_orderByXname_decr__a2_b2X_name() {
+    public void g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
         final Traversal<Vertex, String> traversal = get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name();
         printTraversalForm(traversal);
         final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
@@ -221,11 +204,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_name_order_byXabX() {
-            return g.V().<String>values("name").order().by((a, b) -> b.compareTo(a));
-        }
-
-        @Override
         public Traversal<Vertex, String> get_g_V_name_order_byXa1_b1X_byXb2_a2X() {
             return g.V().<String>values("name").order().by((a, b) -> a.substring(1, 2).compareTo(b.substring(1, 2))).by((a, b) -> b.substring(2, 3).compareTo(a.substring(2, 3)));
         }
@@ -283,16 +261,11 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_name_order_byXabX() {
-            return g.V().<String>values("name").order().by((a, b) -> b.compareTo(a)).submit(g.compute());
-        }
-
-        @Override
         public Traversal<Vertex, String> get_g_V_name_order_byXa1_b1X_byXb2_a2X() {
             return g.V().<String>values("name")
                     .order()
                     .by((a, b) -> a.substring(1, 2).compareTo(b.substring(1, 2)))
-                    .by((a, b) -> b.substring(2, 3).compareTo(a.substring(2, 3))).submit(g.compute());
+                    .by((a, b) -> b.substring(2, 3).compareTo(a.substring(2, 3))); // TODO: .submit(g.compute());
         }
 
         @Override
@@ -314,7 +287,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, String> get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
             return g.V().order().
                     <String>by("name", (a, b) -> a.substring(1, 2).compareTo(b.substring(1, 2))).
-                    <String>by("name", (a, b) -> b.substring(2, 3).compareTo(a.substring(2, 3))).values("name");
+                    <String>by("name", (a, b) -> b.substring(2, 3).compareTo(a.substring(2, 3))).values("name");  // TODO: .submit(g.compute());
         }
 
         @Override
@@ -331,7 +304,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
                 map.put(3, (int) v.get().value("age") * 3);
                 map.put(4, (int) v.get().value("age"));
                 return map;
-            }).order(Scope.local).by(Order.valueDecr).by(Order.keyIncr).submit(g.compute());
+            }).order(Scope.local).by(Order.valueDecr).by(Order.keyIncr); // TODO: .submit(g.compute());
         }
     }
 }

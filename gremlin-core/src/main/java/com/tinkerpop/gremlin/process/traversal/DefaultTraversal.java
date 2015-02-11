@@ -148,8 +148,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         clone.strategies = this.strategies.clone(); // TODO: does this need to be cloned?
         clone.lastEnd = null;
         clone.lastEndCount = 0l;
-        //clone.traversalEngine = this.traversalEngine.isPresent() ? Optional.of(this.traversalEngine.get()) : Optional.empty();
-        //clone.locked = this.traversalEngine.isPresent();
         for (final Step<?, ?> step : this.steps) {
             final Step<?, ?> clonedStep = step.clone();
             clonedStep.setTraversal(clone);

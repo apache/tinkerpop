@@ -28,7 +28,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.label;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.values;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -64,10 +65,10 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
-            return g.V().branch(label())
-                    .option("person", values("age"))
-                    .option("software", values("lang"))
-                    .option("software", values("name"));
+            return g.V().branch(label().is("person").count())
+                    .option(1L, values("age"))
+                    .option(0L, values("lang"))
+                    .option(0L, values("name"));
         }
     }
 
@@ -75,10 +76,10 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
-            return g.V().branch(v -> v.get().label().equals("person") ? "a" : "b")
-                    .option("a", values("age"))
-                    .option("b", values("lang"))
-                    .option("b", values("name")).submit(g.compute());
+            return g.V().branch(label().is("person").count())
+                    .option(1L, values("age"))
+                    .option(0L, values("lang"))
+                    .option(0L, values("name")).submit(g.compute());
         }
 
         @Override

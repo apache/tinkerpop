@@ -108,6 +108,7 @@ import com.tinkerpop.gremlin.process.traversal.lambda.TrueTraversal;
 import com.tinkerpop.gremlin.process.traversal.step.ElementFunctionComparator;
 import com.tinkerpop.gremlin.process.traversal.step.ElementValueComparator;
 import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -117,6 +118,7 @@ import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.PropertyType;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -159,7 +161,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     @Override
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
         try {
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this::asAdmin).create();
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this.asAdmin()).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
             final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(result.graph().getClass());
             return traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
@@ -316,7 +318,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> fold(final E2 seed, final BiFunction<E2, E, E2> foldFunction) {
-        return this.asAdmin().addStep(new FoldStep<>(this.asAdmin(), () -> seed, foldFunction)); // TODO: User should provide supplier?
+        return this.asAdmin().addStep(new FoldStep<>(this.asAdmin(), new ConstantSupplier<>(seed), foldFunction)); // TODO: User should provide supplier?
     }
 
     public default GraphTraversal<S, Long> count() {
@@ -660,6 +662,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
+    public default <A> GraphTraversal<S, E> withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
+        this.asAdmin().getSideEffects().setSack(new ConstantSupplier<>(initialValue), Optional.of(splitOperator));
+        return this;
+    }
+
+    public default <A> GraphTraversal<S, E> withSack(A initialValue) {
+        this.asAdmin().getSideEffects().setSack(new ConstantSupplier<>(initialValue), Optional.empty());
+        return this;
+    }
+
     public default GraphTraversal<S, E> withPath() {
         return this.asAdmin().addStep(new PathIdentityStep<>(this.asAdmin()));
     }
@@ -671,7 +683,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> barrier() {
-        return this.asAdmin().addStep(new CollectingBarrierStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new CollectingBarrierStep(asAdmin()) {
+            @Override
+            public void barrierConsumer(TraverserSet traverserSet) {
+
+            }
+        });
     }
 
     ////

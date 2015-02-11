@@ -18,29 +18,24 @@
  */
 package com.tinkerpop.gremlin.process.graph.traversal.step.util;
 
+import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
-
-import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> {
 
-    public Supplier<E> supplier;
     private boolean done = false;
 
     public SupplyingBarrierStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
-    public void setSupplier(final Supplier<E> supplier) {
-        this.supplier = supplier;
-    }
+    public abstract E supply();
 
     @Override
     public void reset() {
@@ -55,7 +50,7 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> {
         while (this.starts.hasNext())
             this.starts.next();
         this.done = true;
-        return this.getTraversal().asAdmin().getTraverserGenerator().generate(this.supplier.get(), (Step) this, 1l);
+        return this.getTraversal().asAdmin().getTraverserGenerator().generate(this.supply(), (Step) this, 1l);
     }
 
     @Override

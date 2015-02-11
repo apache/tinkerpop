@@ -23,12 +23,13 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.util.iterator.MultiIterator;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ExpandableStepIterator<E> implements Iterator<Traverser.Admin<E>> {
+public final class ExpandableStepIterator<E> implements Iterator<Traverser.Admin<E>>, Serializable {
 
     private final TraverserSet<E> traverserSet = new TraverserSet<>();
     private final MultiIterator<Traverser.Admin<E>> traverserIterators = new MultiIterator<>();

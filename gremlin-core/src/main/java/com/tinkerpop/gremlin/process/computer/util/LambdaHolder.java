@@ -73,7 +73,7 @@ public class LambdaHolder<S> {
         lambdaHolder.configKeyPrefix = configKeyPrefix;
         lambdaHolder.type = Type.valueOf(configuration.getString(lambdaHolder.configKeyPrefix.concat(DOT_TYPE)));
         if (lambdaHolder.type.equals(Type.OBJECT)) {
-            lambdaHolder.configObject = configuration.getProperty(lambdaHolder.configKeyPrefix.concat(DOT_OBJECT));
+            lambdaHolder.configObject = VertexProgramHelper.deserialize(configuration, lambdaHolder.configKeyPrefix.concat(DOT_OBJECT));
             lambdaHolder.realObject = lambdaHolder.configObject;
         } else if (lambdaHolder.type.equals(Type.CLASS)) {
             try {
@@ -84,13 +84,9 @@ public class LambdaHolder<S> {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         } else { // SCRIPT
-            try {
-                final String[] script = VertexProgramHelper.deserialize(configuration, lambdaHolder.configKeyPrefix.concat(DOT_OBJECT));
-                lambdaHolder.configObject = script;
-                lambdaHolder.realObject = new ScriptEngineLambda(script[0], script[1]);
-            } catch (Exception e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
-            }
+            final String[] script = VertexProgramHelper.deserialize(configuration, lambdaHolder.configKeyPrefix.concat(DOT_OBJECT));
+            lambdaHolder.configObject = script;
+            lambdaHolder.realObject = new ScriptEngineLambda(script[0], script[1]);
         }
         return lambdaHolder;
     }
@@ -98,17 +94,12 @@ public class LambdaHolder<S> {
 
     public void storeState(final Configuration configuration) {
         configuration.setProperty(this.configKeyPrefix.concat(DOT_TYPE), this.type.name());
-        if (this.type.equals(Type.OBJECT)) {
-            configuration.setProperty(this.configKeyPrefix.concat(DOT_OBJECT), this.configObject);
-        } else if (this.type.equals(Type.CLASS)) {
+        if (this.type.equals(Type.OBJECT))
+            VertexProgramHelper.serialize(this.configObject, configuration, this.configKeyPrefix.concat(DOT_OBJECT));
+        else if (this.type.equals(Type.CLASS))
             configuration.setProperty(this.configKeyPrefix.concat(DOT_OBJECT), ((Class) this.configObject).getCanonicalName());
-        } else { // SCRIPT
-            try {
-                VertexProgramHelper.serialize(this.configObject, configuration, this.configKeyPrefix.concat(DOT_OBJECT));
-            } catch (Exception e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
-            }
-        }
+        else
+            VertexProgramHelper.serialize(this.configObject, configuration, this.configKeyPrefix.concat(DOT_OBJECT));
     }
 
 

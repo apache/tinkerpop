@@ -45,7 +45,7 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX8X_count();
 
-    public abstract Traversal<Vertex, Long> get_g_V_filterXfalseX_count();
+    public abstract Traversal<Vertex, Long> get_g_V_hasXnoX_count();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -95,7 +95,7 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_filterXfalseX_count() {
-        final Traversal<Vertex, Long> traversal = get_g_V_filterXfalseX_count();
+        final Traversal<Vertex, Long> traversal = get_g_V_hasXnoX_count();
         printTraversalForm(traversal);
         assertEquals(new Long(0), traversal.next());
         assertFalse(traversal.hasNext());
@@ -129,8 +129,8 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_filterXfalseX_count() {
-            return g.V().filter(v -> false).count();
+        public Traversal<Vertex, Long> get_g_V_hasXnoX_count() {
+            return g.V().has("no").count();
         }
     }
 
@@ -166,8 +166,8 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_filterXfalseX_count() {
-            return g.V().filter(v -> false).count().submit(g.compute());
+        public Traversal<Vertex, Long> get_g_V_hasXnoX_count() {
+            return g.V().has("no").count().submit(g.compute());
         }
     }
 }

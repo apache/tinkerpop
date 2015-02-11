@@ -514,6 +514,14 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().withSack(initialValue);
     }
 
+    public default <B> GraphTraversal<A, A> withSack(final B initialValue, final UnaryOperator<B> splitOperator) {
+        return this.start().withSack(initialValue, splitOperator);
+    }
+
+    public default <B> GraphTraversal<A, A> withSack(B initialValue) {
+        return this.start().withSack(initialValue);
+    }
+
     public default GraphTraversal<A, A> withPath() {
         return this.start().withPath();
     }

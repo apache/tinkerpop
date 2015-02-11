@@ -18,13 +18,15 @@
  */
 package com.tinkerpop.gremlin.process.graph.traversal.step.util;
 
+import com.tinkerpop.gremlin.process.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
+import com.tinkerpop.gremlin.process.traversal.step.Reducing;
+import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
+import java.io.Serializable;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -71,7 +73,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> {
         while (this.starts.hasNext())
             seed = this.reducingBiFunction.apply(seed, this.starts.next());
         this.done = true;
-        return this.getTraversal().asAdmin().getTraverserGenerator().generate(Reducing.FinalGet.tryFinalGet(seed), (Step) this, 1l);
+        return TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(Reducing.FinalGet.tryFinalGet(seed), (Step) this, 1l);
     }
 
     @Override
@@ -83,7 +85,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> {
 
     ///////
 
-    public static class ObjectBiFunction<S, E> implements BiFunction<E, Traverser<S>, E> { // Cloneable {
+    public static class ObjectBiFunction<S, E> implements BiFunction<E, Traverser<S>, E>, Serializable {
 
         private final BiFunction<E, S, E> biFunction;
 
@@ -100,13 +102,6 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> {
             return this.biFunction.apply(seed, traverser.get());
         }
 
-        /*@Override
-        public ObjectBiFunction<S, E> clone() throws CloneNotSupportedException {
-            final ObjectBiFunction<S, E> clone = (ObjectBiFunction<S, E>) super.clone();
-            clone.biFunction = CloneableLambda.tryClone(this.biFunction);
-            return clone;
-
-        }*/
     }
 
     ///////

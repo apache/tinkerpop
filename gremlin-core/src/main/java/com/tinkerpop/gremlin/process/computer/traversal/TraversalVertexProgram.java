@@ -32,11 +32,11 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
-import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.TraversalMatrix;
+import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Element;
@@ -46,7 +46,12 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.commons.configuration.Configuration;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 
@@ -103,7 +108,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             throw new IllegalArgumentException("The configuration does not have a traversal supplier");
         }
         this.traversal = this.traversalSupplier.get().get();
-        this.traversal.applyStrategies(TraversalEngine.COMPUTER);
+        if (!this.traversal.getEngine().isPresent())
+            this.traversal.applyStrategies(TraversalEngine.COMPUTER);
         this.traversalMatrix = new TraversalMatrix<>(this.traversal);
         for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecurssively(MapReducer.class, this.traversal)) {
             this.mapReducers.add(mapReducer.getMapReduce());
@@ -244,8 +250,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             return traversal(GREMLIN_GROOVY, traversalScript);
         }
 
-        public Builder traversal(final Supplier<Traversal.Admin> traversal) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, TRAVERSAL_SUPPLIER, traversal);
+        public Builder traversal(final Traversal.Admin traversal) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, TRAVERSAL_SUPPLIER, new TraversalSupplier(traversal));
             return this;
         }
 

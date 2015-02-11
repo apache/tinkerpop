@@ -32,9 +32,9 @@ import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.MapHelper;
+import com.tinkerpop.gremlin.util.function.HashMapSupplier;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,7 +62,7 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
     @Override
     public void registerSideEffects() {
         if (this.sideEffectKey == null) this.sideEffectKey = this.getId();
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMap<Object, Long>::new);
+        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMapSupplier.instance());
     }
 
     @Override

@@ -18,6 +18,7 @@
  */
 package com.tinkerpop.gremlin.process;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
 
@@ -31,7 +32,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface TraversalStrategy {
+public interface TraversalStrategy extends Serializable{
 
     // A TraversalStrategy should not have a public constructor
     // Make use of a singleton instance() object to reduce object creation on the JVM

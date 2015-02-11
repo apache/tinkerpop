@@ -23,6 +23,7 @@ import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Operator;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.function.HashMapSupplier;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -82,12 +83,12 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {
-            return g.V().withSack(() -> 0.0f).outE().sack(Operator.sum, "weight").inV().sack().sum();
+            return g.V().withSack(0.0f).outE().sack(Operator.sum, "weight").inV().sack().sum();
         }
 
         @Override
         public Traversal<Vertex, Float> get_g_V_withSackX0X_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-            return g.V().withSack(() -> 0.0f).repeat(outE().sack(Operator.sum, "weight").inV()).times(2).sack();
+            return g.V().withSack(0.0f).repeat(outE().sack(Operator.sum, "weight").inV()).times(2).sack();
         }
 
         @Override
@@ -106,12 +107,12 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {
-            return g.V().withSack(() -> 0.0f).outE().sack(Operator.sum, "weight").inV().sack().sum().submit(g.compute());
+            return g.V().withSack(0.0f).outE().sack(Operator.sum, "weight").inV().sack().sum().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Float> get_g_V_withSackX0X_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-            return g.V().withSack(() -> 0.0f).repeat(outE().sack(Operator.sum, "weight").inV()).times(2).<Float>sack().submit(g.compute());
+            return g.V().withSack(0.0f).repeat(outE().sack(Operator.sum, "weight").inV()).times(2).<Float>sack().submit(g.compute());
         }
 
         @Override
@@ -119,7 +120,7 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
             return g.V().<HashMap>withSack(HashMap::new, m -> (HashMap) m.clone()).out().out().<Map>sack((map, vertex) -> {
                 map.put("a", vertex.value("name"));
                 return map;
-            }).<Map>sack().submit(g.compute());
+            }).<Map>sack(); // TODO: Make it so the .submit(g.compute());
         }
     }
 }

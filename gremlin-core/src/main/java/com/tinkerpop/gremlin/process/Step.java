@@ -20,6 +20,7 @@ package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
@@ -36,7 +37,7 @@ import java.util.Set;
  * @param <S> The incoming object type of the step
  * @param <E> The outgoing object type of the step
  */
-public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
+public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Cloneable {
 
     /**
      * Add a iterator of {@link Traverser} objects of type S to the step.

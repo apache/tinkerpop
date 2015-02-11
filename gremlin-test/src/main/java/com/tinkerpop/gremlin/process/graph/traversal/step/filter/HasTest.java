@@ -72,8 +72,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXperson_software_blahX();
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX();
-
     public abstract Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age();
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id);
@@ -227,15 +225,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasXname_equalspredicate_markoX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_equalspredicate_markoX();
-        printTraversalForm(traversal);
-        assertEquals("marko", traversal.next().<String>value("name"));
-        assertFalse(traversal.hasNext());
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
     public void g_V_hasXperson_name_markoX_age() {
         final Traversal<Vertex, Integer> traversal = get_g_V_hasXperson_name_markoX_age();
         printTraversalForm(traversal);
@@ -326,11 +315,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
-            return g.V().has("name", (a, b) -> a.equals(b), "marko");
-        }
-
-        @Override
         public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
             return g.V().has("person", "name", "marko").values("age");
         }
@@ -409,11 +393,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasLabelXperson_software_blahX() {
             return g.V().hasLabel("person", "software", "blah");
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
-            return g.V().has("name", (a, b) -> a.equals(b), "marko").submit(g.compute());
         }
 
         @Override

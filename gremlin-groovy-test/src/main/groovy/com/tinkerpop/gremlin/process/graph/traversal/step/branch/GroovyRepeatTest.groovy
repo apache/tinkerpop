@@ -39,33 +39,8 @@ public abstract class GroovyRepeatTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_repeatXoutX_untilXloops_gte_2X_name(final Object v1Id) {
-            g.V(v1Id).repeat(out()).until { it.loops() >= 2 }.name
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilXloops_gte_2X() {
-            g.V.repeat(out()).until { it.loops() >= 2 }
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilXloops_gte_2X_emit() {
-            g.V.repeat(out()).until { it.loops() >= 2 }.emit
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXoutX_untilXloops_gte_2X_emit_path() {
-            g.V.repeat(__.out).until { it.loops() >= 2 }.emit.path
-        }
-
-        @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_emit_path() {
             g.V.repeat(__.out).times(2).emit.path
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_repeatXoutX_untilXloops_gte_2X_repeatXinX_untilXloops_gte_2X_name() {
-            g.V.repeat(__.out).until { it.loops() >= 2 }.repeat(__.in).until { it.loops() >= 2 }.name
         }
 
         @Override
@@ -81,11 +56,6 @@ public abstract class GroovyRepeatTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X_emit() {
             g.V.repeat(__.out).times(2).emit;
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX1X_untilXloops_gte_2X_repeatXoutX_name(Object v1Id) {
-            g.V(v1Id).until { it.loops() >= 2 }.repeat(__.out).name
         }
 
         @Override
@@ -120,33 +90,8 @@ public abstract class GroovyRepeatTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_repeatXoutX_untilXloops_gte_2X_name(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).repeat(__.out).until { it.loops() >= 2 }.name", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilXloops_gte_2X() {
-            ComputerTestHelper.compute("g.V.repeat(__.out).until { it.loops() >= 2 }", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_untilXloops_gte_2X_emit() {
-            ComputerTestHelper.compute("g.V.repeat(__.out).until { it.loops() >= 2 }.emit", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXoutX_untilXloops_gte_2X_emit_path() {
-            ComputerTestHelper.compute("g.V.repeat(__.out).until { it.loops() >= 2 }.emit.path", g)
-        }
-
-        @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_emit_path() {
             ComputerTestHelper.compute("g.V.repeat(__.out).times(2).emit.path", g)
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_repeatXoutX_untilXloops_gte_2X_repeatXinX_untilXloops_gte_2X_name() {
-            ComputerTestHelper.compute("g.V.repeat(__.out).until { it.loops() >= 2 }.repeat(__.in).until { it.loops() >= 2 }.name", g)
         }
 
         @Override
@@ -162,11 +107,6 @@ public abstract class GroovyRepeatTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X_emit() {
             ComputerTestHelper.compute("g.V.repeat(__.out).times(2).emit", g)
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX1X_untilXloops_gte_2X_repeatXoutX_name(Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).until{it.loops() >= 2}.repeat(__.out).name", g)
         }
 
         @Override

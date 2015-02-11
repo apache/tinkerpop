@@ -29,7 +29,7 @@ import java.util.function.Predicate;
  */
 public final class LambdaFilterStep<S> extends FilterStep<S> {
 
-    private Predicate<Traverser<S>> predicate = null;
+    private final Predicate<Traverser<S>> predicate;
 
     public LambdaFilterStep(final Traversal.Admin traversal, final Predicate<Traverser<S>> predicate) {
         super(traversal);

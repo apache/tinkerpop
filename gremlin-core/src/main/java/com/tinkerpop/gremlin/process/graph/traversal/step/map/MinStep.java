@@ -20,12 +20,15 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
+import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.util.function.ConstantSupplier;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,8 +37,8 @@ public final class MinStep<S extends Number> extends ReducingBarrierStep<S, S> i
 
     public MinStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier(() -> (S) Double.valueOf(Double.MAX_VALUE));
-        this.setBiFunction((seed, start) -> seed.doubleValue() < start.get().doubleValue() ? seed : start.get());
+        this.setSeedSupplier(new ConstantSupplier<>((S) Double.valueOf(Double.MAX_VALUE)));
+        this.setBiFunction(MinBiFunction.instance());
     }
 
     @Override
@@ -46,5 +49,25 @@ public final class MinStep<S extends Number> extends ReducingBarrierStep<S, S> i
     @Override
     public Reducer<S, Traverser<S>> getReducer() {
         return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true);
+    }
+
+    /////
+
+    private static class MinBiFunction<S extends Number> implements BiFunction<S, Traverser<S>, S>, Serializable {
+
+        private static final MinBiFunction INSTANCE = new MinBiFunction();
+
+        private MinBiFunction() {
+
+        }
+
+        @Override
+        public S apply(final S mutatingSeed, final Traverser<S> traverser) {
+            return mutatingSeed.doubleValue() < traverser.get().doubleValue() ? mutatingSeed : traverser.get();
+        }
+
+        public final static <S extends Number> MinBiFunction<S> instance() {
+            return INSTANCE;
+        }
     }
 }

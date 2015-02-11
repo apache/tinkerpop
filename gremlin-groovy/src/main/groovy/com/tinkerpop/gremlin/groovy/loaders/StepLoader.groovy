@@ -20,6 +20,8 @@ package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.groovy.function.GComparator
 import com.tinkerpop.gremlin.groovy.function.GFunction
+import com.tinkerpop.gremlin.groovy.function.GSupplier
+import com.tinkerpop.gremlin.groovy.function.GUnaryOperator
 import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
 
 /**
@@ -40,6 +42,14 @@ class StepLoader {
 
         GraphTraversal.metaClass.by = { final Closure closure ->
             return ((GraphTraversal) delegate).by(1 == closure.getMaximumNumberOfParameters() ? new GFunction(closure) : new GComparator(closure));
+        }
+
+        GraphTraversal.metaClass.withSack = { final Closure closure ->
+            return ((GraphTraversal) delegate).withSack(new GSupplier(closure));
+        }
+
+        GraphTraversal.metaClass.withSack = { final Closure closure, final Closure operator ->
+            return ((GraphTraversal) delegate).withSack(new GSupplier(closure), new GUnaryOperator(operator));
         }
     }
 }

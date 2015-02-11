@@ -32,6 +32,7 @@ import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Graph;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -54,7 +55,7 @@ import java.util.stream.Collectors;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Traversal<S, E> extends Iterator<E>, Cloneable {
+public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
 
     /**
      * Used for reflection based access to the static "of" method of a Traversal.
@@ -80,7 +81,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this::asAdmin).create();
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this.asAdmin()).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
             final Traversal.Admin<S, S> traversal = new DefaultTraversal<>(result.graph().getClass());
             return traversal.asAdmin().addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));

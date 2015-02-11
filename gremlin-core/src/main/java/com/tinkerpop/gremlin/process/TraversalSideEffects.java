@@ -20,6 +20,7 @@ package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.structure.Vertex;
 
+import java.io.Serializable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -30,7 +31,7 @@ import java.util.function.UnaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversalSideEffects extends Cloneable {
+public interface TraversalSideEffects extends Cloneable, Serializable {
 
     public static final String SIDE_EFFECTS = "gremlin.traversal.sideEffects";
 

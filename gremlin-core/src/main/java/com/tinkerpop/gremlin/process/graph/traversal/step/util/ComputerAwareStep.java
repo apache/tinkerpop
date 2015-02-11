@@ -24,6 +24,7 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import com.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -34,7 +35,7 @@ import java.util.NoSuchElementException;
  */
 public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> implements EngineDependent {
 
-    private Iterator<Traverser<E>> previousIterator = Collections.emptyIterator();
+    private Iterator<Traverser<E>> previousIterator = EmptyIterator.instance();
 
     public ComputerAwareStep(final Traversal.Admin traversal) {
         super(traversal);

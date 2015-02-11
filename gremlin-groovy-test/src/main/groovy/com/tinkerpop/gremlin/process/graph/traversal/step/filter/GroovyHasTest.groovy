@@ -100,11 +100,6 @@ public abstract class GroovyHasTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
-            g.V().has("name", { v1, v2 -> v1.equals(v2) }, "marko");
-        }
-
-        @Override
         public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
             g.V.has('person', 'name', 'marko').age;
         }
@@ -180,11 +175,6 @@ public abstract class GroovyHasTest {
         @Override
         Traversal<Vertex, Vertex> get_g_V_hasLabelXperson_software_blahX() {
             ComputerTestHelper.compute("g.V.hasLabel('person', 'software', 'blah')", g);
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
-            ComputerTestHelper.compute(" g.V().has('name', { v1, v2 -> v1.equals(v2) }, 'marko')", g);
         }
 
         @Override

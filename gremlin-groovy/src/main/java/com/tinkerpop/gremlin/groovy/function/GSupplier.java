@@ -16,37 +16,38 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.util.iterator;
+package com.tinkerpop.gremlin.groovy.function;
 
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
+import groovy.lang.Closure;
 
-import java.io.Serializable;
-import java.util.Iterator;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class SingleIterator<T> implements Iterator<T>,Serializable {
+public final class GSupplier<A> implements Supplier<A> {
 
-    private final T t;
-    private boolean alive = true;
+    private final Closure closure;
 
-    protected SingleIterator(final T t) {
-        this.t = t;
+    public GSupplier(final Closure closure) {
+        this.closure = closure;
     }
 
     @Override
-    public boolean hasNext() {
-        return this.alive;
+    public A get() {
+        return (A) this.closure.call();
     }
 
-    @Override
-    public T next() {
-        if (!this.alive)
-            throw FastNoSuchElementException.instance();
-        else {
-            this.alive = false;
-            return t;
+    public static GSupplier[] make(final Closure... closures) {
+        final GSupplier[] functions = new GSupplier[closures.length];
+        for (int i = 0; i < closures.length; i++) {
+            functions[i] = new GSupplier(closures[i]);
         }
+        return functions;
+    }
+
+    @Override
+    public String toString() {
+        return "lambda";
     }
 }

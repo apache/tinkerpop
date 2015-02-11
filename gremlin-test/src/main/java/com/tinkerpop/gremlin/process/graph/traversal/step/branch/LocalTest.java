@@ -63,7 +63,7 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(CREW)
-    public void g_V_localXpropertiesXlocationX_orderByXvalueX_limitX2XX_value() {
+    public void g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
         final Traversal<Vertex, String> traversal = get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("brussels", "san diego", "centreville", "dulles", "baltimore", "bremen", "aachen", "kaiserslautern"), traversal);

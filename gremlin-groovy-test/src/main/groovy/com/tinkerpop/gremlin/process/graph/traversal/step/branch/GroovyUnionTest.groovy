@@ -41,12 +41,12 @@ public abstract class GroovyUnionTest {
             g.V(v1Id).union(repeat(__.out).times(2), __.out).name
         }
 
-        public Traversal<Vertex, String> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX() {
-            g.V.choose({ it.label() == 'person' }, union(__.out.lang, __.out.name), __.in.label)
+        public Traversal<Vertex, String> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX() {
+            g.V.choose(__.label.is('person'), union(__.out.lang, __.out.name), __.in.label)
         }
 
-        public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
-            g.V.choose({ it.label() == 'person' }, union(__.out.lang, __.out.name), __.in.label).groupCount
+        public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
+            g.V.choose(__.label.is('person'), union(__.out.lang, __.out.name), __.in.label).groupCount
         }
 
         public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount() {
@@ -77,12 +77,12 @@ public abstract class GroovyUnionTest {
             ComputerTestHelper.compute("g.V(${v1Id}).union(repeat(__.out).times(2), __.out).name", g)
         }
 
-        public Traversal<Vertex, String> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX() {
-            ComputerTestHelper.compute("g.V.choose({ it.label() == 'person' }, union(__.out.lang, __.out.name), __.in.label)", g)
+        public Traversal<Vertex, String> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX() {
+            ComputerTestHelper.compute("g.V.choose(__.label.is('person'), union(__.out.lang, __.out.name), __.in.label)", g)
         }
 
-        public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
-            ComputerTestHelper.compute("g.V.choose({ it.label() == 'person' }, union(__.out.lang, __.out.name), __.in.label).groupCount", g)
+        public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
+            ComputerTestHelper.compute("g.V.choose(__.label.is('person'), union(__.out.lang, __.out.name), __.in.label).groupCount", g)
         }
 
         public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount() {

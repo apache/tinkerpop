@@ -28,6 +28,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.tools.MultiMap;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,7 +42,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface TraversalStrategies extends Cloneable {
+public interface TraversalStrategies extends Serializable, Cloneable {
 
     /**
      * Return all the {@link TraversalStrategy} singleton instances associated with this {@link TraversalStrategies}.

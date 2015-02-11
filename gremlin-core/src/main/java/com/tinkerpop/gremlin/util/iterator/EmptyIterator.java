@@ -26,27 +26,24 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class SingleIterator<T> implements Iterator<T>,Serializable {
+public final class EmptyIterator<S> implements Iterator<S>, Serializable {
 
-    private final T t;
-    private boolean alive = true;
+    private static final EmptyIterator INSTANCE = new EmptyIterator<>();
 
-    protected SingleIterator(final T t) {
-        this.t = t;
+    private EmptyIterator() {
     }
 
     @Override
     public boolean hasNext() {
-        return this.alive;
+        return false;
     }
 
     @Override
-    public T next() {
-        if (!this.alive)
-            throw FastNoSuchElementException.instance();
-        else {
-            this.alive = false;
-            return t;
-        }
+    public S next() {
+        throw FastNoSuchElementException.instance();
+    }
+
+    public static <S> Iterator<S> instance() {
+        return INSTANCE;
     }
 }

@@ -39,11 +39,6 @@ public abstract class GroovyOrderTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_name_order_byXabX() {
-            g.V.name.order.by { a, b -> b <=> a }
-        }
-
-        @Override
         public Traversal<Vertex, String> get_g_V_name_order_byXa1_b1X_byXb2_a2X() {
             g.V.name.order.by { a, b -> a[1] <=> b[1] }.by { a, b -> b[2] <=> a[2] }
         }
@@ -92,11 +87,6 @@ public abstract class GroovyOrderTest {
         @Override
         public Traversal<Vertex, String> get_g_V_name_order() {
             ComputerTestHelper.compute("g.V().name.order()", g)
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_name_order_byXabX() {
-            ComputerTestHelper.compute("g.V.name.order.by { a, b -> b <=> a }", g)
         }
 
         @Override

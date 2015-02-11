@@ -38,7 +38,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_b_neqX();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX();
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXb_hasXname_markoXX();
 
@@ -65,7 +65,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_b_neqX() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_b_neqX();
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -138,8 +138,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_b_neqX() {
-            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", "b", (a, b) -> !a.equals(b));
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX() {
+            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", Compare.neq, "b");
         }
 
         @Override
@@ -166,8 +166,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_b_neqX() {
-            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", "b", (a, b) -> !a.equals(b)).submit(g.compute());
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX() {
+            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", Compare.neq, "b");
         }
 
         @Override

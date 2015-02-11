@@ -23,14 +23,15 @@ import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.function.HashSetSupplier;
 import org.junit.Test;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.inE;
+import static com.tinkerpop.gremlin.process.graph.traversal.__.outE;
 import static org.junit.Assert.*;
 
 /**
@@ -125,7 +126,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX() {
-            return (Traversal) g.V().withSideEffect("a", HashSet::new).both().<String>values("name").store("a");
+            return (Traversal) g.V().withSideEffect("a", HashSetSupplier.instance()).both().<String>values("name").store("a");
         }
 
         @Override
@@ -151,7 +152,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX() {
-            return (Traversal) g.V().withSideEffect("a", HashSet::new).both().<String>values("name").store("a").submit(g.compute());
+            return (Traversal) g.V().withSideEffect("a", HashSetSupplier.instance()).both().<String>values("name").store("a").submit(g.compute());
         }
 
         @Override

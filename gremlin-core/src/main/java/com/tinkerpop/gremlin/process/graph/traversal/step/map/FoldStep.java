@@ -19,13 +19,15 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
 import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.util.function.ArrayListSupplier;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -38,10 +40,7 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> implements R
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
 
     public FoldStep(final Traversal.Admin traversal) {
-        this(traversal, () -> (E) new ArrayList<S>(), (seed, start) -> {
-            ((List) seed).add(start);
-            return seed;
-        });
+        this(traversal, (Supplier) ArrayListSupplier.instance(), (BiFunction) ArrayListBiFunction.instance());
     }
 
     public FoldStep(final Traversal.Admin traversal, final Supplier<E> seed, final BiFunction<E, S, E> foldFunction) {
@@ -58,5 +57,26 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> implements R
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
+    }
+
+    /////////
+
+    private static class ArrayListBiFunction<S> implements BiFunction<ArrayList<S>, S, ArrayList<S>>, Serializable {
+
+        private static final ArrayListBiFunction INSTANCE = new ArrayListBiFunction();
+
+        private ArrayListBiFunction() {
+
+        }
+
+        @Override
+        public ArrayList<S> apply(final ArrayList<S> mutatingSeed, final S traverser) {
+            mutatingSeed.add(traverser);
+            return mutatingSeed;
+        }
+
+        public final static <S> ArrayListBiFunction<S> instance() {
+            return INSTANCE;
+        }
     }
 }

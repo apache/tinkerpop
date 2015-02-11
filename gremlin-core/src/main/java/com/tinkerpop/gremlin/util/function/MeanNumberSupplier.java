@@ -16,37 +16,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.util.iterator;
-
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
-
-import java.io.Serializable;
-import java.util.Iterator;
+package com.tinkerpop.gremlin.util.function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class SingleIterator<T> implements Iterator<T>,Serializable {
 
-    private final T t;
-    private boolean alive = true;
+import com.tinkerpop.gremlin.process.graph.traversal.step.map.MeanStep;
 
-    protected SingleIterator(final T t) {
-        this.t = t;
+import java.io.Serializable;
+import java.util.function.Supplier;
+
+public final class MeanNumberSupplier implements Supplier<MeanStep.MeanNumber>, Serializable {
+
+    private static final MeanNumberSupplier INSTANCE = new MeanNumberSupplier();
+
+    private MeanNumberSupplier() {
+
     }
 
     @Override
-    public boolean hasNext() {
-        return this.alive;
+    public MeanStep.MeanNumber get() {
+        return new MeanStep.MeanNumber();
     }
 
-    @Override
-    public T next() {
-        if (!this.alive)
-            throw FastNoSuchElementException.instance();
-        else {
-            this.alive = false;
-            return t;
-        }
+    public static MeanNumberSupplier instance() {
+        return INSTANCE;
     }
 }
+

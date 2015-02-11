@@ -47,8 +47,8 @@ public abstract class GroovyGroupCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_filterXfalseX_groupCount() {
-            g.V.filter { false }.groupCount;
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCount() {
+            g.V.has('no').groupCount;
         }
 
         @Override
@@ -82,8 +82,8 @@ public abstract class GroovyGroupCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_filterXfalseX_groupCount() {
-            ComputerTestHelper.compute("g.V.filter { false }.groupCount", g)
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCount() {
+            ComputerTestHelper.compute("g.V.has('no').groupCount", g)
         }
 
         @Override

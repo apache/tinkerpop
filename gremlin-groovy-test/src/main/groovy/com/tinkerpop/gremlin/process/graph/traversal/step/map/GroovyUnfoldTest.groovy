@@ -18,9 +18,9 @@
  */
 package com.tinkerpop.gremlin.process.graph.traversal.step.map
 
-import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.ComputerTestHelper
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.UnfoldTest
+import com.tinkerpop.gremlin.process.Traversal
+import com.tinkerpop.gremlin.process.graph.traversal.__
 import com.tinkerpop.gremlin.structure.Edge
 import com.tinkerpop.gremlin.structure.Vertex
 
@@ -32,8 +32,8 @@ public abstract class GroovyUnfoldTest {
     public static class StandardTest extends UnfoldTest {
 
         @Override
-        public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {
-            g.V.map { it.outE }.unfold
+        public Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold() {
+            g.V.local(__.outE.fold).unfold
         }
 
         @Override
@@ -45,8 +45,8 @@ public abstract class GroovyUnfoldTest {
     public static class ComputerTest extends UnfoldTest {
 
         @Override
-        public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {
-            ComputerTestHelper.compute("g.V.map { it.outE }.unfold", g)
+        public Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold() {
+            ComputerTestHelper.compute("g.V.local(__.outE.fold).unfold", g)
         }
 
         @Override

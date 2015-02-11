@@ -25,7 +25,7 @@ import java.util.Comparator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GComparator<A> implements Comparator<A> {
+public final class GComparator<A> implements Comparator<A> {
 
     private final Closure closure;
 

@@ -23,9 +23,13 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
 import com.tinkerpop.gremlin.process.traversal.step.Reducing;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.util.function.MeanNumberSupplier;
 
+import java.io.Serializable;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -36,8 +40,8 @@ public final class MeanStep<S extends Number, E extends Number> extends Reducing
 
     public MeanStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier(() -> (E) new MeanNumber());
-        this.setBiFunction((seed, start) -> (E) ((MeanNumber) seed).add(start.get(), start.bulk()));
+        this.setSeedSupplier((Supplier) MeanNumberSupplier.instance());
+        this.setBiFunction((BiFunction) MeanBiFunction.instance());
     }
 
     @Override
@@ -50,9 +54,29 @@ public final class MeanStep<S extends Number, E extends Number> extends Reducing
         return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true);
     }
 
+    /////
+
+    private static class MeanBiFunction<S extends Number> implements BiFunction<S, Traverser<S>, S>, Serializable {
+
+        private static final MeanBiFunction INSTANCE = new MeanBiFunction();
+
+        private MeanBiFunction() {
+
+        }
+
+        @Override
+        public S apply(final S mutatingSeed, final Traverser<S> traverser) {
+            return (S) ((MeanNumber) mutatingSeed).add(traverser.get(), traverser.bulk());
+        }
+
+        public final static <S extends Number> MeanBiFunction<S> instance() {
+            return INSTANCE;
+        }
+    }
+
     ///
 
-    public final class MeanNumber extends Number implements Comparable<Number>, FinalGet<Double> {
+    public static final class MeanNumber extends Number implements Comparable<Number>, FinalGet<Double> {
 
         private long count = 0l;
         private double sum = 0.0d;

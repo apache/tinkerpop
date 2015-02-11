@@ -47,7 +47,6 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
     public void registerSideEffects() {
         if (this.sideEffectKeys.isEmpty())
             this.sideEffectKeys = Collections.singletonList(((SideEffectCapable) this.getPreviousStep()).getSideEffectKey());
-        SideEffectCapStep.generateSupplier(this);
     }
 
     @Override
@@ -65,10 +64,10 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
     }
 
     @Override
-    public SideEffectCapStep<S, E> clone() throws CloneNotSupportedException {
-        final SideEffectCapStep<S, E> clone = (SideEffectCapStep<S, E>) super.clone();
-        SideEffectCapStep.generateSupplier(clone);
-        return clone;
+    public E supply() {
+        return this.sideEffectKeys.size() == 1 ?
+                this.getTraversal().asAdmin().getSideEffects().get(this.sideEffectKeys.get(0)) :
+                (E) this.getMapOfSideEffects();
     }
 
     public Map<String, Object> getMapOfSideEffects() {
@@ -77,13 +76,5 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
             sideEffects.put(sideEffectKey, this.getTraversal().asAdmin().getSideEffects().get(sideEffectKey));
         }
         return sideEffects;
-    }
-
-    /////////////////////////
-
-    private static final <S, E> void generateSupplier(final SideEffectCapStep<S, E> sideEffectCapStep) {
-        sideEffectCapStep.setSupplier(() -> sideEffectCapStep.sideEffectKeys.size() == 1 ?
-                sideEffectCapStep.getTraversal().asAdmin().getSideEffects().get(sideEffectCapStep.sideEffectKeys.get(0)) :
-                (E) sideEffectCapStep.getMapOfSideEffects());
     }
 }

@@ -56,8 +56,8 @@ public abstract class GroovyCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_filterXfalseX_count() {
-            g.V.filter { false }.count
+        public Traversal<Vertex, Long> get_g_V_hasXnoX_count() {
+            g.V.has('no').count
         }
     }
 
@@ -88,8 +88,8 @@ public abstract class GroovyCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_filterXfalseX_count() {
-            ComputerTestHelper.compute("g.V.filter{false}.count", g)
+        public Traversal<Vertex, Long> get_g_V_hasXnoX_count() {
+            ComputerTestHelper.compute("g.V.has('no').count", g)
         }
     }
 }

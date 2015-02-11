@@ -20,18 +20,19 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
-import com.tinkerpop.gremlin.process.traversal.step.Reversible;
 import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
-import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
-import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.AggregateMapReduce;
 import com.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
 import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import com.tinkerpop.gremlin.process.traversal.step.Reversible;
+import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
+import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.BulkSet;
+import com.tinkerpop.gremlin.process.util.TraverserSet;
+import com.tinkerpop.gremlin.util.function.BulkSetSupplier;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -49,13 +50,12 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     public AggregateStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        AggregateStep.generateConsumer(this);
     }
 
     @Override
     public void registerSideEffects() {
         if (null == this.sideEffectKey) this.sideEffectKey = this.getId();
-        this.getTraversal().asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSet::new);
+        this.getTraversal().asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSetSupplier.instance());
     }
 
     @Override
@@ -84,6 +84,15 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     }
 
     @Override
+    public void barrierConsumer(final TraverserSet<S> traverserSet) {
+        traverserSet.forEach(traverser ->
+                TraversalHelper.addToCollection(
+                        traverser.getSideEffects().get(this.sideEffectKey),
+                        TraversalUtil.apply(traverser, this.aggregateTraversal),
+                        traverser.bulk()));
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.BULK, TraverserRequirement.SIDE_EFFECTS);
     }
@@ -92,18 +101,6 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     public AggregateStep<S> clone() throws CloneNotSupportedException {
         final AggregateStep<S> clone = (AggregateStep<S>) super.clone();
         clone.aggregateTraversal = this.integrateChild(this.aggregateTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
-        AggregateStep.generateConsumer(clone);
         return clone;
-    }
-
-    /////////////////////////
-
-    private static final <S> void generateConsumer(final AggregateStep<S> aggregateStep) {
-        aggregateStep.setConsumer(traverserSet ->
-                traverserSet.forEach(traverser ->
-                        TraversalHelper.addToCollection(
-                                traverser.getSideEffects().get(aggregateStep.sideEffectKey),
-                                TraversalUtil.apply(traverser, aggregateStep.aggregateTraversal),
-                                traverser.bulk())));
     }
 }

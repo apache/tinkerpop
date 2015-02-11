@@ -25,9 +25,9 @@ import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
 import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupStep;
-import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.traversal.TraversalMatrix;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
@@ -65,7 +65,7 @@ public final class GroupMapReduce implements MapReduce<Object, Collection, Objec
 
     @Override
     public void storeState(final Configuration configuration) {
-        this.storeState(configuration);
+        MapReduce.super.storeState(configuration);
         configuration.setProperty(GROUP_BY_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
         configuration.setProperty(GROUP_BY_STEP_STEP_ID, this.groupStepId);
     }
@@ -75,7 +75,8 @@ public final class GroupMapReduce implements MapReduce<Object, Collection, Objec
         this.sideEffectKey = configuration.getString(GROUP_BY_STEP_SIDE_EFFECT_KEY);
         this.groupStepId = configuration.getString(GROUP_BY_STEP_STEP_ID);
         final Traversal.Admin<?, ?> traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
-        traversal.applyStrategies(TraversalEngine.COMPUTER); // TODO: this is a scary error prone requirement, but only a problem for GroupStep
+        if (!traversal.getEngine().isPresent())
+            traversal.applyStrategies(TraversalEngine.COMPUTER); // TODO: this is a scary error prone requirement, but only a problem for GroupStep
         final GroupStep groupStep = new TraversalMatrix<>(traversal).getStepById(this.groupStepId);
         this.reduceFunction = groupStep.getReduceTraversal();
         this.mapSupplier = traversal.getSideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);

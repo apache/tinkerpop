@@ -20,7 +20,7 @@ package com.tinkerpop.gremlin.process.graph.traversal.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.traversal.step.TraversalOptionParent;
-import com.tinkerpop.gremlin.process.traversal.lambda.MapTraversal;
+import com.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collections;
@@ -32,7 +32,7 @@ public final class UnionStep<S, E> extends BranchStep<S, E, TraversalOptionParen
 
     public UnionStep(final Traversal.Admin traversal, final Traversal.Admin<?, E>... unionTraversals) {
         super(traversal);
-        this.setBranchTraversal(new MapTraversal<>(s -> Pick.any));
+        this.setBranchTraversal(new ConstantTraversal<>(Pick.any));
         for (final Traversal.Admin<?, E> union : unionTraversals) {
             this.addGlobalChildOption(Pick.any, (Traversal.Admin) union);
         }

@@ -16,37 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.util.iterator;
-
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
-
-import java.io.Serializable;
-import java.util.Iterator;
+package com.tinkerpop.gremlin.process.traversal.lambda;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class SingleIterator<T> implements Iterator<T>,Serializable {
+public final class ConstantTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
 
-    private final T t;
-    private boolean alive = true;
+    private final E end;
 
-    protected SingleIterator(final T t) {
-        this.t = t;
+    public ConstantTraversal(final E end) {
+        this.end = end;
     }
 
     @Override
-    public boolean hasNext() {
-        return this.alive;
+    public E next() {
+        return this.end;
     }
 
     @Override
-    public T next() {
-        if (!this.alive)
-            throw FastNoSuchElementException.instance();
-        else {
-            this.alive = false;
-            return t;
-        }
+    public String toString() {
+        return "(" + this.end.toString() + ")";
     }
 }
+

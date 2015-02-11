@@ -40,9 +40,9 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_VX1X_unionXrepeatXoutX_timesX2X__outX_name(final Object v1Id);
 
-    public abstract Traversal<Vertex, String> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX();
+    public abstract Traversal<Vertex, String> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX();
 
-    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX_groupCount();
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount();
 
@@ -79,7 +79,7 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX() {
-        final Traversal<Vertex, String> traversal = get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX();
+        final Traversal<Vertex, String> traversal = get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX();
         printTraversalForm(traversal);
         checkResults(new HashMap<String, Long>() {{
             put("lop", 3l);
@@ -94,7 +94,7 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
-        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount();
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX_groupCount();
         printTraversalForm(traversal);
         final Map<String, Long> groupCount = traversal.next();
         assertFalse(traversal.hasNext());
@@ -164,13 +164,13 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX() {
-            return g.V().choose(v -> v.label().equals("person"), union(out().values("lang"), out().values("name")), in().label());
+        public Traversal<Vertex, String> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX() {
+            return g.V().choose(label().is("person"), union(out().values("lang"), out().values("name")), in().label());
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
-            return (Traversal) g.V().choose(v -> v.label().equals("person"), union(out().values("lang"), out().values("name")), in().label()).groupCount();
+        public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
+            return (Traversal) g.V().choose(label().is("person"), union(out().values("lang"), out().values("name")), in().label()).groupCount();
         }
 
         @Override
@@ -207,13 +207,13 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX() {
-            return g.V().choose(v -> v.label().equals("person"), union(out().values("lang"), out().values("name")), in().label()).submit(g.compute());
+        public Traversal<Vertex, String> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX() {
+            return g.V().choose(label().is("person"), union(out().values("lang"), out().values("name")), in().label()).submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_eq_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
-            return (Traversal) g.V().choose(v -> v.label().equals("person"), union(out().values("lang"), out().values("name")), in().label()).groupCount().submit(g.compute());
+        public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
+            return (Traversal) g.V().choose(label().is("person"), union(out().values("lang"), out().values("name")), in().label()).groupCount().submit(g.compute());
         }
 
         @Override

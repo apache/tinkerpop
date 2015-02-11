@@ -20,13 +20,14 @@ package com.tinkerpop.gremlin.process.traversal.step;
 
 import com.tinkerpop.gremlin.structure.Element;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ElementFunctionComparator<V> implements Comparator<Element> {
+public class ElementFunctionComparator<V> implements Comparator<Element>, Serializable{
 
     private final Function<Element, V> elementFunction;
     private final Comparator<V> valueComparator;

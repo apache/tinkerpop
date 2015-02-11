@@ -21,6 +21,7 @@ package com.tinkerpop.gremlin.process.traversal.util;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,7 +30,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalRing<A, B> {
+public final class TraversalRing<A, B> implements Serializable {
 
     private final IdentityTraversal<A, B> identityTraversal = new IdentityTraversal<>();
 

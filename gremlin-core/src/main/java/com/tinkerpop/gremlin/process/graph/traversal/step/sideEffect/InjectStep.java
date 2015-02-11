@@ -19,28 +19,32 @@
 package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
-
-import java.util.Arrays;
-import java.util.List;
+import com.tinkerpop.gremlin.util.iterator.ArrayIterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class InjectStep<S> extends StartStep<S> {
 
-    private final List<S> injections;
+    private final S[] injections;
 
     @SafeVarargs
     public InjectStep(final Traversal.Admin traversal, final S... injections) {
         super(traversal);
-        this.injections = Arrays.asList(injections);
-        this.start = this.injections.iterator();
+        this.injections = injections;
+        this.start = new ArrayIterator<>(this.injections);
     }
 
     @Override
     public InjectStep<S> clone() throws CloneNotSupportedException {
-        final InjectStep<S> clone = (InjectStep<S>)super.clone();
-        clone.start = this.injections.iterator();
+        final InjectStep<S> clone = (InjectStep<S>) super.clone();
+        clone.start = new ArrayIterator<>(clone.injections);
         return clone;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.start = new ArrayIterator<>(this.injections);
     }
 }

@@ -18,12 +18,11 @@
  */
 package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
-import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.ComputerTestHelper
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SackTest
+import com.tinkerpop.gremlin.process.Traversal
+import com.tinkerpop.gremlin.process.graph.traversal.__
 import com.tinkerpop.gremlin.structure.Vertex
 
-import com.tinkerpop.gremlin.process.graph.traversal.__
 import static com.tinkerpop.gremlin.structure.Operator.sum
 
 /**
@@ -35,12 +34,12 @@ public abstract class GroovySackTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {
-            g.V().withSack { 0.0f }.outE.sack(sum, 'weight').inV.sack.sum()
+            g.V().withSack(0.0f).outE.sack(sum, 'weight').inV.sack.sum()
         }
 
         @Override
         public Traversal<Vertex, Float> get_g_V_withSackX0X_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-            g.V.withSack { 0.0f }.repeat(__.outE.sack(sum, 'weight').inV).times(2).sack
+            g.V.withSack(0.0f).repeat(__.outE.sack(sum, 'weight').inV).times(2).sack
         }
 
         @Override
@@ -53,12 +52,12 @@ public abstract class GroovySackTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {
-            ComputerTestHelper.compute("g.V().withSack{0.0f}.outE.sack(sum, 'weight').inV.sack.sum()", g);
+            ComputerTestHelper.compute("g.V().withSack(0.0f).outE.sack(sum, 'weight').inV.sack.sum()", g);
         }
 
         @Override
         public Traversal<Vertex, Float> get_g_V_withSackX0X_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-            ComputerTestHelper.compute("g.V.withSack{ 0.0f }.repeat(__.outE.sack(sum, 'weight').inV).times(2).sack", g)
+            ComputerTestHelper.compute("g.V.withSack(0.0f).repeat(__.outE.sack(sum, 'weight').inV).times(2).sack", g)
         }
 
         @Override

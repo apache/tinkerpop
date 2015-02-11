@@ -22,18 +22,19 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.GroupMapReduce;
+import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import com.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import com.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import com.tinkerpop.gremlin.process.traversal.step.Reversible;
-import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
 import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
 import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.GroupMapReduce;
-import com.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import com.tinkerpop.gremlin.process.util.BulkSet;
+import com.tinkerpop.gremlin.util.function.HashMapSupplier;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -80,7 +81,7 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     @Override
     public void registerSideEffects() {
         if (this.sideEffectKey == null) this.sideEffectKey = this.getId();
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMap<K, Collection<V>>::new);
+        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMapSupplier.instance());
     }
 
     private static <S, K, V> void doGroup(final Traverser.Admin<S> traverser, final Map<K, Collection<V>> groupMap, final Traversal.Admin<S, K> keyTraversal, final Traversal.Admin<S, V> valueTraversal) {

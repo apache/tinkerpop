@@ -16,34 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.traversal.lambda;
+package com.tinkerpop.gremlin.util.function;
+
+import com.tinkerpop.gremlin.process.util.BulkSet;
+
+import java.io.Serializable;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OneTraversal<S> extends AbstractLambdaTraversal<S, Number> {
+public final class BulkSetSupplier<A> implements Supplier<BulkSet<A>>, Serializable {
+    private static final BulkSetSupplier INSTANCE = new BulkSetSupplier();
 
-    private static final OneTraversal INSTANCE = new OneTraversal<>();
-
-    @Override
-    public Number next() {
-        return 1.0d;
+    private BulkSetSupplier() {
     }
 
     @Override
-    public String toString() {
-        return "1.0";
+    public BulkSet<A> get() {
+        return new BulkSet<>();
     }
 
-    @Override
-    public OneTraversal<S> clone() throws CloneNotSupportedException {
+    public static <A> BulkSetSupplier<A> instance() {
         return INSTANCE;
     }
-
-    public static <A> OneTraversal<A> instance() {
-        return INSTANCE;
-    }
-
-
 }
-

@@ -544,6 +544,14 @@ public class __ {
         return __.<A>start().withSack(initialValue);
     }
 
+    public static <A, B> GraphTraversal<A, A> withSack(final B initialValue, final UnaryOperator<B> splitOperator) {
+        return __.<A>start().withSack(initialValue, splitOperator);
+    }
+
+    public static <A, B> GraphTraversal<A, A> withSack(B initialValue) {
+        return __.<A>start().withSack(initialValue);
+    }
+
     public static <A> GraphTraversal<A, A> withPath() {
         return __.<A>start().withPath();
     }

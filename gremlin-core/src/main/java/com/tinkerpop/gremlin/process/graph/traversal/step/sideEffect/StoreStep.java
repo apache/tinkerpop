@@ -31,7 +31,7 @@ import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.BulkSet;
+import com.tinkerpop.gremlin.util.function.BulkSetSupplier;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -62,7 +62,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     @Override
     public void registerSideEffects() {
         if (null == this.sideEffectKey) this.sideEffectKey = this.getId();
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSet::new);
+        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSetSupplier.instance());
     }
 
     @Override
