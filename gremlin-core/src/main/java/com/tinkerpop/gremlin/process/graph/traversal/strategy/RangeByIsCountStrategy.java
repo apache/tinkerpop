@@ -67,6 +67,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy impl
                         final long highRangeOffset = INCREASED_OFFSET_SCALAR_PREDICATES.contains(predicate) ? 1L : 0L;
                         final long highRange = ((Number) value).longValue() + highRangeOffset;
                         TraversalHelper.insertBeforeStep(new RangeStep<>(traversal, 0L, highRange), curr, traversal);
+                        i++;
                     } else {
                         final Long highRangeOffset = RANGE_PREDICATES.get(predicate);
                         if (value instanceof Collection && highRangeOffset != null) {
@@ -74,6 +75,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy impl
                             if (high instanceof Number) {
                                 final long highRange = ((Number) high).longValue() + highRangeOffset;
                                 TraversalHelper.insertBeforeStep(new RangeStep<>(traversal, 0L, highRange), curr, traversal);
+                                i++;
                             }
                         }
                     }

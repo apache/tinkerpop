@@ -48,6 +48,7 @@ public final class ProfileStrategy extends AbstractTraversalStrategy {
         PRIORS.add(ReducingStrategy.class);
         PRIORS.add(SideEffectCapStrategy.class);
         PRIORS.add(SideEffectRegistrationStrategy.class);
+        PRIORS.add(RangeByIsCountStrategy.class);
     }
 
     private ProfileStrategy() {
