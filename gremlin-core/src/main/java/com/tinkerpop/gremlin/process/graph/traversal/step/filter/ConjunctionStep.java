@@ -30,6 +30,7 @@ import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -95,18 +96,22 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
         return TraversalHelper.makeStepString(this, this.conjunctionTraversals);
     }
 
-    /*public List<HasContainer> getHasContainers() {
-        final List<HasContainer> hasContainers = new ArrayList<>();
+    public boolean isConjunctionHasTree() {
         for (final Traversal.Admin<S, ?> conjunctionTraversal : this.conjunctionTraversals) {
             for (final Step<?, ?> step : conjunctionTraversal.getSteps()) {
-                if (step instanceof HasStep) {
-                    hasContainers.addAll(((HasStep) step).getHasContainers());
-                } else if(step instanceof TraversalParent) {
-
-                }
+                if (step instanceof ConjunctionStep) {
+                    if (!((ConjunctionStep) step).isConjunctionHasTree())
+                        return false;
+                } else if (!(step instanceof HasStep))
+                    return false;
             }
         }
-    }*/
+        return true;
+    }
+
+    public ConjunctionTree getConjunctionHasTree() {
+        return new ConjunctionTree(this);
+    }
 
 
     ////////
@@ -123,4 +128,66 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
         }
     }
 
+    ////////
+
+    public static class ConjunctionTree implements Iterable<ConjunctionTree.Entry> {
+
+        private List<Entry> tree = new ArrayList<>();
+        private boolean isAnd;
+
+        public ConjunctionTree(final ConjunctionStep<?> conjunctionStep) {
+            this.isAnd = conjunctionStep.isAnd;
+            for (final Traversal.Admin<?, ?> conjunctionTraversal : conjunctionStep.conjunctionTraversals) {
+                for (final Step<?, ?> step : conjunctionTraversal.getSteps()) {
+                    if (step instanceof HasStep) {
+                        (((HasStep<?>) step).getHasContainers()).forEach(container -> this.tree.add(new Entry(HasContainer.class, container)));
+                    } else if (step instanceof ConjunctionStep) {
+                        tree.add(new Entry(ConjunctionTree.class, ((ConjunctionStep) step).getConjunctionHasTree()));
+                    } else {
+                        throw new IllegalStateException("This conjunction supports more complex steps than HasStep");
+                    }
+                }
+            }
+        }
+
+        @Override
+        public String toString() {
+            return (this.isAnd ? "and" : "or") + this.tree.toString();
+        }
+
+        public boolean isAnd() {
+            return this.isAnd;
+        }
+
+        @Override
+        public Iterator<Entry> iterator() {
+            return this.tree.iterator();
+        }
+
+        public static class Entry {
+            private Class entryClass;
+            private Object entryValue;
+
+            public Entry(final Class entryClass, final Object entryValue) {
+                this.entryClass = entryClass;
+                this.entryValue = entryValue;
+            }
+
+            public <V> V getValue() {
+                return (V) this.entryValue;
+            }
+
+            public boolean isHasContainer() {
+                return entryClass.equals(HasContainer.class);
+            }
+
+            public boolean isConjunctionTree() {
+                return entryClass.equals(ConjunctionTree.class);
+            }
+
+            public String toString() {
+                return this.entryValue.toString();
+            }
+        }
+    }
 }
