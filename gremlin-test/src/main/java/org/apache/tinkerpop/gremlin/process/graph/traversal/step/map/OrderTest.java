@@ -35,7 +35,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.outE;
 import static org.junit.Assert.*;
+
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -59,9 +61,12 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(final Object v1Id);
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_name_order() {
+
         final Traversal<Vertex, String> traversal = get_g_V_name_order();
         printTraversalForm(traversal);
         final List<String> names = traversal.toList();
@@ -196,6 +201,22 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_order_byXoutE_count__decrX() {
+        Arrays.asList(get_g_V_order_byXoutE_count__decrX()).forEach(traversal -> {
+            printTraversalForm(traversal);
+            final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
+            assertEquals(vertices.size(), 6);
+            assertEquals("marko", vertices.get(0).value("name"));
+            assertEquals("josh", vertices.get(1).value("name"));
+            assertEquals("peter", vertices.get(2).value("name"));
+            assertTrue(vertices.get(3).value("name").equals("vadas") || vertices.get(3).value("name").equals("ripple") || vertices.get(3).value("name").equals("lop"));
+            assertTrue(vertices.get(4).value("name").equals("vadas") || vertices.get(4).value("name").equals("ripple") || vertices.get(4).value("name").equals("lop"));
+            assertTrue(vertices.get(5).value("name").equals("vadas") || vertices.get(5).value("name").equals("ripple") || vertices.get(5).value("name").equals("lop"));
+        });
+    }
+
     public static class StandardTest extends OrderTest {
 
         @Override
@@ -245,6 +266,11 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
                 map.put(4, (int) v.get().value("age"));
                 return map;
             }).order(Scope.local).by(Order.valueDecr).by(Order.keyIncr);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX() {
+            return g.V().order().by(outE().count(), Order.decr);
         }
 
     }
@@ -305,6 +331,11 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
                 map.put(4, (int) v.get().value("age"));
                 return map;
             }).order(Scope.local).by(Order.valueDecr).by(Order.keyIncr); // TODO: .submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX() {
+            return g.V().order().by(outE().count(), Order.decr); // TODO: .submit(g.compute());  DETACHED VERTICES DO NOT HAVE EDGES
         }
     }
 }

@@ -18,40 +18,40 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ElementFunctionComparator<V> implements Comparator<Element>, Serializable {
+public class TraversalComparator<S, E> implements Comparator<S>, Serializable, Cloneable {
 
-    private final Function<Element, V> elementFunction;
-    private final Comparator<V> valueComparator;
+    private Traversal.Admin<S, E> traversal;
+    private final Comparator<E> comparator;
 
-    public ElementFunctionComparator(final Function<Element, V> elementFunction, final Comparator<V> valueComparator) {
-        this.elementFunction = elementFunction;
-        this.valueComparator = valueComparator;
-    }
-
-    public Function<Element, V> getElementFunction() {
-        return this.elementFunction;
-    }
-
-    public Comparator<V> getValueComparator() {
-        return this.valueComparator;
-    }
-
-    @Override
-    public int compare(final Element elementA, final Element elementB) {
-        return this.valueComparator.compare(this.elementFunction.apply(elementA), this.elementFunction.apply(elementB));
+    public TraversalComparator(final Traversal.Admin<S, E> traversal, final Comparator<E> comparator) {
+        this.traversal = traversal;
+        this.comparator = comparator;
     }
 
     @Override
     public String toString() {
-        return this.valueComparator.toString() + "(" + this.elementFunction + ')';
+        return this.comparator.toString() + "(" + this.traversal + ")";
+    }
+
+    @Override
+    public int compare(final S start1, final S start2) {
+        return this.comparator.compare(TraversalUtil.apply(start1, this.traversal), TraversalUtil.apply(start2, this.traversal));
+    }
+
+    @Override
+    public TraversalComparator clone() throws CloneNotSupportedException {
+        final TraversalComparator clone = (TraversalComparator) super.clone();
+        clone.traversal = this.traversal.clone();
+        return clone;
     }
 }
+

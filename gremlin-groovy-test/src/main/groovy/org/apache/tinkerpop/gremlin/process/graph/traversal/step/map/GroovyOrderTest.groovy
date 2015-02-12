@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
+import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.Traversal
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.OrderTest
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.structure.Order
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -80,6 +80,11 @@ public abstract class GroovyOrderTest {
                 return map;
             }.order(Scope.local).by(Order.valueDecr).by(Order.keyIncr);
         }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX() {
+            g.V.order.by(__.outE.count, Order.decr)
+        }
     }
 
     public static class ComputerTest extends OrderTest {
@@ -132,6 +137,12 @@ public abstract class GroovyOrderTest {
                 return map;
             }.order(Scope.local).by(Order.valueDecr).by(Order.keyIncr);
             """, g)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX() {
+            g.V.order.by(__.outE.count, Order.decr)
+            // TODO ComputerTestHelper.compute("g.V.order.by(__.outE.count, Order.decr)", g)
         }
 
     }
