@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -43,9 +44,9 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX();
 
-    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXunfold_countX();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXcountXlocalXX();
 
-    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXcountXlocalXX_timesX2X_capXaX();
 
     public abstract Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX();
 
@@ -80,7 +81,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXlangX_group_byXlangX_byX1X_byXsizeX() {
-        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_hasXlangX_group_byXlangX_byX1X_byXunfold_countX();
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_hasXlangX_group_byXlangX_byX1X_byXcountXlocalXX();
         printTraversalForm(traversal);
         final Map<String, Long> map = traversal.next();
         assertEquals(1, map.size());
@@ -93,7 +94,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_repeatXout_groupXaX_byXnameX_byXitX_byXsizeXX_timesX2X_capXaX() {
         List<Traversal<Vertex, Map<String, Long>>> traversals = new ArrayList<>();
-        traversals.add(get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX());
+        traversals.add(get_g_V_repeatXout_groupXaX_byXnameX_by_byXcountXlocalXX_timesX2X_capXaX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             final Map<String, Long> map = traversal.next();
@@ -149,13 +150,13 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXunfold_countX() {
-            return (Traversal) g.V().has("lang").group().by("lang").by(inject(1)).<Collection>by(unfold().count());
+        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXcountXlocalXX() {
+            return (Traversal) g.V().has("lang").group().by("lang").by(inject(1)).<Collection>by(count(Scope.local));
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX() {
-            return g.V().repeat(out().group("a").by("name").by().<Collection>by(unfold().count())).times(2).cap("a");
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXcountXlocalXX_timesX2X_capXaX() {
+            return g.V().repeat(out().group("a").by("name").by().<Collection>by(count(Scope.local))).times(2).cap("a");
         }
 
         @Override
@@ -182,14 +183,14 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXunfold_countX() {
+        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXcountXlocalXX() {
             return (Traversal) g.V().has("lang")
-                    .group().by("lang").by(inject(1)).<Collection>by(unfold().count()).submit(g.compute());
+                    .group().by("lang").by(inject(1)).<Collection>by(count(Scope.local)).submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXsizeXX_timesX2X_capXaX() {
-            return g.V().repeat(out().group("a").by("name").by().<Collection>by(unfold().count())).times(2).<Map<String, Long>>cap("a").submit(g.compute());
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXcountXlocalXX_timesX2X_capXaX() {
+            return g.V().repeat(out().group("a").by("name").by().<Collection>by(count(Scope.local))).times(2).<Map<String, Long>>cap("a").submit(g.compute());
         }
 
         @Override
