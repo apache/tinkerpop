@@ -26,7 +26,7 @@ import java.util.Comparator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ElementValueComparator<V> implements Comparator<Element>, Serializable {
+public final class ElementValueComparator<V> implements Comparator<Element>, Serializable {
 
     private final String propertyKey;
     private final Comparator<V> valueComparator;

@@ -27,7 +27,7 @@ import java.util.Comparator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalComparator<S, E> implements Comparator<S>, Serializable, Cloneable {
+public final class TraversalComparator<S, E> implements Comparator<S>, Serializable, Cloneable {
 
     private Traversal.Admin<S, E> traversal;
     private final Comparator<E> comparator;
