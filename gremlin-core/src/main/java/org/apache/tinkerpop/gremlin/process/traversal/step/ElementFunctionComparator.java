@@ -27,7 +27,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ElementFunctionComparator<V> implements Comparator<Element>, Serializable{
+public final class ElementFunctionComparator<V> implements Comparator<Element>, Serializable {
 
     private final Function<Element, V> elementFunction;
     private final Comparator<V> valueComparator;
@@ -52,6 +52,6 @@ public class ElementFunctionComparator<V> implements Comparator<Element>, Serial
 
     @Override
     public String toString() {
-        return this.elementFunction + "(" + this.valueComparator + ')';
+        return this.valueComparator.toString() + "(" + this.elementFunction + ')';
     }
 }

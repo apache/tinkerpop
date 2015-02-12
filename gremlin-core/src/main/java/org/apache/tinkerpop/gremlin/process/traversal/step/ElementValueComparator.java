@@ -20,12 +20,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ElementValueComparator<V> implements Comparator<Element> {
+public final class ElementValueComparator<V> implements Comparator<Element>, Serializable {
 
     private final String propertyKey;
     private final Comparator<V> valueComparator;
@@ -50,6 +51,6 @@ public class ElementValueComparator<V> implements Comparator<Element> {
 
     @Override
     public String toString() {
-        return this.propertyKey + '(' + this.valueComparator + ')';
+        return this.valueComparator.toString() + '(' + this.propertyKey + ')';
     }
 }

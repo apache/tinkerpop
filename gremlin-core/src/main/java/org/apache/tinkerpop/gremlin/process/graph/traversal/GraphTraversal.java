@@ -107,6 +107,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.MapTraverserTravers
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TrueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ElementFunctionComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ElementValueComparator;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Compare;
@@ -737,6 +738,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <V> GraphTraversal<S, E> by(final String elementPropertyProjection, final Comparator<V> propertyValueComparator) {
         ((ComparatorHolder<Element>) this.asAdmin().getEndStep()).addComparator(new ElementValueComparator<>(elementPropertyProjection, propertyValueComparator));
+        return this;
+    }
+
+    public default <V> GraphTraversal<S, E> by(final Traversal<?,?> traversal, final Comparator<V> endComparator) {
+        ((ComparatorHolder<E>) this.asAdmin().getEndStep()).addComparator(new TraversalComparator(traversal.asAdmin(), endComparator));
         return this;
     }
 
