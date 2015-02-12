@@ -103,7 +103,7 @@ image:lambda-vertex-program.png[width=200,float=left] `LambdaVertexProgram` is t
 [gremlin-groovy,modern]
 ----
 result = g.compute().program(LambdaVertexProgram.build().
-           execute("a.property(single, ('counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
+           execute("a.property(single, 'counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
            terminate('a.iteration > 9').
            elementComputeKeys('counter').create()).submit().get()
 result.graph().V().values('counter')
@@ -115,7 +115,7 @@ The same example is presented below in Java8 using native lambda syntax.
 
 [source,java]
 ComputerResult results = g.compute().program(LambdaVertexProgram.build().
-                        execute((vertex, messenger, memory) -> vertex.<Integer>property(single, ("counter", memory.isInitialIteration() ? 0 : vertex.<Integer>value("counter") + 1)).
+                        execute((vertex, messenger, memory) -> vertex.<Integer>property(single, "counter", memory.isInitialIteration() ? 0 : vertex.<Integer>value("counter") + 1)).
                         terminate(memory -> memory.getIteration() > 9).
                         elementComputeKeys("counter").create()).submit().get();
 results.graph().V().values("counter").forEach(System.out::println);
@@ -134,7 +134,7 @@ Finally, there also exists `LambdaMapReduce` to compliment `LambdaVertexProgram`
 ----
 result = g.compute().
            program(LambdaVertexProgram.build().
-               execute("a.property(single, ('counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
+               execute("a.property(single, 'counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
                terminate('a.iteration > 9').
                elementComputeKeys('counter').create()).
            mapReduce(LambdaMapReduce.build().
@@ -231,13 +231,13 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
         } else if (1 == memory.getIteration()) { <8>
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = StreamFactory.stream(messenger.receiveMessages(this.countMessageScope)).reduce(0.0d, (a, b) -> a + b);
-            vertex.property(single, (PAGE_RANK, initialPageRank);
-            vertex.property(single, (EDGE_COUNT, edgeCount);
+            vertex.property(single, PAGE_RANK, initialPageRank);
+            vertex.property(single, EDGE_COUNT, edgeCount);
             messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
         } else { <9>
             double newPageRank = StreamFactory.stream(messenger.receiveMessages(this.incidentMessageScope)).reduce(0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
-            vertex.property(single, (PAGE_RANK, newPageRank);
+            vertex.property(single, PAGE_RANK, newPageRank);
             messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
         }
     }

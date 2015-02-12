@@ -108,7 +108,7 @@ gremlin> vp.properties()
 ==>p[acl->private]
 gremlin> v.properties('name').valueMap()
 ==>[date:2014, creator:stephen, acl:private]
-gremlin> v.property(single, ('name','okram') <6>
+gremlin> v.property(single, 'name','okram') <6>
 ==>vp[name->okram]
 gremlin> v.property('name')
 ==>vp[name->okram]
@@ -118,7 +118,7 @@ gremlin> v.property('name')
 <3> A vertex property can have standard key/value properties attached to it.
 <4> Vertex property removal is identical to property removal.
 <5> A vertex property can have any number of key/value properties attached to it.
-<6> `Vertex.property(single, ()` is a helper method that will remove all existing key'd properties before adding the new single property.
+<6> `Vertex.property(single, ...)` is a helper method that will remove all existing key'd properties before adding the new single property.
 
 If the concept of vertex properties is difficult to grasp, then it may be best to think of vertex properties in terms of "literal vertices." A vertex can have an edge to a "literal vertex" that has a single value key/value -- e.g. "value=okram." The edge that points to that literal vertex has an edge-label of "name." The properties on the edge represent the literal vertex's properties. The "literal vertex" can not have any other edges to it (only one from the associated vertex).
 
