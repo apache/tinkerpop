@@ -35,7 +35,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -71,9 +70,8 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
                 ((Map<String, Object>) start).forEach((k, v) -> bindings.put(k, (E) TraversalUtil.apply(v, this.traversalRing.next())));
             else
                 this.selectLabels.forEach(label -> {
-                    if (((Map) start).containsKey(label)) {
+                    if (((Map) start).containsKey(label))
                         bindings.put(label, (E) TraversalUtil.apply(((Map) start).get(label), this.traversalRing.next()));
-                    }
                 });
         }
 

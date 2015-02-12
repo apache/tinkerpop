@@ -18,18 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.Path;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +40,7 @@ import java.util.Set;
 public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent, EngineDependent {
 
     private final String selectLabel;
-    protected TraversalRing<Object, Object> traversalRing = new TraversalRing<>();
+    private Traversal.Admin<Object, Object> selectTraversal = new IdentityTraversal<>();
     private boolean requiresPaths = false;
 
     public SelectOneStep(final Traversal.Admin traversal, final String selectLabel) {
@@ -51,24 +51,10 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
         final S start = traverser.get();
-        E end = null;
-        ////// PROCESS STEP BINDINGS
-        final Path path = traverser.path();
-        if (path.hasLabel(this.selectLabel))
-            end = (E) TraversalUtil.apply(path.<Object>get(this.selectLabel), this.traversalRing.next());
-        if (start instanceof Map)
-            end = (E) TraversalUtil.apply(((Map) start).get(this.selectLabel), this.traversalRing.next());
-        // todo: just get map and return first
-        this.traversalRing.reset();
-        if (null == end)
-            throw new IllegalStateException("The traversal does not have an accessible selection label: " + this.selectLabel);
-        return end;
-    }
-
-    @Override
-    public void reset() {
-        super.reset();
-        this.traversalRing.reset();
+        if (start instanceof Map && ((Map) start).containsKey(this.selectLabel))
+            return (E) TraversalUtil.apply(((Map) start).get(this.selectLabel), this.selectTraversal);
+        else
+            return (E) TraversalUtil.apply(traverser.path().<Object>get(this.selectLabel), this.selectTraversal);
     }
 
     @Override
@@ -84,27 +70,24 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.selectLabel, this.traversalRing);
+        return TraversalHelper.makeStepString(this, this.selectLabel, this.selectTraversal);
     }
 
     @Override
     public SelectOneStep<S, E> clone() throws CloneNotSupportedException {
         final SelectOneStep<S, E> clone = (SelectOneStep<S, E>) super.clone();
-        clone.traversalRing = new TraversalRing<>();
-        for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {
-            clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone(), TYPICAL_LOCAL_OPERATIONS));
-        }
+        clone.selectTraversal = this.selectTraversal.clone();
         return clone;
     }
 
     @Override
     public List<Traversal.Admin<Object, Object>> getLocalChildren() {
-        return this.traversalRing.getTraversals();
+        return Collections.singletonList(this.selectTraversal);
     }
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> selectTraversal) {
-        this.traversalRing.addTraversal(this.integrateChild(selectTraversal, TYPICAL_LOCAL_OPERATIONS));
+        this.selectTraversal = this.integrateChild(selectTraversal, TYPICAL_LOCAL_OPERATIONS);
     }
 
     @Override
