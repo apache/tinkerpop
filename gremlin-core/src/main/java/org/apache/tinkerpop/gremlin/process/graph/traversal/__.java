@@ -220,16 +220,33 @@ public class __ {
         return __.<A>start().sum();
     }
 
+    public static <A> GraphTraversal<A, Double> sum(final Scope scope) {
+        return __.<A>start().sum(scope);
+    }
+
+
     public static <A, E2 extends Number> GraphTraversal<A, E2> min() {
         return __.<A>start().min();
+    }
+
+    public static <A, E2 extends Number> GraphTraversal<A, E2> min(final Scope scope) {
+        return __.<A>start().min(scope);
     }
 
     public static <A, E2 extends Number> GraphTraversal<A, E2> max() {
         return __.<A>start().max();
     }
 
+    public static <A, E2 extends Number> GraphTraversal<A, E2> max(final Scope scope) {
+        return __.<A>start().max(scope);
+    }
+
     public static <A> GraphTraversal<A, Double> mean() {
         return __.<A>start().mean();
+    }
+
+    public static <A> GraphTraversal<A, Double> mean(final Scope scope) {
+        return __.<A>start().mean(scope);
     }
 
     ///////////////////// FILTER STEPS /////////////////////

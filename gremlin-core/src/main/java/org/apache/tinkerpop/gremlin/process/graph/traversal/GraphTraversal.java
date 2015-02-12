@@ -65,9 +65,12 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.KeyStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.LambdaMapStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MaxStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MeanStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MinStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MaxGlobalStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MaxLocalStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MeanGlobalStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MeanLocalStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MinGlobalStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MinLocalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.OrderLocalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PathStep;
@@ -77,7 +80,8 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertyVal
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SackStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SelectStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SumStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SumGlobalStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SumLocalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.MatchStep;
@@ -332,19 +336,36 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, Double> sum() {
-        return this.asAdmin().addStep(new SumStep(this.asAdmin()));
+        return this.sum(Scope.global);
+    }
+
+    public default GraphTraversal<S, Double> sum(final Scope scope) {
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new SumGlobalStep(this.asAdmin()) : new SumLocalStep<>(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> max() {
-        return this.asAdmin().addStep(new MaxStep<>(this.asAdmin()));
+        return this.max(Scope.global);
+    }
+
+    public default <E2 extends Number> GraphTraversal<S, E2> max(final Scope scope) {
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MaxGlobalStep<E2>(this.asAdmin()) : new MaxLocalStep(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> min() {
-        return this.asAdmin().addStep(new MinStep<>(this.asAdmin()));
+        return this.min(Scope.global);
     }
 
+    public default <E2 extends Number> GraphTraversal<S, E2> min(final Scope scope) {
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MinGlobalStep<E2>(this.asAdmin()) : new MinLocalStep(this.asAdmin()));
+    }
+
+
     public default GraphTraversal<S, Double> mean() {
-        return this.asAdmin().addStep(new MeanStep<>(this.asAdmin()));
+        return this.mean(Scope.global);
+    }
+
+    public default GraphTraversal<S, Double> mean(final Scope scope) {
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MeanGlobalStep<>(this.asAdmin()) : new MeanLocalStep<>(this.asAdmin()));
     }
 
     ///////////////////// FILTER STEPS /////////////////////

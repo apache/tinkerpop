@@ -20,29 +20,41 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
-import java.util.function.Function;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LambdaMapStep<S, E> extends MapStep<S, E> {
+public final class MeanLocalStep<S> extends MapStep<S, Double> {
 
-    private final Function<Traverser<S>, E> function;
-
-    public LambdaMapStep(final Traversal.Admin traversal, final Function<Traverser<S>, E> function) {
+    public MeanLocalStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.function = function;
     }
 
     @Override
-    protected E map(final Traverser.Admin<S> traverser) {
-        return this.function.apply(traverser);
+    protected Double map(final Traverser.Admin<S> traverser) {
+        final S start = traverser.get();
+        if (start instanceof Collection) {
+            double sum = 0.0d;
+            int count = 0;
+            for (final Number number : (Collection<Number>) start) {
+                count++;
+                sum = sum + number.doubleValue();
+            }
+            return sum / count;
+        } else if (start instanceof Number) {
+            return ((Number) start).doubleValue();
+        } else {
+            return Double.NaN;
+        }
     }
 
     @Override
-    public String toString() {
-        return TraversalHelper.makeStepString(this, this.function);
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.OBJECT);
     }
 }

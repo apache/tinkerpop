@@ -190,16 +190,32 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().sum();
     }
 
+    public default GraphTraversal<A, Double> sum(final Scope scope) {
+        return this.start().sum(scope);
+    }
+
     public default <E2 extends Number> GraphTraversal<A, E2> min() {
         return this.start().min();
+    }
+
+    public default <E2 extends Number> GraphTraversal<A, E2> min(final Scope scope) {
+        return this.start().min(scope);
     }
 
     public default <E2 extends Number> GraphTraversal<A, E2> max() {
         return this.start().max();
     }
 
+    public default <E2 extends Number> GraphTraversal<A, E2> max(final Scope scope) {
+        return this.start().max(scope);
+    }
+
     public default GraphTraversal<A, Double> mean() {
         return this.start().mean();
+    }
+
+    public default GraphTraversal<A, Double> mean(final Scope scope) {
+        return this.start().mean(scope);
     }
 
     ///////////////////// FILTER STEPS /////////////////////

@@ -33,14 +33,14 @@ import java.util.function.BiFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SumStep extends ReducingBarrierStep<Number, Double> implements Reducing<Double, Traverser<Number>> {
+public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> implements Reducing<Double, Traverser<Number>> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.BULK,
             TraverserRequirement.OBJECT
     );
 
-    public SumStep(final Traversal.Admin traversal) {
+    public SumGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(new ConstantSupplier<>(0.0d));
         this.setBiFunction(SumBiFunction.instance());

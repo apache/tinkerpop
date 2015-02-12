@@ -756,6 +756,8 @@ g.V().values('age').max()
 g.V().repeat(both()).times(3).values('age').max()
 ----
 
+IMPORTANT: `max(local)` determines the max of the current, local object (not the objects in the traversal stream). This works for `Collection` and `Number`-type objects. For any other object, a max of `Double.NaN` is returned.
+
 [[mean-step]]
 Mean Step
 ~~~~~~~~~
@@ -771,6 +773,8 @@ g.V().repeat(both()).times(3).values('age').dedup().mean()
 
 <1> Realize that traversers are being bulked by `repeat()`. There may be more of a particular number than another, thus altering the average.
 
+IMPORTANT: `mean(local)` determines the mean of the current, local object (not the objects in the traversal stream). This works for `Collection` and `Number`-type objects. For any other object, a mean of `Double.NaN` is returned.
+
 [[min-step]]
 Min Step
 ~~~~~~~~
@@ -782,6 +786,8 @@ The `min()`-step (*map*) operates on a stream of numbers and determines which is
 g.V().values('age').min()
 g.V().repeat(both()).times(3).values('age').min()
 ----
+
+IMPORTANT: `min(local)` determines the min of the current, local object (not the objects in the traversal stream). This works for `Collection` and `Number`-type objects. For any other object, a min of `Double.NaN` is returned.
 
 [[or-step]]
 Or Step
@@ -1237,6 +1243,8 @@ The `sum()`-step (*map*) operates on a stream of numbers and sums the numbers to
 g.V().values('age').sum()
 g.V().repeat(both()).times(3).values('age').sum()
 ----
+
+IMPORTANT: `sum(local)` determines the sum of the current, local object (not the objects in the traversal stream). This works for `Collection`-type objects. For any other object, a sum of `Double.NaN` is returned.
 
 [[timelimit-step]]
 TimeLimit Step

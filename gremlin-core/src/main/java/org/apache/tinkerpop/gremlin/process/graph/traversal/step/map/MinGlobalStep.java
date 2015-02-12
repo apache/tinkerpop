@@ -33,9 +33,9 @@ import java.util.function.BiFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MinStep<S extends Number> extends ReducingBarrierStep<S, S> implements Reducing<S, Traverser<S>> {
+public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S, S> implements Reducing<S, Traverser<S>> {
 
-    public MinStep(final Traversal.Admin traversal) {
+    public MinGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(new ConstantSupplier<>((S) Double.valueOf(Double.MAX_VALUE)));
         this.setBiFunction(MinBiFunction.instance());
