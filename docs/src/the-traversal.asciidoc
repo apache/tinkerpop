@@ -347,7 +347,7 @@ If a lambda is provided to `dedup()`, then the object is processed by the lambda
 [gremlin-groovy,modern]
 ----
 g.V().valueMap(true, 'name')
-g.V().dedup().by(label()).values('name')
+g.V().dedup().by(label).values('name')
 ----
 
 WARNING: The `dedup()`-step does not have a correlate in <<traversalvertexprogram,Gremlin OLAP>> when used mid-traversal. When in mid-traversal de-duplication only occurs at the the current processing vertex and thus, is not a global operation as it in Gremlin OLTP. When `dedup()` is an end step, the resultant traversers are de-duplicated by `TraverserMapReduce`.
@@ -396,9 +396,9 @@ As traversers propagate across a graph as defined by a traversal, sideEffect com
 
 [gremlin-groovy,modern]
 ----
-g.V().group().by(label()) <1>
-g.V().group().by(label()).by('name') <2>
-g.V().group().by(label()).by('name').by(unfold().count()) <3>
+g.V().group().by(label) <1>
+g.V().group().by(label).by('name') <2>
+g.V().group().by(label).by('name').by(unfold().count()) <3>
 ----
 
 <1> Group the vertices by their label.
@@ -437,7 +437,7 @@ image::groupcount-step.png[width=420]
 
 [gremlin-groovy,modern]
 ----
-g.V().repeat(both().groupCount('m').by(label())).times(10).cap('m')
+g.V().repeat(both().groupCount('m').by(label)).times(10).cap('m')
 ----
 
 The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount()` with a string variable. Given that `groupCount()` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount()`, the object's count is incremented. If `groupCount()` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount()` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount()`) can be accessed with `cap()`-step by referencing the desired variable.
