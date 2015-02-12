@@ -1041,7 +1041,7 @@ image:gremlin-sacks-running.png[width=175,float=right] A traverser can contain a
 * *Initial value supplier*: A `Supplier` providing the initial value of each traverser's sack.
 * *Split operator*: a `UnaryOperator` that clones the traverser's sack when the traverser splits. If no split operator is provided, then `UnaryOperator.identity()` is assumed.
 
-Two trivial examples are presented below to demonstrate the *initial value supplier*. In the first example below, a traverser is created at each vertex in the graph (`g.V()`), with a 1.0 sack (`withSack{1.0f}`), and then the sack value is accessed (`sack()`). In the second example, a random float supplier is used to generate sack values.
+Two trivial examples are presented below to demonstrate the *initial value supplier*. In the first example below, a traverser is created at each vertex in the graph (`g.V()`), with a 1.0 sack (`withSack(1.0f)`), and then the sack value is accessed (`sack()`). In the second example, a random float supplier is used to generate sack values.
 
 [gremlin-groovy,modern]
 ----
