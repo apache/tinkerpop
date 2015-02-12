@@ -16,26 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.process.computer.giraph;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
-import com.tinkerpop.gremlin.hadoop.Constants;
-import com.tinkerpop.gremlin.hadoop.process.computer.giraph.io.GiraphVertexInputFormat;
-import com.tinkerpop.gremlin.hadoop.process.computer.giraph.io.GiraphVertexOutputFormat;
-import com.tinkerpop.gremlin.hadoop.process.computer.util.MapReduceHelper;
-import com.tinkerpop.gremlin.hadoop.process.computer.util.MemoryMapReduce;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
-import com.tinkerpop.gremlin.hadoop.structure.util.HadoopHelper;
-import com.tinkerpop.gremlin.process.computer.ComputerResult;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategy;
-import com.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
-import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import com.tinkerpop.gremlin.process.computer.util.MapMemory;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.io.GiraphVertexInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.io.GiraphVertexOutputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.MapReduceHelper;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.MemoryMapReduce;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.HadoopHelper;
+import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerDataStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
+import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.FileConfiguration;

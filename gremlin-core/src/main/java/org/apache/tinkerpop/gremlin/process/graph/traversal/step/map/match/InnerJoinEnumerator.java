@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.step.map.match;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match;
 
 import java.util.ArrayList;
 import java.util.HashMap;

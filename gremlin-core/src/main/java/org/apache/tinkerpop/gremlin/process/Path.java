@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process;
+package org.apache.tinkerpop.gremlin.process;
 
 import org.javatuples.Pair;
 
@@ -29,7 +29,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
- * A Path denotes a particular walk through a {@link com.tinkerpop.gremlin.structure.Graph} as defined by a {@link Traverser}.
+ * A Path denotes a particular walk through a {@link org.apache.tinkerpop.gremlin.structure.Graph} as defined by a {@link Traverser}.
  * In abstraction, any Path implementation maintains two lists: a list of sets of labels and a list of objects.
  * The list of labels are the labels of the steps traversed.
  * The list of objects are the objects traversed.

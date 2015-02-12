@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server;
+package org.apache.tinkerpop.gremlin.server;
 
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +75,7 @@ public class Graphs {
     }
 
     /**
-     * Rollback transactions across all {@link com.tinkerpop.gremlin.structure.Graph} objects.
+     * Rollback transactions across all {@link org.apache.tinkerpop.gremlin.structure.Graph} objects.
      */
     public void rollbackAll() {
         graphs.entrySet().forEach(e -> {
@@ -86,7 +86,7 @@ public class Graphs {
     }
 
     /**
-     * Commit transactions across all {@link com.tinkerpop.gremlin.structure.Graph} objects.
+     * Commit transactions across all {@link org.apache.tinkerpop.gremlin.structure.Graph} objects.
      */
     public void commitAll() {
         graphs.entrySet().forEach(e -> {

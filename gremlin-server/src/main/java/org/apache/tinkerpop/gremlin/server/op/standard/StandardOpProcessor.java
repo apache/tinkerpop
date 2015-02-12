@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server.op.standard;
+package org.apache.tinkerpop.gremlin.server.op.standard;
 
-import com.tinkerpop.gremlin.server.Context;
-import com.tinkerpop.gremlin.server.OpProcessor;
-import com.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
-import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
+import org.apache.tinkerpop.gremlin.server.Context;
+import org.apache.tinkerpop.gremlin.server.OpProcessor;
+import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
+import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 
 /**
  * Simple {@link OpProcessor} implementation that handles {@code ScriptEngine} script evaluation outside the context

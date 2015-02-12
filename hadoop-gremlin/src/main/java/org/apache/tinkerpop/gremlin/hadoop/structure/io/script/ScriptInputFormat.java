@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.structure.io.script;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io.script;
 
-import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -34,7 +34,7 @@ import java.io.IOException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @author Daniel Kuppitz (daniel at thinkaurelius.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public class ScriptInputFormat extends FileInputFormat<NullWritable, VertexWritable> implements Configurable {
 

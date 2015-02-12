@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
 /**
  * This enumeration allows for the specification of the type of a {@link Property}.

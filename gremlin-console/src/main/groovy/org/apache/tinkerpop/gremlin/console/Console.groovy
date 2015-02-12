@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console
+package org.apache.tinkerpop.gremlin.console
 
-import com.tinkerpop.gremlin.console.commands.*
-import com.tinkerpop.gremlin.console.plugin.PluggedIn
-import com.tinkerpop.gremlin.console.util.ArrayIterator
-import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader
-import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
+import org.apache.tinkerpop.gremlin.console.commands.*
+import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
+import org.apache.tinkerpop.gremlin.console.util.ArrayIterator
+import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
+import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import jline.console.history.FileHistory
 import org.codehaus.groovy.tools.shell.ExitNotification
 import org.codehaus.groovy.tools.shell.Groovysh

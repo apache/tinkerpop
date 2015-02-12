@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.process.computer.giraph;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
-import com.tinkerpop.gremlin.util.Serializer;
+import org.apache.tinkerpop.gremlin.util.Serializer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 

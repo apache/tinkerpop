@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.traverser;
+package org.apache.tinkerpop.gremlin.process.traverser;
 
-import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.traverser.util.AbstractPathTraverser;
-import com.tinkerpop.gremlin.process.util.path.ImmutablePath;
+import org.apache.tinkerpop.gremlin.process.Step;
+import org.apache.tinkerpop.gremlin.process.traverser.util.AbstractPathTraverser;
+import org.apache.tinkerpop.gremlin.process.util.path.ImmutablePath;
 
 import java.util.Optional;
 

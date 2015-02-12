@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.plugin;
+package org.apache.tinkerpop.gremlin.groovy.plugin;
 
 import org.codehaus.groovy.tools.shell.Groovysh;
 
@@ -35,7 +35,7 @@ public interface RemoteAcceptor extends Closeable {
      * to decide how additional arguments on the line should be treated after "connect".
      *
      * @return an object to display as output to the user
-     * @throws com.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with connecting
+     * @throws org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with connecting
      */
     public Object connect(final List<String> args) throws RemoteException;
 
@@ -44,7 +44,7 @@ public interface RemoteAcceptor extends Closeable {
      * to decide how additional arguments on the line should be treated after "config".
      *
      * @return an object to display as output to the user
-     * @throws com.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with configuration
+     * @throws org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with configuration
      */
     public Object configure(final List<String> args) throws RemoteException;
 
@@ -53,7 +53,7 @@ public interface RemoteAcceptor extends Closeable {
      * the line should be treated after "submit".
      *
      * @return an object to display as output to the user
-     * @throws com.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with submission
+     * @throws org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with submission
      */
     public Object submit(final List<String> args) throws RemoteException;
 

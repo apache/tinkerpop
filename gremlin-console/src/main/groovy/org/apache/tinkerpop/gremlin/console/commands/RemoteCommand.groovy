@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console.commands
+package org.apache.tinkerpop.gremlin.console.commands
 
-import com.tinkerpop.gremlin.console.Mediator
-import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
-import com.tinkerpop.gremlin.groovy.plugin.RemoteException
+import org.apache.tinkerpop.gremlin.console.Mediator
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
 import org.codehaus.groovy.tools.shell.ComplexCommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 

@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.FeatureRequirement;
-import com.tinkerpop.gremlin.FeatureRequirementSet;
-import com.tinkerpop.gremlin.GraphManager;
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
-import com.tinkerpop.gremlin.structure.util.batch.Exists;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
+import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
+import org.apache.tinkerpop.gremlin.GraphManager;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
+import org.apache.tinkerpop.gremlin.structure.util.batch.Exists;
 import org.junit.Test;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES;
 import static org.junit.Assert.*;
 
 /**

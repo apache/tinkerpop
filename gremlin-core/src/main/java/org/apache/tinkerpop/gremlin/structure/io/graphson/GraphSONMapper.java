@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.io.graphson;
+package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
-import com.tinkerpop.gremlin.structure.io.Mapper;
+import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * An extension to the standard Jackson {@code ObjectMapper} which automatically registers the standard
- * {@link GraphSONModule} for serializing {@link com.tinkerpop.gremlin.structure.Graph} elements.  This class
+ * {@link GraphSONModule} for serializing {@link org.apache.tinkerpop.gremlin.structure.Graph} elements.  This class
  * can be used for generalized JSON serialization tasks that require meeting GraphSON standards.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

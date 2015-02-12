@@ -1,1 +1,1 @@
-com.tinkerpop.gremlin.hadoop.groovy.plugin.HadoopGremlinPlugin
+org.apache.tinkerpop.gremlin.hadoop.groovy.plugin.HadoopGremlinPlugin

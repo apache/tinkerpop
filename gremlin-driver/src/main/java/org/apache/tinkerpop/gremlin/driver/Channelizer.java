@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.driver;
+package org.apache.tinkerpop.gremlin.driver;
 
-import com.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
-import com.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder;
-import com.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
-import com.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
-import com.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
+import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
+import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder;
+import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
+import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
+import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;

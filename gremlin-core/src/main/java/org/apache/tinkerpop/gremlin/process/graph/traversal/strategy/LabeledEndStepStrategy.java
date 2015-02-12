@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.strategy;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.graph.traversal.step.util.MarkerIdentityStep;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.MarkerIdentityStep;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer.traversal;
+package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.computer.ComputerResult;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.concurrent.Future;
 

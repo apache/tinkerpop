@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer.util;
+package org.apache.tinkerpop.gremlin.process.computer.util;
 
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import com.tinkerpop.gremlin.structure.strategy.StrategyContext;
-import com.tinkerpop.gremlin.structure.strategy.StrategyGraph;
-import com.tinkerpop.gremlin.structure.strategy.StrategyVertex;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import org.apache.tinkerpop.gremlin.structure.strategy.StrategyContext;
+import org.apache.tinkerpop.gremlin.structure.strategy.StrategyGraph;
+import org.apache.tinkerpop.gremlin.structure.strategy.StrategyVertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.HashSet;
 import java.util.Iterator;

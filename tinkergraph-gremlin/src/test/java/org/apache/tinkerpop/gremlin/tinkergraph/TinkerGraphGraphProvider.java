@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.tinkergraph;
+package org.apache.tinkerpop.gremlin.tinkergraph;
 
-import com.tinkerpop.gremlin.AbstractGraphProvider;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphVariables;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
+import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphVariables;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.HashMap;

@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.step.filter;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
-import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import com.tinkerpop.gremlin.process.Path;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.Path;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -33,14 +33,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static com.tinkerpop.gremlin.process.graph.traversal.__.*;
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*;
 import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @author Daniel Kuppitz (daniel at thinkaurelius.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public abstract class ExceptTest extends AbstractGremlinProcessTest {
 

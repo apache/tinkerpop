@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
+import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

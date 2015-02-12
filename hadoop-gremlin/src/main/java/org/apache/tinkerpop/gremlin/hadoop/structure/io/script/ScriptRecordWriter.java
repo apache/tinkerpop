@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.structure.io.script;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io.script;
 
-import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import com.tinkerpop.gremlin.process.computer.util.ScriptEngineCache;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineCache;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -34,7 +34,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 /**
- * @author Daniel Kuppitz (daniel at thinkaurelius.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public class ScriptRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
 

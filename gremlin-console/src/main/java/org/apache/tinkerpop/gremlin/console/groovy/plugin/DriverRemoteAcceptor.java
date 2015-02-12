@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console.groovy.plugin;
+package org.apache.tinkerpop.gremlin.console.groovy.plugin;
 
-import com.tinkerpop.gremlin.driver.Client;
-import com.tinkerpop.gremlin.driver.Cluster;
-import com.tinkerpop.gremlin.driver.Result;
-import com.tinkerpop.gremlin.driver.exception.ResponseException;
-import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
-import com.tinkerpop.gremlin.groovy.plugin.RemoteException;
+import org.apache.tinkerpop.gremlin.driver.Client;
+import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.Result;
+import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.codehaus.groovy.tools.shell.Groovysh;
 

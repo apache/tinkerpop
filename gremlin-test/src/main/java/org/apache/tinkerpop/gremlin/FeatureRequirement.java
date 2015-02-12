@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin;
+package org.apache.tinkerpop.gremlin;
 
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;

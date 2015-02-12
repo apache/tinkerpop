@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process
+package org.apache.tinkerpop.gremlin.process
 
-import com.tinkerpop.gremlin.groovy.engine.GroovyTraversalScript
-import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.computer.GraphComputer
-import com.tinkerpop.gremlin.structure.Graph
+import org.apache.tinkerpop.gremlin.groovy.engine.GroovyTraversalScript
+import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer
+import org.apache.tinkerpop.gremlin.structure.Graph
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

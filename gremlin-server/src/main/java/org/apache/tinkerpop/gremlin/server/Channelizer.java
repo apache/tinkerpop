@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server;
+package org.apache.tinkerpop.gremlin.server;
 
-import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import io.netty.channel.ChannelHandler;
 import io.netty.util.concurrent.EventExecutorGroup;
 
@@ -31,7 +31,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * configured in Gremlin Server with the {@code channelizer} setting in the configuration file.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @see com.tinkerpop.gremlin.server.AbstractChannelizer
+ * @see org.apache.tinkerpop.gremlin.server.AbstractChannelizer
  */
 public interface Channelizer extends ChannelHandler {
 

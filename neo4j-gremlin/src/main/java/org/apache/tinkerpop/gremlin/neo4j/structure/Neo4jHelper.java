@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.neo4j.structure;
+package org.apache.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;

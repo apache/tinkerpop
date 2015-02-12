@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.neo4j.process.graph.traversal.step.util;
+package org.apache.tinkerpop.gremlin.neo4j.process.graph.traversal.step.util;
 
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;

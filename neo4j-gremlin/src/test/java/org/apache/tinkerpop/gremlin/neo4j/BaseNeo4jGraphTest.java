@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.neo4j;
+package org.apache.tinkerpop.gremlin.neo4j;
 
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;

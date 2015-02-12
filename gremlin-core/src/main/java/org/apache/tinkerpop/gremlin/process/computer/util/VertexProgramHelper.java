@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer.util;
+package org.apache.tinkerpop.gremlin.process.computer.util;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import com.tinkerpop.gremlin.util.Serializer;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.util.Serializer;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;

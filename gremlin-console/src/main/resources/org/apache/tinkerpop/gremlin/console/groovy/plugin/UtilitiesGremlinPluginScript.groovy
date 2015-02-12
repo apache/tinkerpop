@@ -23,10 +23,10 @@
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 
-describeGraph = { Class<? extends com.tinkerpop.gremlin.structure.Graph> c ->
+describeGraph = { Class<? extends org.apache.tinkerpop.gremlin.structure.Graph> c ->
     def lf = System.getProperty("line.separator")
-    def optIns = c.getAnnotationsByType(com.tinkerpop.gremlin.structure.Graph.OptIn)
-    def optOuts = c.getAnnotationsByType(com.tinkerpop.gremlin.structure.Graph.OptOut)
+    def optIns = c.getAnnotationsByType(org.apache.tinkerpop.gremlin.structure.Graph.OptIn)
+    def optOuts = c.getAnnotationsByType(org.apache.tinkerpop.gremlin.structure.Graph.OptOut)
 
     def optInCount = optIns != null ? optIns.size() : 0
     def optOutCount = optOuts != null ? optOuts.size() : 0

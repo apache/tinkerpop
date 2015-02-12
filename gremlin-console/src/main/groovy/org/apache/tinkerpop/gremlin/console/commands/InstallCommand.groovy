@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console.commands
+package org.apache.tinkerpop.gremlin.console.commands
 
-import com.tinkerpop.gremlin.console.Mediator
-import com.tinkerpop.gremlin.console.plugin.PluggedIn
-import com.tinkerpop.gremlin.groovy.plugin.Artifact
-import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
+import org.apache.tinkerpop.gremlin.console.Mediator
+import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
+import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact
+import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import groovy.grape.Grape
 import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
@@ -107,7 +107,7 @@ class InstallCommand extends CommandSupport {
         // go in the path which provides enough flexibility to control when jars should load.  unfortunately,
         // this "ordering" issue doesn't seem to be documented as an issue anywhere and it is difficult to say
         // whether it is a java issue, groovy classloader issue, grape issue, etc.  see this issue for more
-        // on the weirdness: https://github.com/tinkerpop/tinkerpop3/issues/230
+        // on the weirdness: https://github.org/apache/tinkerpop/tinkerpop3/issues/230
         //
         // another unfortunate side-effect to this approach is that manual cleanup of jars is kinda messy now
         // because you can't just delete the plugin director as one or more of the jars might have been moved.

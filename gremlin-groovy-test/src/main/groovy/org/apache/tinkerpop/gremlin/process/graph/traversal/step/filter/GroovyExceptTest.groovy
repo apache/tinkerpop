@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.step.filter
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter
 
-import com.tinkerpop.gremlin.process.Path
-import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.graph.traversal.__
-import com.tinkerpop.gremlin.process.ComputerTestHelper
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.ExceptTest
-import com.tinkerpop.gremlin.structure.Vertex
+import org.apache.tinkerpop.gremlin.process.Path
+import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.ExceptTest
+import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @author Daniel Kuppitz (daniel at thinkaurelius.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public abstract class GroovyExceptTest {
 

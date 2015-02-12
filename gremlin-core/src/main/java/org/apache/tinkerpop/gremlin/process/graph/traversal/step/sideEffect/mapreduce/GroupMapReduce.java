@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.computer.KeyValue;
-import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupStep;
-import com.tinkerpop.gremlin.process.traversal.TraversalMatrix;
-import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
-import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupStep;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalMatrix;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.process.util.BulkSet;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.Collection;

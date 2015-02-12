@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server;
+package org.apache.tinkerpop.gremlin.server;
 
-import com.tinkerpop.gremlin.driver.MessageSerializer;
-import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import com.tinkerpop.gremlin.server.handler.IteratorHandler;
-import com.tinkerpop.gremlin.server.handler.OpExecutorHandler;
-import com.tinkerpop.gremlin.server.handler.OpSelectorHandler;
+import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.server.handler.IteratorHandler;
+import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
+import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -53,8 +53,8 @@ import java.util.stream.Stream;
  * Gremlin scripts).
  * <br/>
  * Implementers need only worry about determining how incoming data is converted to a
- * {@link com.tinkerpop.gremlin.driver.message.RequestMessage} and outgoing data is converted from a
- * {@link com.tinkerpop.gremlin.driver.message.ResponseMessage} to whatever expected format is needed by the pipeline.
+ * {@link org.apache.tinkerpop.gremlin.driver.message.RequestMessage} and outgoing data is converted from a
+ * {@link org.apache.tinkerpop.gremlin.driver.message.ResponseMessage} to whatever expected format is needed by the pipeline.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

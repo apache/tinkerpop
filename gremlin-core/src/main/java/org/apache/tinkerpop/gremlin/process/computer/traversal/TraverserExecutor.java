@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer.traversal;
+package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
-import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.TraversalSideEffects;
-import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.computer.MessageScope;
-import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.traversal.TraversalMatrix;
-import com.tinkerpop.gremlin.process.util.TraverserSet;
-import com.tinkerpop.gremlin.structure.*;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
+import org.apache.tinkerpop.gremlin.process.Step;
+import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
+import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalMatrix;
+import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

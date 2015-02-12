@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server;
+package org.apache.tinkerpop.gremlin.server;
 
-import com.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import info.ganglia.gmetric4j.gmetric.GMetric;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
@@ -146,7 +146,7 @@ public class Settings {
     public ServerMetrics metrics = null;
 
     /**
-     * {@link Map} of {@link com.tinkerpop.gremlin.structure.Graph} objects keyed by their binding name.
+     * {@link Map} of {@link org.apache.tinkerpop.gremlin.structure.Graph} objects keyed by their binding name.
      */
     public Map<String, String> graphs;
 
@@ -157,7 +157,7 @@ public class Settings {
     public Map<String, ScriptEngineSettings> scriptEngines;
 
     /**
-     * List of {@link com.tinkerpop.gremlin.driver.MessageSerializer} to configure.
+     * List of {@link org.apache.tinkerpop.gremlin.driver.MessageSerializer} to configure.
      */
     public List<SerializerSettings> serializers;
 
@@ -173,7 +173,7 @@ public class Settings {
     public List<String> plugins = new ArrayList<>();
 
     /**
-     * Custom settings for {@link com.tinkerpop.gremlin.server.OpProcessor} implementations.
+     * Custom settings for {@link org.apache.tinkerpop.gremlin.server.OpProcessor} implementations.
      */
     public List<ProcessorSettings> processors = new ArrayList<>();
 

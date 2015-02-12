@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.process.computer.giraph;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.OutEdges;

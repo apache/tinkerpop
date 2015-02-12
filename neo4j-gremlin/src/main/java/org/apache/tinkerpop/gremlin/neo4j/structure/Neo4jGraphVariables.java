@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.neo4j.structure;
+package org.apache.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.util.GraphVariableHelper;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.GraphVariableHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.kernel.impl.core.NodeManager;

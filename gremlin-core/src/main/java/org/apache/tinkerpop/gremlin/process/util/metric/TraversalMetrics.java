@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.util.metric;
+package org.apache.tinkerpop.gremlin.process.util.metric;
 
-import com.tinkerpop.gremlin.process.util.metric.Metrics;
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.process.util.metric.Metrics;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;

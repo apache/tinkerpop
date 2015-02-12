@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.structure;
+package org.apache.tinkerpop.gremlin.hadoop.structure;
 
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.util.wrapped.WrappedProperty;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedProperty;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

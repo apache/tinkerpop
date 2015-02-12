@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce;
 
-import com.tinkerpop.gremlin.process.computer.KeyValue;
-import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
-import com.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
-import com.tinkerpop.gremlin.process.util.metric.StandardTraversalMetrics;
-import com.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
+import org.apache.tinkerpop.gremlin.process.util.metric.StandardTraversalMetrics;
+import org.apache.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
 

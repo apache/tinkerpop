@@ -108,7 +108,7 @@ gremlin> vp.properties()
 ==>p[acl->private]
 gremlin> v.properties('name').valueMap()
 ==>[date:2014, creator:stephen, acl:private]
-gremlin> v.singleProperty('name','okram') <6>
+gremlin> v.property(single, ('name','okram') <6>
 ==>vp[name->okram]
 gremlin> v.property('name')
 ==>vp[name->okram]
@@ -118,7 +118,7 @@ gremlin> v.property('name')
 <3> A vertex property can have standard key/value properties attached to it.
 <4> Vertex property removal is identical to property removal.
 <5> A vertex property can have any number of key/value properties attached to it.
-<6> `Vertex.singleProperty()` is a helper method that will remove all existing key'd properties before adding the new single property.
+<6> `Vertex.property(single, ()` is a helper method that will remove all existing key'd properties before adding the new single property.
 
 If the concept of vertex properties is difficult to grasp, then it may be best to think of vertex properties in terms of "literal vertices." A vertex can have an edge to a "literal vertex" that has a single value key/value -- e.g. "value=okram." The edge that points to that literal vertex has an edge-label of "name." The properties on the edge represent the literal vertex's properties. The "literal vertex" can not have any other edges to it (only one from the associated vertex).
 
@@ -206,13 +206,13 @@ gremlin> g.features()
 >-- Persistence: true
 ...
 gremlin> g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.AUTO) <2>
-==>com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph$Neo4jTransaction@1c067c0d
+==>org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph$Neo4jTransaction@1c067c0d
 gremlin> g.addVertex("name","stephen")  <3>
 ==>v[0]
 gremlin> g.tx().commit() <4>
 ==>null
 gremlin> g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL) <5>
-==>com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph$Neo4jTransaction@1c067c0d
+==>org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph$Neo4jTransaction@1c067c0d
 gremlin> g.tx().isOpen()
 ==>false
 gremlin> g.addVertex("name","marko") <6>
@@ -524,7 +524,7 @@ gremlin> g = TinkerFactory.createModern()
 gremlin> f = new FileOutputStream("vertex-1.json")
 ==>java.io.FileOutputStream@3bbf9027
 gremlin> mapper = g.io().graphSONMapper().embedTypes(true).create()
-==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper@2ce45a7b
+==>org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper@2ce45a7b
 gremlin> g.io().graphSONWriter().mapper(mapper).create().writeVertex(f, g.V(1).next(), BOTH)
 ==>null
 gremlin> f.close()
@@ -704,7 +704,7 @@ gremlin> Gremlin.version()
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
 gremlin> r = LegacyGraphSONReader.build().create()
-==>com.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader@64337702
+==>org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader@64337702
 gremlin> r.readGraph(new FileInputStream('/tmp/tp2.json'),g)
 ==>null
 gremlin> g.E()
@@ -824,7 +824,7 @@ gremlin> g = TinkerGraph.open()
 gremlin> sg = g.strategy(ReadOnlyStrategy.instance())
 ==>readonlystrategy[tinkergraph[vertices:0 edges:0]]
 gremlin> sg.addVertex("name","stephen")
-Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategy and is therefore unmodifiable
+Graph uses class org.apache.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategy and is therefore unmodifiable
 Display stack trace? [yN]
 
 SequenceStrategy

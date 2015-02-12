@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.engine;
+package org.apache.tinkerpop.gremlin.groovy.engine;
 
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
-import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.computer.ComputerResult;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalScript;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
+import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalScript;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.concurrent.CompletableFuture;

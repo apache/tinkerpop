@@ -16,20 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.process.computer.util;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.util;
 
-import com.tinkerpop.gremlin.hadoop.Constants;
-import com.tinkerpop.gremlin.hadoop.process.computer.HadoopCombine;
-import com.tinkerpop.gremlin.hadoop.process.computer.HadoopMap;
-import com.tinkerpop.gremlin.hadoop.process.computer.HadoopReduce;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
-import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableComparator;
-import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
-import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
-import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.Memory;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopCombine;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopMap;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopReduce;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableComparator;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.Memory;
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;

@@ -19,7 +19,7 @@ Graph Traversal Steps
 
 image::step-types.png[width=650]
 
-A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, Edge, or VertexProperty. It can also be spawned anonymously (i.e. empty) via `__`. A graph traversal is composed of an ordered list of steps. All the steps provided by `GraphTraversal` inherit from the more general forms diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/x.y.z/core/com/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. The following subsections will demonstrate the GraphTraversal steps using the <<gremlin-console,Gremlin Console>>.
+A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, Edge, or VertexProperty. It can also be spawned anonymously (i.e. empty) via `__`. A graph traversal is composed of an ordered list of steps. All the steps provided by `GraphTraversal` inherit from the more general forms diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. The following subsections will demonstrate the GraphTraversal steps using the <<gremlin-console,Gremlin Console>>.
 
 [[lambda-steps]]
 Lambda Steps
@@ -534,8 +534,8 @@ You have two options to get around this limitation. Either explicitly apply all 
 
 [gremlin-groovy,modern]
 ----
-import com.tinkerpop.gremlin.process.graph.traversal.__
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.*
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.*
 TraversalStrategies.GlobalCache.registerStrategies(__, <1>
     TraversalStrategies.GlobalCache.getStrategies(__).addStrategies(
         SideEffectCapStrategy.instance(),
@@ -548,8 +548,8 @@ inject(software).unfold().groupCount().by('lang')
 
 [gremlin-groovy,modern]
 ----
-import com.tinkerpop.gremlin.process.graph.traversal.__
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.*
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.*
 software = g.V().hasLabel('software').toList()
 t = inject(software).unfold().groupCount().by("lang"); null <1>
 t.getStrategies().addStrategies(
@@ -1288,7 +1288,7 @@ It is important to see how the paths of all the emanating traversers are united 
 
 image::tree-step2.png[width=500]
 
-The resultant tree data structure can then be manipulated (see link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/process/graph/step/util/Tree.html[Tree JavaDoc]). For the sake of demonstration, a post-processing lambda is applied in the running example below.
+The resultant tree data structure can then be manipulated (see link:http://www.tinkerpop.com/javadocs/current/org/apache/tinkerpop/gremlin/process/graph/step/util/Tree.html[Tree JavaDoc]). For the sake of demonstration, a post-processing lambda is applied in the running example below.
 
 [gremlin-groovy,modern]
 ----
@@ -1615,7 +1615,7 @@ This traversal definition can now be used as follows.
 
 [gremlin-groovy,modern]
 ----
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
 g.of(SocialTraversal).people("marko").knows().name()
 ----
 

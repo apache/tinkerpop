@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.structure.util.GraphFactory;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
@@ -29,15 +29,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.*;
 
 /**
- * Tests that support the creation of {@link com.tinkerpop.gremlin.structure.Graph} instances which occurs via
- * {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
+ * Tests that support the creation of {@link org.apache.tinkerpop.gremlin.structure.Graph} instances which occurs via
+ * {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphConstructionTest extends AbstractGremlinTest {
     /**
      * All Gremlin Structure implementations should be constructable through
-     * {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
+     * {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}.
      */
     @Test
     public void shouldOpenGraphThroughGraphFactoryViaApacheConfig() throws Exception {

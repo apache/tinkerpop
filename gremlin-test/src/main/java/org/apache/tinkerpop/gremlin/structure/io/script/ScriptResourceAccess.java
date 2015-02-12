@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.io.script;
+package org.apache.tinkerpop.gremlin.structure.io.script;
 
 /**
  * Provides path access to test data resources.
  *
- * @author Daniel Kuppitz (daniel at thinkaurelius.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public class ScriptResourceAccess {
 }

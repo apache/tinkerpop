@@ -17,25 +17,25 @@
  * under the License.
  */
 
-package com.tinkerpop.gremlin.process.graph.traversal.strategy;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 
-import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import com.tinkerpop.gremlin.process.graph.traversal.__;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.HasTraversalStep;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeStep;
-import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Compare;
-import com.tinkerpop.gremlin.structure.Contains;
+import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasTraversalStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Compare;
+import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 
 /**

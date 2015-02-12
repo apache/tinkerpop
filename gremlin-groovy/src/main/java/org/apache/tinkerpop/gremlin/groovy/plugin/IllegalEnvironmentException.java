@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.plugin;
+package org.apache.tinkerpop.gremlin.groovy.plugin;
 
 /**
  * An exception thrown when the environment variables passed via {@link PluginAcceptor#environment()} do not meet

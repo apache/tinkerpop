@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo;
 
-import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;

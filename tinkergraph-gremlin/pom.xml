@@ -19,7 +19,7 @@ limitations under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.tinkerpop</groupId>
+        <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
         <version>3.0.0-SNAPSHOT</version>
     </parent>
@@ -27,17 +27,17 @@ limitations under the License.
     <name>TinkerGraph Gremlin: The Reference Implementation of TinkerPop3</name>
     <dependencies>
         <dependency>
-            <groupId>com.tinkerpop</groupId>
+            <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tinkerpop</groupId>
+            <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-groovy</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tinkerpop</groupId>
+            <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-groovy-test</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -128,7 +128,7 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <outputDirectory>
-                                        ../gremlin-test/src/main/resources/com/tinkerpop/gremlin/structure/io/kryo
+                                        ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/kryo
                                     </outputDirectory>
                                     <resources>
                                         <resource>
@@ -152,7 +152,7 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <outputDirectory>
-                                        ../gremlin-test/src/main/resources/com/tinkerpop/gremlin/structure/io/graphson
+                                        ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/graphson
                                     </outputDirectory>
                                     <resources>
                                         <resource>
@@ -173,7 +173,7 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <outputDirectory>
-                                        ../gremlin-test/src/main/resources/com/tinkerpop/gremlin/structure/io/graphml
+                                        ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/graphml
                                     </outputDirectory>
                                     <resources>
                                         <resource>

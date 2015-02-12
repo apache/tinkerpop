@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.AbstractGremlinSuite;
-import com.tinkerpop.gremlin.algorithm.generator.CommunityGeneratorTest;
-import com.tinkerpop.gremlin.algorithm.generator.DistributionGeneratorTest;
-import com.tinkerpop.gremlin.structure.strategy.IdStrategyTest;
-import com.tinkerpop.gremlin.structure.strategy.PartitionStrategyTest;
-import com.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategyTest;
-import com.tinkerpop.gremlin.structure.strategy.SequenceStrategyTest;
-import com.tinkerpop.gremlin.structure.strategy.StrategyGraphTest;
-import com.tinkerpop.gremlin.structure.strategy.SubgraphStrategyTest;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedEdgeTest;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedPropertyTest;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexPropertyTest;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexTest;
+import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.algorithm.generator.CommunityGeneratorTest;
+import org.apache.tinkerpop.gremlin.algorithm.generator.DistributionGeneratorTest;
+import org.apache.tinkerpop.gremlin.structure.strategy.IdStrategyTest;
+import org.apache.tinkerpop.gremlin.structure.strategy.PartitionStrategyTest;
+import org.apache.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategyTest;
+import org.apache.tinkerpop.gremlin.structure.strategy.SequenceStrategyTest;
+import org.apache.tinkerpop.gremlin.structure.strategy.StrategyGraphTest;
+import org.apache.tinkerpop.gremlin.structure.strategy.SubgraphStrategyTest;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdgeTest;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPropertyTest;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexPropertyTest;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -41,13 +41,13 @@ import java.util.stream.Stream;
 
 /**
  * The {@code StructureStandardSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
- * {@link com.tinkerpop.gremlin.structure.Graph} implementation.  This specialized test suite and runner is for use by
- * Gremlin implementers to test their {@link com.tinkerpop.gremlin.structure.Graph} implementations.  The
+ * {@link org.apache.tinkerpop.gremlin.structure.Graph} implementation.  This specialized test suite and runner is for use by
+ * Gremlin implementers to test their {@link org.apache.tinkerpop.gremlin.structure.Graph} implementations.  The
  * {@code StructureStandardSuite} ensures consistency and validity of the implementations that they test.
  * <p/>
  * To use the {@code StructureStandardSuite} define a class in a test module.  Simple naming would expect the name of
  * the implementation followed by "StructureStandardSuite".  This class should be annotated as follows (note that the
- * "Suite" implements {@link com.tinkerpop.gremlin.GraphProvider} as a convenience only. It could be implemented in a
+ * "Suite" implements {@link org.apache.tinkerpop.gremlin.GraphProvider} as a convenience only. It could be implemented in a
  * separate class file):
  * <code>
  *
@@ -56,8 +56,8 @@ import java.util.stream.Stream;
  * @StructureStandardSuite.GraphProviderClass(TinkerGraphStructureStandardTest.class) public class TinkerGraphStructureStandardTest implements GraphProvider {
  * }
  * </code>
- * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the {@code StructureStandardSuite} to
- * instantiate {@link com.tinkerpop.gremlin.structure.Graph} instances from the implementation being tested to inject
+ * Implementing {@link org.apache.tinkerpop.gremlin.GraphProvider} provides a way for the {@code StructureStandardSuite} to
+ * instantiate {@link org.apache.tinkerpop.gremlin.structure.Graph} instances from the implementation being tested to inject
  * into tests in the suite.  The {@code StructureStandardSuite} will utilized Features defined in the suite to
  * determine which tests will be executed.
  * <br/>

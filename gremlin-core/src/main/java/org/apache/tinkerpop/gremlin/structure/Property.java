@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.structure.util.empty.EmptyProperty;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyProperty;
 
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;

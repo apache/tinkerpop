@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.algorithm.generator;
+package org.apache.tinkerpop.gremlin.algorithm.generator;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Triplet;
 
 import java.util.List;

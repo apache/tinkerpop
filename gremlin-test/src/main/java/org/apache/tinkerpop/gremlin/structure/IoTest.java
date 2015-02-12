@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -30,30 +30,30 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.FeatureRequirement;
-import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.TestHelper;
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
-import com.tinkerpop.gremlin.structure.io.GraphMigrator;
-import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.structure.io.GraphWriter;
-import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
-import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
-import com.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
-import com.tinkerpop.gremlin.structure.io.kryo.VertexByteArrayInputStream;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
+import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
+import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
+import org.apache.tinkerpop.gremlin.structure.io.GraphMigrator;
+import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.VertexByteArrayInputStream;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
@@ -83,10 +83,10 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_ANY_IDS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_ANY_IDS;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
@@ -97,8 +97,8 @@ import static org.mockito.Mockito.mock;
  */
 public class IoTest extends AbstractGremlinTest {
 
-    private static final String GRAPHML_RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure/io/graphml/";
-    private static final String GRAPHSON_RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure/io/graphson/";
+    private static final String GRAPHML_RESOURCE_PATH_PREFIX = "/org/apache/tinkerpop/gremlin/structure/io/graphml/";
+    private static final String GRAPHSON_RESOURCE_PATH_PREFIX = "/org/apache/tinkerpop/gremlin/structure/io/graphson/";
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)

@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server;
+package org.apache.tinkerpop.gremlin.server;
 
-import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import com.tinkerpop.gremlin.server.util.MetricManager;
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;

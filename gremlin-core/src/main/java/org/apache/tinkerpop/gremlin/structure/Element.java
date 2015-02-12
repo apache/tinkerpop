@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -103,14 +103,14 @@ public abstract interface Element {
 
     /**
      * Gets the iterators for the {@code Element}.  Iterators provide low-level access to the data associated with
-     * an {@code Element} as they do not come with the overhead of {@link com.tinkerpop.gremlin.process.Traversal}
+     * an {@code Element} as they do not come with the overhead of {@link org.apache.tinkerpop.gremlin.process.Traversal}
      * construction.  Use iterators in places where performance is most crucial.
      */
     public Element.Iterators iterators();
 
     /**
      * An interface that provides access to iterators over properties of an {@code Element}, without constructing a
-     * {@link com.tinkerpop.gremlin.process.Traversal} object.
+     * {@link org.apache.tinkerpop.gremlin.process.Traversal} object.
      */
     public interface Iterators {
 

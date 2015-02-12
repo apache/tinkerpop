@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.driver.ser;
+package org.apache.tinkerpop.gremlin.driver.ser;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.tinkerpop.gremlin.driver.MessageSerializer;
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
-import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
+import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.ReferenceCountUtil;
@@ -71,7 +71,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
     private boolean serializeToString;
 
     /**
-     * Creates an instance with a standard {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} instance. Note that this instance
+     * Creates an instance with a standard {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper} instance. Note that this instance
      * will be overriden by {@link #configure} is called.
      */
     public KryoMessageSerializerV1d0() {
@@ -79,7 +79,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
     }
 
     /**
-     * Creates an instance with a provided mapper configured {@link com.tinkerpop.gremlin.structure.io.kryo.KryoMapper} instance. Note that this instance
+     * Creates an instance with a provided mapper configured {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper} instance. Note that this instance
      * will be overriden by {@link #configure} is called.
      */
     public KryoMessageSerializerV1d0(final KryoMapper kryo) {

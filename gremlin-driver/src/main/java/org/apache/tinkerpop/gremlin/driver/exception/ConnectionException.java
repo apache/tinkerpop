@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.driver.exception;
+package org.apache.tinkerpop.gremlin.driver.exception;
 
 import java.net.InetSocketAddress;
 import java.net.URI;

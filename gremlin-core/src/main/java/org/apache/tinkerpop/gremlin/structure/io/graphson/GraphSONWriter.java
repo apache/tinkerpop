@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.io.graphson;
+package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 
 import java.io.*;
 
@@ -33,7 +33,7 @@ import java.io.*;
  * only supports JSON data types and is therefore lossy with respect to data types (e.g. a float will become a double).
  * Further note that serialized {@code Map} objects do not support complex types for keys.  {@link Edge} and
  * {@link Vertex} objects are serialized to {@code Map} instances. If an
- * {@link com.tinkerpop.gremlin.structure.Element} is used as a key, it is coerced to its identifier.  Other complex
+ * {@link org.apache.tinkerpop.gremlin.structure.Element} is used as a key, it is coerced to its identifier.  Other complex
  * objects are converted via {@link Object#toString()} unless a mapper serializer is supplied.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process;
+package org.apache.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.graph.traversal.__;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.*;
-import com.tinkerpop.gremlin.process.traversal.DefaultTraversalStrategies;
-import com.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.util.tools.MultiMap;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.*;
+import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.tools.MultiMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -95,7 +95,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
     public void setTraverserGeneratorFactory(final TraverserGeneratorFactory traverserGeneratorFactory);
 
     /**
-     * Sorts the list of provided strategies such that the {@link com.tinkerpop.gremlin.process.TraversalStrategy#applyPost()}
+     * Sorts the list of provided strategies such that the {@link org.apache.tinkerpop.gremlin.process.TraversalStrategy#applyPost()}
      * and {@link TraversalStrategy#applyPrior()} dependencies are respected.
      * <p/>
      * Note, that the order may not be unique.

@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.structure.hdfs;
+package org.apache.tinkerpop.gremlin.hadoop.structure.hdfs;
 
-import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
-import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;

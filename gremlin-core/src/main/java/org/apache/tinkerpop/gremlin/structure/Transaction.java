@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
 import java.io.Closeable;
 import java.util.Collections;
@@ -83,7 +83,7 @@ public interface Transaction extends Closeable {
     public Transaction onReadWrite(final Consumer<Transaction> consumer);
 
     /**
-     * Describes what happens to a transaction on a call to {@link com.tinkerpop.gremlin.structure.Graph#close()}.
+     * Describes what happens to a transaction on a call to {@link org.apache.tinkerpop.gremlin.structure.Graph#close()}.
      * This value can be set using standard behavior defined in {@link CLOSE_BEHAVIOR} or a mapper {@link Consumer}
      * function.
      */

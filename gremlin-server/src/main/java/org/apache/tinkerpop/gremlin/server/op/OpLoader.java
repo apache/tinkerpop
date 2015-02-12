@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server.op;
+package org.apache.tinkerpop.gremlin.server.op;
 
-import com.tinkerpop.gremlin.server.OpProcessor;
-import com.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
+import org.apache.tinkerpop.gremlin.server.OpProcessor;
+import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

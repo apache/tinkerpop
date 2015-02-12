@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal;
+package org.apache.tinkerpop.gremlin.process.graph.traversal;
 
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 
 import java.util.Map;
 

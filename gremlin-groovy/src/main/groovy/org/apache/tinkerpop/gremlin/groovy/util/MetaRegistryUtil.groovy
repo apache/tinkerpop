@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.util
+package org.apache.tinkerpop.gremlin.groovy.util
 
 import org.codehaus.groovy.runtime.InvokerHelper
 

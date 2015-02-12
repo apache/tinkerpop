@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.loaders
+package org.apache.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.gremlin.groovy.function.GComparator
-import com.tinkerpop.gremlin.groovy.function.GFunction
-import com.tinkerpop.gremlin.groovy.function.GSupplier
-import com.tinkerpop.gremlin.groovy.function.GUnaryOperator
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
+import org.apache.tinkerpop.gremlin.groovy.function.GComparator
+import org.apache.tinkerpop.gremlin.groovy.function.GFunction
+import org.apache.tinkerpop.gremlin.groovy.function.GSupplier
+import org.apache.tinkerpop.gremlin.groovy.function.GUnaryOperator
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.strategy;
+package org.apache.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
  * A pass through implementation of {@link GraphStrategy} where all strategy functions are simply executed as

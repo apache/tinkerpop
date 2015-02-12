@@ -16,25 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.groovy.plugin;
+package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 
-import com.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
-import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
-import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
-import com.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
-import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
-import com.tinkerpop.gremlin.hadoop.Constants;
-import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
-import com.tinkerpop.gremlin.hadoop.process.computer.mapreduce.MapReduceGraphComputer;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
-import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import com.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
-import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
-import com.tinkerpop.gremlin.hadoop.structure.io.script.ScriptInputFormat;
-import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.GroupCountMapReduce;
+import org.apache.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
+import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
+import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
+import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.mapreduce.MapReduceGraphComputer;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.GroupCountMapReduce;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.mapred.JobClient;

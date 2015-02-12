@@ -120,8 +120,8 @@ gremlin> :plugin list  <1>
 ==>tinkerpop.tinkergraph[active]
 gremlin> :plugin use tinkerpop.sugar  <2>
 ==>tinkerpop.sugar activated
-gremlin> :install com.tinkerpop neo4j-gremlin x.y.z  <3>
-==>loaded: [com.tinkerpop, neo4j-gremlin, x.y.z]
+gremlin> :install org.apache.tinkerpop neo4j-gremlin x.y.z  <3>
+==>loaded: [org.apache.tinkerpop, neo4j-gremlin, x.y.z]
 gremlin> :plugin list <4>
 ==>tinkerpop.server[active]
 ==>tinkerpop.gephi
@@ -182,9 +182,9 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 -----oOOo-(3)-oOOo-----
 
 [INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern.yaml
-[INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=com.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
-[INFO] GremlinServer$WebSocketServerInitializer - Configured application/vnd.gremlin-v1.0+kryo with com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
-[INFO] GremlinServer$WebSocketServerInitializer - Configured application/vnd.gremlin-v1.0+kryo-stringd with com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
+[INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
+[INFO] GremlinServer$WebSocketServerInitializer - Configured application/vnd.gremlin-v1.0+kryo with org.apache.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
+[INFO] GremlinServer$WebSocketServerInitializer - Configured application/vnd.gremlin-v1.0+kryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
 [INFO] Graphs - Graph [g] was successfully configured via [config/tinkergraph-empty.properties].
 [INFO] GremlinExecutor - Getting dependencies for [[org.apache.commons, commons-math3, 3.2]]
 [INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
@@ -294,7 +294,7 @@ Connecting via Java
 [source,xml]
 ----
 <dependency>
-   <groupId>com.tinkerpop</groupId>
+   <groupId>org.apache.tinkerpop</groupId>
    <artifactId>gremlin-driver</artifactId>
    <version>x.y.z</version>
 </dependency>
@@ -341,12 +341,12 @@ client.submit("[1,2,3,x]", params); <5>
 Connecting via REST
 ~~~~~~~~~~~~~~~~~~~
 
-image:gremlin-rexster.png[width=225,float=left] While the default behavior for Gremlin Server is to provide a WebSockets-based connection, it can also be configured to support link:http://en.wikipedia.org/wiki/Representational_state_transfer[REST].  The REST endpoint provides for a communication protocol familiar to most developers, with a wide support of programming languages, tools and libraries for accessing it.  As a result, REST provides a fast way to get started with Gremlin Server.   It also may represent an easier upgrade path from link:http://rexster.tinkerpop.com/[Rexster] as the API for the endpoint is very similar to Rexster's link:https://github.com/tinkerpop/rexster/wiki/Gremlin-Extension[Gremlin Extension].
+image:gremlin-rexster.png[width=225,float=left] While the default behavior for Gremlin Server is to provide a WebSockets-based connection, it can also be configured to support link:http://en.wikipedia.org/wiki/Representational_state_transfer[REST].  The REST endpoint provides for a communication protocol familiar to most developers, with a wide support of programming languages, tools and libraries for accessing it.  As a result, REST provides a fast way to get started with Gremlin Server.   It also may represent an easier upgrade path from link:http://rexster.tinkerpop.com/[Rexster] as the API for the endpoint is very similar to Rexster's link:https://github.org/apache/tinkerpop/rexster/wiki/Gremlin-Extension[Gremlin Extension].
 
 Gremlin Server provides for a single REST endpoint - a Gremlin evaluator - which allows the submission of a Gremlin script as a request.  For each request, it returns a response containing the serialized results of that script.  To enable this endpoint, Gremlin Server needs to be configured with the `HttpChannelizer`, which replaces the default `WebSocketChannelizer`, in the configuration file:
 
 [source,yaml]
-channelizer: com.tinkerpop.gremlin.server.channel.HttpChannelizer
+channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 
 This setting is already configured in the `gremlin-server-rest-modern.yaml` file that is packaged with the Gremlin Server distribution.  To utilize it, start Gremlin Server as follows:
 
@@ -413,7 +413,7 @@ The `gremlin-server.sh` file also serves a second purpose.  It can be used to "i
 
 [source,text]
 ----
-bin/gremlin-server.sh -i com.tinkerpop neo4j-gremlin x.y.z
+bin/gremlin-server.sh -i org.apache.tinkerpop neo4j-gremlin x.y.z
 ----
 
 This command will "grab" the appropriate dependencies and copy them to the `ext` directory of Gremlin Server, which will then allow them to be "used" the next time the server is started.  To uninstall dependencies, simply delete them from the `ext` directory.
@@ -557,7 +557,7 @@ Gremlin Server is capable of streaming results such that additional responses wi
  "requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1",
  "status":{"code":299,"attributes":{},"message":""}}
 
-The `299` code signifies stream termination which means that all processing for the request `1d6d02bd-8e56-421d-9438-3bd6d0079ff1` is complete.  Please see the link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/driver/message/ResultCode.html[javadoc] for more information on the various `code` values that are available.
+The `299` code signifies stream termination which means that all processing for the request `1d6d02bd-8e56-421d-9438-3bd6d0079ff1` is complete.  Please see the link:http://www.tinkerpop.com/javadocs/current/org/apache/tinkerpop/gremlin/driver/message/ResultCode.html[javadoc] for more information on the various `code` values that are available.
 
 OpProcessors Arguments
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -637,29 +637,29 @@ Plugins provide a way to expand the features of Gremlin Console and Gremlin Serv
 
 [source,java]
 ----
-include::{basedir}/gremlin-groovy/src/main/java/com/tinkerpop/gremlin/groovy/plugin/GremlinPlugin.java[]
+include::{basedir}/gremlin-groovy/src/main/java/org/apache/tinkerpop/gremlin/groovy/plugin/GremlinPlugin.java[]
 ----
 
 The most simple plugin and the one most commonly implemented will likely be one that just provides a list of classes to import to the Gremlin Console.  This type of plugin is the easiest way for implementers of the TinkerPop Structure and Process APIs to make their implementations available to users.  The Neo4j implementation currently maintained by TinkerPop has just such a plugin:
 
 [source,java]
 ----
-include::{basedir}/neo4j-gremlin/src/main/java/com/tinkerpop/gremlin/neo4j/groovy/plugin/Neo4jGremlinPlugin.java[]
+include::{basedir}/neo4j-gremlin/src/main/java/org/apache/tinkerpop/gremlin/neo4j/groovy/plugin/Neo4jGremlinPlugin.java[]
 ----
 
 Note that the plugin provides a unique name for the plugin which follows a namespaced pattern as _namespace_._plugin-name_ (e.g. "tinkerpop.hadoop" - "tinkerpop" is the reserved namespace for TinkerPop maintained plugins). To make Neo4j classes available to the Console, the `PluginAcceptor` is given a `Set` of imports to provide to the plugin host.  The `PluginAcceptor` essentially behaves as an abstraction to the "host" that is handling the `GremlinPlugin`.  `GremlinPlugin` implementations maybe hosted by the Console as well as the `ScriptEngine` in Gremlin Server.  Obviously, registering new commands and other operations that are specific to the Groovy Shell don't make sense there.  Write the code for the plugin defensively by checking the `GremlinPlugin.env` key in the `PluginAcceptor.environment()` to understand which environment the plugin is being used in.
 
-There is one other step to follow to ensure that the `GremlinPlugin` is visible to its hosts.  `GremlinPlugin` implementations are loaded via link:http://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html[ServiceLoader] and therefore need a resource file added to the jar file where the plugin exists.  Add a file called `com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin` to `META-INF.services`.  In the case of the Neo4j plugin above, that file will have this line in it:
+There is one other step to follow to ensure that the `GremlinPlugin` is visible to its hosts.  `GremlinPlugin` implementations are loaded via link:http://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html[ServiceLoader] and therefore need a resource file added to the jar file where the plugin exists.  Add a file called `org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin` to `META-INF.services`.  In the case of the Neo4j plugin above, that file will have this line in it:
 
 [source,java]
 ----
-include::{basedir}/neo4j-gremlin/src/main/resources/META-INF/services/com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin[]
+include::{basedir}/neo4j-gremlin/src/main/resources/META-INF/services/org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin[]
 ----
 
 Once the plugin is packaged, there are two ways to test it out:
 
 . Copy the jar and its dependencies to the Gremlin Console path and start it.
-. Start Gremlin Console and try the `:install` command.  For the case of the Neo4j plugin, it would look like this: `:install com.tinkerpop neo4j-gremlin x.y.z`.
+. Start Gremlin Console and try the `:install` command.  For the case of the Neo4j plugin, it would look like this: `:install org.apache.tinkerpop neo4j-gremlin x.y.z`.
 
 In either case, once one of these two approaches is taken, the jars and their dependencies are available to the Console.  The next step is to "activate" the plugin by doing `:plugin use neo4j`, where "neo4j" refers to the name of the plugin to activate.
 
@@ -679,7 +679,7 @@ TIP: Consider binding the plugin's minor version to the TinkerPop minor version 
 
 [source,java]
 ----
-include::{basedir}/gremlin-groovy/src/main/java/com/tinkerpop/gremlin/groovy/plugin/RemoteAcceptor.java[]
+include::{basedir}/gremlin-groovy/src/main/java/org/apache/tinkerpop/gremlin/groovy/plugin/RemoteAcceptor.java[]
 ----
 
 The `RemoteAcceptor` implementation ties to a `GremlinPlugin` and will only be executed when in use with the Gremlin Console plugin host.  Simply instantiate and return a `RemoteAcceptor` in the `GremlinPlugin.remoteAcceptor()` method of the plugin implementation.  Generally speaking, each call to `remoteAcceptor()` should produce a new instance of a `RemoteAcceptor`.  It will likely be necessary that you provide context from the `GremlinPlugin` to the `RemoteAcceptor` plugin.  For example, the `RemoteAcceptor` implementation might require an instance of `Groovysh` to provide a way to dynamically evaluate a script provided to it so that it can process the results in a different way.
@@ -965,10 +965,10 @@ Flat:
 
  %    cumulative   self            self     total    self    total   self    total                                                                              
 time   seconds    seconds  calls  ms/call  ms/call  min ms  min ms  max ms  max ms  name                                                                        
-61.8        0.02     0.02      1    22.60    22.60   22.60   22.60   22.60   22.60  com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal.iterate
-23.5        0.03     0.00      1     8.62     8.62    8.62    8.62    8.62    8.62  com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.V                   
+61.8        0.02     0.02      1    22.60    22.60   22.60   22.60   22.60   22.60  org.apache.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal.iterate
+23.5        0.03     0.00      1     8.62     8.62    8.62    8.62    8.62    8.62  org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.V                   
 13.4        0.03     0.00      1     4.93    36.57    4.93   36.57    4.93   36.57  groovysh_evaluate$_run_closure1.doCall                                      
- 1.0        0.03     0.00      1     0.38     0.40    0.38    0.40    0.38    0.40  com.tinkerpop.gremlin.groovy.loaders.GremlinLoader.isStep                   
+ 1.0        0.03     0.00      1     0.38     0.40    0.38    0.40    0.38    0.40  org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader.isStep                   
  0.0        0.03     0.00      1     0.01     0.01    0.01    0.01    0.01    0.01  java.util.HashSet.contains                                                  
 
 Call graph:
@@ -976,21 +976,21 @@ Call graph:
 index  % time  self  children  calls  name                                                                                
                0.00      0.03    1/1      <spontaneous>                                                                   
 [1]     100.0  0.00      0.03      1  groovysh_evaluate$_run_closure1.doCall [1]                                          
-               0.02      0.00    1/1      com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal.iterate [2]
-               0.00      0.00    1/1      com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.V [3]                   
-               0.00      0.00    1/1      com.tinkerpop.gremlin.groovy.loaders.GremlinLoader.isStep [4]                   
+               0.02      0.00    1/1      org.apache.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal.iterate [2]
+               0.00      0.00    1/1      org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.V [3]                   
+               0.00      0.00    1/1      org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader.isStep [4]                   
 --------------------------------------------------------------------------------------------------------------------------
                0.02      0.00    1/1      groovysh_evaluate$_run_closure1.doCall [1]                                      
-[2]      61.8  0.02      0.00      1  com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal.iterate [2]    
+[2]      61.8  0.02      0.00      1  org.apache.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal.iterate [2]    
 --------------------------------------------------------------------------------------------------------------------------
                0.00      0.00    1/1      groovysh_evaluate$_run_closure1.doCall [1]                                      
-[3]      23.5  0.00      0.00      1  com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.V [3]                       
+[3]      23.5  0.00      0.00      1  org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.V [3]                       
 --------------------------------------------------------------------------------------------------------------------------
                0.00      0.00    1/1      groovysh_evaluate$_run_closure1.doCall [1]                                      
-[4]       1.1  0.00      0.00      1  com.tinkerpop.gremlin.groovy.loaders.GremlinLoader.isStep [4]                       
+[4]       1.1  0.00      0.00      1  org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader.isStep [4]                       
                0.00      0.00    1/1      java.util.HashSet.contains [5]                                                  
 --------------------------------------------------------------------------------------------------------------------------
-               0.00      0.00    1/1      com.tinkerpop.gremlin.groovy.loaders.GremlinLoader.isStep [4]                   
+               0.00      0.00    1/1      org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader.isStep [4]                   
 [5]       0.0  0.00      0.00      1  java.util.HashSet.contains [5]                                                      
 --------------------------------------------------------------------------------------------------------------------------
 ==>null
@@ -1006,18 +1006,18 @@ A good implementation of the Gremlin APIs will validate their features against t
 ----
 gremlin> describeGraph(HadoopGraph)
 ==>
-IMPLEMENTATION - com.tinkerpop.gremlin.hadoop.structure.HadoopGraph
+IMPLEMENTATION - org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
 TINKERPOP TEST SUITE
 - Compliant with (4 of 8 suites)
-> com.tinkerpop.gremlin.process.ProcessStandardSuite
-> com.tinkerpop.gremlin.process.ProcessComputerSuite
-> com.tinkerpop.gremlin.process.GroovyProcessStandardSuite
-> com.tinkerpop.gremlin.process.GroovyProcessComputerSuite
+> org.apache.tinkerpop.gremlin.process.ProcessStandardSuite
+> org.apache.tinkerpop.gremlin.process.ProcessComputerSuite
+> org.apache.tinkerpop.gremlin.process.GroovyProcessStandardSuite
+> org.apache.tinkerpop.gremlin.process.GroovyProcessComputerSuite
 - Opts out of 12 individual tests
-> com.tinkerpop.gremlin.process.graph.step.map.MatchTest$StandardTest#g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX
+> org.apache.tinkerpop.gremlin.process.graph.step.map.MatchTest$StandardTest#g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX
 	"Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute."
 ...
-> com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest#g_V_matchXa_inXsungByX_b__a_inXsungByX_c__b_outXwrittenByX_d__c_outXwrittenByX_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX
+> org.apache.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest#g_V_matchXa_inXsungByX_b__a_inXsungByX_c__b_outXwrittenByX_d__c_outXwrittenByX_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX
 	"Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute."
 
 - NOTE -

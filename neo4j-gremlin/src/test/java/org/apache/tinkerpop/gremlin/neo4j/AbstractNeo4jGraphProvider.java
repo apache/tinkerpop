@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.neo4j;
+package org.apache.tinkerpop.gremlin.neo4j;
 
-import com.tinkerpop.gremlin.AbstractGraphProvider;
-import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jElement;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraphVariables;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jProperty;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
+import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jElement;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraphVariables;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jProperty;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.neo4j.graphdb.DynamicLabel;
 

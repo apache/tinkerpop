@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.util.batch;
+package org.apache.tinkerpop.gremlin.structure.util.batch;
 
-import com.tinkerpop.gremlin.structure.util.batch.cache.LongIDVertexCache;
-import com.tinkerpop.gremlin.structure.util.batch.cache.ObjectIDVertexCache;
-import com.tinkerpop.gremlin.structure.util.batch.cache.StringIDVertexCache;
-import com.tinkerpop.gremlin.structure.util.batch.cache.URLCompression;
-import com.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
+import org.apache.tinkerpop.gremlin.structure.util.batch.cache.LongIDVertexCache;
+import org.apache.tinkerpop.gremlin.structure.util.batch.cache.ObjectIDVertexCache;
+import org.apache.tinkerpop.gremlin.structure.util.batch.cache.StringIDVertexCache;
+import org.apache.tinkerpop.gremlin.structure.util.batch.cache.URLCompression;
+import org.apache.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
 
 /**
  * Type of vertex ids expected by BatchGraph. The default is IdType.OBJECT.

@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.groovy.plugin;
+package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 
-import com.tinkerpop.gremlin.groovy.engine.GroovyTraversalScript;
-import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
-import com.tinkerpop.gremlin.groovy.plugin.RemoteException;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import com.tinkerpop.gremlin.process.computer.ComputerResult;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.groovy.engine.GroovyTraversalScript;
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;

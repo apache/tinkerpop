@@ -16,25 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop;
+package org.apache.tinkerpop.gremlin.hadoop;
 
-import com.tinkerpop.gremlin.AbstractGraphProvider;
-import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.TestHelper;
-import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopElement;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopGraphVariables;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
-import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
-import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoOutputFormat;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoResourceAccess;
-import com.tinkerpop.gremlin.structure.io.script.ScriptResourceAccess;
+import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
+import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopElement;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraphVariables;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoOutputFormat;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoResourceAccess;
+import org.apache.tinkerpop.gremlin.structure.io.script.ScriptResourceAccess;
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.conf.GiraphConstants;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
@@ -49,7 +49,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @author Daniel Kuppitz (daniel at thinkaurelius.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public class HadoopGraphProvider extends AbstractGraphProvider {
 

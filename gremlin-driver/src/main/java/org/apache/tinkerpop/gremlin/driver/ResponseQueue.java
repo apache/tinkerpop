@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.driver;
+package org.apache.tinkerpop.gremlin.driver;
 
-import com.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A queue of incoming {@link ResponseMessage} objects.  The queue is updated by the
- * {@link com.tinkerpop.gremlin.driver.Handler.GremlinResponseHandler} until a response terminator is identified.  At that point the fetch
+ * {@link org.apache.tinkerpop.gremlin.driver.Handler.GremlinResponseHandler} until a response terminator is identified.  At that point the fetch
  * status is changed to {@link Status#COMPLETE} and all results have made it client side.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

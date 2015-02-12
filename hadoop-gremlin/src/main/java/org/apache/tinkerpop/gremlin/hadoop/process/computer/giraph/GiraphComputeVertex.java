@@ -16,25 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.process.computer.giraph;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
-import com.tinkerpop.gremlin.hadoop.Constants;
-import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategy;
-import com.tinkerpop.gremlin.process.computer.util.MapMemory;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
-import com.tinkerpop.gremlin.structure.strategy.StrategyVertex;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerDataStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.structure.strategy.StrategyVertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -63,7 +63,7 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
     public GiraphComputeVertex() {
     }
 
-    public GiraphComputeVertex(final com.tinkerpop.gremlin.structure.Vertex vertex) {
+    public GiraphComputeVertex(final org.apache.tinkerpop.gremlin.structure.Vertex vertex) {
         this.tinkerVertex = GiraphComputeVertex.generateTinkerVertexForm(vertex);
         this.tinkerVertex.graph().variables().set(VERTEX_ID, this.tinkerVertex.id());
         this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateTinkerVertex(), EmptyOutEdges.instance());
@@ -119,7 +119,7 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
         }
     }
 
-    private static final TinkerVertex generateTinkerVertexForm(final com.tinkerpop.gremlin.structure.Vertex otherVertex) {
+    private static final TinkerVertex generateTinkerVertexForm(final org.apache.tinkerpop.gremlin.structure.Vertex otherVertex) {
         if (otherVertex instanceof TinkerVertex)
             return (TinkerVertex) otherVertex;
         else {
@@ -131,7 +131,7 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
                 final ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
                 final TinkerGraph tinkerGraph = TinkerGraph.open();
                 final TinkerVertex tinkerVertex;
-                final Function<DetachedVertex, com.tinkerpop.gremlin.structure.Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(tinkerGraph, detachedVertex);
+                final Function<DetachedVertex, org.apache.tinkerpop.gremlin.structure.Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(tinkerGraph, detachedVertex);
                 final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(tinkerGraph, detachedEdge);
                 try (InputStream in = new ByteArrayInputStream(bos.toByteArray())) {
                     tinkerVertex = (TinkerVertex) KRYO_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);

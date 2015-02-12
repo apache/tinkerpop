@@ -16,22 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server.op;
+package org.apache.tinkerpop.gremlin.server.op;
 
 import com.codahale.metrics.Timer;
-import com.tinkerpop.gremlin.driver.Tokens;
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
-import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.server.Context;
-import com.tinkerpop.gremlin.server.GremlinServer;
-import com.tinkerpop.gremlin.server.OpProcessor;
-import com.tinkerpop.gremlin.server.Settings;
-import com.tinkerpop.gremlin.server.util.MetricManager;
-import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
-import com.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.server.Context;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.OpProcessor;
+import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang.time.StopWatch;
 import org.slf4j.Logger;
@@ -52,7 +52,7 @@ import java.util.function.Supplier;
 import static com.codahale.metrics.MetricRegistry.name;
 
 /**
- * A base {@link com.tinkerpop.gremlin.server.OpProcessor} implementation that helps with operations that deal
+ * A base {@link org.apache.tinkerpop.gremlin.server.OpProcessor} implementation that helps with operations that deal
  * with script evaluation functions.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

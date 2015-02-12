@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.hadoop.process.groovy;
+package org.apache.tinkerpop.gremlin.hadoop.process.groovy;
 
-import com.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import com.tinkerpop.gremlin.process.GroovyProcessStandardSuite;
-import com.tinkerpop.gremlin.process.ProcessStandardSuite;
+import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.process.GroovyProcessStandardSuite;
+import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
 import org.junit.runner.RunWith;
 
 /**

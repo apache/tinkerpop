@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process;
+package org.apache.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.AbstractGremlinSuite;
-import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
-import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
-import com.tinkerpop.gremlin.process.computer.util.ComputerDataStrategyTest;
-import com.tinkerpop.gremlin.process.graph.traversal.step.branch.*;
-import com.tinkerpop.gremlin.process.graph.traversal.step.filter.*;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.*;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.*;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategyTest;
+import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest;
+import org.apache.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerDataStrategyTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.*;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.*;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.*;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.*;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategyTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -38,8 +38,8 @@ import java.util.stream.Stream;
 
 /**
  * The {@code ProcessComputerStandardSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
- * {@link com.tinkerpop.gremlin.structure.Graph} implementation.  This specialized test suite and runner is for use
- * by Gremlin implementers to test their {@link com.tinkerpop.gremlin.structure.Graph} implementations.  The
+ * {@link org.apache.tinkerpop.gremlin.structure.Graph} implementation.  This specialized test suite and runner is for use
+ * by Gremlin implementers to test their {@link org.apache.tinkerpop.gremlin.structure.Graph} implementations.  The
  * {@code ProcessComputerStandardSuite} ensures consistency and validity of the implementations that they test.
  * <p/>
  * To use the {@code ProcessComputerStandardSuite} define a class in a test module.  Simple naming would expect the
@@ -51,8 +51,8 @@ import java.util.stream.Stream;
  * @ProcessComputerSuite.GraphProviderClass(TinkerGraphProcessComputerTest.class) public class TinkerGraphProcessComputerTest implements GraphProvider {
  * }
  * </code>
- * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the {@code ProcessComputerStandardSuite}
- * to instantiate {@link com.tinkerpop.gremlin.structure.Graph} instances from the implementation being tested to
+ * Implementing {@link org.apache.tinkerpop.gremlin.GraphProvider} provides a way for the {@code ProcessComputerStandardSuite}
+ * to instantiate {@link org.apache.tinkerpop.gremlin.structure.Graph} instances from the implementation being tested to
  * inject into tests in the suite.  The {@code ProcessComputerStandardSuite} will utilized Features defined in the
  * suite to determine which tests will be executed.
  * <br/>

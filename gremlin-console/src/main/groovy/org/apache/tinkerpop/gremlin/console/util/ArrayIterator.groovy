@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console.util
+package org.apache.tinkerpop.gremlin.console.util
 
-import com.tinkerpop.gremlin.process.FastNoSuchElementException
+import org.apache.tinkerpop.gremlin.process.FastNoSuchElementException
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

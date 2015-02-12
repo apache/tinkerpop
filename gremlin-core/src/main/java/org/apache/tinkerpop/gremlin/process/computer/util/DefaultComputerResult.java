@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer.util;
+package org.apache.tinkerpop.gremlin.process.computer.util;
 
-import com.tinkerpop.gremlin.process.computer.ComputerResult;
-import com.tinkerpop.gremlin.process.computer.Memory;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
+import org.apache.tinkerpop.gremlin.process.computer.Memory;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
- * The result of the {@link com.tinkerpop.gremlin.process.computer.GraphComputer}'s computation. This is returned in a {@link java.util.concurrent.Future} by GraphComputer.submit().
- * A GraphComputer computation yields two things: an updated view of the computed on {@link Graph} and any computational sideEffects called {@link com.tinkerpop.gremlin.process.computer.Memory}.
+ * The result of the {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer}'s computation. This is returned in a {@link java.util.concurrent.Future} by GraphComputer.submit().
+ * A GraphComputer computation yields two things: an updated view of the computed on {@link Graph} and any computational sideEffects called {@link org.apache.tinkerpop.gremlin.process.computer.Memory}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

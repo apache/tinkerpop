@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console.plugin
+package org.apache.tinkerpop.gremlin.console.plugin
 
-import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
-import com.tinkerpop.gremlin.groovy.plugin.RemoteException
-import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.structure.Edge
-import com.tinkerpop.gremlin.structure.Graph
-import com.tinkerpop.gremlin.structure.Vertex
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
+import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.structure.Edge
+import org.apache.tinkerpop.gremlin.structure.Graph
+import org.apache.tinkerpop.gremlin.structure.Vertex
 import groovy.json.JsonSlurper
 import groovyx.net.http.HTTPBuilder
 import org.codehaus.groovy.tools.shell.Groovysh

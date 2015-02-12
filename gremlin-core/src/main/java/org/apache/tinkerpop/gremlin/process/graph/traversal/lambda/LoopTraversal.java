@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.lambda;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.lambda;
 
-import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
+import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

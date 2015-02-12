@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.neo4j.structure;
+package org.apache.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.neo4j.DefaultNeo4jGraphProvider;
-import com.tinkerpop.gremlin.structure.StructureStandardSuite;
+import org.apache.tinkerpop.gremlin.neo4j.DefaultNeo4jGraphProvider;
+import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.junit.runner.RunWith;
 
 

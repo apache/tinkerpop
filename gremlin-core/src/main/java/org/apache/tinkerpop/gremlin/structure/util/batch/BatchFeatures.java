@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.util.batch;
+package org.apache.tinkerpop.gremlin.structure.util.batch;
 
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

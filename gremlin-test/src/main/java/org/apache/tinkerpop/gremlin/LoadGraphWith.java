@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin;
+package org.apache.tinkerpop.gremlin;
 
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
+import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -30,9 +30,9 @@ import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.*;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.*;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES;
 
 /**
  * Annotations to define a graph example to load from test resources prior to test execution.  This annotation is
@@ -44,7 +44,7 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEAT
  * data contains for the test to be executed.
  * <br/>
  * If a graph implementation is "read-only", it can override the
- * {@link GraphProvider#loadGraphData(com.tinkerpop.gremlin.structure.Graph, LoadGraphWith, Class, String)} method
+ * {@link GraphProvider#loadGraphData(org.apache.tinkerpop.gremlin.structure.Graph, LoadGraphWith, Class, String)} method
  * to provide some other mechanism for making that data available to the graph in time for the test.  See the
  * hadoop-gremlin implementation for more details.
  *
@@ -69,7 +69,7 @@ public @interface LoadGraphWith {
         MODERN,
 
         /**
-         * Load "The Crew" TinkerPop3 toy graph which includes {@link com.tinkerpop.gremlin.structure.VertexProperty} data.
+         * Load "The Crew" TinkerPop3 toy graph which includes {@link org.apache.tinkerpop.gremlin.structure.VertexProperty} data.
          */
         CREW,
 
@@ -135,7 +135,7 @@ public @interface LoadGraphWith {
         }
     }
 
-    public static final String RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure/io/kryo/";
+    public static final String RESOURCE_PATH_PREFIX = "/org/apache/tinkerpop/gremlin/structure/io/kryo/";
 
     /**
      * The name of the resource to load with full path.

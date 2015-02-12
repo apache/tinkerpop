@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.ExceptionCoverage;
-import com.tinkerpop.gremlin.FeatureRequirement;
-import com.tinkerpop.gremlin.FeatureRequirementSet;
-import com.tinkerpop.gremlin.GraphManager;
-import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures;
-import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.ExceptionCoverage;
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
+import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
+import org.apache.tinkerpop.gremlin.GraphManager;
+import org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
+import org.apache.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures;
+import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -38,14 +38,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Gremlin Test Suite for {@link com.tinkerpop.gremlin.structure.Property} operations.
+ * Gremlin Test Suite for {@link org.apache.tinkerpop.gremlin.structure.Property} operations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -54,7 +54,7 @@ import static org.junit.Assume.assumeThat;
 public class PropertyTest {
 
     /**
-     * Basic tests for the {@link com.tinkerpop.gremlin.structure.Property} class.
+     * Basic tests for the {@link org.apache.tinkerpop.gremlin.structure.Property} class.
      */
     public static class BasicPropertyTest extends AbstractGremlinTest {
         @Test
@@ -117,8 +117,8 @@ public class PropertyTest {
     }
 
     /**
-     * Checks that properties added to an {@link com.tinkerpop.gremlin.structure.Element} are validated in a consistent way when they are added at
-     * {@link com.tinkerpop.gremlin.structure.Vertex} or {@link com.tinkerpop.gremlin.structure.Edge} construction by throwing an appropriate exception.
+     * Checks that properties added to an {@link org.apache.tinkerpop.gremlin.structure.Element} are validated in a consistent way when they are added at
+     * {@link org.apache.tinkerpop.gremlin.structure.Vertex} or {@link org.apache.tinkerpop.gremlin.structure.Edge} construction by throwing an appropriate exception.
      */
     @RunWith(Parameterized.class)
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
@@ -179,7 +179,7 @@ public class PropertyTest {
     }
 
     /**
-     * Test exceptions around use of {@link com.tinkerpop.gremlin.structure.Element#value(String)}.
+     * Test exceptions around use of {@link org.apache.tinkerpop.gremlin.structure.Element#value(String)}.
      */
     @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
             "propertyDoesNotExist"
@@ -218,7 +218,7 @@ public class PropertyTest {
 
 
     /**
-     * Checks that properties added to an {@link com.tinkerpop.gremlin.structure.Element} are validated in a
+     * Checks that properties added to an {@link org.apache.tinkerpop.gremlin.structure.Element} are validated in a
      * consistent way when they are set after {@link Vertex} or {@link Edge} construction by throwing an
      * appropriate exception.
      */
@@ -283,7 +283,7 @@ public class PropertyTest {
     }
 
     /**
-     * Tests for feature support on {@link com.tinkerpop.gremlin.structure.Property}.  The tests validate if {@link com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures}
+     * Tests for feature support on {@link org.apache.tinkerpop.gremlin.structure.Property}.  The tests validate if {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures}
      * should be turned on or off and if the enabled features are properly supported by the implementation.  Note that
      * these tests are run in a separate test class as they are "parameterized" tests.
      */

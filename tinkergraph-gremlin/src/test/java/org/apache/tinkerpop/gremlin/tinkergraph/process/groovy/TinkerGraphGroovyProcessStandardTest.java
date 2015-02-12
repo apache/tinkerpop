@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.tinkergraph.process.groovy;
+package org.apache.tinkerpop.gremlin.tinkergraph.process.groovy;
 
-import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
-import com.tinkerpop.gremlin.process.GroovyProcessStandardSuite;
-import com.tinkerpop.gremlin.process.ProcessStandardSuite;
-import com.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
+import org.apache.tinkerpop.gremlin.process.GroovyProcessStandardSuite;
+import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
+import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.runner.RunWith;
 
 /**

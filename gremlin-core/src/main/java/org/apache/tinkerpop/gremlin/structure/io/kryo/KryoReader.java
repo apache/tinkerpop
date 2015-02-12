@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.structure.io.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.*;
-import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
 import java.io.*;
 import java.util.*;
@@ -362,7 +362,7 @@ public class KryoReader implements GraphReader {
 
         /**
          * The name of the key to supply to
-         * {@link com.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#vertexIdKey} when reading data into
+         * {@link org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#vertexIdKey} when reading data into
          * the {@link Graph}.
          */
         public Builder vertexIdKey(final String vertexIdKey) {
@@ -372,7 +372,7 @@ public class KryoReader implements GraphReader {
 
         /**
          * The name of the key to supply to
-         * {@link com.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#edgeIdKey} when reading data into
+         * {@link org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#edgeIdKey} when reading data into
          * the {@link Graph}.
          */
         public Builder edgeIdKey(final String edgeIdKey) {

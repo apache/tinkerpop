@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer
+package org.apache.tinkerpop.gremlin.process.computer
 
-import com.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce
-import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
+import org.apache.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce
+import org.apache.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

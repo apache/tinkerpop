@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy;
+package org.apache.tinkerpop.gremlin.groovy;
 
-import com.tinkerpop.gremlin.AbstractGremlinSuite;
-import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.GraphManager;
-import com.tinkerpop.gremlin.groovy.engine.GremlinExecutorTest;
-import com.tinkerpop.gremlin.groovy.engine.GroovyTraversalScriptTest;
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
-import com.tinkerpop.gremlin.groovy.loaders.GremlinLoaderTest;
-import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
-import com.tinkerpop.gremlin.groovy.loaders.SugarLoaderTest;
-import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
+import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.GraphManager;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutorTest;
+import org.apache.tinkerpop.gremlin.groovy.engine.GroovyTraversalScriptTest;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
+import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoaderTest;
+import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
+import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoaderTest;
+import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 

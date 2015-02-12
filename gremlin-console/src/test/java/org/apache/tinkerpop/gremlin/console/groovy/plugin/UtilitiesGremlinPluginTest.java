@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console.groovy.plugin;
+package org.apache.tinkerpop.gremlin.console.groovy.plugin;
 
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.junit.Ignore;
@@ -67,6 +67,6 @@ public class UtilitiesGremlinPluginTest {
         final SpyPluginAcceptor spy = new SpyPluginAcceptor(groovysh::execute, () -> env);
         plugin.pluginTo(spy);
 
-        assertThat(groovysh.execute("describeGraph(com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph)").toString(), containsString("IMPLEMENTATION - com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph"));
+        assertThat(groovysh.execute("describeGraph(org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph)").toString(), containsString("IMPLEMENTATION - org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph"));
     }
 }

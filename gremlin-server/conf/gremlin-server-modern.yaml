@@ -14,8 +14,8 @@ scriptEngines: {
     staticImports: [java.lang.Math.PI],
     scripts: [scripts/generate-modern.groovy]}}
 serializers:
-  - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0 }
-  - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0, config: { serializeResultToString: true }}
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0 }
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0, config: { serializeResultToString: true }}
 metrics: {
   slf4jReporter: {enabled: true, interval: 180000}}
 threadPoolBoss: 1

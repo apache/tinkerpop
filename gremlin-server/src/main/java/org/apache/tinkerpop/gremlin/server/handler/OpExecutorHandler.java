@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server.handler;
+package org.apache.tinkerpop.gremlin.server.handler;
 
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
-import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import com.tinkerpop.gremlin.server.Context;
-import com.tinkerpop.gremlin.server.Graphs;
-import com.tinkerpop.gremlin.server.Settings;
-import com.tinkerpop.gremlin.server.op.OpProcessorException;
-import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.server.Context;
+import org.apache.tinkerpop.gremlin.server.Graphs;
+import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
+import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

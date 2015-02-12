@@ -16,24 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.neo4j.structure;
+package org.apache.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.neo4j.process.graph.traversal.step.sideEffect.Neo4jGraphStep;
-import com.tinkerpop.gremlin.neo4j.process.graph.traversal.step.util.Neo4jCypherIterator;
-import com.tinkerpop.gremlin.neo4j.process.graph.traversal.strategy.Neo4jGraphStepStrategy;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Transaction;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.neo4j.process.graph.traversal.step.sideEffect.Neo4jGraphStep;
+import org.apache.tinkerpop.gremlin.neo4j.process.graph.traversal.step.util.Neo4jCypherIterator;
+import org.apache.tinkerpop.gremlin.neo4j.process.graph.traversal.strategy.Neo4jGraphStepStrategy;
+import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
+import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
@@ -66,7 +66,7 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.structure.VertexTest$ExceptionConsistencyWhenVertexRemovedTest",
+        test = "org.apache.tinkerpop.gremlin.structure.VertexTest$ExceptionConsistencyWhenVertexRemovedTest",
         method = "shouldThrowExceptionIfVertexWasRemovedWhenCallingProperty",
         specific = "property(single,k,v)",
         reason = "Neo4j throws a NodeNotFoundException instead of the desired IllegalStateException")
@@ -189,7 +189,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
      * Open a new {@link Neo4jGraph} instance.
      *
      * @param configuration the configuration for the instance
-     * @return a newly opened {@link com.tinkerpop.gremlin.structure.Graph}
+     * @return a newly opened {@link org.apache.tinkerpop.gremlin.structure.Graph}
      */
     public static Neo4jGraph open(final Configuration configuration) {
         if (null == configuration) throw Graph.Exceptions.argumentCanNotBeNull("configuration");

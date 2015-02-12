@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process;
+package org.apache.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.Serializable;
 import java.util.Optional;
@@ -177,9 +177,9 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
     }
 
     /**
-     * In a distributed {@link com.tinkerpop.gremlin.process.computer.GraphComputer} traversal, the sideEffects of the traversal are not a single object within a single JVM.
+     * In a distributed {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer} traversal, the sideEffects of the traversal are not a single object within a single JVM.
      * Instead, the sideEffects are distributed across the graph and the pieces are stored on the computing vertices.
-     * This method is necessary to call when the {@link com.tinkerpop.gremlin.process.Traversal} is processing the {@link com.tinkerpop.gremlin.process.Traverser}s at a particular {@link com.tinkerpop.gremlin.structure.Vertex}.
+     * This method is necessary to call when the {@link org.apache.tinkerpop.gremlin.process.Traversal} is processing the {@link org.apache.tinkerpop.gremlin.process.Traverser}s at a particular {@link org.apache.tinkerpop.gremlin.structure.Vertex}.
      *
      * @param vertex the vertex where the traversal is currently executing.
      */

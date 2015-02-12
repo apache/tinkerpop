@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.tinkergraph.structure;
+package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.structure.StructureStandardSuite;
-import com.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
+import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
+import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
 import org.junit.runner.RunWith;
 
 

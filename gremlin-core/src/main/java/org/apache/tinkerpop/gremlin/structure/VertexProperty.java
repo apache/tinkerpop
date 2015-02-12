@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.graph.traversal.VertexPropertyTraversal;
-import com.tinkerpop.gremlin.structure.util.empty.EmptyVertexProperty;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.VertexPropertyTraversal;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyVertexProperty;
 
 import java.util.Iterator;
 
@@ -85,7 +85,7 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
 
     /**
      * An interface that provides access to iterators over properties, without constructing a
-     * {@link com.tinkerpop.gremlin.process.Traversal} object.
+     * {@link org.apache.tinkerpop.gremlin.process.Traversal} object.
      */
     public interface Iterators extends Element.Iterators {
         /**

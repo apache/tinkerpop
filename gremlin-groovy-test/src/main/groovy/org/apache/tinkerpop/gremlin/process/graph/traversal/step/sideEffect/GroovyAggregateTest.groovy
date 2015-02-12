@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
-import com.tinkerpop.gremlin.process.Path
-import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.ComputerTestHelper
-import com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AggregateTest
-import com.tinkerpop.gremlin.structure.Vertex
+import org.apache.tinkerpop.gremlin.process.Path
+import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AggregateTest
+import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.traversal.util;
+package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.traversal.step.Reversible;
-import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
-import com.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
-import com.tinkerpop.gremlin.process.traversal.StepPosition;
-import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
-import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.process.Step;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.StepPosition;
+import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.util.BulkSet;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.Collection;

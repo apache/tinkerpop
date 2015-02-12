@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.util;
+package org.apache.tinkerpop.gremlin.process.graph.util;
 
 import org.junit.Test;
 

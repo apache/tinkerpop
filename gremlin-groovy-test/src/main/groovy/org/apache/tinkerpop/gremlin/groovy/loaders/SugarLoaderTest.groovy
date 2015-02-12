@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.loaders
+package org.apache.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.gremlin.AbstractGremlinTest
-import com.tinkerpop.gremlin.LoadGraphWith
-import com.tinkerpop.gremlin.groovy.util.SugarTestHelper
-import com.tinkerpop.gremlin.structure.Graph
-import com.tinkerpop.gremlin.structure.Vertex
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest
+import org.apache.tinkerpop.gremlin.LoadGraphWith
+import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper
+import org.apache.tinkerpop.gremlin.structure.Graph
+import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
 
 import static org.junit.Assert.*

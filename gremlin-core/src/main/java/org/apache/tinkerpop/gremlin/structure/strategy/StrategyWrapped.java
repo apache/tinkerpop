@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.strategy;
+package org.apache.tinkerpop.gremlin.structure.strategy;
 
 /**
  * A marker interface for the graph wrapper classes.  Classes that are strategy wrappers should implement this

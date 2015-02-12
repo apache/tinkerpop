@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.computer;
+package org.apache.tinkerpop.gremlin.process.computer;
 
 import java.util.concurrent.Future;
 
 /**
  * The {@link GraphComputer} is responsible for the execution of a {@link VertexProgram} and then a set of {@link MapReduce} jobs
- * over the vertices in the {@link com.tinkerpop.gremlin.structure.Graph}. It is up to the {@link GraphComputer} implementation to determine the
+ * over the vertices in the {@link org.apache.tinkerpop.gremlin.structure.Graph}. It is up to the {@link GraphComputer} implementation to determine the
  * appropriate memory structures given the computing substrate. {@link GraphComputer} implementations also
  * maintains levels of memory {@link Isolation}: Bulk Synchronous and Dirty Bulk Synchronous.
  *
@@ -73,7 +73,7 @@ public interface GraphComputer {
     /**
      * Submit the {@link VertexProgram} and the set of {@link MapReduce} jobs for execution by the {@link GraphComputer}.
      *
-     * @return a {@link Future} denoting a reference to the asynchronous computation and where to get the {@link com.tinkerpop.gremlin.process.computer.util.DefaultComputerResult} when its is complete.
+     * @return a {@link Future} denoting a reference to the asynchronous computation and where to get the {@link org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult} when its is complete.
      */
     public Future<ComputerResult> submit();
 

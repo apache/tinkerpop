@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.console.groovy.plugin;
+package org.apache.tinkerpop.gremlin.console.groovy.plugin;
 
-import com.tinkerpop.gremlin.server.GremlinServer;
-import com.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.junit.After;
 import org.junit.Before;
 

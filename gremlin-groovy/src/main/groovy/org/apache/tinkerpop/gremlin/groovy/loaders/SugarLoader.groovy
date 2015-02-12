@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.groovy.loaders
+package org.apache.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.Traverser
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
-import com.tinkerpop.gremlin.process.graph.traversal.__
-import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper
-import com.tinkerpop.gremlin.structure.*
+import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.Traverser
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper
+import org.apache.tinkerpop.gremlin.structure.*
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

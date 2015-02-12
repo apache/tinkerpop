@@ -23,7 +23,7 @@ limitations under the License.
         <artifactId>oss-parent</artifactId>
         <version>7</version>
     </parent>
-    <groupId>com.tinkerpop</groupId>
+    <groupId>org.apache.tinkerpop</groupId>
     <artifactId>tinkerpop</artifactId>
     <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -698,23 +698,23 @@ limitations under the License.
                                     </sourcepath>
                                     <quiet>true</quiet>
                                     <sourceFileIncludes>
-                                        <sourceFileInclude>com/tinkerpop/gremlin/structure/*.java</sourceFileInclude>
-                                        <sourceFileInclude>com/tinkerpop/gremlin/structure/io/*.java</sourceFileInclude>
-                                        <sourceFileInclude>com/tinkerpop/gremlin/structure/io/graphml/*.java
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/*.java</sourceFileInclude>
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/*.java</sourceFileInclude>
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/graphml/*.java
                                         </sourceFileInclude>
-                                        <sourceFileInclude>com/tinkerpop/gremlin/structure/io/graphson/*.java
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/graphson/*.java
                                         </sourceFileInclude>
-                                        <sourceFileInclude>com/tinkerpop/gremlin/structure/io/kryo/*.java
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/kryo/*.java
                                         </sourceFileInclude>
-                                        <sourceFileInclude>com/tinkerpop/gremlin/structure/strategy/*.java
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/strategy/*.java
                                         </sourceFileInclude>
-                                        <sourceFileInclude>com/tinkerpop/gremlin/process/*.java</sourceFileInclude>
-                                        <sourceFileInclude>com/tinkerpop/gremlin/process/computer/*.java
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/*.java</sourceFileInclude>
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/computer/*.java
                                         </sourceFileInclude>
-                                        <sourceFileInclude>com/tinkerpop/gremlin/process/graph/*.java
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/graph/*.java
                                         </sourceFileInclude>
-                                        <sourceFileInclude>com/tinkerpop/gremlin/process/util/*.java</sourceFileInclude>
-                                        <sourceFileInclude>com/tinkerpop/gremlin/driver/*.java</sourceFileInclude>
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/util/*.java</sourceFileInclude>
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/driver/*.java</sourceFileInclude>
                                     </sourceFileIncludes>
                                 </configuration>
                             </execution>

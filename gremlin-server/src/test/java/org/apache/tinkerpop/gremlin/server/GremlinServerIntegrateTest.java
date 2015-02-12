@@ -16,23 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server;
+package org.apache.tinkerpop.gremlin.server;
 
-import com.tinkerpop.gremlin.driver.Client;
-import com.tinkerpop.gremlin.driver.Cluster;
-import com.tinkerpop.gremlin.driver.ResultSet;
-import com.tinkerpop.gremlin.driver.Tokens;
-import com.tinkerpop.gremlin.driver.exception.ResponseException;
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
-import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import com.tinkerpop.gremlin.driver.ser.Serializers;
-import com.tinkerpop.gremlin.driver.simple.NioClient;
-import com.tinkerpop.gremlin.driver.simple.SimpleClient;
-import com.tinkerpop.gremlin.driver.simple.WebSocketClient;
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.server.channel.NioChannelizer;
-import com.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
+import org.apache.tinkerpop.gremlin.driver.Client;
+import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.ResultSet;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.driver.simple.NioClient;
+import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
+import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
+import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;

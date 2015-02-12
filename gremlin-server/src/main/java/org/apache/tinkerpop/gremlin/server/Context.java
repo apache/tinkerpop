@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server;
+package org.apache.tinkerpop.gremlin.server;
 
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
-import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -75,7 +75,7 @@ public class Context {
     }
 
     /**
-     * Gets the set of {@link com.tinkerpop.gremlin.structure.Graph} objects configured in Gremlin Server.
+     * Gets the set of {@link org.apache.tinkerpop.gremlin.structure.Graph} objects configured in Gremlin Server.
      */
     public Graphs getGraphs() {
         return graphs;

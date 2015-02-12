@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.structure.util;
+package org.apache.tinkerpop.gremlin.structure.util;
 
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.util.config.YamlConfiguration;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.util.config.YamlConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.MapConfiguration;
@@ -30,7 +30,7 @@ import java.io.File;
 import java.util.Map;
 
 /**
- * Factory to construct new {@link com.tinkerpop.gremlin.structure.Graph} instances from a
+ * Factory to construct new {@link org.apache.tinkerpop.gremlin.structure.Graph} instances from a
  * {@link org.apache.commons.configuration.Configuration} object or properties file.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -38,12 +38,12 @@ import java.util.Map;
 public class GraphFactory {
 
     /**
-     * Open a graph.  See each {@link com.tinkerpop.gremlin.structure.Graph} instance for its configuration options.
+     * Open a graph.  See each {@link org.apache.tinkerpop.gremlin.structure.Graph} instance for its configuration options.
      *
      * @param configuration A configuration object that specifies the minimally required properties for a                        I
-     *                      {@link com.tinkerpop.gremlin.structure.Graph} instance. This minimum is determined by the
-     *                      {@link com.tinkerpop.gremlin.structure.Graph} instance itself.
-     * @return A {@link com.tinkerpop.gremlin.structure.Graph} instance.
+     *                      {@link org.apache.tinkerpop.gremlin.structure.Graph} instance. This minimum is determined by the
+     *                      {@link org.apache.tinkerpop.gremlin.structure.Graph} instance itself.
+     * @return A {@link org.apache.tinkerpop.gremlin.structure.Graph} instance.
      * @throws IllegalArgumentException if {@code configuration}
      */
     public static Graph open(final Configuration configuration) {
@@ -76,14 +76,14 @@ public class GraphFactory {
     }
 
     /**
-     * Open a graph.  See each {@link com.tinkerpop.gremlin.structure.Graph} instance for its configuration options. This file may be XML, YAML,
+     * Open a graph.  See each {@link org.apache.tinkerpop.gremlin.structure.Graph} instance for its configuration options. This file may be XML, YAML,
      * or a standard properties file. How the configuration is used (and which kind is required) is dependent on
      * the implementation.
      *
      * @param configurationFile The location of a configuration file that specifies the minimally required properties
-     *                          for a {@link com.tinkerpop.gremlin.structure.Graph} instance. This minimum is determined by the {@link com.tinkerpop.gremlin.structure.Graph} instance
+     *                          for a {@link org.apache.tinkerpop.gremlin.structure.Graph} instance. This minimum is determined by the {@link org.apache.tinkerpop.gremlin.structure.Graph} instance
      *                          itself.
-     * @return A {@link com.tinkerpop.gremlin.structure.Graph} instance.
+     * @return A {@link org.apache.tinkerpop.gremlin.structure.Graph} instance.
      * @throws IllegalArgumentException if {@code configurationFile} is null
      */
     public static Graph open(final String configurationFile) {
@@ -92,7 +92,7 @@ public class GraphFactory {
     }
 
     /**
-     * Open a graph. See each {@link com.tinkerpop.gremlin.structure.Graph} instance for its configuration options.
+     * Open a graph. See each {@link org.apache.tinkerpop.gremlin.structure.Graph} instance for its configuration options.
      *
      * @param configuration A {@link java.util.Map} based configuration that will be converted to an {@link org.apache.commons.configuration.Configuration} object
      *                      via {@link org.apache.commons.configuration.MapConfiguration} and passed to the appropriate overload.

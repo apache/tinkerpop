@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.driver.handler;
+package org.apache.tinkerpop.gremlin.driver.handler;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;

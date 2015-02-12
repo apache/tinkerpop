@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server;
+package org.apache.tinkerpop.gremlin.server;
 
-import com.tinkerpop.gremlin.driver.Client;
-import com.tinkerpop.gremlin.driver.Cluster;
-import com.tinkerpop.gremlin.driver.Result;
-import com.tinkerpop.gremlin.driver.ResultSet;
-import com.tinkerpop.gremlin.driver.exception.ResponseException;
-import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import com.tinkerpop.gremlin.driver.ser.JsonBuilderKryoSerializer;
-import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import com.tinkerpop.gremlin.util.TimeUtil;
+import org.apache.tinkerpop.gremlin.driver.Client;
+import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.Result;
+import org.apache.tinkerpop.gremlin.driver.ResultSet;
+import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderKryoSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
 import org.junit.Rule;
 import org.junit.Test;
@@ -129,7 +129,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     /**
-     * This test arose from this issue: https://github.com/tinkerpop/tinkerpop3/issues/515
+     * This test arose from this issue: https://github.org/apache/tinkerpop/tinkerpop3/issues/515
      * <br/>
      * ResultSet.all returns a CompleteableFuture that blocks on the worker pool until isExausted returns false.
      * isExausted in turn needs a thread on the worker pool to even return. So its totally possible to consume all

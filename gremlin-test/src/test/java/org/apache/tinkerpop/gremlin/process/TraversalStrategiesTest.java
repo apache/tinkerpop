@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process;
+package org.apache.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.graph.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.AbstractTraversalStrategy;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 public class TraversalStrategiesTest {
 
     /**
-     * Tests that {@link com.tinkerpop.gremlin.process.TraversalStrategies#sortStrategies(java.util.List)}
+     * Tests that {@link org.apache.tinkerpop.gremlin.process.TraversalStrategies#sortStrategies(java.util.List)}
      * works as advertised. This class defines a bunch of dummy strategies which define an order. It is verified
      * that the right order is being returned.
      */

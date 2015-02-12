@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
-import com.tinkerpop.gremlin.process.graph.traversal.step.util.SupplyingBarrierStep;
-import com.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
-import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.SupplyingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.*;
 

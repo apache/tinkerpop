@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process;
+package org.apache.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.computer.ComputerResult;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import com.tinkerpop.gremlin.process.traversal.DefaultTraversal;
-import com.tinkerpop.gremlin.process.traversal.step.EmptyStep;
-import com.tinkerpop.gremlin.process.traversal.step.Reversible;
-import com.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.util.BulkSet;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -74,7 +74,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
     /**
      * Submit the traversal to a {@link GraphComputer} for OLAP execution.
      * This method should execute the traversal via {@link TraversalVertexProgram}.
-     * It should then wrap the {@link com.tinkerpop.gremlin.process.computer.util.DefaultComputerResult} in a new {@link Traversal} containing a {@link ComputerResultStep}.
+     * It should then wrap the {@link org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult} in a new {@link Traversal} containing a {@link ComputerResultStep}.
      *
      * @param computer the GraphComputer to execute the traversal on
      * @return a new traversal with the starts being the results of the TraversalVertexProgram
@@ -222,7 +222,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
 
         /**
          * Add an iterator of {@link Traverser} objects to the head/start of the traversal.
-         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectStep}.
+         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectStep}.
          *
          * @param starts an iterators of traversers
          */
@@ -233,7 +233,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
 
         /**
          * Add a single {@link Traverser} object to the head of the traversal.
-         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectStep}.
+         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectStep}.
          *
          * @param start a traverser to add to the traversal
          */
@@ -338,7 +338,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
 
         /**
          * Get the {@link TraverserGenerator} associated with this traversal.
-         * The traversal generator creates {@link Traverser} instances that are respective of the traversal's {@link com.tinkerpop.gremlin.process.traverser.TraverserRequirement}.
+         * The traversal generator creates {@link Traverser} instances that are respective of the traversal's {@link org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement}.
          *
          * @return the generator of traversers
          */
@@ -411,7 +411,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
         public TraversalStrategies getStrategies();
 
         /**
-         * Set the {@link com.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is the parent of this traversal.
+         * Set the {@link org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is the parent of this traversal.
          * Traversals can be nested and this is the means by which the traversal tree is connected.
          *
          * @param step the traversal holder parent step
@@ -419,7 +419,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
         public void setParent(final TraversalParent step);
 
         /**
-         * Get the {@link com.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is the parent of this traversal.
+         * Get the {@link org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is the parent of this traversal.
          * Traversals can be nested and this is the means by which the traversal tree is walked.
          *
          * @return the traversal holder parent step

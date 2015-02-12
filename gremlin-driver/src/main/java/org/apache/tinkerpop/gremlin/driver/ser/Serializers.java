@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.driver.ser;
+package org.apache.tinkerpop.gremlin.driver.ser;
 
-import com.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 
 /**
  * An enum of the default serializers.
@@ -34,14 +34,14 @@ public enum Serializers {
 
     /**
      * Default serializer for results returned from Gremlin Server. This implementation must be of type
-     * {@link com.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
+     * {@link org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
      * websocket messages.
      */
     public static final MessageSerializer DEFAULT_RESULT_SERIALIZER = new JsonMessageSerializerV1d0();
 
     /**
      * Default serializer for requests received by Gremlin Server. This implementation must be of type
-     * {@link com.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
+     * {@link org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
      * websocket messages.
      */
     public static final MessageSerializer DEFAULT_REQUEST_SERIALIZER = new JsonMessageSerializerV1d0();

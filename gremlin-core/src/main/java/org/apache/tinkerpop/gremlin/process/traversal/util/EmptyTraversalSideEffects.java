@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.process.traversal.util;
+package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import com.tinkerpop.gremlin.process.TraversalSideEffects;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collections;
 import java.util.Optional;

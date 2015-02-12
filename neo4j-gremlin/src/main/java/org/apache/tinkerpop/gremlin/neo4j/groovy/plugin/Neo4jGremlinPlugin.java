@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.neo4j.groovy.plugin;
+package org.apache.tinkerpop.gremlin.neo4j.groovy.plugin;
 
-import com.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
-import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
-import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
-import com.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
+import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
+import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
+import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 
 import java.util.HashSet;
 import java.util.Set;

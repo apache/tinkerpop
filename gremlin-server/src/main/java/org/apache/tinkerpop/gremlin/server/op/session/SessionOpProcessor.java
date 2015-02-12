@@ -16,23 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.server.op.session;
+package org.apache.tinkerpop.gremlin.server.op.session;
 
-import com.tinkerpop.gremlin.driver.Tokens;
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
-import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import com.tinkerpop.gremlin.server.Context;
-import com.tinkerpop.gremlin.server.Settings;
-import com.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
-import com.tinkerpop.gremlin.server.op.OpProcessorException;
-import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.server.Context;
+import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
+import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
+import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 
 import java.util.HashMap;
 import java.util.Optional;
 
 /**
- * Simple {@link com.tinkerpop.gremlin.server.OpProcessor} implementation that handles {@code ScriptEngine}
+ * Simple {@link org.apache.tinkerpop.gremlin.server.OpProcessor} implementation that handles {@code ScriptEngine}
  * script evaluation in the context of a session.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
