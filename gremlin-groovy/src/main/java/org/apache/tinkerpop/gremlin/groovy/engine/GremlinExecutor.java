@@ -492,7 +492,7 @@ public class GremlinExecutor implements AutoCloseable {
         }
 
         public GremlinExecutor create() {
-            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-executor-XXX-%d").build();
+            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-executor-default-%d").build();
 
             final AtomicBoolean poolCreatedByBuilder = new AtomicBoolean();
             final AtomicBoolean suppliedExecutor = new AtomicBoolean(true);
