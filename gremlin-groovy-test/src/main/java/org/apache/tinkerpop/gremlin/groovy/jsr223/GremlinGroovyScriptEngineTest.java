@@ -42,6 +42,7 @@ import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import javax.script.SimpleBindings;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -49,6 +50,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.*;
@@ -562,6 +565,17 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         assertEquals(nonUtf8, eval.next());
         eval = (Traversal) engine.eval("g.V().has('name','轉注')");
         assertEquals(utf8Name, eval.next());
+    }
+
+    @Test
+    public void shouldTimeoutScriptOnTimedWhile() throws Exception {
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, 3000);
+        try {
+            engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
+            fail("This should have timed out");
+        } catch (ScriptException se) {
+            assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
+        }
     }
 
     public static class DenyAll extends GroovyValueFilter {

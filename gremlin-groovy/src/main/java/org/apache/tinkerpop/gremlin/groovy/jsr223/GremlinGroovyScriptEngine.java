@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
+import groovy.transform.ThreadInterrupt;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
@@ -35,8 +36,11 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
+import groovy.transform.TimedInterrupt;
+import org.codehaus.groovy.ast.tools.GeneralUtils;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.jsr223.GroovyCompiledScript;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -65,9 +69,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * This {@code ScriptEngine} implementation is heavily adapted from the {@code GroovyScriptEngineImpl} to include
@@ -78,6 +82,7 @@ import java.util.stream.Stream;
  */
 public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager, AutoCloseable {
 
+    public static final long DEFAULT_SCRIPT_EVALUATION_TIMEOUT = 60000;
     public static final String KEY_REFERENCE_TYPE = "#jsr223.groovy.engine.keep.globals";
     public static final String REFERENCE_TYPE_PHANTOM = "phantom";
     public static final String REFERENCE_TYPE_WEAK = "weak";
@@ -122,6 +127,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private ImportCustomizerProvider importCustomizerProvider;
     private Optional<SecurityCustomizerProvider> securityProvider;
 
+    private final long scriptEvaluationTimeout;
+
     private final Set<Artifact> artifactsToUse = new HashSet<>();
 
     public GremlinGroovyScriptEngine() {
@@ -132,10 +139,18 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         this(importCustomizerProvider, null);
     }
 
-    public GremlinGroovyScriptEngine(final ImportCustomizerProvider importCustomizerProvider, final SecurityCustomizerProvider securityCustomizerProvider) {
+    public GremlinGroovyScriptEngine(final ImportCustomizerProvider importCustomizerProvider,
+                                     final SecurityCustomizerProvider securityCustomizerProvider) {
+        this(importCustomizerProvider, securityCustomizerProvider, DEFAULT_SCRIPT_EVALUATION_TIMEOUT);
+    }
+
+    public GremlinGroovyScriptEngine(final ImportCustomizerProvider importCustomizerProvider,
+                                     final SecurityCustomizerProvider securityCustomizerProvider,
+                                     final long scriptEvaluationTimeout) {
         GremlinLoader.load();
         this.importCustomizerProvider = importCustomizerProvider;
         this.securityProvider = Optional.ofNullable(securityCustomizerProvider);
+        this.scriptEvaluationTimeout = scriptEvaluationTimeout;
         createClassLoader();
     }
 
@@ -458,6 +473,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
         if (this.securityProvider.isPresent())
             conf.addCompilationCustomizers(this.securityProvider.get().getCompilationCustomizer());
+
+        final Map<String,Object> annotationParams = new HashMap<>();
+        annotationParams.put("value", scriptEvaluationTimeout);
+        annotationParams.put("unit", GeneralUtils.propX(GeneralUtils.classX(TimeUnit.class), TimeUnit.MILLISECONDS.toString()));
+        conf.addCompilationCustomizers(new ASTTransformationCustomizer(annotationParams, TimedInterrupt.class));
+        conf.addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class));
 
         this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
         this.securityProvider.ifPresent(SecurityCustomizerProvider::registerInterceptors);

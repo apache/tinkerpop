@@ -29,6 +29,7 @@ import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
+import java.sql.Time;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,6 +38,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
@@ -206,7 +209,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         // then iterated in another.  note that Gremlin Server configures the script engine to auto-commit
         // after evaluation.  this basically tests the state of the Gremlin Server GremlinExecutor when
         // being used in sessionless mode
-        final ExecutorService evalExecutor = Executors.newSingleThreadExecutor(testingThreadFactory);
+        final ExecutorService evalExecutor = Executors.newFixedThreadPool(2, testingThreadFactory);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .afterSuccess(b -> {
                     final Graph graph = (Graph) b.get("g");
@@ -241,7 +244,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         // this test sort of simulates Gremlin Server interaction where a Traversal is eval'd in one Thread, but
         // then iterated in another.  this basically tests the state of the Gremlin Server GremlinExecutor when
         // being used in session mode
-        final ExecutorService evalExecutor = Executors.newSingleThreadExecutor(testingThreadFactory);
+        final ExecutorService evalExecutor = Executors.newFixedThreadPool(2, testingThreadFactory);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build().executorService(evalExecutor).create();
 
         final Map<String,Object> bindings = new HashMap<>();
@@ -308,9 +311,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
 
     @Test
     public void shouldNotExhaustThreads() throws Exception {
-        // this is not representative of how the GremlinExecutor should be configured.  A single thread executor
-        // shared will create odd behaviors, but it's good for this test.
-        final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(testingThreadFactory);
+        final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2, testingThreadFactory);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .executorService(executorService)
                 .scheduledExecutorService(executorService).create();
