@@ -1045,7 +1045,7 @@ Two trivial examples are presented below to demonstrate the *initial value suppl
 
 [gremlin-groovy,modern]
 ----
-g.V().withSack {1.0f}.sack()
+g.V().withSack(1.0f).sack()
 rand = new Random()
 g.V().withSack {rand.nextFloat()}.sack()
 ----
@@ -1054,9 +1054,9 @@ A more complicated initial value supplier example is presented below where the s
 
 [gremlin-groovy,modern]
 ----
-g.V().withSack {1.0f}.repeat(outE().sack(mult,'weight').inV()).times(2)
-g.V().withSack {1.0f}.repeat(outE().sack(mult,'weight').inV()).times(2).sack()
-g.V().withSack {1.0f}.repeat(outE().sack(mult,'weight').inV()).times(2).path().
+g.V().withSack(1.0f).repeat(outE().sack(mult,'weight').inV()).times(2)
+g.V().withSack(1.0f).repeat(outE().sack(mult,'weight').inV()).times(2).sack()
+g.V().withSack(1.0f).repeat(outE().sack(mult,'weight').inV()).times(2).path().
       by().by('weight')
 ----
 
