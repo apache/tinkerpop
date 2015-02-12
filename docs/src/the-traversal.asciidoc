@@ -54,7 +54,7 @@ image:map-lambda.png[width=150,float=right]
 [gremlin-groovy,modern]
 ----
 g.V(1).as('a').out() <1>
-g.V(1).as('a').out().map{it.path('a')} <2>
+g.V(1).as('a').out().map {it.path('a')} <2>
 g.V(1).as('a').out().back('a') <3>
 ----
 
@@ -215,14 +215,14 @@ The `by()`-step is not an actual step, but instead is a "step-modulator" similar
 
 [gremlin-groovy,modern]
 ----
-g.V().group().by(bothE().count())                              <1>
-g.V().group().by(bothE().count()).by('name')                   <2>
-g.V().group().by(bothE().count()).by('name').by{it.size()}     <3>
+g.V().group().by(bothE().count())                                  <1>
+g.V().group().by(bothE().count()).by('name')                       <2>
+g.V().group().by(bothE().count()).by('name').by(unfold().count())  <3>
 ----
 
 <1> `by(outE().count())` will group the elements by their edge count (*traversal*).
 <2> `by('name')` will process the grouped elements by their name (*element property projection*).
-<3> `by{it.size()}` will count the number of elements in each group (*function*).
+<3> `by(unfold().count())` will count the number of elements in each group (*traversal*).
 
 [[coalesce-step]]
 Coalesce Step
@@ -251,7 +251,7 @@ The `count()`-step (*map*) counts the total number of represented traversers in 
 g.V().count()
 g.V().hasLabel('person').count()
 g.V().hasLabel('person').outE('created').count().path()  <1>
-g.V().hasLabel('person').outE('created').count().map{it.get() * 10}.map{it.get() + 2}.path() <2>
+g.V().hasLabel('person').outE('created').count().map {it.get() * 10}.path() <2>
 ----
 
 <1> `count()`-step is a <<a-note-on-barrier-steps,reducing barrier step>> meaning that all of the previous traversers are folded into a new traverser.
@@ -268,17 +268,17 @@ The `choose()`-step (*branch*) routes the current traverser to a particular trav
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('person').
-      choose({it.value('name').length() == 5},
+      choose(values('age').is(lte, 30),
         __.in(),
         __.out()).values('name') <1>
 g.V().hasLabel('person').
-      choose {it.value('name').length()}.
-        option(5, __.in()).
-        option(4, __.out()).values('name') <2>
+      choose(values('age')).
+        option(27, __.in()).
+        option(32, __.out()).values('name') <2>
 ----
 
-<1> If the predicate is true, then do `in`, else do `out` (i.e. predicate-based option selection).
-<2> Use the result of the function as a key to the map of traversal options (i.e. function-based option selection).
+<1> If the traversal yields an element, then do `in`, else do `out` (i.e. true/false-based option selection).
+<2> Use the result of the traversal as a key to the map of traversal options (i.e. value-based option selection).
 
 However, note that `choose()` can have an arbitrary number of options and moreover, can take an anonymous traversal as its choice function.
 
@@ -346,8 +346,8 @@ If a lambda is provided to `dedup()`, then the object is processed by the lambda
 
 [gremlin-groovy,modern]
 ----
-g.V().values('name').map {[ it.get(), it.get().length() ]}
-g.V().values('name').dedup().by {it.length()}
+g.V().valueMap(true, 'name')
+g.V().dedup().by(label()).values('name')
 ----
 
 WARNING: The `dedup()`-step does not have a correlate in <<traversalvertexprogram,Gremlin OLAP>> when used mid-traversal. When in mid-traversal de-duplication only occurs at the the current processing vertex and thus, is not a global operation as it in Gremlin OLTP. When `dedup()` is an end step, the resultant traversers are de-duplicated by `TraverserMapReduce`.
@@ -396,14 +396,14 @@ As traversers propagate across a graph as defined by a traversal, sideEffect com
 
 [gremlin-groovy,modern]
 ----
-g.V().group().by {it.value('name')[1]} <1>
-g.V().group().by {it.value('name')[1]}.by('name') <2>
-g.V().group().by {it.value('name')[1]}.by('name').by {it.size()} <3>
+g.V().group().by(label()) <1>
+g.V().group().by(label()).by('name') <2>
+g.V().group().by(label()).by('name').by(unfold().count()) <3>
 ----
 
-<1> Group the vertices by the second letter of their name.
-<2> For each vertex in the group, get their name (now the name[1] is apparent).
-<3> For each grouping, what is it's size?
+<1> Group the vertices by their label.
+<2> For each vertex in the group, get their name.
+<3> For each grouping, what is its size?
 
 The three projection parameters available to `group()` via `by()` are:
 
@@ -437,7 +437,7 @@ image::groupcount-step.png[width=420]
 
 [gremlin-groovy,modern]
 ----
-g.V().repeat(both().groupCount('m').by {it.value('name')[1]}).times(10).cap('m')
+g.V().repeat(both().groupCount('m').by(label())).times(10).cap('m')
 ----
 
 The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount()` with a string variable. Given that `groupCount()` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount()`, the object's count is incremented. If `groupCount()` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount()` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount()`) can be accessed with `cap()`-step by referencing the desired variable.
@@ -481,7 +481,7 @@ It is also possible to filter any arbitrary object based on a anonymous traversa
 ----
 g.V().has(out('created')).values('name') <1>
 g.V().out('knows').has(out('created')).values('name') <2>
-g.V().has(out('created').limit(2).count().retain(2L)).values('name') <3>
+g.V().has(out('created').count().is(gte, 2L)).values('name') <3>
 g.V().has(out('knows').has(out('created'))).values('name') <4>
 ----
 
@@ -812,7 +812,7 @@ When the objects of the traversal stream need to be sorted, `order()`-step (*map
 ----
 g.V().values('name').order()
 g.V().values('name').order().by(decr)
-g.V().values('name').order().by {a,b -> a[1] <=> b[1]}
+g.V().hasLabel('person').order().by('age', incr).values('name')
 ----
 
 Note that `order()` takes a `Comparator` var args and thus, its possible to do secondary sorting. Secondary sorting is presented below along with the handy `Comparator.comparing()` method.
@@ -840,19 +840,21 @@ The `order()`-step allows the user to provide an arbitrary number of comparators
 
 [gremlin-groovy,modern]
 ----
-g.V().hasLabel('person').order().by('name') {a,b -> a[1] <=> b[1]}.
-                                  by('age',incr).values('name')
-g.V().hasLabel('person').order().by('name') {a,b -> a[1] <=> b[1]}.
-                                  by('age',decr).values('name')
+g.V().hasLabel('person').order().by(outE('created').count(), incr).
+                                 by('age', incr).values('name')
+g.V().hasLabel('person').order().by(outE('created').count(), incr).
+                                 by('age', decr).values('name')
 ----
 
 Randomizing the order of the traversers at a particular point in the traversal is possible with `Order.shuffle`.
 
 [gremlin-groovy]
 ----
-inject(1,2,3).map {it.get() * 2}
-inject(1,2,3).map {it.get() * 2}.order().by(shuffle)
-inject(1,2,3).map {it.get() * 2}.order().by(shuffle)
+inject((1..9).toList())
+inject((1..9).toList()).order(local).by(Order.shuffle)
+inject((1..9).toList()).order(local).by(Order.shuffle)
+inject(1..5).unfold()
+inject(1..5).unfold().order().by(Order.shuffle)
 ----
 
 [[path-step]]
@@ -991,13 +993,8 @@ The `emit()`-modulator can take an arbitrary predicate.
 
 [gremlin-groovy,modern]
 ----
-g.V(1).repeat(out()).times(2).
-       emit {it.get().property('lang').isPresent()}.path().by('name')
-g.V(1).repeat(out()).times(2).
-       emit(has('lang')).path().by('name') <1>
+g.V(1).repeat(out()).times(2).emit(has('lang')).path().by('name')
 ----
-
-<1> The same query, but using a traversal instead of a predicate.
 
 image::repeat-step.png[width=500]
 
@@ -1014,14 +1011,12 @@ Finally, note that both `emit()` and `until()` can take a traversal and in such,
 ----
 g.V(1).repeat(out()).until(hasLabel('software')).path().by('name') <1>
 g.V(1).emit(hasLabel('person')).repeat(out()).path().by('name') <2>
-g.V(1).repeat(out()).until(outE().count().retain(0L)).path().by('name') <3>
-g.V(1).repeat(out()).until {!it.get().outE().hasNext()}.path().by('name') <4>
+g.V(1).repeat(out()).until(outE().count().is(0L)).path().by('name') <3>
 ----
 
 <1> Starting from vertex 1, keep taking outgoing edges until a software vertex is reached.
 <2> Starting from vertex 1, and in an infinite loop, emit the vertex if it is a person and then traverser the outgoing edges.
 <3> Starting from vertex 1, keep taking outgoing edges until a vertex is reached that has no more outgoing edges.
-<4> The same as before, but using a predicate argument for `until()`.
 
 WARNING: The anonymous traversal of `emit()` and `until()` (not `repeat()`) process their current objects "locally." In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversals do not leave the confines of the vertex's star graph. In other words, they can not traverse to an adjacent vertex's properties or edges.
 
@@ -1133,10 +1128,10 @@ The second use case is best understood in terms of <<match-step,`match()`>>-step
 
 [gremlin-groovy,modern]
 ----
-g.V().range(0, 2).as('a').map{[b:1,c:2]} <1>
-g.V().range(0, 2).as('a').map{[b:1,c:2]}.select() <2>
-g.V().range(0, 2).as('a').map{[b:1,c:2]}.select('a','c') <3>
-g.V().range(0, 2).as('a').map{[b:1,c:2]}.select('c') <4>
+g.V().range(0, 2).as('a').map {[b:1,c:2]} <1>
+g.V().range(0, 2).as('a').map {[b:1,c:2]}.select() <2>
+g.V().range(0, 2).as('a').map {[b:1,c:2]}.select('a','c') <3>
+g.V().range(0, 2).as('a').map {[b:1,c:2]}.select('c') <4>
 ----
 
 <1> A contrived example to create a `Map<String,Object>` flow as a foundation for the examples to follow.
@@ -1265,7 +1260,7 @@ NOTE: The method `clock(int runs, Closure code)` is a utility preloaded in the <
 ----
 g.V().repeat(both().groupCount('m')).times(16).cap('m').order(local).by(valueDecr).next()
 clock(1) {g.V().repeat(both().groupCount('m')).times(16).cap('m').order(local).by(valueDecr).next()}
-g.V().repeat(timeLimit(2).both().groupCount('m')).times(16).cap('m')order(local).by(valueDecr).next()
+g.V().repeat(timeLimit(2).both().groupCount('m')).times(16).cap('m').order(local).by(valueDecr).next()
 clock(1) {g.V().repeat(timeLimit(2).both().groupCount('m')).times(16).cap('m').order(local).by(valueDecr).next()}
 ----
 
@@ -1316,7 +1311,7 @@ Note that `unfold()` does not recursively unroll iterators. Instead, `repeat()` 
 ----
 inject(1,[2,3,[4,5,[6]]])
 inject(1,[2,3,[4,5,[6]]]).unfold()
-inject(1,[2,3,[4,5,[6]]]).repeat(unfold()).until {!(it.get() instanceof List)}
+inject(1,[2,3,[4,5,[6]]]).repeat(unfold()).until(unfold().count().is(1l)).unfold()
 ----
 
 [[union-step]]
@@ -1429,7 +1424,7 @@ image:lambda.png[width=150,float=right] A link:http://en.wikipedia.org/wiki/Anon
 
 [gremlin-groovy,modern]
 ----
-g.V().filter{it.get().value('name') == 'marko'}.out('created').map {
+g.V().filter {it.get().value('name') == 'marko'}.out('created').map {
     it.get().value('name')
 } <1>
 g.V().has('name','marko').out('created').values('name') <2>
