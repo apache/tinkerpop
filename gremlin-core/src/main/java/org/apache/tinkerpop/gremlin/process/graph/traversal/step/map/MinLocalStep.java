@@ -41,7 +41,7 @@ public final class MinLocalStep<S> extends MapStep<S, Number> {
         if (start instanceof Number) {
             return (Number) start;
         } else if (start instanceof Collection) {
-            Number temp = Double.MIN_VALUE;
+            Number temp = Double.MAX_VALUE;
             for (final Number number : (Collection<Number>) start) {
                 if (number.doubleValue() < temp.doubleValue())
                     temp = number;
