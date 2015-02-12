@@ -182,6 +182,10 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().count();
     }
 
+    public default GraphTraversal<A, Long> count(final Scope scope) {
+        return this.start().count(scope);
+    }
+
     public default GraphTraversal<A, Double> sum() {
         return this.start().sum();
     }

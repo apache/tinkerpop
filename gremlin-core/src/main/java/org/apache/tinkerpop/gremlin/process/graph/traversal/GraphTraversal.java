@@ -55,7 +55,8 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.TimeLimi
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.BackStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CoalesceStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountGlobalStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountLocalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.FoldStep;
@@ -255,7 +256,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> order(final Scope scope) {
-        return scope.equals(Scope.local) ? this.asAdmin().addStep(new OrderLocalStep<>(this.asAdmin())) : this.asAdmin().addStep(new OrderGlobalStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new OrderGlobalStep<>(this.asAdmin()) : new OrderLocalStep<>(this.asAdmin()));
     }
 
     public default <E2> GraphTraversal<S, ? extends Property<E2>> properties(final String... propertyKeys) {
@@ -323,7 +324,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, Long> count() {
-        return this.asAdmin().addStep(new CountStep<>(this.asAdmin()));
+        return this.count(Scope.global);
+    }
+
+    public default GraphTraversal<S, Long> count(final Scope scope) {
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new CountGlobalStep<>(this.asAdmin()) : new CountLocalStep<>(this.asAdmin()));
     }
 
     public default GraphTraversal<S, Double> sum() {
@@ -741,7 +746,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
-    public default <V> GraphTraversal<S, E> by(final Traversal<?,?> traversal, final Comparator<V> endComparator) {
+    public default <V> GraphTraversal<S, E> by(final Traversal<?, ?> traversal, final Comparator<V> endComparator) {
         ((ComparatorHolder<E>) this.asAdmin().getEndStep()).addComparator(new TraversalComparator(traversal.asAdmin(), endComparator));
         return this;
     }

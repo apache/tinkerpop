@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Contains;
@@ -57,7 +57,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy impl
         Step prev = null;
         for (int i = 0; i < size; i++) {
             final Step curr = traversal.getSteps().get(i);
-            if (curr instanceof CountStep && i < size - 1) {
+            if (curr instanceof CountGlobalStep && i < size - 1) {
                 final Step next = traversal.getSteps().get(i + 1);
                 if (next instanceof IsStep && !(prev instanceof RangeStep)) { // if a RangeStep was provided, assume that the user knows what he's doing
                     final IsStep isStep = (IsStep) next;

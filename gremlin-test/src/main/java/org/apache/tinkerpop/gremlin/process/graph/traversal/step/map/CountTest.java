@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -46,6 +47,8 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX8X_count();
 
     public abstract Traversal<Vertex, Long> get_g_V_hasXnoX_count();
+
+    public abstract Traversal<Vertex, Long> get_g_V_fold_countXlocalX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -94,10 +97,28 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void g_V_hasXnoX_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_hasXnoX_count();
+        printTraversalForm(traversal);
+        assertEquals(new Long(0), traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void g_V_filterXfalseX_count() {
         final Traversal<Vertex, Long> traversal = get_g_V_hasXnoX_count();
         printTraversalForm(traversal);
         assertEquals(new Long(0), traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_fold_countXlocalX() {
+        final Traversal<Vertex, Long> traversal = get_g_V_fold_countXlocalX();
+        printTraversalForm(traversal);
+        assertEquals(new Long(6), traversal.next());
         assertFalse(traversal.hasNext());
     }
 
@@ -131,6 +152,11 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_hasXnoX_count() {
             return g.V().has("no").count();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
+            return g.V().fold().count(Scope.local);
         }
     }
 
@@ -168,6 +194,11 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_hasXnoX_count() {
             return g.V().has("no").count().submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
+            return g.V().fold().count(Scope.local); // todo -- fold
         }
     }
 }

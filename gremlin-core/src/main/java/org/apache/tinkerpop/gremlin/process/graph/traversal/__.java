@@ -212,6 +212,10 @@ public class __ {
         return __.<A>start().count();
     }
 
+    public static <A> GraphTraversal<A, Long> count(final Scope scope) {
+        return __.<A>start().count(scope);
+    }
+
     public static <A> GraphTraversal<A, Double> sum() {
         return __.<A>start().sum();
     }

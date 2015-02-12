@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `CountLocalStep` / `count(local)` for counting the objects in the current object container.
 * `TraversalComparator` exists which allows for `order().by(outE().count(),decr)`.
 * Apache refactoring: `com.tinkerpop` -> `org.apache.tinkerpop`.
 * `Traversal` is now `Serializable` and with 99% of queries no longer needing lambdas, Gremlin-Java works over the wire.

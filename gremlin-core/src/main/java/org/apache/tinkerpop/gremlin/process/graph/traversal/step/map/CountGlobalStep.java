@@ -33,11 +33,11 @@ import java.util.function.BiFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CountStep<S> extends ReducingBarrierStep<S, Long> implements Reducing<Long, Traverser<S>> {
+public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> implements Reducing<Long, Traverser<S>> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.BULK);
 
-    public CountStep(final Traversal.Admin traversal) {
+    public CountGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(new ConstantSupplier<>(0L));
         this.setBiFunction(CountBiFunction.<S>instance());

@@ -217,12 +217,12 @@ The `by()`-step is not an actual step, but instead is a "step-modulator" similar
 ----
 g.V().group().by(bothE().count())                                  <1>
 g.V().group().by(bothE().count()).by('name')                       <2>
-g.V().group().by(bothE().count()).by('name').by(unfold().count())  <3>
+g.V().group().by(bothE().count()).by('name').by(count(local))  <3>
 ----
 
 <1> `by(outE().count())` will group the elements by their edge count (*traversal*).
 <2> `by('name')` will process the grouped elements by their name (*element property projection*).
-<3> `by(unfold().count())` will count the number of elements in each group (*traversal*).
+<3> `by(count(local))` will count the number of elements in each group (*traversal*).
 
 [[coalesce-step]]
 Coalesce Step
@@ -256,6 +256,8 @@ g.V().hasLabel('person').outE('created').count().map {it.get() * 10}.path() <2>
 
 <1> `count()`-step is a <<a-note-on-barrier-steps,reducing barrier step>> meaning that all of the previous traversers are folded into a new traverser.
 <2> The path of the traverser emanating from `count()` starts at `count()`.
+
+IMPORTANT: `count(local)` counts the current, local object (not the objects in the traversal stream). This works for `Collection`- and `Map`-type objects. For any other object, a count of 1 is returned.
 
 [[choose-step]]
 Choose Step
@@ -380,6 +382,7 @@ g.V(1).out('knows').values('name').fold().next().getClass() <2>
 g.V(1).out('knows').values('name').fold(0) {a,b -> a + b.length()} <3>
 g.V().values('age').fold(0) {a,b -> a + b} <4>
 g.V().values('age').fold(0, sum) <5>
+g.V().values('age').sum() <6>
 ----
 
 <1> A parameterless `fold()` will aggregate all the objects into a list and then emit the list.
@@ -387,6 +390,7 @@ g.V().values('age').fold(0, sum) <5>
 <3> `fold()` can be provided two arguments --  a seed value and a reduce bi-function ("vadas" is 5 characters + "josh" with 4 characters).
 <4> What is the total age of the people in the graph?
 <5> The same as before, but using a built-in bi-function.
+<6> The same as before, but using the <<sum-step,`sum()`-step>>.
 
 [[group-step]]
 Group Step
@@ -398,7 +402,7 @@ As traversers propagate across a graph as defined by a traversal, sideEffect com
 ----
 g.V().group().by(label) <1>
 g.V().group().by(label).by('name') <2>
-g.V().group().by(label).by('name').by(unfold().count()) <3>
+g.V().group().by(label).by('name').by(count(local)) <3>
 ----
 
 <1> Group the vertices by their label.
@@ -815,18 +819,6 @@ g.V().values('name').order().by(decr)
 g.V().hasLabel('person').order().by('age', incr).values('name')
 ----
 
-Note that `order()` takes a `Comparator` var args and thus, its possible to do secondary sorting. Secondary sorting is presented below along with the handy `Comparator.comparing()` method.
-
-[gremlin-groovy,modern]
-----
-import static java.util.Comparator.*
-g.V().values('name').order().by(comparing {it[1]}) <1>
-g.V().values('name').order().by(comparing {it[1]}).by(comparing {it[2]}) <2>
-----
-
-<1> Order by the second letter.
-<2> Order by second letter and if a tie, the third letter.
-
 One of the most traversed objects in a traversal is an `Element`. An element can have properties associated with it (i.e. key/value pairs). In many situations, it is desirable to sort an element traversal stream according to a comparison of their properties.
 
 [gremlin-groovy,modern]
@@ -836,7 +828,7 @@ g.V().order().by('name',incr).values('name')
 g.V().order().by('name',decr).values('name')
 ----
 
-The `order()`-step allows the user to provide an arbitrary number of comparators for primary, secondary, etc. sorting. These comparators can be lambdas or they can be pre-defined enums (e.g. `Order.incr`). It is always best to use a pre-defined enum instead of a generic lambda as the underlying vendor may be able to optimize the execution when the comparator is inspectable.
+The `order()`-step allows the user to provide an arbitrary number of comparators for primary, secondary, etc. sorting. In the example below, the primary ordering is based on the outgoing created-edge count. The secondary ordering is based on the age of the person.
 
 [gremlin-groovy,modern]
 ----
@@ -848,14 +840,14 @@ g.V().hasLabel('person').order().by(outE('created').count(), incr).
 
 Randomizing the order of the traversers at a particular point in the traversal is possible with `Order.shuffle`.
 
-[gremlin-groovy]
+[gremlin-groovy,modern]
 ----
-inject((1..9).toList())
-inject((1..9).toList()).order(local).by(Order.shuffle)
-inject((1..9).toList()).order(local).by(Order.shuffle)
-inject(1..5).unfold()
-inject(1..5).unfold().order().by(Order.shuffle)
+g.V().hasLabel('person').order().by(shuffle)
+g.V().hasLabel('person').order().by(shuffle)
 ----
+
+IMPORTANT: `order(local)` orders the current, local object (not the objects in the traversal stream). This works for `Collection`- and `Map`-type objects. For any other object, the object is returned unchanged.
+
 
 [[path-step]]
 Path Step

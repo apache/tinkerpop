@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
+import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountTest
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -59,6 +59,11 @@ public abstract class GroovyCountTest {
         public Traversal<Vertex, Long> get_g_V_hasXnoX_count() {
             g.V.has('no').count
         }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
+            return g.V.fold.count(Scope.local);
+        }
     }
 
     public static class ComputerTest extends CountTest {
@@ -90,6 +95,11 @@ public abstract class GroovyCountTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_hasXnoX_count() {
             ComputerTestHelper.compute("g.V.has('no').count", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
+            g.V.fold.count(Scope.local);   // TODO: fold
         }
     }
 }

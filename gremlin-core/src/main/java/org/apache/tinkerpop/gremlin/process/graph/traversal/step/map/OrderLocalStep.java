@@ -48,13 +48,13 @@ public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Reversi
 
     @Override
     protected S map(final Traverser.Admin<S> traverser) {
-        final Object object = traverser.get();
-        if (object instanceof Collection)
-            return (S) OrderLocalStep.sortCollection((List) object, this.chainedComparator);
-        else if (object instanceof Map)
-            return (S) OrderLocalStep.sortMap((Map) object, this.chainedComparator);
+        final S start = traverser.get();
+        if (start instanceof Collection)
+            return (S) OrderLocalStep.sortCollection((List) start, this.chainedComparator);
+        else if (start instanceof Map)
+            return (S) OrderLocalStep.sortMap((Map) start, this.chainedComparator);
         else
-            throw new IllegalArgumentException("The provided object can not be ordered: " + object);
+            return start;
     }
 
     @Override
