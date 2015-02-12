@@ -43,9 +43,9 @@ public final class SumLocalStep<S> extends MapStep<S, Double> {
             for (final Number number : (Collection<Number>) start) {
                 sum = sum + number.doubleValue();
             }
-            return sum * traverser.bulk();
+            return sum;
         } else if (start instanceof Number) {
-            return ((Number) start).doubleValue() * traverser.bulk();
+            return ((Number) start).doubleValue();
         } else
             return Double.NaN;
     }
