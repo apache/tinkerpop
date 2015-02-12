@@ -33,6 +33,7 @@ import com.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import com.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import com.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import com.tinkerpop.gremlin.util.function.TreeSupplier;
 
 import java.util.List;
 import java.util.Set;
@@ -67,7 +68,7 @@ public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRe
     @Override
     public void registerSideEffects() {
         if (null == this.sideEffectKey) this.sideEffectKey = this.getId();
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, Tree::new);
+        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, TreeSupplier.instance());
     }
 
     @Override

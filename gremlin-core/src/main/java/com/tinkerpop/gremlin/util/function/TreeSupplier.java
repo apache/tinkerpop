@@ -16,43 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.tinkerpop.gremlin.util.iterator;
+package com.tinkerpop.gremlin.util.function;
 
-import com.tinkerpop.gremlin.process.FastNoSuchElementException;
+import com.tinkerpop.gremlin.process.graph.util.Tree;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ArrayIterator<T> implements Iterator<T>, Serializable {
+public final class TreeSupplier<A> implements Supplier<Tree<A>>, Serializable {
+    private static final TreeSupplier INSTANCE = new TreeSupplier();
 
-    private final T[] array;
-    private int current = 0;
-
-    public ArrayIterator(final T[] array) {
-        this.array = array;
+    private TreeSupplier() {
     }
 
     @Override
-    public boolean hasNext() {
-        return this.current < this.array.length;
+    public Tree<A> get() {
+        return new Tree<>();
     }
 
-    @Override
-    public T next() {
-        if (this.hasNext()) {
-            this.current++;
-            return this.array[this.current - 1];
-        } else {
-            throw FastNoSuchElementException.instance();
-        }
-    }
-
-    @Override
-    public String toString() {
-        return Arrays.asList(array).toString();
+    public static <A> TreeSupplier<A> instance() {
+        return INSTANCE;
     }
 }

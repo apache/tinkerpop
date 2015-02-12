@@ -19,6 +19,8 @@
 package com.tinkerpop.gremlin.process.computer.util;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.FeatureRequirement;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.strategy.StrategyGraph;
@@ -37,6 +39,7 @@ import static org.junit.Assert.*;
 public class ComputerDataStrategyTest extends AbstractGremlinTest {
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldFilterHiddenProperties() {
         final StrategyGraph sg = g.strategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
 
@@ -53,6 +56,7 @@ public class ComputerDataStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldAccessHiddenProperties() {
         final StrategyGraph sg = g.strategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
 
@@ -69,6 +73,7 @@ public class ComputerDataStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldHideHiddenKeys() {
         final StrategyGraph sg = g.strategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
 
