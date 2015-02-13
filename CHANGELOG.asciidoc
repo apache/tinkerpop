@@ -25,6 +25,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `TraversalStrategy.apply(traversal)` is the new method signature as the `TraversalEngine` can be retrieved from the `Traversal`.
+* `TraversalEngine` is now an interface and provided by the graph to the traversal at construction. `Graph` methods added to set the desired traversal engine to use.
 * Added `count(local)`, `sum(local)`, `max(local)`, `min(local)`, and `mean(local)` operating on the local object (e.g. collection, map, etc.)
 * `TraversalComparator` exists which allows for `order().by(outE().count(),decr)`.
 * Added Apache Rat plugin to detect the proper inclusion of license headers in files.
