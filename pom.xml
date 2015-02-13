@@ -213,14 +213,14 @@ limitations under the License.
                 <configuration>
                     <excludeSubProjects>false</excludeSubProjects>
                     <excludes>
-                        <exclude>docs/**</exclude>
+                        <exclude>docs/static/**</exclude>
+                        <exclude>docs/stylesheets/**</exclude>
                         <exclude>**/target/**</exclude>
                         <exclude>**/*.gio</exclude>
                         <exclude>**/*.iml</exclude>
                         <exclude>**/*.json</exclude>
                         <exclude>**/*.xml</exclude>
                         <exclude>**/*.ldjson</exclude>
-                        <exclude>**/*.asciidoc</exclude>
                         <exclude>.travis.yml</exclude>
                         <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/tinkerpop-classic.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
