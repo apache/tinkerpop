@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -97,7 +96,7 @@ public abstract class TraversalVerificationStrategyTest extends AbstractGremlinP
         }
 
         @Test
-        @Ignore
+        @Ignore("Something is eating the exception...")
         @LoadGraphWith(MODERN)
         public void shouldNotAllowLocalTraversalsToLeaveTheStarGraphOnComputer() {
             try {

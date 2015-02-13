@@ -77,7 +77,7 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
             try {
                 final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this.getTraversal()).create();
                 populateTraversers(this.graphComputer.program(vertexProgram).submit().get());
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             this.first = false;
@@ -123,9 +123,5 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return EnumSet.of(TraverserRequirement.OBJECT);
-    }
-
-    public Traversal.Admin<?, ?> getComputerTraversal() {
-        return this.getTraversal();
     }
 }

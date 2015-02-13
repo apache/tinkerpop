@@ -124,9 +124,7 @@ public abstract class RangeByIsCountStrategyTest extends AbstractGremlinProcessT
         public void nestedCountEqualsNullShouldLimitToOne() {
             final AtomicInteger counter = new AtomicInteger(0);
             final Traversal traversal = g.V().has(__.outE("created").count().is(0)).iterate();
-            final ComputerResultStep crs = (ComputerResultStep) traversal.asAdmin().getEndStep();
-            final Traversal ct = crs.getComputerTraversal();
-            final HasTraversalStep hasStep = TraversalHelper.getStepsOfClass(HasTraversalStep.class, ct.asAdmin()).stream().findFirst().get();
+            final HasTraversalStep hasStep = TraversalHelper.getStepsOfClass(HasTraversalStep.class, traversal.asAdmin()).stream().findFirst().get();
             final Traversal nestedTraversal = (Traversal) hasStep.getLocalChildren().get(0);
             TraversalHelper.getStepsOfClass(RangeStep.class, nestedTraversal.asAdmin()).stream().forEach(step -> {
                 assertEquals(0, step.getLowRange());

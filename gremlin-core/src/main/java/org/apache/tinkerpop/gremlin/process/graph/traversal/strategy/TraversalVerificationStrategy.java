@@ -20,13 +20,12 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Optional;
@@ -49,7 +48,7 @@ public final class TraversalVerificationStrategy extends AbstractTraversalStrate
         Step<?, ?> endStep = traversal.getEndStep() instanceof ComputerAwareStep.EndStep ?
                 ((ComputerAwareStep.EndStep) traversal.getEndStep()).getPreviousStep() :
                 traversal.getEndStep();
-        if(endStep instanceof ComputerResultStep)
+        if (endStep instanceof ComputerResultStep)        // TODO: this is not needed anymore (delete when you prove it)
             endStep = endStep.getPreviousStep();
 
         for (final Step<?, ?> step : traversal.getSteps()) {

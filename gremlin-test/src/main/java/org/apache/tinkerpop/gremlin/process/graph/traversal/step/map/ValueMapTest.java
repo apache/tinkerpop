@@ -109,7 +109,6 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore
     @LoadGraphWith(MODERN)
     public void g_VX1X_outXcreatedX_valueMap() {
         final Traversal<Vertex, Map<String, List<String>>> traversal = get_g_VX1X_outXcreatedX_valueMap(convertToVertexId("marko"));
