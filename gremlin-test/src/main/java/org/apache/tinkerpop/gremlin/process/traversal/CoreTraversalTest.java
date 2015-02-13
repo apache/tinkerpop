@@ -209,7 +209,6 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         g.tx().rollback();
     }
 
-    @org.junit.Ignore
     @Test
     @LoadGraphWith(GRATEFUL)
     public void shouldTimeoutOnTraversalWhereIterateHasStarted() throws Exception {
@@ -226,7 +225,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
         t.start();
 
-        Thread.sleep(1000);
+        Thread.sleep(500);
         t.interrupt();
         t.join();
 
@@ -249,14 +248,13 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
         t.start();
 
-        Thread.sleep(1000);
+        Thread.sleep(500);
         t.interrupt();
         t.join();
 
         assertTrue(interrupted.get());
     }
 
-    @org.junit.Ignore
     @Test
     @LoadGraphWith(GRATEFUL)
     public void shouldTimeoutOnTraversalWhereNextingStarted() throws Exception {
@@ -267,13 +265,14 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
                 g.V().out().out().out().out().out().out().out().out().out().out().out().next(Integer.MAX_VALUE);
                 fail("No way this should have completed in any reasonable time");
             } catch (Exception ex) {
+                ex.printStackTrace();
                 interrupted.set(ex.getClass().equals(TraversalInterruptedException.class));
             }
         });
 
         t.start();
 
-        Thread.sleep(1000);
+        Thread.sleep(500);
         t.interrupt();
         t.join();
 
@@ -296,7 +295,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
         t.start();
 
-        Thread.sleep(1000);
+        Thread.sleep(500);
         t.interrupt();
         t.join();
 

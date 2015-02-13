@@ -20,21 +20,31 @@ package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.util.InterruptedRuntimeException;
 
+import java.util.Optional;
+
 /**
  * An unchecked exception thrown when the current thread processing a {@link Traversal} is interrupted.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class TraversalInterruptedException extends InterruptedRuntimeException {
-    private final Traversal interruptedTraversal;
+    private final Optional<Traversal> interruptedTraversal;
 
-    public TraversalInterruptedException(final Traversal interruptedTraversal) {
-        super(String.format("The %s thread received interruption notification while iterating %s - it did not complete",
-                Thread.currentThread().getName(), interruptedTraversal));
-        this.interruptedTraversal = interruptedTraversal;
+    public TraversalInterruptedException(final Throwable t) {
+        this(null, t);
     }
 
-    public Traversal getInterruptedTraversal() {
+    public TraversalInterruptedException(final Traversal interruptedTraversal) {
+        this(interruptedTraversal, null);
+    }
+
+    public TraversalInterruptedException(final Traversal interruptedTraversal, final Throwable cause) {
+        super(String.format("The %s thread received interruption notification while iterating %s - it did not complete",
+                Thread.currentThread().getName(), null == interruptedTraversal ? "" : interruptedTraversal), cause);
+        this.interruptedTraversal = Optional.ofNullable(interruptedTraversal);
+    }
+
+    public Optional<Traversal> getInterruptedTraversal() {
         return interruptedTraversal;
     }
 }
