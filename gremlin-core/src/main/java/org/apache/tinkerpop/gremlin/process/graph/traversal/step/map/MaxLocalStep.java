@@ -22,14 +22,13 @@ import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MaxLocalStep<S> extends MapStep<S, Number> {
+public final class MaxLocalStep<S> extends LocalAggregateStep<S, Number> {
 
     public MaxLocalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -37,23 +36,7 @@ public final class MaxLocalStep<S> extends MapStep<S, Number> {
 
     @Override
     protected Number map(final Traverser.Admin<S> traverser) {
-        final S start = traverser.get();
-        if (start instanceof Number) {
-            return (Number) start;
-        } else if (start instanceof Collection) {
-            Number temp = Double.MIN_VALUE;
-            for (final Number number : (Collection<Number>) start) {
-                if (number.doubleValue() > temp.doubleValue())
-                    temp = number;
-            }
-            return temp;
-        } else
-            return Double.NaN;
-    }
-
-
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.OBJECT);
+        return this.<Number>collect(traverser).stream().mapToDouble(Number::doubleValue).max()
+                .orElseGet(() -> Double.NaN);
     }
 }

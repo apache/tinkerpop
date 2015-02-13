@@ -20,16 +20,11 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SumLocalStep<S> extends MapStep<S, Double> {
+public final class SumLocalStep<S> extends LocalAggregateStep<S, Double> {
 
     public SumLocalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -37,21 +32,6 @@ public final class SumLocalStep<S> extends MapStep<S, Double> {
 
     @Override
     protected Double map(final Traverser.Admin<S> traverser) {
-        final S start = traverser.get();
-        if (start instanceof Collection) {
-            double sum = 0.0d;
-            for (final Number number : (Collection<Number>) start) {
-                sum = sum + number.doubleValue();
-            }
-            return sum;
-        } else if (start instanceof Number) {
-            return ((Number) start).doubleValue();
-        } else
-            return Double.NaN;
-    }
-
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.OBJECT);
+        return this.<Number>collect(traverser).stream().mapToDouble(Number::doubleValue).sum();
     }
 }
