@@ -42,8 +42,8 @@ public final class TraversalVerificationStrategy extends AbstractTraversalStrate
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
-        if (engine.isStandard())
+    public void apply(final Traversal.Admin<?, ?> traversal) {
+        if (traversal.getEngine().isStandard())
             return;
 
         Step<?, ?> endStep = traversal.getEndStep() instanceof ComputerAwareStep.EndStep ?

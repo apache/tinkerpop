@@ -74,7 +74,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     public void applyStrategies() throws IllegalStateException {
         if (this.locked) throw Traversal.Exceptions.traversalIsLocked();
         TraversalHelper.reIdSteps(this.stepPosition, this);
-        this.strategies.applyStrategies(this, this.traversalEngine);
+        this.strategies.applyStrategies(this);
         for (final Step<?, ?> step : this.getSteps()) {
             if (step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {

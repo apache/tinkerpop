@@ -43,7 +43,7 @@ public final class DedupOptimizerStrategy extends AbstractTraversalStrategy {
     private static final List<Class<? extends Step>> BIJECTIVE_PIPES = Arrays.asList(IdentityStep.class, OrderGlobalStep.class);
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal) {
         if (!TraversalHelper.hasStepOfClass(DedupStep.class, traversal))
             return;
 

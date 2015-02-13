@@ -40,7 +40,7 @@ public final class SideEffectRegistrationStrategy extends AbstractTraversalStrat
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal) {
         TraversalHelper.getStepsOfAssignableClass(SideEffectRegistrar.class, traversal).forEach(SideEffectRegistrar::registerSideEffects);
     }
 

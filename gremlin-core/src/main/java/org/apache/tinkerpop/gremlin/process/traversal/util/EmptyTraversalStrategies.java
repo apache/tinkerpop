@@ -44,7 +44,7 @@ public final class EmptyTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public void applyStrategies(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
+    public void applyStrategies(final Traversal.Admin<?, ?> traversal) {
 
     }
 

@@ -49,7 +49,7 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy implemen
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal) {
         if (!TraversalHelper.hasStepOfClass(MatchStep.class, traversal))
             return;
 

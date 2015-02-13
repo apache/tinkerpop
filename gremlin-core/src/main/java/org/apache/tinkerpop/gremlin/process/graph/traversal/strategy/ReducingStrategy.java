@@ -37,8 +37,8 @@ public final class ReducingStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
-        if (engine.isStandard())
+    public void apply(final Traversal.Admin<?, ?> traversal) {
+        if (traversal.getEngine().isStandard())
             return;
 
         final Step endStep = traversal.getEndStep();

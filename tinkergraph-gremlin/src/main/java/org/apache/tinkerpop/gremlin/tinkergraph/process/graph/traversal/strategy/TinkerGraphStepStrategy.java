@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strateg
 
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.IdentityStep;
@@ -39,8 +38,8 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
-        if (engine.isComputer())
+    public void apply(final Traversal.Admin<?, ?> traversal) {
+        if (traversal.getEngine().isComputer())
             return;
 
         final Step<?, ?> startStep = traversal.getStartStep();
