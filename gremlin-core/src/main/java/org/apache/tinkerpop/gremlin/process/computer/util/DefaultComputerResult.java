@@ -37,7 +37,6 @@ public class DefaultComputerResult implements ComputerResult {
 
     public DefaultComputerResult(final Graph graph, final Memory memory) {
         this.graph = graph;
-        this.graph.engine(StandardTraversalEngine.instance());
         this.memory = memory;
     }
 

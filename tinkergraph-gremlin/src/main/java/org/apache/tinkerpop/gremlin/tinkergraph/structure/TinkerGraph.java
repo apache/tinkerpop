@@ -163,8 +163,8 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public void engine(final TraversalEngine engine) {
-        this.engine = engine;
+    public void engine(final TraversalEngine traversalEngine) {
+        this.engine = traversalEngine;
         this.engine.setGraph(this);
     }
 

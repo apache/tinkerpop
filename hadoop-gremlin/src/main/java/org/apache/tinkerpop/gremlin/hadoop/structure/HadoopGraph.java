@@ -175,8 +175,9 @@ public class HadoopGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public void engine(final TraversalEngine engine) {
-        this.traversalEngine = engine;
+    public void engine(final TraversalEngine traversalEngine) {
+        this.traversalEngine = traversalEngine;
+        this.traversalEngine.setGraph(this);
     }
 
 

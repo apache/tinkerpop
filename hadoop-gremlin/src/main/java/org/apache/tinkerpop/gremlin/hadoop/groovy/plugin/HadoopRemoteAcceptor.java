@@ -18,19 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.groovy.engine.GroovyTraversalScript;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.FileConfiguration;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
 import java.io.File;
@@ -105,9 +104,8 @@ public class HadoopRemoteAcceptor implements RemoteAcceptor {
             final ComputerResult computerResult = traversal.result().get();
             this.shell.getInterp().getContext().setProperty(RESULT, computerResult);
 
-            final GraphTraversal.Admin traversal2 = new DefaultGraphTraversal<>(Graph.class);
-            final ComputerResultStep computerResultStep = new ComputerResultStep(traversal2,null,false);
-            computerResultStep.populateTraversers(computerResult);
+            final GraphTraversal.Admin<?, ?> traversal2 = new DefaultGraphTraversal<>(Graph.class);
+            traversal2.addStep(new ComputerResultStep<>(traversal2, computerResult, false));
             traversal2.range(0, 19);
             return traversal2;
         } catch (Exception e) {

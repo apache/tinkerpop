@@ -134,8 +134,8 @@ public class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, W
     }
 
     @Override
-    public void engine(final TraversalEngine engine) {
-        this.baseGraph.engine(engine);
+    public void engine(final TraversalEngine traversalEngine) {
+        this.baseGraph.engine(traversalEngine);
     }
 
     @Override

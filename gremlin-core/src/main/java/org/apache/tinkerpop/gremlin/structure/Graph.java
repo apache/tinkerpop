@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.io.DefaultIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
@@ -179,10 +180,23 @@ public interface Graph extends AutoCloseable {
      */
     public GraphComputer compute(final Class... graphComputerClass);
 
+    /**
+     * Get the declared {@link TraversalEngine} used by all {@link Traversal}s spawned from the graph or its elements.
+     *
+     * @return the current {@link TraversalEngine}
+     */
     public TraversalEngine engine();
 
-    public void engine(final TraversalEngine engine);
+    /**
+     * Set the {@link TraversalEngine} to use for all {@link Traversal}s spawned off the graph or its elements.
+     *
+     * @param traversalEngine the new traversal engine to use.
+     */
+    public void engine(final TraversalEngine traversalEngine);
 
+    /* TODO ?? public default void standard() {
+        this.engine(StandardTraversalEngine.instance());
+    }*/
 
     /**
      * Configure and control the transactions for those graphs that support this feature.

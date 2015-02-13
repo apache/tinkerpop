@@ -258,9 +258,9 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     }
 
     @Override
-    public void engine(final TraversalEngine engine) {
-        if (!engine.getClass().equals(StandardTraversalEngine.class))
-            throw new IllegalArgumentException("The provided traversal engine is not supported by this graph: " + engine.getClass().getCanonicalName());
+    public void engine(final TraversalEngine traversalEngine) {
+        if (!traversalEngine.getClass().equals(StandardTraversalEngine.class))
+            throw new IllegalArgumentException("The provided traversal engine is not supported by this graph: " + traversalEngine.getClass().getCanonicalName());
     }
 
     @Override

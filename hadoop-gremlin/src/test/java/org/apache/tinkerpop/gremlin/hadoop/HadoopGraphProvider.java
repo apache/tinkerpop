@@ -96,6 +96,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName) {
         return new HashMap<String, Object>() {{
+            put("computer", test.getSimpleName().contains("Computer")); // TODO: REMOVE!
             put("gremlin.graph", HadoopGraph.class.getName());
             put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, KryoInputFormat.class.getCanonicalName());
             put(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, KryoOutputFormat.class.getCanonicalName());

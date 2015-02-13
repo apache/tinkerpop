@@ -52,7 +52,7 @@ public class TinkerGraphGraphProvider extends AbstractGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName) {
         return new HashMap<String, Object>() {{
-            put("computer", test.getSimpleName().contains("Computer"));
+            put("computer", test.getSimpleName().contains("Computer")); // TODO: REMOVE!
             put(Graph.GRAPH, TinkerGraph.class.getName());
         }};
     }

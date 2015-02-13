@@ -261,7 +261,7 @@ public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
     }
 
     @Override
-    public void engine(final TraversalEngine engine) {
+    public void engine(final TraversalEngine traversalEngine) {
 
     }
 

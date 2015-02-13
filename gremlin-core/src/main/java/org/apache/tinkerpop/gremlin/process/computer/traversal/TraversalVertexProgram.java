@@ -108,10 +108,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             throw new IllegalArgumentException("The configuration does not have a traversal supplier");
         }
         this.traversal = this.traversalSupplier.get().get();
-        if (!this.traversal.isLocked())
-            this.traversal.applyStrategies();
-
-        ((ComputerResultStep) this.traversal.getEndStep()).asIdentity = true;
+        if (!this.traversal.isLocked()) this.traversal.applyStrategies();
+        ((ComputerResultStep) this.traversal.getEndStep()).byPass();
         this.traversalMatrix = new TraversalMatrix<>(this.traversal);
         for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecurssively(MapReducer.class, this.traversal)) {
             this.mapReducers.add(mapReducer.getMapReduce());

@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -161,7 +163,11 @@ public abstract class AbstractGremlinTest {
 
     public Vertex convertToVertex(final Graph g, final String vertexName) {
         // all test graphs have "name" as a unique id which makes it easy to hardcode this...works for now
-        return g.V().has("name", vertexName).next();
+        final TraversalEngine temp = g.engine();
+        g.engine(StandardTraversalEngine.instance());
+        final Vertex vertex = g.V().has("name", vertexName).next();
+        g.engine(temp);
+        return vertex;
     }
 
     public Object convertToEdgeId(final String outVertexName, String edgeLabel, final String inVertexName) {
@@ -169,7 +175,11 @@ public abstract class AbstractGremlinTest {
     }
 
     public Object convertToEdgeId(final Graph g, final String outVertexName, String edgeLabel, final String inVertexName) {
-        return g.V().has("name", outVertexName).outE(edgeLabel).as("e").inV().has("name", inVertexName).<Edge>back("e").next().id();
+        final TraversalEngine temp = g.engine();
+        g.engine(StandardTraversalEngine.instance());
+        final Object edgeId = g.V().has("name", outVertexName).outE(edgeLabel).as("e").inV().has("name", inVertexName).<Edge>back("e").next().id();
+        g.engine(temp);
+        return edgeId;
     }
 
     /**

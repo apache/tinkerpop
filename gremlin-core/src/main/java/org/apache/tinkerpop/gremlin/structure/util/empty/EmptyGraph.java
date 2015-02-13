@@ -81,7 +81,7 @@ public final class EmptyGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public void engine(final TraversalEngine engine) {
+    public void engine(final TraversalEngine traversalEngine) {
 
     }
 

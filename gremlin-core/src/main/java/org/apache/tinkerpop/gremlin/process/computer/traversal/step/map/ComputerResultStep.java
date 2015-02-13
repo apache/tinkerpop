@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SideEffectCapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -46,25 +47,33 @@ import java.util.Set;
 public final class ComputerResultStep<S> extends AbstractStep<S, S> {
 
     private final transient GraphComputer graphComputer;
+    private final transient ComputerResult computerResult;
 
     private Iterator<Traverser.Admin<S>> traversers;
     private Graph graph;
     private final boolean attachElements; // should be part of graph computer with "propagate properties"
-    public boolean first = true;
-    public boolean asIdentity = false;
+    private boolean first = true;
+    private boolean byPass = false;
 
     public ComputerResultStep(final Traversal.Admin traversal, final GraphComputer graphComputer, final boolean attachElements) {
         super(traversal);
         this.attachElements = attachElements;
         this.graphComputer = graphComputer;
+        this.computerResult = null;
+    }
+
+    public ComputerResultStep(final Traversal.Admin traversal, final ComputerResult computerResult, final boolean attachElements) {
+        super(traversal);
+        this.attachElements = attachElements;
+        this.graphComputer = null;
+        this.computerResult = computerResult;
+        this.populateTraversers(this.computerResult);
     }
 
     @Override
     public Traverser<S> processNextStart() {
-        if (this.asIdentity) {
-            return this.starts.next();
-        }
-        if (this.first) {
+        if (this.byPass) return this.starts.next();
+        if (this.first && null == this.computerResult) {
             try {
                 final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this.getTraversal()).create();
                 populateTraversers(this.graphComputer.program(vertexProgram).submit().get());
@@ -82,6 +91,7 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
 
     public void populateTraversers(final ComputerResult result) {
         this.graph = result.graph();
+        this.graph.engine(StandardTraversalEngine.instance());
         result.memory().keys().forEach(key -> this.getTraversal().getSideEffects().set(key, result.memory().get(key)));
         final Step endStep = this.getPreviousStep();
         if (endStep instanceof SideEffectCapStep) {
@@ -99,6 +109,10 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
             this.traversers = result.memory().get(TraverserMapReduce.TRAVERSERS);
         }
         this.first = false;
+    }
+
+    public void byPass() {
+        this.byPass = true;
     }
 
     @Override
