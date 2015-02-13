@@ -18,8 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.engine;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import org.apache.tinkerpop.gremlin.process.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.javatuples.Pair;
@@ -44,6 +46,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -85,7 +88,7 @@ public class GremlinExecutor implements AutoCloseable {
     private final Consumer<Bindings> beforeEval;
     private final Consumer<Bindings> afterSuccess;
     private final Consumer<Bindings> afterTimeout;
-    private final BiConsumer<Bindings, Exception> afterFailure;
+    private final BiConsumer<Bindings, Throwable> afterFailure;
     private final Set<String> enabledPlugins;
     private final boolean suppliedExecutor;
     private final boolean suppliedScheduledExecutor;
@@ -94,7 +97,7 @@ public class GremlinExecutor implements AutoCloseable {
                             final long scriptEvaluationTimeout, final Bindings globalBindings,
                             final ExecutorService executorService, final ScheduledExecutorService scheduledExecutorService,
                             final Consumer<Bindings> beforeEval, final Consumer<Bindings> afterSuccess,
-                            final Consumer<Bindings> afterTimeout, final BiConsumer<Bindings, Exception> afterFailure,
+                            final Consumer<Bindings> afterTimeout, final BiConsumer<Bindings, Throwable> afterFailure,
                             final Set<String> enabledPlugins, final boolean suppliedExecutor, final boolean suppliedScheduledExecutor) {
         this.executorService = executorService;
         this.scheduledExecutorService = scheduledExecutorService;
@@ -143,36 +146,61 @@ public class GremlinExecutor implements AutoCloseable {
 
         logger.debug("Preparing to evaluate script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
-        // select the gremlin threadpool to execute the script evaluation in
-        final AtomicBoolean abort = new AtomicBoolean(false);
-        final CompletableFuture<Object> evaluationFuture = CompletableFuture.supplyAsync(() -> {
+        final Bindings bindings = new SimpleBindings();
+        bindings.putAll(this.globalBindings);
+        bindings.putAll(boundVars);
+        beforeEval.accept(bindings);
 
-            final Bindings bindings = new SimpleBindings();
-            bindings.putAll(this.globalBindings);
-            bindings.putAll(boundVars);
-
+        final CompletableFuture<Object> evaluationFuture = new CompletableFuture<>();
+        final FutureTask<Void> f = new FutureTask<>(() -> {
             try {
                 logger.debug("Evaluating script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
-                beforeEval.accept(bindings);
                 final Object o = scriptEngines.eval(script, bindings, lang);
 
-                if (abort.get())
-                    afterTimeout.accept(bindings);
-                else
-                    afterSuccess.accept(bindings);
+                afterSuccess.accept(bindings);
 
                 // apply a transformation before sending back the result - useful when trying to force serialization
-                // in the same thread that the eval took place given threadlocal nature of graphs as well as some
+                // in the same thread that the eval took place given ThreadLocal nature of graphs as well as some
                 // transactional constraints
-                return null == transformResult ? o : transformResult.apply(o);
+                evaluationFuture.complete(null == transformResult ? o : transformResult.apply(o));
             } catch (Exception ex) {
-                afterFailure.accept(bindings, ex);
-                throw new RuntimeException(ex);
-            }
-        }, executorService);
+                final Throwable root = ExceptionUtils.getRootCause(ex);
 
-        scheduleTimeout(evaluationFuture, script, abort);
+                // thread interruptions will typically come as the result of a timeout, so in those cases,
+                // check for that situation and convert to TimeoutException
+                if (root.getClass().equals(InterruptedException.class)
+                        || root.getClass().equals(TraversalInterruptedException.class))
+                    evaluationFuture.completeExceptionally(new TimeoutException(
+                            String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]: %s", scriptEvaluationTimeout, script, root.getMessage())));
+                else {
+                    afterFailure.accept(bindings, root);
+                    evaluationFuture.completeExceptionally(root);
+                }
+            }
+
+            return null;
+        });
+
+        executorService.execute(f);
+
+        if (scriptEvaluationTimeout > 0) {
+            // Schedule a timeout in the thread pool for future execution
+            final ScheduledFuture<?> sf = scheduledExecutorService.schedule(() -> {
+                logger.info("Timing out script - {} - in thread [{}]", script, Thread.currentThread().getName());
+                if (!f.isDone()) {
+                    afterTimeout.accept(bindings);
+                    f.cancel(true);
+                }
+            }, scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
+
+            // Cancel the scheduled timeout if the eval future is complete or the script evaluation failed
+            // with exception
+            evaluationFuture.handleAsync((v, t) -> {
+                logger.debug("Killing scheduled timeout on script evaluation as the eval completed (possibly with exception).");
+                return sf.cancel(true);
+            });
+        }
 
         return evaluationFuture;
     }
@@ -244,28 +272,6 @@ public class GremlinExecutor implements AutoCloseable {
         }, "gremlin-executor-close").start();
 
         return future;
-    }
-
-    private void scheduleTimeout(final CompletableFuture<Object> evaluationFuture, final String script, final AtomicBoolean abort) {
-        if (scriptEvaluationTimeout > 0) {
-            // Schedule a timeout in the threadpool for future execution - killing an eval is cheap
-            final ScheduledFuture<?> sf = scheduledExecutorService.schedule(() -> {
-                logger.info("Timing out script - {} - in thread [{}]", script, Thread.currentThread().getName());
-
-                if (!evaluationFuture.isDone()) {
-                    abort.set(true);
-                    evaluationFuture.completeExceptionally(new TimeoutException(
-                            String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]", scriptEvaluationTimeout, script)));
-                }
-            }, scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
-
-            // Cancel the scheduled timeout if the eval future is complete or the script evaluation failed
-            // with exception
-            evaluationFuture.handleAsync((v, t) -> {
-                logger.debug("Killing scheduled timeout on script evaluation as the eval completed (possibly with exception).");
-                return sf.cancel(true);
-            });
-        }
     }
 
     private ScriptEngines createScriptEngines() {
@@ -372,7 +378,7 @@ public class GremlinExecutor implements AutoCloseable {
         };
         private Consumer<Bindings> afterTimeout = (b) -> {
         };
-        private BiConsumer<Bindings, Exception> afterFailure = (b, e) -> {
+        private BiConsumer<Bindings, Throwable> afterFailure = (b, e) -> {
         };
         private List<List<String>> use = new ArrayList<>();
         private Bindings globalBindings = new SimpleBindings();
@@ -470,7 +476,7 @@ public class GremlinExecutor implements AutoCloseable {
         /**
          * A {@link Consumer} to execute in the event of failure.
          */
-        public Builder afterFailure(final BiConsumer<Bindings, Exception> afterFailure) {
+        public Builder afterFailure(final BiConsumer<Bindings, Throwable> afterFailure) {
             this.afterFailure = afterFailure;
             return this;
         }

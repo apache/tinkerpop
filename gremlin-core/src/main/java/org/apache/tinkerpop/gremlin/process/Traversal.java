@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.util.InterruptedRuntimeException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -111,6 +112,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
         final List<E> result = new ArrayList<>();
         int counter = 0;
         while (counter++ < amount && this.hasNext()) {
+            if (Thread.interrupted()) throw new TraversalInterruptedException(this);
             result.add(this.next());
         }
         return result;
@@ -157,6 +159,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
             // use the end step so the results are bulked
             final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
+                if (Thread.interrupted()) throw new TraversalInterruptedException(this);
                 final Traverser<E> traverser = endStep.next();
                 TraversalHelper.addToCollection(collection, traverser.get(), traverser.bulk());
             }
@@ -179,6 +182,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
             // use the end step so the results are bulked
             final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
+                if (Thread.interrupted()) throw new TraversalInterruptedException(this);
                 endStep.next();
             }
         } catch (final NoSuchElementException ignored) {
@@ -197,7 +201,20 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
     public default <E2> void forEachRemaining(final Class<E2> endType, final Consumer<E2> consumer) {
         try {
             while (true) {
+                if (Thread.interrupted()) throw new TraversalInterruptedException(this);
                 consumer.accept((E2) next());
+            }
+        } catch (final NoSuchElementException ignore) {
+
+        }
+    }
+
+    @Override
+    public default void forEachRemaining(final Consumer<? super E> action) {
+        try {
+            while (true) {
+                if (Thread.interrupted()) throw new TraversalInterruptedException(this);
+                action.accept(next());
             }
         } catch (final NoSuchElementException ignore) {
 

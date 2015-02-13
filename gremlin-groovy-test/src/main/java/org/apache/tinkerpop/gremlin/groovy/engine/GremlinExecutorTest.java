@@ -131,7 +131,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
     }
 
     @Test
-    public void shouldTimeoutScript() throws Exception {
+    public void shouldTimeoutSleepingScript() throws Exception {
         final AtomicBoolean successCalled = new AtomicBoolean(false);
         final AtomicBoolean failureCalled = new AtomicBoolean(false);
 
@@ -149,12 +149,77 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
             assertEquals(TimeoutException.class, ex.getCause().getClass());
         }
 
-        timeOutCount.await(2000, TimeUnit.MILLISECONDS);
+        assertTrue(timeOutCount.await(2000, TimeUnit.MILLISECONDS));
 
         assertFalse(successCalled.get());
         assertFalse(failureCalled.get());
         assertEquals(0, timeOutCount.getCount());
         gremlinExecutor.close();
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
+    public void shouldTimeoutIteratingTraversalScript() throws Exception {
+        final AtomicBoolean successCalled = new AtomicBoolean(false);
+        final AtomicBoolean failureCalled = new AtomicBoolean(false);
+
+        final CountDownLatch timeOutCount = new CountDownLatch(1);
+
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .scriptEvaluationTimeout(1000)
+                .afterFailure((b, e) -> failureCalled.set(true))
+                .afterSuccess((b) -> successCalled.set(true))
+                .afterTimeout((b) -> timeOutCount.countDown()).create();
+        try {
+            final Bindings b = new SimpleBindings();
+            b.put("g", g);
+            gremlinExecutor.eval("g.V().out().out().out().out().out().out().out().out().out().out().out().iterate()", b).get();
+            fail("This script should have timed out with an exception");
+        } catch (Exception ex) {
+            assertEquals(TimeoutException.class, ex.getCause().getClass());
+        }
+
+        assertTrue(timeOutCount.await(2000, TimeUnit.MILLISECONDS));
+
+        assertFalse(successCalled.get());
+        assertFalse(failureCalled.get());
+        assertEquals(0, timeOutCount.getCount());
+        gremlinExecutor.close();
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
+    public void shouldTimeoutIteratingTraversalScriptButBeSureInterruptedThreadCanBeReused() throws Exception {
+        final CountDownLatch timeOutCount = new CountDownLatch(1);
+
+        final ExecutorService evalExecutor = Executors.newSingleThreadExecutor(testingThreadFactory);
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .executorService(evalExecutor)
+                .scriptEvaluationTimeout(1000)
+                .afterTimeout((b) -> timeOutCount.countDown()).create();
+
+        assertEquals(2, gremlinExecutor.eval("1+1").get());
+
+        try {
+            final Bindings b = new SimpleBindings();
+            b.put("g", g);
+            gremlinExecutor.eval("g.V().out().out().out().out().out().out().out().out().out().out().out().iterate()", b).get();
+            fail("This script should have timed out with an exception");
+        } catch (Exception ex) {
+            assertEquals(TimeoutException.class, ex.getCause().getClass());
+
+            // just make sure that interrupted thread is good to go again
+            assertEquals(2, gremlinExecutor.eval("1+1").get());
+            assertEquals(2, gremlinExecutor.eval("1+1").get());
+            assertEquals(2, gremlinExecutor.eval("1+1").get());
+        }
+
+        assertTrue(timeOutCount.await(2000, TimeUnit.MILLISECONDS));
+
+        assertEquals(0, timeOutCount.getCount());
+        gremlinExecutor.close();
+        evalExecutor.shutdown();
+        evalExecutor.awaitTermination(30000, TimeUnit.MILLISECONDS);
     }
 
     @Test
@@ -209,7 +274,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         // then iterated in another.  note that Gremlin Server configures the script engine to auto-commit
         // after evaluation.  this basically tests the state of the Gremlin Server GremlinExecutor when
         // being used in sessionless mode
-        final ExecutorService evalExecutor = Executors.newFixedThreadPool(2, testingThreadFactory);
+        final ExecutorService evalExecutor = Executors.newSingleThreadExecutor(testingThreadFactory);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .afterSuccess(b -> {
                     final Graph graph = (Graph) b.get("g");
@@ -244,7 +309,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         // this test sort of simulates Gremlin Server interaction where a Traversal is eval'd in one Thread, but
         // then iterated in another.  this basically tests the state of the Gremlin Server GremlinExecutor when
         // being used in session mode
-        final ExecutorService evalExecutor = Executors.newFixedThreadPool(2, testingThreadFactory);
+        final ExecutorService evalExecutor = Executors.newSingleThreadExecutor(testingThreadFactory);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build().executorService(evalExecutor).create();
 
         final Map<String,Object> bindings = new HashMap<>();
@@ -406,7 +471,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
             gremlinExecutor.eval("c = new java.awt.Color(255, 255, 255)").get();
             fail("Should have failed security");
         } catch (Exception se) {
-            assertEquals(SecurityException.class, se.getCause().getCause().getCause().getCause().getClass());
+            assertEquals(SecurityException.class, se.getCause().getClass());
         } finally {
             gremlinExecutor.close();
         }
@@ -428,7 +493,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
             gremlinExecutor.eval("c = 'new java.awt.Color(255, 255, 255)'").get();
             fail("Should have failed security");
         } catch (Exception se) {
-            assertEquals(SecurityException.class, se.getCause().getCause().getCause().getCause().getClass());
+            assertEquals(SecurityException.class, se.getCause().getClass());
         }
 
         try {
