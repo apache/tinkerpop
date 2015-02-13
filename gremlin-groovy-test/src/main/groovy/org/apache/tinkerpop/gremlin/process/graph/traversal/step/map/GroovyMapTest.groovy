@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MapTest
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -76,12 +77,14 @@ public abstract class GroovyMapTest {
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
             // TODO: Doesn't work for graph computer because sideEffects are not accessible
+            g.engine(StandardTraversalEngine.instance());
             g.V.as('a').out.map { v -> v.path('a').name };
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
             // TODO: Doesn't work for graph computer because sideEffects are not accessible
+            g.engine(StandardTraversalEngine.instance());
             g.V().as('a').out.out().map { v -> v.path('a').name + v.name };
         }
     }

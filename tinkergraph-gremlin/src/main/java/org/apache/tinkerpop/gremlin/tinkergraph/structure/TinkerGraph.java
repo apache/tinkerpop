@@ -18,9 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -33,8 +37,6 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView
 import org.apache.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strategy.TinkerElementStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strategy.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -84,6 +86,8 @@ public class TinkerGraph implements Graph, Graph.Iterators {
 
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
+
+    protected TraversalEngine engine = StandardTraversalEngine.instance();
 
     /**
      * An empty private constructor that initializes {@link TinkerGraph} with no {@link org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy}.  Primarily
@@ -153,6 +157,17 @@ public class TinkerGraph implements Graph, Graph.Iterators {
             throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass[0]);
     }
 
+    @Override
+    public TraversalEngine engine() {
+        return this.engine;
+    }
+
+    @Override
+    public void engine(final TraversalEngine engine) {
+        this.engine = engine;
+        this.engine.setGraph(this);
+    }
+
 
     @Override
     public Variables variables() {
@@ -175,7 +190,7 @@ public class TinkerGraph implements Graph, Graph.Iterators {
 
     @Override
     public void close() {
-       this.graphView = null;
+        this.graphView = null;
     }
 
     @Override

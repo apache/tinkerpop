@@ -79,7 +79,7 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
             return g.V().branch(label().is("person").count())
                     .option(1L, values("age"))
                     .option(0L, values("lang"))
-                    .option(0L, values("name")).submit(g.compute());
+                    .option(0L, values("name"));
         }
 
         @Override
@@ -87,7 +87,7 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
             return g.V().branch(label())
                     .option("person", values("age"))
                     .option("software", values("lang"))
-                    .option("software", values("name")).submit(g.compute());
+                    .option("software", values("name"));
         }
     }
 }

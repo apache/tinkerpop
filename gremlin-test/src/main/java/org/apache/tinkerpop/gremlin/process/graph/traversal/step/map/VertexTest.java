@@ -622,127 +622,127 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V() {
-            return g.V().submit(g.compute());
+            return g.V();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out(final Object v1Id) {
-            return g.V(v1Id).out().submit(g.compute());
+            return g.V(v1Id).out();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX2X_in(final Object v2Id) {
-            return g.V(v2Id).in().submit(g.compute());
+            return g.V(v2Id).in();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX4X_both(final Object v4Id) {
-            return g.V(v4Id).both().submit(g.compute());
+            return g.V(v4Id).both();
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E() {
-            return g.E().submit(g.compute());
+            return g.E();
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_outE(final Object v1Id) {
-            return g.V(v1Id).outE().submit(g.compute());
+            return g.V(v1Id).outE();
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX2X_inE(final Object v2Id) {
-            return g.V(v2Id).inE().submit(g.compute());
+            return g.V(v2Id).inE();
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX4X_bothE(final Object v4Id) {
-            return g.V(v4Id).bothE().submit(g.compute());
+            return g.V(v4Id).bothE();
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX4X_bothEXcreatedX(final Object v4Id) {
-            return g.V(v4Id).bothE("created").submit(g.compute());
+            return g.V(v4Id).bothE("created");
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outE_inV(final Object v1Id) {
-            return g.V(v1Id).outE().inV().submit(g.compute());
+            return g.V(v1Id).outE().inV();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX2X_inE_outV(final Object v2Id) {
-            return g.V(v2Id).inE().outV().submit(g.compute());
+            return g.V(v2Id).inE().outV();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_outE_hasXweight_1X_outV() {
-            return g.V().outE().has("weight", 1.0d).outV().submit(g.compute());
+            return g.V().outE().has("weight", 1.0d).outV();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_out_outE_inV_inE_inV_both_name() {
-            return g.V().out().outE().inV().inE().inV().both().<String>values("name").submit(g.compute());
+            return g.V().out().outE().inV().inE().inV().both().<String>values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_outEXknowsX_bothV_name(final Object v1Id) {
-            return g.V(v1Id).outE("knows").bothV().<String>values("name").submit(g.compute());
+            return g.V(v1Id).outE("knows").bothV().<String>values("name");
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXknowsX(final Object v1Id) {
-            return g.V(v1Id).out("knows").submit(g.compute());
+            return g.V(v1Id).out("knows");
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXknows_createdX(final Object v1Id) {
-            return g.V(v1Id).out("knows", "created").submit(g.compute());
+            return g.V(v1Id).out("knows", "created");
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outEXknowsX_inV(final Object v1Id) {
-            return g.V(v1Id).outE("knows").inV().submit(g.compute());
+            return g.V(v1Id).outE("knows").inV();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outEXknows_createdX_inV(final Object v1Id) {
-            return g.V(v1Id).outE("knows", "created").inV().submit(g.compute());
+            return g.V(v1Id).outE("knows", "created").inV();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outE_otherV(final Object v1Id) {
-            return g.V(v1Id).outE().otherV().submit(g.compute());
+            return g.V(v1Id).outE().otherV();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX4X_bothE_otherV(final Object v4Id) {
-            return g.V(v4Id).bothE().otherV().submit(g.compute());
+            return g.V(v4Id).bothE().otherV();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX4X_bothE_hasXweight_lt_1X_otherV(Object v4Id) {
-            return g.V(v4Id).bothE().has("weight", Compare.lt, 1d).otherV().submit(g.compute());
+            return g.V(v4Id).bothE().has("weight", Compare.lt, 1d).otherV();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_out_out() {
-            return g.V().out().out().submit(g.compute());
+            return g.V().out().out();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_out_out(final Object v1Id) {
-            return g.V(v1Id).out().out().out().submit(g.compute());
+            return g.V(v1Id).out().out().out();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_out_name(final Object v1Id) {
-            return g.V(v1Id).out().<String>values("name").submit(g.compute());
+            return g.V(v1Id).out().<String>values("name");
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_to_XOUT_knowsX(final Object v1Id) {
-            return g.V(v1Id).to(Direction.OUT, "knows").submit(g.compute());
+            return g.V(v1Id).to(Direction.OUT, "knows");
         }
     }
 }

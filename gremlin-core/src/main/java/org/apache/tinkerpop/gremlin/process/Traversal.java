@@ -18,12 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process;
 
-import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -50,7 +48,7 @@ import java.util.stream.Collectors;
  * This is the base interface for all traversal's, where each extending interface is seen as a domain specific language.
  * For example, {@link GraphTraversal} is a domain specific language for traversing a graph using "graph concepts" (e.g. vertices, edges).
  * Another example may represent the graph using "social concepts" (e.g. people, cities, artifacts).
- * A {@link Traversal} is evaluated in one of two ways: {@link TraversalEngine#STANDARD} (OLTP) and {@link TraversalEngine#COMPUTER} (OLAP).
+ * A {@link Traversal} is evaluated in one of two ways: {@link StandardTraversalEngine} (OLTP) and {@link ComputerTraversalEngine} (OLAP).
  * OLTP traversals leverage an iterator and are executed within a single JVM (with data access allowed to be remote).
  * OLAP traversals leverage {@link GraphComputer} and are executed between multiple JVMs (and/or cores).
  *
@@ -70,25 +68,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
      */
     public default Traversal.Admin<S, E> asAdmin() {
         return (Traversal.Admin<S, E>) this;
-    }
-
-    /**
-     * Submit the traversal to a {@link GraphComputer} for OLAP execution.
-     * This method should execute the traversal via {@link TraversalVertexProgram}.
-     * It should then wrap the {@link org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult} in a new {@link Traversal} containing a {@link ComputerResultStep}.
-     *
-     * @param computer the GraphComputer to execute the traversal on
-     * @return a new traversal with the starts being the results of the TraversalVertexProgram
-     */
-    public default Traversal<S, E> submit(final GraphComputer computer) {
-        try {
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this.asAdmin()).create();
-            final ComputerResult result = computer.program(vertexProgram).submit().get();
-            final Traversal.Admin<S, S> traversal = new DefaultTraversal<>(result.graph().getClass());
-            return traversal.asAdmin().addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
-        } catch (final Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
     }
 
     /**
@@ -154,8 +133,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
      */
     public default <C extends Collection<E>> C fill(final C collection) {
         try {
-            if (!this.asAdmin().getEngine().isPresent())
-                this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
+            if (!this.asAdmin().isLocked()) this.asAdmin().applyStrategies();
             // use the end step so the results are bulked
             final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
@@ -177,8 +155,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
      */
     public default <A, B> Traversal<A, B> iterate() {
         try {
-            if (!this.asAdmin().getEngine().isPresent())
-                this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
+            if (!this.asAdmin().isLocked()) this.asAdmin().applyStrategies();
             // use the end step so the results are bulked
             final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
@@ -244,7 +221,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
          * @param starts an iterators of traversers
          */
         public default void addStarts(final Iterator<Traverser<S>> starts) {
-            if(!this.getEngine().isPresent()) this.applyStrategies(TraversalEngine.STANDARD);
+            if (!this.isLocked()) this.applyStrategies();
             this.getStartStep().addStarts(starts);
         }
 
@@ -255,7 +232,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
          * @param start a traverser to add to the traversal
          */
         public default void addStart(final Traverser<S> start) {
-            if(!this.getEngine().isPresent()) this.applyStrategies(TraversalEngine.STANDARD);
+            if (!this.isLocked()) this.applyStrategies();
             this.getStartStep().addStart(start);
         }
 
@@ -340,18 +317,17 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
          * Once the strategies are applied, the traversal is "locked" and can no longer have steps added to it.
          * The order of operations for strategy applications should be: globally id steps, apply strategies to root traversal, then to nested traversals.
          *
-         * @param engine the engine that will ultimately execute the traversal.
          * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
          */
-        public void applyStrategies(final TraversalEngine engine) throws IllegalStateException;
+        public void applyStrategies() throws IllegalStateException;
 
         /**
-         * When the {@link TraversalStrategies} have been applied, the destined {@link TraversalEngine} has been declared.
-         * Once a traversal engine has been declared, the traversal can no longer be extended, only executed.
-         *
-         * @return whether the traversal engine has been defined or not.
+         * @return whether the traversal engine associated with this traversal.
          */
-        public Optional<TraversalEngine> getEngine();
+        public TraversalEngine getEngine();
+
+        public void setEngine(final TraversalEngine engine);
+
 
         /**
          * Get the {@link TraverserGenerator} associated with this traversal.
@@ -376,7 +352,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
                 requirements.add(TraverserRequirement.SIDE_EFFECTS);
             if (this.getSideEffects().getSackInitialValue().isPresent())
                 requirements.add(TraverserRequirement.SACK);
-            if (this.getEngine().isPresent() && this.getEngine().get().equals(TraversalEngine.COMPUTER))
+            if (this.getEngine().isComputer())
                 requirements.add(TraverserRequirement.BULK);
             return requirements;
         }
@@ -449,6 +425,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
          * @return The cloned traversal
          */
         public Traversal.Admin<S, E> clone() throws CloneNotSupportedException;
+
+        public boolean isLocked();
 
     }
 

@@ -71,12 +71,12 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXname_ageX_value() {
-            return g.V().has("age").properties("name", "age").value().submit(g.compute());
+            return g.V().has("age").properties("name", "age").value();
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXage_nameX_value() {
-            return g.V().has("age").properties("age", "name").value().submit(g.compute());
+            return g.V().has("age").properties("age", "name").value();
         }
     }
 

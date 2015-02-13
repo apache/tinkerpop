@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -168,37 +169,38 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Long> get_g_V_count() {
-            return g.V().count().submit(g.compute());
+            return g.V().count();
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_out_count() {
-            return g.V().out().count().submit(g.compute());
+            return g.V().out().count();
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_both_both_count() {
-            return g.V().both().both().count().submit(g.compute());
+            return g.V().both().both().count();
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX3X_count() {
-            return g.V().repeat(out()).times(3).count().submit(g.compute());
+            return g.V().repeat(out()).times(3).count();
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX8X_count() {
-            return g.V().repeat(out()).times(8).count().submit(g.compute());
+            return g.V().repeat(out()).times(8).count();
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_hasXnoX_count() {
-            return g.V().has("no").count().submit(g.compute());
+            return g.V().has("no").count();
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
-            return g.V().fold().count(Scope.local); // todo -- fold
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return g.V().fold().count(Scope.local);
         }
     }
 }

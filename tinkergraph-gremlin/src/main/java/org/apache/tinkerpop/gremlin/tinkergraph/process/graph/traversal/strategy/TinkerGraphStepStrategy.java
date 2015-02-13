@@ -40,7 +40,7 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
-        if (engine.equals(TraversalEngine.COMPUTER))
+        if (engine.isComputer())
             return;
 
         final Step<?, ?> startStep = traversal.getStartStep();

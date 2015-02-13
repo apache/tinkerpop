@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -102,17 +103,19 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX1X() {
-            return g.E().sample(1);   // TODO: makes no sense when its global
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return g.E().sample(1);
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX2X_byXweightX() {
-            return g.E().sample(2).by("weight"); // TODO: makes no sense when its global
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return g.E().sample(2).by("weight");
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX() {
-            return g.V().local(outE().sample(1).by("weight")).submit(g.compute());
+            return g.V().local(outE().sample(1).by("weight"));
         }
     }
 }

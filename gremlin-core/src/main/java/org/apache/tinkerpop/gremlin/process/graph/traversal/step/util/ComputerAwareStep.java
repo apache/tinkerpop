@@ -52,7 +52,7 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
     @Override
     public void onEngine(final TraversalEngine engine) {
-        this.traverserStepIdSetByChild = engine.equals(TraversalEngine.COMPUTER);
+        this.traverserStepIdSetByChild = engine.isComputer();
     }
 
     @Override
@@ -88,7 +88,7 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
         @Override
         public void onEngine(final TraversalEngine engine) {
-            this.traverserStepIdSetByChild = engine.equals(TraversalEngine.COMPUTER);
+            this.traverserStepIdSetByChild = engine.isComputer();
         }
     }
 

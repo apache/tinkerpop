@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traverser.util.DefaultTraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Contains;
@@ -124,7 +125,7 @@ public final class PartitionStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
         return (f) -> ids -> {
-            final GraphTraversal<Vertex, Vertex> traversal = this.generateTraversal(ctx.getStrategyGraph().getBaseGraph().getClass());
+            final GraphTraversal<Vertex, Vertex> traversal = this.generateTraversal(ctx.getStrategyGraph().getBaseGraph());
             traversal.asAdmin().getStrategies().setTraverserGeneratorFactory(DefaultTraverserGeneratorFactory.instance());
             TraversalHelper.insertTraversal(0, f.apply(ids).has(this.partitionKey, Contains.within, getReadPartitions()).asAdmin(), traversal.asAdmin());
             return traversal.filter(vertex -> testVertex(vertex.get()));
@@ -134,7 +135,7 @@ public final class PartitionStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
         return (f) -> ids -> {
-            final GraphTraversal<Edge, Edge> traversal = this.generateTraversal(ctx.getStrategyGraph().getBaseGraph().getClass());
+            final GraphTraversal<Edge, Edge> traversal = this.generateTraversal(ctx.getStrategyGraph().getBaseGraph());
             traversal.asAdmin().getStrategies().setTraverserGeneratorFactory(DefaultTraverserGeneratorFactory.instance());
             TraversalHelper.insertTraversal(0, f.apply(ids).has(this.partitionKey, Contains.within, getReadPartitions()).asAdmin(), traversal.asAdmin());
             return traversal.filter(edge -> testEdge(edge.get()));
@@ -172,8 +173,8 @@ public final class PartitionStrategy implements GraphStrategy {
         }
     }
 
-    private final <S, E> GraphTraversal<S, E> generateTraversal(final Class emanatingClass) {
-        return new DefaultGraphTraversal<S, E>(emanatingClass) {
+    private final <S, E> GraphTraversal<S, E> generateTraversal(final Object emanatingObject) {
+        return new DefaultGraphTraversal<S, E>(emanatingObject) {
             @Override
             public GraphTraversal<S, Vertex> to(final Direction direction, final String... edgeLabels) {
                 return direction.equals(Direction.BOTH) ?

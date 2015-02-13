@@ -18,11 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traverser.B_O_Traverser;
@@ -35,7 +37,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
-import org.apache.commons.configuration.Configuration;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -99,6 +100,8 @@ public interface GraphProvider {
      */
     default public Graph openTestGraph(final Configuration config, final GraphStrategy... strategies) {
         final Graph g = GraphFactory.open(config);
+        if (config.containsKey("computer") && (boolean) config.getProperty("computer"))
+            g.engine(ComputerTraversalEngine.instance());
         return null == strategies ? g : g.strategy(strategies);
     }
 

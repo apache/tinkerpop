@@ -83,12 +83,12 @@ public abstract class OrTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name() {
-            return g.V().or(has("age", gt, 27), outE().count().is(gte, 2l)).<String>values("name").submit(g.compute());
+            return g.V().or(has("age", gt, 27), outE().count().is(gte, 2l)).<String>values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_orXoutEXknowsX__hasXlabel_softwareX_or_hasXage_gte_35XX_name() {
-            return g.V().or(outE("knows"), has(T.label, "software").or().has("age", Compare.gte, 35)).<String>values("name").submit(g.compute());
+            return g.V().or(outE("knows"), has(T.label, "software").or().has("age", Compare.gte, 35)).<String>values("name");
         }
     }
 }

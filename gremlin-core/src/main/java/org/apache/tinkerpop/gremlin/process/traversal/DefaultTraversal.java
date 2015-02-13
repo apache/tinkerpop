@@ -18,12 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.*;
+import org.apache.tinkerpop.gremlin.process.Step;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -36,14 +47,22 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     private final StepPosition stepPosition = new StepPosition();
 
     protected List<Step> steps = new ArrayList<>();
-    protected TraversalStrategies strategies;
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
-    protected TraversalEngine traversalEngine = null;
+    protected TraversalStrategies strategies;
+    protected TraversalEngine traversalEngine;
+
+    protected boolean locked = false;
 
     protected TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
 
-    public DefaultTraversal(final Class emanatingClass) {
-        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(emanatingClass));
+    public DefaultTraversal(final Object emanatingObject) {
+        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(emanatingObject.getClass()));
+        if (emanatingObject instanceof Graph)
+            this.traversalEngine = ((Graph) emanatingObject).engine();
+        else if (emanatingObject instanceof Element)
+            this.traversalEngine = ((Element) emanatingObject).graph().engine();
+        else
+            this.traversalEngine = StandardTraversalEngine.instance();
     }
 
     @Override
@@ -52,29 +71,37 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void applyStrategies(final TraversalEngine engine) throws IllegalStateException {
-        if (null != this.traversalEngine) throw Traversal.Exceptions.traversalIsLocked();
-
+    public void applyStrategies() throws IllegalStateException {
+        if (this.locked) throw Traversal.Exceptions.traversalIsLocked();
         TraversalHelper.reIdSteps(this.stepPosition, this);
-        this.strategies.applyStrategies(this, engine);
+        this.strategies.applyStrategies(this, this.traversalEngine);
         for (final Step<?, ?> step : this.getSteps()) {
             if (step instanceof TraversalParent) {
-                ((TraversalParent) step).setChildStrategies(this.strategies); // TODO: should we clone?
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
-                    globalChild.applyStrategies(engine);
+                    globalChild.setStrategies(this.strategies);
+                    globalChild.setEngine(this.traversalEngine);
+                    globalChild.applyStrategies();
                 }
                 for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
-                    localChild.applyStrategies(TraversalEngine.STANDARD);
+                    localChild.setStrategies(this.strategies);
+                    localChild.setEngine(StandardTraversalEngine.instance());
+                    localChild.applyStrategies();
                 }
             }
         }
-        this.traversalEngine = engine;
+        this.traversalEngine.processTraversal(this);
         this.finalEndStep = this.getEndStep();
+        this.locked = true;
     }
 
     @Override
-    public Optional<TraversalEngine> getEngine() {
-        return Optional.ofNullable(this.traversalEngine);
+    public TraversalEngine getEngine() {
+        return this.traversalEngine;
+    }
+
+    @Override
+    public void setEngine(final TraversalEngine engine) {
+        this.traversalEngine = engine;
     }
 
     @Override
@@ -84,13 +111,13 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public boolean hasNext() {
-        if (null == this.traversalEngine) this.applyStrategies(TraversalEngine.STANDARD);
+        if (!this.locked) this.applyStrategies();
         return this.lastEndCount > 0l || this.finalEndStep.hasNext();
     }
 
     @Override
     public E next() {
-        if (null == this.traversalEngine) this.applyStrategies(TraversalEngine.STANDARD);
+        if (!this.locked) this.applyStrategies();
         if (this.lastEndCount > 0l) {
             this.lastEndCount--;
             return this.lastEnd;
@@ -115,13 +142,13 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public void addStart(final Traverser<S> start) {
-        if (null == this.traversalEngine) this.applyStrategies(TraversalEngine.STANDARD);
+        if (!this.locked) this.applyStrategies();
         if (!this.steps.isEmpty()) this.steps.get(0).addStart(start);
     }
 
     @Override
     public void addStarts(final Iterator<Traverser<S>> starts) {
-        if (null == this.traversalEngine) this.applyStrategies(TraversalEngine.STANDARD);
+        if (!this.locked) this.applyStrategies();
         if (!this.steps.isEmpty()) this.steps.get(0).addStarts(starts);
     }
 
@@ -161,6 +188,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
+    public boolean isLocked() {
+        return this.locked;
+    }
+
+    @Override
     public void setSideEffects(final TraversalSideEffects sideEffects) {
         this.sideEffects = sideEffects;
     }
@@ -186,7 +218,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
-        if (null != this.traversalEngine) throw Exceptions.traversalIsLocked();
+        if (this.locked) throw Exceptions.traversalIsLocked();
         step.setId(this.stepPosition.nextXId());
         this.steps.add(index, step);
         final Step previousStep = this.steps.size() > 0 && index != 0 ? steps.get(index - 1) : null;
@@ -200,7 +232,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public <S2, E2> Traversal.Admin<S2, E2> removeStep(final int index) throws IllegalStateException {
-        if (null != this.traversalEngine) throw Exceptions.traversalIsLocked();
+        if (this.locked) throw Exceptions.traversalIsLocked();
         final Step previousStep = this.steps.size() > 0 && index != 0 ? steps.get(index - 1) : null;
         final Step nextStep = this.steps.size() > index + 1 ? steps.get(index + 1) : null;
         this.steps.remove(index);

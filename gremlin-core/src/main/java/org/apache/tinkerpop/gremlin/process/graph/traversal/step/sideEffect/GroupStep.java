@@ -101,7 +101,7 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
 
     @Override
     public void onEngine(final TraversalEngine traversalEngine) {
-        this.onGraphComputer = traversalEngine.equals(TraversalEngine.COMPUTER);
+        this.onGraphComputer = traversalEngine.isComputer();
     }
 
     @Override

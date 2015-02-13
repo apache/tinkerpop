@@ -69,12 +69,12 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_min() {
-            return g.V().values("age").<Integer>min().submit(g.compute());
+            return g.V().values("age").<Integer>min();
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_min() {
-            return g.V().repeat(both()).times(5).values("age").<Integer>min().submit(g.compute());
+            return g.V().repeat(both()).times(5).values("age").<Integer>min();
         }
     }
 }

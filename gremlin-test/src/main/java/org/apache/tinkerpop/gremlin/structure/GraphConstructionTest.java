@@ -65,6 +65,7 @@ public class GraphConstructionTest extends AbstractGremlinTest {
     @Test
     public void shouldMaintainOriginalConfigurationObjectGivenToFactory() {
         final Configuration originalConfig = graphProvider.newGraphConfiguration("temp2", this.getClass(), name.getMethodName());
+        originalConfig.clearProperty("computer"); // TODO: Necessary cause of HACK.
         final Graph createdGraph = GraphFactory.open(originalConfig);
 
         final Configuration configInGraph = createdGraph.configuration();

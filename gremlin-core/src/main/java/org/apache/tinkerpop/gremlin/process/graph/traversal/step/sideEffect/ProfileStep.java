@@ -88,9 +88,9 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements Reversib
     }
 
     private StandardTraversalMetrics getTraversalMetricsUtil() {
-        StandardTraversalMetrics traversalMetrics = this.getTraversal().asAdmin().getSideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, StandardTraversalMetrics::new);
-        final boolean isComputer = this.traversal.asAdmin().getEngine().get().equals(TraversalEngine.COMPUTER);
-        traversalMetrics.initializeIfNecessary(this.getId(), this.traversal.asAdmin().getSteps().indexOf(this), name, isComputer);
+        StandardTraversalMetrics traversalMetrics = this.getTraversal().getSideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, StandardTraversalMetrics::new);
+        final boolean isComputer = this.getTraversal().getEngine().isComputer();
+        traversalMetrics.initializeIfNecessary(this.getId(), this.getTraversal().getSteps().indexOf(this), name, isComputer);
         return traversalMetrics;
     }
 }

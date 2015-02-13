@@ -132,27 +132,27 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isX32X() {
-            return super.get_g_V_valuesXageX_isX32X().submit(g.compute());
+            return super.get_g_V_valuesXageX_isX32X();
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isXlte_30X() {
-            return super.get_g_V_valuesXageX_isXlte_30X().submit(g.compute());
+            return super.get_g_V_valuesXageX_isXlte_30X();
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isXgte_29X_isXlt_34X() {
-            return super.get_g_V_valuesXageX_isXgte_29X_isXlt_34X().submit(g.compute());
+            return super.get_g_V_valuesXageX_isXgte_29X_isXlt_34X();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX() {
-            return super.get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX().submit(g.compute());
+            return super.get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
-            return super.get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX().submit(g.compute());
+            return super.get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX();
         }
     }
 }

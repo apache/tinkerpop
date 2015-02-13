@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.strategy;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -125,6 +126,16 @@ public class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, W
     @Override
     public GraphComputer compute(final Class... graphComputerClass) {
         return this.baseGraph.compute(graphComputerClass);
+    }
+
+    @Override
+    public TraversalEngine engine() {
+        return this.baseGraph.engine();
+    }
+
+    @Override
+    public void engine(final TraversalEngine engine) {
+        this.baseGraph.engine(engine);
     }
 
     @Override

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.LambdaFi
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
@@ -54,7 +55,7 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldChainTogetherStepsWithNextPreviousInALinkedListStructure() {
-        Traversal.Admin traversal = new DefaultTraversal<>(Object.class);
+        Traversal.Admin traversal = new DefaultTraversal<>(new Object());
         traversal.asAdmin().addStep(new IdentityStep(traversal));
         traversal.asAdmin().addStep(new HasStep(traversal, null));
         traversal.asAdmin().addStep(new LambdaFilterStep(traversal, traverser -> true));
@@ -63,13 +64,13 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldAddStepsCorrectly() {
-        Traversal.Admin traversal = new DefaultTraversal<>(Object.class);
+        Traversal.Admin traversal = new DefaultTraversal<>(new Object());
         traversal.asAdmin().addStep(0, new LambdaFilterStep(traversal, traverser -> true));
         traversal.asAdmin().addStep(0, new HasStep(traversal, null));
         traversal.asAdmin().addStep(0, new IdentityStep(traversal));
         validateToyTraversal(traversal);
 
-        traversal = new DefaultTraversal<>(Object.class);
+        traversal = new DefaultTraversal<>(new Object());
         traversal.asAdmin().addStep(0, new IdentityStep(traversal));
         traversal.asAdmin().addStep(1, new HasStep(traversal, null));
         traversal.asAdmin().addStep(2, new LambdaFilterStep(traversal, traverser -> true));
@@ -78,7 +79,7 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldRemoveStepsCorrectly() {
-        Traversal.Admin traversal = new DefaultTraversal<>(Object.class);
+        Traversal.Admin traversal = new DefaultTraversal<>(new Object());
         traversal.asAdmin().addStep(new IdentityStep(traversal));
         traversal.asAdmin().addStep(new HasStep(traversal, null));
         traversal.asAdmin().addStep(new LambdaFilterStep(traversal, traverser -> true));

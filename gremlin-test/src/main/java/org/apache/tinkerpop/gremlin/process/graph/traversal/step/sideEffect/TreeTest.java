@@ -152,17 +152,17 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX() {
-            return (Traversal) g.V().out().out().tree().by(T.id).submit(g.compute());
+            return (Traversal) g.V().out().out().tree().by(T.id);
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX() {
-            return (Traversal) g.V().out().out().tree("a").by(T.id).submit(g.compute());
+            return (Traversal) g.V().out().out().tree("a").by(T.id);
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX() {
-            return (Traversal) g.V().out().out().tree("a").submit(g.compute());
+            return (Traversal) g.V().out().out().tree("a");
         }
     }
 }

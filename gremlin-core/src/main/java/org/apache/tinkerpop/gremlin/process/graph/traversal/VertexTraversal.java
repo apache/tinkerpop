@@ -32,7 +32,7 @@ public interface VertexTraversal extends ElementTraversal<Vertex> {
 
     @Override
     default GraphTraversal<Vertex, Vertex> start() {
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this.getClass());
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
         return traversal.addStep(new StartStep<>(traversal, this));
     }
 

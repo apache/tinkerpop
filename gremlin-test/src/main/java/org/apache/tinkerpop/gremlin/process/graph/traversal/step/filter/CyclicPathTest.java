@@ -88,12 +88,12 @@ public abstract class CyclicPathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
-            return g.V(v1Id).out("created").in("created").cyclicPath().submit(g.compute());
+            return g.V(v1Id).out("created").in("created").cyclicPath();
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1Id) {
-            return g.V(v1Id).out("created").in("created").cyclicPath().path().submit(g.compute());
+            return g.V(v1Id).out("created").in("created").cyclicPath().path();
         }
     }
 }

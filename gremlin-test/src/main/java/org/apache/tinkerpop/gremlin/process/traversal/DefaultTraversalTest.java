@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
@@ -34,8 +35,7 @@ public class DefaultTraversalTest {
 
     @Test
     public void shouldCloneTraversalCorrectly() throws CloneNotSupportedException {
-        final Graph g = EmptyGraph.instance();
-        final DefaultGraphTraversal<?, ?> original = new DefaultGraphTraversal<>(g.getClass());
+        final DefaultGraphTraversal<?, ?> original = new DefaultGraphTraversal<>(EmptyGraph.instance());
         original.out().groupCount("m").values("name").count();
         final DefaultTraversal<?, ?> clone = (DefaultTraversal) original.clone();
         assertNotEquals(original.hashCode(), clone.hashCode());

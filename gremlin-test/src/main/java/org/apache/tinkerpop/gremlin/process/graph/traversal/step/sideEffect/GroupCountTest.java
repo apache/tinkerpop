@@ -162,34 +162,34 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
-            return (Traversal) g.V().out("created").groupCount().by("name").submit(g.compute());
+            return (Traversal) g.V().out("created").groupCount().by("name");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount() {
-            return (Traversal) g.V().out("created").values("name").groupCount().submit(g.compute());
+            return (Traversal) g.V().out("created").values("name").groupCount();
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
-            return (Traversal) g.V().out("created").values("name").groupCount("a").submit(g.compute());
+            return (Traversal) g.V().out("created").values("name").groupCount("a");
         }
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCount() {
-            return (Traversal) g.V().has("no").groupCount().submit(g.compute());
+            return (Traversal) g.V().has("no").groupCount();
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX() {
-            return g.V().repeat(out().groupCount("a").by("name")).times(2).<Map<String, Long>>cap("a").submit(g.compute());
+            return g.V().repeat(out().groupCount("a").by("name")).times(2).<Map<String, Long>>cap("a");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX() {
             return g.V().union(
                     repeat(out()).times(2).groupCount("m").by("lang"),
-                    repeat(in()).times(2).groupCount("m").by("name")).<Map<String, Long>>cap("m").submit(g.compute());
+                    repeat(in()).times(2).groupCount("m").by("name")).<Map<String, Long>>cap("m");
         }
     }
 }

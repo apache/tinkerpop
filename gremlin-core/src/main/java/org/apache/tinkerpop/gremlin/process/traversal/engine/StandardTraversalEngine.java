@@ -16,31 +16,39 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.graph.traversal;
+package org.apache.tinkerpop.gremlin.process.traversal.engine;
 
-import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implements GraphTraversal.Admin<S, E> {
+public final class StandardTraversalEngine implements TraversalEngine {
 
-    public DefaultGraphTraversal(final Object emanatingObject) {
-        super(emanatingObject);
+    private static StandardTraversalEngine INSTANCE = new StandardTraversalEngine();
+
+    private StandardTraversalEngine() {
+
     }
 
     @Override
-    public GraphTraversal.Admin<S, E> asAdmin() {
-        return this;
+    public void processTraversal(final Traversal.Admin<?, ?> traversal) {
+
     }
 
     @Override
-    public GraphTraversal<S, E> iterate() {
-        return GraphTraversal.Admin.super.iterate();
+    public Type getType() {
+        return Type.STANDARD;
     }
 
     @Override
-    public DefaultGraphTraversal<S, E> clone() throws CloneNotSupportedException {
-        return (DefaultGraphTraversal<S, E>) super.clone();
+    public void setGraph(final Graph graph) {
+
+    }
+
+    public static StandardTraversalEngine instance() {
+        return INSTANCE;
     }
 }

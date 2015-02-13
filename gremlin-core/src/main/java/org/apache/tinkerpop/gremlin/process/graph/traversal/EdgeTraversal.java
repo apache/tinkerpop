@@ -31,7 +31,7 @@ public interface EdgeTraversal extends ElementTraversal<Edge> {
 
     @Override
     default GraphTraversal<Edge, Edge> start() {
-        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(this.getClass());
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
         return traversal.addStep(new StartStep<>(traversal, this));
     }
 

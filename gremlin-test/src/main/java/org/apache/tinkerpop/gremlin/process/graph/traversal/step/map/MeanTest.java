@@ -65,7 +65,7 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_age_mean() {
-            return g.V().values("age").mean().submit(g.compute());
+            return g.V().values("age").mean();
         }
 
     }

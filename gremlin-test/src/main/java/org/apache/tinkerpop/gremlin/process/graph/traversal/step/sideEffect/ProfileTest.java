@@ -226,12 +226,12 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile() {
-            return (Traversal) g.V().out().out().profile().submit(g.compute());
+            return (Traversal) g.V().out().out().profile();
         }
 
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_repeat_both_profile() {
-            return (Traversal) g.V().repeat(both()).times(3).profile().submit(g.compute());
+            return (Traversal) g.V().repeat(both()).times(3).profile();
         }
     }
 }

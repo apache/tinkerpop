@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -92,17 +93,18 @@ public abstract class RetainTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_retainXg_v2X(final Object v1Id, final Object v2Id) {
-            return g.V(v1Id).out().retain(g.V(v2Id).next());// TODO: .submit(g.compute());
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return g.V(v1Id).out().retain(g.V(v2Id).next());
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_retainXxX(final Object v1Id) {
-            return g.V(v1Id).out().aggregate("x").out().retain("x").submit(g.compute());
+            return g.V(v1Id).out().aggregate("x").out().retain("x");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_retainXaX_name(final Object v1Id) {
-            return g.V(v1Id).as("a").out("created").in("created").retain("a").<String>values("name").submit(g.compute());
+            return g.V(v1Id).as("a").out("created").in("created").retain("a").<String>values("name");
         }
     }
 }

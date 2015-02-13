@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.FastNoSuchElementException;
@@ -75,13 +76,18 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void applyStrategies(final TraversalEngine engine) {
+    public void applyStrategies() {
 
     }
 
     @Override
-    public Optional<TraversalEngine> getEngine() {
-        return Optional.empty();
+    public TraversalEngine getEngine() {
+        return StandardTraversalEngine.instance();
+    }
+
+    @Override
+    public void setEngine(final TraversalEngine engine) {
+
     }
 
     @Override
@@ -105,13 +111,13 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public Traversal<S, E> submit(final GraphComputer computer) {
+    public EmptyTraversal<S, E> clone() throws CloneNotSupportedException {
         return instance();
     }
 
     @Override
-    public EmptyTraversal<S, E> clone() throws CloneNotSupportedException {
-        return instance();
+    public boolean isLocked() {
+        return true;
     }
 
     @Override
