@@ -158,12 +158,12 @@ public class GremlinExecutor implements AutoCloseable {
 
                 final Object o = scriptEngines.eval(script, bindings, lang);
 
-                afterSuccess.accept(bindings);
-
                 // apply a transformation before sending back the result - useful when trying to force serialization
                 // in the same thread that the eval took place given ThreadLocal nature of graphs as well as some
                 // transactional constraints
                 evaluationFuture.complete(null == transformResult ? o : transformResult.apply(o));
+
+                afterSuccess.accept(bindings);
             } catch (Exception ex) {
                 final Throwable root = ExceptionUtils.getRootCause(ex);
 
@@ -416,9 +416,12 @@ public class GremlinExecutor implements AutoCloseable {
         }
 
         /**
-         * Amount of time a script has before it times out.
+         * Amount of time a script has before it times out. Note that the time required covers both script evaluation
+         * as well as any time needed for a post result transformation (if the transformation function is supplied
+         * to the {@link GremlinExecutor#eval}).
          *
-         * @param scriptEvaluationTimeout Time in milliseconds that a script is allowed to run.
+         * @param scriptEvaluationTimeout Time in milliseconds that a script is allowed to run and its
+         *                                results potentially transformed.
          */
         public Builder scriptEvaluationTimeout(final long scriptEvaluationTimeout) {
             this.scriptEvaluationTimeout = scriptEvaluationTimeout;
@@ -458,7 +461,9 @@ public class GremlinExecutor implements AutoCloseable {
         }
 
         /**
-         * A {@link Consumer} to execute just after successful script evaluation.
+         * A {@link Consumer} to execute just after successful script evaluation. Note that success will be called
+         * after evaluation of the script in the engine and after the results have passed through transformation
+         * (if a transform function is passed to the {@link GremlinExecutor#eval}.
          */
         public Builder afterSuccess(final Consumer<Bindings> afterSuccess) {
             this.afterSuccess = afterSuccess;
