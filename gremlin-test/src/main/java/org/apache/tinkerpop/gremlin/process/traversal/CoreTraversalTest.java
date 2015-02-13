@@ -209,6 +209,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         g.tx().rollback();
     }
 
+    @org.junit.Ignore
     @Test
     @LoadGraphWith(GRATEFUL)
     public void shouldTimeoutOnTraversalWhereIterateHasStarted() throws Exception {
@@ -255,6 +256,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         assertTrue(interrupted.get());
     }
 
+    @org.junit.Ignore
     @Test
     @LoadGraphWith(GRATEFUL)
     public void shouldTimeoutOnTraversalWhereNextingStarted() throws Exception {
