@@ -18,11 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
+import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MaxTest
 import org.apache.tinkerpop.gremlin.structure.Vertex
+
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.bothE
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.max
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,6 +44,10 @@ public abstract class GroovyMaxTest {
             g.V.repeat(__.both).times(5).age.max
         }
 
+        @Override
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmaxXlocalXX() {
+            g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(max(Scope.local)).cap()
+        }
     }
 
     public static class ComputerTest extends MaxTest {
@@ -53,6 +60,11 @@ public abstract class GroovyMaxTest {
         @Override
         public Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_max() {
             ComputerTestHelper.compute("g.V.repeat(__.both).times(5).age.max", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmaxXlocalXX() {
+            ComputerTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(max(Scope.local)).cap()", g)
         }
     }
 }

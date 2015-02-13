@@ -18,11 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal;
 
-import org.apache.tinkerpop.gremlin.process.Path;
-import org.apache.tinkerpop.gremlin.process.Scope;
-import org.apache.tinkerpop.gremlin.process.T;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.*;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -33,14 +29,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
+import java.util.function.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -265,6 +254,10 @@ public class __ {
         return __.<A>start().dedup();
     }
 
+    public static <A> GraphTraversal<A, A> dedup(final Scope scope) {
+        return __.<A>start().dedup(scope);
+    }
+
     public static <A> GraphTraversal<A, A> except(final String sideEffectKeyOrPathLabel) {
         return __.<A>start().except(sideEffectKeyOrPathLabel);
     }
@@ -383,6 +376,10 @@ public class __ {
 
     public static <A> GraphTraversal<A, A> sample(final int amountToSample) {
         return __.<A>start().sample(amountToSample);
+    }
+
+    public static <A> GraphTraversal<A, A> sample(final Scope scope, final int amountToSample) {
+        return __.<A>start().sample(scope, amountToSample);
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////

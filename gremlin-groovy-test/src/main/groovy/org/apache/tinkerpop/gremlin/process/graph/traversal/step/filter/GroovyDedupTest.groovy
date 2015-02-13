@@ -18,11 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter
 
+import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.T
 import org.apache.tinkerpop.gremlin.process.Traversal
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.DedupTest
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
+
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.bothE
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.dedup
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -45,22 +49,38 @@ public abstract class GroovyDedupTest {
         public Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value() {
             g.V().both().properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value
         }
+
+        @Override
+        Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap() {
+            g.V().group().by(T.label).by(bothE().values('weight').fold()).by(dedup(Scope.local)).cap()
+        }
     }
 
-    public static class ComputerTestImpl extends DedupTest {
+    public static class ComputerTest extends DedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
-            ComputerTestHelper.compute("g.V.both.dedup.name", g);
+            g.engine(StandardTraversalEngine.instance()) // TODO
+            g.V.both.dedup.name
+            //ComputerTestHelper.compute("g.V.both.dedup.name", g);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
-            ComputerTestHelper.compute("g.V.both.has(T.label,'software').dedup.by('lang').name", g);
+            g.engine(StandardTraversalEngine.instance()) // TODO
+            g.V.both.has(T.label, 'software').dedup.by('lang').name
+            //ComputerTestHelper.compute("g.V.both.has(T.label,'software').dedup.by('lang').name", g);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value() {
-            ComputerTestHelper.compute("g.V.both.properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value", g);
+            g.engine(StandardTraversalEngine.instance()) // TODO
+            g.V().both().properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value
+            //ComputerTestHelper.compute("g.V.both.properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value", g);
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap() {
+            ComputerTestHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(dedup(Scope.local)).cap()", g);
         }
     }
 }

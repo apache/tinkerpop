@@ -18,10 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MeanTest
+import org.apache.tinkerpop.gremlin.process.Scope
+import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
+
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.bothE
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.mean
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -35,6 +38,10 @@ public abstract class GroovyMeanTest {
             g.V.age.mean
         }
 
+        @Override
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX() {
+            g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(mean(Scope.local)).cap()
+        }
     }
 
     public static class ComputerTest extends MeanTest {
@@ -42,6 +49,11 @@ public abstract class GroovyMeanTest {
         @Override
         public Traversal<Vertex, Double> get_g_V_age_mean() {
             ComputerTestHelper.compute("g.V.age.mean", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX() {
+            ComputerTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(mean(Scope.local)).cap()", g)
         }
     }
 }

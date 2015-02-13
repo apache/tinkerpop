@@ -20,16 +20,19 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.bothE;
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.mean;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -38,6 +41,7 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Double> get_g_V_age_mean();
 
+    public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -52,6 +56,19 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXsoftwareX_group_byXnameX_byXin_valuesXageX_foldX_byXmeanXlocalXX() {
+        final Traversal<Vertex, Map<String, Number>> traversal = get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Map<String, Number> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, map.size());
+        assertEquals(1.0, map.get("ripple"));
+        assertEquals(1.0 / 3, map.get("lop"));
+    }
+
     public static class StandardTest extends MeanTest {
 
         @Override
@@ -59,6 +76,10 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
             return g.V().values("age").mean();
         }
 
+        @Override
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX() {
+            return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).by(mean(Scope.local)).cap();
+        }
     }
 
     public static class ComputerTest extends MeanTest {
@@ -68,5 +89,10 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
             return g.V().values("age").mean();
         }
 
+        @Override
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX() {
+            return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).
+                    by(mean(Scope.local)).<Map<String, Number>>cap();
+        }
     }
 }

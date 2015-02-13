@@ -26,9 +26,8 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.*;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategyTest;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -48,6 +47,8 @@ import java.util.stream.Stream;
  * (note that the "Suite" implements ProcessComputerStandardSuite.GraphProvider as a convenience only. It could be
  * implemented in a separate class file):
  * <code>
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(ProcessComputerSuite.class)
  * @ProcessComputerSuite.GraphProviderClass(TinkerGraphProcessComputerTest.class) public class TinkerGraphProcessComputerTest implements GraphProvider {
  * }
@@ -57,8 +58,6 @@ import java.util.stream.Stream;
  * inject into tests in the suite.  The {@code ProcessComputerStandardSuite} will utilized Features defined in the
  * suite to determine which tests will be executed.
  * <br/>
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProcessComputerSuite extends AbstractGremlinSuite {
 
@@ -71,7 +70,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
     private static final Class<?>[] allTests = new Class<?>[]{
 
             // basic api semantics testing
-           // GraphComputerTest.ComputerTest.class,   // todo: not sure this should be here as it forces retest of GraphComputer without an "implementation"
+            // GraphComputerTest.ComputerTest.class,   // todo: not sure this should be here as it forces retest of GraphComputer without an "implementation"
 
             // branch
             BranchTest.ComputerTest.class,
@@ -84,7 +83,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             AndTest.ComputerTest.class,
             CoinTest.ComputerTest.class,
             CyclicPathTest.ComputerTest.class,
-            // TODO: DedupTest.ComputerTest.class
+            DedupTest.ComputerTest.class,
             ExceptTest.ComputerTest.class,
             FilterTest.ComputerTest.class,
             HasNotTest.ComputerTest.class,
@@ -105,6 +104,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             MaxTest.ComputerTest.class,
             MeanTest.ComputerTest.class,
             MinTest.ComputerTest.class,
+            SumTest.ComputerTest.class,
             // TODO: MatchTest.ComputerTest.class,
             OrderTest.ComputerTest.class,
             PathTest.ComputerTest.class,
@@ -180,6 +180,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             MaxTest.class,
             MeanTest.class,
             MinTest.class,
+            SumTest.class,
             // MatchTest.class,
             OrderTest.class,
             PathTest.class,

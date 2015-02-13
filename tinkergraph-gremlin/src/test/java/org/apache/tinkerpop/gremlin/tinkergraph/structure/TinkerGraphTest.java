@@ -21,18 +21,11 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper;
+import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Operator;
-import org.apache.tinkerpop.gremlin.structure.Order;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
@@ -44,13 +37,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -194,23 +182,20 @@ public class TinkerGraphTest {
     public void testPlayDK() throws Exception {
 
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().count().is(0l).profile().cap(TraversalMetrics.METRICS_KEY);
-        System.out.println(t.toString());
-        t.iterate();
-        System.out.println(t.toString());
+        Traversal t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(dedup(Scope.local)).cap();
+        t.forEachRemaining(System.out::println);
         System.out.println("--");
 
-        t = g.V().count().is(0l).profile().cap(TraversalMetrics.METRICS_KEY);
-        ((DefaultTraversal) t).getStrategies().removeStrategies(RangeByIsCountStrategy.class);
-        System.out.println(t.toString());
-        t.iterate();
-        System.out.println(t.toString());
+        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).cap();
+        t.forEachRemaining(System.out::println);
         System.out.println("--");
 
-        t = g.V().count().is(0l).profile().cap(TraversalMetrics.METRICS_KEY);
-        System.out.println(t.toString());
-        t.iterate();
-        System.out.println(t.toString());
+        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 2)).cap();
+        t.forEachRemaining(System.out::println);
+        System.out.println("--");
+
+        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 4)).cap();
+        t.forEachRemaining(System.out::println);
     }
 
     /**

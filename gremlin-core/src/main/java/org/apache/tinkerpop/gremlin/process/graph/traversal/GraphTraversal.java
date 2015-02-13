@@ -48,37 +48,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.SampleSt
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.SimplePathStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.TimeLimitStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.WhereStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.BackStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CoalesceStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountGlobalStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountLocalStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeOtherVertexStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.FoldStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.IdStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.KeyStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.LabelStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.LambdaFlatMapStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.LambdaMapStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MaxGlobalStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MaxLocalStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MeanGlobalStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MeanLocalStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MinGlobalStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MinLocalStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.OrderGlobalStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.OrderLocalStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PathStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertyMapStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertyValueStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SackStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SelectOneStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SelectStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SumGlobalStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SumLocalStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.UnfoldStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.MatchStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AggregateStep;
@@ -377,6 +347,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new DedupStep<>(this.asAdmin()));
     }
 
+    public default GraphTraversal<S, E> dedup(final Scope scope) {
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new DedupStep<>(this.asAdmin()) : new DedupLocalStep<>(this.asAdmin()));
+    }
+
     public default GraphTraversal<S, E> except(final String sideEffectKeyOrPathLabel) {
         return this.asAdmin().addStep(new ExceptStep<E>(this.asAdmin(), sideEffectKeyOrPathLabel));
     }
@@ -495,6 +469,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> sample(final int amountToSample) {
         return this.asAdmin().addStep(new SampleStep<>(this.asAdmin(), amountToSample));
+    }
+
+    public default GraphTraversal<S, E> sample(final Scope scope, final int amountToSample) {
+        return this.asAdmin().addStep(scope.equals(Scope.global)
+                ? new SampleStep<>(this.asAdmin(), amountToSample)
+                : new SampleLocalStep<>(this.asAdmin(), amountToSample));
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
