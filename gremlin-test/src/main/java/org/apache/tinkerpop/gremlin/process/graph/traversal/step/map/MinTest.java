@@ -20,15 +20,20 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -38,6 +43,8 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Integer> get_g_V_age_min();
 
     public abstract Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_min();
+
+    public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXminXlocalXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -49,6 +56,19 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
             printTraversalForm(traversal);
             checkResults(Arrays.asList(27), traversal);
         });
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXsoftwareX_group_byXnameX_byXin_valuesXageX_foldX_byXminXlocalXX() {
+        final Traversal<Vertex, Map<String, Number>> traversal = get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXminXlocalXX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Map<String, Number> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, map.size());
+        assertEquals(1.0, map.get("ripple"));
+        assertEquals(0.2, map.get("lop"));
     }
 
     public static class StandardTest extends MinTest {
@@ -63,6 +83,10 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
             return g.V().repeat(both()).times(5).values("age").min();
         }
 
+        @Override
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXminXlocalXX() {
+            return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).by(min(Scope.local)).cap();
+        }
     }
 
     public static class ComputerTest extends MinTest {
@@ -75,6 +99,12 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_min() {
             return g.V().repeat(both()).times(5).values("age").<Integer>min().submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXminXlocalXX() {
+            return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).
+                    by(min(Scope.local)).<Map<String, Number>>cap().submit(g.compute());
         }
     }
 }

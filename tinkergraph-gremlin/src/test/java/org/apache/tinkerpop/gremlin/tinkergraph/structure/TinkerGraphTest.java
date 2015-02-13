@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategy;
@@ -188,22 +189,9 @@ public class TinkerGraphTest {
     public void testPlayDK() throws Exception {
 
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().count().is(0l).profile().cap(TraversalMetrics.METRICS_KEY);
+        Traversal t = g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).cap();
         System.out.println(t.toString());
-        t.iterate();
-        System.out.println(t.toString());
-        System.out.println("--");
-
-        t = g.V().count().is(0l).profile().cap(TraversalMetrics.METRICS_KEY);
-        ((DefaultTraversal) t).getStrategies().removeStrategies(RangeByIsCountStrategy.class);
-        System.out.println(t.toString());
-        t.iterate();
-        System.out.println(t.toString());
-        System.out.println("--");
-
-        t = g.V().count().is(0l).profile().cap(TraversalMetrics.METRICS_KEY);
-        System.out.println(t.toString());
-        t.iterate();
+        t.forEachRemaining(System.out::println);
         System.out.println(t.toString());
     }
 
