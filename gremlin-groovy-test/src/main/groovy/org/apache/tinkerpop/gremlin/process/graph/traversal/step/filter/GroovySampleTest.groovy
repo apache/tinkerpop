@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.T
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -66,11 +67,13 @@ public abstract class GroovySampleTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX1X() {
+            g.engine(StandardTraversalEngine.instance());
             g.E.sample(1) // TODO: makes no sense when its global
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX2X_byXweightX() {
+            g.engine(StandardTraversalEngine.instance());
             g.E.sample(2).by('weight') // TODO: makes no sense when its global
         }
 

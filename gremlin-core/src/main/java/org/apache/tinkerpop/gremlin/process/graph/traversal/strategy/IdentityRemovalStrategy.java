@@ -34,7 +34,7 @@ public final class IdentityRemovalStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal) {
         if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
             return;
 

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -217,45 +218,53 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
-            return g.V().filter(v -> false);// TODO: .submit(g.compute());
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return g.V().filter(v -> false);// TODO: ;
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXtrueX() {
-            return g.V().filter(v -> true);// TODO: .submit(g.compute());
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return g.V().filter(v -> true);// TODO: ;
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX() {
-            return g.V().filter(v -> v.get().<String>property("lang").orElse("none").equals("java"));// TODO: .submit(g.compute());
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return g.V().filter(v -> v.get().<String>property("lang").orElse("none").equals("java"));// TODO: ;
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_filterXage_gt_30X(final Object v1Id) {
-            return g.V(v1Id).filter(v -> v.get().<Integer>property("age").orElse(0) > 30);// TODO: .submit(g.compute());
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return g.V(v1Id).filter(v -> v.get().<Integer>property("age").orElse(0) > 30);// TODO: ;
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_filterXage_gt_30X(final Object v1Id) {
-            return g.V(v1Id).out().filter(v -> v.get().<Integer>property("age").orElse(0) > 30);// TODO: .submit(g.compute());
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return g.V(v1Id).out().filter(v -> v.get().<Integer>property("age").orElse(0) > 30);// TODO: ;
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_filterXfalseX() {
-            return g.E().filter(v -> false);// TODO: .submit(g.compute());
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return g.E().filter(v -> false);// TODO: ;
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_filterXtrueX() {
-            return g.E().filter(v -> true);// TODO: .submit(g.compute());
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return g.E().filter(v -> true);// TODO: ;
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
+            g.engine(StandardTraversalEngine.instance()); // TODO
             return g.V().filter(v -> {
                 final String name = v.get().value("name");
                 return name.startsWith("m") || name.startsWith("p");
-            });// TODO: .submit(g.compute());
+            });// TODO: ;
         }
     }
 }

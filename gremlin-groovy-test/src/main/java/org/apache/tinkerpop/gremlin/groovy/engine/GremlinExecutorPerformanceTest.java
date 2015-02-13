@@ -64,7 +64,6 @@ public class GremlinExecutorPerformanceTest extends AbstractGremlinTest  {
     public final static int DEFAULT_BENCHMARK_ROUNDS = 500;
     public final static int DEFAULT_WARMUP_ROUNDS = 10;
 
-
     @Override
     public void setup() throws Exception {
         super.setup();

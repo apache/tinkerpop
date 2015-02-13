@@ -42,8 +42,8 @@ public class HadoopElementStepStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
-        if (engine.equals(TraversalEngine.STANDARD))
+    public void apply(final Traversal.Admin<?, ?> traversal) {
+        if (traversal.getEngine().isStandard())
             return;
 
         final StartStep<Element> startStep = (StartStep<Element>) traversal.getStartStep();

@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.T
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.bothE
@@ -58,19 +59,22 @@ public abstract class GroovyDedupTest {
     public static class ComputerTest extends DedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
-            g.V.both.dedup.name // TODO
+            g.engine(StandardTraversalEngine.instance()) // TODO
+            g.V.both.dedup.name
             //ComputerTestHelper.compute("g.V.both.dedup.name", g);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
-            g.V.both.has(T.label, 'software').dedup.by('lang').name // TODO
+            g.engine(StandardTraversalEngine.instance()) // TODO
+            g.V.both.has(T.label, 'software').dedup.by('lang').name
             //ComputerTestHelper.compute("g.V.both.has(T.label,'software').dedup.by('lang').name", g);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value() {
-            g.V().both().properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value // TODO
+            g.engine(StandardTraversalEngine.instance()) // TODO
+            g.V().both().properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value
             //ComputerTestHelper.compute("g.V.both.properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value", g);
         }
 

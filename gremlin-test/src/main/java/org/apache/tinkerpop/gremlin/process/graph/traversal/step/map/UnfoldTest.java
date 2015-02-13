@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -109,12 +110,13 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold() {
-            return (Traversal) g.V().local(outE().fold()).unfold().submit(g.compute());
+            return (Traversal) g.V().local(outE().fold()).unfold();
         }
 
         @Override
         public Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX() {
-            return g.V().valueMap().<Map.Entry<String, List>>unfold().map(m -> m.get().getKey()); // TODO: .submit(g.compute());
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return g.V().valueMap().<Map.Entry<String, List>>unfold().map(m -> m.get().getKey()); // TODO: ;
         }
     }
 }

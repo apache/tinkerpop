@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Order
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -101,22 +102,26 @@ public abstract class GroovyOrderTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXname_incrX_name() {
+            g.engine(StandardTraversalEngine.instance());
             g.V.order.by('name', Order.incr).name
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXnameX_name() {
+            g.engine(StandardTraversalEngine.instance());
             g.V.order.by('name', Order.incr).name
         }
 
         @Override
         public Traversal<Vertex, Double> get_g_V_outE_order_byXweight_decrX_weight() {
+            g.engine(StandardTraversalEngine.instance());
             g.V.outE.order.by('weight', Order.decr).weight
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
-            return g.V.order.by('name') { a, b -> a[1].compareTo(b[1]) }.by('name') { a, b -> b[2].compareTo(a[2]) }.name;
+            g.engine(StandardTraversalEngine.instance());
+             g.V.order.by('name') { a, b -> a[1].compareTo(b[1]) }.by('name') { a, b -> b[2].compareTo(a[2]) }.name;
         }
 
         @Override
@@ -141,6 +146,7 @@ public abstract class GroovyOrderTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX() {
+            g.engine(StandardTraversalEngine.instance());
             g.V.order.by(__.outE.count, Order.decr)
             // TODO ComputerTestHelper.compute("g.V.order.by(__.outE.count, Order.decr)", g)
         }

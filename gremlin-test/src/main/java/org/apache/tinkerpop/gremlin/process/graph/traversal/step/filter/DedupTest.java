@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
@@ -144,22 +145,25 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
-            return super.get_g_V_both_dedup_name()/*.submit(g.compute())*/; // TODO
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return super.get_g_V_both_dedup_name();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
-            return super.get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name()/*.submit(g.compute())*/; // TODO
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return super.get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value() {
-            return super.get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value()/*.submit(g.compute())*/; // TODO
+            g.engine(StandardTraversalEngine.instance()); // TODO
+            return super.get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value();
         }
 
         @Override
         public Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap() {
-            return super.get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap().submit(g.compute());
+            return super.get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap();
         }
     }
 }

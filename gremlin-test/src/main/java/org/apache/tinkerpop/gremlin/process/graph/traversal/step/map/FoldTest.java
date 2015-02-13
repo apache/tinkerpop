@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Operator;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -108,17 +109,18 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_fold() {
-            return g.V().fold().submit(g.compute());
+            return g.V().fold();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
+            g.engine(StandardTraversalEngine.instance()); // TODO
             return (Traversal) g.V().fold().unfold(); // Does not work in OLAP cause fold() is not an endstep.
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
-            return g.V().<Integer>values("age").fold(0, (BinaryOperator) Operator.sum).submit(g.compute());
+            return g.V().<Integer>values("age").fold(0, (BinaryOperator) Operator.sum);
         }
     }
 }

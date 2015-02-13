@@ -20,18 +20,12 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.process.ComputerTestHelper;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversal;
-import org.apache.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Operator;
-import org.apache.tinkerpop.gremlin.structure.Order;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
@@ -43,13 +37,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -108,7 +97,7 @@ public class TinkerGraphTest {
         v7.addEdge("link", v9, "weight", 1f);
         v8.addEdge("link", v9, "weight", 7f);
 
-        v1.withSack(() -> Float.MIN_VALUE).repeat(outE().sack(Operator.max, "weight").inV()).times(5).sack().submit(g.compute()).forEachRemaining(System.out::println);
+        v1.withSack(() -> Float.MIN_VALUE).repeat(outE().sack(Operator.max, "weight").inV()).times(5).sack().forEachRemaining(System.out::println);
     }
 
     @Test
@@ -149,8 +138,12 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().order().by(out().count(),Order.decr).values("name");
+        g.engine(ComputerTraversalEngine.instance());
+        //Traversal t = g.V().label().groupCount();
+        Traversal t  = ComputerTestHelper.compute("g.V().out('created').groupCount().by('name').values('name')", g);
+        System.out.println(t);
         t.forEachRemaining(System.out::println);
+        System.out.println(t);
     }
 
     @Test

@@ -163,27 +163,27 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coalesceXoutXfooX_outXbarXX() {
-            return super.get_g_V_coalesceXoutXfooX_outXbarXX().submit(g.compute());
+            return super.get_g_V_coalesceXoutXfooX_outXbarXX();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX(final Object v1Id) {
-            return super.get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX(v1Id).submit(g.compute());
+            return super.get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX(v1Id);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX(final Object v1Id) {
-            return super.get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX(v1Id).submit(g.compute());
+            return super.get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX(v1Id);
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX() {
-            return super.get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX().submit(g.compute());
+            return super.get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX();
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX() {
-            return super.get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX(); // TODO .submit(g.compute());
+            return super.get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX(); // TODO ;
         }
     }
 }

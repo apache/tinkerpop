@@ -86,13 +86,13 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_age_mean() {
-            return g.V().values("age").mean().submit(g.compute());
+            return g.V().values("age").mean();
         }
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX() {
             return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).
-                    by(mean(Scope.local)).<Map<String, Number>>cap().submit(g.compute());
+                    by(mean(Scope.local)).<Map<String, Number>>cap();
         }
     }
 }

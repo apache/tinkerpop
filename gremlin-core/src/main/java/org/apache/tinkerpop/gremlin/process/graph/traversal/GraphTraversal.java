@@ -23,12 +23,7 @@ import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.lambda.LoopTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.ComparatorHolder;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.TraversalOptionParent;
@@ -132,18 +127,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         @Override
         public GraphTraversal.Admin<S, E> clone() throws CloneNotSupportedException;
-    }
-
-    @Override
-    public default GraphTraversal<S, E> submit(final GraphComputer computer) {
-        try {
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this.asAdmin()).create();
-            final ComputerResult result = computer.program(vertexProgram).submit().get();
-            final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(result.graph().getClass());
-            return traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
-        } catch (final Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
     }
 
     @Override
@@ -769,7 +752,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     @Override
     public default void remove() {
         try {
-            this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
+            this.asAdmin().applyStrategies();
             final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
                 final Object object = endStep.next().get();

@@ -39,12 +39,6 @@ public abstract interface ElementTraversal<A extends Element> {
         throw new UnsupportedOperationException("This method must be implemented by the element");
     }
 
-    //////////////////////////////////////////////////////////////////////
-
-    public default GraphTraversal<A, A> submit(final GraphComputer graphComputer) {
-        return this.start().submit(graphComputer);
-    }
-
     ///////////////////// MAP STEPS /////////////////////
 
     public default <E2> GraphTraversal<A, E2> map(final Function<Traverser<A>, E2> function) {

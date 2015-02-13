@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
@@ -54,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.junit.Assert.*;
 
 /**
@@ -576,6 +578,35 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         } catch (ScriptException se) {
             assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
         }
+    }
+
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void shouldTimeoutOnEvalOfTraversalWhereIterateHasStarted() throws Exception {
+        // this is just a safety net test for groovy - see the gremlin-test/CoreTraversalTest for more
+        // complete testing of breaking out of iteration
+        final ScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Bindings b = new SimpleBindings();
+        b.put("g", g);
+
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
+
+        final Thread t = new Thread(() -> {
+            try {
+                engine.eval("g.V().out().out().out().out().out().out().out().out().out().out().out().iterate()", b);
+                fail("No way this should have completed in any reasonable time");
+            } catch (Exception ex) {
+                interrupted.set(ex.getCause().getCause().getClass().equals(TraversalInterruptedException.class));
+            }
+        });
+
+        t.start();
+
+        Thread.sleep(1000);
+        t.interrupt();
+        t.join();
+
+        assertTrue(interrupted.get());
     }
 
     public static class DenyAll extends GroovyValueFilter {

@@ -42,7 +42,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
 
-            GroovyGraphComputerTest.ComputerTest.class,
+            //GroovyGraphComputerTest.ComputerTest.class,
 
             //branch
             GroovyBranchTest.ComputerTest.class,

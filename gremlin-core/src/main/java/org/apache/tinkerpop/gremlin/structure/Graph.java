@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.io.DefaultIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
@@ -37,7 +39,6 @@ import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.strategy.SequenceStrategy;
 import org.apache.tinkerpop.gremlin.structure.strategy.StrategyGraph;
 import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
-import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.io.IOException;
@@ -139,7 +140,7 @@ public interface Graph extends AutoCloseable {
      * @return a graph traversal over the vertices of the graph
      */
     public default GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this.getClass());
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
         return traversal.addStep(new GraphStep<>(traversal, this, Vertex.class, vertexIds));
     }
 
@@ -151,7 +152,7 @@ public interface Graph extends AutoCloseable {
      * @return a graph traversal over the edges of the graph
      */
     public default GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(this.getClass());
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
         return traversal.addStep(new GraphStep<>(traversal, this, Edge.class, edgeIds));
     }
 
@@ -177,6 +178,11 @@ public interface Graph extends AutoCloseable {
      * @return A graph computer for processing this graph
      */
     public GraphComputer compute(final Class... graphComputerClass);
+
+    public TraversalEngine engine();
+
+    public void engine(final TraversalEngine engine);
+
 
     /**
      * Configure and control the transactions for those graphs that support this feature.

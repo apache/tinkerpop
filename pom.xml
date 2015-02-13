@@ -206,6 +206,43 @@ limitations under the License.
                     </archive>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <version>0.11</version>
+                <configuration>
+                    <excludeSubProjects>false</excludeSubProjects>
+                    <excludes>
+                        <exclude>docs/static/**</exclude>
+                        <exclude>docs/stylesheets/**</exclude>
+                        <exclude>**/target/**</exclude>
+                        <exclude>**/*.gio</exclude>
+                        <exclude>**/*.iml</exclude>
+                        <exclude>**/*.json</exclude>
+                        <exclude>**/*.xml</exclude>
+                        <exclude>**/*.ldjson</exclude>
+                        <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/tinkerpop-classic.txt</exclude>
+                        <exclude>**/src/main/resources/META-INF/services/**</exclude>
+                        <exclude>**/src/main/ext/**</exclude>
+                    </excludes>
+                    <licenses>
+                        <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
+                    </licenses>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.doxia</groupId>
+                        <artifactId>doxia-core</artifactId>
+                        <version>1.6</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>xerces</groupId>
+                                <artifactId>xercesImpl</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>

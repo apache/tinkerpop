@@ -20,9 +20,11 @@ package org.apache.tinkerpop.gremlin.structure.util.batch;
 
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.VertexTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -251,6 +253,16 @@ public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
     @Override
     public GraphComputer compute(final Class... graphComputerClass) {
         throw Exceptions.graphComputerNotSupported();
+    }
+
+    @Override
+    public TraversalEngine engine() {
+        return StandardTraversalEngine.instance();
+    }
+
+    @Override
+    public void engine(final TraversalEngine engine) {
+
     }
 
     @Override

@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.groovy;
 
+import groovy.grape.Grape;
+import groovy.json.JsonBuilder;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.algorithm.generator.AbstractGenerator;
 import org.apache.tinkerpop.gremlin.groovy.function.GFunction;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
@@ -32,6 +35,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Contains;
@@ -51,9 +55,6 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.tools.TimeUtils;
-import groovy.grape.Grape;
-import groovy.json.JsonBuilder;
-import org.apache.commons.configuration.Configuration;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
@@ -86,6 +87,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
         imports.add(GraphComputer.class.getPackage().getName() + DOT_STAR);
         imports.add(GraphTraversal.class.getPackage().getName() + DOT_STAR);
+        imports.add(ComputerTraversalEngine.class.getPackage().getName() + DOT_STAR);
         staticImports.add(__.class.getCanonicalName() + DOT_STAR);
         staticImports.add(TraversalOptionParent.Pick.class.getCanonicalName() + DOT_STAR);
 

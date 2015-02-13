@@ -225,49 +225,49 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_asXhereX_out_backXhereX(final Object v1Id) {
-            return g.V(v1Id).as("here").out().<Vertex>back("here").submit(g.compute());
+            return g.V(v1Id).as("here").out().<Vertex>back("here");
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX4X_out_asXhereX_hasXlang_javaX_backXhereX(final Object v4Id) {
-            return g.V(v4Id).out().as("here").has("lang", "java").<Vertex>back("here").submit(g.compute());
+            return g.V(v4Id).out().as("here").has("lang", "java").<Vertex>back("here");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX4X_out_asXhereX_hasXlang_javaX_backXhereX_name(final Object v4Id) {
-            return g.V(v4Id).out().as("here").has("lang", "java").back("here").<String>values("name").submit(g.compute());
+            return g.V(v4Id).out().as("here").has("lang", "java").back("here").<String>values("name");
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_outE_asXhereX_inV_hasXname_vadasX_backXhereX(final Object v1Id) {
-            return g.V(v1Id).outE().as("here").inV().has("name", "vadas").<Edge>back("here").submit(g.compute());
+            return g.V(v1Id).outE().as("here").inV().has("name", "vadas").<Edge>back("here");
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(final Object v1Id) {
-            return g.V(v1Id).outE("knows").has("weight", 1.0d).as("here").inV().has("name", "josh").<Edge>back("here").submit(g.compute());
+            return g.V(v1Id).outE("knows").has("weight", 1.0d).as("here").inV().has("name", "josh").<Edge>back("here");
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_backXhereX(final Object v1Id) {
-            return g.V(v1Id).outE("knows").as("here").has("weight", 1.0d).inV().has("name", "josh").<Edge>back("here").submit(g.compute());
+            return g.V(v1Id).outE("knows").as("here").has("weight", 1.0d).inV().has("name", "josh").<Edge>back("here");
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_backXhereX(final Object v1Id) {
-            return g.V(v1Id).outE("knows").as("here").has("weight", 1.0d).as("fake").inV().has("name", "josh").<Edge>back("here").submit(g.compute());
+            return g.V(v1Id).outE("knows").as("here").has("weight", 1.0d).as("fake").inV().has("name", "josh").<Edge>back("here");
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_backXhereX() {
-            return g.V().as("here").out().values("name").<Vertex>back("here").submit(g.compute());
+            return g.V().as("here").out().values("name").<Vertex>back("here");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_backXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_backXprojectXX_groupCount_byXnameX() {
             return (Traversal) g.V().out("created")
                     .union(as("project").in("created").has("name", "marko").back("project"),
-                            as("project").in("created").in("knows").has("name", "marko").back("project")).groupCount().by("name").submit(g.compute());
+                            as("project").in("created").in("knows").has("name", "marko").back("project")).groupCount().by("name");
         }
     }
 }

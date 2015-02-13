@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.engine;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.process.Traversal;
@@ -26,10 +28,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalScript;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.commons.configuration.Configuration;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -62,6 +61,7 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
         configuration.getKeys().forEachRemaining(key -> configurationMap.append("'").append(key).append("':'").append(configuration.getProperty(key)).append("',"));
         configurationMap.deleteCharAt(configurationMap.length() - 1).append("])\n");
         this.openGraphScript = configurationMap.toString();
+        this.openGraphScript = this.openGraphScript + "g.engine(ComputerTraversalEngine.instance())\n";
         return this;
     }
 
@@ -85,11 +85,12 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
     @Override
     public Future<Traversal<S, E>> traversal() {
         return CompletableFuture.<Traversal<S, E>>supplyAsync(() -> {
-            try {
-                final TraversalVertexProgram vertexProgram = this.program();
-                final ComputerResult result = this.graphComputer.program(vertexProgram).submit().get();
-                final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(result.graph().getClass());
-                return traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
+            try {;
+                final ComputerResult result = this.graphComputer.program(this.program()).submit().get();
+                final Traversal.Admin<S, E> traversal = (Traversal.Admin<S, E>) new GremlinGroovyScriptEngine().eval(this.makeFullScript());
+                traversal.applyStrategies();
+                ((ComputerResultStep) traversal.getEndStep()).populateTraversers(result);
+                return traversal;
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

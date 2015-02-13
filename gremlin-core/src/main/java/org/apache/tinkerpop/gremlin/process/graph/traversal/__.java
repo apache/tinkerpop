@@ -42,13 +42,7 @@ public class __ {
     //////////////////////////////////////////////////////////////////////
 
     public static <A> GraphTraversal<A, A> start() {
-        return new DefaultGraphTraversal<>(__.class);
-    }
-
-    //////////////////////////////////////////////////////////////////////
-
-    public static <A> GraphTraversal<A, A> submit(final GraphComputer graphComputer) {
-        return __.<A>start().submit(graphComputer);
+        return new DefaultGraphTraversal<>(new __());
     }
 
     ///////////////////// MAP STEPS /////////////////////

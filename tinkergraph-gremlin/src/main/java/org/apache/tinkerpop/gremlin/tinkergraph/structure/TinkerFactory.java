@@ -154,7 +154,7 @@ public class TinkerFactory {
             private final Graph graph;
 
             public DefaultSocialTraversal(final Graph graph) {
-                super(Graph.class); // should be SocialGraph.class, SocialVertex.class, etc. Perhaps...
+                super(graph); // should be SocialGraph.class, SocialVertex.class, etc. Perhaps...
                 this.graph = graph;
             }
 

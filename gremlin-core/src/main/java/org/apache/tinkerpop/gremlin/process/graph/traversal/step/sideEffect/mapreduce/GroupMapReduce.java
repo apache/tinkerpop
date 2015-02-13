@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.commons.configuration.Configuration;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -75,8 +74,8 @@ public final class GroupMapReduce implements MapReduce<Object, Collection, Objec
         this.sideEffectKey = configuration.getString(GROUP_BY_STEP_SIDE_EFFECT_KEY);
         this.groupStepId = configuration.getString(GROUP_BY_STEP_STEP_ID);
         final Traversal.Admin<?, ?> traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
-        if (!traversal.getEngine().isPresent())
-            traversal.applyStrategies(TraversalEngine.COMPUTER); // TODO: this is a scary error prone requirement, but only a problem for GroupStep
+        if (!traversal.isLocked())
+            traversal.applyStrategies(); // TODO: this is a scary error prone requirement, but only a problem for GroupStep
         final GroupStep groupStep = new TraversalMatrix<>(traversal).getStepById(this.groupStepId);
         this.reduceFunction = groupStep.getReduceTraversal();
         this.mapSupplier = traversal.getSideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);

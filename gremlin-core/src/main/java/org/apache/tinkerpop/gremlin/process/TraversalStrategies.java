@@ -56,7 +56,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      * @param traversal the traversal to apply the strategies to
      * @param engine    the engine that the traversal is going to be executed on
      */
-    public void applyStrategies(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine);
+    public void applyStrategies(final Traversal.Admin<?, ?> traversal);
 
     /**
      * Add all the provided {@link TraversalStrategy} instances to the current collection.

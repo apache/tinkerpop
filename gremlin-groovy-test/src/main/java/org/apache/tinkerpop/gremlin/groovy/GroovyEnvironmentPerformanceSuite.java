@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutorPerformanceTest;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
+import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoaderPerformanceTest;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -38,7 +39,8 @@ import java.util.stream.Stream;
 public class GroovyEnvironmentPerformanceSuite extends AbstractGremlinSuite {
 
     private static final Class<?>[] allTests = new Class<?>[]{
-            GremlinExecutorPerformanceTest.class
+            GremlinExecutorPerformanceTest.class,
+            SugarLoaderPerformanceTest.class
     };
 
     /**

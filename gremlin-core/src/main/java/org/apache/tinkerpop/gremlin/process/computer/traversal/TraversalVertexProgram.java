@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.TraverserGenerator;
@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.process.computer.util.LambdaHolder;
@@ -44,7 +45,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.commons.configuration.Configuration;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -108,14 +108,16 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             throw new IllegalArgumentException("The configuration does not have a traversal supplier");
         }
         this.traversal = this.traversalSupplier.get().get();
-        if (!this.traversal.getEngine().isPresent())
-            this.traversal.applyStrategies(TraversalEngine.COMPUTER);
+        if (!this.traversal.isLocked())
+            this.traversal.applyStrategies();
+
+        ((ComputerResultStep) this.traversal.getEndStep()).asIdentity = true;
         this.traversalMatrix = new TraversalMatrix<>(this.traversal);
         for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecurssively(MapReducer.class, this.traversal)) {
             this.mapReducers.add(mapReducer.getMapReduce());
         }
-        if (!(this.traversal.getEndStep() instanceof SideEffectCapStep))
-            this.mapReducers.add(new TraverserMapReduce(this.traversal.getEndStep()));
+        if (!(this.traversal.getEndStep().getPreviousStep() instanceof SideEffectCapStep))
+            this.mapReducers.add(new TraverserMapReduce(this.traversal.getEndStep().getPreviousStep()));
     }
 
     @Override

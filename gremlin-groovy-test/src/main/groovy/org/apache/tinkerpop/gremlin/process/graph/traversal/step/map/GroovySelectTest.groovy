@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Order
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -90,6 +91,7 @@ public abstract class GroovySelectTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(
                 final Object v1Id) {
+            g.engine(StandardTraversalEngine.instance());
             g.V(v1Id).as('a').out('knows').as('b').select.by('name')
             // TODO
         }
@@ -102,27 +104,32 @@ public abstract class GroovySelectTest {
         @Override
         public Traversal<Vertex, String> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX(
                 final Object v1Id) {
+            g.engine(StandardTraversalEngine.instance());
             g.V(v1Id).as('a').out('knows').as('b').select('a').by('name')
             //TODO
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_select_byXnameX() {
+            g.engine(StandardTraversalEngine.instance());
             g.V.as('a').out.as('b').select.by('name') // TODO computer
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX() {
+            g.engine(StandardTraversalEngine.instance());
             g.V.as('a').out.aggregate.as('b').select.by('name') // TODO computer
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by() {
+            g.engine(StandardTraversalEngine.instance());
             g.V().as('a').name.order().as('b').select.by('name').by // TODO: computer
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
+            g.engine(StandardTraversalEngine.instance());
             g.V.has('name', 'gremlin').inE('uses').order.by('skill', Order.incr).as('a').outV.as('b').select.by('skill').by('name')
             // TODO: computer
         }

@@ -41,7 +41,7 @@ public final class ConjunctionStrategy extends AbstractTraversalStrategy impleme
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine traversalEngine) {
+    public void apply(final Traversal.Admin<?, ?> traversal) {
         processConjunctionMarker(AndStep.AndMarker.class, traversal);
         processConjunctionMarker(OrStep.OrMarker.class, traversal);
     }

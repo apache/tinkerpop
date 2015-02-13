@@ -41,7 +41,7 @@ public final class SideEffectCapStrategy extends AbstractTraversalStrategy imple
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal) {
         if (traversal.getEndStep() instanceof SideEffectCapable && traversal.getParent() instanceof EmptyStep) {
             ((GraphTraversal) traversal).cap();
         }

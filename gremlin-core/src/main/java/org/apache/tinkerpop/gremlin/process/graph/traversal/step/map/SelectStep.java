@@ -87,7 +87,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public void onEngine(final TraversalEngine traversalEngine) {
-        this.requiresPaths = traversalEngine.equals(TraversalEngine.COMPUTER) ?
+        this.requiresPaths = traversalEngine.isComputer() ?
                 TraversalHelper.getLabelsUpTo(this, this.traversal.asAdmin()).stream().filter(this.selectLabels::contains).findAny().isPresent() :
                 TraversalHelper.getStepsUpTo(this, this.traversal.asAdmin()).stream()
                         .filter(step -> step instanceof CollectingBarrierStep)

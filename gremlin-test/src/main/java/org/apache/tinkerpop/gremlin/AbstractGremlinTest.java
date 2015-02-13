@@ -18,14 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -222,7 +221,7 @@ public abstract class AbstractGremlinTest {
         final boolean muted = Boolean.parseBoolean(System.getProperty("muteTestLogs", "false"));
 
         if (!muted) System.out.println("Testing: " + traversal);
-        traversal.asAdmin().applyStrategies(TraversalEngine.STANDARD); // for GraphComputer, this will always be the ComputerResultStep traversal
+        traversal.hasNext();
         if (!muted) System.out.println("         " + traversal);
     }
 

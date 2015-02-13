@@ -18,10 +18,28 @@
  */
 package org.apache.tinkerpop.gremlin.process;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum TraversalEngine {
+public interface TraversalEngine extends Serializable {
 
-    STANDARD, COMPUTER
+    public enum Type {STANDARD, COMPUTER}
+
+    public void processTraversal(final Traversal.Admin<?, ?> traversal);
+
+    public Type getType();
+
+    public void setGraph(final Graph graph);
+
+    public default boolean isStandard() {
+        return this.getType().equals(Type.STANDARD);
+    }
+
+    public default boolean isComputer() {
+        return this.getType().equals(Type.COMPUTER);
+    }
 }

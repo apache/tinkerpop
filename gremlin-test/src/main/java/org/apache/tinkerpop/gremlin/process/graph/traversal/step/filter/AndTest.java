@@ -83,12 +83,12 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_andXhasXage_gt_27X__outE_count_gt_2X_name() {
-            return g.V().and(has("age", gt, 27), outE().count().is(gte, 2l)).<String>values("name").submit(g.compute());
+            return g.V().and(has("age", gt, 27), outE().count().is(gte, 2l)).<String>values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_andXoutE__hasXlabel_personX_and_hasXage_gte_32XX_name() {
-            return g.V().and(outE(), has(T.label, "person").and().has("age", Compare.gte, 32)).<String>values("name").submit(g.compute());
+            return g.V().and(outE(), has(T.label, "person").and().has("age", Compare.gte, 32)).<String>values("name");
         }
     }
 }

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Operator;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
@@ -107,20 +108,21 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {
-            return g.V().withSack(0.0f).outE().sack(Operator.sum, "weight").inV().sack().sum().submit(g.compute());
+            return g.V().withSack(0.0f).outE().sack(Operator.sum, "weight").inV().sack().sum();
         }
 
         @Override
         public Traversal<Vertex, Float> get_g_V_withSackX0X_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-            return g.V().withSack(0.0f).repeat(outE().sack(Operator.sum, "weight").inV()).times(2).<Float>sack().submit(g.compute());
+            return g.V().withSack(0.0f).repeat(outE().sack(Operator.sum, "weight").inV()).times(2).<Float>sack();
         }
 
         @Override
         public Traversal<Vertex, Map> get_g_V_withSackXmap__map_cloneX_out_out_sackXmap_a_nameX_sack() {
+            g.engine(StandardTraversalEngine.instance()); // TODO
             return g.V().<HashMap>withSack(HashMap::new, m -> (HashMap) m.clone()).out().out().<Map>sack((map, vertex) -> {
                 map.put("a", vertex.value("name"));
                 return map;
-            }).<Map>sack(); // TODO: Make it so the .submit(g.compute());
+            }).<Map>sack(); // TODO: Make it so the ;
         }
     }
 }

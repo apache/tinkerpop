@@ -31,9 +31,7 @@ import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -93,18 +91,18 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_min() {
-            return g.V().values("age").<Integer>min().submit(g.compute());
+            return g.V().values("age").<Integer>min();
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_min() {
-            return g.V().repeat(both()).times(5).values("age").<Integer>min().submit(g.compute());
+            return g.V().repeat(both()).times(5).values("age").<Integer>min();
         }
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXminXlocalXX() {
             return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).
-                    by(min(Scope.local)).<Map<String, Number>>cap().submit(g.compute());
+                    by(min(Scope.local)).<Map<String, Number>>cap();
         }
     }
 }

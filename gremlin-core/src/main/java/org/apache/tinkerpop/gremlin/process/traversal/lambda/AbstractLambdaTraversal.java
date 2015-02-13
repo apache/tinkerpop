@@ -25,15 +25,15 @@ import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.TraverserGenerator;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traverser.O_TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traverser.O_TraverserGenerator;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -61,13 +61,13 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     }
 
     @Override
-    public void applyStrategies(final TraversalEngine engine) throws IllegalStateException {
+    public void applyStrategies() throws IllegalStateException {
 
     }
 
     @Override
-    public Optional<TraversalEngine> getEngine() {
-        return Optional.of(TraversalEngine.STANDARD);
+    public TraversalEngine getEngine() {
+        return StandardTraversalEngine.instance();
     }
 
     @Override
@@ -120,7 +120,18 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
         return true;
     }
 
+    @Override
     public void addStart(final Traverser<S> start) {
+    }
+
+    @Override
+    public boolean isLocked() {
+        return true;
+    }
+
+    @Override
+    public void setEngine(final TraversalEngine engine) {
+
     }
 
 }

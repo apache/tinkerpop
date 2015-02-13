@@ -59,7 +59,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     public void onEngine(final TraversalEngine traversalEngine) {
-        this.requiresPaths = traversalEngine.equals(TraversalEngine.COMPUTER) ?
+        this.requiresPaths = traversalEngine.isComputer() ?
                 TraversalHelper.getLabelsUpTo(this, this.traversal.asAdmin()).stream().filter(this.selectLabel::equals).findAny().isPresent() :
                 TraversalHelper.getStepsUpTo(this, this.traversal.asAdmin()).stream()
                         .filter(step -> step instanceof CollectingBarrierStep)

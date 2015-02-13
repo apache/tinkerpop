@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Contains;
@@ -32,12 +33,18 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
+import javax.script.Bindings;
+import javax.script.ScriptEngine;
+import javax.script.SimpleBindings;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
@@ -200,5 +207,98 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         g.tx().open();
         assertEquals(1, IteratorUtils.count(t));
         g.tx().rollback();
+    }
+
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void shouldTimeoutOnTraversalWhereIterateHasStarted() throws Exception {
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
+
+        final Thread t = new Thread(() -> {
+            try {
+                g.V().out().out().out().out().out().out().out().out().out().out().out().iterate();
+                fail("No way this should have completed in any reasonable time");
+            } catch (Exception ex) {
+                interrupted.set(ex.getClass().equals(TraversalInterruptedException.class));
+            }
+        });
+
+        t.start();
+
+        Thread.sleep(500);
+        t.interrupt();
+        t.join();
+
+        assertTrue(interrupted.get());
+    }
+
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void shouldTimeoutOnTraversalWhereForEachRemainingHasStarted() throws Exception {
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
+
+        final Thread t = new Thread(() -> {
+            try {
+                g.V().out().out().out().out().out().out().out().out().out().out().out().forEachRemaining(Object::toString);
+                fail("No way this should have completed in any reasonable time");
+            } catch (Exception ex) {
+                interrupted.set(ex.getClass().equals(TraversalInterruptedException.class));
+            }
+        });
+
+        t.start();
+
+        Thread.sleep(500);
+        t.interrupt();
+        t.join();
+
+        assertTrue(interrupted.get());
+    }
+
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void shouldTimeoutOnTraversalWhereNextingStarted() throws Exception {
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
+
+        final Thread t = new Thread(() -> {
+            try {
+                g.V().out().out().out().out().out().out().out().out().out().out().out().next(Integer.MAX_VALUE);
+                fail("No way this should have completed in any reasonable time");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                interrupted.set(ex.getClass().equals(TraversalInterruptedException.class));
+            }
+        });
+
+        t.start();
+
+        Thread.sleep(500);
+        t.interrupt();
+        t.join();
+
+        assertTrue(interrupted.get());
+    }
+
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void shouldTimeoutOnTraversalWhereFillStarted() throws Exception {
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
+
+        final Thread t = new Thread(() -> {
+            try {
+                g.V().out().out().out().out().out().out().out().out().out().out().out().fill(new ArrayList<>());
+                fail("No way this should have completed in any reasonable time");
+            } catch (Exception ex) {
+                interrupted.set(ex.getClass().equals(TraversalInterruptedException.class));
+            }
+        });
+
+        t.start();
+
+        Thread.sleep(500);
+        t.interrupt();
+        t.join();
+
+        assertTrue(interrupted.get());
     }
 }

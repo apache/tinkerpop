@@ -18,15 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
+import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
 import org.apache.tinkerpop.gremlin.hadoop.process.graph.traversal.strategy.HadoopElementStepStrategy;
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopEdgeIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopVertexIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -34,10 +40,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hadoop.mapreduce.InputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,6 +141,7 @@ public class HadoopGraph implements Graph, Graph.Iterators {
     }};
 
     protected final HadoopConfiguration configuration;
+    private TraversalEngine traversalEngine = StandardTraversalEngine.instance();
 
     private HadoopGraph(final Configuration configuration) {
         this.configuration = new HadoopConfiguration(configuration);
@@ -164,6 +167,16 @@ public class HadoopGraph implements Graph, Graph.Iterators {
             return new GiraphGraphComputer(this);
         else
             throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass[0]);
+    }
+
+    @Override
+    public TraversalEngine engine() {
+        return this.traversalEngine;
+    }
+
+    @Override
+    public void engine(final TraversalEngine engine) {
+        this.traversalEngine = engine;
     }
 
 

@@ -91,18 +91,18 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_max() {
-            return g.V().values("age").<Integer>max().submit(g.compute());
+            return g.V().values("age").<Integer>max();
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_max() {
-            return g.V().repeat(both()).times(5).values("age").<Integer>max().submit(g.compute());
+            return g.V().repeat(both()).times(5).values("age").<Integer>max();
         }
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmaxXlocalXX() {
             return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).
-                    by(max(Scope.local)).<Map<String, Number>>cap().submit(g.compute());
+                    by(max(Scope.local)).<Map<String, Number>>cap();
         }
     }
 }

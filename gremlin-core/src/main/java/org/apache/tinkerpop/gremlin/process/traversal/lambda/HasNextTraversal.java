@@ -120,13 +120,23 @@ public final class HasNextTraversal<S> implements Traversal.Admin<S, Boolean> {
     }
 
     @Override
-    public void applyStrategies(final TraversalEngine engine) throws IllegalStateException {
-        this.hasNextTraversal.applyStrategies(engine);
+    public boolean isLocked() {
+        return true;
     }
 
     @Override
-    public Optional<TraversalEngine> getEngine() {
+    public void applyStrategies() throws IllegalStateException {
+        this.hasNextTraversal.applyStrategies();
+    }
+
+    @Override
+    public TraversalEngine getEngine() {
         return this.hasNextTraversal.getEngine();
+    }
+
+    @Override
+    public void setEngine(final TraversalEngine engine) {
+
     }
 
     @Override

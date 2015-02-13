@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.process.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -35,6 +36,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
 import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -67,6 +69,10 @@ public abstract class HadoopElementIterator<E extends Element> implements Iterat
                     this.readers.add(inputFormat.createRecordReader(new FileSplit(status.getPath(), 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(configuration, new TaskAttemptID())));
                 }
             }
+        } catch (ClosedByInterruptException cbie) {
+            // this is the exception that seems to rise when a Traversal interrupt occurs.  Convert it to the
+            // common exception expected.
+            throw new TraversalInterruptedException(cbie);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

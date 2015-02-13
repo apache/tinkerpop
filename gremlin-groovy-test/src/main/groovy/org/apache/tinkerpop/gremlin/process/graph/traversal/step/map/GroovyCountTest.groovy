@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -99,6 +100,7 @@ public abstract class GroovyCountTest {
 
         @Override
         public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
+            g.engine(StandardTraversalEngine.instance());
             g.V.fold.count(Scope.local);   // TODO: fold
         }
     }

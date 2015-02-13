@@ -48,7 +48,7 @@ public final class BackStep<S, E> extends MapStep<S, E> implements EngineDepende
 
     @Override
     public void onEngine(final TraversalEngine traversalEngine) {
-        this.requiresPaths = traversalEngine.equals(TraversalEngine.COMPUTER);
+        this.requiresPaths = traversalEngine.isComputer();
     }
 
     @Override

@@ -34,10 +34,10 @@ public final class EngineDependentStrategy extends AbstractTraversalStrategy imp
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine traversalEngine) {
+    public void apply(final Traversal.Admin<?, ?> traversal) {
         traversal.getSteps().stream()
                 .filter(step -> step instanceof EngineDependent)
-                .forEach(step -> ((EngineDependent) step).onEngine(traversalEngine));
+                .forEach(step -> ((EngineDependent) step).onEngine(traversal.getEngine()));
     }
 
     public static EngineDependentStrategy instance() {

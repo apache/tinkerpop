@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.UnionTest
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*
@@ -100,6 +101,7 @@ public abstract class GroovyUnionTest {
         @Override
         public Traversal<Vertex, Number> get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(
                 final Object v1Id, final Object v2Id) {
+            g.engine(StandardTraversalEngine.instance());
             g.V(v1Id, v2Id).union(outE().count, inE().count, outE().weight.sum);
         }
     }

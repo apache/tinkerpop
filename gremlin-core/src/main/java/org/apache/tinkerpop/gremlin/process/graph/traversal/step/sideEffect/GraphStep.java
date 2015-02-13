@@ -84,7 +84,7 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
 
     @Override
     public void onEngine(final TraversalEngine traversalEngine) {
-        if (traversalEngine.equals(TraversalEngine.COMPUTER)) {
+        if (traversalEngine.isComputer()) {
             this.iteratorSupplier = Collections::emptyIterator;
         }
     }

@@ -55,7 +55,7 @@ public final class ProfileStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine traversalEngine) {
+    public void apply(final Traversal.Admin<?, ?> traversal) {
         if (!TraversalHelper.hasStepOfClass(ProfileStep.class, traversal))
             return;
 

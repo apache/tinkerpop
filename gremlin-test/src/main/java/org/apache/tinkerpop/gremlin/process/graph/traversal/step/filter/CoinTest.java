@@ -89,12 +89,12 @@ public abstract class CoinTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX1X() {
-            return g.V().coin(1.0d).submit(g.compute());
+            return g.V().coin(1.0d);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX0X() {
-            return g.V().coin(0.0d).submit(g.compute());
+            return g.V().coin(0.0d);
         }
     }
 }

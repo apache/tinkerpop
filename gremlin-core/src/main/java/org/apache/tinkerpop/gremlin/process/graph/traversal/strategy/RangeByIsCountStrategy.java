@@ -52,7 +52,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy impl
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal) {
         final int size = traversal.getSteps().size();
         Step prev = null;
         for (int i = 0; i < size; i++) {

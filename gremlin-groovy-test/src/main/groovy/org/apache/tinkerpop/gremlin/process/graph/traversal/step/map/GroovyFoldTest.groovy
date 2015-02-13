@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.FoldTest
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -53,6 +54,7 @@ public abstract class GroovyFoldTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
+            g.engine(StandardTraversalEngine.instance());
             g.V.fold.unfold    // Does not work in OLAP cause fold() is not an endstep.
         }
 
