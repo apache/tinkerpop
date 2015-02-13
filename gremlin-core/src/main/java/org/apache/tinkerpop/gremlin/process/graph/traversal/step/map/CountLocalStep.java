@@ -20,15 +20,11 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CountLocalStep<S> extends LocalAggregateStep<S, Long> {
+public final class CountLocalStep<S> extends LocalBarrierStep<S, Long> {
 
     public CountLocalStep(final Traversal.Admin traversal) {
         super(traversal);

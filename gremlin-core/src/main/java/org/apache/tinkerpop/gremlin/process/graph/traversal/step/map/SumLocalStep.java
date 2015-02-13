@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SumLocalStep<S> extends LocalAggregateStep<S, Double> {
+public final class SumLocalStep<S> extends LocalBarrierStep<S, Double> {
 
     public SumLocalStep(final Traversal.Admin traversal) {
         super(traversal);

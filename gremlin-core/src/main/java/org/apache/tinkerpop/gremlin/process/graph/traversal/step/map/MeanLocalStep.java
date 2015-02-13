@@ -20,15 +20,11 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MeanLocalStep<S> extends LocalAggregateStep<S, Double> {
+public final class MeanLocalStep<S> extends LocalBarrierStep<S, Double> {
 
     public MeanLocalStep(final Traversal.Admin traversal) {
         super(traversal);

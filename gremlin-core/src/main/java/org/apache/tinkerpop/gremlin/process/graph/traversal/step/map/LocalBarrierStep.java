@@ -30,9 +30,9 @@ import java.util.Set;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public abstract class LocalAggregateStep<S, E> extends MapStep<S, E> {
+public abstract class LocalBarrierStep<S, E> extends MapStep<S, E> {
 
-    public LocalAggregateStep(final Traversal.Admin traversal) {
+    public LocalBarrierStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
