@@ -11,6 +11,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Added `count(local)`, `sum(local)`, `max(local)`, `min(local)`, and `mean(local)` operating on the local object (e.g. collection, map, etc.)
 * `TraversalComparator` exists which allows for `order().by(outE().count(),decr)`.
+* A `Traversal` now respects thread interruption during iteration, throwing a `TraversalInterruptionException` if it encounters interruption on the current thread.
 * Apache refactoring: `com.tinkerpop` -> `org.apache.tinkerpop`.
 * `Traversal` is now `Serializable` and with 99% of queries no longer needing lambdas, Gremlin-Java works over the wire.
 * Added `VertexProperty.Cardinality` with `list`, `set`, and `single`. No more `Vertex.singleProperty()` method.
