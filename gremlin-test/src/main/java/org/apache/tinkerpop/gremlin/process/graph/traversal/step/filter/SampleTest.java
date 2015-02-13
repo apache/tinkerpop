@@ -20,10 +20,15 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.Scope;
+import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+
+import java.util.Collection;
+import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*;
@@ -39,6 +44,10 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Edge, Edge> get_g_E_sampleX2X_byXweightX();
 
     public abstract Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX();
+
+    public abstract Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX();
+
+    public abstract Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -73,6 +82,34 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
+        final Traversal<Vertex, Map<String, Collection<Double>>> traversal =
+                get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Map<String, Collection<Double>> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, map.size());
+        assertEquals(2, map.get("software").size());
+        assertEquals(2, map.get("person").size());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
+        final Traversal<Vertex, Map<String, Collection<Double>>> traversal =
+                get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Map<String, Collection<Double>> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, map.size());
+        assertEquals(4, map.get("software").size());
+        assertEquals(5, map.get("person").size());
+    }
+
     public static class StandardTest extends SampleTest {
 
         public StandardTest() {
@@ -93,26 +130,47 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX() {
             return g.V().local(outE().sample(1).by("weight"));
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
+            return g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 2)).cap();
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
+            return g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 5)).cap();
+        }
     }
 
-    public static class ComputerTest extends SampleTest {
+    public static class ComputerTest extends StandardTest {
+
         public ComputerTest() {
             requiresGraphComputer = true;
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX1X() {
-            return g.E().sample(1);   // TODO: makes no sense when its global
+            return super.get_g_E_sampleX1X();   // TODO: makes no sense when its global
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX2X_byXweightX() {
-            return g.E().sample(2).by("weight"); // TODO: makes no sense when its global
+            return super.get_g_E_sampleX2X_byXweightX(); // TODO: makes no sense when its global
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX() {
-            return g.V().local(outE().sample(1).by("weight")).submit(g.compute());
+            return super.get_g_V_localXoutE_sampleX1X_byXweightXX().submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
+            return super.get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX().submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
+            return super.get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX().submit(g.compute());
         }
     }
 }

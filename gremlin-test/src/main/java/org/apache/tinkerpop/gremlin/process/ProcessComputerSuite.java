@@ -83,7 +83,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             AndTest.ComputerTest.class,
             CoinTest.ComputerTest.class,
             CyclicPathTest.ComputerTest.class,
-            // TODO: DedupTest.ComputerTest.class
+            DedupTest.ComputerTest.class,
             ExceptTest.ComputerTest.class,
             FilterTest.ComputerTest.class,
             HasNotTest.ComputerTest.class,

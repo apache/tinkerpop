@@ -55,7 +55,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyAndTest.ComputerTest.class,
             GroovyCoinTest.ComputerTest.class,
             GroovyCyclicPathTest.ComputerTest.class,
-            // TODO: GroovyDedupTest.ComputerTest.class
+            GroovyDedupTest.ComputerTest.class,
             // TODO: GroovyExceptTest.ComputerTest.class,
             GroovyFilterTest.ComputerTest.class,
             GroovyHasNotTest.ComputerTest.class,

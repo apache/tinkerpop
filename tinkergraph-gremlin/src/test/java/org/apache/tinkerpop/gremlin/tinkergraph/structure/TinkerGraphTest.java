@@ -189,10 +189,20 @@ public class TinkerGraphTest {
     public void testPlayDK() throws Exception {
 
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).cap();
-        System.out.println(t.toString());
+        Traversal t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(dedup(Scope.local)).cap();
         t.forEachRemaining(System.out::println);
-        System.out.println(t.toString());
+        System.out.println("--");
+
+        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).cap();
+        t.forEachRemaining(System.out::println);
+        System.out.println("--");
+
+        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 2)).cap();
+        t.forEachRemaining(System.out::println);
+        System.out.println("--");
+
+        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 4)).cap();
+        t.forEachRemaining(System.out::println);
     }
 
     /**

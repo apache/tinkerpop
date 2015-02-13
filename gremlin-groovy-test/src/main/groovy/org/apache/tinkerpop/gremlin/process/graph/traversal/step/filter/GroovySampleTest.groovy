@@ -18,12 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter
 
+import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.Scope
+import org.apache.tinkerpop.gremlin.process.T
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.SampleTest
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
+
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.bothE
+import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.sample
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -46,6 +50,16 @@ public abstract class GroovySampleTest {
         public Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX() {
             g.V.local(__.outE.sample(1).by('weight'))
         }
+
+        @Override
+        Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
+            g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(Scope.local, 2)).cap()
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
+            g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(Scope.local, 5)).cap()
+        }
     }
 
     public static class ComputerTest extends SampleTest {
@@ -63,6 +77,16 @@ public abstract class GroovySampleTest {
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX() {
             ComputerTestHelper.compute("g.V.local(__.outE.sample(1).by('weight'))", g)
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
+            ComputerTestHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(Scope.local, 2)).cap()", g)
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
+            ComputerTestHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(Scope.local, 5)).cap()", g)
         }
     }
 }
