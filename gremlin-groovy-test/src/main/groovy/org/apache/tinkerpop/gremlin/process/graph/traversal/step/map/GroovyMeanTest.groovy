@@ -39,7 +39,7 @@ public abstract class GroovyMeanTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Integer>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX() {
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX() {
             g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(mean(Scope.local)).cap()
         }
     }
@@ -52,7 +52,7 @@ public abstract class GroovyMeanTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Integer>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX() {
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX() {
             ComputerTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(mean(Scope.local)).cap()", g)
         }
     }
