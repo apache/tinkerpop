@@ -73,6 +73,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PathStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertyValueStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.RangeLocalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SackStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SampleLocalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SelectOneStep;
@@ -477,8 +478,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> range(final Scope scope, final long low, final long high) {
         return this.asAdmin().addStep(scope.equals(Scope.global)
-        ? new RangeGlobalStep<>(this.asAdmin(), low, high)
-        : new RangeLocalStep<>(this.asAdmin(), low, high));
+                ? new RangeGlobalStep<>(this.asAdmin(), low, high)
+                : new RangeLocalStep<>(this.asAdmin(), low, high));
     }
 
     public default GraphTraversal<S, E> limit(final long limit) {
