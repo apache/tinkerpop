@@ -20,8 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.DedupStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
@@ -44,7 +43,7 @@ public final class DedupOptimizerStrategy extends AbstractTraversalStrategy {
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(DedupStep.class, traversal))
+        if (!TraversalHelper.hasStepOfClass(DedupGlobalStep.class, traversal))
             return;
 
         boolean done = false;
@@ -52,7 +51,7 @@ public final class DedupOptimizerStrategy extends AbstractTraversalStrategy {
             done = true;
             for (int i = 0; i < traversal.getSteps().size(); i++) {
                 final Step step1 = traversal.getSteps().get(i);
-                if (step1 instanceof DedupStep && !(((DedupStep) step1).getLocalChildren().get(0) instanceof IdentityTraversal)) {
+                if (step1 instanceof DedupGlobalStep && !(((DedupGlobalStep) step1).getLocalChildren().get(0) instanceof IdentityTraversal)) {
                     for (int j = i; j >= 0; j--) {
                         final Step step2 = traversal.getSteps().get(j);
                         if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(step2.getClass())).findAny().isPresent()) {

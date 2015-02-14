@@ -36,12 +36,12 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupStep<S> extends FilterStep<S> implements Reversible, Reducing<Set<Object>, S>, TraversalParent {
+public final class DedupGlobalStep<S> extends FilterStep<S> implements Reversible, Reducing<Set<Object>, S>, TraversalParent {
 
     private Traversal.Admin<S, Object> dedupTraversal = new IdentityTraversal<>();
     private Set<Object> duplicateSet = new HashSet<>();
 
-    public DedupStep(final Traversal.Admin traversal) {
+    public DedupGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
@@ -71,8 +71,8 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
     }
 
     @Override
-    public DedupStep<S> clone() throws CloneNotSupportedException {
-        final DedupStep<S> clone = (DedupStep<S>) super.clone();
+    public DedupGlobalStep<S> clone() throws CloneNotSupportedException {
+        final DedupGlobalStep<S> clone = (DedupGlobalStep<S>) super.clone();
         clone.duplicateSet = new HashSet<>();
         clone.dedupTraversal = clone.integrateChild(this.dedupTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
         return clone;

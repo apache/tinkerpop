@@ -35,7 +35,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.UnionSte
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.CoinStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.CyclicPathStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.DedupStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.ExceptStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasTraversalStep;
@@ -44,7 +44,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.LambdaFi
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RetainStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.SampleStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.SampleGlobalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.SimplePathStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.TimeLimitStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.WhereStep;
@@ -344,11 +344,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> dedup() {
-        return this.asAdmin().addStep(new DedupStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new DedupGlobalStep<>(this.asAdmin()));
     }
 
     public default GraphTraversal<S, E> dedup(final Scope scope) {
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new DedupStep<>(this.asAdmin()) : new DedupLocalStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new DedupGlobalStep<>(this.asAdmin()) : new DedupLocalStep<>(this.asAdmin()));
     }
 
     public default GraphTraversal<S, E> except(final String sideEffectKeyOrPathLabel) {
@@ -468,12 +468,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> sample(final int amountToSample) {
-        return this.asAdmin().addStep(new SampleStep<>(this.asAdmin(), amountToSample));
+        return this.asAdmin().addStep(new SampleGlobalStep<>(this.asAdmin(), amountToSample));
     }
 
     public default GraphTraversal<S, E> sample(final Scope scope, final int amountToSample) {
         return this.asAdmin().addStep(scope.equals(Scope.global)
-                ? new SampleStep<>(this.asAdmin(), amountToSample)
+                ? new SampleGlobalStep<>(this.asAdmin(), amountToSample)
                 : new SampleLocalStep<>(this.asAdmin(), amountToSample));
     }
 
