@@ -208,7 +208,6 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore("Fails on Neo4j -- infinite loop.")
     @LoadGraphWith(GRATEFUL)
     public void shouldTimeoutOnTraversalWhereIterateHasStarted() throws Exception {
         final AtomicBoolean interrupted = new AtomicBoolean(false);
@@ -232,7 +231,6 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore("Fails on Neo4j -- infinite loop.")
     @LoadGraphWith(GRATEFUL)
     public void shouldTimeoutOnTraversalWhereForEachRemainingHasStarted() throws Exception {
         final AtomicBoolean interrupted = new AtomicBoolean(false);
@@ -256,7 +254,6 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore("Fails on Neo4j -- infinite loop.")
     @LoadGraphWith(GRATEFUL)
     public void shouldTimeoutOnTraversalWhereNextingStarted() throws Exception {
         final AtomicBoolean interrupted = new AtomicBoolean(false);
@@ -281,7 +278,6 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore("Fails on Neo4j -- infinite loop.")
     @LoadGraphWith(GRATEFUL)
     public void shouldTimeoutOnTraversalWhereFillStarted() throws Exception {
         final AtomicBoolean interrupted = new AtomicBoolean(false);
