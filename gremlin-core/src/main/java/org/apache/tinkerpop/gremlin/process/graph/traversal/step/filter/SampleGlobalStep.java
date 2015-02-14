@@ -37,13 +37,13 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SampleStep<S> extends CollectingBarrierStep<S> implements Reversible, TraversalParent {
+public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implements Reversible, TraversalParent {
 
     private Traversal.Admin<S, Number> probabilityTraversal = new ConstantTraversal<>(1.0d);
     private final int amountToSample;
     private static final Random RANDOM = new Random();
 
-    public SampleStep(final Traversal.Admin traversal, final int amountToSample) {
+    public SampleGlobalStep(final Traversal.Admin traversal, final int amountToSample) {
         super(traversal);
         this.amountToSample = amountToSample;
     }
@@ -110,8 +110,8 @@ public final class SampleStep<S> extends CollectingBarrierStep<S> implements Rev
     }
 
     @Override
-    public SampleStep<S> clone() throws CloneNotSupportedException {
-        final SampleStep<S> clone = (SampleStep<S>) super.clone();
+    public SampleGlobalStep<S> clone() throws CloneNotSupportedException {
+        final SampleGlobalStep<S> clone = (SampleGlobalStep<S>) super.clone();
         clone.probabilityTraversal = clone.integrateChild(this.probabilityTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
         return clone;
     }
