@@ -33,13 +33,13 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Bob Briody (http://bobbriody.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RangeStep<S> extends FilterStep<S> implements Ranging {
+public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging {
 
     private final long low;
     private final long high;
     private AtomicLong counter = new AtomicLong(0l);
 
-    public RangeStep(final Traversal.Admin traversal, final long low, final long high) {
+    public RangeGlobalStep(final Traversal.Admin traversal, final long low, final long high) {
         super(traversal);
         if (low != -1 && high != -1 && low > high) {
             throw new IllegalArgumentException("Not a legal range: [" + low + ", " + high + ']');
@@ -100,8 +100,8 @@ public final class RangeStep<S> extends FilterStep<S> implements Ranging {
     }
 
     @Override
-    public RangeStep<S> clone() throws CloneNotSupportedException {
-        final RangeStep<S> clone = (RangeStep<S>) super.clone();
+    public RangeGlobalStep<S> clone() throws CloneNotSupportedException {
+        final RangeGlobalStep<S> clone = (RangeGlobalStep<S>) super.clone();
         clone.counter = new AtomicLong(0l);
         return clone;
     }

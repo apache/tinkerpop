@@ -22,10 +22,9 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasTraversalStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Contains;
@@ -49,7 +48,7 @@ public abstract class RangeByIsCountStrategyTest extends AbstractGremlinProcessT
             final AtomicInteger counter = new AtomicInteger(0);
             Traversal traversal = g.V().count().is(predicate, value);
             traversal.iterate();
-            TraversalHelper.getStepsOfClass(RangeStep.class, traversal.asAdmin()).stream().forEach(step -> {
+            TraversalHelper.getStepsOfClass(RangeGlobalStep.class, traversal.asAdmin()).stream().forEach(step -> {
                 assertEquals(0, step.getLowRange());
                 assertEquals(expectedHighRange, step.getHighRange());
                 counter.incrementAndGet();
@@ -126,7 +125,7 @@ public abstract class RangeByIsCountStrategyTest extends AbstractGremlinProcessT
             final Traversal traversal = g.V().has(__.outE("created").count().is(0)).iterate();
             final HasTraversalStep hasStep = TraversalHelper.getStepsOfClass(HasTraversalStep.class, traversal.asAdmin()).stream().findFirst().get();
             final Traversal nestedTraversal = (Traversal) hasStep.getLocalChildren().get(0);
-            TraversalHelper.getStepsOfClass(RangeStep.class, nestedTraversal.asAdmin()).stream().forEach(step -> {
+            TraversalHelper.getStepsOfClass(RangeGlobalStep.class, nestedTraversal.asAdmin()).stream().forEach(step -> {
                 assertEquals(0, step.getLowRange());
                 assertEquals(1, step.getHighRange());
                 counter.incrementAndGet();

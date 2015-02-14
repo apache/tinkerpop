@@ -182,19 +182,16 @@ public class TinkerGraphTest {
     public void testPlayDK() throws Exception {
 
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(dedup(Scope.local)).cap();
+        g.engine(ComputerTraversalEngine.instance());
+        Traversal t = g.V().hasLabel("software").as("s").local(inE("created").values("weight").fold()).as("p").select().by("name").by();
         t.forEachRemaining(System.out::println);
         System.out.println("--");
 
-        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).cap();
+        t = g.V().hasLabel("software").as("s").local(inE("created").values("weight").fold().limit(Scope.local, 1)).as("p").select().by("name").by();
         t.forEachRemaining(System.out::println);
         System.out.println("--");
 
-        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 2)).cap();
-        t.forEachRemaining(System.out::println);
-        System.out.println("--");
-
-        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 4)).cap();
+        t = g.V().hasLabel("software").as("s").local(inE("created").values("weight").fold().range(Scope.local, 1, 2)).as("p").select().by("name").by();
         t.forEachRemaining(System.out::println);
     }
 

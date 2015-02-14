@@ -160,10 +160,5 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
             g.engine(StandardTraversalEngine.instance()); // TODO
             return super.get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value();
         }
-
-        @Override
-        public Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap() {
-            return super.get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap();
-        }
     }
 }
