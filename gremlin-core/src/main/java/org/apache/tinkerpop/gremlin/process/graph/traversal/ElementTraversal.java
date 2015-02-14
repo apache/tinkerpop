@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.graph.traversal;
 
 import org.apache.tinkerpop.gremlin.process.*;
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.*;
 
 import java.util.Collection;
@@ -315,8 +314,16 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().range(low, high);
     }
 
+    public default GraphTraversal<A, A> range(final Scope scope, final long low, final long high) {
+        return this.start().range(scope, low, high);
+    }
+
     public default GraphTraversal<A, A> limit(final long limit) {
         return this.start().limit(limit);
+    }
+
+    public default GraphTraversal<A, A> limit(final Scope scope, final long limit) {
+        return this.start().limit(scope, limit);
     }
 
     public default GraphTraversal<A, A> retain(final String sideEffectKeyOrPathLabel) {

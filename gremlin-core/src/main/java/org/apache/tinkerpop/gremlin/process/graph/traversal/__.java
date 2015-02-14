@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.graph.traversal;
 
 import org.apache.tinkerpop.gremlin.process.*;
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -350,8 +349,16 @@ public class __ {
         return __.<A>start().range(low, high);
     }
 
+    public static <A> GraphTraversal<A, A> range(final Scope scope, final long low, final long high) {
+        return __.<A>start().range(scope, low, high);
+    }
+
     public static <A> GraphTraversal<A, A> limit(final long limit) {
         return __.<A>start().limit(limit);
+    }
+
+    public static <A> GraphTraversal<A, A> limit(final Scope scope, final long limit) {
+        return __.<A>start().limit(scope, limit);
     }
 
     public static <A> GraphTraversal<A, A> retain(final String sideEffectKeyOrPathLabel) {

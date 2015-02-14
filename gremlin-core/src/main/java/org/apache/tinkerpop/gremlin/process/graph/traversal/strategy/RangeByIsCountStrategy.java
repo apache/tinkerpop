@@ -20,10 +20,9 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.IsStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Compare;
@@ -59,14 +58,14 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy impl
             final Step curr = traversal.getSteps().get(i);
             if (curr instanceof CountGlobalStep && i < size - 1) {
                 final Step next = traversal.getSteps().get(i + 1);
-                if (next instanceof IsStep && !(prev instanceof RangeStep)) { // if a RangeStep was provided, assume that the user knows what he's doing
+                if (next instanceof IsStep && !(prev instanceof RangeGlobalStep)) { // if a RangeStep was provided, assume that the user knows what he's doing
                     final IsStep isStep = (IsStep) next;
                     final Object value = isStep.getValue();
                     final BiPredicate predicate = isStep.getPredicate();
                     if (value instanceof Number) {
                         final long highRangeOffset = INCREASED_OFFSET_SCALAR_PREDICATES.contains(predicate) ? 1L : 0L;
                         final long highRange = ((Number) value).longValue() + highRangeOffset;
-                        TraversalHelper.insertBeforeStep(new RangeStep<>(traversal, 0L, highRange), curr, traversal);
+                        TraversalHelper.insertBeforeStep(new RangeGlobalStep<>(traversal, 0L, highRange), curr, traversal);
                         i++;
                     } else {
                         final Long highRangeOffset = RANGE_PREDICATES.get(predicate);
@@ -74,7 +73,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy impl
                             final Object high = Collections.max((Collection) value);
                             if (high instanceof Number) {
                                 final long highRange = ((Number) high).longValue() + highRangeOffset;
-                                TraversalHelper.insertBeforeStep(new RangeStep<>(traversal, 0L, highRange), curr, traversal);
+                                TraversalHelper.insertBeforeStep(new RangeGlobalStep<>(traversal, 0L, highRange), curr, traversal);
                                 i++;
                             }
                         }

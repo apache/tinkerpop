@@ -42,7 +42,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasTrave
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.OrStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RetainStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.SampleGlobalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.SimplePathStep;
@@ -440,11 +440,21 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> range(final long low, final long high) {
-        return this.asAdmin().addStep(new RangeStep<>(this.asAdmin(), low, high));
+        return this.asAdmin().addStep(new RangeGlobalStep<>(this.asAdmin(), low, high));
+    }
+
+    public default GraphTraversal<S, E> range(final Scope scope, final long low, final long high) {
+        return this.asAdmin().addStep(scope.equals(Scope.global)
+        ? new RangeGlobalStep<>(this.asAdmin(), low, high)
+        : new RangeLocalStep<>(this.asAdmin(), low, high));
     }
 
     public default GraphTraversal<S, E> limit(final long limit) {
-        return this.range(0, limit);
+        return this.range(Scope.global, 0, limit);
+    }
+
+    public default GraphTraversal<S, E> limit(final Scope scope, final long limit) {
+        return this.range(scope, 0, limit);
     }
 
     public default GraphTraversal<S, E> retain(final String sideEffectKeyOrPathLabel) {
