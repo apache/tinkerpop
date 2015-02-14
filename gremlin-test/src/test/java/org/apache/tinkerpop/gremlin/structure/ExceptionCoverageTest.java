@@ -63,6 +63,7 @@ public class ExceptionCoverageTest {
         final Set<String> ignore = new HashSet<String>() {{
             // this is a general exception to be used as needed. it is not explicitly tested:
             add("org.apache.tinkerpop.gremlin.structure.Graph$Exceptions#argumentCanNotBeNull");
+            add("org.apache.tinkerpop.gremlin.structure.Graph$Exceptions#traversalEngineNotSupported");
 
             // todo: need to write consistency tests for the following items still...........
             add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");

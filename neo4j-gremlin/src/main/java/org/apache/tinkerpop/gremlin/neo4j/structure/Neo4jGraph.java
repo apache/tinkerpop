@@ -234,7 +234,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     @Override
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         this.tx().readWrite();
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(Neo4jGraph.class);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
         traversal.addStep(new Neo4jGraphStep<>(traversal, this, Vertex.class, vertexIds));
         return traversal;
     }
@@ -242,7 +242,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     @Override
     public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
         this.tx().readWrite();
-        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(Neo4jGraph.class);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
         traversal.addStep(new Neo4jGraphStep<>(traversal, this, Edge.class, edgeIds));
         return traversal;
     }
@@ -260,7 +260,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     @Override
     public void engine(final TraversalEngine traversalEngine) {
         if (!traversalEngine.getClass().equals(StandardTraversalEngine.class))
-            throw new IllegalArgumentException("The provided traversal engine is not supported by this graph: " + traversalEngine.getClass().getCanonicalName());
+            throw Graph.Exceptions.traversalEngineNotSupported(traversalEngine);
     }
 
     @Override
