@@ -56,7 +56,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_limitXlocal_1XX_asXwX_select_byXnameX_by();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_2XX_asXwX_select_byXnameX_by();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -178,8 +178,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_2XX_asXwX_select_byXnameX_by() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_2XX_asXwX_select_byXnameX_by();
+    public void g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -247,8 +247,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_2XX_asXwX_select_byXnameX_by() {
-            return g.V().hasLabel("software").as("s").local(inE("created").values("weight").fold().range(Scope.local, 1, 2)).as("w").select().by("name").by();
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by() {
+            return g.V().hasLabel("software").as("s").local(inE("created").values("weight").fold().range(Scope.local, 1, 3)).as("w").select().by("name").by();
         }
     }
 
@@ -307,9 +307,9 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_2XX_asXwX_select_byXnameX_by() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by() {
             g.engine(StandardTraversalEngine.instance()); // TODO: the traversal should work in computer mode, but throws a ClassCastException
-            return super.get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_2XX_asXwX_select_byXnameX_by();
+            return super.get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by();
         }
     }
 }

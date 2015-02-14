@@ -47,7 +47,7 @@ public final class RangeLocalStep<S> extends LocalBarrierStep<S, S> {
     protected S map(final Traverser.Admin<S> traverser) {
         Stream stream = this.collect(traverser).stream().skip(this.low);
         if (this.high != -1) {
-            stream = stream.limit(this.high);
+            stream = stream.limit(this.high - this.low);
         }
         return (S) stream.collect(Collectors.toList());
     }

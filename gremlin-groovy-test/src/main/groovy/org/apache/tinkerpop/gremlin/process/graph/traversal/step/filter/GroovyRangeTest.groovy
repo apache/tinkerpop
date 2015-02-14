@@ -72,8 +72,8 @@ public abstract class GroovyRangeTest {
         }
 
         @Override
-        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_2XX_asXwX_select_byXnameX_by() {
-            g.V().hasLabel('software').as('s').local(__.inE('created').values('weight').fold().range(Scope.local, 1, 2)).as('w').select().by('name').by()
+        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by() {
+            g.V().hasLabel('software').as('s').local(__.inE('created').values('weight').fold().range(Scope.local, 1, 3)).as('w').select().by('name').by()
         }
     }
 
@@ -137,11 +137,11 @@ public abstract class GroovyRangeTest {
         }
 
         @Override
-        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_2XX_asXwX_select_byXnameX_by() {
+        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by() {
             g.engine(StandardTraversalEngine.instance())
             // TODO: the traversal should work in computer mode, but throws a ClassCastException
-            g.V().hasLabel('software').as('s').local(__.inE('created').values('weight').fold().range(Scope.local, 1, 2)).as('w').select().by('name').by()
-            //ComputerTestHelper.compute("g.V().hasLabel('software').as('s').local(__.inE('created').values('weight').fold().range(Scope.local, 1, 2)).as('p').select().by('name').by()", g)
+            g.V().hasLabel('software').as('s').local(__.inE('created').values('weight').fold().range(Scope.local, 1, 3)).as('w').select().by('name').by()
+            //ComputerTestHelper.compute("g.V().hasLabel('software').as('s').local(__.inE('created').values('weight').fold().range(Scope.local, 1, 3)).as('p').select().by('name').by()", g)
         }
     }
 }
