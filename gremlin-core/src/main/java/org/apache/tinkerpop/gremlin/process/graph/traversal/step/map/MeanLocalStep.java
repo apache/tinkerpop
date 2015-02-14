@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.LocalBarrierStep;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
