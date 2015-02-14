@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
 import java.io.File;
@@ -88,9 +87,8 @@ public class HadoopRemoteAcceptor implements RemoteAcceptor {
         for (int i = 0; i < args.size(); i = i + 2) {
             if (args.get(i).equals(USE_SUGAR))
                 this.useSugarPlugin = Boolean.valueOf(args.get(i + 1));
-            else {
+            else
                 this.hadoopGraph.configuration().setProperty(args.get(i), args.get(i + 1));
-            }
         }
         return this.hadoopGraph;
     }
@@ -104,7 +102,7 @@ public class HadoopRemoteAcceptor implements RemoteAcceptor {
             final ComputerResult computerResult = traversal.result().get();
             this.shell.getInterp().getContext().setProperty(RESULT, computerResult);
 
-            final GraphTraversal.Admin<?, ?> traversal2 = new DefaultGraphTraversal<>(Graph.class);
+            final GraphTraversal.Admin<?, ?> traversal2 = new DefaultGraphTraversal<>(computerResult.graph());
             traversal2.addStep(new ComputerResultStep<>(traversal2, computerResult, false));
             traversal2.range(0, 19);
             return traversal2;

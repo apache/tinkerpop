@@ -85,7 +85,7 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
     @Override
     public Future<Traversal<S, E>> traversal() {
         return CompletableFuture.<Traversal<S, E>>supplyAsync(() -> {
-            try {;
+            try {
                 final ComputerResult result = this.graphComputer.program(this.program()).submit().get();
                 final Traversal.Admin<S, E> traversal = (Traversal.Admin<S, E>) new GremlinGroovyScriptEngine().eval(this.makeFullScript());
                 traversal.applyStrategies();

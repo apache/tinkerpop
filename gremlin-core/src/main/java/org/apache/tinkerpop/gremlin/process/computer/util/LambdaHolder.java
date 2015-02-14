@@ -98,7 +98,7 @@ public class LambdaHolder<S> {
             VertexProgramHelper.serialize(this.configObject, configuration, this.configKeyPrefix.concat(DOT_OBJECT));
         else if (this.type.equals(Type.CLASS))
             configuration.setProperty(this.configKeyPrefix.concat(DOT_OBJECT), ((Class) this.configObject).getCanonicalName());
-        else
+        else   // SCRIPT
             VertexProgramHelper.serialize(this.configObject, configuration, this.configKeyPrefix.concat(DOT_OBJECT));
     }
 
