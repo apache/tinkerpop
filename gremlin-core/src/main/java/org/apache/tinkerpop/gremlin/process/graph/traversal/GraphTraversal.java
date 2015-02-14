@@ -473,7 +473,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> range(final long low, final long high) {
-        return this.asAdmin().addStep(new RangeGlobalStep<>(this.asAdmin(), low, high));
+        return this.range(Scope.global, low, high);
     }
 
     public default GraphTraversal<S, E> range(final Scope scope, final long low, final long high) {
