@@ -34,6 +34,6 @@ public final class MinLocalStep<S> extends LocalBarrierStep<S, Number> {
     @Override
     protected Number map(final Traverser.Admin<S> traverser) {
         return this.<Number>collect(traverser).stream().mapToDouble(Number::doubleValue).min()
-                .orElseGet(() -> Double.NaN);
+                .orElse(Double.NaN);
     }
 }

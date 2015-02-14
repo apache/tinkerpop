@@ -34,6 +34,6 @@ public final class MeanLocalStep<S> extends LocalBarrierStep<S, Double> {
     @Override
     protected Double map(final Traverser.Admin<S> traverser) {
         return this.<Number>collect(traverser).stream().mapToDouble(Number::doubleValue).average()
-                .orElseGet(() -> Double.NaN);
+                .orElse(Double.NaN);
     }
 }
