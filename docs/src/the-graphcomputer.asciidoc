@@ -322,6 +322,19 @@ While 5 iterations were presented, in fact, `TraversalVertexProgram` will execut
 
 When the computation is complete a <<mapreduce,MapReduce>> job executes which aggregates all the `groupCount()` sideEffect Map (i.e. "`HashMap`") objects on each vertex into a single local representation (thus, turning the distributed Map representation into a local Map representation).
 
+////
+The same OLAP traversal can be executed using the standard `g.compute()` model, though at the expense of verbosity. `TraversalVertexProgram` provides a fluent `Builder` for constructing a `TraversalVertexProgram`. The specified `traversal()` can be either a `Supplier<Traversal>` object, a `Supplier<Traversal>` class, or a link:http://en.wikipedia.org/wiki/Scripting_for_the_Java_Platform[JSR-223] script that will generate (i.e. supply) a `Traversal`. If `traversal()` is supplied a single string, it is assumed that "gremlin-groovy" is the `ScriptEngine` to use. If two strings are supplied, then the first string denotes the `ScriptEngine` to evaluate the second string script with in order to generate (i.e. supply) the `Traversal`.
+
+[gremlin-groovy,modern]
+----
+//g.engine(ComputerTraversalEngine.instance())
+//result = g.compute().program(TraversalVertexProgram.build().traversal(g.V().both().hasLabel('person').values('age').groupCount('a')).create()).submit().get()
+//result.memory().a
+//result.memory().iteration
+//result.memory().runtime
+----
+////
+
 [[distributed-gremlin-gotchas]]
 Distributed Gremlin Gotchas
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
