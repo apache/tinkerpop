@@ -251,7 +251,14 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         }
 
         public Builder traversal(final Traversal.Admin traversal) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, TRAVERSAL_SUPPLIER, new TraversalSupplier(traversal));
+            return this.traversal(traversal, true);
+        }
+
+        public Builder traversal(final Traversal.Admin traversal, boolean serialize) {
+            if (serialize)
+                LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SERIALIZED_OBJECT, TRAVERSAL_SUPPLIER, new TraversalSupplier(traversal, false));
+            else
+                LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, TRAVERSAL_SUPPLIER, new TraversalSupplier(traversal, true));
             return this;
         }
 

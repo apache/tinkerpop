@@ -182,5 +182,4 @@ public class TinkerGraphComputer implements GraphComputer {
             return this.iterator.hasNext() ? this.iterator.next() : null;
         }
     }
-
 }

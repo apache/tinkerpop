@@ -139,8 +139,8 @@ public class TinkerGraphTest {
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
         g.engine(ComputerTraversalEngine.instance());
-        //Traversal t = g.V().label().groupCount();
-        Traversal t  = ComputerTestHelper.compute("g.V().out('created').groupCount().by('name').values('name')", g);
+        Traversal t = g.V().map(v -> v.get().value("name"));
+        //Traversal t  = ComputerTestHelper.compute("g.V().out('created').groupCount().by('name').values('name')", g);
         System.out.println(t);
         t.forEachRemaining(System.out::println);
         System.out.println(t);
