@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
@@ -182,16 +181,19 @@ public class TinkerGraphTest {
     public void testPlayDK() throws Exception {
 
         Graph g = TinkerFactory.createModern();
-        g.engine(ComputerTraversalEngine.instance());
-        Traversal t = g.V().hasLabel("software").as("s").local(inE("created").values("weight").fold()).as("p").select().by("name").by();
+        Traversal t = g.V().hasLabel("person").as("p").local(out("created").values("name").fold().limit(Scope.local, 1));
         t.forEachRemaining(System.out::println);
         System.out.println("--");
 
-        t = g.V().hasLabel("software").as("s").local(inE("created").values("weight").fold().limit(Scope.local, 1)).as("p").select().by("name").by();
+        t = g.V().hasLabel("person").group().by("name").by(out("created").values("name").fold()).cap().limit(Scope.local, 2);
         t.forEachRemaining(System.out::println);
         System.out.println("--");
 
-        t = g.V().hasLabel("software").as("s").local(inE("created").values("weight").fold().range(Scope.local, 1, 2)).as("p").select().by("name").by();
+        t = g.V().hasLabel("person").as("p").local(out("created").values("name").fold().sample(Scope.local, 1));
+        t.forEachRemaining(System.out::println);
+        System.out.println("--");
+
+        t = g.V().hasLabel("person").group().by("name").by(out("created").values("name").fold()).cap().sample(Scope.local, 2);
         t.forEachRemaining(System.out::println);
     }
 
