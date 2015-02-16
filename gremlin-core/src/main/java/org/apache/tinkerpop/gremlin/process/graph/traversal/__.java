@@ -273,6 +273,10 @@ public class __ {
         return __.<A>start().has(hasNextTraversal);
     }
 
+    public static <A> GraphTraversal<A, A> hasNot(final Traversal<?, ?> hasNotNextTraversal) {
+        return __.<A>start().hasNot(hasNotNextTraversal);
+    }
+
     public static <A> GraphTraversal<A, A> has(final String key) {
         return __.<A>start().has(key);
     }

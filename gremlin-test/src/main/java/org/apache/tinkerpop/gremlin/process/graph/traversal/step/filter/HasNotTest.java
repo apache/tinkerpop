@@ -21,11 +21,13 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,6 +44,8 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey);
 
+    public abstract Traversal<Vertex, String> get_g_V_hasNotXoutXcreatedXX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_hasNotXprop() {
@@ -56,11 +60,18 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void get_g_V_hasNotXprop() {
+    public void g_V_hasNotXprop() {
         Traversal<Vertex, Vertex> traversal = get_g_V_hasNotXprop("circumference");
         printTraversalForm(traversal);
         final List<Element> list = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(6, list.size());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasNotXoutXcreatedXX() {
+        Traversal<Vertex, String> traversal = get_g_V_hasNotXoutXcreatedXX();
+        checkResults(Arrays.asList("vadas", "lop", "ripple"), traversal);
     }
 
     public static class StandardTest extends HasNotTest {
@@ -77,21 +88,16 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey) {
             return g.V().hasNot(propertyKey);
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasNotXoutXcreatedXX() {
+            return g.V().hasNot(__.out("created")).values("name");
+        }
     }
 
-    public static class ComputerTest extends HasNotTest {
+    public static class ComputerTest extends StandardTest {
         public ComputerTest() {
             requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_hasNotXprop(final Object v1Id, final String propertyKey) {
-            return g.V(v1Id).hasNot(propertyKey);
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey) {
-            return g.V().hasNot(propertyKey);
         }
     }
 }
