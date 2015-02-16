@@ -19,18 +19,20 @@
 
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.LocalBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.util.BulkSet;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class SampleLocalStep<S> extends LocalBarrierStep<S, S> {
+public final class SampleLocalStep<S> extends MapStep<S, S> {
+
+    private static final Random RANDOM = new Random();
 
     private final int amountToSample;
 
@@ -41,9 +43,65 @@ public final class SampleLocalStep<S> extends LocalBarrierStep<S, S> {
 
     @Override
     protected S map(final Traverser.Admin<S> traverser) {
-        final List elements = new ArrayList(this.collect(traverser));
-        if (elements.size() <= this.amountToSample) return (S) elements;
-        Collections.shuffle(elements);
-        return (S) elements.subList(0, this.amountToSample);
+        final S start = traverser.get();
+        if (start instanceof Map) {
+            return mapMap((Map) start);
+        } else if (start instanceof Collection) {
+            return mapCollection((Collection) start);
+        } else if (RANDOM.nextDouble() > 0.5d) {
+            throw FastNoSuchElementException.instance();
+        }
+        return start;
+    }
+
+    private S mapCollection(final Collection collection) {
+        final int size = collection.size();
+        if (size <= this.amountToSample) {
+            return (S) collection;
+        }
+        final double individualWeight = 1.0d / size;
+        final Collection result = new BulkSet();
+        double runningWeight = 0.0d;
+        int runningAmountToSample = 0;
+        while (runningAmountToSample < this.amountToSample) {
+            for (final Object item : collection) {
+                runningWeight = runningWeight + individualWeight;
+                if (RANDOM.nextDouble() <= (runningWeight / size)) {
+                    result.add(item);
+                    if (++runningAmountToSample == this.amountToSample) {
+                        break;
+                    }
+                }
+            }
+        }
+        return (S) result;
+    }
+
+    private S mapMap(final Map map) {
+        final int size = map.size();
+        if (size <= this.amountToSample) {
+            return (S) map;
+        }
+        final double individualWeight = 1.0d / size;
+        final Map result = new HashMap(this.amountToSample);
+        double runningWeight = 0.0d;
+        while (result.size() < this.amountToSample) {
+            for (final Object obj : map.entrySet()) {
+                runningWeight = runningWeight + individualWeight;
+                final Map.Entry entry = (Map.Entry) obj;
+                if (RANDOM.nextDouble() <= (runningWeight / size)) {
+                    result.put(entry.getKey(), entry.getValue());
+                    if (result.size() == this.amountToSample) {
+                        break;
+                    }
+                }
+            }
+        }
+        return (S) result;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.OBJECT);
     }
 }

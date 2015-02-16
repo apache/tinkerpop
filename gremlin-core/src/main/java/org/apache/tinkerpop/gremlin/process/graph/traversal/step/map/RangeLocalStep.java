@@ -21,15 +21,14 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.LocalBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.*;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class RangeLocalStep<S> extends LocalBarrierStep<S, S> {
+public final class RangeLocalStep<S> extends MapStep<S, S> {
 
     private final long low;
     private final long high;
@@ -45,10 +44,41 @@ public final class RangeLocalStep<S> extends LocalBarrierStep<S, S> {
 
     @Override
     protected S map(final Traverser.Admin<S> traverser) {
-        Stream stream = this.collect(traverser).stream().skip(this.low);
-        if (this.high != -1) {
-            stream = stream.limit(this.high - this.low);
+        final S start = traverser.get();
+        if (start instanceof Map) {
+            final Map map = (Map) start;
+            final long capacity = (this.high != -1 ? this.high : map.size()) - this.low;
+            final Map result = new LinkedHashMap((int) Math.min(capacity, map.size()));
+            long c = 0L;
+            for (final Object obj : map.entrySet()) {
+                final Map.Entry entry = (Map.Entry) obj;
+                if (c >= this.low) {
+                    if (c < this.high || this.high == -1) {
+                        result.put(entry.getKey(), entry.getValue());
+                    } else break;
+                }
+                c++;
+            }
+            return (S) result;
+        } else if (start instanceof Collection) {
+            final Collection collection = (Collection) start;
+            final Collection result = (collection instanceof Set) ? new TreeSet() : new LinkedList();
+            long c = 0L;
+            for (final Object item : collection) {
+                if (c >= this.low) {
+                    if (c < this.high || this.high == -1) {
+                        result.add(item);
+                    } else break;
+                }
+                c++;
+            }
+            return (S) result;
         }
-        return (S) stream.collect(Collectors.toList());
+        return start;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.OBJECT);
     }
 }
