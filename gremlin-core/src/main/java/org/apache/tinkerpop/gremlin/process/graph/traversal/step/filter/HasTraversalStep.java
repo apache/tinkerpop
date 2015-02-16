@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -37,9 +37,11 @@ import java.util.Set;
 public final class HasTraversalStep<S> extends AbstractStep<S, S> implements TraversalParent {
 
     private Traversal.Admin<S, ?> hasTraversal;
+    private final boolean negate;
 
-    public HasTraversalStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?> hasTraversal) {
+    public HasTraversalStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?> hasTraversal, final boolean negate) {
         super(traversal);
+        this.negate = negate;
         this.integrateChild(this.hasTraversal = hasTraversal, TYPICAL_LOCAL_OPERATIONS);
     }
 
@@ -47,14 +49,15 @@ public final class HasTraversalStep<S> extends AbstractStep<S, S> implements Tra
     protected Traverser<S> processNextStart() throws NoSuchElementException {
         while (true) {
             final Traverser.Admin<S> start = this.starts.next();
-            if (TraversalUtil.test(start, this.hasTraversal))
+            if (TraversalUtil.test(start, this.hasTraversal) != negate)
                 return start;
         }
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.hasTraversal);
+        final String stepString = TraversalHelper.makeStepString(this, this.hasTraversal);
+        return this.negate ? stepString.replaceFirst("\\(", "(!") : stepString;
     }
 
     @Override

@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasNotTest
+import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -38,6 +38,11 @@ public abstract class GroovyHasNotTest {
         public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey) {
             g.V.hasNot(propertyKey)
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasNotXoutXcreatedXX() {
+            return g.V().hasNot(__.out('created')).values('name');
+        }
     }
 
     public static class ComputerTest extends HasNotTest {
@@ -49,6 +54,11 @@ public abstract class GroovyHasNotTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey) {
             ComputerTestHelper.compute("g.V.hasNot('${propertyKey}')", g);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasNotXoutXcreatedXX() {
+            ComputerTestHelper.compute("return g.V().hasNot(__.out('created')).values('name')", g);
         }
     }
 }

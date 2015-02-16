@@ -238,6 +238,10 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().has(hasNextTraversal);
     }
 
+    public default GraphTraversal<A, A> hasNot(final Traversal<?, ?> hasNotNextTraversal) {
+        return this.start().hasNot(hasNotNextTraversal);
+    }
+
     public default GraphTraversal<A, A> has(final String key) {
         return this.start().has(key);
     }
