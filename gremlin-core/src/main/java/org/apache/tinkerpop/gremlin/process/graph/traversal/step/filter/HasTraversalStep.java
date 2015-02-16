@@ -56,7 +56,8 @@ public final class HasTraversalStep<S> extends AbstractStep<S, S> implements Tra
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.hasTraversal);
+        final String stepString = TraversalHelper.makeStepString(this, this.hasTraversal);
+        return this.negate ? stepString.replaceFirst("\\(", "(!") : stepString;
     }
 
     @Override
