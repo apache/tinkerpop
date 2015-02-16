@@ -22,8 +22,12 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.util.BulkSet;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -58,14 +62,15 @@ public final class SampleLocalStep<S> extends MapStep<S, S> {
             return (S) collection;
         }
         final double individualWeight = 1.0d / size;
-        final Collection result = (collection instanceof Set) ? new HashSet() : new ArrayList();
+        final Collection result = new BulkSet();
         double runningWeight = 0.0d;
-        while (result.size() < this.amountToSample) {
+        int runningAmountToSample = 0;
+        while (runningAmountToSample < this.amountToSample) {
             for (final Object item : collection) {
                 runningWeight = runningWeight + individualWeight;
                 if (RANDOM.nextDouble() <= (runningWeight / size)) {
                     result.add(item);
-                    if (result.size() == this.amountToSample) {
+                    if (++runningAmountToSample == this.amountToSample) {
                         break;
                     }
                 }

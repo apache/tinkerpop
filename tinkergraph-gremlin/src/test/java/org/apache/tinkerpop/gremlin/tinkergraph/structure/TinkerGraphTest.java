@@ -195,6 +195,10 @@ public class TinkerGraphTest {
 
         t = g.V().hasLabel("person").group().by("name").by(out("created").values("name").fold()).cap().sample(Scope.local, 2);
         t.forEachRemaining(System.out::println);
+        System.out.println("--");
+
+        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 5)).cap();
+        t.forEachRemaining(System.out::println);
     }
 
     /**
