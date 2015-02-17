@@ -23,8 +23,8 @@ import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -37,7 +37,7 @@ public final class DedupLocalStep<E, S extends Iterable<E>> extends MapStep<S, S
 
     @Override
     protected Set<E> map(final Traverser.Admin<S> traverser) {
-        final Set<E> result = new TreeSet<>();
+        final Set<E> result = new LinkedHashSet<>();
         for (final E item : traverser.get()) {
             result.add(item);
         }
