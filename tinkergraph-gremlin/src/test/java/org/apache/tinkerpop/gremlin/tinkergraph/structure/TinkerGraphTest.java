@@ -199,6 +199,10 @@ public class TinkerGraphTest {
 
         t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 5)).cap();
         t.forEachRemaining(System.out::println);
+
+        System.out.println("--");
+        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(order(Scope.local).by(Order.keyDecr)).cap();
+        t.forEachRemaining(System.out::println);
     }
 
     /**
