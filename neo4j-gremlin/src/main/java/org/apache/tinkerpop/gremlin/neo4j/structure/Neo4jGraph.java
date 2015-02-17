@@ -399,7 +399,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
      */
     public <S, E> GraphTraversal<S, E> cypher(final String query, final Map<String, Object> parameters) {
         this.tx().readWrite();
-        final GraphTraversal.Admin<S, E> traversal = new DefaultGraphTraversal<>(Neo4jGraph.class);
+        final GraphTraversal.Admin<S, E> traversal = new DefaultGraphTraversal<>(this);
         traversal.addStep(new StartStep(traversal, new Neo4jCypherIterator<S>((ResourceIterator) this.cypher.execute(query, parameters).iterator(), this)));
         return traversal;
     }
