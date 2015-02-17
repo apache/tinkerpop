@@ -26,6 +26,7 @@ import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 import com.carrotsearch.junitbenchmarks.annotation.LabelType;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -34,13 +35,14 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.out;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
 @AxisRange(min = 0, max = 1)
 @BenchmarkMethodChart(filePrefix = "gremlin-traversal")
 @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-gremlin-traversal")
 public class TraversalPerformanceTest extends AbstractGremlinTest {
 
-    public final static int DEFAULT_BENCHMARK_ROUNDS = 25;
+    public final static int DEFAULT_BENCHMARK_ROUNDS = 10;
     public final static int DEFAULT_WARMUP_ROUNDS = 5;
 
     @Rule
@@ -100,5 +102,29 @@ public class TraversalPerformanceTest extends AbstractGremlinTest {
     @Test
     public void g_V_out_mapXout_out_valuesXnameX_toListX() throws Exception {
         g.V().out().map(v -> v.get().out().out().values("name").toList()).iterate();
+    }
+
+    @BenchmarkOptions(benchmarkRounds = DEFAULT_BENCHMARK_ROUNDS, warmupRounds = DEFAULT_WARMUP_ROUNDS, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
+    @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
+    @Test
+    public void g_V_label_groupCount_cap() throws Exception {
+        g.V().label().groupCount().cap().iterate();
+    }
+
+    @BenchmarkOptions(benchmarkRounds = DEFAULT_BENCHMARK_ROUNDS, warmupRounds = DEFAULT_WARMUP_ROUNDS, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
+    @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
+    @Test
+    public void g_V_match_selectXbX_valuesXnameX() throws Exception {
+        g.V().match("a",
+                __.as("a").has("name", "Garcia"),
+                __.as("a").in("writtenBy").as("b"),
+                __.as("a").in("sungBy").as("b")).select("b").values("name").iterate();
+    }
+
+    @BenchmarkOptions(benchmarkRounds = DEFAULT_BENCHMARK_ROUNDS, warmupRounds = DEFAULT_WARMUP_ROUNDS, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
+    @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
+    @Test
+    public void g_E_hasLabelXwrittenByX_hasNotXinV_inEXsungByXX_subgraph() throws Exception {
+        g.E().hasLabel("writtenBy").hasNot(__.inV().inE("sungBy")).subgraph().iterate();
     }
 }
