@@ -366,6 +366,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_cap_asXxX_select() {
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().label().groupCount().cap().as("x").select();
         }
 

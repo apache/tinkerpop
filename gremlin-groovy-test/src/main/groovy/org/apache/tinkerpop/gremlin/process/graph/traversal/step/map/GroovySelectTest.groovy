@@ -152,7 +152,9 @@ public abstract class GroovySelectTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_cap_asXxX_select() {
-            ComputerTestHelper.compute("g.V().label().groupCount().cap().as('x').select()", g)
+            g.engine(StandardTraversalEngine.standard);
+            g.V().label().groupCount().cap().as('x').select()
+            //ComputerTestHelper.compute("g.V().label().groupCount().cap().as('x').select()", g)
         }
 
         @Override
