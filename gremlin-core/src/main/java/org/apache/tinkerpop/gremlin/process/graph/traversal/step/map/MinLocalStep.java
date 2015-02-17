@@ -20,20 +20,40 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.LocalBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class MinLocalStep<S> extends LocalBarrierStep<S, Number> {
+public final class MinLocalStep<E extends Number, S extends Iterable<E>> extends MapStep<S, E> {
 
     public MinLocalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected Number map(final Traverser.Admin<S> traverser) {
-        return this.<Number>collect(traverser).stream().mapToDouble(Number::doubleValue).min()
-                .orElse(Double.NaN);
+    protected E map(final Traverser.Admin<S> traverser) {
+        Double result;
+        final Iterator<E> iter = traverser.get().iterator();
+        if (iter.hasNext()) {
+            result = (Double) iter.next();
+            while (iter.hasNext()) {
+                final Double curr = (Double) iter.next();
+                if (result > curr) result = curr;
+            }
+        } else {
+            result = Double.NaN;
+        }
+        return (E) result;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.OBJECT);
     }
 }

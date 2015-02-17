@@ -20,12 +20,17 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.LocalBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class MeanLocalStep<S> extends LocalBarrierStep<S, Double> {
+public final class MeanLocalStep<E extends Number, S extends Iterable<E>> extends MapStep<S, Double> {
 
     public MeanLocalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -33,7 +38,22 @@ public final class MeanLocalStep<S> extends LocalBarrierStep<S, Double> {
 
     @Override
     protected Double map(final Traverser.Admin<S> traverser) {
-        return this.<Number>collect(traverser).stream().mapToDouble(Number::doubleValue).average()
-                .orElse(Double.NaN);
+        final Iterator<E> iter = traverser.get().iterator();
+        if (iter.hasNext()) {
+            Long counter = 1L;
+            Double result = (Double) iter.next();
+            while (iter.hasNext()) {
+                result += (Double) iter.next();
+                counter++;
+            }
+            return result / counter;
+        } else {
+            return Double.NaN;
+        }
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.OBJECT);
     }
 }
