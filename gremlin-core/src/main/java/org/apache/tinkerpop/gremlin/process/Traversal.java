@@ -316,12 +316,18 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
         public void applyStrategies() throws IllegalStateException;
 
         /**
-         * @return whether the traversal engine associated with this traversal.
+         * Get the {@link TraversalEngine} that will be used to execute this traversal.
+         *
+         * @return get the traversal engine associated with this traversal.
          */
         public TraversalEngine getEngine();
 
+        /**
+         * Set the {@link TraversalEngine} to be used for executing this traversal.
+         *
+         * @param engine the engine to execute the traversal with.
+         */
         public void setEngine(final TraversalEngine engine);
-
 
         /**
          * Get the {@link TraverserGenerator} associated with this traversal.
@@ -420,6 +426,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
          */
         public Traversal.Admin<S, E> clone() throws CloneNotSupportedException;
 
+        /**
+         * When the traversal has had its {@link TraversalStrategies} applied to it, it is locked.
+         *
+         * @return whether the traversal is locked
+         */
         public boolean isLocked();
 
     }

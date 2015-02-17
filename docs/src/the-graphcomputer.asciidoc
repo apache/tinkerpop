@@ -310,6 +310,8 @@ g.engine(computer)
 g.V().both().hasLabel('person').values('age').groupCount().next() // OLAP
 ----
 
+image::olap-traversal.png[width=650]
+
 In the OLAP example above, a `TraversalVertexProgram` is (logically) sent to each vertex in the graph. Each instance evaluation requires (logically) 5 BSP iterations and each iteration is interpreted as such:
 
  . `g.V()`: Put a traverser on each vertex in the graph.

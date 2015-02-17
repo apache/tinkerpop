@@ -18,7 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal;
 
-import org.apache.tinkerpop.gremlin.process.*;
+import org.apache.tinkerpop.gremlin.process.Path;
+import org.apache.tinkerpop.gremlin.process.Scope;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -28,7 +33,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -42,6 +54,12 @@ public class __ {
 
     public static <A> GraphTraversal<A, A> start() {
         return new DefaultGraphTraversal<>(new __());
+    }
+
+    public static <A> GraphTraversal<A, A> __(final Object start) {
+        final GraphTraversal.Admin<A, A> traversal = new DefaultGraphTraversal<>(start);
+        traversal.addStep(new StartStep<>(traversal, start));
+        return traversal;
     }
 
     ///////////////////// MAP STEPS /////////////////////
