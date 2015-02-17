@@ -100,7 +100,7 @@ public abstract class GroovyCountTest {
 
         @Override
         public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard);
             g.V.fold.count(Scope.local);   // TODO: fold
         }
     }

@@ -102,25 +102,25 @@ public abstract class GroovyOrderTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXname_incrX_name() {
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard);
             g.V.order.by('name', Order.incr).name
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXnameX_name() {
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard);
             g.V.order.by('name', Order.incr).name
         }
 
         @Override
         public Traversal<Vertex, Double> get_g_V_outE_order_byXweight_decrX_weight() {
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard);
             g.V.outE.order.by('weight', Order.decr).weight
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard);
              g.V.order.by('name') { a, b -> a[1].compareTo(b[1]) }.by('name') { a, b -> b[2].compareTo(a[2]) }.name;
         }
 
@@ -146,7 +146,7 @@ public abstract class GroovyOrderTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX() {
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard);
             g.V.order.by(__.outE.count, Order.decr)
             // TODO ComputerTestHelper.compute("g.V.order.by(__.outE.count, Order.decr)", g)
         }

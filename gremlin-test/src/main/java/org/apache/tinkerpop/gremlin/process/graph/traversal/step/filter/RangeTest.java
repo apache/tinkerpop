@@ -260,55 +260,55 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_limitX2X(Object v1Id) {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return super.get_g_VX1X_out_limitX2X(v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_localXoutE_limitX1X_inVX_limitX3X() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return super.get_g_V_localXoutE_limitX1X_inVX_limitX3X();
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXknowsX_outEXcreatedX_rangeX0_1X_inV(Object v1Id) {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return super.get_g_VX1X_outXknowsX_outEXcreatedX_rangeX0_1X_inV(v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXknowsX_outXcreatedX_rangeX0_1X(Object v1Id) {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return super.get_g_VX1X_outXknowsX_outXcreatedX_rangeX0_1X(v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_rangeX1_3X(Object v1Id) {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return super.get_g_VX1X_outXcreatedX_inXcreatedX_rangeX1_3X(v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV(Object v1Id) {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return super.get_g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV(v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return super.get_g_V_repeatXbothX_timesX3X_rangeX5_11X();
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_limitXlocal_1XX_asXwX_select_byXnameX_by() {
-            g.engine(StandardTraversalEngine.instance()); // TODO: the traversal should work in computer mode, but throws a ClassCastException
+            g.engine(StandardTraversalEngine.standard); // TODO the traversal should work in computer mode, but throws a ClassCastException
             return super.get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_limitXlocal_1XX_asXwX_select_byXnameX_by();
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by() {
-            g.engine(StandardTraversalEngine.instance()); // TODO: the traversal should work in computer mode, but throws a ClassCastException
+            g.engine(StandardTraversalEngine.standard); // TODO the traversal should work in computer mode, but throws a ClassCastException
             return super.get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by();
         }
     }

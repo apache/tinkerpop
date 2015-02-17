@@ -67,13 +67,13 @@ public abstract class GroovySampleTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX1X() {
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard);
             g.E.sample(1) // TODO: makes no sense when its global
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX2X_byXweightX() {
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard);
             g.E.sample(2).by('weight') // TODO: makes no sense when its global
         }
 

@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
  */
 public final class StandardTraversalEngine implements TraversalEngine {
 
-    private static StandardTraversalEngine INSTANCE = new StandardTraversalEngine();
+    public static final StandardTraversalEngine standard = new StandardTraversalEngine();
 
     private StandardTraversalEngine() {
 
@@ -44,11 +44,7 @@ public final class StandardTraversalEngine implements TraversalEngine {
     }
 
     @Override
-    public void setGraph(final Graph graph) {
-
-    }
-
-    public static StandardTraversalEngine instance() {
-        return INSTANCE;
+    public StandardTraversalEngine create(final Graph graph) {
+        return standard;
     }
 }

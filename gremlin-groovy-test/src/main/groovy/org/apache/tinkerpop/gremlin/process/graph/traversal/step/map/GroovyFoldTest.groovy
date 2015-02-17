@@ -54,7 +54,7 @@ public abstract class GroovyFoldTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard);
             g.V.fold.unfold    // Does not work in OLAP cause fold() is not an endstep.
         }
 

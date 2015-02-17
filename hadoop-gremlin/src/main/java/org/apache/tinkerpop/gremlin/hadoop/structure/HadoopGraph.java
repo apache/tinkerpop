@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -141,7 +140,7 @@ public class HadoopGraph implements Graph, Graph.Iterators {
     }};
 
     protected final HadoopConfiguration configuration;
-    private TraversalEngine traversalEngine = StandardTraversalEngine.instance();
+    private TraversalEngine traversalEngine = StandardTraversalEngine.standard;
 
     private HadoopGraph(final Configuration configuration) {
         this.configuration = new HadoopConfiguration(configuration);
@@ -161,12 +160,14 @@ public class HadoopGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public GraphComputer compute(final Class... graphComputerClass) {
-        GraphComputerHelper.validateComputeArguments(graphComputerClass);
-        if (graphComputerClass.length == 0 || graphComputerClass[0].equals(GiraphGraphComputer.class))
-            return new GiraphGraphComputer(this);
-        else
-            throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass[0]);
+    public void compute(final Class<? extends GraphComputer> graphComputerClass) {
+        if (!graphComputerClass.equals(GiraphGraphComputer.class))
+            throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+    }
+
+    @Override
+    public GraphComputer compute() {
+        return new GiraphGraphComputer(this);
     }
 
     @Override
@@ -177,7 +178,6 @@ public class HadoopGraph implements Graph, Graph.Iterators {
     @Override
     public void engine(final TraversalEngine traversalEngine) {
         this.traversalEngine = traversalEngine;
-        this.traversalEngine.setGraph(this);
     }
 
 

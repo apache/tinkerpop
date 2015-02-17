@@ -58,11 +58,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     public DefaultTraversal(final Object emanatingObject) {
         this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(emanatingObject.getClass()));
         if (emanatingObject instanceof Graph)
-            this.traversalEngine = ((Graph) emanatingObject).engine();
+            this.traversalEngine = ((Graph) emanatingObject).engine().create((Graph) emanatingObject);
         else if (emanatingObject instanceof Element)
-            this.traversalEngine = ((Element) emanatingObject).graph().engine();
+            this.traversalEngine = ((Element) emanatingObject).graph().engine().create(((Element) emanatingObject).graph());
         else
-            this.traversalEngine = StandardTraversalEngine.instance();
+            this.traversalEngine = StandardTraversalEngine.standard;
     }
 
     @Override
@@ -84,7 +84,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 }
                 for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
                     localChild.setStrategies(this.strategies);
-                    localChild.setEngine(StandardTraversalEngine.instance());
+                    localChild.setEngine(StandardTraversalEngine.standard);
                     localChild.applyStrategies();
                 }
             }

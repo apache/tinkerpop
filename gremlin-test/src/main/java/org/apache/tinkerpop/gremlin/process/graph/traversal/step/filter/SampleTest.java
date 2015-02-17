@@ -151,30 +151,20 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX1X() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return super.get_g_E_sampleX1X();
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX2X_byXweightX() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return super.get_g_E_sampleX2X_byXweightX();
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return super.get_g_V_localXoutE_sampleX1X_byXweightXX();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
-            return super.get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
-            return super.get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX();
         }
     }
 }

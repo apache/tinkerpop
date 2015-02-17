@@ -23,16 +23,19 @@ import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class ComputerTraversalEngine implements TraversalEngine {
 
-    private transient Graph graph;
+    public static final ComputerTraversalEngine computer = new ComputerTraversalEngine(EmptyGraph.instance());
 
-    private ComputerTraversalEngine() {
+    private final transient Graph graph;
 
+    private ComputerTraversalEngine(final Graph graph) {
+        this.graph = graph;
     }
 
     @Override
@@ -42,16 +45,12 @@ public final class ComputerTraversalEngine implements TraversalEngine {
     }
 
     @Override
-    public void setGraph(final Graph graph) {
-        this.graph = graph;
-    }
-
-    @Override
     public Type getType() {
         return Type.COMPUTER;
     }
 
-    public static ComputerTraversalEngine instance() {
-        return new ComputerTraversalEngine();
+    @Override
+    public ComputerTraversalEngine create(final Graph graph) {
+        return new ComputerTraversalEngine(graph);
     }
 }

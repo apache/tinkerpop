@@ -59,21 +59,21 @@ public abstract class GroovyDedupTest {
     public static class ComputerTest extends DedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
-            g.engine(StandardTraversalEngine.instance()) // TODO
+            g.engine(StandardTraversalEngine.standard) // TODO
             g.V.both.dedup.name
             //ComputerTestHelper.compute("g.V.both.dedup.name", g);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
-            g.engine(StandardTraversalEngine.instance()) // TODO
+            g.engine(StandardTraversalEngine.standard) // TODO
             g.V.both.has(T.label, 'software').dedup.by('lang').name
             //ComputerTestHelper.compute("g.V.both.has(T.label,'software').dedup.by('lang').name", g);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value() {
-            g.engine(StandardTraversalEngine.instance()) // TODO
+            g.engine(StandardTraversalEngine.standard) // TODO
             g.V().both().properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value
             //ComputerTestHelper.compute("g.V.both.properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value", g);
         }

@@ -178,7 +178,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_outXknowsX_bX() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().has("age").as("a").out().in().has("age").as("b").select().where(as("a").out("knows").as("b"));
         }
     }

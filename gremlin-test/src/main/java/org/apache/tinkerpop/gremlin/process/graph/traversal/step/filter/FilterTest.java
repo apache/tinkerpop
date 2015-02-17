@@ -218,49 +218,49 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().filter(v -> false);// TODO: ;
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXtrueX() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().filter(v -> true);// TODO: ;
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().filter(v -> v.get().<String>property("lang").orElse("none").equals("java"));// TODO: ;
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_filterXage_gt_30X(final Object v1Id) {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V(v1Id).filter(v -> v.get().<Integer>property("age").orElse(0) > 30);// TODO: ;
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_filterXage_gt_30X(final Object v1Id) {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V(v1Id).out().filter(v -> v.get().<Integer>property("age").orElse(0) > 30);// TODO: ;
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_filterXfalseX() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.E().filter(v -> false);// TODO: ;
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_filterXtrueX() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.E().filter(v -> true);// TODO: ;
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().filter(v -> {
                 final String name = v.get().value("name");
                 return name.startsWith("m") || name.startsWith("p");

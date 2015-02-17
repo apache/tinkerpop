@@ -114,7 +114,7 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return (Traversal) g.V().fold().unfold(); // Does not work in OLAP cause fold() is not an endstep.
         }
 

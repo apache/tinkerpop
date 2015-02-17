@@ -101,7 +101,7 @@ public interface GraphProvider {
     default public Graph openTestGraph(final Configuration config, final GraphStrategy... strategies) {
         final Graph g = GraphFactory.open(config);
         if (config.containsKey("computer") && (boolean) config.getProperty("computer"))
-            g.engine(ComputerTraversalEngine.instance());
+            g.engine(ComputerTraversalEngine.computer);
         return null == strategies ? g : g.strategy(strategies);
     }
 

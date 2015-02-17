@@ -77,14 +77,14 @@ public abstract class GroovyMapTest {
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
             // TODO: Doesn't work for graph computer because sideEffects are not accessible
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard);
             g.V.as('a').out.map { v -> v.path('a').name };
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
             // TODO: Doesn't work for graph computer because sideEffects are not accessible
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard);
             g.V().as('a').out.out().map { v -> v.path('a').name + v.name };
         }
     }

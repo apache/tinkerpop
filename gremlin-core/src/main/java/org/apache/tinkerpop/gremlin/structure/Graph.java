@@ -170,14 +170,22 @@ public interface Graph extends AutoCloseable {
     }
 
     /**
-     * Create an OLAP {@link GraphComputer} to execute a vertex program over this graph.
+     * Declare the {@link GraphComputer} to use for OLAP operations on the graph.
      * If the graph does not support graph computer then an {@link java.lang.UnsupportedOperationException} is thrown.
-     * The provided arguments can be of either length 0 or 1. A graph can support multiple graph computers.
      *
-     * @param graphComputerClass The graph computer class to use (if no argument, then a default is selected by the graph)
+     * @param graphComputerClass The graph computer class to use.
+     * @throws IllegalArgumentException if the provided {@link GraphComputer} class is not supported.
+     */
+    public void compute(final Class<? extends GraphComputer> graphComputerClass) throws IllegalArgumentException;
+
+    /**
+     * Create an OLAP {@link GraphComputer} to execute a vertex program over this graph.
+     * The {@link GraphComputer} to use is declared by {@link Graph#compute(Class)}.
+     * If the graph does not support graph computer then an {@link java.lang.UnsupportedOperationException} is thrown.
+     *
      * @return A graph computer for processing this graph
      */
-    public GraphComputer compute(final Class... graphComputerClass);
+    public GraphComputer compute();
 
     /**
      * Get the declared {@link TraversalEngine} used by all {@link Traversal}s spawned from the graph or its elements.
@@ -192,10 +200,6 @@ public interface Graph extends AutoCloseable {
      * @param traversalEngine the new traversal engine to use.
      */
     public void engine(final TraversalEngine traversalEngine);
-
-    /* TODO ?? public default void standard() {
-        this.engine(StandardTraversalEngine.instance());
-    }*/
 
     /**
      * Configure and control the transactions for those graphs that support this feature.

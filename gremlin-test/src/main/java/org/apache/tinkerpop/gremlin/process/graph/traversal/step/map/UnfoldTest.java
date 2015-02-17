@@ -115,7 +115,7 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().valueMap().<Map.Entry<String, List>>unfold().map(m -> m.get().getKey()); // TODO: ;
         }
     }

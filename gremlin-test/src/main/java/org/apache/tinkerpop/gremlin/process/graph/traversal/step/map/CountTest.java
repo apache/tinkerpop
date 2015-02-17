@@ -199,7 +199,7 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().fold().count(Scope.local);
         }
     }

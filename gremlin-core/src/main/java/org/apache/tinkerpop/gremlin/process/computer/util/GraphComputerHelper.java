@@ -62,11 +62,6 @@ public final class GraphComputerHelper {
         }
     }
 
-    public static void validateComputeArguments(Class... graphComputerClass) {
-        if (graphComputerClass.length > 1)
-            throw Graph.Exceptions.onlyOneOrNoGraphComputerClass();
-    }
-
     public static boolean areEqual(final MapReduce a, final Object b) {
         if (null == a)
             throw Graph.Exceptions.argumentCanNotBeNull("a");

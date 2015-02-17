@@ -61,7 +61,7 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
         configuration.getKeys().forEachRemaining(key -> configurationMap.append("'").append(key).append("':'").append(configuration.getProperty(key)).append("',"));
         configurationMap.deleteCharAt(configurationMap.length() - 1).append("])\n");
         this.openGraphScript = configurationMap.toString();
-        this.openGraphScript = this.openGraphScript + "g.engine(ComputerTraversalEngine.instance())\n";
+        this.openGraphScript = this.openGraphScript + "g.engine(ComputerTraversalEngine.computer)\n";
         return this;
     }
 

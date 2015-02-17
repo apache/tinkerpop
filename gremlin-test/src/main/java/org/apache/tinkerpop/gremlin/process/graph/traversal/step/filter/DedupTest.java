@@ -145,19 +145,19 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return super.get_g_V_both_dedup_name();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return super.get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return super.get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value();
         }
     }

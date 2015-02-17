@@ -289,7 +289,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_name_order_byXa1_b1X_byXb2_a2X() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().<String>values("name")
                     .order()
                     .by((a, b) -> a.substring(1, 2).compareTo(b.substring(1, 2)))
@@ -298,25 +298,25 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXname_incrX_name() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().order().by("name", Order.incr).values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXnameX_name() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().order().by("name", Order.incr).values("name");
         }
 
         @Override
         public Traversal<Vertex, Double> get_g_V_outE_order_byXweight_decrX_weight() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().outE().order().by("weight", Order.decr).values("weight");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().order().
                     <String>by("name", (a, b) -> a.substring(1, 2).compareTo(b.substring(1, 2))).
                     <String>by("name", (a, b) -> b.substring(2, 3).compareTo(a.substring(2, 3))).values("name");  // TODO: ;
@@ -329,7 +329,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(final Object v1Id) {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V(v1Id).map(v -> {
                 final Map<Integer, Integer> map = new HashMap<>();
                 map.put(1, (int) v.get().value("age"));
@@ -342,7 +342,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().order().by(outE().count(), Order.decr); // TODO: ;  DETACHED VERTICES DO NOT HAVE EDGES
         }
     }

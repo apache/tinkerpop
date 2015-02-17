@@ -230,7 +230,7 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Number> get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(final Object v1Id, final Object v2Id) {
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard);
             return g.V(v1Id, v2Id).union(outE().count(), inE().count(), (Traversal) outE().values("weight").sum()); // DOES NOT WORK IN OLAP
         }
     }

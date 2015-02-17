@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.batch;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
@@ -36,8 +38,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -251,13 +251,18 @@ public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
     }
 
     @Override
-    public GraphComputer compute(final Class... graphComputerClass) {
+    public void compute(final Class<? extends GraphComputer> graphComputerClass) {
+        throw Exceptions.graphComputerNotSupported();
+    }
+
+    @Override
+    public GraphComputer compute() {
         throw Exceptions.graphComputerNotSupported();
     }
 
     @Override
     public TraversalEngine engine() {
-        return StandardTraversalEngine.instance();
+        return StandardTraversalEngine.standard;
     }
 
     @Override

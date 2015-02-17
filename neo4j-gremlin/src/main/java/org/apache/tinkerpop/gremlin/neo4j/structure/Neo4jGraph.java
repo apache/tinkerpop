@@ -248,13 +248,19 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     }
 
     @Override
-    public GraphComputer compute(final Class... graphComputerClass) {
+    public void compute(final Class<? extends GraphComputer> graphComputerClass) {
         throw Graph.Exceptions.graphComputerNotSupported();
     }
 
     @Override
+    public GraphComputer compute() {
+        throw Graph.Exceptions.graphComputerNotSupported();
+    }
+
+
+    @Override
     public TraversalEngine engine() {
-        return StandardTraversalEngine.instance();
+        return StandardTraversalEngine.standard;
     }
 
     @Override

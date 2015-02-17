@@ -96,13 +96,13 @@ public abstract class InjectTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V(v1Id).out().inject(g.V(v2Id).next()).<String>values("name");
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V(v1Id).out().<String>values("name").inject("daniel").as("a").map(t -> t.get().length()).path();
         }
     }

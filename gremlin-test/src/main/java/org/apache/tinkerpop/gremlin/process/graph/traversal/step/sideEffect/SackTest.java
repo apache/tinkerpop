@@ -118,7 +118,7 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map> get_g_V_withSackXmap__map_cloneX_out_out_sackXmap_a_nameX_sack() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
+            g.engine(StandardTraversalEngine.standard); // TODO
             return g.V().<HashMap>withSack(HashMap::new, m -> (HashMap) m.clone()).out().out().<Map>sack((map, vertex) -> {
                 map.put("a", vertex.value("name"));
                 return map;
