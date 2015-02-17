@@ -30,11 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -43,13 +39,11 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     protected TraversalRing<Object, Object> traversalRing = new TraversalRing<>();
     private final List<String> selectLabels;
-    private final boolean wasEmpty;
     private boolean requiresPaths = false;
 
     public SelectStep(final Traversal.Admin traversal, final String... selectLabels) {
         super(traversal);
-        this.wasEmpty = selectLabels.length == 0;
-        this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal) : Arrays.asList(selectLabels);
+        this.selectLabels = selectLabels.length == 0 ? TraversalHelper.getLabelsUpTo(this, this.traversal) : Arrays.asList(selectLabels);
     }
 
     @Override
@@ -66,7 +60,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
         ////// PROCESS MAP BINDINGS
         if (start instanceof Map) {
-            if (this.wasEmpty)
+            if (this.selectLabels.isEmpty())
                 ((Map<String, Object>) start).forEach((k, v) -> bindings.put(k, (E) TraversalUtil.apply(v, this.traversalRing.next())));
             else
                 this.selectLabels.forEach(label -> {
