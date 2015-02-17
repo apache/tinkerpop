@@ -27,6 +27,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Added `hasNot(traversal)` which is a faster way of doing `has(traversal.count().is(0L))`.
 * `TraversalStrategy.apply(traversal)` is the new method signature as the `TraversalEngine` can be retrieved from the `Traversal`.
+* Added `TimeLimitedStrategy` which injects a `TimeLimit` step at the end of every `Traversal`.
 * `TraversalEngine` is now an interface and provided to the traversal by the graph. `Graph` methods added to set the desired traversal engine to use.
 * Added `count(local)`, `sum(local)`, `max(local)`, `min(local)`, `mean(local)`, `dedup(local)`, `sample(local)` and `range(local)` for operating on the local object (e.g. collection, map, etc.).
 * `TraversalComparator` exists which allows for `order().by(outE().count(),decr)`.
