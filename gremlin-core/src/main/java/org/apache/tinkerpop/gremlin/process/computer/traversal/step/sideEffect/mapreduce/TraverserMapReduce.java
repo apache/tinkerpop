@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
@@ -32,7 +33,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.commons.configuration.Configuration;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -62,7 +62,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
     @Override
     public void loadState(final Configuration configuration) {
         this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
-        final Step endStep = this.traversal.getEndStep();
+        final Step endStep = this.traversal.getEndStep().getPreviousStep(); // don't get the ComputerResultStep
         this.comparator = Optional.ofNullable(endStep instanceof ComparatorHolder ? GraphComputerHelper.chainComparators(((ComparatorHolder) endStep).getComparators()) : null);
         this.reducer = Optional.ofNullable(endStep instanceof Reducing ? ((Reducing) endStep).getReducer() : null);
     }

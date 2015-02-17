@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper
 import org.apache.tinkerpop.gremlin.structure.*
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -88,6 +89,10 @@ class SugarLoader {
         public static final get(final Traverser traverser, final String key) {
             return traverser.get()."$key";
         }
+
+        public String toString() {
+            return this.metaClass.owner.get().toString();
+        }
     }
 
     public static class ElementCategory {
@@ -102,6 +107,15 @@ class SugarLoader {
 
         public static final set(final Element element, final String key, final Object value) {
             element.property(key, value);
+        }
+
+        public String toString() {
+            if (this.metaClass.owner instanceof Vertex)
+                return StringFactory.vertexString(this.metaClass.owner);
+            else if (this.metaClass.owner instanceof Edge)
+                return StringFactory.edgeString(this.metaClass.owner);
+            else
+                return StringFactory.propertyString(this.metaClass.owner);
         }
     }
 
@@ -122,6 +136,10 @@ class SugarLoader {
         public static final putAt(final Vertex vertex, final String key, final Object value) {
             vertex.property(key, value);
         }
+
+        public String toString() {
+            return StringFactory.vertexString(this.metaClass.owner);
+        }
     }
 
     public static class GraphCategory {
@@ -135,6 +153,10 @@ class SugarLoader {
                 return graph.E();
             else
                 return graph."$key";
+        }
+
+        public String toString() {
+            return StringFactory.graphString(this.metaClass.owner, "");
         }
     }
 

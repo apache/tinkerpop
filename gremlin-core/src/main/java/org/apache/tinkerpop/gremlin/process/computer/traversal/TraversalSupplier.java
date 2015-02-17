@@ -29,13 +29,19 @@ import java.util.function.Supplier;
 public final class TraversalSupplier<S, E> implements Supplier<Traversal.Admin<S, E>>, Serializable {
 
     private final Traversal.Admin<S, E> traversal;
+    private final boolean cloneOnGet;
 
-    public TraversalSupplier(final Traversal.Admin<S, E> traversal) {
+    public TraversalSupplier(final Traversal.Admin<S, E> traversal, final boolean cloneOnGet) {
         this.traversal = traversal;
+        this.cloneOnGet = cloneOnGet;
     }
 
     @Override
     public Traversal.Admin<S, E> get() {
-        return this.traversal;
+        try {
+            return this.cloneOnGet ? this.traversal.clone() : this.traversal;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 }

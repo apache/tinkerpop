@@ -69,6 +69,7 @@ public class ExceptionCoverageTest {
             add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
             add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
             add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
+            add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#supportsNonSerializableObjects");
         }};
 
         // register test classes here that contain @ExceptionCoverage annotations

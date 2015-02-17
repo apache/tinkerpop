@@ -130,6 +130,10 @@ public interface GraphComputer {
         public default boolean supportsIsolation(final Isolation isolation) {
             return true;
         }
+
+        public default boolean supportsNonSerializableObjects() {
+            return true;
+        }
     }
 
     public static class Exceptions {

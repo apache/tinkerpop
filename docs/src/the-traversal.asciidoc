@@ -669,6 +669,10 @@ g.V().match('a',
         __.as('b').in('created').has('age', 29).as('c')).select('a','c').by('name')
 ----
 
+[[grateful-dead]]
+.Grateful Dead
+image::grateful-dead-schema.png[width=475]
+
 MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. Like SPARQL, MatchStep conjoins a set of patterns applied to a graph.  For example, the following traversal finds exactly those songs which Jerry Garcia has both sung and written (using the Grateful Dead graph distributed in the `data/` directory):  
 
 [gremlin-groovy]

@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
@@ -139,8 +138,8 @@ public class TinkerGraphTest {
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
         g.engine(ComputerTraversalEngine.instance());
-        //Traversal t = g.V().label().groupCount();
-        Traversal t  = ComputerTestHelper.compute("g.V().out('created').groupCount().by('name').values('name')", g);
+        Traversal t = g.V().map(v -> v.get().value("name"));
+        //Traversal t  = ComputerTestHelper.compute("g.V().out('created').groupCount().by('name').values('name')", g);
         System.out.println(t);
         t.forEachRemaining(System.out::println);
         System.out.println(t);
@@ -182,16 +181,23 @@ public class TinkerGraphTest {
     public void testPlayDK() throws Exception {
 
         Graph g = TinkerFactory.createModern();
-        g.engine(ComputerTraversalEngine.instance());
-        Traversal t = g.V().hasLabel("software").as("s").local(inE("created").values("weight").fold()).as("p").select().by("name").by();
+        Traversal t = g.V().hasLabel("person").as("p").local(out("created").values("name").fold().limit(Scope.local, 1));
         t.forEachRemaining(System.out::println);
         System.out.println("--");
 
-        t = g.V().hasLabel("software").as("s").local(inE("created").values("weight").fold().limit(Scope.local, 1)).as("p").select().by("name").by();
+        t = g.V().hasLabel("person").group().by("name").by(out("created").values("name").fold()).cap().limit(Scope.local, 2);
         t.forEachRemaining(System.out::println);
         System.out.println("--");
 
-        t = g.V().hasLabel("software").as("s").local(inE("created").values("weight").fold().range(Scope.local, 1, 2)).as("p").select().by("name").by();
+        t = g.V().hasLabel("person").as("p").local(out("created").values("name").fold().sample(Scope.local, 1));
+        t.forEachRemaining(System.out::println);
+        System.out.println("--");
+
+        t = g.V().hasLabel("person").group().by("name").by(out("created").values("name").fold()).cap().sample(Scope.local, 2);
+        t.forEachRemaining(System.out::println);
+        System.out.println("--");
+
+        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 5)).cap();
         t.forEachRemaining(System.out::println);
     }
 

@@ -28,6 +28,7 @@ public class LambdaHolder<S> {
 
     public enum Type {
         OBJECT,
+        SERIALIZED_OBJECT,
         CLASS,
         SCRIPT
     }
@@ -73,6 +74,9 @@ public class LambdaHolder<S> {
         lambdaHolder.configKeyPrefix = configKeyPrefix;
         lambdaHolder.type = Type.valueOf(configuration.getString(lambdaHolder.configKeyPrefix.concat(DOT_TYPE)));
         if (lambdaHolder.type.equals(Type.OBJECT)) {
+            lambdaHolder.configObject = configuration.getProperty(lambdaHolder.configKeyPrefix.concat(DOT_OBJECT));
+            lambdaHolder.realObject = lambdaHolder.configObject;
+        } else if (lambdaHolder.type.equals(Type.SERIALIZED_OBJECT)) {
             lambdaHolder.configObject = VertexProgramHelper.deserialize(configuration, lambdaHolder.configKeyPrefix.concat(DOT_OBJECT));
             lambdaHolder.realObject = lambdaHolder.configObject;
         } else if (lambdaHolder.type.equals(Type.CLASS)) {
@@ -95,6 +99,8 @@ public class LambdaHolder<S> {
     public void storeState(final Configuration configuration) {
         configuration.setProperty(this.configKeyPrefix.concat(DOT_TYPE), this.type.name());
         if (this.type.equals(Type.OBJECT))
+            configuration.setProperty(this.configKeyPrefix.concat(DOT_OBJECT), this.configObject);
+        else if (this.type.equals(Type.SERIALIZED_OBJECT))
             VertexProgramHelper.serialize(this.configObject, configuration, this.configKeyPrefix.concat(DOT_OBJECT));
         else if (this.type.equals(Type.CLASS))
             configuration.setProperty(this.configKeyPrefix.concat(DOT_OBJECT), ((Class) this.configObject).getCanonicalName());

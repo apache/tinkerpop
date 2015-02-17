@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -116,5 +117,10 @@ public final class GroupMapReduce implements MapReduce<Object, Collection, Objec
         if (null != clone.reduceFunction)
             clone.reduceFunction = this.reduceFunction.clone();
         return clone;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.mapReduceString(this, this.getMemoryKey());
     }
 }

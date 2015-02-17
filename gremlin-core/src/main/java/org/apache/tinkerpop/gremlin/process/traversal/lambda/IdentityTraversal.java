@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.process.Traverser;
  */
 public final class IdentityTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
 
+    private static final String IDENTITY = "identity";
+
     private S s;
 
     @Override
@@ -39,6 +41,6 @@ public final class IdentityTraversal<S, E> extends AbstractLambdaTraversal<S, E>
 
     @Override
     public String toString() {
-        return "";
+        return IDENTITY;
     }
 }
