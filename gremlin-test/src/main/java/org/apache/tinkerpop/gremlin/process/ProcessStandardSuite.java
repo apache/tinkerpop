@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.TraversalSideEffectsTest;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategyTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.util.PathTest;
@@ -133,8 +132,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             PathTest.class,
 
             // strategy
-            TraversalVerificationStrategyTest.StandardTest.class,
-            RangeByIsCountStrategyTest.StandardTest.class
+            TraversalVerificationStrategyTest.StandardTest.class
 
             // algorithms
             // PageRankVertexProgramTest.class
@@ -211,8 +209,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // PageRankVertexProgramTest.class
 
             // strategy
-            TraversalVerificationStrategyTest.class,
-            RangeByIsCountStrategyTest.class
+            TraversalVerificationStrategyTest.class
     };
 
     /**
