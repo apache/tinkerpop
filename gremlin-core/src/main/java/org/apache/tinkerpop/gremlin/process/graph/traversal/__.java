@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -56,10 +55,8 @@ public class __ {
         return new DefaultGraphTraversal<>(new __());
     }
 
-    public static <A> GraphTraversal<A, A> __(final Object start) {
-        final GraphTraversal.Admin<A, A> traversal = new DefaultGraphTraversal<>(start);
-        traversal.addStep(new StartStep<>(traversal, start));
-        return traversal;
+    public static <A> GraphTraversal<A, A> __(final Object... starts) {
+        return inject(starts);
     }
 
     ///////////////////// MAP STEPS /////////////////////
