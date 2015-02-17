@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Order
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -79,6 +80,16 @@ public abstract class GroovySelectTest {
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select() {
             return g.V.has(values('name').is('marko')).as('a').select
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_cap_asXxX_select() {
+            return g.V().label().groupCount().cap().as('x').select()
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
+            return g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount().cap()).as('relations').select().by('name').by()
+        }
     }
 
     public static class ComputerTest extends SelectTest {
@@ -137,6 +148,21 @@ public abstract class GroovySelectTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select() {
             ComputerTestHelper.compute("g.V.has(values('name').is('marko')).as('a').select", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_cap_asXxX_select() {
+            g.engine(StandardTraversalEngine.standard);
+            g.V().label().groupCount().cap().as('x').select()
+            //ComputerTestHelper.compute("g.V().label().groupCount().cap().as('x').select()", g)
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
+            g.engine(StandardTraversalEngine.standard);
+            // TODO: should work in computer mode, but throws ClassCastException
+            g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount().cap()).as('relations').select().by('name').by()
+            //ComputerTestHelper.compute("g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount().cap()).as('relations').select().by('name').by()", g)
         }
     }
 }

@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
-import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
@@ -179,29 +178,17 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlayDK() throws Exception {
-
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().hasLabel("person").as("p").local(out("created").values("name").fold().limit(Scope.local, 1));
+        Traversal t = g.V().hasLabel("person").as("person").local(bothE().label().groupCount().cap()).as("relations").select().by("name").by();
         t.forEachRemaining(System.out::println);
         System.out.println("--");
 
-        t = g.V().hasLabel("person").group().by("name").by(out("created").values("name").fold()).cap().limit(Scope.local, 2);
-        t.forEachRemaining(System.out::println);
-        System.out.println("--");
-
-        t = g.V().hasLabel("person").as("p").local(out("created").values("name").fold().sample(Scope.local, 1));
-        t.forEachRemaining(System.out::println);
-        System.out.println("--");
-
-        t = g.V().hasLabel("person").group().by("name").by(out("created").values("name").fold()).cap().sample(Scope.local, 2);
-        t.forEachRemaining(System.out::println);
-        System.out.println("--");
-
-        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 5)).cap();
-        t.forEachRemaining(System.out::println);
-
-        System.out.println("--");
-        t = g.V().group().by(T.label).by(bothE().values("weight").fold()).by(order(Scope.local).by(Order.keyDecr)).cap();
+        t = g.V().match("a",
+                as("a").out("knows").as("b"),
+                as("b").out("created").has("name", "lop"),
+                as("b").match("a1",
+                        as("a1").out("created").as("b1"),
+                        as("b1").in("created").as("c1")).select("c1").as("c")).<String>select().by("name");
         t.forEachRemaining(System.out::println);
     }
 
