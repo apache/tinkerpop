@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 /**
@@ -52,5 +53,10 @@ public final class ComputerTraversalEngine implements TraversalEngine {
     @Override
     public ComputerTraversalEngine create(final Graph graph) {
         return new ComputerTraversalEngine(graph);
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.traversalEngineString(this);
     }
 }

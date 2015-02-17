@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.engine;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -46,5 +47,10 @@ public final class StandardTraversalEngine implements TraversalEngine {
     @Override
     public StandardTraversalEngine create(final Graph graph) {
         return standard;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.traversalEngineString(this);
     }
 }
