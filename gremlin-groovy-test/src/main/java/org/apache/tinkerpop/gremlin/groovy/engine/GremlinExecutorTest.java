@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
+import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TimeLimitedStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.junit.Test;
@@ -155,71 +157,6 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         assertFalse(failureCalled.get());
         assertEquals(0, timeOutCount.getCount());
         gremlinExecutor.close();
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
-    public void shouldTimeoutIteratingTraversalScript() throws Exception {
-        final AtomicBoolean successCalled = new AtomicBoolean(false);
-        final AtomicBoolean failureCalled = new AtomicBoolean(false);
-
-        final CountDownLatch timeOutCount = new CountDownLatch(1);
-
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .scriptEvaluationTimeout(1000)
-                .afterFailure((b, e) -> failureCalled.set(true))
-                .afterSuccess((b) -> successCalled.set(true))
-                .afterTimeout((b) -> timeOutCount.countDown()).create();
-        try {
-            final Bindings b = new SimpleBindings();
-            b.put("g", g);
-            gremlinExecutor.eval("g.V().out().out().out().out().out().out().out().out().out().out().out().iterate()", b).get();
-            fail("This script should have timed out with an exception");
-        } catch (Exception ex) {
-            assertEquals(TimeoutException.class, ex.getCause().getClass());
-        }
-
-        assertTrue(timeOutCount.await(2000, TimeUnit.MILLISECONDS));
-
-        assertFalse(successCalled.get());
-        assertFalse(failureCalled.get());
-        assertEquals(0, timeOutCount.getCount());
-        gremlinExecutor.close();
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
-    public void shouldTimeoutIteratingTraversalScriptButBeSureInterruptedThreadCanBeReused() throws Exception {
-        final CountDownLatch timeOutCount = new CountDownLatch(1);
-
-        final ExecutorService evalExecutor = Executors.newSingleThreadExecutor(testingThreadFactory);
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .executorService(evalExecutor)
-                .scriptEvaluationTimeout(1000)
-                .afterTimeout((b) -> timeOutCount.countDown()).create();
-
-        assertEquals(2, gremlinExecutor.eval("1+1").get());
-
-        try {
-            final Bindings b = new SimpleBindings();
-            b.put("g", g);
-            gremlinExecutor.eval("g.V().out().out().out().out().out().out().out().out().out().out().out().iterate()", b).get();
-            fail("This script should have timed out with an exception");
-        } catch (Exception ex) {
-            assertEquals(TimeoutException.class, ex.getCause().getClass());
-
-            // just make sure that interrupted thread is good to go again
-            assertEquals(2, gremlinExecutor.eval("1+1").get());
-            assertEquals(2, gremlinExecutor.eval("1+1").get());
-            assertEquals(2, gremlinExecutor.eval("1+1").get());
-        }
-
-        assertTrue(timeOutCount.await(2000, TimeUnit.MILLISECONDS));
-
-        assertEquals(0, timeOutCount.getCount());
-        gremlinExecutor.close();
-        evalExecutor.shutdown();
-        evalExecutor.awaitTermination(30000, TimeUnit.MILLISECONDS);
     }
 
     @Test
