@@ -55,6 +55,7 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends BranchTest {
 
         @Override
@@ -72,9 +73,5 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
                     .option(0L, values("lang"))
                     .option(0L, values("name"));
         }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }

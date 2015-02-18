@@ -221,6 +221,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends RepeatTest {
 
         @Override
@@ -267,9 +268,5 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
             return g.V().repeat(groupCount("m").by("name").out()).times(2).cap("m");
         }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }

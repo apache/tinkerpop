@@ -73,11 +73,11 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // GraphComputerTest.ComputerTest.class,   // todo: not sure this should be here as it forces retest of GraphComputer without an "implementation"
 
             // branch
-            BranchTest.ComputerTest.class,
-            ChooseTest.ComputerTest.class,
-            LocalTest.ComputerTest.class,
-            RepeatTest.ComputerTest.class,
-            UnionTest.ComputerTest.class,
+            BranchTest.StandardTest.class,
+            ChooseTest.StandardTest.class,
+            LocalTest.StandardTest.class,
+            RepeatTest.StandardTest.class,
+            UnionTest.StandardTest.class,
 
             // filter
             AndTest.ComputerTest.class,

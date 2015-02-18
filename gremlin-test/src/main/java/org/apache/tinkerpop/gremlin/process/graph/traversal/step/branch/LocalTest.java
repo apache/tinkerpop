@@ -197,6 +197,7 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends LocalTest {
 
         @Override
@@ -250,9 +251,5 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
         }
 
 
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }

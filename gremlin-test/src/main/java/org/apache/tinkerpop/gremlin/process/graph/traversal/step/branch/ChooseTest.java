@@ -62,6 +62,7 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends ChooseTest {
 
         @Override
@@ -70,9 +71,5 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
                     .option(2L, values("name"))
                     .option(3L, valueMap());
         }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }

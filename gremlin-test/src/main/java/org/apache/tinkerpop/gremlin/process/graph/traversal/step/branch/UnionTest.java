@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
@@ -126,6 +127,7 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX() {
         final Traversal<Vertex, Number> traversal = get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
@@ -151,6 +153,7 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends UnionTest {
 
         @Override
@@ -187,17 +190,6 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Number> get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(final Object v1Id, final Object v2Id) {
             return g.V(v1Id, v2Id).union(outE().count(), inE().count(), (Traversal) outE().values("weight").sum());
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
-
-        @Override
-        @Test
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX() {
-            super.g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX();
         }
     }
 }
