@@ -106,7 +106,7 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
                 this.traversers = IteratorUtils.of(this.getTraversal().getTraverserGenerator().generate((S) sideEffects, this, 1l));
             }
         } else if (endStep instanceof ReducingBarrierStep) {
-            this.traversers = result.memory().get(ReducingBarrierStep.REDUCING);
+            this.traversers = IteratorUtils.of(this.getTraversal().getTraverserGenerator().generate(result.memory().get(ReducingBarrierStep.REDUCING), this, 1l));
         } else {
             this.traversers = result.memory().get(TraverserMapReduce.TRAVERSERS);
         }

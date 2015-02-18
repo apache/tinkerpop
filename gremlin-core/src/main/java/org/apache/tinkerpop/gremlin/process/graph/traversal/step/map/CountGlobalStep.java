@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
@@ -31,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.EnumSet;
@@ -59,8 +57,8 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
     }
 
     @Override
-    public MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Iterator<Traverser.Admin<Long>>> getMapReduce() {
-        return new CountMapReduce();
+    public MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> getMapReduce() {
+        return CountMapReduce.instance();
     }
 
     ///////////
@@ -85,7 +83,13 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
 
     ///////////
 
-    private class CountMapReduce extends StaticMapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Iterator<Traverser.Admin<Long>>> {
+    private static class CountMapReduce extends StaticMapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
+
+        private static CountMapReduce INSTANCE = new CountMapReduce();
+
+        private CountMapReduce() {
+
+        }
 
         @Override
         public boolean doStage(final MapReduce.Stage stage) {
@@ -117,9 +121,14 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
         }
 
         @Override
-        public Iterator<Traverser.Admin<Long>> generateFinalResult(final Iterator<KeyValue<NullObject, Long>> keyValues) {
-            return IteratorUtils.of(getTraversal().getTraverserGenerator().generate(keyValues.hasNext() ? keyValues.next().getValue() : 0L, (Step) CountGlobalStep.this, 1L));
+        public Long generateFinalResult(final Iterator<KeyValue<NullObject, Long>> keyValues) {
+            return keyValues.hasNext() ? keyValues.next().getValue() : 0L;
         }
+
+        public static final CountMapReduce instance() {
+            return INSTANCE;
+        }
+
     }
 
 }

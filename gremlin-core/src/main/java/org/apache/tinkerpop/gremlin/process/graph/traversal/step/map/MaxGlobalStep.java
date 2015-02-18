@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
@@ -31,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -56,8 +54,8 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
     }
 
     @Override
-    public MapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Iterator<Traverser.Admin<Number>>> getMapReduce() {
-        return new MaxMapReduce();
+    public MapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> getMapReduce() {
+        return MaxMapReduce.instance();
     }
 
     /////
@@ -82,7 +80,13 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
     ///////////
 
-    private class MaxMapReduce extends StaticMapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Iterator<Traverser.Admin<Number>>> {
+    private static class MaxMapReduce extends StaticMapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> {
+
+        private static final MaxMapReduce INSTANCE = new MaxMapReduce();
+
+        private MaxMapReduce() {
+
+        }
 
         @Override
         public boolean doStage(final MapReduce.Stage stage) {
@@ -116,8 +120,12 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
         }
 
         @Override
-        public Iterator<Traverser.Admin<Number>> generateFinalResult(final Iterator<KeyValue<NullObject, Number>> keyValues) {
-            return IteratorUtils.of(getTraversal().getTraverserGenerator().generate(keyValues.hasNext() ? keyValues.next().getValue() : -Double.MAX_VALUE, (Step) MaxGlobalStep.this, 1L));
+        public Number generateFinalResult(final Iterator<KeyValue<NullObject, Number>> keyValues) {
+            return keyValues.hasNext() ? keyValues.next().getValue() : -Double.MAX_VALUE;
+        }
+
+        public static final MaxMapReduce instance() {
+            return INSTANCE;
         }
     }
 }

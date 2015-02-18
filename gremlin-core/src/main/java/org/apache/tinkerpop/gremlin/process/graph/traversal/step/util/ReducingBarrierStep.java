@@ -34,9 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -127,7 +125,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
         @Override
         public Object generateFinalResult(final Iterator keyValues) {
-            return keyValues.hasNext() ? IteratorUtils.of(((KeyValue) keyValues.next()).getValue()) : Collections.emptyIterator();
+            return ((KeyValue) keyValues.next()).getValue();
 
         }
 
@@ -143,7 +141,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
             while (values.hasNext()) {
                 mutatingSeed = function.apply(mutatingSeed, values.next());
             }
-            emitter.emit(getTraversal().getTraverserGenerator().generate(FinalGet.tryFinalGet(mutatingSeed), (Step) getTraversal().getEndStep(), 1l));
+            emitter.emit(FinalGet.tryFinalGet(mutatingSeed));
         }
 
     }
