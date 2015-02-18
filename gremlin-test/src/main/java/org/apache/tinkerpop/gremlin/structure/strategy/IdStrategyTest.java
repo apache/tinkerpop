@@ -184,7 +184,7 @@ public class IdStrategyTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldInjectAnIdAndReturnBySpecifiedId() {
             final IdStrategy strategy = (IdStrategy) ((StrategyGraph) g).getStrategy();
-            final Object o = GraphManager.get().convertId("1");
+            final Object o = GraphManager.getGraphProvider().convertId("1");
             final Vertex v = g.addVertex(T.id, o, "something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
@@ -204,7 +204,7 @@ public class IdStrategyTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldAllowDirectSettingOfIdField() {
             final IdStrategy strategy = (IdStrategy) ((StrategyGraph) g).getStrategy();
-            final Object o = GraphManager.get().convertId("1");
+            final Object o = GraphManager.getGraphProvider().convertId("1");
             final Vertex v = g.addVertex(T.id, o, "something", "else", strategy.getIdKey(), "should be ok to set this as supportsEdgeId=true");
             tryCommit(g, c -> {
                 assertNotNull(v);

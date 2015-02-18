@@ -242,14 +242,13 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
     }
 
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite);
+        super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, TraversalEngine.Type.STANDARD);
     }
 
     @Override
     public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
-        final UseEngine useEngine = testClass.getAnnotation(UseEngine.class);
-
-        if (null == useEngine || !useEngine.value().equals(TraversalEngine.Type.STANDARD))
+        final UseEngine[] useEngines = testClass.getAnnotationsByType(UseEngine.class);
+        if (null == useEngines || !Stream.of(useEngines).anyMatch(useEngine -> useEngine.value().equals(TraversalEngine.Type.STANDARD)))
             throw new RuntimeException(String.format("The %s expects all tests to be annotated with @UseEngine(%s) - check %s",
                     ProcessComputerSuite.class.getName(), TraversalEngine.Type.STANDARD, testClass.getName()));
         return super.beforeTestExecution(testClass);

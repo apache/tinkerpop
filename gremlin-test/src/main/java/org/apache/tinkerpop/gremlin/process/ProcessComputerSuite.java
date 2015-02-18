@@ -98,7 +98,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // map
             BackTest.ComputerTest.class,
-            CountTest.ComputerTest.class,
+            CountTest.StandardTest.class,
             FoldTest.ComputerTest.class,
             MapTest.ComputerTest.class,
             MaxTest.ComputerTest.class,
@@ -234,17 +234,21 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
     }
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce);
+        super(klass, builder, testsToExecute, testsToEnforce, false, TraversalEngine.Type.COMPUTER);
     }
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce);
+        super(klass, builder, testsToExecute, testsToEnforce, false, TraversalEngine.Type.COMPUTER);
+    }
+
+    public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite) throws InitializationError {
+        super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, TraversalEngine.Type.COMPUTER);
     }
 
     @Override
     public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
-        final UseEngine useEngine = testClass.getAnnotation(UseEngine.class);
-        if (null == useEngine || !useEngine.value().equals(TraversalEngine.Type.COMPUTER))
+        final UseEngine[] useEngines = testClass.getAnnotationsByType(UseEngine.class);
+        if (null == useEngines || !Stream.of(useEngines).anyMatch(useEngine -> useEngine.value().equals(TraversalEngine.Type.COMPUTER)))
             throw new RuntimeException(String.format("The %s expects all tests to be annotated with @UseEngine(%s) - check %s",
                     ProcessComputerSuite.class.getName(), TraversalEngine.Type.COMPUTER, testClass.getName()));
 

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin;
 
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -106,7 +107,13 @@ public abstract class AbstractGremlinSuite extends Suite {
         this(klass, builder, testsToExecute, testsToEnforce, false);
     }
 
-    public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite) throws InitializationError {
+    public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce,
+                                final boolean gremlinFlavorSuite) throws InitializationError {
+        this(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, TraversalEngine.Type.STANDARD);
+    }
+
+    public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce,
+                                final boolean gremlinFlavorSuite, TraversalEngine.Type traversalEngineType) throws InitializationError {
         super(builder, klass, enforce(testsToExecute, testsToEnforce));
 
         this.gremlinFlavorSuite = gremlinFlavorSuite;
@@ -126,7 +133,8 @@ public abstract class AbstractGremlinSuite extends Suite {
             validateStructureInterfacesRegistered(graphProvider);
             validateHelpersNotImplemented(graphProvider);
 
-            GraphManager.set(graphProvider);
+            GraphManager.setGraphProvider(graphProvider);
+            GraphManager.setTraversalEngineType(traversalEngineType);
         } catch (Exception ex) {
             throw new InitializationError(ex);
         }

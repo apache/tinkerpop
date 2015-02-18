@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.util.MapHelper;
 import org.junit.Before;
@@ -51,17 +52,22 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
     }
 
     private boolean hasGraphComputerRequirement() {
-        final UseEngine useEngine = this.getClass().getAnnotation(UseEngine.class);
-        if (null == useEngine)
-            throw new RuntimeException(String.format("The %s expects all tests to be annotated with %s",
-                    AbstractGremlinProcessTest.class.getName(), UseEngine.class.getName()));
-
-        return useEngine.value().equals(TraversalEngine.Type.COMPUTER);
+        return GraphManager.getTraversalEngineType().equals(TraversalEngine.Type.COMPUTER);
     }
 
     @Before
     public void setupTest() {
         assumeTrue(graphMeetsTestRequirements());
+
+        try {
+            // ignore tests that aren't supported by a specific TraversalEngine
+            final IgnoreEngine ignoreEngine = this.getClass().getMethod(name.getMethodName()).getAnnotation(IgnoreEngine.class);
+            if (ignoreEngine != null)
+                assumeTrue(String.format("This test is ignored for %s", ignoreEngine.value()), ignoreEngine.value().equals(GraphManager.getTraversalEngineType()));
+        } catch (NoSuchMethodException nsme) {
+            throw new RuntimeException(String.format("Could not find test method %s in test case %s", name.getMethodName(), this.getClass().getName()));
+        }
+
         if (hasGraphComputerRequirement()) g.engine(ComputerTraversalEngine.computer);
     }
 

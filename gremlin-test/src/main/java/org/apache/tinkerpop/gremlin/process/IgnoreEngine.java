@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -30,8 +29,7 @@ import java.lang.annotation.Target;
  */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(UseEngines.class)
-@Target(ElementType.TYPE)
-public @interface UseEngine {
+@Target(ElementType.METHOD)
+public @interface IgnoreEngine {
     public TraversalEngine.Type value();
 }

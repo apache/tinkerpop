@@ -121,7 +121,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
 
     private void unloadSugar() {
         try {
-            SugarTestHelper.clearRegistry(GraphManager.get());
+            SugarTestHelper.clearRegistry(GraphManager.getGraphProvider());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
