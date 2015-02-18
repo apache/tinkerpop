@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.util;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
@@ -27,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
@@ -61,14 +63,6 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
     public void setBiFunction(final BiFunction<E, Traverser<S>, E> reducingBiFunction) {
         this.reducingBiFunction = reducingBiFunction;
-    }
-
-    public Supplier<E> getSeedSupplier() {
-        return this.seedSupplier;
-    }
-
-    public BiFunction<E, Traverser<S>, E> getBiFunction() {
-        return this.reducingBiFunction;
     }
 
     @Override
@@ -106,15 +100,43 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
     @Override
     public MapReduce getMapReduce() {
-        return new DefaultMapReduce();
+        return new DefaultMapReduce(this.seedSupplier, this.reducingBiFunction);
     }
 
     ///////
 
-    public class DefaultMapReduce extends StaticMapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Object> {
+    public static class DefaultMapReduce extends StaticMapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Object> {
+
+        private static final String REDUCING_BARRIER_STEP_SEED_SUPPLIER = "gremlin.reducingBarrierStep.seedSupplier";
+        private static final String REDUCING_BARRIER_STEP_BI_FUNCTION = "gremlin.reducingBarrierStep.biFunction";
+
+        private BiFunction biFunction;
+        private Supplier seedSupplier;
+
+        private DefaultMapReduce() {
+        }
+
+        public DefaultMapReduce(final Supplier seedSupplier, final BiFunction biFunction) {
+            this.seedSupplier = seedSupplier;
+            this.biFunction = biFunction;
+
+        }
 
         @Override
-        public boolean doStage(Stage stage) {
+        public void storeState(final Configuration configuration) {
+            super.storeState(configuration);
+            VertexProgramHelper.serialize(this.seedSupplier, configuration, REDUCING_BARRIER_STEP_SEED_SUPPLIER);
+            VertexProgramHelper.serialize(this.biFunction, configuration, REDUCING_BARRIER_STEP_BI_FUNCTION);
+
+        }
+
+        public void loadState(final Configuration configuration) {
+            this.seedSupplier = VertexProgramHelper.deserialize(configuration, REDUCING_BARRIER_STEP_SEED_SUPPLIER);
+            this.biFunction = VertexProgramHelper.deserialize(configuration, REDUCING_BARRIER_STEP_BI_FUNCTION);
+        }
+
+        @Override
+        public boolean doStage(final Stage stage) {
             return !stage.equals(Stage.COMBINE);
         }
 
@@ -136,10 +158,9 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
         @Override
         public void reduce(final NullObject key, final Iterator<Object> values, final ReduceEmitter<NullObject, Object> emitter) {
-            Object mutatingSeed = getSeedSupplier().get();
-            final BiFunction function = getBiFunction();
+            Object mutatingSeed = this.seedSupplier.get();
             while (values.hasNext()) {
-                mutatingSeed = function.apply(mutatingSeed, values.next());
+                mutatingSeed = this.biFunction.apply(mutatingSeed, values.next());
             }
             emitter.emit(FinalGet.tryFinalGet(mutatingSeed));
         }
