@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.Iterator;
@@ -143,7 +144,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
         @Override
         public Object generateFinalResult(final Iterator keyValues) {
-            return ((KeyValue) keyValues.next()).getValue();
+            return IteratorUtils.of(((KeyValue) keyValues.next()).getValue());
 
         }
 
