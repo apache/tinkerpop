@@ -157,6 +157,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
             coreStrategies.addStrategies(
                     DedupOptimizerStrategy.instance(),
                     RangeByIsCountStrategy.instance(),
+                    GroupCountReduceStrategy.instance(),
                     IdentityRemovalStrategy.instance(),
                     SideEffectCapStrategy.instance(),
                     MatchWhereStrategy.instance(),

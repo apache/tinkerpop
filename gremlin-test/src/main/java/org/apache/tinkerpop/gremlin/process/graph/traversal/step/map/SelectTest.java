@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Order;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.*;
@@ -198,7 +197,6 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore
     @LoadGraphWith(MODERN)
     public void g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by();
@@ -297,7 +295,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
-            return g.V().hasLabel("person").as("person").local(__.bothE().label().groupCount().cap()).as("relations").select().by("name").by();
+            return g.V().hasLabel("person").as("person").local(__.bothE().label().groupCount()).as("relations").select().by("name").by();
         }
     }
 
@@ -373,7 +371,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
             g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().hasLabel("person").as("person").local(__.bothE().label().groupCount().cap()).as("relations").select().by("name").by();
+            return g.V().hasLabel("person").as("person").local(__.bothE().label().groupCount()).as("relations").select().by("name").by();
         }
     }
 }

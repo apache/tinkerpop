@@ -460,7 +460,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey) {
-        return this.asAdmin().addStep(new GroupCountStep<>(this.asAdmin(), sideEffectKey));
+        return this.asAdmin().addStep(new GroupCountSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
     public default GraphTraversal<S, E> groupCount() {

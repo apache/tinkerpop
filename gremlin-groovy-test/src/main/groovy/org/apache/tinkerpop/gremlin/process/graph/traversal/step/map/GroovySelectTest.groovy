@@ -88,7 +88,7 @@ public abstract class GroovySelectTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
-            return g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount().cap()).as('relations').select().by('name').by()
+            return g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount()).as('relations').select().by('name').by()
         }
     }
 
@@ -161,8 +161,8 @@ public abstract class GroovySelectTest {
         Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
             g.engine(StandardTraversalEngine.standard);
             // TODO: should work in computer mode, but throws ClassCastException
-            g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount().cap()).as('relations').select().by('name').by()
-            //ComputerTestHelper.compute("g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount().cap()).as('relations').select().by('name').by()", g)
+            g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount()).as('relations').select().by('name').by()
+            //ComputerTestHelper.compute("g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount()).as('relations').select().by('name').by()", g)
         }
     }
 }

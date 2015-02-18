@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupCountStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupCountSideEffectStep;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
@@ -46,7 +46,7 @@ public final class GroupCountMapReduce extends StaticMapReduce<Object, Long, Obj
 
     }
 
-    public GroupCountMapReduce(final GroupCountStep step) {
+    public GroupCountMapReduce(final GroupCountSideEffectStep step) {
         this.sideEffectKey = step.getSideEffectKey();
         this.mapSupplier = step.getTraversal().asAdmin().getSideEffects().<Map<Object, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
     }
