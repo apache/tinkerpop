@@ -179,16 +179,17 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlayDK() throws Exception {
         Graph g = TinkerFactory.createModern();
-        Traversal t = g.V().hasLabel("person").as("person").local(bothE().label().groupCount().cap()).as("relations").select().by("name").by();
+        Traversal t = g.V().hasLabel("person").as("person").local(bothE().label().groupCount()).as("relations").select().by("name").by();
+        System.out.println(t.toString());
+        t.forEachRemaining(System.out::println);
+        System.out.println(t.toString());
+        System.out.println("--");
+
+        t = g.V().hasLabel("person").as("person").local(bothE().groupCount().by(T.label)).as("relations").select().by("name").by();
         t.forEachRemaining(System.out::println);
         System.out.println("--");
 
-        t = g.V().match("a",
-                as("a").out("knows").as("b"),
-                as("b").out("created").has("name", "lop"),
-                as("b").match("a1",
-                        as("a1").out("created").as("b1"),
-                        as("b1").in("created").as("c1")).select("c1").as("c")).<String>select().by("name");
+        t = g.V().hasLabel("person").as("person").local(bothE().groupCount().by(label())).as("relations").select().by("name").by();
         t.forEachRemaining(System.out::println);
     }
 

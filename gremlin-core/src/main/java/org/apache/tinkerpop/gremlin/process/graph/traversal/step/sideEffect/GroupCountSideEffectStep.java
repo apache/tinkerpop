@@ -42,13 +42,13 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectRegistrar, SideEffectCapable, Reversible, TraversalParent, MapReducer<Object, Long, Object, Long, Map<Object, Long>> {
+public final class GroupCountSideEffectStep<S> extends SideEffectStep<S> implements SideEffectRegistrar, SideEffectCapable, Reversible, TraversalParent, MapReducer<Object, Long, Object, Long, Map<Object, Long>> {
 
     private Traversal.Admin<S, Object> groupTraversal = new IdentityTraversal<>();
     private String sideEffectKey;
     // TODO: onFirst like subgraph so we don't keep getting the map
 
-    public GroupCountStep(final Traversal.Admin traversal, final String sideEffectKey) {
+    public GroupCountSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
     }
@@ -96,8 +96,8 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
     }
 
     @Override
-    public GroupCountStep<S> clone() throws CloneNotSupportedException {
-        final GroupCountStep<S> clone = (GroupCountStep<S>) super.clone();
+    public GroupCountSideEffectStep<S> clone() throws CloneNotSupportedException {
+        final GroupCountSideEffectStep<S> clone = (GroupCountSideEffectStep<S>) super.clone();
         clone.groupTraversal = this.integrateChild(this.groupTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
         return clone;
     }
