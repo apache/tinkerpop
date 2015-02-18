@@ -44,7 +44,7 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
     public MaxGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier(new ConstantSupplier<>((S) Double.valueOf(-Double.MAX_VALUE)));
+        this.setSeedSupplier(new ConstantSupplier<>(null));
         this.setBiFunction(MaxBiFunction.<S>instance());
     }
 
@@ -70,7 +70,7 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         @Override
         public S apply(final S mutatingSeed, final Traverser<S> traverser) {
-            return mutatingSeed.doubleValue() > traverser.get().doubleValue() ? mutatingSeed : traverser.get();
+            return mutatingSeed != null && mutatingSeed.doubleValue() >= traverser.get().doubleValue() ? mutatingSeed : traverser.get();
         }
 
         public final static <S extends Number> MaxBiFunction<S> instance() {
@@ -105,13 +105,15 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         @Override
         public void reduce(final NullObject key, final Iterator<Number> values, final ReduceEmitter<NullObject, Number> emitter) {
-            Number max = -Double.MAX_VALUE;
-            while (values.hasNext()) {
-                final Number value = values.next();
-                if (value.doubleValue() > max.doubleValue())
-                    max = value;
+            if (values.hasNext()) {
+                Number max = -Double.MAX_VALUE;
+                while (values.hasNext()) {
+                    final Number value = values.next();
+                    if (value.doubleValue() > max.doubleValue())
+                        max = value;
+                }
+                emitter.emit(max);
             }
-            emitter.emit(max);
         }
 
         @Override
@@ -121,7 +123,7 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         @Override
         public Number generateFinalResult(final Iterator<KeyValue<NullObject, Number>> keyValues) {
-            return keyValues.hasNext() ? keyValues.next().getValue() : -Double.MAX_VALUE;
+            return keyValues.hasNext() ? keyValues.next().getValue() : null;
         }
 
         public static final MaxMapReduce instance() {

@@ -20,29 +20,42 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S, S> {
+public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S, S> implements MapReducer {
 
     public MinGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier(new ConstantSupplier<>((S) Double.valueOf(Double.MAX_VALUE)));
+        this.setSeedSupplier(new ConstantSupplier<>(null));
         this.setBiFunction(MinBiFunction.instance());
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
+    }
+
+    @Override
+    public MapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> getMapReduce() {
+        return MinMapReduce.instance();
     }
 
     /////
@@ -57,10 +70,63 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         @Override
         public S apply(final S mutatingSeed, final Traverser<S> traverser) {
-            return mutatingSeed.doubleValue() < traverser.get().doubleValue() ? mutatingSeed : traverser.get();
+            return mutatingSeed != null && mutatingSeed.doubleValue() <= traverser.get().doubleValue() ? mutatingSeed : traverser.get();
         }
 
         public final static <S extends Number> MinBiFunction<S> instance() {
+            return INSTANCE;
+        }
+    }
+
+    ///////////
+
+    private static class MinMapReduce extends StaticMapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> {
+
+        private static final MinMapReduce INSTANCE = new MinMapReduce();
+
+        private MinMapReduce() {
+
+        }
+
+        @Override
+        public boolean doStage(final MapReduce.Stage stage) {
+            return true;
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<NullObject, Number> emitter) {
+            vertex.<TraverserSet<Number>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(traverser.get())));
+        }
+
+        @Override
+        public void combine(final NullObject key, final Iterator<Number> values, final ReduceEmitter<NullObject, Number> emitter) {
+            this.reduce(key, values, emitter);
+        }
+
+        @Override
+        public void reduce(final NullObject key, final Iterator<Number> values, final ReduceEmitter<NullObject, Number> emitter) {
+            if (values.hasNext()) {
+                Number min = Double.MAX_VALUE;
+                while (values.hasNext()) {
+                    final Number value = values.next();
+                    if (value.doubleValue() < min.doubleValue())
+                        min = value;
+                }
+                emitter.emit(min);
+            }
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return REDUCING;
+        }
+
+        @Override
+        public Number generateFinalResult(final Iterator<KeyValue<NullObject, Number>> keyValues) {
+            return keyValues.hasNext() ? keyValues.next().getValue() : null;
+        }
+
+        public static final MinMapReduce instance() {
             return INSTANCE;
         }
     }
