@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reducing;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
@@ -33,7 +32,7 @@ import java.util.function.BiFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S, S> implements Reducing<S, Traverser<S>> {
+public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S, S> {
 
     public MinGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -44,11 +43,6 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
-    }
-
-    @Override
-    public Reducer<S, Traverser<S>> getReducer() {
-        return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true, true);
     }
 
     /////

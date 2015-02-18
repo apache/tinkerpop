@@ -27,10 +27,8 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reducing;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -44,7 +42,7 @@ import java.util.function.BiFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> implements Reducing<Long, Traverser<S>>, MapReducer {
+public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> implements MapReducer {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.BULK);
 
@@ -61,13 +59,8 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
     }
 
     @Override
-    public Reducer<Long, Traverser<S>> getReducer() {
-        return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true, true);
-    }
-
-    @Override
-    public MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> getMapReduce() {
-        return (MapReduce) new CountMapReduce();
+    public MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Iterator<Traverser.Admin<Long>>> getMapReduce() {
+        return new CountMapReduce();
     }
 
     ///////////
@@ -100,16 +93,6 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
         }
 
         @Override
-        public String getMemoryKey() {
-            return Graph.Hidden.hide("reducingBarrier");
-        }
-
-        @Override
-        public Iterator<Traverser.Admin<Long>> generateFinalResult(final Iterator<KeyValue<NullObject, Long>> keyValues) {
-            return IteratorUtils.of(getTraversal().getTraverserGenerator().generate(keyValues.hasNext() ? keyValues.next().getValue() : 0L, (Step) CountGlobalStep.this, 1L));
-        }
-
-        @Override
         public void map(final Vertex vertex, final MapEmitter<NullObject, Long> emitter) {
             vertex.<TraverserSet<?>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(traverser.bulk())));
         }
@@ -126,6 +109,16 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
                 count = count + values.next();
             }
             emitter.emit(count);
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return REDUCING;
+        }
+
+        @Override
+        public Iterator<Traverser.Admin<Long>> generateFinalResult(final Iterator<KeyValue<NullObject, Long>> keyValues) {
+            return IteratorUtils.of(getTraversal().getTraverserGenerator().generate(keyValues.hasNext() ? keyValues.next().getValue() : 0L, (Step) CountGlobalStep.this, 1L));
         }
     }
 

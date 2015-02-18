@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reducing;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.util.function.ArrayListSupplier;
 
@@ -35,7 +34,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> implements Reducing<E, S> {
+public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
 
@@ -46,12 +45,7 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> implements R
     public FoldStep(final Traversal.Admin traversal, final Supplier<E> seed, final BiFunction<E, S, E> foldFunction) {
         super(traversal);
         this.setSeedSupplier(seed);
-        this.setBiFunction(new ObjectBiFunction<>(foldFunction));
-    }
-
-    @Override
-    public Reducer<E, S> getReducer() {
-        return new Reducer<>(this.getSeedSupplier(), ((ObjectBiFunction<S, E>) this.getBiFunction()).getBiFunction(), false, false);
+        this.setBiFunction(new FoldBiFunction<>(foldFunction));
     }
 
     @Override
@@ -78,5 +72,22 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> implements R
         public final static <S> ArrayListBiFunction<S> instance() {
             return INSTANCE;
         }
+    }
+
+    ///////
+
+    public static class FoldBiFunction<S, E> implements BiFunction<E, Traverser<S>, E>, Serializable {
+
+        private final BiFunction<E, S, E> biFunction;
+
+        public FoldBiFunction(final BiFunction<E, S, E> biFunction) {
+            this.biFunction = biFunction;
+        }
+
+        @Override
+        public E apply(final E seed, final Traverser<S> traverser) {
+            return this.biFunction.apply(seed, traverser.get());
+        }
+
     }
 }

@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reducing;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
@@ -33,7 +32,7 @@ import java.util.function.BiFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> implements Reducing<Double, Traverser<Number>> {
+public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.BULK,
@@ -50,11 +49,6 @@ public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> imp
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
-    }
-
-    @Override
-    public Reducer<Double, Traverser<Number>> getReducer() {
-        return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true, true);
     }
 
     /////
