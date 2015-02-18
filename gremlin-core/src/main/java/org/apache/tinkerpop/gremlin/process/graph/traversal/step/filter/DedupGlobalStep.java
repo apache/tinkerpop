@@ -67,7 +67,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Reversibl
         return new Reducer<>(HashSet::new, (set, start) -> {
             set.add(TraversalUtil.apply(start, this.dedupTraversal));
             return set;
-        }, true);
+        }, false, true);
     }
 
     @Override

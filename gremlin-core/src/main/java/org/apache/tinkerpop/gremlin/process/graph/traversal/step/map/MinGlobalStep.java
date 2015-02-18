@@ -48,7 +48,7 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
     @Override
     public Reducer<S, Traverser<S>> getReducer() {
-        return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true);
+        return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true, true);
     }
 
     /////

@@ -72,7 +72,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // GraphComputerTest.ComputerTest.class,   // todo: not sure this should be here as it forces retest of GraphComputer without an "implementation"
 
             // branch
-            BranchTest.ComputerTest.class,
+            /*BranchTest.ComputerTest.class,
             ChooseTest.ComputerTest.class,
             LocalTest.ComputerTest.class,
             RepeatTest.ComputerTest.class,
@@ -96,7 +96,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             WhereTest.ComputerTest.class,
 
             // map
-            BackTest.ComputerTest.class,
+            BackTest.ComputerTest.class,*/
             CountTest.ComputerTest.class,
             FoldTest.ComputerTest.class,
             MapTest.ComputerTest.class,

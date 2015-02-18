@@ -51,7 +51,7 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
 
     @Override
     public Reducer<E, Traverser<S>> getReducer() {
-        return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true);
+        return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), false, true);
     }
 
     /////

@@ -54,7 +54,7 @@ public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> imp
 
     @Override
     public Reducer<Double, Traverser<Number>> getReducer() {
-        return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true);
+        return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true, true);
     }
 
     /////

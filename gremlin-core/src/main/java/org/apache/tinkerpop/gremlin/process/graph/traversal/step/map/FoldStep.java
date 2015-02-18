@@ -51,7 +51,7 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> implements R
 
     @Override
     public Reducer<E, S> getReducer() {
-        return new Reducer<>(this.getSeedSupplier(), ((ObjectBiFunction<S, E>) this.getBiFunction()).getBiFunction(), false);
+        return new Reducer<>(this.getSeedSupplier(), ((ObjectBiFunction<S, E>) this.getBiFunction()).getBiFunction(), false, false);
     }
 
     @Override
