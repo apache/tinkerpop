@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
@@ -63,6 +64,7 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_valueMap_unfold_mapXkeyX() {
         final Traversal<Vertex, String> traversal = get_g_V_valueMap_unfold_mapXkeyX();
         printTraversalForm(traversal);
@@ -91,6 +93,7 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends UnfoldTest {
 
         @Override
@@ -101,15 +104,6 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_valueMap_unfold_mapXkeyX() {
             return g.V().valueMap().<Map.Entry<String, List>>unfold().map(m -> m.get().getKey());
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
-        @Override
-        @Test
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void g_V_valueMap_unfold_mapXkeyX() {
         }
     }
 }

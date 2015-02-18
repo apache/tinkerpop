@@ -67,6 +67,7 @@ public abstract class SumTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends SumTest {
 
         @Override
@@ -78,9 +79,5 @@ public abstract class SumTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXsumXlocalXX() {
             return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).by(sum(Scope.local)).cap();
         }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }

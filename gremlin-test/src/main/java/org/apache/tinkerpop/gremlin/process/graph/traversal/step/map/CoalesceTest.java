@@ -126,6 +126,7 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends CoalesceTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coalesceXoutXfooX_outXbarXX() {
@@ -151,9 +152,5 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Path> get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX() {
             return g.V().coalesce(outE("knows"), outE("created")).otherV().path().by("name").by(T.label);
         }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }

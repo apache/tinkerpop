@@ -487,6 +487,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends VertexTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V() {
@@ -612,9 +613,5 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Vertex> get_g_VX1X_to_XOUT_knowsX(final Object v1Id) {
             return g.V(v1Id).to(Direction.OUT, "knows");
         }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }
