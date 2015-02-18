@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.*;
@@ -242,5 +243,15 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite) throws InitializationError {
         super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite);
+    }
+
+    @Override
+    public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
+        final UseEngine useEngine = testClass.getAnnotation(UseEngine.class);
+
+        if (null == useEngine || !useEngine.value().equals(TraversalEngine.Type.STANDARD))
+            throw new RuntimeException(String.format("The %s expects all tests to be annotated with @UseEngine(%s) - check %s",
+                    ProcessComputerSuite.class.getName(), TraversalEngine.Type.STANDARD, testClass.getName()));
+        return super.beforeTestExecution(testClass);
     }
 }

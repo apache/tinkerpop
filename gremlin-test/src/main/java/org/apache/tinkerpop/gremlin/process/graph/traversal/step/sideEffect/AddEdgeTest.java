@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -113,6 +115,7 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
         assertEquals(1, count);
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends AddEdgeTest {
 
         @Override

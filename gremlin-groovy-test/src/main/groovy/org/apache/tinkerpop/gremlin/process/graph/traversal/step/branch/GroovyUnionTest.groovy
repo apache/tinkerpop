@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch
 
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.UnionTest
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
@@ -32,6 +34,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*
  */
 public abstract class GroovyUnionTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends UnionTest {
 
         public Traversal<Vertex, String> get_g_V_unionXout__inX_name() {
@@ -68,6 +71,7 @@ public abstract class GroovyUnionTest {
 
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends UnionTest {
 
         public Traversal<Vertex, String> get_g_V_unionXout__inX_name() {

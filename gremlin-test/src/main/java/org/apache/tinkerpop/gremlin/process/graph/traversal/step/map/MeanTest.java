@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -69,6 +71,7 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
         assertEquals(1.0 / 3, map.get("lop"));
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends MeanTest {
 
         @Override
@@ -82,17 +85,7 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends MeanTest {
-
-        @Override
-        public Traversal<Vertex, Double> get_g_V_age_mean() {
-            return g.V().values("age").mean();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX() {
-            return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).
-                    by(mean(Scope.local)).<Map<String, Number>>cap();
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
     }
 }

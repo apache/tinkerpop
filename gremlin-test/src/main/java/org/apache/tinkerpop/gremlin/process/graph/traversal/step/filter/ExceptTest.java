@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Path;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
@@ -138,6 +140,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("peter", "josh"), traversal);
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends ExceptTest {
 
         @Override
@@ -176,49 +179,31 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends ExceptTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
 
-        public ComputerTest() {
-            requiresGraphComputer = true;
+        @Override
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_VX1X_out_exceptXg_v2X() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_exceptXg_v2X(final Object v1Id, final Object v2Id) {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V(v1Id).out().except(g.V(v2Id).next());
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_VX1X_outXcreatedX_inXcreatedX_exceptXg_v1X_name() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_exceptXxX(final Object v1Id) {
-            return g.V(v1Id).out().aggregate("x").out().except("x");
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_exceptXg_V_toListX() {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_outXcreatedX_inXcreatedX_exceptXg_v1X_name(final Object v1Id) {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V(v1Id).out("created").in("created").except(g.V(v1Id).next()).<String>values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_exceptXg_V_toListX() {
-            g.engine(StandardTraversalEngine.standard);// TODO
-            return g.V().except(g.V().toList());
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_exceptXX() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().except(Collections.emptyList());
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(final Object v1Id) {
-            return g.V(v1Id).repeat(bothE("created").except("e").aggregate("e").otherV()).emit().path();
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_exceptXaX_name(final Object v1Id) {
-            return g.V(v1Id).as("a").out("created").in("created").except("a").<String>values("name");
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_exceptXX() {
         }
     }
 }

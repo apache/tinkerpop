@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -64,6 +66,7 @@ public abstract class SumTest extends AbstractGremlinProcessTest {
         assertEquals(1.0, map.get("lop"));
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends SumTest {
 
         @Override
@@ -77,17 +80,7 @@ public abstract class SumTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends SumTest {
-
-        @Override
-        public Traversal<Vertex, Double> get_g_V_valuesXageX_sum() {
-            return g.V().values("age").sum();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXsumXlocalXX() {
-            return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).
-                    by(sum(Scope.local)).<Map<String, Number>>cap();
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
     }
 }

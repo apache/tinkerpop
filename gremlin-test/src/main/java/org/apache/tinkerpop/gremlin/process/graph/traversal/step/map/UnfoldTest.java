@@ -21,7 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -42,7 +43,7 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold();
 
-    public abstract Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX();
+    public abstract Traversal<Vertex, String> get_g_V_valueMap_unfold_mapXkeyX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -63,7 +64,7 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_valueMap_unfold_mapXkeyX() {
-        final Traversal<Vertex, String> traversal = get_V_valueMap_unfold_mapXkeyX();
+        final Traversal<Vertex, String> traversal = get_g_V_valueMap_unfold_mapXkeyX();
         printTraversalForm(traversal);
         int counter = 0;
         int ageCounter = 0;
@@ -89,6 +90,7 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends UnfoldTest {
 
         @Override
@@ -97,26 +99,17 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX() {
+        public Traversal<Vertex, String> get_g_V_valueMap_unfold_mapXkeyX() {
             return g.V().valueMap().<Map.Entry<String, List>>unfold().map(m -> m.get().getKey());
         }
     }
 
-    public static class ComputerTest extends UnfoldTest {
-
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
         @Override
-        public Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold() {
-            return (Traversal) g.V().local(outE().fold()).unfold();
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().valueMap().<Map.Entry<String, List>>unfold().map(m -> m.get().getKey()); // TODO: ;
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_valueMap_unfold_mapXkeyX() {
         }
     }
 }

@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -29,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyUnfoldTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends UnfoldTest {
 
         @Override
@@ -37,11 +40,12 @@ public abstract class GroovyUnfoldTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX() {
+        public Traversal<Vertex, String> get_g_V_valueMap_unfold_mapXkeyX() {
             g.V.valueMap.unfold.map { it.key }
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends UnfoldTest {
 
         @Override
@@ -50,7 +54,7 @@ public abstract class GroovyUnfoldTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX() {
+        public Traversal<Vertex, String> get_g_V_valueMap_unfold_mapXkeyX() {
             ComputerTestHelper.compute("g.V.valueMap.unfold.map { it.key }", g)
         }
     }

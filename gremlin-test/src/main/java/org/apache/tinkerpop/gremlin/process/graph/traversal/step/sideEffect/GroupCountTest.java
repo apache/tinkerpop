@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -120,6 +122,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends GroupCountTest {
 
         @Override
@@ -155,41 +158,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends GroupCountTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
-            return (Traversal) g.V().out("created").groupCount().by("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount() {
-            return (Traversal) g.V().out("created").values("name").groupCount();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
-            return (Traversal) g.V().out("created").values("name").groupCount("a");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCount() {
-            return (Traversal) g.V().has("no").groupCount();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX() {
-            return g.V().repeat(out().groupCount("a").by("name")).times(2).<Map<String, Long>>cap("a");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX() {
-            return g.V().union(
-                    repeat(out()).times(2).groupCount("m").by("lang"),
-                    repeat(in()).times(2).groupCount("m").by("name")).<Map<String, Long>>cap("m");
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
     }
 }

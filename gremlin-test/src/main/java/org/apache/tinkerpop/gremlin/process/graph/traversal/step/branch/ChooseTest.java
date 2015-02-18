@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -59,6 +61,7 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         assertEquals(Long.valueOf(1), counts.get("josh"));
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends ChooseTest {
 
         @Override
@@ -69,17 +72,7 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends ChooseTest {
-
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {
-            return g.V().choose(out().count())
-                    .option(2L, values("name"))
-                    .option(3L, valueMap());
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
     }
 }

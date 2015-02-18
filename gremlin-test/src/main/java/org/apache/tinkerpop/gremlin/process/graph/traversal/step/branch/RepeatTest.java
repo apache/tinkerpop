@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Path;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -218,10 +220,8 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends RepeatTest {
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_emit_path() {
@@ -269,54 +269,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends RepeatTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_emit_path() {
-            return g.V().repeat(out()).times(2).emit().path();
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_repeatXoutX_timesX2X_repeatXinX_timesX2X_name() {
-            return g.V().repeat(out()).times(2).repeat(in()).times(2).<String>values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X() {
-            return g.V().repeat(out()).times(2);
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X_emit() {
-            return g.V().repeat(out()).times(2).emit();
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX1X_timesX2X_repeatXoutX_name(Object v1Id) {
-            return g.V(v1Id).times(2).repeat(out()).<String>values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_V_emit_repeatXoutX_timesX2X_path() {
-            return g.V().emit().repeat(out()).times(2).path();
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_V_emit_timesX2X_repeatXoutX_path() {
-            return g.V().emit().times(2).repeat(out()).path();
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
-            return g.V(v1Id).emit(has(T.label, "person")).repeat(out()).<String>values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
-            return g.V().repeat(groupCount("m").by("name").out()).times(2).<Map<String, Long>>cap("m");
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
     }
 }

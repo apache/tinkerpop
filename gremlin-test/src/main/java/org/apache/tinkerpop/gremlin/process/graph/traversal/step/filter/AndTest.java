@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -59,11 +61,9 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("josh", "peter"), traversal);
     }
 
-    public static class StandardTest extends AndTest {
 
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTest extends AndTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_andXhasXage_gt_27X__outE_count_gt_2X_name() {
@@ -76,19 +76,8 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends AndTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
 
-        @Override
-        public Traversal<Vertex, String> get_g_V_andXhasXage_gt_27X__outE_count_gt_2X_name() {
-            return g.V().and(has("age", gt, 27), outE().count().is(gte, 2l)).<String>values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_andXoutE__hasXlabel_personX_and_hasXage_gte_32XX_name() {
-            return g.V().and(outE(), has(T.label, "person").and().has("age", Compare.gte, 32)).<String>values("name");
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
     }
 }

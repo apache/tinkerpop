@@ -18,18 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
 import org.apache.tinkerpop.gremlin.process.Path
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PathTest
 import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.junit.Test
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyPathTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends PathTest {
 
         @Override
@@ -58,6 +63,7 @@ public abstract class GroovyPathTest {
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends PathTest {
 
         @Override
@@ -66,26 +72,44 @@ public abstract class GroovyPathTest {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_VX1X_out_path_byXageX_byXnameX(final Object v1Id) {
-            g.V(v1Id).out.path.by('age').by('name');
-            // TODO
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_VX1X_out_path_byXageX_byXnameX() {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX() {
-            g.V.repeat(__.out).times(2).path.by.by('name').by('lang');
-            //TODO
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        void g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX() {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_out_out_path_byXnameX_byXageX() {
-            g.V.out.out.path.by('name').by('age');
-            // TODO
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_out_out_path_byXnameX_byXageX() {
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path() {
             ComputerTestHelper.compute("g.V.as('a').has('name', 'marko').as('b').has('age', 29).as('c').path", g);
+        }
+
+        @Override
+        Traversal<Vertex, Path> get_g_VX1X_out_path_byXageX_byXnameX(Object v1Id) {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Path> get_g_V_out_out_path_byXnameX_byXageX() {
+            // override with nothing until the test itself is supported
+            return null
         }
     }
 }

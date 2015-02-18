@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -200,12 +202,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         assertEquals(2, counter);
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends RangeTest {
-
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_limitX2X(final Object v1Id) {
             return g.V(v1Id).out().limit(2);
@@ -252,64 +250,62 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends StandardTest {
-
-        public ComputerTest() {
-            requiresGraphComputer = true;
+        @Override
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_VX1X_out_limitX2X() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_limitX2X(Object v1Id) {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return super.get_g_VX1X_out_limitX2X(v1Id);
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_localXoutE_limitX1X_inVX_limitX3X() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_localXoutE_limitX1X_inVX_limitX3X() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return super.get_g_V_localXoutE_limitX1X_inVX_limitX3X();
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_VX1X_outXknowsX_outEXcreatedX_rangeX0_1X_inV() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_outXknowsX_outEXcreatedX_rangeX0_1X_inV(Object v1Id) {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return super.get_g_VX1X_outXknowsX_outEXcreatedX_rangeX0_1X_inV(v1Id);
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_VX1X_outXknowsX_outXcreatedX_rangeX0_1X() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_outXknowsX_outXcreatedX_rangeX0_1X(Object v1Id) {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return super.get_g_VX1X_outXknowsX_outXcreatedX_rangeX0_1X(v1Id);
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_VX1X_outXcreatedX_inXcreatedX_rangeX1_3X() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_rangeX1_3X(Object v1Id) {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return super.get_g_VX1X_outXcreatedX_inXcreatedX_rangeX1_3X(v1Id);
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV(Object v1Id) {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return super.get_g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV(v1Id);
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_repeatXbothX_timesX3X_rangeX5_11X() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return super.get_g_V_repeatXbothX_timesX3X_rangeX5_11X();
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_limitXlocal_1XX_asXwX_select_byXnameX_by() {
+            // TODO the traversal should work in computer mode, but throws a ClassCastException
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_limitXlocal_1XX_asXwX_select_byXnameX_by() {
-            g.engine(StandardTraversalEngine.standard); // TODO the traversal should work in computer mode, but throws a ClassCastException
-            return super.get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_limitXlocal_1XX_asXwX_select_byXnameX_by();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by() {
-            g.engine(StandardTraversalEngine.standard); // TODO the traversal should work in computer mode, but throws a ClassCastException
-            return super.get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by();
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by() {
+            // TODO the traversal should work in computer mode, but throws a ClassCastException
         }
     }
 }

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerDataStrategyTest;
@@ -238,5 +239,15 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
         super(klass, builder, testsToExecute, testsToEnforce);
+    }
+
+    @Override
+    public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
+        final UseEngine useEngine = testClass.getAnnotation(UseEngine.class);
+        if (null == useEngine || !useEngine.value().equals(TraversalEngine.Type.COMPUTER))
+            throw new RuntimeException(String.format("The %s expects all tests to be annotated with @UseEngine(%s) - check %s",
+                    ProcessComputerSuite.class.getName(), TraversalEngine.Type.COMPUTER, testClass.getName()));
+
+        return super.beforeTestExecution(testClass);
     }
 }

@@ -18,17 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
 import org.apache.tinkerpop.gremlin.process.Path
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectTest
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.junit.Test
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyInjectTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends InjectTest {
         @Override
         public Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
@@ -41,17 +46,32 @@ public abstract class GroovyInjectTest {
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends InjectTest {
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
-            g.engine(StandardTraversalEngine.standard);
-            g.V(v1Id).out.inject(g.V(v2Id).next()).name
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        void g_VX1X_out_injectXv2X_name() {
+            super.g_VX1X_out_injectXv2X_name()
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
-            g.engine(StandardTraversalEngine.standard);
-            g.V(v1Id).out().name.inject('daniel').as('a').map { it.length() }.path
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        void g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path() {
+            super.g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path()
+        }
+
+        @Override
+        Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(Object v1Id, Object v2Id) {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(Object v1Id) {
+            // override with nothing until the test itself is supported
+            return null
         }
     }
 }

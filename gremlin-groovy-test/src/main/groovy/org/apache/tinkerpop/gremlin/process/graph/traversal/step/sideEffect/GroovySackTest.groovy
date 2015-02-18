@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -30,6 +32,7 @@ import static org.apache.tinkerpop.gremlin.structure.Operator.sum
  */
 public abstract class GroovySackTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends SackTest {
 
         @Override
@@ -48,6 +51,7 @@ public abstract class GroovySackTest {
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends SackTest {
 
         @Override

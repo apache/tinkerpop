@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.util;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Path;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.util.path.ImmutablePath;
 import org.apache.tinkerpop.gremlin.process.util.path.MutablePath;
 import org.junit.Test;
@@ -35,6 +37,7 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@UseEngine(TraversalEngine.Type.STANDARD)
 public class PathTest extends AbstractGremlinProcessTest {
 
     @Test

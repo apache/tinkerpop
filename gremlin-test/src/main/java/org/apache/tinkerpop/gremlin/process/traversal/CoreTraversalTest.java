@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Contains;
@@ -49,6 +51,7 @@ import static org.junit.Assert.*;
 @ExceptionCoverage(exceptionClass = Traversal.Exceptions.class, methods = {
         "traversalIsLocked"
 })
+@UseEngine(TraversalEngine.Type.STANDARD)
 public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
     @Test

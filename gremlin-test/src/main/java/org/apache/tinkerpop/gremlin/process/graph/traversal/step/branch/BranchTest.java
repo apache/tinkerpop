@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -52,7 +54,7 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
         });
     }
 
-
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends BranchTest {
 
         @Override
@@ -72,22 +74,7 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends BranchTest {
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
-            return g.V().branch(label().is("person").count())
-                    .option(1L, values("age"))
-                    .option(0L, values("lang"))
-                    .option(0L, values("name"));
-        }
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
-            return g.V().branch(label())
-                    .option("person", values("age"))
-                    .option("software", values("lang"))
-                    .option("software", values("name"));
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
     }
 }

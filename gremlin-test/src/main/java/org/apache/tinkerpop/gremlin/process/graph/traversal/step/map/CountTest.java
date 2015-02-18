@@ -22,7 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -123,6 +124,7 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends CountTest {
 
         @Override
@@ -161,46 +163,12 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends CountTest {
-
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
         @Override
-        public Traversal<Vertex, Long> get_g_V_count() {
-            return g.V().count();
-        }
-
-        @Override
-        public Traversal<Vertex, Long> get_g_V_out_count() {
-            return g.V().out().count();
-        }
-
-        @Override
-        public Traversal<Vertex, Long> get_g_V_both_both_count() {
-            return g.V().both().both().count();
-        }
-
-        @Override
-        public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX3X_count() {
-            return g.V().repeat(out()).times(3).count();
-        }
-
-        @Override
-        public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX8X_count() {
-            return g.V().repeat(out()).times(8).count();
-        }
-
-        @Override
-        public Traversal<Vertex, Long> get_g_V_hasXnoX_count() {
-            return g.V().has("no").count();
-        }
-
-        @Override
-        public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().fold().count(Scope.local);
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_fold_countXlocalX() {
         }
     }
 }

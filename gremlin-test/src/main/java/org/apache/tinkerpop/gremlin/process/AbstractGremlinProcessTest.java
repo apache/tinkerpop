@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.util.MapHelper;
 import org.junit.Before;
 
@@ -38,11 +39,7 @@ import static org.junit.Assume.assumeTrue;
  */
 public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
 
-    /**
-     * Determines if a test case implementation of a process test uses graph computer.  This value should be
-     * set in the constructor of the class that implements this.
-     */
-    protected boolean requiresGraphComputer;
+    protected static final String TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER = "Traversal not supported by ComputerTraversalEngine.computer";
 
     /**
      * Determines if a graph meets requirements for execution.  All gremlin process tests should check this
@@ -50,12 +47,22 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
      * feature or if it does require the computer feature then ensure that the graph being tested supports it.
      */
     protected boolean graphMeetsTestRequirements() {
-        return !requiresGraphComputer || g.features().graph().supportsComputer();
+        return !hasGraphComputerRequirement() || g.features().graph().supportsComputer();
+    }
+
+    private boolean hasGraphComputerRequirement() {
+        final UseEngine useEngine = this.getClass().getAnnotation(UseEngine.class);
+        if (null == useEngine)
+            throw new RuntimeException(String.format("The %s expects all tests to be annotated with %s",
+                    AbstractGremlinProcessTest.class.getName(), UseEngine.class.getName()));
+
+        return useEngine.value().equals(TraversalEngine.Type.COMPUTER);
     }
 
     @Before
     public void setupTest() {
         assumeTrue(graphMeetsTestRequirements());
+        if (hasGraphComputerRequirement()) g.engine(ComputerTraversalEngine.computer);
     }
 
     public <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {

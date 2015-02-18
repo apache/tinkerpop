@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -111,12 +113,8 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
         assertEquals(5, map.get("person").size());
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends SampleTest {
-
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX1X() {
             return g.E().sample(1);
@@ -143,28 +141,24 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends StandardTest {
-
-        public ComputerTest() {
-            requiresGraphComputer = true;
+        @Override
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_E_sampleX1X() {
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_sampleX1X() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return super.get_g_E_sampleX1X();
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_E_sampleX2X_byXweightX() {
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_sampleX2X_byXweightX() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return super.get_g_E_sampleX2X_byXweightX();
-        }
-
-        @Override
-        public Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return super.get_g_V_localXoutE_sampleX1X_byXweightXX();
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_localXoutE_sampleX1X_byXweightXX() {
         }
     }
 }

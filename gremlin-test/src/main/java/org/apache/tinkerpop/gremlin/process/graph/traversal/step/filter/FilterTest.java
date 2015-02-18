@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -161,10 +163,8 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends FilterTest {
-        public StandardTest() {
-            this.requiresGraphComputer = false;
-        }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
@@ -210,61 +210,55 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends FilterTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
 
-        public ComputerTest() {
-            this.requiresGraphComputer = true;
+        @Override
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_filterXfalseX() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().filter(v -> false);// TODO: ;
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_filterXtrueX() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_filterXtrueX() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().filter(v -> true);// TODO: ;
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_filterXlang_eq_javaX() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().filter(v -> v.get().<String>property("lang").orElse("none").equals("java"));// TODO: ;
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_VX1X_filterXage_gt_30X() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_filterXage_gt_30X(final Object v1Id) {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V(v1Id).filter(v -> v.get().<Integer>property("age").orElse(0) > 30);// TODO: ;
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_VX1X_out_filterXage_gt_30X() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_filterXage_gt_30X(final Object v1Id) {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V(v1Id).out().filter(v -> v.get().<Integer>property("age").orElse(0) > 30);// TODO: ;
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_E_filterXfalseX() {
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_filterXfalseX() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.E().filter(v -> false);// TODO: ;
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_E_filterXtrueX() {
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_filterXtrueX() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.E().filter(v -> true);// TODO: ;
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().filter(v -> {
-                final String name = v.get().value("name");
-                return name.startsWith("m") || name.startsWith("p");
-            });// TODO: ;
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
         }
     }
 }

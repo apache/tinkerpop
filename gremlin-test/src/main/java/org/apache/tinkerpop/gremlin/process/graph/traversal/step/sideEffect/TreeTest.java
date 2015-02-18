@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.graph.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -102,11 +104,8 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends TreeTest {
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
         @Override
         public Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id) {
             return (Traversal) g.V(v1Id).out().out().tree().by("name");
@@ -133,36 +132,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends TreeTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id) {
-            // TODO: micropaths don't have vertex properties
-            return (Traversal) g.V(v1Id).out().out().tree().by("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
-            // TODO: micropaths don't have vertex properties
-            return g.V(v1Id).out().out().tree("a").by("name").both().both().<Tree>cap("a");
-        }
-
-        @Override
-        public Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX() {
-            return (Traversal) g.V().out().out().tree().by(T.id);
-        }
-
-        @Override
-        public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX() {
-            return (Traversal) g.V().out().out().tree("a").by(T.id);
-        }
-
-        @Override
-        public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX() {
-            return (Traversal) g.V().out().out().tree("a");
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
     }
 }

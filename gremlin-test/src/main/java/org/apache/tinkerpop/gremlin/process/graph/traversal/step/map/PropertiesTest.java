@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -46,12 +48,8 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends PropertiesTest {
-
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXname_ageX_value() {
             return g.V().has("age").properties("name", "age").value();
@@ -63,21 +61,8 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends PropertiesTest {
-
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXname_ageX_value() {
-            return g.V().has("age").properties("name", "age").value();
-        }
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXage_nameX_value() {
-            return g.V().has("age").properties("age", "name").value();
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
     }
 
 }

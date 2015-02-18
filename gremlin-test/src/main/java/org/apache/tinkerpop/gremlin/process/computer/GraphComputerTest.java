@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.computer;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
@@ -311,12 +313,8 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
     }
 
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends GraphComputerTest {
-
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
         @Override
         public GraphComputer get_g_compute() {
             return g.compute();

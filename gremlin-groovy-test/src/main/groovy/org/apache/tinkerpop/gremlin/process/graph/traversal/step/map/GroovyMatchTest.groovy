@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.T
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MatchTest
 import org.apache.tinkerpop.gremlin.structure.Compare
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -29,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.__
  */
 public abstract class GroovyMatchTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends MatchTest {
 
         @Override

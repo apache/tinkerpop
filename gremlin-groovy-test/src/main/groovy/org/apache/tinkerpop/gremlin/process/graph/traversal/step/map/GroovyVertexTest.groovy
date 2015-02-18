@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexTest
 import org.apache.tinkerpop.gremlin.structure.Compare
 import org.apache.tinkerpop.gremlin.structure.Direction
@@ -31,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyVertexTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends VertexTest {
 
         @Override
@@ -160,6 +163,7 @@ public abstract class GroovyVertexTest {
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends VertexTest {
 
         @Override

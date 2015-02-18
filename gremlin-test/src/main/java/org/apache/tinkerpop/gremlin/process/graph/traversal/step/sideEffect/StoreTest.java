@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.HashSetSupplier;
@@ -109,11 +111,8 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         assertFalse(store.isEmpty());
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends StoreTest {
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX() {
             return g.V().store("a").by("name").out().cap("a");
@@ -135,30 +134,8 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends StoreTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX() {
-            return g.V().store("a").by("name").out().<Collection>cap("a");
-        }
-
-        @Override
-        public Traversal<Vertex, Collection> get_g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(final Object v1Id) {
-            return g.V(v1Id).store("a").by("name").out().store("a").by("name").values("name").<Collection>cap("a");
-        }
-
-        @Override
-        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX() {
-            return (Traversal) g.V().withSideEffect("a", HashSetSupplier.instance()).both().<String>values("name").store("a");
-        }
-
-        @Override
-        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX() {
-            return (Traversal) g.V().store("a").by(outE("created").count()).out().out().store("a").by(inE("created").values("weight").sum());
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
     }
 
 }

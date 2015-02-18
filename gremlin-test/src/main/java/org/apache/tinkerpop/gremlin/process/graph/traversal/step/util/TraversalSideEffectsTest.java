@@ -20,7 +20,9 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
 
@@ -46,11 +48,8 @@ public abstract class TraversalSideEffectsTest extends AbstractGremlinProcessTes
         assertEquals(StringFactory.traversalSideEffectsString(sideEffects), sideEffects.toString());
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends TraversalSideEffectsTest {
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
         @Override
         public TraversalSideEffects get_g_V_asAdmin_getSideEffects() {
             return g.V().asAdmin().getSideEffects();

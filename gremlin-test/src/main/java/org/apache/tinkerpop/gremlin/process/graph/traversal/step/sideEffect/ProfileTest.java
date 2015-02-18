@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.util.metric.Metrics;
 import org.apache.tinkerpop.gremlin.process.util.metric.StandardTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
@@ -148,6 +150,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertEquals(100, totalPercentDuration, 0.000001);
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends ProfileTest {
 
         @Test
@@ -219,19 +222,15 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     }
 
-    public static class ComputerTest extends ProfileTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
 
         @Override
-        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile() {
-            return (Traversal) g.V().out().out().profile();
-        }
+        @Test
+        @LoadGraphWith(MODERN)
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void testProfileTimes() {
 
-        @Override
-        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_repeat_both_profile() {
-            return (Traversal) g.V().repeat(both()).times(3).profile();
         }
     }
 }

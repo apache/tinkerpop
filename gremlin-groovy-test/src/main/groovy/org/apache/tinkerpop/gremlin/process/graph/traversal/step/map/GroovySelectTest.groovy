@@ -18,12 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Order
 import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.junit.Test
 
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.values
 
@@ -32,6 +36,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.values
  */
 public abstract class GroovySelectTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends SelectTest {
 
         @Override
@@ -67,7 +72,7 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by_XitX() {
             g.V().as('a').name.order().as('b').select.by('name').by
         }
 
@@ -92,6 +97,7 @@ public abstract class GroovySelectTest {
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends SelectTest {
 
         @Override
@@ -100,11 +106,9 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(
-                final Object v1Id) {
-            g.engine(StandardTraversalEngine.standard);
-            g.V(v1Id).as('a').out('knows').as('b').select.by('name')
-            // TODO
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX() {
         }
 
         @Override
@@ -113,36 +117,27 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX(
-                final Object v1Id) {
-            g.engine(StandardTraversalEngine.standard);
-            g.V(v1Id).as('a').out('knows').as('b').select('a').by('name')
-            //TODO
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX() {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_select_byXnameX() {
-            g.engine(StandardTraversalEngine.standard);
-            g.V.as('a').out.as('b').select.by('name') // TODO computer
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_asXaX_out_asXbX_select_byXnameX() {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX() {
-            g.engine(StandardTraversalEngine.standard);
-            g.V.as('a').out.aggregate.as('b').select.by('name') // TODO computer
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        void g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX() {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by() {
-            g.engine(StandardTraversalEngine.standard);
-            g.V().as('a').name.order().as('b').select.by('name').by // TODO: computer
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
-            g.engine(StandardTraversalEngine.standard);
-            g.V.has('name', 'gremlin').inE('uses').order.by('skill', Order.incr).as('a').outV.as('b').select.by('skill').by('name')
-            // TODO: computer
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
         }
 
         @Override
@@ -151,18 +146,63 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_cap_asXxX_select() {
-            g.engine(StandardTraversalEngine.standard);
-            g.V().label().groupCount().cap().as('x').select()
-            //ComputerTestHelper.compute("g.V().label().groupCount().cap().as('x').select()", g)
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_label_groupCount_cap_asXxX_select() {
+        }
+
+        @Override
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        void g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(Object v1Id) {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, String> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX(Object v1Id) {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_select_byXnameX() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by_XitX() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_cap_asXxX_select() {
+            // override with nothing until the test itself is supported
+            return null
         }
 
         @Override
         Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
-            g.engine(StandardTraversalEngine.standard);
-            // TODO: should work in computer mode, but throws ClassCastException
-            g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount().cap()).as('relations').select().by('name').by()
-            //ComputerTestHelper.compute("g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount().cap()).as('relations').select().by('name').by()", g)
+            // override with nothing until the test itself is supported
+            return null
         }
     }
 }

@@ -18,17 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MapTest
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.junit.Test
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class GroovyMapTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends MapTest {
 
         @Override
@@ -57,6 +62,7 @@ public abstract class GroovyMapTest {
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends MapTest {
 
         @Override
@@ -75,17 +81,29 @@ public abstract class GroovyMapTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_asXaX_out_mapXa_nameX() {
             // TODO: Doesn't work for graph computer because sideEffects are not accessible
-            g.engine(StandardTraversalEngine.standard);
-            g.V.as('a').out.map { v -> v.path('a').name };
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_asXaX_out_out_mapXa_name_it_nameX() {
             // TODO: Doesn't work for graph computer because sideEffects are not accessible
-            g.engine(StandardTraversalEngine.standard);
-            g.V().as('a').out.out().map { v -> v.path('a').name + v.name };
+        }
+
+        @Override
+        Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
+            // override with nothing until the test itself is supported
+            return null
         }
     }
 }

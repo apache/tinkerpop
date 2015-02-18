@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesTest
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -28,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyPropertiesTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends PropertiesTest {
 
         @Override
@@ -41,6 +44,7 @@ public abstract class GroovyPropertiesTest {
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends PropertiesTest {
 
         @Override

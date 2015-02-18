@@ -18,17 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter
 
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
 import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.junit.Test
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyRangeTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends RangeTest {
 
         @Override
@@ -77,71 +82,117 @@ public abstract class GroovyRangeTest {
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends RangeTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_limitX2X(final Object v1Id) {
-            g.engine(StandardTraversalEngine.standard) // TODO
-            g.V(v1Id).out.limit(2)
-            //ComputerTestHelper.compute("g.V(v1Id).out.limit(2)", g)
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_VX1X_out_limitX2X() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_localXoutE_limitX1X_inVX_limitX3X() {
-            g.engine(StandardTraversalEngine.standard) // TODO
-            g.V.local(__.outE.limit(3)).inV.limit(3)
-            //ComputerTestHelper.compute("g.V.local(__.outE.limit(3)).inV.limit(3)", g)
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_localXoutE_limitX1X_inVX_limitX3X() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_outXknowsX_outEXcreatedX_rangeX0_1X_inV(final Object v1Id) {
-            g.engine(StandardTraversalEngine.standard) // TODO
-            g.V(v1Id).out('knows').outE('created')[0].inV()
-            //ComputerTestHelper.compute("g.V(v1Id).out('knows').outE('created')[0].inV()", g)
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_VX1X_outXknowsX_outEXcreatedX_rangeX0_1X_inV() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_outXknowsX_outXcreatedX_rangeX0_1X(final Object v1Id) {
-            g.engine(StandardTraversalEngine.standard) // TODO
-            g.V(v1Id).out('knows').out('created')[0]
-            //ComputerTestHelper.compute("g.V(v1Id).out('knows').out('created')[0]", g)
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_VX1X_outXknowsX_outXcreatedX_rangeX0_1X() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_rangeX1_3X(final Object v1Id) {
-            g.engine(StandardTraversalEngine.standard) // TODO
-            g.V(v1Id).out('created').in('created')[1..3]
-            //ComputerTestHelper.compute("g.V(v1Id).out('created').in('created')[1..3]", g)
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_VX1X_outXcreatedX_inXcreatedX_rangeX1_3X() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV(final Object v1Id) {
-            g.engine(StandardTraversalEngine.standard) // TODO
-            g.V(v1Id).out('created').inE('created')[1..3].outV
-            //ComputerTestHelper.compute("g.V(v1Id).out('created').inE('created')[1..3].outV", g)
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV() {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X() {
-            g.engine(StandardTraversalEngine.standard) // TODO
-            g.V().repeat(__.both).times(3)[5..11]
-            //ComputerTestHelper.compute("g.V().repeat(__.both).times(3)[5..11]", g)
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_repeatXbothX_timesX3X_rangeX5_11X() {
+        }
+
+        @Override
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        void g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_limitXlocal_1XX_asXwX_select_byXnameX_by() {
+
+        }
+
+        @Override
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        void g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by() {
+            // TODO: the traversal should work in computer mode, but throws a ClassCastException
+        }
+
+        @Override
+        Traversal<Vertex, Vertex> get_g_VX1X_out_limitX2X(Object v1Id) {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Vertex> get_g_V_localXoutE_limitX1X_inVX_limitX3X() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Vertex> get_g_VX1X_outXknowsX_outEXcreatedX_rangeX0_1X_inV(Object v1Id) {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Vertex> get_g_VX1X_outXknowsX_outXcreatedX_rangeX0_1X(Object v1Id) {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_rangeX1_3X(Object v1Id) {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV(Object v1Id) {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X() {
+            // override with nothing until the test itself is supported
+            return null
         }
 
         @Override
         Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_limitXlocal_1XX_asXwX_select_byXnameX_by() {
-            g.engine(StandardTraversalEngine.standard)
-            // TODO: the traversal should work in computer mode, but throws a ClassCastException
-            g.V().hasLabel('software').as('s').local(__.inE('created').values('weight').fold().limit(Scope.local, 1)).as('w').select().by('name').by()
-            //ComputerTestHelper.compute("g.V().hasLabel('software').as('s').local(__.inE('created').values('weight').fold().limit(Scope.local, 1)).as('p').select().by('name').by()", g)
+            // override with nothing until the test itself is supported
+            return null
         }
 
         @Override
         Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by() {
-            g.engine(StandardTraversalEngine.standard)
-            // TODO: the traversal should work in computer mode, but throws a ClassCastException
-            g.V().hasLabel('software').as('s').local(__.inE('created').values('weight').fold().range(Scope.local, 1, 3)).as('w').select().by('name').by()
-            //ComputerTestHelper.compute("g.V().hasLabel('software').as('s').local(__.inE('created').values('weight').fold().range(Scope.local, 1, 3)).as('p').select().by('name').by()", g)
+            // override with nothing until the test itself is supported
+            return null
         }
     }
 }

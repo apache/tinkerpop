@@ -18,11 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
-import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Path;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -37,7 +38,7 @@ import static org.junit.Assert.assertFalse;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class InjectTest extends AbstractGremlinTest {
+public abstract class InjectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id);
 
@@ -79,6 +80,7 @@ public abstract class InjectTest extends AbstractGremlinTest {
         assertEquals(4, counter);
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends InjectTest {
 
         @Override
@@ -92,18 +94,19 @@ public abstract class InjectTest extends AbstractGremlinTest {
         }
     }
 
-    public static class ComputerTest extends InjectTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V(v1Id).out().inject(g.V(v2Id).next()).<String>values("name");
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_VX1X_out_injectXv2X_name() {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V(v1Id).out().<String>values("name").inject("daniel").as("a").map(t -> t.get().length()).path();
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path() {
         }
     }
 }

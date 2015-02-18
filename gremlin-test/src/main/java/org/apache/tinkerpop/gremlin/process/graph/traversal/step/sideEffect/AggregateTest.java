@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Path;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -121,6 +123,7 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
     }*/
 
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends AggregateTest {
 
         @Override
@@ -143,25 +146,7 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
         }*/
     }
 
-    public static class ComputerTest extends AggregateTest {
-
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {
-            return (Traversal) g.V().values("name").aggregate();
-        }
-
-        @Override
-        public Traversal<Vertex, List<String>> get_g_V_aggregate_byXnameX() {
-            return (Traversal) g.V().aggregate().by("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
-            return g.V().out().aggregate("a").path();
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
     }
 }

@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Path;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -128,11 +130,8 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         assertEquals(3, path.labels().get(0).size());
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends PathTest {
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_name_path(final Object v1Id) {
             return g.V(v1Id).values("name").path();
@@ -159,37 +158,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends PathTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_VX1X_name_path(final Object v1Id) {
-            return g.V(v1Id).identity().values("name").path();
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_VX1X_out_path_byXageX_byXnameX(final Object v1Id) {
-            // TODO: Detached elements do not store properties (attach)
-            return g.V(v1Id).out().path().by("age").by("name"); // .submit(g.compute())
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX() {
-            // TODO: Detached elements do not store properties (attach)
-            return g.V().repeat(out()).times(2).path().by().by("name").by("lang");
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_V_out_out_path_byXnameX_byXageX() {
-            // TODO: Detached elements do not store properties (attach)
-            return g.V().out().out().path().by("name").by("age");
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path() {
-            return g.V().as("a").has("name", "marko").as("b").has("age", 29).as("c").path();
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
     }
 }

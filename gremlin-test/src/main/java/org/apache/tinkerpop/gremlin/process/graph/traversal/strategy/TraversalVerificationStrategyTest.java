@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -33,6 +35,7 @@ import static org.junit.Assert.fail;
  */
 public abstract class TraversalVerificationStrategyTest extends AbstractGremlinProcessTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends TraversalVerificationStrategyTest {
         @Test
         @LoadGraphWith(MODERN)
@@ -65,7 +68,9 @@ public abstract class TraversalVerificationStrategyTest extends AbstractGremlinP
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends TraversalVerificationStrategyTest {
+
         @Test
         @LoadGraphWith(MODERN)
         public void shouldNotAllowNestedGlobalTraversalToHaveBarriers() {

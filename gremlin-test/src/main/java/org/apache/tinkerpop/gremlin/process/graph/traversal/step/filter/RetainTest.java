@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -68,6 +70,7 @@ public abstract class RetainTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends RetainTest {
 
         @Override
@@ -86,25 +89,12 @@ public abstract class RetainTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends RetainTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_retainXg_v2X(final Object v1Id, final Object v2Id) {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V(v1Id).out().retain(g.V(v2Id).next());
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_retainXxX(final Object v1Id) {
-            return g.V(v1Id).out().aggregate("x").out().retain("x");
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_retainXaX_name(final Object v1Id) {
-            return g.V(v1Id).as("a").out("created").in("created").retain("a").<String>values("name");
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_VX1X_out_retainXg_v2X() {
         }
     }
 }

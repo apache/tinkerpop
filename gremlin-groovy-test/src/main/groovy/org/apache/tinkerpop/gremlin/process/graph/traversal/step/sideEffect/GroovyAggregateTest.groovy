@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 import org.apache.tinkerpop.gremlin.process.Path
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AggregateTest
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -29,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyAggregateTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends AggregateTest {
 
         @Override
@@ -47,6 +50,7 @@ public abstract class GroovyAggregateTest {
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends AggregateTest {
 
         @Override

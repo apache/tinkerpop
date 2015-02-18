@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -136,6 +138,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertTrue(map.get(3l).contains("marko"));
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends GroupTest {
 
         @Override
@@ -165,38 +168,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends GroupTest {
-
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX() {
-            return (Traversal) g.V().group().by("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX() {
-            return (Traversal) g.V().has("lang")
-                    .group("a").by("lang").by("name").out().cap("a");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXcountXlocalXX() {
-            return (Traversal) g.V().has("lang")
-                    .group().by("lang").by(inject(1)).<Collection>by(count(Scope.local));
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXcountXlocalXX_timesX2X_capXaX() {
-            return g.V().repeat(out().group("a").by("name").by().<Collection>by(count(Scope.local))).times(2).<Map<String, Long>>cap("a");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX() {
-            return (Traversal) g.V().group().by(outE().count()).by("name");
-        }
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
     }
 
 }

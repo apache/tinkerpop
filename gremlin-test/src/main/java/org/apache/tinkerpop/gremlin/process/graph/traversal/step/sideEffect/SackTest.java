@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Operator;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -77,11 +79,8 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
         assertEquals(2, counter);
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends SackTest {
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
         @Override
         public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {
             return g.V().withSack(0.0f).outE().sack(Operator.sum, "weight").inV().sack().sum();
@@ -101,28 +100,12 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class ComputerTest extends SackTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
         @Override
-        public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {
-            return g.V().withSack(0.0f).outE().sack(Operator.sum, "weight").inV().sack().sum();
-        }
-
-        @Override
-        public Traversal<Vertex, Float> get_g_V_withSackX0X_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-            return g.V().withSack(0.0f).repeat(outE().sack(Operator.sum, "weight").inV()).times(2).<Float>sack();
-        }
-
-        @Override
-        public Traversal<Vertex, Map> get_g_V_withSackXmap__map_cloneX_out_out_sackXmap_a_nameX_sack() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().<HashMap>withSack(HashMap::new, m -> (HashMap) m.clone()).out().out().<Map>sack((map, vertex) -> {
-                map.put("a", vertex.value("name"));
-                return map;
-            }).<Map>sack(); // TODO: Make it so the ;
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_withSackXmap__map_cloneX_out_out_sackXmap_a_nameX_sack() {
         }
     }
 }

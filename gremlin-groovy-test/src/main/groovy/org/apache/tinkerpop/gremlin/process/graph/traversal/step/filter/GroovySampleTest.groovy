@@ -18,14 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter
 
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.T
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.junit.Test
 
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.bothE
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.sample
@@ -35,6 +39,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.sample
  */
 public abstract class GroovySampleTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends SampleTest {
 
         @Override
@@ -63,18 +68,21 @@ public abstract class GroovySampleTest {
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends SampleTest {
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_sampleX1X() {
-            g.engine(StandardTraversalEngine.standard);
-            g.E.sample(1) // TODO: makes no sense when its global
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_E_sampleX1X() {
+            // TODO: makes no sense when its global
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_sampleX2X_byXweightX() {
-            g.engine(StandardTraversalEngine.standard);
-            g.E.sample(2).by('weight') // TODO: makes no sense when its global
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_E_sampleX2X_byXweightX() {
+            // TODO: makes no sense when its global
         }
 
         @Override
@@ -90,6 +98,18 @@ public abstract class GroovySampleTest {
         @Override
         Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
             ComputerTestHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(Scope.local, 5)).cap()", g)
+        }
+
+        @Override
+        Traversal<Edge, Edge> get_g_E_sampleX1X() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Edge, Edge> get_g_E_sampleX2X_byXweightX() {
+            // override with nothing until the test itself is supported
+            return null
         }
     }
 }

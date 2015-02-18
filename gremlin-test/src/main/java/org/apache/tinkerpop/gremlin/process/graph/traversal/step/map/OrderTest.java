@@ -22,7 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Order;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
@@ -218,6 +219,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends OrderTest {
 
         @Override
@@ -276,74 +278,43 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     }
 
-    public static class ComputerTest extends OrderTest {
-
-        public ComputerTest() {
-            requiresGraphComputer = true;
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTest extends StandardTest {
+        @Override
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_name_order_byXa1_b1X_byXb2_a2X() {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_name_order() {
-            return g.V().<String>values("name").order();
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_order_byXname_incrX_name() {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_name_order_byXa1_b1X_byXb2_a2X() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().<String>values("name")
-                    .order()
-                    .by((a, b) -> a.substring(1, 2).compareTo(b.substring(1, 2)))
-                    .by((a, b) -> b.substring(2, 3).compareTo(a.substring(2, 3))); // TODO: ;
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_outE_order_byXweight_decrX_weight() {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_order_byXname_incrX_name() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().order().by("name", Order.incr).values("name");
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_order_byXnameX_name() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().order().by("name", Order.incr).values("name");
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX() {
         }
 
         @Override
-        public Traversal<Vertex, Double> get_g_V_outE_order_byXweight_decrX_weight() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().outE().order().by("weight", Order.decr).values("weight");
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().order().
-                    <String>by("name", (a, b) -> a.substring(1, 2).compareTo(b.substring(1, 2))).
-                    <String>by("name", (a, b) -> b.substring(2, 3).compareTo(a.substring(2, 3))).values("name");  // TODO: ;
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_select() {
-            return (Traversal) g.V().as("a").out("created").as("b").order().by(Order.shuffle).select();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(final Object v1Id) {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V(v1Id).map(v -> {
-                final Map<Integer, Integer> map = new HashMap<>();
-                map.put(1, (int) v.get().value("age"));
-                map.put(2, (int) v.get().value("age") * 2);
-                map.put(3, (int) v.get().value("age") * 3);
-                map.put(4, (int) v.get().value("age"));
-                return map;
-            }).order(Scope.local).by(Order.valueDecr).by(Order.keyIncr); // TODO: ;
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX() {
-            g.engine(StandardTraversalEngine.standard); // TODO
-            return g.V().order().by(outE().count(), Order.decr); // TODO: ;  DETACHED VERTICES DO NOT HAVE EDGES
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_order_byXoutE_count__decrX() {
+             // TODO: DETACHED VERTICES DO NOT HAVE EDGES
         }
     }
 }

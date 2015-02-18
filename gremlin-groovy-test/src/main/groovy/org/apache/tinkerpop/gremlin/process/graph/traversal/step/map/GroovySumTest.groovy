@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.bothE
@@ -31,6 +33,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.sum
  */
 public abstract class GroovySumTest {
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTest extends SumTest {
 
         @Override
@@ -44,6 +47,7 @@ public abstract class GroovySumTest {
         }
     }
 
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends SumTest {
 
         @Override
