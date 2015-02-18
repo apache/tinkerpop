@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -45,7 +44,6 @@ public final class ProfileStrategy extends AbstractTraversalStrategy {
         PRIORS.add(IdentityRemovalStrategy.class);
         PRIORS.add(LabeledEndStepStrategy.class);
         PRIORS.add(MatchWhereStrategy.class);
-        PRIORS.add(ReducingStrategy.class);
         PRIORS.add(SideEffectCapStrategy.class);
         PRIORS.add(SideEffectRegistrationStrategy.class);
         PRIORS.add(RangeByIsCountStrategy.class);
