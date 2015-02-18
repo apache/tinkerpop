@@ -63,6 +63,7 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
 
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends AndTest {
 
         @Override
@@ -74,10 +75,5 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, String> get_g_V_andXoutE__hasXlabel_personX_and_hasXage_gte_32XX_name() {
             return g.V().and(outE(), has(T.label, "person").and().has("age", Compare.gte, 32)).values("name");
         }
-    }
-
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }

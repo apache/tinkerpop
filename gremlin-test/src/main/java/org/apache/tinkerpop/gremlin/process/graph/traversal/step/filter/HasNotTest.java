@@ -77,6 +77,7 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends HasNotTest {
 
         @Override
@@ -93,9 +94,5 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, String> get_g_V_hasNotXoutXcreatedXX() {
             return g.V().hasNot(__.out("created")).values("name");
         }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }

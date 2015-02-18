@@ -63,7 +63,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
             // ignore tests that aren't supported by a specific TraversalEngine
             final IgnoreEngine ignoreEngine = this.getClass().getMethod(name.getMethodName()).getAnnotation(IgnoreEngine.class);
             if (ignoreEngine != null)
-                assumeTrue(String.format("This test is ignored for %s", ignoreEngine.value()), ignoreEngine.value().equals(GraphManager.getTraversalEngineType()));
+                assumeTrue(String.format("This test is ignored for %s", ignoreEngine.value()), !ignoreEngine.value().equals(GraphManager.getTraversalEngineType()));
         } catch (NoSuchMethodException nsme) {
             throw new RuntimeException(String.format("Could not find test method %s in test case %s", name.getMethodName(), this.getClass().getName()));
         }

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
@@ -58,6 +59,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_filterXfalseX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_filterXfalseX();
         printTraversalForm(traversal);
@@ -67,6 +69,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_filterXtrueX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_filterXtrueX();
         printTraversalForm(traversal);
@@ -83,6 +86,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_filterXlang_eq_javaX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_filterXlang_eq_javaX();
         printTraversalForm(traversal);
@@ -101,6 +105,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_filterXage_gt_30X() {
         Traversal<Vertex, Vertex> traversal = get_g_VX1X_filterXage_gt_30X(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -113,6 +118,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_out_filterXage_gt_30X() {
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_filterXage_gt_30X(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -122,6 +128,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
         printTraversalForm(traversal);
@@ -140,6 +147,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_E_filterXfalseX() {
         final Traversal<Edge, Edge> traversal = get_g_E_filterXfalseX();
         printTraversalForm(traversal);
@@ -149,6 +157,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_E_filterXtrueX() {
         final Traversal<Edge, Edge> traversal = get_g_E_filterXtrueX();
         printTraversalForm(traversal);
@@ -164,6 +173,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends FilterTest {
 
         @Override
@@ -207,58 +217,6 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Edge, Edge> get_g_E_filterXtrueX() {
             return g.E().filter(e -> true);
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
-
-        @Override
-        @Test
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void g_V_filterXfalseX() {
-        }
-
-        @Override
-        @Test
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void g_V_filterXtrueX() {
-        }
-
-        @Override
-        @Test
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void g_V_filterXlang_eq_javaX() {
-        }
-
-        @Override
-        @Test
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void g_VX1X_filterXage_gt_30X() {
-        }
-
-        @Override
-        @Test
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void g_VX1X_out_filterXage_gt_30X() {
-        }
-
-        @Override
-        @Test
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void g_E_filterXfalseX() {
-        }
-
-        @Override
-        @Test
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void g_E_filterXtrueX() {
-        }
-
-        @Override
-        @Test
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
         }
     }
 }

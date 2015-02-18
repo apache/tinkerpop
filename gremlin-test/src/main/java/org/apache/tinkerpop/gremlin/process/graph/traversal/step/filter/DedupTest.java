@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
@@ -54,6 +55,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_both_dedup_name() {
         final Traversal<Vertex, String> traversal = get_g_V_both_dedup_name();
         printTraversalForm(traversal);
@@ -70,6 +72,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name();
         printTraversalForm(traversal);
@@ -81,6 +84,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_both_name_orderXa_bX_dedup() {
         final Traversal<Vertex, String> traversal = get_g_V_both_name_orderXa_bX_dedup();
         printTraversalForm(traversal);
@@ -113,6 +117,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends DedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
@@ -132,28 +137,6 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap() {
             return g.V().group().by(T.label).by(bothE().values("weight").fold()).by(dedup(Scope.local)).cap();
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
-
-        @Override
-        @Test
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void g_V_both_dedup_name() {
-        }
-
-        @Override
-        @Test
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
-        }
-
-        @Override
-        @Test
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void g_V_both_name_orderXa_bX_dedup() {
         }
     }
 }

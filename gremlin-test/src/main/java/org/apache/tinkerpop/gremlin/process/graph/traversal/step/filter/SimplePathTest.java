@@ -70,6 +70,7 @@ public abstract class SimplePathTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends SimplePathTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
@@ -81,9 +82,5 @@ public abstract class SimplePathTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_timesX3X_path() {
             return g.V().repeat(both().simplePath()).times(3).path();
         }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }

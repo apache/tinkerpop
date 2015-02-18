@@ -95,6 +95,7 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends IsTest {
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isX32X() {
@@ -120,9 +121,5 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
             return g.V().has(in("created").count().is(Compare.gte, 2l)).values("name");
         }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }

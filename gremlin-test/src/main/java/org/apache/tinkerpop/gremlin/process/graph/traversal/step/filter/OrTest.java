@@ -62,6 +62,7 @@ public abstract class OrTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends OrTest {
         @Override
         public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name() {
@@ -72,9 +73,5 @@ public abstract class OrTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, String> get_g_V_orXoutEXknowsX__hasXlabel_softwareX_or_hasXage_gte_35XX_name() {
             return g.V().or(outE("knows"), has(T.label, "software").or().has("age", Compare.gte, 35)).values("name");
         }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }
