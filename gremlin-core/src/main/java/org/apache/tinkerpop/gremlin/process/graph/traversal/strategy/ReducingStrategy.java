@@ -20,11 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reducing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -42,37 +38,11 @@ public final class ReducingStrategy extends AbstractTraversalStrategy {
             return;
 
         final Step endStep = traversal.getEndStep();
-        if (endStep instanceof Reducing)
-            TraversalHelper.replaceStep(endStep, new ReducingIdentity(traversal, (Reducing) endStep), traversal);
+        if (endStep instanceof ReducingBarrierStep)
+            ((ReducingBarrierStep) endStep).byPass();
     }
 
     public static ReducingStrategy instance() {
         return INSTANCE;
-    }
-
-    private static class ReducingIdentity extends AbstractStep implements Reducing {
-
-        private final Reducer reducer;
-        private String reducingStepString;
-
-        public ReducingIdentity(final Traversal.Admin traversal, final Reducing reducingStep) {
-            super(traversal);
-            this.reducer = reducingStep.getReducer();
-            this.reducingStepString = reducingStep.toString();
-        }
-
-        @Override
-        public String toString() {
-            return TraversalHelper.makeStepString(this, this.reducingStepString);
-        }
-
-        public Reducer getReducer() {
-            return this.reducer;
-        }
-
-        public Traverser processNextStart() {
-            return this.starts.next();
-        }
-
     }
 }
