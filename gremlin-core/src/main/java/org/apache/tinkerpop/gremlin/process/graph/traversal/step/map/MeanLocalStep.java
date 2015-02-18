@@ -38,12 +38,12 @@ public final class MeanLocalStep<E extends Number, S extends Iterable<E>> extend
 
     @Override
     protected Double map(final Traverser.Admin<S> traverser) {
-        final Iterator<E> iter = traverser.get().iterator();
-        if (iter.hasNext()) {
+        final Iterator<E> iterator = traverser.get().iterator();
+        if (iterator.hasNext()) {
             Long counter = 1L;
-            Double result = (Double) iter.next();
-            while (iter.hasNext()) {
-                result += (Double) iter.next();
+            Double result = iterator.next().doubleValue();
+            while (iterator.hasNext()) {
+                result += iterator.next().doubleValue();
                 counter++;
             }
             return result / counter;

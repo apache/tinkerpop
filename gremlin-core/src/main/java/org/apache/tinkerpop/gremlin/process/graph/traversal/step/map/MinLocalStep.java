@@ -38,16 +38,16 @@ public final class MinLocalStep<E extends Number, S extends Iterable<E>> extends
 
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
-        Double result;
-        final Iterator<E> iter = traverser.get().iterator();
-        if (iter.hasNext()) {
-            result = (Double) iter.next();
-            while (iter.hasNext()) {
-                final Double curr = (Double) iter.next();
-                if (result > curr) result = curr;
+        Number result;
+        final Iterator<E> iterator = traverser.get().iterator();
+        if (iterator.hasNext()) {
+            result = iterator.next();
+            while (iterator.hasNext()) {
+                final Number curr = iterator.next();
+                if (result.doubleValue() > curr.doubleValue()) result = curr;
             }
         } else {
-            result = Double.NaN;
+            result = Double.MAX_VALUE;
         }
         return (E) result;
     }

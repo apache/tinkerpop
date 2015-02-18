@@ -39,11 +39,11 @@ public final class SumLocalStep<E extends Number, S extends Iterable<E>> extends
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
         Double result;
-        final Iterator<E> iter = traverser.get().iterator();
-        if (iter.hasNext()) {
-            result = (Double) iter.next();
-            while (iter.hasNext()) {
-                result += (Double) iter.next();
+        final Iterator<E> iterator = traverser.get().iterator();
+        if (iterator.hasNext()) {
+            result = iterator.next().doubleValue();
+            while (iterator.hasNext()) {
+                result += iterator.next().doubleValue();
             }
         } else {
             result = Double.NaN;
