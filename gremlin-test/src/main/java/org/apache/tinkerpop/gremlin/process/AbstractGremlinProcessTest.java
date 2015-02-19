@@ -40,8 +40,6 @@ import static org.junit.Assume.assumeTrue;
  */
 public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
 
-    protected static final String TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER = "Traversal not supported by ComputerTraversalEngine.computer";
-
     /**
      * Determines if a graph meets requirements for execution.  All gremlin process tests should check this
      * method as part of a call to {@code assumeTrue} to ensure that the test doesn't require the computer
