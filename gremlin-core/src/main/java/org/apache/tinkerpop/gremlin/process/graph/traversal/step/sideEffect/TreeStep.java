@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRegistrar, Reversible, SideEffectCapable, TraversalParent, MapReducer<Object, Tree, Object, Tree, Tree> {
+public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, SideEffectCapable, TraversalParent, MapReducer<Object, Tree, Object, Tree, Tree> {
 
     private TraversalRing<Object, Object> traversalRing;
     private String sideEffectKey;
@@ -50,6 +50,7 @@ public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRe
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         this.traversalRing = new TraversalRing<>();
+        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, TreeSupplier.instance());
     }
 
     @Override
@@ -63,12 +64,6 @@ public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRe
             depth = (Tree) depth.get(object);
         }
         this.traversalRing.reset();
-    }
-
-    @Override
-    public void registerSideEffects() {
-        if (null == this.sideEffectKey) this.sideEffectKey = this.getId();
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, TreeSupplier.instance());
     }
 
     @Override

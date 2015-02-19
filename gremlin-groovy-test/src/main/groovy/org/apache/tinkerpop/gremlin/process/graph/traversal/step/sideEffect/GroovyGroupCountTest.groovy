@@ -45,8 +45,8 @@ public abstract class GroovyGroupCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
-            g.V.out('created').name.groupCount('a')
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX_capXaX() {
+            g.V.out('created').name.groupCount('a').cap('a')
         }
 
         @Override
@@ -81,8 +81,8 @@ public abstract class GroovyGroupCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
-            ComputerTestHelper.compute("g.V.out('created').name.groupCount('a')", g)
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX_capXaX() {
+            ComputerTestHelper.compute("g.V.out('created').name.groupCount('a').cap('a')", g)
         }
 
         @Override

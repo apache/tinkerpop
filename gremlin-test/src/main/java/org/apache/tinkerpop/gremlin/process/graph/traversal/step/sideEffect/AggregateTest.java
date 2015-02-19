@@ -129,12 +129,12 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_name_aggregateXxX_capXxX() {
-            return (Traversal) g.V().values("name").aggregate("x").cap("x");
+            return g.V().values("name").aggregate("x").cap("x");
         }
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_aggregateXxX_byXnameX_capXxX() {
-            return (Traversal) g.V().aggregate("x").by("name").cap("x");
+            return g.V().aggregate("x").by("name").cap("x");
         }
 
         @Override

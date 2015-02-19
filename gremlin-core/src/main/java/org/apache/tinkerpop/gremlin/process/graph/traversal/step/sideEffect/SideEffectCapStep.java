@@ -19,18 +19,21 @@
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.SupplyingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> implements SideEffectRegistrar {
+public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.SIDE_EFFECTS,
@@ -41,12 +44,9 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
 
     public SideEffectCapStep(final Traversal.Admin traversal, final String... sideEffectKeys) {
         super(traversal);
+        if (0 == sideEffectKeys.length)
+            throw new IllegalArgumentException("At least one sideEffect key must be provided to " + this.getClass().getSimpleName());
         this.sideEffectKeys = Arrays.asList(sideEffectKeys);
-    }
-
-    public void registerSideEffects() {
-        if (this.sideEffectKeys.isEmpty())
-            this.sideEffectKeys = Collections.singletonList(((SideEffectCapable) this.getPreviousStep()).getSideEffectKey());
     }
 
     @Override

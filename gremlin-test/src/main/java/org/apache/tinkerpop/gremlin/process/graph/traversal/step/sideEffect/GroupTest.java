@@ -144,18 +144,17 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX() {
-            return (Traversal) g.V().group().by("name");
+            return g.V().<String, Collection<Vertex>>group().by("name");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX() {
-            return (Traversal) g.V().has("lang")
-                    .group("a").by("lang").by("name").out().cap("a");
+            return g.V().has("lang").group("a").by("lang").by("name").out().cap("a");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXcountXlocalXX() {
-            return (Traversal) g.V().has("lang").group().by("lang").by(inject(1)).<Collection>by(count(Scope.local));
+            return g.V().has("lang").<String, Long>group().by("lang").by(inject(1)).<Collection>by(count(Scope.local));
         }
 
         @Override
@@ -165,7 +164,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX() {
-            return (Traversal) g.V().group().by(outE().count()).by("name");
+            return g.V().<Long, Collection<String>>group().by(outE().count()).by("name");
         }
     }
 }

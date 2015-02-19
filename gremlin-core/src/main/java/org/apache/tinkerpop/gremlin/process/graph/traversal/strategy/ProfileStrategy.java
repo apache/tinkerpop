@@ -39,13 +39,12 @@ public final class ProfileStrategy extends AbstractTraversalStrategy {
     static {
         // Ensure that this strategy is applied last.
         PRIORS.add(ComparatorHolderRemovalStrategy.class);
+        PRIORS.add(ConjunctionStrategy.class);
         PRIORS.add(DedupOptimizerStrategy.class);
         PRIORS.add(EngineDependentStrategy.class);
         PRIORS.add(IdentityRemovalStrategy.class);
         PRIORS.add(LabeledEndStepStrategy.class);
         PRIORS.add(MatchWhereStrategy.class);
-        PRIORS.add(SideEffectCapStrategy.class);
-        PRIORS.add(SideEffectRegistrationStrategy.class);
         PRIORS.add(RangeByIsCountStrategy.class);
     }
 

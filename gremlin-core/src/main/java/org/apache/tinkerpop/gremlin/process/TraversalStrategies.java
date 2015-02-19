@@ -28,8 +28,6 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.LabeledEndS
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.MatchWhereStrategy;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategy;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.SideEffectCapStrategy;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.SideEffectRegistrationStrategy;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
@@ -169,13 +167,11 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     DedupOptimizerStrategy.instance(),
                     RangeByIsCountStrategy.instance(),
                     IdentityRemovalStrategy.instance(),
-                    SideEffectCapStrategy.instance(),
                     MatchWhereStrategy.instance(),
                     ComparatorHolderRemovalStrategy.instance(),
                     LabeledEndStepStrategy.instance(),
                     EngineDependentStrategy.instance(),
                     ProfileStrategy.instance(),
-                    SideEffectRegistrationStrategy.instance(),
                     TraversalVerificationStrategy.instance(),
                     ConjunctionStrategy.instance());
             try {

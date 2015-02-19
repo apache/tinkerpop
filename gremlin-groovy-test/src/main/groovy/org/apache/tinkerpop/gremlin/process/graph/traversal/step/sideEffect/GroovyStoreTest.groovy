@@ -46,14 +46,14 @@ public abstract class GroovyStoreTest {
         }
 
         @Override
-        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX() {
-            g.V.withSideEffect('a') { [] as Set }.both.name.store('a')
+        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX() {
+            g.V.withSideEffect('a') { [] as Set }.both.name.store('a').cap('a')
         }
 
 
         @Override
-        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX() {
-            g.V.store('a').by(__.outE('created').count).out.out.store('a').by(__.inE('created').weight.sum);
+        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX_capXaX() {
+            g.V.store('a').by(__.outE('created').count).out.out.store('a').by(__.inE('created').weight.sum).cap('a');
         }
     }
 
@@ -72,13 +72,13 @@ public abstract class GroovyStoreTest {
         }
 
         @Override
-        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX() {
-            ComputerTestHelper.compute("g.V.withSideEffect('a'){[] as Set}.both.name.store('a')", g);
+        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX() {
+            ComputerTestHelper.compute("g.V.withSideEffect('a'){[] as Set}.both.name.store('a').cap('a')", g);
         }
 
         @Override
-        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX() {
-            ComputerTestHelper.compute("g.V.store('a').by(__.outE('created').count).out.out.store('a').by(__.inE('created').weight.sum)", g);
+        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX_capXaX() {
+            ComputerTestHelper.compute("g.V.store('a').by(__.outE('created').count).out.out.store('a').by(__.inE('created').weight.sum).cap('a')", g);
         }
     }
 }
