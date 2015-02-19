@@ -123,7 +123,7 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         @Override
         public Number generateFinalResult(final Iterator<KeyValue<NullObject, Number>> keyValues) {
-            return keyValues.hasNext() ? keyValues.next().getValue() : null;
+            return keyValues.hasNext() ? keyValues.next().getValue() : Double.NaN;
         }
 
         public static final MaxMapReduce instance() {
