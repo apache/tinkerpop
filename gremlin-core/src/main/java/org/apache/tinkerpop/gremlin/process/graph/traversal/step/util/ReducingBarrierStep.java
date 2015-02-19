@@ -18,26 +18,40 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.util;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reducing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.io.Serializable;
+import java.util.Iterator;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> {
+public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements MapReducer, EngineDependent {
+
+    public static final String REDUCING = Graph.Hidden.hide("reducing");
 
     private Supplier<E> seedSupplier;
     private BiFunction<E, Traverser<S>, E> reducingBiFunction;
     private boolean done = false;
+    private boolean byPass = false;
 
     public ReducingBarrierStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -51,12 +65,9 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> {
         this.reducingBiFunction = reducingBiFunction;
     }
 
-    public Supplier<E> getSeedSupplier() {
-        return this.seedSupplier;
-    }
-
-    public BiFunction<E, Traverser<S>, E> getBiFunction() {
-        return this.reducingBiFunction;
+    @Override
+    public void onEngine(final TraversalEngine traversalEngine) {
+        this.byPass = traversalEngine.isComputer();
     }
 
     @Override
@@ -67,13 +78,17 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> {
 
     @Override
     public Traverser<E> processNextStart() {
-        if (this.done)
-            throw FastNoSuchElementException.instance();
-        E seed = this.seedSupplier.get();
-        while (this.starts.hasNext())
-            seed = this.reducingBiFunction.apply(seed, this.starts.next());
-        this.done = true;
-        return TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(Reducing.FinalGet.tryFinalGet(seed), (Step) this, 1l);
+        if (this.byPass) {
+            return (Traverser<E>) this.starts.next();
+        } else {
+            if (this.done)
+                throw FastNoSuchElementException.instance();
+            E seed = this.seedSupplier.get();
+            while (this.starts.hasNext())
+                seed = this.reducingBiFunction.apply(seed, this.starts.next());
+            this.done = true;
+            return TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(FinalGet.tryFinalGet(seed), (Step) this, 1l);
+        }
     }
 
     @Override
@@ -83,28 +98,84 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> {
         return clone;
     }
 
-    ///////
-
-    public static class ObjectBiFunction<S, E> implements BiFunction<E, Traverser<S>, E>, Serializable {
-
-        private final BiFunction<E, S, E> biFunction;
-
-        public ObjectBiFunction(final BiFunction<E, S, E> biFunction) {
-            this.biFunction = biFunction;
-        }
-
-        public final BiFunction<E, S, E> getBiFunction() {
-            return this.biFunction;
-        }
-
-        @Override
-        public E apply(final E seed, final Traverser<S> traverser) {
-            return this.biFunction.apply(seed, traverser.get());
-        }
-
+    @Override
+    public MapReduce getMapReduce() {
+        return new DefaultMapReduce(this.seedSupplier, this.reducingBiFunction);
     }
 
     ///////
 
+    public static class DefaultMapReduce extends StaticMapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Object> {
+
+        private static final String REDUCING_BARRIER_STEP_SEED_SUPPLIER = "gremlin.reducingBarrierStep.seedSupplier";
+        private static final String REDUCING_BARRIER_STEP_BI_FUNCTION = "gremlin.reducingBarrierStep.biFunction";
+
+        private BiFunction biFunction;
+        private Supplier seedSupplier;
+
+        private DefaultMapReduce() {
+        }
+
+        public DefaultMapReduce(final Supplier seedSupplier, final BiFunction biFunction) {
+            this.seedSupplier = seedSupplier;
+            this.biFunction = biFunction;
+
+        }
+
+        @Override
+        public void storeState(final Configuration configuration) {
+            super.storeState(configuration);
+            VertexProgramHelper.serialize(this.seedSupplier, configuration, REDUCING_BARRIER_STEP_SEED_SUPPLIER);
+            VertexProgramHelper.serialize(this.biFunction, configuration, REDUCING_BARRIER_STEP_BI_FUNCTION);
+
+        }
+
+        public void loadState(final Configuration configuration) {
+            this.seedSupplier = VertexProgramHelper.deserialize(configuration, REDUCING_BARRIER_STEP_SEED_SUPPLIER);
+            this.biFunction = VertexProgramHelper.deserialize(configuration, REDUCING_BARRIER_STEP_BI_FUNCTION);
+        }
+
+        @Override
+        public boolean doStage(final Stage stage) {
+            return !stage.equals(Stage.COMBINE);
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return REDUCING;
+        }
+
+        @Override
+        public Object generateFinalResult(final Iterator keyValues) {
+            return ((KeyValue) keyValues.next()).getValue();
+
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
+            vertex.<TraverserSet<?>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(emitter::emit));
+        }
+
+        @Override
+        public void reduce(final NullObject key, final Iterator<Object> values, final ReduceEmitter<NullObject, Object> emitter) {
+            Object mutatingSeed = this.seedSupplier.get();
+            while (values.hasNext()) {
+                mutatingSeed = this.biFunction.apply(mutatingSeed, values.next());
+            }
+            emitter.emit(FinalGet.tryFinalGet(mutatingSeed));
+        }
+
+    }
+
+    /////
+
+    public interface FinalGet<A> {
+
+        public A getFinal();
+
+        public static <A> A tryFinalGet(final Object object) {
+            return object instanceof FinalGet ? ((FinalGet<A>) object).getFinal() : (A) object;
+        }
+    }
 
 }

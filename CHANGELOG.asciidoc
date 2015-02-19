@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed `Reducing.Reducer` and `ReducingStrategy`. Previous `Reducing` classes are now `MapReducer` classes.
 * Added `hasNot(traversal)` which is a faster way of doing `has(traversal.count().is(0L))`.
 * `TraversalStrategy.apply(traversal)` is the new method signature as the `TraversalEngine` can be retrieved from the `Traversal`.
 * Added `TimeLimitedStrategy` which injects a `TimeLimit` step at the end of every `Traversal`.

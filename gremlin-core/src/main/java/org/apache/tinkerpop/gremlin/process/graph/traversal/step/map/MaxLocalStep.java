@@ -47,7 +47,7 @@ public final class MaxLocalStep<E extends Number, S extends Iterable<E>> extends
                 if (result.doubleValue() < curr.doubleValue()) result = curr;
             }
         } else {
-            result = -Double.MAX_VALUE;
+            result = Double.NaN;
         }
         return (E) result;
     }

@@ -20,20 +20,27 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reducing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> implements Reducing<Long, Traverser<S>> {
+public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> implements MapReducer {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.BULK);
 
@@ -50,11 +57,11 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
     }
 
     @Override
-    public Reducer<Long, Traverser<S>> getReducer() {
-        return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true);
+    public MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> getMapReduce() {
+        return CountMapReduce.instance();
     }
 
-    /////
+    ///////////
 
     private static class CountBiFunction<S> implements BiFunction<Long, Traverser<S>, Long>, Serializable {
 
@@ -73,4 +80,55 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
             return INSTANCE;
         }
     }
+
+    ///////////
+
+    private static class CountMapReduce extends StaticMapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
+
+        private static CountMapReduce INSTANCE = new CountMapReduce();
+
+        private CountMapReduce() {
+
+        }
+
+        @Override
+        public boolean doStage(final MapReduce.Stage stage) {
+            return true;
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<NullObject, Long> emitter) {
+            vertex.<TraverserSet<?>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(traverser.bulk())));
+        }
+
+        @Override
+        public void combine(final NullObject key, final Iterator<Long> values, final ReduceEmitter<NullObject, Long> emitter) {
+            this.reduce(key, values, emitter);
+        }
+
+        @Override
+        public void reduce(final NullObject key, final Iterator<Long> values, final ReduceEmitter<NullObject, Long> emitter) {
+            long count = 0l;
+            while (values.hasNext()) {
+                count = count + values.next();
+            }
+            emitter.emit(count);
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return REDUCING;
+        }
+
+        @Override
+        public Long generateFinalResult(final Iterator<KeyValue<NullObject, Long>> keyValues) {
+            return keyValues.hasNext() ? keyValues.next().getValue() : 0L;
+        }
+
+        public static final CountMapReduce instance() {
+            return INSTANCE;
+        }
+
+    }
+
 }

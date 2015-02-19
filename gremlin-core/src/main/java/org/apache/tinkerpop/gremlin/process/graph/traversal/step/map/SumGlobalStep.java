@@ -20,20 +20,27 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reducing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> implements Reducing<Double, Traverser<Number>> {
+public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> implements MapReducer {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.BULK,
@@ -53,8 +60,8 @@ public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> imp
     }
 
     @Override
-    public Reducer<Double, Traverser<Number>> getReducer() {
-        return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true);
+    public MapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> getMapReduce() {
+        return SumMapReduce.instance();
     }
 
     /////
@@ -73,6 +80,57 @@ public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> imp
         }
 
         public final static <S extends Number> SumBiFunction<S> instance() {
+            return INSTANCE;
+        }
+    }
+
+    ///////////
+
+    private static class SumMapReduce extends StaticMapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> {
+
+        private static final SumMapReduce INSTANCE = new SumMapReduce();
+
+        private SumMapReduce() {
+
+        }
+
+        @Override
+        public boolean doStage(final MapReduce.Stage stage) {
+            return true;
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<NullObject, Number> emitter) {
+            vertex.<TraverserSet<Number>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(traverser.get().doubleValue() * traverser.bulk())));
+        }
+
+        @Override
+        public void combine(final NullObject key, final Iterator<Number> values, final ReduceEmitter<NullObject, Number> emitter) {
+            this.reduce(key, values, emitter);
+        }
+
+        @Override
+        public void reduce(final NullObject key, final Iterator<Number> values, final ReduceEmitter<NullObject, Number> emitter) {
+            if (values.hasNext()) {
+                Number sum = values.next();
+                while (values.hasNext()) {
+                    sum = sum.doubleValue() + values.next().doubleValue();
+                }
+                emitter.emit(sum);
+            }
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return REDUCING;
+        }
+
+        @Override
+        public Number generateFinalResult(final Iterator<KeyValue<NullObject, Number>> keyValues) {
+            return keyValues.hasNext() ? keyValues.next().getValue() : 0.0d;
+        }
+
+        public static final SumMapReduce instance() {
             return INSTANCE;
         }
     }

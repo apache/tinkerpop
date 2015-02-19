@@ -20,13 +20,20 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reducing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.MeanNumberSupplier;
 
 import java.io.Serializable;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -34,7 +41,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MeanGlobalStep<S extends Number, E extends Number> extends ReducingBarrierStep<S, E> implements Reducing<E, Traverser<S>> {
+public final class MeanGlobalStep<S extends Number, E extends Number> extends ReducingBarrierStep<S, E> implements MapReducer {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.BULK);
 
@@ -47,11 +54,6 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
-    }
-
-    @Override
-    public Reducer<E, Traverser<S>> getReducer() {
-        return new Reducer<>(this.getSeedSupplier(), this.getBiFunction(), true);
     }
 
     /////
@@ -74,16 +76,80 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
         }
     }
 
+    ///////////
+
+    private static class MeanMapReduce extends StaticMapReduce<MapReduce.NullObject, MeanNumber, MapReduce.NullObject, MeanNumber, Double> {
+
+        private static final MeanMapReduce INSTANCE = new MeanMapReduce();
+
+        private MeanMapReduce() {
+
+        }
+
+        @Override
+        public boolean doStage(final MapReduce.Stage stage) {
+            return true;
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<NullObject, MeanNumber> emitter) {
+            vertex.<TraverserSet<MeanNumber>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(new MeanNumber(traverser.get().doubleValue(), traverser.bulk()))));
+        }
+
+        @Override
+        public void combine(final NullObject key, final Iterator<MeanNumber> values, final ReduceEmitter<NullObject, MeanNumber> emitter) {
+            this.reduce(key, values, emitter);
+        }
+
+        @Override
+        public void reduce(final NullObject key, final Iterator<MeanNumber> values, final ReduceEmitter<NullObject, MeanNumber> emitter) {
+            MeanNumber mean = new MeanNumber();
+            while (values.hasNext()) {
+                mean.add(values.next());
+            }
+            emitter.emit(mean);
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return REDUCING;
+        }
+
+        @Override
+        public Double generateFinalResult(final Iterator<KeyValue<NullObject, MeanNumber>> keyValues) {
+            return keyValues.hasNext() ? keyValues.next().getValue().doubleValue() : Double.NaN;
+        }
+
+        public static final MeanMapReduce instance() {
+            return INSTANCE;
+        }
+    }
+
     ///
 
     public static final class MeanNumber extends Number implements Comparable<Number>, FinalGet<Double> {
 
-        private long count = 0l;
-        private double sum = 0.0d;
+        private long count;
+        private double sum;
+
+        public MeanNumber() {
+            this(0.0d, 0l);
+        }
+
+        public MeanNumber(final double number, final long count) {
+            this.count = count;
+            this.sum = number * count;
+        }
 
         public MeanNumber add(final Number amount, final long count) {
-            this.count = this.count + count;
-            this.sum = this.sum + (amount.doubleValue() * count);
+            this.count += count;
+            this.sum += amount.doubleValue() * count;
+            return this;
+        }
+
+        public MeanNumber add(final MeanNumber other) {
+            this.count += other.count;
+            this.sum += other.sum;
             return this;
         }
 
@@ -132,5 +198,4 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
             return this.doubleValue();
         }
     }
-
 }
