@@ -47,6 +47,11 @@ public abstract class GroovyProfileTest {
         }
 
         @Override
+        @org.junit.Ignore
+        void testProfileTimes() {
+        }
+
+        @Override
         Traversal<Vertex, StandardTraversalMetrics> get_g_V_sleep_sleep_profile() {
             return null
         }
@@ -64,6 +69,11 @@ public abstract class GroovyProfileTest {
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_repeat_both_profile() {
            ComputerTestHelper.compute("g.V.repeat(__.both()).times(3).profile()", g);
+        }
+
+        @Override
+        @org.junit.Ignore
+        void testProfileTimes() {
         }
 
         @Override

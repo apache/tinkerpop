@@ -122,9 +122,9 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertEquals(100, totalPercentDuration, 0.000001);
     }
 
-    /*
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void testProfileTimes() {
         final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_sleep_sleep_profile();
         printTraversalForm(traversal);
@@ -157,7 +157,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         }
         assertEquals(100, totalPercentDuration, 0.000001);
     }
-    */
 
     @Test
     @LoadGraphWith(MODERN)
