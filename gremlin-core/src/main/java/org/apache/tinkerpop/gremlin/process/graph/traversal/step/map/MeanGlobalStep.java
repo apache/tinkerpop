@@ -56,6 +56,11 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
         return REQUIREMENTS;
     }
 
+    @Override
+    public MapReduce<MapReduce.NullObject, MeanNumber, MapReduce.NullObject, MeanNumber, Double> getMapReduce() {
+        return MeanMapReduce.instance();
+    }
+
     /////
 
     private static class MeanBiFunction<S extends Number> implements BiFunction<S, Traverser<S>, S>, Serializable {
