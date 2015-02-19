@@ -111,9 +111,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] allTests = new Class<?>[]{
 
-            // basic api semantics testing
-            // GraphComputerTest.ComputerTest.class,   // todo: not sure this should be here as it forces retest of GraphComputer without an "implementation"
-
             // branch
             BranchTest.Traversals.class,
             ChooseTest.Traversals.class,
@@ -140,6 +137,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // map
             BackTest.Traversals.class,
+            CoalesceTest.Traversals.class,
             CountTest.Traversals.class,
             FoldTest.Traversals.class,
             MapTest.Traversals.class,
@@ -155,7 +153,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             UnfoldTest.Traversals.class,
             ValueMapTest.Traversals.class,
             VertexTest.Traversals.class,
-            CoalesceTest.Traversals.class,
 
             // sideEffect
             // TODO: AddEdgeTest.ComputerTest.class,

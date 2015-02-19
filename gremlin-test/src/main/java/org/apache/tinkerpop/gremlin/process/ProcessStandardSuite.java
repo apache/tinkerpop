@@ -95,6 +95,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // map
             BackTest.Traversals.class,
+            CoalesceTest.Traversals.class,
             CountTest.Traversals.class,
             FoldTest.Traversals.class,
             MapTest.Traversals.class,
@@ -110,7 +111,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             VertexTest.Traversals.class,
             UnfoldTest.Traversals.class,
             ValueMapTest.Traversals.class,
-            CoalesceTest.Traversals.class,
 
             // sideEffect
             AddEdgeTest.Traversals.class,
