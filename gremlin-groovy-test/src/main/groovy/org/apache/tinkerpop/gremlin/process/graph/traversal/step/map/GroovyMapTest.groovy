@@ -18,15 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
-import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.LoadGraphWith
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MapTest
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
+
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -64,6 +64,28 @@ public abstract class GroovyMapTest {
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTraversals extends MapTest {
+
+        @Test
+        @LoadGraphWith(MODERN)
+        @Override
+        public void g_VX1X_mapXnameX() {
+            super.g_VX1X_mapXnameX();
+        }
+
+        @Test
+        @LoadGraphWith(MODERN)
+        @Override
+        public void g_VX1X_outE_label_mapXlengthX() {
+            super.g_VX1X_outE_label_mapXlengthX();
+        }
+
+        @Test
+        @LoadGraphWith(MODERN)
+        @Override
+        public void g_VX1X_out_mapXnameX_mapXlengthX() {
+            super.g_VX1X_out_mapXnameX_mapXlengthX();
+        }
+
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_mapXnameX(final Object v1Id) {

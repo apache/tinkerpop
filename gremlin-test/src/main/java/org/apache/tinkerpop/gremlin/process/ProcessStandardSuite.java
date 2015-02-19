@@ -140,80 +140,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
     };
 
     /**
-     * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
-     */
-    protected static Class<?>[] testsToEnforce = new Class<?>[]{
-            // branch
-            BranchTest.class,
-            ChooseTest.class,
-            LocalTest.class,
-            RepeatTest.class,
-            UnionTest.class,
-
-            // filter
-            AndTest.class,
-            CoinTest.class,
-            CyclicPathTest.class,
-            DedupTest.class,
-            ExceptTest.class,
-            FilterTest.class,
-            HasNotTest.class,
-            HasTest.class,
-            IsTest.class,
-            OrTest.class,
-            RangeTest.class,
-            RetainTest.class,
-            SampleTest.class,
-            SimplePathTest.class,
-            WhereTest.class,
-
-            // map
-            BackTest.class,
-            CountTest.class,
-            FoldTest.class,
-            MapTest.class,
-            MatchTest.class,
-            MaxTest.class,
-            MeanTest.class,
-            MinTest.class,
-            SumTest.class,
-            OrderTest.class,
-            org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PathTest.class,
-            SelectTest.class,
-            VertexTest.class,
-            UnfoldTest.class,
-            ValueMapTest.class,
-            CoalesceTest.class,
-
-            // sideEffect
-            AddEdgeTest.class,
-            AggregateTest.class,
-            GroupTest.class,
-            GroupCountTest.class,
-            InjectTest.class,
-            ProfileTest.class,
-            SackTest.class,
-            SideEffectCapTest.class,
-            SideEffectTest.class,
-            StoreTest.class,
-            SubgraphTest.class,
-            TreeTest.class,
-
-            // util
-            TraversalSideEffectsTest.class,
-
-            // compliance
-            CoreTraversalTest.class,
-            PathTest.class,
-
-            // algorithms
-            // PageRankVertexProgramTest.class
-
-            // strategy
-            TraversalVerificationStrategyTest.class
-    };
-
-    /**
      * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
      * as needed to enforce tests upon implementations.
      */
@@ -229,12 +155,11 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
                     .filter(c -> filters.contains(c.getName()))
                     .collect(Collectors.toList());
             testsToExecute = allowed.toArray(new Class<?>[allowed.size()]);
-            testsToEnforce = testsToExecute;
         }
     }
 
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce);
+        super(klass, builder, testsToExecute, testsToExecute);
     }
 
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {

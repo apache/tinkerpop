@@ -105,7 +105,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
     };
 
     public GroovyProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce);
+        super(klass, builder, testsToExecute, testsToExecute);
     }
 
     @Override

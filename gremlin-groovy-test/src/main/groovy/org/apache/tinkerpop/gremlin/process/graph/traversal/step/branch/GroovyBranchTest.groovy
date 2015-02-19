@@ -18,16 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch
 
-import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.LoadGraphWith
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.BranchTest
-import org.apache.tinkerpop.gremlin.structure.Vertex
-
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.junit.Test
 
-import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.label
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -56,6 +56,13 @@ public abstract class GroovyBranchTest {
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTraversals extends BranchTest {
+
+        @Test
+        @LoadGraphWith(MODERN)
+        @Override
+        public void g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
+            super.g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX();
+        }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {

@@ -181,81 +181,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
     };
 
     /**
-     * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
-     */
-    protected static final Class<?>[] testsToEnforce = new Class<?>[]{
-            // basic api semantics testing
-            GraphComputerTest.class,
-
-            // branch
-            BranchTest.class,
-            ChooseTest.class,
-            LocalTest.class,
-            RepeatTest.class,
-            UnionTest.class,
-
-            // filter
-            AndTest.class,
-            CoinTest.class,
-            CyclicPathTest.class,
-            DedupTest.class,
-            ExceptTest.class,
-            FilterTest.class,
-            HasNotTest.class,
-            HasTest.class,
-            IsTest.class,
-            OrTest.class,
-            RangeTest.class,
-            RetainTest.class,
-            SampleTest.class,
-            SimplePathTest.class,
-            WhereTest.class,
-
-
-            // map
-            BackTest.class,
-            CountTest.class,
-            // FoldTest.class,
-            MapTest.class,
-            MaxTest.class,
-            MeanTest.class,
-            MinTest.class,
-            SumTest.class,
-            // MatchTest.class,
-            OrderTest.class,
-            PathTest.class,
-            PropertiesTest.class,
-            SelectTest.class,
-            UnfoldTest.class,
-            ValueMapTest.class,
-            VertexTest.class,
-            CoalesceTest.class,
-
-
-            // sideEffect
-            // AddEdgeTest.class,
-            AggregateTest.class,
-            GroupTest.class,
-            GroupCountTest.class,
-            InjectTest.class,
-            ProfileTest.class,
-            SackTest.class,
-            SideEffectCapTest.class,
-            // SideEffectTest.class,
-            StoreTest.class,
-            // SubgraphTest.class,
-            TreeTest.class,
-
-
-            // algorithms
-            PageRankVertexProgramTest.class,
-
-            // strategy
-            ComputerDataStrategyTest.class,
-            TraversalVerificationStrategyTest.class
-    };
-
-    /**
      * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
      * as needed to enforce tests upon implementations.
      */
@@ -275,7 +200,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
     }
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce, false, TraversalEngine.Type.COMPUTER);
+        super(klass, builder, testsToExecute, testsToExecute, false, TraversalEngine.Type.COMPUTER);
     }
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
