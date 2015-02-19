@@ -98,7 +98,7 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
 
         @Override
         public void map(final Vertex vertex, final MapEmitter<NullObject, MeanNumber> emitter) {
-            vertex.<TraverserSet<MeanNumber>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(new MeanNumber(traverser.get().doubleValue(), traverser.bulk()))));
+            vertex.<TraverserSet<Number>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(new MeanNumber(traverser.get().doubleValue(), traverser.bulk()))));
         }
 
         @Override

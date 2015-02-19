@@ -57,7 +57,7 @@ public abstract class GroovyCoalesceTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX() {
-            g.V.coalesce(out('likes'), out('knows'), out('created')).groupCount().by('name').cap();
+            g.V.coalesce(out('likes'), out('knows'), out('created')).groupCount().by('name');
         }
 
         @Override
@@ -86,7 +86,7 @@ public abstract class GroovyCoalesceTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX() {
-            ComputerTestHelper.compute("g.V().coalesce(out('likes'), out('knows'), out('created')).groupCount().by('name').cap()", g)
+            ComputerTestHelper.compute("g.V().coalesce(out('likes'), out('knows'), out('created')).groupCount().by('name')", g)
         }
 
         @Override

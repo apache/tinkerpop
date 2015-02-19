@@ -446,8 +446,8 @@ public class __ {
         return __.<A>start().groupCount(sideEffectKey);
     }
 
-    public static <A> GraphTraversal<A, A> groupCount() {
-        return __.<A>start().groupCount();
+    public static <A,B> GraphTraversal<A, Map<B, Long>> groupCount() {
+        return __.<A>start().<B>groupCount();
     }
 
     public static <A> GraphTraversal<A, Vertex> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
