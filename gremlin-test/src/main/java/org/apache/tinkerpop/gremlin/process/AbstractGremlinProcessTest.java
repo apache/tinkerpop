@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.util.MapHelper;
 import org.junit.Before;
 
@@ -67,7 +68,17 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
             throw new RuntimeException(String.format("Could not find test method %s in test case %s", name.getMethodName(), this.getClass().getName()));
         }
 
-        if (hasGraphComputerRequirement()) g.engine(ComputerTraversalEngine.computer);
+        switch (GraphManager.getTraversalEngineType()) {
+            case STANDARD:
+                g.engine(StandardTraversalEngine.standard);
+                break;
+            case COMPUTER:
+                g.engine(ComputerTraversalEngine.computer);
+                break;
+            default:
+                throw new RuntimeException(String.format("%s is not supported as an engine - check %s [%s]",
+                        GraphManager.getTraversalEngineType(), this.getClass().getName(), this.name.getMethodName()));
+        }
     }
 
     public <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {
