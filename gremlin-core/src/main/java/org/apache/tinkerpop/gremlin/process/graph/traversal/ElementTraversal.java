@@ -396,8 +396,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().groupCount(sideEffectKey);
     }
 
-    public default GraphTraversal<A, A> groupCount() {
-        return this.start().groupCount();
+    public default <B> GraphTraversal<A, Map<B,Long>> groupCount() {
+        return this.start().<B>groupCount();
     }
 
     public default GraphTraversal<A, Vertex> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {

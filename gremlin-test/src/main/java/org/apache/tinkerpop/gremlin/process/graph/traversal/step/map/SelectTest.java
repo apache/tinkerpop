@@ -61,9 +61,9 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_cap_asXxX_select();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_asXxX_select();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -189,8 +189,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
-    public void g_V_label_groupCount_cap_asXxX_select() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_label_groupCount_cap_asXxX_select();
+    public void g_V_label_groupCount_asXxX_select() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_label_groupCount_asXxX_select();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         final Map<String, Object> map1 = traversal.next();
@@ -209,8 +209,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Ignore
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
-    public void g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by();
+    public void g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by();
         printTraversalForm(traversal);
         final Set<String> persons = new HashSet<>();
         for (int i = 0; i < 4; i++) {
@@ -298,13 +298,13 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_cap_asXxX_select() {
-            return g.V().label().groupCount().cap().as("x").select();
+        public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_asXxX_select() {
+            return g.V().label().groupCount().as("x").select();
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
-            return g.V().hasLabel("person").as("person").local(__.bothE().label().groupCount().cap()).as("relations").select().by("name").by();
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
+            return g.V().hasLabel("person").as("person").local(__.bothE().label().groupCount()).as("relations").select().by("name").by();
         }
     }
 }

@@ -110,7 +110,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldHavePropertyForEachRemainingBehaviorEvenWithStrategyRewrite() {
-        final GraphTraversal<Vertex, Vertex> traversal = g.V().out().groupCount();
+        final GraphTraversal<Vertex, Map<Object,Long>> traversal = g.V().out().groupCount();
         traversal.forEachRemaining(Map.class, map -> assertTrue(map instanceof Map));
     }
 
