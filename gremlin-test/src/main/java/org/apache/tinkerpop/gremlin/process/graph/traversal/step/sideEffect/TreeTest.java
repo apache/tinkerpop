@@ -20,12 +20,14 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.graph.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -52,6 +54,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id);
 
     @Test
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_out_tree_byXnameX() {
         List<Traversal<Vertex, Tree>> traversals = Arrays.asList(

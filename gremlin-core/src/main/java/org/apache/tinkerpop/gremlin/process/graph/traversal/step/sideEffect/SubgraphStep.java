@@ -23,13 +23,20 @@ import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
-import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A side-effect step that produces an edge induced subgraph.
@@ -37,7 +44,7 @@ import java.util.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffectCapable, SideEffectRegistrar, Reversible {
+public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffectCapable, Reversible {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.OBJECT,
@@ -56,6 +63,7 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
     public SubgraphStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
+        this.getTraversal().asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
     }
 
     @Override
@@ -66,12 +74,6 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
                 throw new IllegalArgumentException("The provided subgraph must support user supplied ids for vertices and edges: " + this.subgraph);
         }
         SubgraphStep.addEdgeToSubgraph(this.subgraph, traverser.get());
-    }
-
-    @Override
-    public void registerSideEffects() {
-        if (null == this.sideEffectKey) this.sideEffectKey = this.getId();
-        this.getTraversal().asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
     }
 
     @Override

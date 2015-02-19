@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
@@ -48,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -58,11 +58,11 @@ public final class GroupStep<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R
 
     private Traversal.Admin<S, K> keyTraversal = new IdentityTraversal<>();
     private Traversal.Admin<S, V> valueTraversal = new IdentityTraversal<>();
-    private Traversal.Admin<Collection<V>, R> reduceTraversal = new IdentityTraversal<>();
+    private Traversal.Admin<Collection<V>, R> reduceTraversal = null;
 
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier(() -> (Map) new GroupMap());
+        this.setSeedSupplier((Supplier) new GroupMapSupplier());
         this.setBiFunction((BiFunction) new GroupReducingBiFunction());
     }
 
@@ -154,9 +154,24 @@ public final class GroupStep<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R
 
         @Override
         public Map<K, R> getFinal() {
-            final Map<K, R> reduceMap = new HashMap<>();
-            this.forEach((k, vv) -> reduceMap.put(k, TraversalUtil.apply(vv, reduceTraversal)));
-            return reduceMap;
+            if (null == reduceTraversal)
+                return (Map<K, R>) this;
+            else {
+                final Map<K, R> reduceMap = new HashMap<>();
+                this.forEach((k, vv) -> reduceMap.put(k, TraversalUtil.apply(vv, reduceTraversal)));
+                return reduceMap;
+            }
+        }
+    }
+
+    private class GroupMapSupplier implements Supplier<GroupMap>, Serializable {
+
+        private GroupMapSupplier() {
+        }
+
+        @Override
+        public GroupMap get() {
+            return new GroupMap();
         }
     }
 
@@ -190,8 +205,8 @@ public final class GroupStep<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R
             final Traversal.Admin<?, ?> traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
             if (!traversal.isLocked())
                 traversal.applyStrategies(); // TODO: this is a scary error prone requirement, but only a problem for GroupStep
-            final GroupSideEffectStep groupSideEffectStep = new TraversalMatrix<>(traversal).getStepById(this.groupStepId);
-            this.reduceTraversal = groupSideEffectStep.getReduceTraversal();
+            final GroupStep groupStep = new TraversalMatrix<>(traversal).getStepById(this.groupStepId);
+            this.reduceTraversal = groupStep.getReduceTraversal();
         }
 
         @Override

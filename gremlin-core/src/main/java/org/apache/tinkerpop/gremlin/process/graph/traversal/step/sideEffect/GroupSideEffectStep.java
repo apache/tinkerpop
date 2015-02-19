@@ -161,8 +161,8 @@ public final class GroupSideEffectStep<S, K, V, R> extends SideEffectStep<S> imp
 
     public static final class GroupSideEffectMapReduce<K, V, R> implements MapReduce<K, Collection<V>, K, R, Map<K, R>> {
 
-        public static final String GROUP_BY_STEP_SIDE_EFFECT_KEY = "gremlin.groupStep.sideEffectKey";
-        public static final String GROUP_BY_STEP_STEP_ID = "gremlin.groupStep.stepId";
+        public static final String GROUP_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY = "gremlin.groupSideEffectStep.sideEffectKey";
+        public static final String GROUP_SIDE_EFFECT_STEP_STEP_ID = "gremlin.groupSideEffectStep.stepId";
 
         private String sideEffectKey;
         private String groupStepId;
@@ -183,14 +183,14 @@ public final class GroupSideEffectStep<S, K, V, R> extends SideEffectStep<S> imp
         @Override
         public void storeState(final Configuration configuration) {
             MapReduce.super.storeState(configuration);
-            configuration.setProperty(GROUP_BY_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
-            configuration.setProperty(GROUP_BY_STEP_STEP_ID, this.groupStepId);
+            configuration.setProperty(GROUP_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
+            configuration.setProperty(GROUP_SIDE_EFFECT_STEP_STEP_ID, this.groupStepId);
         }
 
         @Override
         public void loadState(final Configuration configuration) {
-            this.sideEffectKey = configuration.getString(GROUP_BY_STEP_SIDE_EFFECT_KEY);
-            this.groupStepId = configuration.getString(GROUP_BY_STEP_STEP_ID);
+            this.sideEffectKey = configuration.getString(GROUP_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY);
+            this.groupStepId = configuration.getString(GROUP_SIDE_EFFECT_STEP_STEP_ID);
             final Traversal.Admin<?, ?> traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
             if (!traversal.isLocked())
                 traversal.applyStrategies(); // TODO: this is a scary error prone requirement, but only a problem for GroupStep

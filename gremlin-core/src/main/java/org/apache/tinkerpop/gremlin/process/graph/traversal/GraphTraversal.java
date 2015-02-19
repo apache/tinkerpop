@@ -548,10 +548,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SubgraphStep(this.asAdmin(), sideEffectKey));
     }
 
-    public default GraphTraversal<S, Edge> subgraph() {
-        return this.subgraph(null);
-    }
-
     public default GraphTraversal<S, E> aggregate(final String sideEffectKey) {
         return this.asAdmin().addStep(new AggregateStep<>(this.asAdmin(), sideEffectKey));
     }

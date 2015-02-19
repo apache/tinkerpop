@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.Path;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
@@ -95,6 +96,7 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @LoadGraphWith(MODERN)
     public void g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX() {
         Traversal<Vertex, Path> traversal = get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX();

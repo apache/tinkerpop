@@ -65,6 +65,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_path_byXageX_byXnameX() {
         final Traversal<Vertex, Path> traversal = get_g_VX1X_out_path_byXageX_byXnameX(convertToVertexId("marko"));
@@ -83,6 +84,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @LoadGraphWith(MODERN)
     public void g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX() {
         final Traversal<Vertex, Path> traversal = get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX();
@@ -100,6 +102,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @LoadGraphWith(MODERN)
     public void g_V_out_out_path_byXnameX_byXageX() {
         final Traversal<Vertex, Path> traversal = get_g_V_out_out_path_byXnameX_byXageX();

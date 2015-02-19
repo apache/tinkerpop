@@ -20,13 +20,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.StepPosition;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -277,6 +277,11 @@ public final class TraversalHelper {
                 for (int i = 0; i < parent.getGlobalChildren().size(); i++) {
                     if (parent.getGlobalChildren().get(i) == current) {
                         stepPosition.z = i;
+                    }
+                }
+                for (int i = 0; i < parent.getLocalChildren().size(); i++) {
+                    if (parent.getLocalChildren().get(i) == current) {
+                        stepPosition.z = i + parent.getGlobalChildren().size();
                     }
                 }
             }

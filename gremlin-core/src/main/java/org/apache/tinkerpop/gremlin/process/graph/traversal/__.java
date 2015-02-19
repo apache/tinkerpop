@@ -430,10 +430,6 @@ public class __ {
         return __.<A>start().subgraph(sideEffectKey);
     }
 
-    public static <A> GraphTraversal<A, Edge> subgraph() {
-        return __.<A>start().subgraph();
-    }
-
     public static <A> GraphTraversal<A, A> aggregate(final String sideEffectKey) {
         return __.<A>start().aggregate(sideEffectKey);
     }
