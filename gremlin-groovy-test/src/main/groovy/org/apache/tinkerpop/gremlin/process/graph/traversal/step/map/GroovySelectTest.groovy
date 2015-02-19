@@ -87,13 +87,13 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_cap_asXxX_select() {
-            return g.V().label().groupCount().cap().as('x').select()
+        public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_asXxX_select() {
+            return g.V().label().groupCount().as('x').select()
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
-            return g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount().cap()).as('relations').select().by('name').by()
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
+            return g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount()).as('relations').select().by('name').by()
         }
     }
 
@@ -148,13 +148,13 @@ public abstract class GroovySelectTest {
         @Override
         @Test
         @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        public void g_V_label_groupCount_cap_asXxX_select() {
+        public void g_V_label_groupCount_asXxX_select() {
         }
 
         @Override
         @Test
         @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        void g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
+        void g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
         }
 
         @Override
@@ -194,13 +194,13 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_cap_asXxX_select() {
+        Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_asXxX_select() {
             // override with nothing until the test itself is supported
             return null
         }
 
         @Override
-        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCount_capX_asXrelationsX_select_byXnameX_by() {
+        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
             // override with nothing until the test itself is supported
             return null
         }

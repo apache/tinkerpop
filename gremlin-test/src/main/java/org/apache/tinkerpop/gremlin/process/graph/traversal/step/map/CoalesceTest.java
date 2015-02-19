@@ -145,7 +145,7 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX() {
-            return g.V().coalesce(out("likes"), out("knows"), out("created")).groupCount().by("name").cap();
+            return g.V().coalesce(out("likes"), out("knows"), out("created")).<String>groupCount().by("name");
         }
 
         @Override

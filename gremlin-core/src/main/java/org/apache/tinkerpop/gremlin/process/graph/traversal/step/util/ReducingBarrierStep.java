@@ -51,7 +51,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     private Supplier<E> seedSupplier;
     private BiFunction<E, Traverser<S>, E> reducingBiFunction;
     private boolean done = false;
-    private boolean byPass = false;
+    protected boolean byPass = false;
 
     public ReducingBarrierStep(final Traversal.Admin traversal) {
         super(traversal);
