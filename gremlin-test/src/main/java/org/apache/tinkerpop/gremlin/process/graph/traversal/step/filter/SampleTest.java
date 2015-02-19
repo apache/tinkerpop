@@ -137,12 +137,12 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
-            return g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 2)).cap();
+            return g.V().<String,Collection<Double>>group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 2));
         }
 
         @Override
         public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
-            return g.V().group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 5)).cap();
+            return g.V().<String,Collection<Double>>group().by(T.label).by(bothE().values("weight").fold()).by(sample(Scope.local, 5));
         }
     }
 }

@@ -18,14 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.Scope
-import org.apache.tinkerpop.gremlin.process.T
-import org.apache.tinkerpop.gremlin.process.Traversal
-import org.apache.tinkerpop.gremlin.process.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
+import org.apache.tinkerpop.gremlin.process.*
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
 
@@ -56,8 +49,8 @@ public abstract class GroovyDedupTest {
         }
 
         @Override
-        Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap() {
-            g.V().group().by(T.label).by(bothE().values('weight').fold()).by(dedup(Scope.local)).cap()
+        Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX() {
+            g.V().group().by(T.label).by(bothE().values('weight').fold()).by(dedup(Scope.local))
         }
     }
 
@@ -82,8 +75,8 @@ public abstract class GroovyDedupTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap() {
-            ComputerTestHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(dedup(Scope.local)).cap()", g);
+        public Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX() {
+            ComputerTestHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(dedup(Scope.local))", g);
         }
 
         @Override

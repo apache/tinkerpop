@@ -53,7 +53,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_select_byXnameX();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregateXxX_asXbX_select_byXnameX();
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by_XitX();
 
@@ -132,7 +132,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public void g_V_asXaX_out_asXbX_select_byXnameX() {
         Arrays.asList(
                 get_g_V_asXaX_out_asXbX_select_byXnameX(),
-                get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX()).forEach(traversal -> {
+                get_g_V_asXaX_out_aggregateXxX_asXbX_select_byXnameX()).forEach(traversal -> {
             printTraversalForm(traversal);
             final List<Map<String, String>> expected = makeMapList(2,
                     "a", "marko", "b", "lop",
@@ -278,8 +278,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX() {
-            return g.V().as("a").out().aggregate().as("b").<String>select().by("name");
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregateXxX_asXbX_select_byXnameX() {
+            return g.V().as("a").out().aggregate("x").as("b").<String>select().by("name");
         }
 
         @Override

@@ -35,13 +35,13 @@ public abstract class GroovyAggregateTest {
     public static class StandardTraversals extends AggregateTest {
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {
-            g.V.name.aggregate
+        public Traversal<Vertex, List<String>> get_g_V_name_aggregateXxX_capXxX() {
+            g.V.name.aggregate('x').cap('x')
         }
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_aggregate_byXnameX() {
-            g.V.aggregate.by('name')
+        public Traversal<Vertex, List<String>> get_g_V_aggregateXxX_byXnameX_capXxX() {
+            g.V.aggregate('x').by('name').cap('x')
         }
 
         @Override
@@ -54,13 +54,13 @@ public abstract class GroovyAggregateTest {
     public static class ComputerTraversals extends AggregateTest {
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {
-            ComputerTestHelper.compute("g.V.name.aggregate", g)
+        public Traversal<Vertex, List<String>> get_g_V_name_aggregateXxX_capXxX() {
+            ComputerTestHelper.compute("g.V.name.aggregate('x').cap('x')", g)
         }
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_aggregate_byXnameX() {
-            ComputerTestHelper.compute("g.V.aggregate.by('name')", g)
+        public Traversal<Vertex, List<String>> get_g_V_aggregateXxX_byXnameX_capXxX() {
+            ComputerTestHelper.compute("g.V.aggregate('x').by('name').cap('x')", g)
         }
 
         @Override

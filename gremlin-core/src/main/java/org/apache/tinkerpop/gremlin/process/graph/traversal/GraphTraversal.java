@@ -57,6 +57,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeOtherVe
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroupCountStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.KeyStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.LabelStep;
@@ -87,7 +88,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.Match
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AggregateStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupCountSideEffectStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.LambdaSideEffectStep;
@@ -355,6 +356,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new MeanGlobalStep<>(this.asAdmin()) : new MeanLocalStep<>(this.asAdmin()));
     }
 
+    public default <K, R> GraphTraversal<S, Map<K, R>> group() {
+        return this.asAdmin().addStep(new GroupStep<>(this.asAdmin()));
+    }
+
+    public default <E2> GraphTraversal<S, Map<E2, Long>> groupCount() {
+        return this.asAdmin().addStep(new GroupCountStep<>(this.asAdmin()));
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     public default GraphTraversal<S, E> filter(final Predicate<Traverser<E>> predicate) {
@@ -547,24 +556,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new AggregateStep<>(this.asAdmin(), sideEffectKey));
     }
 
-    public default GraphTraversal<S, E> aggregate() {
-        return this.aggregate(null);
-    }
-
     public default GraphTraversal<S, E> group(final String sideEffectKey) {
-        return this.asAdmin().addStep(new GroupStep<>(this.asAdmin(), sideEffectKey));
-    }
-
-    public default GraphTraversal<S, E> group() {
-        return this.group(null);
+        return this.asAdmin().addStep(new GroupSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey) {
         return this.asAdmin().addStep(new GroupCountSideEffectStep<>(this.asAdmin(), sideEffectKey));
-    }
-
-    public default <E2> GraphTraversal<S, Map<E2, Long>> groupCount() {
-        return this.asAdmin().addStep(new GroupCountStep<>(this.asAdmin()));
     }
 
     public default GraphTraversal<S, Vertex> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
@@ -605,10 +602,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> store(final String sideEffectKey) {
         return this.asAdmin().addStep(new StoreStep<>(this.asAdmin(), sideEffectKey));
-    }
-
-    public default GraphTraversal<S, E> store() {
-        return this.store(null);
     }
 
     public default GraphTraversal<S, E> profile() {

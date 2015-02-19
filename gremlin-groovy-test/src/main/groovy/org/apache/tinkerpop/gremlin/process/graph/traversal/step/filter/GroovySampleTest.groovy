@@ -59,12 +59,12 @@ public abstract class GroovySampleTest {
 
         @Override
         Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
-            g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(Scope.local, 2)).cap()
+            g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(Scope.local, 2))
         }
 
         @Override
         Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
-            g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(Scope.local, 5)).cap()
+            g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(Scope.local, 5))
         }
     }
 
@@ -92,12 +92,12 @@ public abstract class GroovySampleTest {
 
         @Override
         Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
-            ComputerTestHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(Scope.local, 2)).cap()", g)
+            ComputerTestHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(Scope.local, 2))", g)
         }
 
         @Override
         Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
-            ComputerTestHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(Scope.local, 5)).cap()", g)
+            ComputerTestHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(Scope.local, 5))", g)
         }
 
         @Override

@@ -87,7 +87,7 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmaxXlocalXX() {
-            return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).by(max(Scope.local)).cap();
+            return g.V().hasLabel("software").<String, Number>group().by("name").by(bothE().values("weight").fold()).by(max(Scope.local));
         }
     }
 }

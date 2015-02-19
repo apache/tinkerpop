@@ -67,8 +67,8 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX() {
-            g.V.as('a').out.aggregate.as('b').select.by('name')
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregateXxX_asXbX_select_byXnameX() {
+            g.V.as('a').out.aggregate('x').as('b').select.by('name')
         }
 
         @Override
@@ -176,7 +176,7 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX() {
+        Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregateXxX_asXbX_select_byXnameX() {
             // override with nothing until the test itself is supported
             return null
         }

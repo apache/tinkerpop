@@ -43,9 +43,9 @@ import static org.junit.Assert.*;
  */
 public abstract class AggregateTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, List<String>> get_g_V_name_aggregate();
+    public abstract Traversal<Vertex, List<String>> get_g_V_name_aggregateXxX_capXxX();
 
-    public abstract Traversal<Vertex, List<String>> get_g_V_aggregate_byXnameX();
+    public abstract Traversal<Vertex, List<String>> get_g_V_aggregateXxX_byXnameX_capXxX();
 
     public abstract Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path();
 
@@ -53,8 +53,8 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_valueXnameX_aggregate() {
-        Traversal<Vertex, List<String>> traversal = get_g_V_name_aggregate();
+    public void g_V_valueXnameX_aggregateXxX_capXxX() {
+        Traversal<Vertex, List<String>> traversal = get_g_V_name_aggregateXxX_capXxX();
         printTraversalForm(traversal);
         final Collection<String> names = traversal.next();
         assertFalse(traversal.hasNext());
@@ -63,8 +63,8 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_aggregate_byXnameX() {
-        Traversal<Vertex, List<String>> traversal = get_g_V_aggregate_byXnameX();
+    public void g_V_aggregateXxX_byXnameX_capXxX() {
+        Traversal<Vertex, List<String>> traversal = get_g_V_aggregateXxX_byXnameX_capXxX();
         printTraversalForm(traversal);
         final Collection<String> names = traversal.next();
         assertFalse(traversal.hasNext());
@@ -128,13 +128,13 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
     public static class Traversals extends AggregateTest {
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {
-            return (Traversal) g.V().values("name").aggregate();
+        public Traversal<Vertex, List<String>> get_g_V_name_aggregateXxX_capXxX() {
+            return (Traversal) g.V().values("name").aggregate("x").cap("x");
         }
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_aggregate_byXnameX() {
-            return (Traversal) g.V().aggregate().by("name");
+        public Traversal<Vertex, List<String>> get_g_V_aggregateXxX_byXnameX_capXxX() {
+            return (Traversal) g.V().aggregate("x").by("name").cap("x");
         }
 
         @Override

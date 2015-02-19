@@ -246,6 +246,14 @@ public class __ {
         return __.<A>start().mean(scope);
     }
 
+    public static <A, K, R> GraphTraversal<A, Map<K, R>> group() {
+        return __.<A>start().group();
+    }
+
+    public static <A, B> GraphTraversal<A, Map<B, Long>> groupCount() {
+        return __.<A>start().<B>groupCount();
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     public static <A> GraphTraversal<A, A> filter(final Predicate<Traverser<A>> predicate) {
@@ -430,24 +438,12 @@ public class __ {
         return __.<A>start().aggregate(sideEffectKey);
     }
 
-    public static <A> GraphTraversal<A, A> aggregate() {
-        return __.<A>start().aggregate();
-    }
-
     public static <A> GraphTraversal<A, A> group(final String sideEffectKey) {
         return __.<A>start().group(sideEffectKey);
     }
 
-    public static <A> GraphTraversal<A, A> group() {
-        return __.<A>start().group();
-    }
-
     public static <A> GraphTraversal<A, A> groupCount(final String sideEffectKey) {
         return __.<A>start().groupCount(sideEffectKey);
-    }
-
-    public static <A,B> GraphTraversal<A, Map<B, Long>> groupCount() {
-        return __.<A>start().<B>groupCount();
     }
 
     public static <A> GraphTraversal<A, Vertex> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
@@ -488,10 +484,6 @@ public class __ {
 
     public static <A> GraphTraversal<A, A> store(final String sideEffectKey) {
         return __.<A>start().store(sideEffectKey);
-    }
-
-    public static <A> GraphTraversal<A, A> store() {
-        return __.<A>start().store();
     }
 
     ///////////////////// BRANCH STEPS /////////////////////

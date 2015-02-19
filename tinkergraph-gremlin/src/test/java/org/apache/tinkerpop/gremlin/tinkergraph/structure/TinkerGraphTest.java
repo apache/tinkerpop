@@ -39,6 +39,7 @@ import org.junit.Test;
 import java.io.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -137,8 +138,8 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        //g.engine(ComputerTraversalEngine.computer);
-        Traversal t = g.V().hasLabel("software").as("s").local(inE("created").values("weight").limit(1)).as("w").path();
+        g.engine(ComputerTraversalEngine.computer);
+        Traversal t = g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).by(max(Scope.local));
         //Traversal t  = ComputerTestHelper.compute("g.V().out('created').groupCount().by('name').values('name')", g);
         System.out.println(t);
         t.forEachRemaining(System.out::println);

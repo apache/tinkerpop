@@ -51,7 +51,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup();
 
-    public abstract Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap();
+    public abstract Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -103,7 +103,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap() {
         final Traversal<Vertex, Map<String, Set<Double>>> traversal =
-                get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap();
+                get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         final Map<String, Set<Double>> map = traversal.next();
@@ -135,8 +135,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX_cap() {
-            return g.V().group().by(T.label).by(bothE().values("weight").fold()).by(dedup(Scope.local)).cap();
+        public Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX() {
+            return g.V().<String,Set<Double>>group().by(T.label).by(bothE().values("weight").fold()).by(dedup(Scope.local));
         }
     }
 }

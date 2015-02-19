@@ -43,7 +43,7 @@ public abstract class GroovySumTest {
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXsumXlocalXX() {
-            g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(sum(Scope.local)).cap()
+            g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(sum(Scope.local))
         }
     }
 
@@ -57,7 +57,7 @@ public abstract class GroovySumTest {
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXsumXlocalXX() {
-            ComputerTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(sum(Scope.local)).cap()", g)
+            ComputerTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(sum(Scope.local))", g)
         }
     }
 }
