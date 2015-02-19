@@ -63,17 +63,17 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     public void setRepeatTraversal(final Traversal.Admin<S, S> repeatTraversal) {
         this.repeatTraversal = repeatTraversal; // .clone();
         this.repeatTraversal.addStep(new RepeatEndStep(this.repeatTraversal));
-        this.integrateChild(this.repeatTraversal, TYPICAL_GLOBAL_OPERATIONS);
+        this.integrateChild(this.repeatTraversal);
     }
 
     public void setUntilTraversal(final Traversal.Admin<S, ?> untilTraversal) {
         if (null == this.repeatTraversal) this.untilFirst = true;
-        this.integrateChild(this.untilTraversal = untilTraversal, TYPICAL_LOCAL_OPERATIONS);
+        this.untilTraversal = this.integrateChild(untilTraversal);
     }
 
     public void setEmitTraversal(final Traversal.Admin<S, ?> emitTraversal) {
         if (null == this.repeatTraversal) this.emitFirst = true;
-        this.integrateChild(this.emitTraversal = emitTraversal, TYPICAL_LOCAL_OPERATIONS);
+        this.emitTraversal = this.integrateChild(emitTraversal);
     }
 
     public List<Traversal.Admin<S, S>> getGlobalChildren() {
@@ -122,11 +122,11 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     @Override
     public RepeatStep<S> clone() throws CloneNotSupportedException {
         final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
-        clone.repeatTraversal = clone.integrateChild(this.repeatTraversal.clone(), TYPICAL_GLOBAL_OPERATIONS);
+        clone.repeatTraversal = clone.integrateChild(this.repeatTraversal.clone());
         if (null != this.untilTraversal)
-            clone.untilTraversal = clone.integrateChild(this.untilTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+            clone.untilTraversal = clone.integrateChild(this.untilTraversal.clone());
         if (null != this.emitTraversal)
-            clone.emitTraversal = clone.integrateChild(this.emitTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+            clone.emitTraversal = clone.integrateChild(this.emitTraversal.clone());
         return clone;
     }
 

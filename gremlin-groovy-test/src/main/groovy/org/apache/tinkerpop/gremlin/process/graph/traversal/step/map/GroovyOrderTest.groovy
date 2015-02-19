@@ -19,19 +19,11 @@
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith
-import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine
-import org.apache.tinkerpop.gremlin.process.Scope
-import org.apache.tinkerpop.gremlin.process.Traversal
-import org.apache.tinkerpop.gremlin.process.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
+import org.apache.tinkerpop.gremlin.process.*
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.structure.Order
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
-
-import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -183,7 +175,7 @@ public abstract class GroovyOrderTest {
         }
 
         @Test
-        @LoadGraphWith(MODERN)
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
         @Override
         public void g_V_name_order_byXa1_b1X_byXb2_a2X() {
             super.g_V_name_order_byXa1_b1X_byXb2_a2X();

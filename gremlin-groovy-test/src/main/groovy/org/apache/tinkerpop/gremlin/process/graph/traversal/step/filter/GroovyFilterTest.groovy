@@ -27,8 +27,6 @@ import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
 
-import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -83,56 +81,56 @@ public abstract class GroovyFilterTest {
 
 
         @Test
-        @LoadGraphWith(MODERN)
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
         @Override
         public void g_V_filterXfalseX() {
             super.g_V_filterXfalseX();
         }
 
         @Test
-        @LoadGraphWith(MODERN)
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
         @Override
         public void g_V_filterXtrueX() {
             super.g_V_filterXtrueX();
         }
 
         @Test
-        @LoadGraphWith(MODERN)
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
         @Override
         public void g_V_filterXlang_eq_javaX() {
             super.g_V_filterXlang_eq_javaX();
         }
 
         @Test
-        @LoadGraphWith(MODERN)
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
         @Override
         public void g_VX1X_filterXage_gt_30X() {
             super.g_VX1X_filterXage_gt_30X();
         }
 
         @Test
-        @LoadGraphWith(MODERN)
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
         @Override
         public void g_VX1X_out_filterXage_gt_30X() {
             super.g_VX1X_out_filterXage_gt_30X();
         }
 
         @Test
-        @LoadGraphWith(MODERN)
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
         @Override
         public void g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
             super.g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
         }
 
         @Test
-        @LoadGraphWith(MODERN)
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
         @Override
         public void g_E_filterXfalseX() {
             super.g_E_filterXfalseX();
         }
 
         @Test
-        @LoadGraphWith(MODERN)
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
         @Override
         public void g_E_filterXtrueX() {
             super.g_E_filterXtrueX();

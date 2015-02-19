@@ -27,8 +27,6 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
 
-import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -58,7 +56,7 @@ public abstract class GroovyBranchTest {
     public static class ComputerTraversals extends BranchTest {
 
         @Test
-        @LoadGraphWith(MODERN)
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
         @Override
         public void g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
             super.g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX();

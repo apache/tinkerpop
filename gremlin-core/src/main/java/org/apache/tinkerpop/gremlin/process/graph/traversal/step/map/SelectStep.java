@@ -30,7 +30,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -87,7 +91,9 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
                         .filter(step -> step instanceof CollectingBarrierStep)
                         .filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal.asAdmin()).stream().filter(this.selectLabels::contains).findAny().isPresent()
                                 || (step.getLabel().isPresent() && this.selectLabels.contains(step.getLabel().get()))) // TODO: get rid of this (there is a test case to check it)
-                        .findAny().isPresent();
+                        .findAny().isPresent() ||
+                        TraversalHelper.getStepsUpTo(this, this.traversal.asAdmin()).stream().
+                                filter(step -> step instanceof TraversalParent).findAny().isPresent();
     }
 
     @Override
@@ -100,7 +106,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         final SelectStep<S, E> clone = (SelectStep<S, E>) super.clone();
         clone.traversalRing = new TraversalRing<>();
         for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {
-            clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone(), TYPICAL_LOCAL_OPERATIONS));
+            clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone()));
         }
         return clone;
     }
@@ -112,7 +118,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> selectTraversal) {
-        this.traversalRing.addTraversal(this.integrateChild(selectTraversal, TYPICAL_LOCAL_OPERATIONS));
+        this.traversalRing.addTraversal(this.integrateChild(selectTraversal));
     }
 
     @Override

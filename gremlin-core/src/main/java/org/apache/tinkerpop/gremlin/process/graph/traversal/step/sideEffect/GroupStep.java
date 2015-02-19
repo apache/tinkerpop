@@ -126,13 +126,13 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> kvrTraversal) {
         if ('k' == this.state) {
-            this.keyTraversal = this.integrateChild(kvrTraversal, TYPICAL_LOCAL_OPERATIONS);
+            this.keyTraversal = this.integrateChild(kvrTraversal);
             this.state = 'v';
         } else if ('v' == this.state) {
-            this.valueTraversal = this.integrateChild(kvrTraversal, TYPICAL_LOCAL_OPERATIONS);
+            this.valueTraversal = this.integrateChild(kvrTraversal);
             this.state = 'r';
         } else if ('r' == this.state) {
-            this.reduceTraversal = this.integrateChild(kvrTraversal, TYPICAL_LOCAL_OPERATIONS);
+            this.reduceTraversal = this.integrateChild(kvrTraversal);
             this.state = 'x';
         } else {
             throw new IllegalStateException("The key, value, and reduce functions for group()-step have already been set");
@@ -147,10 +147,10 @@ public final class GroupStep<S, K, V, R> extends SideEffectStep<S> implements Si
     @Override
     public GroupStep<S, K, V, R> clone() throws CloneNotSupportedException {
         final GroupStep<S, K, V, R> clone = (GroupStep<S, K, V, R>) super.clone();
-        clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
-        clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+        clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone());
+        clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone());
         if (null != this.reduceTraversal)
-            clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+            clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone());
         return clone;
     }
 }

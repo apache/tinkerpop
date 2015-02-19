@@ -26,8 +26,6 @@ import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
 
-import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -66,21 +64,21 @@ public abstract class GroovyMapTest {
     public static class ComputerTraversals extends MapTest {
 
         @Test
-        @LoadGraphWith(MODERN)
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
         @Override
         public void g_VX1X_mapXnameX() {
             super.g_VX1X_mapXnameX();
         }
 
         @Test
-        @LoadGraphWith(MODERN)
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
         @Override
         public void g_VX1X_outE_label_mapXlengthX() {
             super.g_VX1X_outE_label_mapXlengthX();
         }
 
         @Test
-        @LoadGraphWith(MODERN)
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
         @Override
         public void g_VX1X_out_mapXnameX_mapXlengthX() {
             super.g_VX1X_out_mapXnameX_mapXlengthX();
