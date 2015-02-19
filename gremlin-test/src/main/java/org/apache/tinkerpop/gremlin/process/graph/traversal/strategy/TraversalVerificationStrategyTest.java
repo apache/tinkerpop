@@ -23,11 +23,13 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -72,61 +74,60 @@ public abstract class TraversalVerificationStrategyTest extends AbstractGremlinP
     public static class ComputerTraversals extends TraversalVerificationStrategyTest {
 
         @Test
-        @Ignore("Something is eating the exception...")
         @LoadGraphWith(MODERN)
         public void shouldNotAllowNestedGlobalTraversalToHaveBarriers() {
+            g.engine(ComputerTraversalEngine.computer);
             try {
                 final GraphTraversal t = g.V().values("age").union(max(), min(), sum()).iterate();
                 fail("Nested global traversals should not be allowed to contain barriers (COMPUTER): " + t);
             } catch (IllegalStateException e) {
-
+               assertTrue(true);
             }
         }
 
         @Test
-        @Ignore("Something is eating the exception...")
         @LoadGraphWith(MODERN)
         public void shouldNotAllowMidTraversalBarriersOnComputer() {
+            g.engine(ComputerTraversalEngine.computer);
             try {
                 final GraphTraversal t = g.V().count().sum().iterate();
                 fail("Mid-traversal barrier steps are not allowed (COMPUTER): " + t);
             } catch (IllegalStateException e) {
-
+                assertTrue(true);
             }
 
             try {
                 final GraphTraversal t = g.V().count().sum().map(x -> x.get() * 19).iterate();
                 fail("Mid-traversal barrier steps are not allowed (COMPUTER): " + t);
             } catch (IllegalStateException e) {
-
+                assertTrue(true);
             }
         }
 
         @Test
-        @Ignore("Something is eating the exception...")
         @LoadGraphWith(MODERN)
         public void shouldNotAllowLocalTraversalsToLeaveTheStarGraphOnComputer() {
-            try {
-                g.V().local(outE().values("weight")).iterate();
-                g.V().local(out().id()).iterate();
-                g.V().local(outE().inV()).iterate();
-                g.V().local(inE().as("a").values("weight").back("a").outV()).iterate();
-            } catch (IllegalStateException e) {
-                fail("Local traversals on the star-graph are OK on COMPUTER: " + e.getMessage());
-            }
-
+            g.engine(ComputerTraversalEngine.computer);
             try {
                 final GraphTraversal t = g.V().local(out().out()).iterate();
                 fail("Local traversals should not be allowed to leave the star-graph (COMPUTER): " + t);
             } catch (IllegalStateException e) {
-
+                assertTrue(true);
             }
 
             try {
                 final GraphTraversal t = g.V().local(out().values("name")).iterate();
                 fail("Local traversals should not be allowed to leave the star-graph (COMPUTER): " + t);
             } catch (IllegalStateException e) {
+                assertTrue(true);
+            }
 
+            try {
+                g.V().local(outE().values("weight")).iterate();
+                g.V().local(out().id()).iterate();
+                g.V().local(outE().inV()).iterate();
+            } catch (IllegalStateException e) {
+                fail("Local traversals on the star-graph are OK on COMPUTER: " + e.getMessage());
             }
         }
     }

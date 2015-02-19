@@ -279,11 +279,11 @@ public final class TraversalHelper {
                         stepPosition.z = i;
                     }
                 }
-                for (int i = 0; i < parent.getLocalChildren().size(); i++) {
+                /*for (int i = 0; i < parent.getLocalChildren().size(); i++) {
                     if (parent.getLocalChildren().get(i) == current) {
                         stepPosition.z = i + parent.getGlobalChildren().size();
                     }
-                }
+                }*/
             }
             current = parent.asStep().getTraversal();
         }

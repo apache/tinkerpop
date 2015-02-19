@@ -56,9 +56,9 @@ public final class TraversalMatrix<S, E> {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     this.harvestSteps(globalChild);
                 }
-                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                /*for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
                     this.harvestSteps(localChild);
-                }
+                }*/
             }
         }
     }
