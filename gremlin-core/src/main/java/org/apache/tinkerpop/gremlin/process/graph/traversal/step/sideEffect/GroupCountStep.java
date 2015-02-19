@@ -82,7 +82,7 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> traversal) {
-        this.groupTraversal = this.integrateChild(traversal, TYPICAL_LOCAL_OPERATIONS);
+        this.groupTraversal = this.integrateChild(traversal);
     }
 
     @Override
@@ -98,7 +98,7 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
     @Override
     public GroupCountStep<S> clone() throws CloneNotSupportedException {
         final GroupCountStep<S> clone = (GroupCountStep<S>) super.clone();
-        clone.groupTraversal = this.integrateChild(this.groupTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+        clone.groupTraversal = this.integrateChild(this.groupTraversal.clone());
         return clone;
     }
 }

@@ -58,14 +58,14 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Reversibl
 
     @Override
     public void addLocalChild(final Traversal.Admin dedupTraversal) {
-        this.dedupTraversal = this.integrateChild(dedupTraversal, TYPICAL_LOCAL_OPERATIONS);
+        this.dedupTraversal = this.integrateChild(dedupTraversal);
     }
 
     @Override
     public DedupGlobalStep<S> clone() throws CloneNotSupportedException {
         final DedupGlobalStep<S> clone = (DedupGlobalStep<S>) super.clone();
         clone.duplicateSet = new HashSet<>();
-        clone.dedupTraversal = clone.integrateChild(this.dedupTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+        clone.dedupTraversal = clone.integrateChild(this.dedupTraversal.clone());
         return clone;
     }
 

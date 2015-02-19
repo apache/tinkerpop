@@ -43,7 +43,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     }
 
     public void setBranchTraversal(final Traversal.Admin<S, M> branchTraversal) {
-        this.integrateChild(this.branchTraversal = branchTraversal, TYPICAL_LOCAL_OPERATIONS);
+        this.branchTraversal = this.integrateChild(branchTraversal);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
         else
             this.traversalOptions.put(pickToken, new ArrayList<>(Collections.singletonList(traversalOption)));
         traversalOption.addStep(new EndStep(traversalOption));
-        this.integrateChild(traversalOption, TYPICAL_GLOBAL_OPERATIONS);
+        this.integrateChild(traversalOption);
     }
 
     @Override
@@ -144,12 +144,12 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
                 for (final Traversal.Admin<S, E> traversal : traversals) {
                     final Traversal.Admin<S, E> clonedTraversal = traversal.clone();
                     clonedTraversals.add(clonedTraversal);
-                    clone.integrateChild(clonedTraversal, TYPICAL_GLOBAL_OPERATIONS);
+                    clone.integrateChild(clonedTraversal);
                 }
             }
         }
         clone.branchTraversal = this.branchTraversal.clone();
-        clone.integrateChild(clone.branchTraversal, TYPICAL_LOCAL_OPERATIONS);
+        clone.integrateChild(clone.branchTraversal);
         return clone;
     }
 

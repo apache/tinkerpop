@@ -87,7 +87,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> storeTraversal) {
-        this.storeTraversal = this.integrateChild(storeTraversal, TYPICAL_LOCAL_OPERATIONS);
+        this.storeTraversal = this.integrateChild(storeTraversal);
     }
 
     @Override
@@ -98,7 +98,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     @Override
     public StoreStep<S> clone() throws CloneNotSupportedException {
         final StoreStep<S> clone = (StoreStep<S>) super.clone();
-        clone.storeTraversal = clone.integrateChild(this.storeTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+        clone.storeTraversal = clone.integrateChild(this.storeTraversal.clone());
         return clone;
     }
 }

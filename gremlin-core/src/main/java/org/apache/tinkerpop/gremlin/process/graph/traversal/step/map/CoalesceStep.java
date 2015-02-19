@@ -44,7 +44,7 @@ public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements Trave
         super(traversal);
         this.coalesceTraversals = Arrays.asList(coalesceTraversals);
         for (final Traversal.Admin<S, ?> conjunctionTraversal : this.coalesceTraversals) {
-            this.integrateChild(conjunctionTraversal, TYPICAL_LOCAL_OPERATIONS);
+            this.integrateChild(conjunctionTraversal);
         }
     }
 
@@ -74,7 +74,7 @@ public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements Trave
         final CoalesceStep<S, E> clone = (CoalesceStep<S, E>) super.clone();
         clone.coalesceTraversals = new ArrayList<>();
         for (final Traversal.Admin<S, ?> conjunctionTraversal : this.coalesceTraversals) {
-            clone.coalesceTraversals.add(clone.integrateChild(conjunctionTraversal.clone(), TYPICAL_LOCAL_OPERATIONS));
+            clone.coalesceTraversals.add(clone.integrateChild(conjunctionTraversal.clone()));
         }
         return clone;
     }

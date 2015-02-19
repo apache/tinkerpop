@@ -77,7 +77,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
         this.currentStart = new B_O_PA_S_SE_SL_Traverser<>(null, this);
         for (final Traversal tl : traversals) {
             addTraversalPrivate(tl);
-            this.integrateChild(tl.asAdmin(), TYPICAL_LOCAL_OPERATIONS);
+            this.integrateChild(tl.asAdmin());
             this.traversals.add(tl);
         }
         checkSolvability();
@@ -104,7 +104,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     public void addTraversal(final Traversal<S, S> traversal) {
         addTraversalPrivate(traversal);
         this.traversals.add(traversal);
-        this.integrateChild(traversal.asAdmin(), TYPICAL_LOCAL_OPERATIONS);
+        this.integrateChild(traversal.asAdmin());
         checkSolvability();
     }
 

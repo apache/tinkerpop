@@ -71,22 +71,6 @@ public class B_O_PA_S_SE_SL_Traverser<T> extends AbstractPathTraverser<T> {
         return this;
     }
 
-
-    @Override
-    public <R> Traverser.Admin<R> split(final R r, final Step<T, R> step) {
-        try {
-            final B_O_PA_S_SE_SL_Traverser<R> clone = (B_O_PA_S_SE_SL_Traverser<R>) super.clone();
-            clone.t = r;
-            final Optional<String> stepLabel = step.getLabel();
-            clone.path = getOrCreateFromCache(this.sideEffects); // local traversal branches are cut off from the primary path history
-            clone.path = stepLabel.isPresent() ? clone.path.clone().extend(r, stepLabel.get()) : clone.path.clone().extend(r);
-            clone.sack = null == clone.sack ? null : clone.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(clone.sack);
-            return clone;
-        } catch (final CloneNotSupportedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
     //////////////////////
 
     private static final Map<TraversalSideEffects, SparsePath> PATH_CACHE = new WeakHashMap<>();

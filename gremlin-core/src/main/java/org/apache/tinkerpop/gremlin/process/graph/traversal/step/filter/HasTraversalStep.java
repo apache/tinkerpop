@@ -33,6 +33,7 @@ import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public final class HasTraversalStep<S> extends AbstractStep<S, S> implements TraversalParent {
 
@@ -42,14 +43,14 @@ public final class HasTraversalStep<S> extends AbstractStep<S, S> implements Tra
     public HasTraversalStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?> hasTraversal, final boolean negate) {
         super(traversal);
         this.negate = negate;
-        this.integrateChild(this.hasTraversal = hasTraversal, TYPICAL_LOCAL_OPERATIONS);
+        this.hasTraversal = this.integrateChild(hasTraversal);
     }
 
     @Override
     protected Traverser<S> processNextStart() throws NoSuchElementException {
         while (true) {
             final Traverser.Admin<S> start = this.starts.next();
-            if (TraversalUtil.test(start, this.hasTraversal) != negate)
+            if (TraversalUtil.test(start, this.hasTraversal) != this.negate)
                 return start;
         }
     }
@@ -73,7 +74,7 @@ public final class HasTraversalStep<S> extends AbstractStep<S, S> implements Tra
     @Override
     public HasTraversalStep<S> clone() throws CloneNotSupportedException {
         final HasTraversalStep<S> clone = (HasTraversalStep<S>) super.clone();
-        clone.hasTraversal = clone.integrateChild(this.hasTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+        clone.hasTraversal = clone.integrateChild(this.hasTraversal.clone());
         return clone;
     }
 }

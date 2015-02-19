@@ -97,7 +97,7 @@ public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRe
         final TreeStep<S> clone = (TreeStep<S>) super.clone();
         clone.traversalRing = new TraversalRing<>();
         for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {
-            clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone(), TYPICAL_LOCAL_OPERATIONS));
+            clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone()));
         }
         return clone;
     }
@@ -109,7 +109,7 @@ public final class TreeStep<S> extends SideEffectStep<S> implements SideEffectRe
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> treeTraversal) {
-        this.traversalRing.addTraversal(this.integrateChild(treeTraversal, TYPICAL_LOCAL_OPERATIONS));
+        this.traversalRing.addTraversal(this.integrateChild(treeTraversal));
     }
 
     @Override

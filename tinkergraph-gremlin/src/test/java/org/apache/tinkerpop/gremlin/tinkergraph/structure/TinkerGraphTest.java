@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
@@ -136,8 +137,8 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph g = TinkerFactory.createModern();
-        g.engine(ComputerTraversalEngine.computer);
-        Traversal t = g.V().map(v -> v.get().value("name"));
+        //g.engine(ComputerTraversalEngine.computer);
+        Traversal t = g.V().hasLabel("software").as("s").local(inE("created").values("weight").limit(1)).as("w").path();
         //Traversal t  = ComputerTestHelper.compute("g.V().out('created').groupCount().by('name').values('name')", g);
         System.out.println(t);
         t.forEachRemaining(System.out::println);

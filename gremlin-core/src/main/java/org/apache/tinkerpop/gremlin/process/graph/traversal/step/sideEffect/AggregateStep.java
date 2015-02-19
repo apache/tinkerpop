@@ -75,7 +75,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> traversal) {
-        this.aggregateTraversal = this.integrateChild(traversal, TYPICAL_LOCAL_OPERATIONS);
+        this.aggregateTraversal = this.integrateChild(traversal);
     }
 
     @Override
@@ -100,7 +100,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     @Override
     public AggregateStep<S> clone() throws CloneNotSupportedException {
         final AggregateStep<S> clone = (AggregateStep<S>) super.clone();
-        clone.aggregateTraversal = this.integrateChild(this.aggregateTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+        clone.aggregateTraversal = this.integrateChild(this.aggregateTraversal.clone());
         return clone;
     }
 }
