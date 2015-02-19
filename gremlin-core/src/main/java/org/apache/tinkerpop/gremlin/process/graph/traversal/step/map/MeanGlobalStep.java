@@ -40,6 +40,7 @@ import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public final class MeanGlobalStep<S extends Number, E extends Number> extends ReducingBarrierStep<S, E> implements MapReducer {
 
@@ -57,7 +58,7 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
     }
 
     @Override
-    public MapReduce<MapReduce.NullObject, MeanNumber, MapReduce.NullObject, MeanNumber, Double> getMapReduce() {
+    public MapReduce<Number, Long, Number, Long, Double> getMapReduce() {
         return MeanMapReduce.instance();
     }
 
@@ -83,7 +84,7 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
 
     ///////////
 
-    private static class MeanMapReduce extends StaticMapReduce<MapReduce.NullObject, MeanNumber, MapReduce.NullObject, MeanNumber, Double> {
+    private static final class MeanMapReduce extends StaticMapReduce<Number, Long, Number, Long, Double> {
 
         private static final MeanMapReduce INSTANCE = new MeanMapReduce();
 
@@ -97,22 +98,22 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
         }
 
         @Override
-        public void map(final Vertex vertex, final MapEmitter<NullObject, MeanNumber> emitter) {
-            vertex.<TraverserSet<Number>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(new MeanNumber(traverser.get().doubleValue(), traverser.bulk()))));
+        public void map(final Vertex vertex, final MapEmitter<Number, Long> emitter) {
+            vertex.<TraverserSet<Number>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(traverser.get(), traverser.bulk())));
         }
 
         @Override
-        public void combine(final NullObject key, final Iterator<MeanNumber> values, final ReduceEmitter<NullObject, MeanNumber> emitter) {
+        public void combine(final Number key, final Iterator<Long> values, final ReduceEmitter<Number, Long> emitter) {
             this.reduce(key, values, emitter);
         }
 
         @Override
-        public void reduce(final NullObject key, final Iterator<MeanNumber> values, final ReduceEmitter<NullObject, MeanNumber> emitter) {
-            MeanNumber mean = new MeanNumber();
+        public void reduce(final Number key, final Iterator<Long> values, final ReduceEmitter<Number, Long> emitter) {
+            long counter = 0;
             while (values.hasNext()) {
-                mean.add(values.next());
+                counter = counter + values.next();
             }
-            emitter.emit(mean);
+            emitter.emit(key, counter);
         }
 
         @Override
@@ -121,8 +122,19 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
         }
 
         @Override
-        public Double generateFinalResult(final Iterator<KeyValue<NullObject, MeanNumber>> keyValues) {
-            return keyValues.hasNext() ? keyValues.next().getValue().doubleValue() : Double.NaN;
+        public Double generateFinalResult(final Iterator<KeyValue<Number, Long>> keyValues) {
+            if (keyValues.hasNext()) {
+                KeyValue<Number, Long> pair = keyValues.next();
+                double result = pair.getKey().doubleValue();
+                long counter = pair.getValue();
+                while (keyValues.hasNext()) {
+                    pair = keyValues.next();
+                    result += pair.getKey().doubleValue();
+                    counter += pair.getValue();
+                }
+                return result / counter;
+            }
+            return Double.NaN;
         }
 
         public static final MeanMapReduce instance() {
