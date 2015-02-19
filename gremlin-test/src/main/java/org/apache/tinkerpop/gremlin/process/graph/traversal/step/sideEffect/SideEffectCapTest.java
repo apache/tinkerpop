@@ -78,6 +78,7 @@ public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends SideEffectCapTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX() {
@@ -90,9 +91,5 @@ public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
                     values("age").groupCount("a"),
                     values("name").groupCount("b")).cap("a", "b");
         }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }

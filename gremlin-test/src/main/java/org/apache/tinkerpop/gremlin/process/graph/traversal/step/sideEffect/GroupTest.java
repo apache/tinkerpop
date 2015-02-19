@@ -139,6 +139,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends GroupTest {
 
         @Override
@@ -167,9 +168,4 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
             return (Traversal) g.V().group().by(outE().count()).by("name");
         }
     }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
-    }
-
 }

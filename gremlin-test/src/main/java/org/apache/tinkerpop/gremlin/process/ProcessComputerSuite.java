@@ -117,17 +117,17 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // sideEffect
             // TODO: AddEdgeTest.ComputerTest.class,
-            AggregateTest.ComputerTest.class,
-            GroupTest.ComputerTest.class,
-            GroupCountTest.ComputerTest.class,
+            AggregateTest.StandardTest.class,
+            GroupTest.StandardTest.class,
+            GroupCountTest.StandardTest.class,
             // TODO: InjectTest.ComputerTest.class,
-            ProfileTest.ComputerTest.class,
-            SackTest.ComputerTest.class,
-            SideEffectCapTest.ComputerTest.class,
+            ProfileTest.StandardTest.class,
+            SackTest.StandardTest.class,
+            SideEffectCapTest.StandardTest.class,
             // TODO: REMOVE? SideEffectTest.ComputerTest.class,
-            StoreTest.ComputerTest.class,
+            StoreTest.StandardTest.class,
             // TODO: REMOVE? SubgraphTest.ComputerTest.class,
-            TreeTest.ComputerTest.class,
+            TreeTest.StandardTest.class,
 
             // algorithms
             PageRankVertexProgramTest.class,

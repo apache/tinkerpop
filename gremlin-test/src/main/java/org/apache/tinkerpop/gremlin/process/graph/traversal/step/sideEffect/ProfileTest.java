@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.Traverser;
@@ -46,6 +47,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile();
 
     public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_repeat_both_profile();
+
+    public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_sleep_sleep_profile();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -119,8 +122,46 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertEquals(100, totalPercentDuration, 0.000001);
     }
 
+    /*
     @Test
     @LoadGraphWith(MODERN)
+    public void testProfileTimes() {
+        final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_sleep_sleep_profile();
+        printTraversalForm(traversal);
+
+        traversal.iterate();
+
+        assertEquals("There should be 6 steps in this traversal (counting injected profile steps).", 6, traversal.asAdmin().getSteps().size());
+
+        TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(TraversalMetrics.METRICS_KEY);
+        traversalMetrics.toString(); // ensure no exceptions are thrown
+
+        // Grab the second (sideEffect{sleep}) step and check the times.
+        Metrics metrics = traversalMetrics.getMetrics(1);
+        // 6 elements w/ a 10ms sleep each = 60ms with 10ms for other computation
+        assertTrue("Duration should be at least the length of the sleep: " + metrics.getDuration(TimeUnit.MILLISECONDS),
+                metrics.getDuration(TimeUnit.MILLISECONDS) >= 60);
+        assertTrue("Check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MILLISECONDS),
+                metrics.getDuration(TimeUnit.MILLISECONDS) < 80);
+
+        // 6 elements w/ a 5ms sleep each = 30ms plus 20ms for other computation
+        metrics = traversalMetrics.getMetrics(2);
+        assertTrue("Duration should be at least the length of the sleep: " + metrics.getDuration(TimeUnit.MILLISECONDS),
+                metrics.getDuration(TimeUnit.MILLISECONDS) >= 30);
+        assertTrue("Check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MILLISECONDS),
+                metrics.getDuration(TimeUnit.MILLISECONDS) < 50);
+
+        double totalPercentDuration = 0;
+        for (Metrics m : traversalMetrics.getMetrics()) {
+            totalPercentDuration += m.getPercentDuration();
+        }
+        assertEquals(100, totalPercentDuration, 0.000001);
+    }
+    */
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_repeat_both_modern_profile() {
         final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_repeat_both_profile();
         printTraversalForm(traversal);
@@ -151,42 +192,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends ProfileTest {
-
-        @Test
-        @LoadGraphWith(MODERN)
-        public void testProfileTimes() {
-            final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_sleep_sleep_profile();
-            printTraversalForm(traversal);
-
-            traversal.iterate();
-
-            assertEquals("There should be 6 steps in this traversal (counting injected profile steps).", 6, traversal.asAdmin().getSteps().size());
-
-            TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(TraversalMetrics.METRICS_KEY);
-            traversalMetrics.toString(); // ensure no exceptions are thrown
-
-            // Grab the second (sideEffect{sleep}) step and check the times.
-            Metrics metrics = traversalMetrics.getMetrics(1);
-            // 6 elements w/ a 10ms sleep each = 60ms with 10ms for other computation
-            assertTrue("Duration should be at least the length of the sleep: " + metrics.getDuration(TimeUnit.MILLISECONDS),
-                    metrics.getDuration(TimeUnit.MILLISECONDS) >= 60);
-            assertTrue("Check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MILLISECONDS),
-                    metrics.getDuration(TimeUnit.MILLISECONDS) < 80);
-
-            // 6 elements w/ a 5ms sleep each = 30ms plus 20ms for other computation
-            metrics = traversalMetrics.getMetrics(2);
-            assertTrue("Duration should be at least the length of the sleep: " + metrics.getDuration(TimeUnit.MILLISECONDS),
-                    metrics.getDuration(TimeUnit.MILLISECONDS) >= 30);
-            assertTrue("Check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MILLISECONDS),
-                    metrics.getDuration(TimeUnit.MILLISECONDS) < 50);
-
-            double totalPercentDuration = 0;
-            for (Metrics m : traversalMetrics.getMetrics()) {
-                totalPercentDuration += m.getPercentDuration();
-            }
-            assertEquals(100, totalPercentDuration, 0.000001);
-        }
 
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile() {
@@ -198,6 +205,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
             return (Traversal) g.V().repeat(both()).times(3).profile();
         }
 
+        @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_sleep_sleep_profile() {
             return (Traversal) g.V().sideEffect(new Consumer<Traverser<Vertex>>() {
                 @Override
@@ -220,17 +228,5 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
             }).profile();
         }
 
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
-
-        @Override
-        @Test
-        @LoadGraphWith(MODERN)
-        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
-        public void testProfileTimes() {
-
-        }
     }
 }

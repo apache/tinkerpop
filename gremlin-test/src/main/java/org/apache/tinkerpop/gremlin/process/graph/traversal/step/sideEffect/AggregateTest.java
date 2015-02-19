@@ -124,6 +124,7 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
 
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends AggregateTest {
 
         @Override
@@ -144,9 +145,5 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
         /*public Traversal<Vertex, Path> get_g_v1_asXxX_bothE_asXeX_valueXweightX_exceptXwX_aggregateXwX_backXeX_otherV_jumpXx_true_trueX_path(final Object v1Id) {
             return g.V(1).as("x").bothE().as("e").value("weight").except("w").aggregate("w").back("e").otherV().jump("x", t -> true, t -> true).path();
         }*/
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }

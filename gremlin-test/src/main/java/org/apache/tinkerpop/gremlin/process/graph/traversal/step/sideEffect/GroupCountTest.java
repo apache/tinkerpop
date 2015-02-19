@@ -123,6 +123,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends GroupCountTest {
 
         @Override
@@ -156,9 +157,5 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
                     repeat(out()).times(2).groupCount("m").by("lang"),
                     repeat(in()).times(2).groupCount("m").by("name")).cap("m");
         }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
     }
 }

@@ -112,6 +112,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class StandardTest extends StoreTest {
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX() {
@@ -133,9 +134,4 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
             return (Traversal) g.V().store("a").by(outE("created").count()).out().out().store("a").by(inE("created").values("weight").sum());
         }
     }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StandardTest {
-    }
-
 }
