@@ -76,5 +76,11 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends StandardTest {
+
+        @Override
+        @Test
+        @org.junit.Ignore(TRAVERSAL_NOT_SUPPORTED_BY_COMPUTER)
+        public void g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
+        }
     }
 }
