@@ -56,6 +56,11 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
         return REQUIREMENTS;
     }
 
+    @Override
+    public MapReduce<MapReduce.NullObject, MeanNumber, MapReduce.NullObject, MeanNumber, Double> getMapReduce() {
+        return MeanMapReduce.instance();
+    }
+
     /////
 
     private static class MeanBiFunction<S extends Number> implements BiFunction<S, Traverser<S>, S>, Serializable {
@@ -93,7 +98,7 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
 
         @Override
         public void map(final Vertex vertex, final MapEmitter<NullObject, MeanNumber> emitter) {
-            vertex.<TraverserSet<MeanNumber>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(new MeanNumber(traverser.get().doubleValue(), traverser.bulk()))));
+            vertex.<TraverserSet<Number>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(new MeanNumber(traverser.get().doubleValue(), traverser.bulk()))));
         }
 
         @Override
