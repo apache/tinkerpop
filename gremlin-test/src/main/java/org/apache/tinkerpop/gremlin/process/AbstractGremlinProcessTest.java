@@ -52,7 +52,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
 
     private boolean hasGraphComputerRequirement() {
         // do the negation of STANDARD as we expect a type of REASONING that would infer computer support
-        return !GraphManager.getTraversalEngineType().equals(TraversalEngine.Type.STANDARD);
+        return !GraphManager.getTraversalEngine().getType().equals(TraversalEngine.Type.STANDARD);
     }
 
     @Before
@@ -63,22 +63,12 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
             // ignore tests that aren't supported by a specific TraversalEngine
             final IgnoreEngine ignoreEngine = this.getClass().getMethod(name.getMethodName()).getAnnotation(IgnoreEngine.class);
             if (ignoreEngine != null)
-                assumeTrue(String.format("This test is ignored for %s", ignoreEngine.value()), !ignoreEngine.value().equals(GraphManager.getTraversalEngineType()));
+                assumeTrue(String.format("This test is ignored for %s", ignoreEngine.value()), !ignoreEngine.value().equals(GraphManager.getTraversalEngine().getType()));
         } catch (NoSuchMethodException nsme) {
             throw new RuntimeException(String.format("Could not find test method %s in test case %s", name.getMethodName(), this.getClass().getName()));
         }
 
-        switch (GraphManager.getTraversalEngineType()) {
-            case STANDARD:
-                g.engine(StandardTraversalEngine.standard);
-                break;
-            case COMPUTER:
-                g.engine(ComputerTraversalEngine.computer);
-                break;
-            default:
-                throw new RuntimeException(String.format("%s is not supported as an engine - check %s [%s]",
-                        GraphManager.getTraversalEngineType(), this.getClass().getName(), this.name.getMethodName()));
-        }
+        g.engine(GraphManager.getTraversalEngine());
     }
 
     public <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {

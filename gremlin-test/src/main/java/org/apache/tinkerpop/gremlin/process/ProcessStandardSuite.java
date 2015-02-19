@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.TraversalSideEffectsTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.util.PathTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -167,7 +168,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
     }
 
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, TraversalEngine.Type.STANDARD);
+        super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, StandardTraversalEngine.standard);
     }
 
     @Override

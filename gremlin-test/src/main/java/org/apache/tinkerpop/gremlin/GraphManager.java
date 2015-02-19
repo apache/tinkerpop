@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.process.TraversalEngine;
  */
 public class GraphManager {
     private static GraphProvider graphProvider;
-    private static TraversalEngine.Type traversalEngineType;
+    private static TraversalEngine traversalEngine;
 
     public static GraphProvider setGraphProvider(final GraphProvider graphProvider) {
         final GraphProvider old = GraphManager.graphProvider;
@@ -39,13 +39,13 @@ public class GraphManager {
         return graphProvider;
     }
 
-    public static TraversalEngine.Type setTraversalEngineType(final TraversalEngine.Type traversalEngineType) {
-        final TraversalEngine.Type old = GraphManager.traversalEngineType;
-        GraphManager.traversalEngineType = traversalEngineType;
+    public static TraversalEngine setTraversalEngine(final TraversalEngine traversalEngine) {
+        final TraversalEngine old = GraphManager.traversalEngine;
+        GraphManager.traversalEngine = traversalEngine;
         return old;
     }
 
-    public static TraversalEngine.Type getTraversalEngineType() {
-        return traversalEngineType;
+    public static TraversalEngine getTraversalEngine() {
+        return traversalEngine;
     }
 }
