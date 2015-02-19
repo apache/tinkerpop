@@ -125,11 +125,11 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
         public Double generateFinalResult(final Iterator<KeyValue<Number, Long>> keyValues) {
             if (keyValues.hasNext()) {
                 KeyValue<Number, Long> pair = keyValues.next();
-                double result = pair.getKey().doubleValue();
+                double result = pair.getKey().doubleValue() * pair.getValue();
                 long counter = pair.getValue();
                 while (keyValues.hasNext()) {
                     pair = keyValues.next();
-                    result += pair.getKey().doubleValue();
+                    result += pair.getKey().doubleValue() * pair.getValue();
                     counter += pair.getValue();
                 }
                 return result / counter;
