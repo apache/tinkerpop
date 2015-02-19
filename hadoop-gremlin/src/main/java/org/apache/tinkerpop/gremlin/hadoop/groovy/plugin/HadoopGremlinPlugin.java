@@ -18,6 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.mapred.JobClient;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
@@ -34,11 +38,6 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFo
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.GroupCountMapReduce;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.mapred.JobClient;
-import org.apache.hadoop.mapreduce.Job;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -67,7 +66,6 @@ public class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT_SPACE + GraphSONInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + ScriptInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + HDFSTools.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT_SPACE + GroupCountMapReduce.class.getPackage().getName() + DOT_STAR);
         ////
         add(IMPORT_SPACE + GiraphGraphComputer.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + MapReduceGraphComputer.class.getPackage().getName() + DOT_STAR);
