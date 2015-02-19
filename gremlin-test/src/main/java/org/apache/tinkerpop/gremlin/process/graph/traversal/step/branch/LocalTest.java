@@ -198,7 +198,7 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends LocalTest {
+    public static class Traversals extends LocalTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {

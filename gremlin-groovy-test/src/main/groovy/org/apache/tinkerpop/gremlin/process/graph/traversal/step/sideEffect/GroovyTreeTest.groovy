@@ -35,7 +35,7 @@ import org.junit.Test
 public abstract class GroovyTreeTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends TreeTest {
+    public static class StandardTraversals extends TreeTest {
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX() {
@@ -64,7 +64,7 @@ public abstract class GroovyTreeTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends TreeTest {
+    public static class ComputerTraversals extends TreeTest {
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX() {

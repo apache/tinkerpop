@@ -228,7 +228,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends OrderTest {
+    public static class Traversals extends OrderTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_name_order() {

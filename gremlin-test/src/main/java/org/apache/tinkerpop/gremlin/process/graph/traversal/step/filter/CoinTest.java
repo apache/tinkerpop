@@ -70,7 +70,7 @@ public abstract class CoinTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends CoinTest {
+    public static class Traversals extends CoinTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX1X() {
             return g.V().coin(1.0d);

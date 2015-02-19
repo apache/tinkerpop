@@ -85,7 +85,7 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends InjectTest {
+    public static class Traversals extends InjectTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id) {

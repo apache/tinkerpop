@@ -35,7 +35,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.max
 public abstract class GroovyMaxTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends MaxTest {
+    public static class StandardTraversals extends MaxTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_max() {
@@ -54,7 +54,7 @@ public abstract class GroovyMaxTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends MaxTest {
+    public static class ComputerTraversals extends MaxTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_max() {

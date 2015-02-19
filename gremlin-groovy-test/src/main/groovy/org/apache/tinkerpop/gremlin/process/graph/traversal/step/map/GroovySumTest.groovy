@@ -34,7 +34,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.sum
 public abstract class GroovySumTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends SumTest {
+    public static class StandardTraversals extends SumTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_valuesXageX_sum() {
@@ -48,11 +48,11 @@ public abstract class GroovySumTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends SumTest {
+    public static class ComputerTraversals extends SumTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_valuesXageX_sum() {
-            ComputerTestHelper.compute("g.V.age.mean", g)
+            ComputerTestHelper.compute("g.V.age.sum", g)
         }
 
         @Override

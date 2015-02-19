@@ -39,7 +39,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.dedup
 public abstract class GroovyDedupTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends DedupTest {
+    public static class StandardTraversals extends DedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
             g.V.both.dedup.name
@@ -62,7 +62,7 @@ public abstract class GroovyDedupTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends DedupTest {
+    public static class ComputerTraversals extends DedupTest {
         @Override
         @Test
         @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")

@@ -73,7 +73,7 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends MaxTest {
+    public static class Traversals extends MaxTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_max() {

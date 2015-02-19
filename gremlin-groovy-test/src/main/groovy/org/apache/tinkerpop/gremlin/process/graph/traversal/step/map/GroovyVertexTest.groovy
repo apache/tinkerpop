@@ -34,7 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyVertexTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends VertexTest {
+    public static class StandardTraversals extends VertexTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V() {
@@ -164,7 +164,7 @@ public abstract class GroovyVertexTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends VertexTest {
+    public static class ComputerTraversals extends VertexTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V() {

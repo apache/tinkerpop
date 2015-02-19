@@ -34,7 +34,7 @@ import org.junit.Test
 public abstract class GroovyFoldTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends FoldTest {
+    public static class StandardTraversals extends FoldTest {
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_fold() {
             g.V.fold
@@ -52,7 +52,7 @@ public abstract class GroovyFoldTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends FoldTest {
+    public static class ComputerTraversals extends FoldTest {
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_fold() {
             ComputerTestHelper.compute("g.V.fold", g)

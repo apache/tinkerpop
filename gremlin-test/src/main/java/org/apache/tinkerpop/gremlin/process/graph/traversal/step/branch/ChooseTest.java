@@ -63,7 +63,7 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends ChooseTest {
+    public static class Traversals extends ChooseTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {

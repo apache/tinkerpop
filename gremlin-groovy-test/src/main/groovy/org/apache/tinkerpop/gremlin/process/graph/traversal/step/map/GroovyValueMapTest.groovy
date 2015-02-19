@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyValueMapTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends ValueMapTest {
+    public static class StandardTraversals extends ValueMapTest {
         @Override
         public Traversal<Vertex, Map<String, List>> get_g_V_valueMap() {
             g.V.valueMap
@@ -49,7 +49,7 @@ public abstract class GroovyValueMapTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends ValueMapTest {
+    public static class ComputerTraversals extends ValueMapTest {
         @Override
         public Traversal<Vertex, Map<String, List>> get_g_V_valueMap() {
             ComputerTestHelper.compute("g.V.valueMap", g);

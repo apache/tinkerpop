@@ -96,7 +96,7 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends IsTest {
+    public static class Traversals extends IsTest {
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isX32X() {
             return g.V().<Integer>values("age").is(32);

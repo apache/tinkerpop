@@ -34,7 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyExceptTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends ExceptTest {
+    public static class StandardTraversals extends ExceptTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_exceptXg_v2X(final Object v1Id, final Object v2Id) {
@@ -74,7 +74,7 @@ public abstract class GroovyExceptTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends ExceptTest {
+    public static class ComputerTraversals extends ExceptTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_exceptXg_v2X(final Object v1Id, final Object v2Id) {

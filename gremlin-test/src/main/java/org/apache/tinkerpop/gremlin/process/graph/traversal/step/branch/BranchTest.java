@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.label;
@@ -47,18 +46,22 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
-        final List<Traversal<Vertex, Object>> traversals = Arrays.asList(
-                get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX(),
-                get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX());
-        traversals.forEach(traversal -> {
-            printTraversalForm(traversal);
-            checkResults(Arrays.asList("java", "java", "lop", "ripple", 29, 27, 32, 35), traversal);
-        });
+        Traversal<Vertex, Object> traversal = get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("java", "java", "lop", "ripple", 29, 27, 32, 35), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
+        Traversal<Vertex, Object> traversal = get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("java", "java", "lop", "ripple", 29, 27, 32, 35), traversal);
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends BranchTest {
+    public static class Traversals extends BranchTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {

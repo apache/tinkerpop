@@ -49,7 +49,7 @@ public abstract class TraversalSideEffectsTest extends AbstractGremlinProcessTes
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends TraversalSideEffectsTest {
+    public static class Traversals extends TraversalSideEffectsTest {
         @Override
         public TraversalSideEffects get_g_V_asAdmin_getSideEffects() {
             return g.V().asAdmin().getSideEffects();

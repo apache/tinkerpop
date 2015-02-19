@@ -488,7 +488,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends VertexTest {
+    public static class Traversals extends VertexTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V() {
             return g.V();

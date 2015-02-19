@@ -35,7 +35,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.label
 public abstract class GroovyBranchTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends BranchTest {
+    public static class StandardTraversals extends BranchTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
@@ -55,7 +55,7 @@ public abstract class GroovyBranchTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends BranchTest {
+    public static class ComputerTraversals extends BranchTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {

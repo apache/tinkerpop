@@ -35,7 +35,7 @@ import org.junit.Test
 public abstract class GroovyPathTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends PathTest {
+    public static class StandardTraversals extends PathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_name_path(final Object v1Id) {
@@ -64,7 +64,7 @@ public abstract class GroovyPathTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends PathTest {
+    public static class ComputerTraversals extends PathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_name_path(final Object v1Id) {

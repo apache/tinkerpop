@@ -37,7 +37,7 @@ import org.junit.Test
 public abstract class GroovyWhereTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends WhereTest {
+    public static class StandardTraversals extends WhereTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
             g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', Compare.eq, 'b');
@@ -60,7 +60,7 @@ public abstract class GroovyWhereTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends WhereTest {
+    public static class ComputerTraversals extends WhereTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
             ComputerTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', Compare.eq, 'b')", g);

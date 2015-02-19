@@ -38,7 +38,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.outE
 public abstract class GroovyCoalesceTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends CoalesceTest {
+    public static class StandardTraversals extends CoalesceTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coalesceXoutXfooX_outXbarXX() {
@@ -67,7 +67,7 @@ public abstract class GroovyCoalesceTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends CoalesceTest {
+    public static class ComputerTraversals extends CoalesceTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coalesceXoutXfooX_outXbarXX() {

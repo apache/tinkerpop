@@ -116,7 +116,7 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends AddEdgeTest {
+    public static class Traversals extends AddEdgeTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(final Object v1Id) {

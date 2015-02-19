@@ -140,7 +140,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends GroupTest {
+    public static class Traversals extends GroupTest {
 
         @Override
         public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX() {

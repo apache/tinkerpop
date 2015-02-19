@@ -37,7 +37,7 @@ import static org.apache.tinkerpop.gremlin.structure.Compare.gte
 public abstract class GroovyAndTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends AndTest {
+    public static class StandardTraversals extends AndTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_andXhasXage_gt_27X__outE_count_gt_2X_name() {
@@ -51,7 +51,7 @@ public abstract class GroovyAndTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends AndTest {
+    public static class ComputerTraversals extends AndTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_andXhasXage_gt_27X__outE_count_gt_2X_name() {

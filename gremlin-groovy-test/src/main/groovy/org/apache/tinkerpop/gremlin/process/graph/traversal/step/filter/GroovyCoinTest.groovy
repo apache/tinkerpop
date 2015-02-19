@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyCoinTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends CoinTest {
+    public static class StandardTraversals extends CoinTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX1X() {
@@ -45,7 +45,7 @@ public abstract class GroovyCoinTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends CoinTest {
+    public static class ComputerTraversals extends CoinTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX1X() {

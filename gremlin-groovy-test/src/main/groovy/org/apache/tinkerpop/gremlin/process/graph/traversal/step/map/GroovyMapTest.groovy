@@ -34,7 +34,7 @@ import org.junit.Test
 public abstract class GroovyMapTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends MapTest {
+    public static class StandardTraversals extends MapTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_mapXnameX(final Object v1Id) {
@@ -63,7 +63,7 @@ public abstract class GroovyMapTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends MapTest {
+    public static class ComputerTraversals extends MapTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_mapXnameX(final Object v1Id) {

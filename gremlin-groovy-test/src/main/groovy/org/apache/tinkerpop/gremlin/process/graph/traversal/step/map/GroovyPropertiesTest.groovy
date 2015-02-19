@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyPropertiesTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends PropertiesTest {
+    public static class StandardTraversals extends PropertiesTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXname_ageX_value() {
@@ -45,7 +45,7 @@ public abstract class GroovyPropertiesTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends PropertiesTest {
+    public static class ComputerTraversals extends PropertiesTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXname_ageX_value() {

@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyAddEdgeTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends AddEdgeTest {
+    public static class StandardTraversals extends AddEdgeTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(

@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyAggregateTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends AggregateTest {
+    public static class StandardTraversals extends AggregateTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {
@@ -51,7 +51,7 @@ public abstract class GroovyAggregateTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends AggregateTest {
+    public static class ComputerTraversals extends AggregateTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {

@@ -119,7 +119,7 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends SampleTest {
+    public static class Traversals extends SampleTest {
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX1X() {
             return g.E().sample(1);

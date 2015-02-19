@@ -33,7 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovySimplePathTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends SimplePathTest {
+    public static class StandardTraversals extends SimplePathTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
@@ -47,7 +47,7 @@ public abstract class GroovySimplePathTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends SimplePathTest {
+    public static class ComputerTraversals extends SimplePathTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {

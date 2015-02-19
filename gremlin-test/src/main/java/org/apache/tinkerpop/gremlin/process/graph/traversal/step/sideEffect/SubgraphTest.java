@@ -101,7 +101,7 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends SubgraphTest {
+    public static class Traversals extends SubgraphTest {
 
         @Override
         public Traversal<Vertex, Graph> get_g_V_withSideEffectXsgX_outEXknowsX_subgraphXsgX_name_capXsgX(final Object v1Id, final Graph subgraph) {

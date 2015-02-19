@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyFilterTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends FilterTest {
+    public static class StandardTraversals extends FilterTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
@@ -76,7 +76,7 @@ public abstract class GroovyFilterTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends FilterTest {
+    public static class ComputerTraversals extends FilterTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {

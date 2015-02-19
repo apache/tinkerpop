@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyCyclicPathTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends CyclicPathTest {
+    public static class StandardTraversals extends CyclicPathTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
@@ -46,7 +46,7 @@ public abstract class GroovyCyclicPathTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends CyclicPathTest {
+    public static class ComputerTraversals extends CyclicPathTest {
 
         @Override
         Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath(final Object v1) {

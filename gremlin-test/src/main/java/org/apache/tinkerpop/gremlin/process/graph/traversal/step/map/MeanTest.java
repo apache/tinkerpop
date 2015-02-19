@@ -73,7 +73,7 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends MeanTest {
+    public static class Traversals extends MeanTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_age_mean() {

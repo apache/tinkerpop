@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyGroupCountTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends GroupCountTest {
+    public static class StandardTraversals extends GroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
@@ -68,7 +68,7 @@ public abstract class GroovyGroupCountTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends GroupCountTest {
+    public static class ComputerTraversals extends GroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {

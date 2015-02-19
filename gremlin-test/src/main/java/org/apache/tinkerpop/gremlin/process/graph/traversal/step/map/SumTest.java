@@ -68,7 +68,7 @@ public abstract class SumTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends SumTest {
+    public static class Traversals extends SumTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_valuesXageX_sum() {

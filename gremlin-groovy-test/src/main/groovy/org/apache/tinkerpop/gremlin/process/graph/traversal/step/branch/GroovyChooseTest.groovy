@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyChooseTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends ChooseTest {
+    public static class StandardTraversals extends ChooseTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {
@@ -41,7 +41,7 @@ public abstract class GroovyChooseTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends ChooseTest {
+    public static class ComputerTraversals extends ChooseTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {

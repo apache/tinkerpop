@@ -127,7 +127,7 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends CoalesceTest {
+    public static class Traversals extends CoalesceTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coalesceXoutXfooX_outXbarXX() {
             return g.V().coalesce(out("foo"), out("bar"));

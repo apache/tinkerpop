@@ -126,7 +126,7 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends ValueMapTest {
+    public static class Traversals extends ValueMapTest {
         @Override
         public Traversal<Vertex, Map<String, List>> get_g_V_valueMap() {
             return g.V().valueMap();

@@ -125,7 +125,7 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends AggregateTest {
+    public static class Traversals extends AggregateTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {

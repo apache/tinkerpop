@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyUnfoldTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends UnfoldTest {
+    public static class StandardTraversals extends UnfoldTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold() {
@@ -46,7 +46,7 @@ public abstract class GroovyUnfoldTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends UnfoldTest {
+    public static class ComputerTraversals extends UnfoldTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold() {

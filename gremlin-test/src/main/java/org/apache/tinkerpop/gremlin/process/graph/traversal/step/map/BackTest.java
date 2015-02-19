@@ -170,7 +170,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends BackTest {
+    public static class Traversals extends BackTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_asXhereX_out_backXhereX(final Object v1Id) {
             return g.V(v1Id).as("here").out().back("here");

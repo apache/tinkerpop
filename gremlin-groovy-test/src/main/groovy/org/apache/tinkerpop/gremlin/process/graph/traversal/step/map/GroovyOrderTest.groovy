@@ -35,7 +35,7 @@ import org.junit.Test
 public abstract class GroovyOrderTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends OrderTest {
+    public static class StandardTraversals extends OrderTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_name_order() {
@@ -92,7 +92,7 @@ public abstract class GroovyOrderTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends OrderTest {
+    public static class ComputerTraversals extends OrderTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_name_order() {

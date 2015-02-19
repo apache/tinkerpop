@@ -124,7 +124,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends GroupCountTest {
+    public static class Traversals extends GroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {

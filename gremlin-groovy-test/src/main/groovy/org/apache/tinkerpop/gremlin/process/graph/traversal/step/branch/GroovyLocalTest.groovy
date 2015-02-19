@@ -36,7 +36,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 public abstract class GroovyLocalTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends LocalTest {
+    public static class StandardTraversals extends LocalTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
@@ -90,7 +90,7 @@ public abstract class GroovyLocalTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends LocalTest {
+    public static class ComputerTraversals extends LocalTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {

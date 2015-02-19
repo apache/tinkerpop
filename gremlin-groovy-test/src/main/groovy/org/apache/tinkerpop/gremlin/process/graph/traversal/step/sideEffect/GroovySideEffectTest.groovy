@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovySideEffectTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends SideEffectTest {
+    public static class StandardTraversals extends SideEffectTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_sideEffectXstore_aX_name(final Object v1Id) {

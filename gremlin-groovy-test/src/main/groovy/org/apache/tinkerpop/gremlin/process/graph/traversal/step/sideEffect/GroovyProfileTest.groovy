@@ -34,7 +34,7 @@ import org.junit.Ignore
 public abstract class GroovyProfileTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends ProfileTest {
+    public static class StandardTraversals extends ProfileTest {
 
         @Override
         Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile() {
@@ -58,7 +58,7 @@ public abstract class GroovyProfileTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends ProfileTest {
+    public static class ComputerTraversals extends ProfileTest {
 
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile() {

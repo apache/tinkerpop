@@ -40,7 +40,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.sample
 public abstract class GroovySampleTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends SampleTest {
+    public static class StandardTraversals extends SampleTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX1X() {
@@ -69,7 +69,7 @@ public abstract class GroovySampleTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends SampleTest {
+    public static class ComputerTraversals extends SampleTest {
 
         @Override
         @Test

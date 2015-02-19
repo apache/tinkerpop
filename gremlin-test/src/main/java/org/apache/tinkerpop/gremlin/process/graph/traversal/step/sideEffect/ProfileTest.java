@@ -192,7 +192,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends ProfileTest {
+    public static class Traversals extends ProfileTest {
 
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile() {

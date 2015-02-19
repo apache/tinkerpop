@@ -174,7 +174,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends FilterTest {
+    public static class Traversals extends FilterTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {

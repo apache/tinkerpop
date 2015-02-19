@@ -113,7 +113,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends StoreTest {
+    public static class Traversals extends StoreTest {
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX() {
             return g.V().store("a").by("name").out().cap("a");

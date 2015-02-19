@@ -34,7 +34,7 @@ import org.junit.Test
 public abstract class GroovyRangeTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends RangeTest {
+    public static class StandardTraversals extends RangeTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_limitX2X(final Object v1Id) {
@@ -83,7 +83,7 @@ public abstract class GroovyRangeTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends RangeTest {
+    public static class ComputerTraversals extends RangeTest {
 
         @Override
         @Test

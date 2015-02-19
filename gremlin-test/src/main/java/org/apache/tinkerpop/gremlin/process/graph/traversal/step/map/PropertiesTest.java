@@ -50,7 +50,7 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends PropertiesTest {
+    public static class Traversals extends PropertiesTest {
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXname_ageX_value() {
             return g.V().has("age").properties("name", "age").value();

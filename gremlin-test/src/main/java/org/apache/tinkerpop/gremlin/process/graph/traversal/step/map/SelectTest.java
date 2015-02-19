@@ -251,7 +251,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends SelectTest {
+    public static class Traversals extends SelectTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
             return g.V(v1Id).as("a").out("knows").as("b").select();

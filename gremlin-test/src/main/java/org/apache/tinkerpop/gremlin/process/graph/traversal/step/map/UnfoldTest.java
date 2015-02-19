@@ -94,7 +94,7 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends UnfoldTest {
+    public static class Traversals extends UnfoldTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold() {

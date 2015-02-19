@@ -128,7 +128,7 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends CountTest {
+    public static class Traversals extends CountTest {
 
         @Override
         public Traversal<Vertex, Long> get_g_V_count() {

@@ -214,7 +214,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends RangeTest {
+    public static class Traversals extends RangeTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_limitX2X(final Object v1Id) {
             return g.V(v1Id).out().limit(2);

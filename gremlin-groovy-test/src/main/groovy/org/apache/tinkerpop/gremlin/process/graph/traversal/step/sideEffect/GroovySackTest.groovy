@@ -33,7 +33,7 @@ import static org.apache.tinkerpop.gremlin.structure.Operator.sum
 public abstract class GroovySackTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends SackTest {
+    public static class StandardTraversals extends SackTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {
@@ -52,7 +52,7 @@ public abstract class GroovySackTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends SackTest {
+    public static class ComputerTraversals extends SackTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {

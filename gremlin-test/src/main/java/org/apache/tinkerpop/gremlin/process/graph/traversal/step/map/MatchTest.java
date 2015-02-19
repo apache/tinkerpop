@@ -649,7 +649,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends MatchTest {
+    public static class Traversals extends MatchTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX() {
             return g.V().match("a", as("a").out().as("b"));

@@ -35,7 +35,7 @@ import org.junit.Test
 public abstract class GroovyCountTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends CountTest {
+    public static class StandardTraversals extends CountTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_count() {
             g.V.count()
@@ -73,7 +73,7 @@ public abstract class GroovyCountTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends CountTest {
+    public static class ComputerTraversals extends CountTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_count() {
             ComputerTestHelper.compute("g.V.count()", g)

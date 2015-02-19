@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyRetainTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends RetainTest {
+    public static class StandardTraversals extends RetainTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_retainXg_v2X(final Object v1Id, final Object v2Id) {
             g.V(v1Id).out.retain(g.V(v2Id).next())
@@ -49,7 +49,7 @@ public abstract class GroovyRetainTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends RetainTest {
+    public static class ComputerTraversals extends RetainTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_retainXg_v2X(final Object v1Id, final Object v2Id) {
             ComputerTestHelper.compute("g.V(${v1Id}).out.retain(g.V($v2Id).next())", g);

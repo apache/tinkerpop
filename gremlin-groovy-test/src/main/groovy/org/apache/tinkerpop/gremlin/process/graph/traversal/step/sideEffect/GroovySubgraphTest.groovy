@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 public abstract class GroovySubgraphTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends SubgraphTest {
+    public static class StandardTraversals extends SubgraphTest {
 
         @Override
         public Traversal<Vertex, Graph> get_g_V_withSideEffectXsgX_outEXknowsX_subgraphXsgX_name_capXsgX(

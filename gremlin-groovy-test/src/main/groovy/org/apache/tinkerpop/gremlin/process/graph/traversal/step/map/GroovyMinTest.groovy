@@ -35,7 +35,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.min
 public abstract class GroovyMinTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends MinTest {
+    public static class StandardTraversals extends MinTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_min() {
@@ -54,7 +54,7 @@ public abstract class GroovyMinTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends MinTest {
+    public static class ComputerTraversals extends MinTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_min() {

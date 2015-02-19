@@ -37,7 +37,7 @@ import static org.apache.tinkerpop.gremlin.structure.Compare.gte
 public abstract class GroovyOrTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends OrTest {
+    public static class StandardTraversals extends OrTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name() {
@@ -51,7 +51,7 @@ public abstract class GroovyOrTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends OrTest {
+    public static class ComputerTraversals extends OrTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name() {

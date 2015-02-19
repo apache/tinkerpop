@@ -73,7 +73,7 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends MinTest {
+    public static class Traversals extends MinTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_min() {

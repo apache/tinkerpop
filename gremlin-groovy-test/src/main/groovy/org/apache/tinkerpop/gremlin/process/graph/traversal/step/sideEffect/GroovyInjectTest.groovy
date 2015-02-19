@@ -18,13 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
 import org.apache.tinkerpop.gremlin.process.Path
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectTest
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
 
@@ -34,7 +31,7 @@ import org.junit.Test
 public abstract class GroovyInjectTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends InjectTest {
+    public static class StandardTraversals extends InjectTest {
         @Override
         public Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
             g.V(v1Id).out.inject(g.V(v2Id).next()).name
@@ -47,7 +44,7 @@ public abstract class GroovyInjectTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends InjectTest {
+    public static class ComputerTraversals extends InjectTest {
         @Override
         @Test
         @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")

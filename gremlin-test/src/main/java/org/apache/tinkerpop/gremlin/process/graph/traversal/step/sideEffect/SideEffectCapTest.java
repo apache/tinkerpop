@@ -79,7 +79,7 @@ public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends SideEffectCapTest {
+    public static class Traversals extends SideEffectCapTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX() {
             return g.V().has("age").groupCount("a").by("name").out().cap("a");

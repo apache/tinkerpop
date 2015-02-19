@@ -35,7 +35,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*
 public abstract class GroovyUnionTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends UnionTest {
+    public static class StandardTraversals extends UnionTest {
 
         public Traversal<Vertex, String> get_g_V_unionXout__inX_name() {
             g.V.union(__.out, __.in).name
@@ -72,7 +72,7 @@ public abstract class GroovyUnionTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends UnionTest {
+    public static class ComputerTraversals extends UnionTest {
 
         public Traversal<Vertex, String> get_g_V_unionXout__inX_name() {
             ComputerTestHelper.compute("g.V.union(__.out, __.in).name", g)

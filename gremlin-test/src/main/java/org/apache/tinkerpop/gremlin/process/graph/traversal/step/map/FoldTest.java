@@ -89,7 +89,7 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends FoldTest {
+    public static class Traversals extends FoldTest {
 
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_fold() {

@@ -83,7 +83,7 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends SackTest {
+    public static class Traversals extends SackTest {
         @Override
         public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {
             return g.V().withSack(0.0f).outE().sack(Operator.sum, "weight").inV().sack().sum();

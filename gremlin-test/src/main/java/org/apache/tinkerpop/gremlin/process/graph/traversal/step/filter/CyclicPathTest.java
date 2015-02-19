@@ -72,7 +72,7 @@ public abstract class CyclicPathTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends CyclicPathTest {
+    public static class Traversals extends CyclicPathTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
             return g.V(v1Id).out("created").in("created").cyclicPath();

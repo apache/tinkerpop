@@ -34,7 +34,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.mean
 public abstract class GroovyMeanTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends MeanTest {
+    public static class StandardTraversals extends MeanTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_age_mean() {
@@ -48,7 +48,7 @@ public abstract class GroovyMeanTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends MeanTest {
+    public static class ComputerTraversals extends MeanTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_age_mean() {

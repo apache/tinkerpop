@@ -78,7 +78,7 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends HasNotTest {
+    public static class Traversals extends HasNotTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasNotXprop(final Object v1Id, final String propertyKey) {

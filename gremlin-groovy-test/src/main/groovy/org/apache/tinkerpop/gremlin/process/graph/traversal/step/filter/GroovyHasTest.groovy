@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 public abstract class GroovyHasTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends HasTest {
+    public static class StandardTraversals extends HasTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
@@ -111,7 +111,7 @@ public abstract class GroovyHasTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends HasTest {
+    public static class ComputerTraversals extends HasTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {

@@ -104,6 +104,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_exceptXg_V_toListX() {
         Traversal<Vertex, Vertex> traversal = get_g_V_exceptXg_V_toListX();
         printTraversalForm(traversal);

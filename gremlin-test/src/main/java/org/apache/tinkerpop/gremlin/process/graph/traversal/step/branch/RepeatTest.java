@@ -222,7 +222,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends RepeatTest {
+    public static class Traversals extends RepeatTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_emit_path() {

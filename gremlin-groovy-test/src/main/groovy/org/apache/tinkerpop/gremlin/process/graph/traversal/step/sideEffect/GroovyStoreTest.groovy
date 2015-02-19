@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyStoreTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends StoreTest {
+    public static class StandardTraversals extends StoreTest {
 
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX() {
@@ -58,7 +58,7 @@ public abstract class GroovyStoreTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends StoreTest {
+    public static class ComputerTraversals extends StoreTest {
 
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX() {

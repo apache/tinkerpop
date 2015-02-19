@@ -133,7 +133,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends PathTest {
+    public static class Traversals extends PathTest {
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_name_path(final Object v1Id) {
             return g.V(v1Id).values("name").path();

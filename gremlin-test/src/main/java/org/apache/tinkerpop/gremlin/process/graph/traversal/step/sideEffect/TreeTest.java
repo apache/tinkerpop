@@ -106,7 +106,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends TreeTest {
+    public static class Traversals extends TreeTest {
         @Override
         public Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id) {
             return (Traversal) g.V(v1Id).out().out().tree().by("name");

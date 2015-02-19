@@ -36,7 +36,7 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*;
 public abstract class GroovyRepeatTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTest extends RepeatTest {
+    public static class StandardTraversals extends RepeatTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_emit_path() {
@@ -85,7 +85,7 @@ public abstract class GroovyRepeatTest {
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTest extends RepeatTest {
+    public static class ComputerTraversals extends RepeatTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_emit_path() {
             ComputerTestHelper.compute("g.V.repeat(__.out).times(2).emit.path", g)

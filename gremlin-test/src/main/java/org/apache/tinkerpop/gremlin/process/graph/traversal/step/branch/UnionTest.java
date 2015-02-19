@@ -154,7 +154,7 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends UnionTest {
+    public static class Traversals extends UnionTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_unionXout__inX_name() {

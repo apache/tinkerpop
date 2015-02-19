@@ -118,7 +118,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends DedupTest {
+    public static class Traversals extends DedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
             return g.V().both().dedup().values("name");

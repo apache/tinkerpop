@@ -63,7 +63,7 @@ public abstract class OrTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends OrTest {
+    public static class Traversals extends OrTest {
         @Override
         public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name() {
             return g.V().or(has("age", gt, 27), outE().count().is(gte, 2l)).values("name");

@@ -248,7 +248,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends HasTest {
+    public static class Traversals extends HasTest {
         @Override
         public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
             return g.V().out("knows").has(out("created")).values("name");
