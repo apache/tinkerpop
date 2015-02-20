@@ -107,7 +107,7 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
 
     public static final class GroupCountSideEffectMapReduce<E> extends StaticMapReduce<E, Long, E, Long, Map<E, Long>> {
 
-        public static final String GROUP_COUNT_STEP_SIDE_EFFECT_KEY = "gremlin.groupCountStep.sideEffectKey";
+        public static final String GROUP_COUNT_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY = "gremlin.groupCountSideEffectStep.sideEffectKey";
 
         private String sideEffectKey;
         private Supplier<Map<E, Long>> mapSupplier;
@@ -124,12 +124,12 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
         @Override
         public void storeState(final Configuration configuration) {
             super.storeState(configuration);
-            configuration.setProperty(GROUP_COUNT_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
+            configuration.setProperty(GROUP_COUNT_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
         }
 
         @Override
         public void loadState(final Configuration configuration) {
-            this.sideEffectKey = configuration.getString(GROUP_COUNT_STEP_SIDE_EFFECT_KEY);
+            this.sideEffectKey = configuration.getString(GROUP_COUNT_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY);
             this.mapSupplier = TraversalVertexProgram.getTraversalSupplier(configuration).get().getSideEffects().<Map<E, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
         }
 

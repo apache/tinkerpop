@@ -49,7 +49,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements MapReducer, TraversalParent {
+public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements MapReducer, TraversalParent {
 
     private TraversalRing<Object, Object> traversalRing = new TraversalRing<>();
 
