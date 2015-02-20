@@ -46,6 +46,11 @@ public interface TraversalMetrics {
     public static final String TRAVERSER_COUNT_ID = "traverserCount";
 
     /**
+     * The annotation key used to obtain the percent duration via Metrics.getAnnotation(String key)
+     */
+    public static final String PERCENT_DURATION_KEY = "percentDur";
+
+    /**
      * Get the total duration taken by the Traversal.
      *
      * @param unit

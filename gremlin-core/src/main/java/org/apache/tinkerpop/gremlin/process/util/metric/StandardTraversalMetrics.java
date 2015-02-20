@@ -123,10 +123,10 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
             final long itemCount = m.getCount(TraversalMetrics.ELEMENT_COUNT_ID);
             final long traverserCount = m.getCount(TraversalMetrics.TRAVERSER_COUNT_ID);
 
-            String percentDur = m.getAnnotation(Metrics.PERCENT_DURATION_KEY);
+            Double percentDur = (Double) m.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY);
             if (percentDur != null) {
                 sb.append(String.format("%n%-50s %21d %11d %15.3f %8.2f",
-                        rowName, itemCount, traverserCount, m.getDuration(TimeUnit.MICROSECONDS) / 1000.0, Double.parseDouble(percentDur)));
+                        rowName, itemCount, traverserCount, m.getDuration(TimeUnit.MICROSECONDS) / 1000.0, percentDur));
             } else {
                 sb.append(String.format("%n%-50s %21d %11d %15.3f",
                         rowName, itemCount, traverserCount, m.getDuration(TimeUnit.MICROSECONDS) / 1000.0));
@@ -155,7 +155,7 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
         // Assign %'s
         tempMetrics.forEach(m -> {
             double dur = m.getDuration(TimeUnit.NANOSECONDS) * 100.d / this.totalStepDuration;
-            m.setAnnotation(Metrics.PERCENT_DURATION_KEY, String.valueOf(dur));
+            m.setAnnotation(TraversalMetrics.PERCENT_DURATION_KEY, dur);
         });
 
         // Store immutable instances of the calculated metrics

@@ -37,7 +37,7 @@ public class ImmutableMetrics implements Metrics, Serializable {
     protected String name;
     protected Map<String, AtomicLong> counts = new HashMap<>();
     protected long durationNs = 0l;
-    protected final Map<String, String> annotations = new HashMap<>();
+    protected final Map<String, Object> annotations = new HashMap<>();
     protected final Map<String, ImmutableMetrics> nested = new LinkedHashMap<>();
 
     protected ImmutableMetrics() {
@@ -82,12 +82,12 @@ public class ImmutableMetrics implements Metrics, Serializable {
     }
 
     @Override
-    public Map<String, String> getAnnotations() {
+    public Map<String, Object> getAnnotations() {
         return annotations;
     }
 
     @Override
-    public String getAnnotation(final String key) {
+    public Object getAnnotation(final String key) {
         return annotations.get(key);
     }
 

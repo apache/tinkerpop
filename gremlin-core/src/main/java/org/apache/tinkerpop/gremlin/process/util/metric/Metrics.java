@@ -33,10 +33,6 @@ public interface Metrics {
 
 
 
-    /**
-     * The annotation key used to obtain the percent duration via Metrics.getAnnotation(String key)
-     */
-    public static final String PERCENT_DURATION_KEY = "percentDur";
 
     /**
      * Get the duration of execution time taken.
@@ -92,17 +88,17 @@ public interface Metrics {
     Metrics getNested(String metricsId);
 
     /**
-     * Obtain the annotations for this Metrics.
+     * Obtain the annotations for this Metrics. Values may be of type String or Number.
      *
      * @return the annotations for this Metrics. Modifications to the returned object are persisted in the original.
      */
-    public Map<String, String> getAnnotations();
+    public Map<String, Object> getAnnotations();
 
     /**
-     * Obtain the annotation with the specified key.
+     * Obtain the annotation with the specified key. Values may be of type String or Number.
      *
      * @param key key of the annotation to obtain.
      * @return
      */
-    public String getAnnotation(String key);
+    public Object getAnnotation(String key);
 }
