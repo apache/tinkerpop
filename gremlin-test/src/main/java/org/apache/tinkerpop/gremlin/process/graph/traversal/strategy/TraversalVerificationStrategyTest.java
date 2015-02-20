@@ -76,7 +76,6 @@ public abstract class TraversalVerificationStrategyTest extends AbstractGremlinP
         @Test
         @LoadGraphWith(MODERN)
         public void shouldNotAllowNestedGlobalTraversalToHaveBarriers() {
-            g.engine(ComputerTraversalEngine.computer);
             try {
                 final GraphTraversal t = g.V().values("age").union(max(), min(), sum()).iterate();
                 fail("Nested global traversals should not be allowed to contain barriers (COMPUTER): " + t);
@@ -88,7 +87,6 @@ public abstract class TraversalVerificationStrategyTest extends AbstractGremlinP
         @Test
         @LoadGraphWith(MODERN)
         public void shouldNotAllowMidTraversalBarriersOnComputer() {
-            g.engine(ComputerTraversalEngine.computer);
             try {
                 final GraphTraversal t = g.V().count().sum().iterate();
                 fail("Mid-traversal barrier steps are not allowed (COMPUTER): " + t);
@@ -107,7 +105,6 @@ public abstract class TraversalVerificationStrategyTest extends AbstractGremlinP
         @Test
         @LoadGraphWith(MODERN)
         public void shouldNotAllowLocalTraversalsToLeaveTheStarGraphOnComputer() {
-            g.engine(ComputerTraversalEngine.computer);
             try {
                 final GraphTraversal t = g.V().local(out().out()).iterate();
                 fail("Local traversals should not be allowed to leave the star-graph (COMPUTER): " + t);

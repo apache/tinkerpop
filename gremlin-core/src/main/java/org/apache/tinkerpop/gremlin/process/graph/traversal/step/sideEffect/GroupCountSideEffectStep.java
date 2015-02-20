@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
 import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -51,7 +50,7 @@ import java.util.function.Supplier;
  */
 public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> implements SideEffectCapable, Reversible, TraversalParent, MapReducer<E, Long, E, Long, Map<E, Long>> {
 
-    private Traversal.Admin<S, E> groupTraversal = new IdentityTraversal<>();
+    private Traversal.Admin<S, E> groupTraversal = null;
     private String sideEffectKey;
 
     public GroupCountSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
@@ -63,7 +62,7 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         final Map<Object, Long> groupCountMap = traverser.sideEffects(this.sideEffectKey);
-        MapHelper.incr(groupCountMap, TraversalUtil.apply(traverser.asAdmin(), this.groupTraversal), traverser.bulk());
+        MapHelper.incr(groupCountMap, TraversalUtil.applyNullable(traverser.asAdmin(), this.groupTraversal), traverser.bulk());
     }
 
     @Override
@@ -82,13 +81,13 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> traversal) {
-        this.groupTraversal = this.integrateChild(traversal);
+    public void addLocalChild(final Traversal.Admin<?, ?> groupTraversal) {
+        this.groupTraversal = this.integrateChild(groupTraversal);
     }
 
     @Override
     public List<Traversal.Admin<S, E>> getLocalChildren() {
-        return Collections.singletonList(this.groupTraversal);
+        return null == this.groupTraversal ? Collections.emptyList() : Collections.singletonList(this.groupTraversal);
     }
 
     @Override
@@ -99,7 +98,8 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
     @Override
     public GroupCountSideEffectStep<S, E> clone() throws CloneNotSupportedException {
         final GroupCountSideEffectStep<S, E> clone = (GroupCountSideEffectStep<S, E>) super.clone();
-        clone.groupTraversal = this.integrateChild(this.groupTraversal.clone());
+        if (null != this.groupTraversal)
+            clone.groupTraversal = clone.integrateChild(this.groupTraversal.clone());
         return clone;
     }
 

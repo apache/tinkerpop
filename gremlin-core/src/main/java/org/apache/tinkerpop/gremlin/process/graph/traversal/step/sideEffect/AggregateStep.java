@@ -18,32 +18,39 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.AggregateMapReduce;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class AggregateStep<S> extends CollectingBarrierStep<S> implements SideEffectCapable, Reversible, TraversalParent, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
 
-    private Traversal.Admin<S, Object> aggregateTraversal = new IdentityTraversal<>();
+    private Traversal.Admin<S, Object> aggregateTraversal = null;
     private String sideEffectKey;
 
     public AggregateStep(final Traversal.Admin traversal, final String sideEffectKey) {
@@ -68,13 +75,13 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> traversal) {
-        this.aggregateTraversal = this.integrateChild(traversal);
+    public void addLocalChild(final Traversal.Admin<?, ?> aggregateTraversal) {
+        this.aggregateTraversal = this.integrateChild(aggregateTraversal);
     }
 
     @Override
     public List<Traversal.Admin<S, Object>> getLocalChildren() {
-        return Collections.singletonList(this.aggregateTraversal);
+        return null == this.aggregateTraversal ? Collections.emptyList() : Collections.singletonList(this.aggregateTraversal);
     }
 
     @Override
@@ -82,7 +89,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
         traverserSet.forEach(traverser ->
                 TraversalHelper.addToCollection(
                         traverser.getSideEffects().get(this.sideEffectKey),
-                        TraversalUtil.apply(traverser, this.aggregateTraversal),
+                        TraversalUtil.applyNullable(traverser, this.aggregateTraversal),
                         traverser.bulk()));
     }
 
@@ -94,7 +101,61 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     @Override
     public AggregateStep<S> clone() throws CloneNotSupportedException {
         final AggregateStep<S> clone = (AggregateStep<S>) super.clone();
-        clone.aggregateTraversal = this.integrateChild(this.aggregateTraversal.clone());
+        if (null != this.aggregateTraversal)
+            clone.aggregateTraversal = clone.integrateChild(this.aggregateTraversal.clone());
         return clone;
+    }
+
+    ////////
+
+    public static final class AggregateMapReduce extends StaticMapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
+
+        public static final String AGGREGATE_STEP_SIDE_EFFECT_KEY = "gremlin.aggregateStep.sideEffectKey";
+
+        private String sideEffectKey;
+        private Supplier<Collection> collectionSupplier;
+
+        private AggregateMapReduce() {
+
+        }
+
+        public AggregateMapReduce(final AggregateStep step) {
+            this.sideEffectKey = step.getSideEffectKey();
+            this.collectionSupplier = step.getTraversal().asAdmin().getSideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
+        }
+
+        @Override
+        public void storeState(final Configuration configuration) {
+            super.storeState(configuration);
+            configuration.setProperty(AGGREGATE_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
+        }
+
+        @Override
+        public void loadState(final Configuration configuration) {
+            this.sideEffectKey = configuration.getString(AGGREGATE_STEP_SIDE_EFFECT_KEY);
+            this.collectionSupplier = TraversalVertexProgram.getTraversalSupplier(configuration).get().getSideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
+        }
+
+        @Override
+        public boolean doStage(final Stage stage) {
+            return stage.equals(Stage.MAP);
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
+            VertexTraversalSideEffects.of(vertex).<Collection<?>>orElse(this.sideEffectKey, Collections.emptyList()).forEach(emitter::emit);
+        }
+
+        @Override
+        public Collection generateFinalResult(final Iterator<KeyValue<NullObject, Object>> keyValues) {
+            final Collection collection = this.collectionSupplier.get();
+            keyValues.forEachRemaining(keyValue -> collection.add(keyValue.getValue()));
+            return collection;
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return this.sideEffectKey;
+        }
     }
 }

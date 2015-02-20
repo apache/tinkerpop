@@ -18,23 +18,27 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Path;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.SideEffectCapable;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.TreeMapReduce;
 import org.apache.tinkerpop.gremlin.process.graph.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
-import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.TreeSupplier;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -111,4 +115,55 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
     }
+
+    ////////////////
+
+    public static final class TreeMapReduce extends StaticMapReduce<Object, Tree, Object, Tree, Tree> {
+
+        public static final String TREE_STEP_SIDE_EFFECT_KEY = "gremlin.treeStep.sideEffectKey";
+
+        private String sideEffectKey;
+
+        private TreeMapReduce() {
+
+        }
+
+        public TreeMapReduce(final TreeStep step) {
+            this.sideEffectKey = step.getSideEffectKey();
+        }
+
+        @Override
+        public void storeState(final Configuration configuration) {
+            super.storeState(configuration);
+            configuration.setProperty(TREE_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
+        }
+
+        @Override
+        public void loadState(final Configuration configuration) {
+            this.sideEffectKey = configuration.getString(TREE_STEP_SIDE_EFFECT_KEY);
+        }
+
+        @Override
+        public boolean doStage(final Stage stage) {
+            return stage.equals(Stage.MAP);
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<Object, Tree> emitter) {
+            VertexTraversalSideEffects.of(vertex).<Tree<?>>ifPresent(this.sideEffectKey, tree -> tree.splitParents().forEach(branches -> emitter.emit(branches.keySet().iterator().next(), branches)));
+        }
+
+        @Override
+        public Tree generateFinalResult(final Iterator<KeyValue<Object, Tree>> keyValues) {
+            final Tree result = new Tree();
+            keyValues.forEachRemaining(keyValue -> result.addTree(keyValue.getValue()));
+            return result;
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return this.sideEffectKey;
+        }
+    }
+
 }

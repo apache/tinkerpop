@@ -45,7 +45,7 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
     public MinGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(new ConstantSupplier<>(null));
-        this.setBiFunction(MinBiFunction.instance());
+        this.setBiFunction(MinGlobalBiFunction.instance());
     }
 
     @Override
@@ -55,16 +55,16 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
     @Override
     public MapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> getMapReduce() {
-        return MinMapReduce.instance();
+        return MinGlobalMapReduce.instance();
     }
 
     /////
 
-    private static class MinBiFunction<S extends Number> implements BiFunction<S, Traverser<S>, S>, Serializable {
+    private static class MinGlobalBiFunction<S extends Number> implements BiFunction<S, Traverser<S>, S>, Serializable {
 
-        private static final MinBiFunction INSTANCE = new MinBiFunction();
+        private static final MinGlobalBiFunction INSTANCE = new MinGlobalBiFunction();
 
-        private MinBiFunction() {
+        private MinGlobalBiFunction() {
 
         }
 
@@ -73,18 +73,18 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
             return mutatingSeed != null && mutatingSeed.doubleValue() <= traverser.get().doubleValue() ? mutatingSeed : traverser.get();
         }
 
-        public final static <S extends Number> MinBiFunction<S> instance() {
+        public final static <S extends Number> MinGlobalBiFunction<S> instance() {
             return INSTANCE;
         }
     }
 
     ///////////
 
-    private static class MinMapReduce extends StaticMapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> {
+    private static class MinGlobalMapReduce extends StaticMapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> {
 
-        private static final MinMapReduce INSTANCE = new MinMapReduce();
+        private static final MinGlobalMapReduce INSTANCE = new MinGlobalMapReduce();
 
-        private MinMapReduce() {
+        private MinGlobalMapReduce() {
 
         }
 
@@ -126,7 +126,7 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
             return keyValues.hasNext() ? keyValues.next().getValue() : Double.NaN;
         }
 
-        public static final MinMapReduce instance() {
+        public static final MinGlobalMapReduce instance() {
             return INSTANCE;
         }
     }
