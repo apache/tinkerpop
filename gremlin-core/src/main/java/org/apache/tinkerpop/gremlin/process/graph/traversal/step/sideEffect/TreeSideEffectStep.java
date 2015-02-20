@@ -153,6 +153,20 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Re
             VertexTraversalSideEffects.of(vertex).<Tree<?>>ifPresent(this.sideEffectKey, tree -> tree.splitParents().forEach(branches -> emitter.emit(branches.keySet().iterator().next(), branches)));
         }
 
+        /*
+        @Override
+        public void combine(final NullObject key, final Iterator<Tree> values, final ReduceEmitter<NullObject, Tree> emitter) {
+            this.reduce(key, values, emitter);
+        }
+
+        @Override
+        public void reduce(final NullObject key, final Iterator<Tree> values, final ReduceEmitter<NullObject, Tree> emitter) {
+            final Tree tree = new Tree();
+            values.forEachRemaining(tree::addTree);
+            emitter.emit(tree);
+        }
+        */
+
         @Override
         public Tree generateFinalResult(final Iterator<KeyValue<Object, Tree>> keyValues) {
             final Tree result = new Tree();

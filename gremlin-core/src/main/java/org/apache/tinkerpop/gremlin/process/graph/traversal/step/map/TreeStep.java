@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Path;
-import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
@@ -35,7 +34,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.util.path.MutablePath;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.TreeSupplier;
 
@@ -76,7 +74,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
     }
 
     @Override
-    public MapReduce<MapReduce.NullObject, Path, MapReduce.NullObject, Path, Tree> getMapReduce() {
+    public MapReduce<MapReduce.NullObject, Tree, MapReduce.NullObject, Tree, Tree> getMapReduce() {
         return TreeMapReduce.instance();
     }
 
@@ -94,14 +92,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
     public Traverser<Tree> processNextStart() {
         if (this.byPass) {
             final Traverser.Admin<S> traverser = this.starts.next();
-            if (this.traversalRing.isEmpty())
-                return (Traverser) traverser.split(traverser.path(), (Step) this);
-            else {
-                final Path path = MutablePath.make();
-                traverser.path().forEach((object, labels) -> path.extend(TraversalUtil.apply(object, this.traversalRing.next()), labels.toArray(new String[labels.size()])));
-                this.traversalRing.reset();
-                return (Traverser) traverser.split(path, (Step) this);
-            }
+            return traverser.split(this.reducingBiFunction.apply(new Tree(), traverser), this);
         } else {
             return super.processNextStart();
         }
@@ -137,7 +128,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
 
     ///////////
 
-    public static final class TreeMapReduce<E> extends StaticMapReduce<MapReduce.NullObject, Path, MapReduce.NullObject, Path, Tree> {
+    public static final class TreeMapReduce extends StaticMapReduce<MapReduce.NullObject, Tree, MapReduce.NullObject, Tree, Tree> {
 
         private static final TreeMapReduce INSTANCE = new TreeMapReduce();
 
@@ -147,28 +138,29 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
 
         @Override
         public boolean doStage(final Stage stage) {
-            return stage.equals(Stage.MAP);
+            return true;
         }
 
         @Override
-        public void map(final Vertex vertex, final MapEmitter<NullObject, Path> emitter) {
-            vertex.<TraverserSet<Path>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(traverser.get())));
+        public void map(final Vertex vertex, final MapEmitter<NullObject, Tree> emitter) {
+            vertex.<TraverserSet<Tree>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(traverser.get())));
         }
 
         @Override
-        public Tree generateFinalResult(final Iterator<KeyValue<NullObject, Path>> keyValues) {
-            Tree tree = new Tree();
-            while (keyValues.hasNext()) {
-                Tree depth = tree;
-                final Path path = keyValues.next().getValue();
-                for (int i = 0; i < path.size(); i++) {
-                    final Object object = path.get(i);
-                    if (!depth.containsKey(object))
-                        depth.put(object, new Tree<>());
-                    depth = (Tree) depth.get(object);
-                }
-            }
-            return tree;
+        public void combine(final NullObject key, final Iterator<Tree> values, final ReduceEmitter<NullObject, Tree> emitter) {
+            this.reduce(key, values, emitter);
+        }
+
+        @Override
+        public void reduce(final NullObject key, final Iterator<Tree> values, final ReduceEmitter<NullObject, Tree> emitter) {
+            final Tree tree = new Tree();
+            values.forEachRemaining(tree::addTree);
+            emitter.emit(tree);
+        }
+
+        @Override
+        public Tree generateFinalResult(final Iterator<KeyValue<NullObject, Tree>> keyValues) {
+            return keyValues.hasNext() ? keyValues.next().getValue() : new Tree();
         }
 
         @Override
@@ -176,7 +168,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
             return REDUCING;
         }
 
-        public static final <E> TreeMapReduce<E> instance() {
+        public static final TreeMapReduce instance() {
             return INSTANCE;
         }
     }
