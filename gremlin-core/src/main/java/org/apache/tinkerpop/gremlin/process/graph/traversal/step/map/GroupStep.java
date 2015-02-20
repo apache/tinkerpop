@@ -146,19 +146,15 @@ public final class GroupStep<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R
 
         @Override
         public Map<K, Collection<V>> apply(final Map<K, Collection<V>> mutatingSeed, final Traverser.Admin<S> traverser) {
-            this.doGroup(traverser, mutatingSeed, GroupStep.this.keyTraversal, GroupStep.this.valueTraversal);
-            return mutatingSeed;
-        }
-
-        private void doGroup(final Traverser.Admin<S> traverser, final Map<K, Collection<V>> groupMap, final Traversal.Admin<S, K> keyTraversal, final Traversal.Admin<S, V> valueTraversal) {
-            final K key = TraversalUtil.applyNullable(traverser, keyTraversal);
-            final V value = TraversalUtil.applyNullable(traverser, valueTraversal);
-            Collection<V> values = groupMap.get(key);
+            final K key = TraversalUtil.applyNullable(traverser, GroupStep.this.keyTraversal);
+            final V value = TraversalUtil.applyNullable(traverser, GroupStep.this.valueTraversal);
+            Collection<V> values = mutatingSeed.get(key);
             if (null == values) {
                 values = new BulkSet<>();
-                groupMap.put(key, values);
+                mutatingSeed.put(key, values);
             }
             TraversalHelper.addToCollectionUnrollIterator(values, value, traverser.bulk());
+            return mutatingSeed;
         }
     }
 

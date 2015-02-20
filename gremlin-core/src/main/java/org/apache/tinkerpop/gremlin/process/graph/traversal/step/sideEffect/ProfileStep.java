@@ -20,16 +20,19 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
+import org.apache.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapreduce.ProfileMapReduce;
-import org.apache.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.util.metric.StandardTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -51,7 +54,7 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements Reversib
 
     @Override
     public MapReduce<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> getMapReduce() {
-        return new ProfileMapReduce();
+        return ProfileMapReduce.instance();
     }
 
     @Override
@@ -92,5 +95,50 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements Reversib
         final boolean isComputer = this.getTraversal().getEngine().isComputer();
         traversalMetrics.initializeIfNecessary(this.getId(), this.getTraversal().getSteps().indexOf(this), name, isComputer);
         return traversalMetrics;
+    }
+
+    //////////////////
+
+    public static final class ProfileMapReduce extends StaticMapReduce<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> {
+
+        private static ProfileMapReduce INSTANCE = new ProfileMapReduce();
+
+        private ProfileMapReduce() {
+
+        }
+
+        @Override
+        public boolean doStage(final Stage stage) {
+            return true;
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return TraversalMetrics.METRICS_KEY;
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<NullObject, StandardTraversalMetrics> emitter) {
+            VertexTraversalSideEffects.of(vertex).<StandardTraversalMetrics>ifPresent(TraversalMetrics.METRICS_KEY, emitter::emit);
+        }
+
+        @Override
+        public void combine(final NullObject key, final Iterator<StandardTraversalMetrics> values, final ReduceEmitter<NullObject, StandardTraversalMetrics> emitter) {
+            reduce(key, values, emitter);
+        }
+
+        @Override
+        public void reduce(final NullObject key, final Iterator<StandardTraversalMetrics> values, final ReduceEmitter<NullObject, StandardTraversalMetrics> emitter) {
+            emitter.emit(StandardTraversalMetrics.merge(values));
+        }
+
+        @Override
+        public StandardTraversalMetrics generateFinalResult(final Iterator<KeyValue<NullObject, StandardTraversalMetrics>> keyValues) {
+            return keyValues.next().getValue();
+        }
+
+        public static ProfileMapReduce instance() {
+            return INSTANCE;
+        }
     }
 }
