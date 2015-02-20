@@ -45,7 +45,7 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
     public MaxGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(new ConstantSupplier<>(null));
-        this.setBiFunction(MaxBiFunction.<S>instance());
+        this.setBiFunction(MaxGlobalBiFunction.<S>instance());
     }
 
     @Override
@@ -55,16 +55,16 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
     @Override
     public MapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> getMapReduce() {
-        return MaxMapReduce.instance();
+        return MaxGlobalMapReduce.instance();
     }
 
     /////
 
-    private static class MaxBiFunction<S extends Number> implements BiFunction<S, Traverser<S>, S>, Serializable {
+    private static class MaxGlobalBiFunction<S extends Number> implements BiFunction<S, Traverser<S>, S>, Serializable {
 
-        private static final MaxBiFunction INSTANCE = new MaxBiFunction();
+        private static final MaxGlobalBiFunction INSTANCE = new MaxGlobalBiFunction();
 
-        private MaxBiFunction() {
+        private MaxGlobalBiFunction() {
 
         }
 
@@ -73,18 +73,18 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
             return mutatingSeed != null && mutatingSeed.doubleValue() >= traverser.get().doubleValue() ? mutatingSeed : traverser.get();
         }
 
-        public final static <S extends Number> MaxBiFunction<S> instance() {
+        public final static <S extends Number> MaxGlobalBiFunction<S> instance() {
             return INSTANCE;
         }
     }
 
     ///////////
 
-    private static class MaxMapReduce extends StaticMapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> {
+    private static class MaxGlobalMapReduce extends StaticMapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> {
 
-        private static final MaxMapReduce INSTANCE = new MaxMapReduce();
+        private static final MaxGlobalMapReduce INSTANCE = new MaxGlobalMapReduce();
 
-        private MaxMapReduce() {
+        private MaxGlobalMapReduce() {
 
         }
 
@@ -126,7 +126,7 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
             return keyValues.hasNext() ? keyValues.next().getValue() : Double.NaN;
         }
 
-        public static final MaxMapReduce instance() {
+        public static final MaxGlobalMapReduce instance() {
             return INSTANCE;
         }
     }

@@ -49,7 +49,7 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
     public MeanGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier((Supplier) MeanNumberSupplier.instance());
-        this.setBiFunction((BiFunction) MeanBiFunction.instance());
+        this.setBiFunction((BiFunction) MeanGlobalBiFunction.instance());
     }
 
     @Override
@@ -59,16 +59,16 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
 
     @Override
     public MapReduce<Number, Long, Number, Long, Double> getMapReduce() {
-        return MeanMapReduce.instance();
+        return MeanGlobalMapReduce.instance();
     }
 
     /////
 
-    private static class MeanBiFunction<S extends Number> implements BiFunction<S, Traverser<S>, S>, Serializable {
+    private static class MeanGlobalBiFunction<S extends Number> implements BiFunction<S, Traverser<S>, S>, Serializable {
 
-        private static final MeanBiFunction INSTANCE = new MeanBiFunction();
+        private static final MeanGlobalBiFunction INSTANCE = new MeanGlobalBiFunction();
 
-        private MeanBiFunction() {
+        private MeanGlobalBiFunction() {
 
         }
 
@@ -77,18 +77,18 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
             return (S) ((MeanNumber) mutatingSeed).add(traverser.get(), traverser.bulk());
         }
 
-        public final static <S extends Number> MeanBiFunction<S> instance() {
+        public final static <S extends Number> MeanGlobalBiFunction<S> instance() {
             return INSTANCE;
         }
     }
 
     ///////////
 
-    private static final class MeanMapReduce extends StaticMapReduce<Number, Long, Number, Long, Double> {
+    private static final class MeanGlobalMapReduce extends StaticMapReduce<Number, Long, Number, Long, Double> {
 
-        private static final MeanMapReduce INSTANCE = new MeanMapReduce();
+        private static final MeanGlobalMapReduce INSTANCE = new MeanGlobalMapReduce();
 
-        private MeanMapReduce() {
+        private MeanGlobalMapReduce() {
 
         }
 
@@ -137,7 +137,7 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
             return Double.NaN;
         }
 
-        public static final MeanMapReduce instance() {
+        public static final MeanGlobalMapReduce instance() {
             return INSTANCE;
         }
     }

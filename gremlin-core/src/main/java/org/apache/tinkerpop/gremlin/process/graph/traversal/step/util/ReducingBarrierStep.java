@@ -164,7 +164,6 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
             }
             emitter.emit(FinalGet.tryFinalGet(mutatingSeed));
         }
-
     }
 
     /////

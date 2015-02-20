@@ -716,7 +716,7 @@ gremlin> g.V().count()
 gremlin> g.V().out().out().values('name')
 ==>ripple
 ==>lop
-gremlin> g.V().group().by{it.value('name')[1]}.by{it.value('name')}.next()
+gremlin> g.V().group().by{it.value('name')[1]}.by('name').next()
 ==>a={marko=1, vadas=1}
 ==>e={peter=1}
 ==>i={ripple=1}
@@ -749,35 +749,41 @@ WARNING: Giraph uses a large number of Hadoop counters. The default for Hadoop i
 WARNING: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the VertexPrograms on the vertices of the graph.
 
 [source,text]
-gremlin> :remote connect tinkerpop.hadoop ../../../hadoop-gremlin/conf/hadoop-kryo.properties
-==>hadoopgraph[kryoinputformat->kryooutputformat]
-gremlin> :> g.V().count()
-INFO  org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[HadoopGraphStep(vertex), CountStep, SideEffectCapStep]
+gremlin> g.engine(computer)
+==>null
+gremlin> g.V().count()
+INFO  org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[GraphStep(vertex), CountGlobalStep, ComputerResultStep]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0037
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
-INFO  org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: CountMapReduce
+INFO  org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: CountGlobalMapReduce
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0038
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>6
-gremlin> :> g.V().out().out().values('name')
-INFO  org.apache.tinkerpop.gremlin.giraph.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[HadoopGraphStep(vertex), VertexStep(OUT), VertexStep(OUT), ElementValueStep(name)]
+gremlin> g.V().out().out().values('name')
+INFO  org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[GraphStep(vertex), VertexStep(OUT,vertex), VertexStep(OUT,vertex), PropertiesStep([name],value), ComputerResultStep]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0031
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
-INFO  org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: TraversalResultMapReduce
+INFO  org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: TraverserMapReduce
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0032
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>ripple
 ==>lop
-gremlin> :> g.V().group('a').by{it.value('name')[1]}.by{it.value('name')}
-INFO  org.apache.tinkerpop.gremlin.giraph.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[HadoopGraphStep(vertex), GroupByStep@a, SideEffectCapStep(a)]
+
+IMPORTANT: The examples above do not use lambdas (i.e. closures in Gremlin-Groovy). This makes the traversal serializable and thus, able to be distributed to all machines in the Hadoop cluster. If a lambda is required in a traversal, then the traversal must be sent as a `String` and compiled locally at each machine in the cluster. The following example demonstrates the `:remote` command which allows for submitting Gremlin traversals as a `String`.
+
+[source,text]
+gremlin> :remote connect tinkerpop.hadoop ../../../hadoop-gremlin/conf/hadoop-kryo.properties
+==>hadoopgraph[kryoinputformat->kryooutputformat]
+gremlin> :> g.V().group('a').by{it.value('name')[1]}.by('name')
+INFO  org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[GraphStep(vertex), GroupStep(lambda,value(name)), ComputerResultStep]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0039
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
-INFO  org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: GroupByMapReduce[a]
+INFO  org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: GroupStepMapReduce
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0040
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
@@ -788,13 +794,11 @@ gremlin> result.memory.runtime
 ==>20356
 gremlin> result.memory.keys()
 ==>a
-gremlin> result.memory.a
+gremlin> result.memory.get('~reducing')
 ==>a={marko=1, vadas=1}
 ==>e={peter=1}
 ==>i={ripple=1}
 ==>o={lop=1, josh=1}
-
-NOTE: Distributed graph computations on cluster-sized graphs can yield an enormous number of results. To be safe, Hadoop-Gremlin only returns up to 20 results to the console (with, of course, all the results being available in HDFS). If more traversal results are desired, access `result.memory().get('~traversers')`.
 
 TIP: image:gremlin-sugar.png[width=50,float=left] For those wanting to use the <<sugar-plugin,SugarPlugin>> with their submitted traversal, do `:remote config useSugar true` as well as `:plugin use tinkerpop.sugar` at the start of the Gremlin Console session if it is not already activated.
 
