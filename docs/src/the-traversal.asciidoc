@@ -460,7 +460,7 @@ image::groupcount-step.png[width=420]
 g.V().repeat(both().groupCount('m').by(label)).times(10).cap('m')
 ----
 
-The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount()` with a string variable. Given that `groupCount()` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount()`, the object's count is incremented. If `groupCount()` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount()` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount()`) can be accessed with `cap()`-step by referencing the desired variable.
+The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount()` with a string variable. Given that `groupCount()` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount()`, the object's count is incremented.
 
 WARNING: The `groupCount()`-step does not have a correlate in <<traversalvertexprogram,Gremlin OLAP>> when used mid-traversal. When in mid-traversal grouping only occurs at the the current processing vertex and thus, is not a global operation as it in Gremlin OLTP. However, `GroupCountMapReduce` provides unified groups at the end of the traversal computation.
 
@@ -537,50 +537,6 @@ inject(1,2).map {it.get() + 1}.map {g.V(it.get()).next()}.values('name')
 ----
 
 IMPORTANT: Note that a standalone anonymous traversal is a common use case which comes with a limitation: Anonymous traversals do not have all strategies applied to them by default. This can lead to some unexpected behaviors as shown in the following example.
-
-[source,groovy]
-----
-gremlin> g = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> software = g.V().hasLabel('software').toList()
-==>v[3]
-==>v[5]
-gremlin> inject(software).unfold().groupCount().by('lang')
-Side effects do not have a value for provided key: null
-Display stack trace? [yN]
-----
-
-You have two options to get around this limitation. Either explicitly apply all the required strategies to all anonymous traversals or apply the strategies only to the current traversal.
-
-[gremlin-groovy,modern]
-----
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.*
-TraversalStrategies.GlobalCache.registerStrategies(__, <1>
-    TraversalStrategies.GlobalCache.getStrategies(__).addStrategies(
-        SideEffectCapStrategy.instance(),
-        SideEffectRegistrationStrategy.instance()))
-software = g.V().hasLabel('software').toList()
-inject(software).unfold().groupCount().by('lang')
-----
-
-<1> Apply required strategies globally for all anonymous traversals.
-
-[gremlin-groovy,modern]
-----
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.*
-software = g.V().hasLabel('software').toList()
-t = inject(software).unfold().groupCount().by("lang"); null <1>
-t.getStrategies().addStrategies(
-    SideEffectCapStrategy.instance(),
-    SideEffectRegistrationStrategy.instance()) <2>
-t <3>
-----
-
-<1> Create the traversal, but don't evaluate it.
-<2> Apply the required strategies locally (only for this particular traversal).
-<3> Evaluate the traversal.
 
 [[is-step]]
 Is Step
@@ -1223,7 +1179,7 @@ Extracting a portion of a graph from a larger one for analysis, visualization or
 
 [gremlin-groovy,modern]
 ----
-sg = g.E().hasLabel('knows').subgraph().next() <1>
+sg = g.E().hasLabel('knows').subgraph('sg').cap('sg').next() <1>
 sg.E() <2>
 ----
 
@@ -1304,14 +1260,15 @@ It is important to see how the paths of all the emanating traversers are united 
 image::tree-step2.png[width=500]
 
 The resultant tree data structure can then be manipulated (see link:http://www.tinkerpop.com/javadocs/current/org/apache/tinkerpop/gremlin/process/graph/step/util/Tree.html[Tree JavaDoc]). For the sake of demonstration, a post-processing lambda is applied in the running example below.
-
+////
 [gremlin-groovy,modern]
 ----
-tree = g.V().out().out().tree().by('name').next()
-tree['marko']
-tree['marko']['josh']
-tree.getObjectsAtDepth(3)
+//tree = g.V().out().out().tree().by('name').next()
+//tree['marko']
+//tree['marko']['josh']
+//tree.getObjectsAtDepth(3)
 ----
+////
 
 [[unfold-step]]
 Unfold Step
