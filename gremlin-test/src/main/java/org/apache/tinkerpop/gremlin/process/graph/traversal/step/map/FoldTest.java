@@ -20,7 +20,10 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Operator;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -59,6 +62,7 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_fold_unfold() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_fold_unfold();
         printTraversalForm(traversal);
@@ -83,7 +87,9 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
         assertEquals(Integer.valueOf(123), ageSum);
     }
 
-    public static class StandardTest extends FoldTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends FoldTest {
 
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_fold() {
@@ -93,29 +99,6 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
             return g.V().fold().unfold();
-        }
-
-        @Override
-        public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
-            return g.V().<Integer>values("age").fold(0, (BinaryOperator) Operator.sum);
-        }
-    }
-
-    public static class ComputerTest extends FoldTest {
-
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, List<Vertex>> get_g_V_fold() {
-            return g.V().fold();
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
-            g.engine(StandardTraversalEngine.instance()); // TODO
-            return (Traversal) g.V().fold().unfold(); // Does not work in OLAP cause fold() is not an endstep.
         }
 
         @Override

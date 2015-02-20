@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StoreTest
@@ -29,7 +31,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyStoreTest {
 
-    public static class StandardTest extends StoreTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends StoreTest {
 
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX() {
@@ -43,18 +46,19 @@ public abstract class GroovyStoreTest {
         }
 
         @Override
-        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX() {
-            g.V.withSideEffect('a') { [] as Set }.both.name.store('a')
+        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX() {
+            g.V.withSideEffect('a') { [] as Set }.both.name.store('a').cap('a')
         }
 
 
         @Override
-        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX() {
-            g.V.store('a').by(__.outE('created').count).out.out.store('a').by(__.inE('created').weight.sum);
+        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX_capXaX() {
+            g.V.store('a').by(__.outE('created').count).out.out.store('a').by(__.inE('created').weight.sum).cap('a');
         }
     }
 
-    public static class ComputerTest extends StoreTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends StoreTest {
 
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX() {
@@ -68,13 +72,13 @@ public abstract class GroovyStoreTest {
         }
 
         @Override
-        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX() {
-            ComputerTestHelper.compute("g.V.withSideEffect('a'){[] as Set}.both.name.store('a')", g);
+        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX() {
+            ComputerTestHelper.compute("g.V.withSideEffect('a'){[] as Set}.both.name.store('a').cap('a')", g);
         }
 
         @Override
-        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX() {
-            ComputerTestHelper.compute("g.V.store('a').by(__.outE('created').count).out.out.store('a').by(__.inE('created').weight.sum)", g);
+        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX_capXaX() {
+            ComputerTestHelper.compute("g.V.store('a').by(__.outE('created').count).out.out.store('a').by(__.inE('created').weight.sum).cap('a')", g);
         }
     }
 }

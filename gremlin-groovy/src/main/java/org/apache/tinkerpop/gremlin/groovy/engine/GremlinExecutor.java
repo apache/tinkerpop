@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.groovy.engine;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
-import org.apache.tinkerpop.gremlin.process.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.javatuples.Pair;
@@ -169,8 +168,7 @@ public class GremlinExecutor implements AutoCloseable {
 
                 // thread interruptions will typically come as the result of a timeout, so in those cases,
                 // check for that situation and convert to TimeoutException
-                if (root.getClass().equals(InterruptedException.class)
-                        || root.getClass().equals(TraversalInterruptedException.class))
+                if (root.getClass().equals(InterruptedException.class))
                     evaluationFuture.completeExceptionally(new TimeoutException(
                             String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]: %s", scriptEvaluationTimeout, script, root.getMessage())));
                 else {

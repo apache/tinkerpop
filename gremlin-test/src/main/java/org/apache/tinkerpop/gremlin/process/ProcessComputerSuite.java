@@ -19,15 +19,57 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerDataStrategyTest;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.*;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.*;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.*;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.*;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategyTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.BranchTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.ChooseTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.LocalTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.RepeatTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.UnionTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.AndTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.CoinTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.CyclicPathTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.DedupTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.ExceptTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.FilterTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasNotTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.IsTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.OrTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RangeTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RetainTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.SampleTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.SimplePathTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.WhereTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.BackTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CoalesceTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.FoldTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MapTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MaxTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MeanTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MinTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.OrderTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PathTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SelectTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SumTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.UnfoldTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.ValueMapTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AggregateTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupCountTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.ProfileTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SackTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SideEffectCapTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StoreTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.TreeTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -69,65 +111,62 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] allTests = new Class<?>[]{
 
-            // basic api semantics testing
-            // GraphComputerTest.ComputerTest.class,   // todo: not sure this should be here as it forces retest of GraphComputer without an "implementation"
-
             // branch
-            BranchTest.ComputerTest.class,
-            ChooseTest.ComputerTest.class,
-            LocalTest.ComputerTest.class,
-            RepeatTest.ComputerTest.class,
-            UnionTest.ComputerTest.class,
+            BranchTest.Traversals.class,
+            ChooseTest.Traversals.class,
+            LocalTest.Traversals.class,
+            RepeatTest.Traversals.class,
+            UnionTest.Traversals.class,
 
             // filter
-            AndTest.ComputerTest.class,
-            CoinTest.ComputerTest.class,
-            CyclicPathTest.ComputerTest.class,
-            DedupTest.ComputerTest.class,
-            ExceptTest.ComputerTest.class,
-            FilterTest.ComputerTest.class,
-            HasNotTest.ComputerTest.class,
-            HasTest.ComputerTest.class,
-            IsTest.ComputerTest.class,
-            OrTest.ComputerTest.class,
-            RangeTest.ComputerTest.class,
-            RetainTest.ComputerTest.class,
-            SampleTest.ComputerTest.class,
-            SimplePathTest.ComputerTest.class,
-            WhereTest.ComputerTest.class,
+            AndTest.Traversals.class,
+            CoinTest.Traversals.class,
+            CyclicPathTest.Traversals.class,
+            DedupTest.Traversals.class,
+            ExceptTest.StandardTest.class,
+            FilterTest.Traversals.class,
+            HasNotTest.Traversals.class,
+            HasTest.Traversals.class,
+            IsTest.Traversals.class,
+            OrTest.Traversals.class,
+            RangeTest.Traversals.class,
+            RetainTest.Traversals.class,
+            SampleTest.Traversals.class,
+            SimplePathTest.Traversals.class,
+            WhereTest.Traversals.class,
 
             // map
-            BackTest.ComputerTest.class,
-            CountTest.ComputerTest.class,
-            FoldTest.ComputerTest.class,
-            MapTest.ComputerTest.class,
-            MaxTest.ComputerTest.class,
-            MeanTest.ComputerTest.class,
-            MinTest.ComputerTest.class,
-            SumTest.ComputerTest.class,
+            BackTest.Traversals.class,
+            CoalesceTest.Traversals.class,
+            CountTest.Traversals.class,
+            FoldTest.Traversals.class,
+            MapTest.Traversals.class,
+            MaxTest.Traversals.class,
+            MeanTest.Traversals.class,
+            MinTest.Traversals.class,
+            SumTest.Traversals.class,
             // TODO: MatchTest.ComputerTest.class,
-            OrderTest.ComputerTest.class,
-            PathTest.ComputerTest.class,
-            PropertiesTest.ComputerTest.class,
-            SelectTest.ComputerTest.class,
-            UnfoldTest.ComputerTest.class,
-            ValueMapTest.ComputerTest.class,
-            VertexTest.ComputerTest.class,
-            CoalesceTest.ComputerTest.class,
+            OrderTest.Traversals.class,
+            PathTest.Traversals.class,
+            PropertiesTest.Traversals.class,
+            SelectTest.Traversals.class,
+            UnfoldTest.Traversals.class,
+            ValueMapTest.Traversals.class,
+            VertexTest.Traversals.class,
 
             // sideEffect
             // TODO: AddEdgeTest.ComputerTest.class,
-            AggregateTest.ComputerTest.class,
-            GroupTest.ComputerTest.class,
-            GroupCountTest.ComputerTest.class,
+            AggregateTest.Traversals.class,
+            GroupTest.Traversals.class,
+            GroupCountTest.Traversals.class,
             // TODO: InjectTest.ComputerTest.class,
-            ProfileTest.ComputerTest.class,
-            SackTest.ComputerTest.class,
-            SideEffectCapTest.ComputerTest.class,
+            ProfileTest.Traversals.class,
+            SackTest.Traversals.class,
+            SideEffectCapTest.Traversals.class,
             // TODO: REMOVE? SideEffectTest.ComputerTest.class,
-            StoreTest.ComputerTest.class,
+            StoreTest.Traversals.class,
             // TODO: REMOVE? SubgraphTest.ComputerTest.class,
-            TreeTest.ComputerTest.class,
+            TreeTest.Traversals.class,
 
             // algorithms
             PageRankVertexProgramTest.class,
@@ -136,84 +175,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             ComputerDataStrategyTest.class,
 
             // strategy
-            TraversalVerificationStrategyTest.ComputerTest.class,
-            RangeByIsCountStrategyTest.ComputerTest.class
-    };
-
-    /**
-     * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
-     */
-    protected static final Class<?>[] testsToEnforce = new Class<?>[]{
-            // basic api semantics testing
-            GraphComputerTest.class,
-
-            // branch
-            BranchTest.class,
-            ChooseTest.class,
-            LocalTest.class,
-            RepeatTest.class,
-            UnionTest.class,
-
-            // filter
-            AndTest.class,
-            CoinTest.class,
-            CyclicPathTest.class,
-            DedupTest.class,
-            ExceptTest.class,
-            FilterTest.class,
-            HasNotTest.class,
-            HasTest.class,
-            IsTest.class,
-            OrTest.class,
-            RangeTest.class,
-            RetainTest.class,
-            SampleTest.class,
-            SimplePathTest.class,
-            WhereTest.class,
-
-
-            // map
-            BackTest.class,
-            CountTest.class,
-            // FoldTest.class,
-            MapTest.class,
-            MaxTest.class,
-            MeanTest.class,
-            MinTest.class,
-            SumTest.class,
-            // MatchTest.class,
-            OrderTest.class,
-            PathTest.class,
-            PropertiesTest.class,
-            SelectTest.class,
-            UnfoldTest.class,
-            ValueMapTest.class,
-            VertexTest.class,
-            CoalesceTest.class,
-
-
-            // sideEffect
-            // AddEdgeTest.class,
-            AggregateTest.class,
-            GroupTest.class,
-            GroupCountTest.class,
-            InjectTest.class,
-            ProfileTest.class,
-            SackTest.class,
-            SideEffectCapTest.class,
-            // SideEffectTest.class,
-            StoreTest.class,
-            // SubgraphTest.class,
-            TreeTest.class,
-
-
-            // algorithms
-            PageRankVertexProgramTest.class,
-
-            // strategy
-            ComputerDataStrategyTest.class,
-            TraversalVerificationStrategyTest.class,
-            RangeByIsCountStrategyTest.class
+            TraversalVerificationStrategyTest.ComputerTraversals.class
     };
 
     /**
@@ -236,10 +198,24 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
     }
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce);
+        super(klass, builder, testsToExecute, testsToExecute, false, ComputerTraversalEngine.computer);
     }
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce);
+        super(klass, builder, testsToExecute, testsToEnforce, false, ComputerTraversalEngine.computer);
+    }
+
+    public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite) throws InitializationError {
+        super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, ComputerTraversalEngine.computer);
+    }
+
+    @Override
+    public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
+        final UseEngine[] useEngines = testClass.getAnnotationsByType(UseEngine.class);
+        if (null == useEngines || !Stream.of(useEngines).anyMatch(useEngine -> useEngine.value().equals(TraversalEngine.Type.COMPUTER)))
+            throw new RuntimeException(String.format("The %s expects all tests to be annotated with @UseEngine(%s) - check %s",
+                    ProcessComputerSuite.class.getName(), TraversalEngine.Type.COMPUTER, testClass.getName()));
+
+        return super.beforeTestExecution(testClass);
     }
 }

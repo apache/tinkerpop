@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -92,12 +94,9 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class StandardTest extends IsTest {
-
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends IsTest {
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isX32X() {
             return g.V().<Integer>values("age").is(32);
@@ -121,38 +120,6 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
             return g.V().has(in("created").count().is(Compare.gte, 2l)).values("name");
-        }
-    }
-
-    public static class ComputerTest extends StandardTest {
-
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, Integer> get_g_V_valuesXageX_isX32X() {
-            return super.get_g_V_valuesXageX_isX32X();
-        }
-
-        @Override
-        public Traversal<Vertex, Integer> get_g_V_valuesXageX_isXlte_30X() {
-            return super.get_g_V_valuesXageX_isXlte_30X();
-        }
-
-        @Override
-        public Traversal<Vertex, Integer> get_g_V_valuesXageX_isXgte_29X_isXlt_34X() {
-            return super.get_g_V_valuesXageX_isXgte_29X_isXlt_34X();
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX() {
-            return super.get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX();
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
-            return super.get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX();
         }
     }
 }

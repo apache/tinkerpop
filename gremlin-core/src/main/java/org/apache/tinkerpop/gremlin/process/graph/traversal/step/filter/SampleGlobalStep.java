@@ -55,7 +55,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> probabilityTraversal) {
-        this.probabilityTraversal = this.integrateChild(probabilityTraversal, TYPICAL_LOCAL_OPERATIONS);
+        this.probabilityTraversal = this.integrateChild(probabilityTraversal);
     }
 
     @Override
@@ -112,7 +112,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     @Override
     public SampleGlobalStep<S> clone() throws CloneNotSupportedException {
         final SampleGlobalStep<S> clone = (SampleGlobalStep<S>) super.clone();
-        clone.probabilityTraversal = clone.integrateChild(this.probabilityTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+        clone.probabilityTraversal = clone.integrateChild(this.probabilityTraversal.clone());
         return clone;
     }
 }

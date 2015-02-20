@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter
 
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.CoinTest
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -28,7 +30,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyCoinTest {
 
-    public static class StandardTest extends CoinTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends CoinTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX1X() {
@@ -41,7 +44,8 @@ public abstract class GroovyCoinTest {
         }
     }
 
-    public static class ComputerTest extends CoinTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends CoinTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX1X() {

@@ -62,7 +62,7 @@ public final class RangeLocalStep<S> extends MapStep<S, S> {
             return (S) result;
         } else if (start instanceof Collection) {
             final Collection collection = (Collection) start;
-            final Collection result = (collection instanceof Set) ? new TreeSet() : new LinkedList();
+            final Collection result = (collection instanceof Set) ? new LinkedHashSet() : new LinkedList();
             long c = 0L;
             for (final Object item : collection) {
                 if (c >= this.low) {

@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.Collecting
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
-import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -42,7 +41,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AggregateStep<S> extends CollectingBarrierStep<S> implements SideEffectRegistrar, SideEffectCapable, Reversible, TraversalParent, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
+public final class AggregateStep<S> extends CollectingBarrierStep<S> implements SideEffectCapable, Reversible, TraversalParent, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
 
     private Traversal.Admin<S, Object> aggregateTraversal = new IdentityTraversal<>();
     private String sideEffectKey;
@@ -50,11 +49,6 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     public AggregateStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-    }
-
-    @Override
-    public void registerSideEffects() {
-        if (null == this.sideEffectKey) this.sideEffectKey = this.getId();
         this.getTraversal().asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSetSupplier.instance());
     }
 
@@ -75,7 +69,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> traversal) {
-        this.aggregateTraversal = this.integrateChild(traversal, TYPICAL_LOCAL_OPERATIONS);
+        this.aggregateTraversal = this.integrateChild(traversal);
     }
 
     @Override
@@ -100,7 +94,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     @Override
     public AggregateStep<S> clone() throws CloneNotSupportedException {
         final AggregateStep<S> clone = (AggregateStep<S>) super.clone();
-        clone.aggregateTraversal = this.integrateChild(this.aggregateTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+        clone.aggregateTraversal = this.integrateChild(this.aggregateTraversal.clone());
         return clone;
     }
 }

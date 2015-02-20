@@ -18,21 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.Scope
-import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.LoadGraphWith
+import org.apache.tinkerpop.gremlin.process.*
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Order
 import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.junit.Test
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyOrderTest {
 
-
-    public static class StandardTest extends OrderTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends OrderTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_name_order() {
@@ -88,7 +87,8 @@ public abstract class GroovyOrderTest {
         }
     }
 
-    public static class ComputerTest extends OrderTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends OrderTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_name_order() {
@@ -101,27 +101,21 @@ public abstract class GroovyOrderTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_order_byXname_incrX_name() {
-            g.engine(StandardTraversalEngine.instance());
-            g.V.order.by('name', Order.incr).name
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_order_byXname_incrX_name() {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_order_byXnameX_name() {
-            g.engine(StandardTraversalEngine.instance());
-            g.V.order.by('name', Order.incr).name
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_outE_order_byXweight_decrX_weight() {
         }
 
         @Override
-        public Traversal<Vertex, Double> get_g_V_outE_order_byXweight_decrX_weight() {
-            g.engine(StandardTraversalEngine.instance());
-            g.V.outE.order.by('weight', Order.decr).weight
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
-            g.engine(StandardTraversalEngine.instance());
-             g.V.order.by('name') { a, b -> a[1].compareTo(b[1]) }.by('name') { a, b -> b[2].compareTo(a[2]) }.name;
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
         }
 
         @Override
@@ -145,11 +139,46 @@ public abstract class GroovyOrderTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX() {
-            g.engine(StandardTraversalEngine.instance());
-            g.V.order.by(__.outE.count, Order.decr)
-            // TODO ComputerTestHelper.compute("g.V.order.by(__.outE.count, Order.decr)", g)
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_order_byXoutE_count__decrX() {
         }
 
+        @Override
+        Traversal<Vertex, String> get_g_V_order_byXname_incrX_name() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, String> get_g_V_order_byXnameX_name() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Double> get_g_V_outE_order_byXweight_decrX_weight() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, String> get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Test
+        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
+        @Override
+        public void g_V_name_order_byXa1_b1X_byXb2_a2X() {
+            super.g_V_name_order_byXa1_b1X_byXb2_a2X();
+        }
     }
 }

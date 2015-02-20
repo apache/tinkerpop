@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -32,7 +34,8 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.min
  */
 public abstract class GroovyMinTest {
 
-    public static class StandardTest extends MinTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends MinTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_min() {
@@ -46,11 +49,12 @@ public abstract class GroovyMinTest {
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXminXlocalXX() {
-            g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(min(Scope.local)).cap()
+            g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(min(Scope.local))
         }
     }
 
-    public static class ComputerTest extends MinTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends MinTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_min() {
@@ -64,7 +68,7 @@ public abstract class GroovyMinTest {
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXminXlocalXX() {
-            ComputerTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(min(Scope.local)).cap()", g)
+            ComputerTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(min(Scope.local))", g)
         }
     }
 }

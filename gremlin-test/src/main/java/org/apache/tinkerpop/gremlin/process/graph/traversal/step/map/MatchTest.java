@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.Bindings;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.CrossJoinEnumerator;
@@ -646,11 +648,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                 new Bindings<String>().put("letter", "c").put("number", "4"));
     }
 
-    public static class StandardTest extends MatchTest {
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class Traversals extends MatchTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX() {
             return g.V().match("a", as("a").out().as("b"));

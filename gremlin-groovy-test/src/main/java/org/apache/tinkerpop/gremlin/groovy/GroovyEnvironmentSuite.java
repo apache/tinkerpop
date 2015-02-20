@@ -86,7 +86,7 @@ public class GroovyEnvironmentSuite extends AbstractGremlinSuite {
 
     private void unloadSugar() {
         try {
-            SugarTestHelper.clearRegistry(GraphManager.get());
+            SugarTestHelper.clearRegistry(GraphManager.getGraphProvider());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

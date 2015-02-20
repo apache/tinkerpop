@@ -18,21 +18,26 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter
 
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.WhereTest
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Compare
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.junit.Test
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyWhereTest {
 
-    public static class StandardTest extends WhereTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends WhereTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
             g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', Compare.eq, 'b');
@@ -54,7 +59,8 @@ public abstract class GroovyWhereTest {
         }
     }
 
-    public static class ComputerTest extends WhereTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends WhereTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
             ComputerTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', Compare.eq, 'b')", g);
@@ -66,17 +72,27 @@ public abstract class GroovyWhereTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXb_hasXname_markoXX() {
-            // TODO: ComputerTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where(__.as('b').has('name', 'marko'))", g);
-            g.engine(StandardTraversalEngine.instance());
-            g.V.has('age').as('a').out.in.has('age').as('b').select().where(__.as('b').has('name', 'marko'));
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXb_hasXname_markoXX() {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_outXknowsX_bX() {
-            // TODO: ComputerTestHelper.compute("g.V().has('age').as('a').out.in.has('age').as('b').select().where(__.as('a').out('knows').as('b'))", g);
-            g.engine(StandardTraversalEngine.instance());
-            g.V().has('age').as('a').out.in.has('age').as('b').select().where(__.as('a').out('knows').as('b'));
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_outXknowsX_bX() {
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXb_hasXname_markoXX() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_outXknowsX_bX() {
+            // override with nothing until the test itself is supported
+            return null
         }
     }
 }

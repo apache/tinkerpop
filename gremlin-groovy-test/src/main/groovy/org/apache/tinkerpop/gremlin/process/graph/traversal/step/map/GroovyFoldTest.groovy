@@ -18,18 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.FoldTest
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.junit.Test
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyFoldTest {
 
-    public static class StandardTest extends FoldTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends FoldTest {
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_fold() {
             g.V.fold
@@ -46,21 +51,29 @@ public abstract class GroovyFoldTest {
         }
     }
 
-    public static class ComputerTest extends FoldTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends FoldTest {
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_fold() {
             ComputerTestHelper.compute("g.V.fold", g)
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
-            g.engine(StandardTraversalEngine.instance());
-            g.V.fold.unfold    // Does not work in OLAP cause fold() is not an endstep.
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_fold_unfold() {
+            // Does not work in OLAP cause fold() is not an endstep.
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
             ComputerTestHelper.compute("g.V.age.fold(0) { seed, age -> seed + age }", g);
+        }
+
+        @Override
+        Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
+            // override with nothing until the test itself is supported
+            return null
         }
     }
 }

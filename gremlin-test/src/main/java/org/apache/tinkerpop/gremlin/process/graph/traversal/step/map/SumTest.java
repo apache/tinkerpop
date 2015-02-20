@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -64,7 +66,9 @@ public abstract class SumTest extends AbstractGremlinProcessTest {
         assertEquals(1.0, map.get("lop"));
     }
 
-    public static class StandardTest extends SumTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends SumTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_valuesXageX_sum() {
@@ -73,21 +77,7 @@ public abstract class SumTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXsumXlocalXX() {
-            return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).by(sum(Scope.local)).cap();
-        }
-    }
-
-    public static class ComputerTest extends SumTest {
-
-        @Override
-        public Traversal<Vertex, Double> get_g_V_valuesXageX_sum() {
-            return g.V().values("age").sum();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXsumXlocalXX() {
-            return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).
-                    by(sum(Scope.local)).<Map<String, Number>>cap();
+            return g.V().hasLabel("software").<String, Number>group().by("name").by(bothE().values("weight").fold()).by(sum(Scope.local));
         }
     }
 }

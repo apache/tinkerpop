@@ -62,8 +62,8 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
         dirty = true;
         final MutableMetrics metrics = allMetrics.get(metricsId);
         metrics.stop();
-        metrics.incrementCount(Metrics.TRAVERSER_COUNT_ID, 1);
-        metrics.incrementCount(Metrics.ELEMENT_COUNT_ID, bulk);
+        metrics.incrementCount(TraversalMetrics.TRAVERSER_COUNT_ID, 1);
+        metrics.incrementCount(TraversalMetrics.ELEMENT_COUNT_ID, bulk);
     }
 
     @Override
@@ -120,8 +120,8 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
                 rowName = "  " + rowName;
             }
             rowName = StringUtils.abbreviate(rowName, 50);
-            final long itemCount = m.getCount(Metrics.ELEMENT_COUNT_ID);
-            final long traverserCount = m.getCount(Metrics.TRAVERSER_COUNT_ID);
+            final long itemCount = m.getCount(TraversalMetrics.ELEMENT_COUNT_ID);
+            final long traverserCount = m.getCount(TraversalMetrics.TRAVERSER_COUNT_ID);
 
             String percentDur = m.getAnnotation(Metrics.PERCENT_DURATION_KEY);
             if (percentDur != null) {

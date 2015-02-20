@@ -43,13 +43,11 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     protected TraversalRing<Object, Object> traversalRing = new TraversalRing<>();
     private final List<String> selectLabels;
-    private final boolean wasEmpty;
     private boolean requiresPaths = false;
 
     public SelectStep(final Traversal.Admin traversal, final String... selectLabels) {
         super(traversal);
-        this.wasEmpty = selectLabels.length == 0;
-        this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal) : Arrays.asList(selectLabels);
+        this.selectLabels = selectLabels.length == 0 ? TraversalHelper.getLabelsUpTo(this, this.traversal) : Arrays.asList(selectLabels);
     }
 
     @Override
@@ -66,7 +64,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
         ////// PROCESS MAP BINDINGS
         if (start instanceof Map) {
-            if (this.wasEmpty)
+            if (this.selectLabels.isEmpty())
                 ((Map<String, Object>) start).forEach((k, v) -> bindings.put(k, (E) TraversalUtil.apply(v, this.traversalRing.next())));
             else
                 this.selectLabels.forEach(label -> {
@@ -93,7 +91,9 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
                         .filter(step -> step instanceof CollectingBarrierStep)
                         .filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal.asAdmin()).stream().filter(this.selectLabels::contains).findAny().isPresent()
                                 || (step.getLabel().isPresent() && this.selectLabels.contains(step.getLabel().get()))) // TODO: get rid of this (there is a test case to check it)
-                        .findAny().isPresent();
+                        .findAny().isPresent() ||
+                        TraversalHelper.getStepsUpTo(this, this.traversal.asAdmin()).stream().
+                                filter(step -> step instanceof TraversalParent).findAny().isPresent();
     }
 
     @Override
@@ -106,7 +106,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         final SelectStep<S, E> clone = (SelectStep<S, E>) super.clone();
         clone.traversalRing = new TraversalRing<>();
         for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {
-            clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone(), TYPICAL_LOCAL_OPERATIONS));
+            clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone()));
         }
         return clone;
     }
@@ -118,7 +118,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> selectTraversal) {
-        this.traversalRing.addTraversal(this.integrateChild(selectTraversal, TYPICAL_LOCAL_OPERATIONS));
+        this.traversalRing.addTraversal(this.integrateChild(selectTraversal));
     }
 
     @Override

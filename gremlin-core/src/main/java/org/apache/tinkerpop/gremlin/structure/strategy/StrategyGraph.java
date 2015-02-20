@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.strategy;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -29,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
-import org.apache.commons.configuration.Configuration;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -124,8 +124,13 @@ public class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, W
     }
 
     @Override
-    public GraphComputer compute(final Class... graphComputerClass) {
-        return this.baseGraph.compute(graphComputerClass);
+    public void compute(final Class<? extends GraphComputer> graphComputerClass) {
+        this.baseGraph.compute(graphComputerClass);
+    }
+
+    @Override
+    public GraphComputer compute() {
+        return this.baseGraph.compute();
     }
 
     @Override

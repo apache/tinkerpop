@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
 import java.util.Collections;
@@ -32,15 +31,6 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface TraversalParent {
-
-    public enum Operation {
-        SET_PARENT,
-        SET_SIDE_EFFECTS,
-        MERGE_IN_SIDE_EFFECTS,
-    }
-
-    public static final Operation[] TYPICAL_GLOBAL_OPERATIONS = {Operation.SET_PARENT, Operation.MERGE_IN_SIDE_EFFECTS, Operation.SET_SIDE_EFFECTS};
-    public static final Operation[] TYPICAL_LOCAL_OPERATIONS = {Operation.SET_PARENT};
 
     public default <S, E> List<Traversal.Admin<S, E>> getGlobalChildren() {
         return Collections.emptyList();
@@ -56,11 +46,6 @@ public interface TraversalParent {
 
     public default void addGlobalChild(final Traversal.Admin<?, ?> globalChildTraversal) {
         throw new IllegalStateException("This traversal holder does not support the addition of global traversals: " + this.getClass().getCanonicalName());
-    }
-
-    public default void setChildStrategies(final TraversalStrategies strategies) {
-        this.getGlobalChildren().forEach(traversal -> traversal.setStrategies(strategies));
-        this.getLocalChildren().forEach(traversal -> traversal.setStrategies(strategies));
     }
 
     public default Set<TraverserRequirement> getSelfAndChildRequirements(final TraverserRequirement... selfRequirements) {
@@ -79,20 +64,10 @@ public interface TraversalParent {
         return (Step<?, ?>) this;
     }
 
-    public default <S, E> Traversal.Admin<S, E> integrateChild(final Traversal.Admin<?, ?> childTraversal, final Operation... operations) {
-        for (final Operation operation : operations) {
-            switch (operation) {
-                case SET_PARENT:
-                    childTraversal.setParent(this);
-                    break;
-                case MERGE_IN_SIDE_EFFECTS:
-                    childTraversal.getSideEffects().mergeInto(this.asStep().getTraversal().getSideEffects());
-                    break;
-                case SET_SIDE_EFFECTS:
-                    childTraversal.setSideEffects(this.asStep().getTraversal().getSideEffects());
-                    break;
-            }
-        }
+    public default <S, E> Traversal.Admin<S, E> integrateChild(final Traversal.Admin<?, ?> childTraversal) {
+        childTraversal.setParent(this);
+        childTraversal.getSideEffects().mergeInto(this.asStep().getTraversal().getSideEffects());
+        childTraversal.setSideEffects(this.asStep().getTraversal().getSideEffects());
         return (Traversal.Admin<S, E>) childTraversal;
     }
 }

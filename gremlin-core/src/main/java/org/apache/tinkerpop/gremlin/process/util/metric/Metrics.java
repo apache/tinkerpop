@@ -32,15 +32,6 @@ import java.util.concurrent.TimeUnit;
 public interface Metrics {
 
 
-    /**
-     * The MetricsId used to obtain the element count via Metrics.getCount(String countKey)
-     */
-    public static final String ELEMENT_COUNT_ID = "elementCount";
-
-    /**
-     * The MetricsId used to obtain the traverser count via Metrics.getCount(String countKey)
-     */
-    public static final String TRAVERSER_COUNT_ID = "traverserCount";
 
     /**
      * The annotation key used to obtain the percent duration via Metrics.getAnnotation(String key)

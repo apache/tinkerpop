@@ -136,8 +136,8 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements Reversib
             }
 
             // Initialize counters (necessary because some steps might end up being 0)
-            metrics.incrementCount(Metrics.ELEMENT_COUNT_ID, 0);
-            metrics.incrementCount(Metrics.TRAVERSER_COUNT_ID, 0);
+            metrics.incrementCount(TraversalMetrics.ELEMENT_COUNT_ID, 0);
+            metrics.incrementCount(TraversalMetrics.TRAVERSER_COUNT_ID, 0);
 
             // Add metrics to parent, if necessary
             if (parentMetrics != null) {

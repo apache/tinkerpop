@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 import org.apache.tinkerpop.gremlin.process.Path
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AggregateTest
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -29,16 +31,17 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyAggregateTest {
 
-    public static class StandardTest extends AggregateTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends AggregateTest {
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {
-            g.V.name.aggregate
+        public Traversal<Vertex, List<String>> get_g_V_name_aggregateXxX_capXxX() {
+            g.V.name.aggregate('x').cap('x')
         }
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_aggregate_byXnameX() {
-            g.V.aggregate.by('name')
+        public Traversal<Vertex, List<String>> get_g_V_aggregateXxX_byXnameX_capXxX() {
+            g.V.aggregate('x').by('name').cap('x')
         }
 
         @Override
@@ -47,16 +50,17 @@ public abstract class GroovyAggregateTest {
         }
     }
 
-    public static class ComputerTest extends AggregateTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends AggregateTest {
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {
-            ComputerTestHelper.compute("g.V.name.aggregate", g)
+        public Traversal<Vertex, List<String>> get_g_V_name_aggregateXxX_capXxX() {
+            ComputerTestHelper.compute("g.V.name.aggregate('x').cap('x')", g)
         }
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_aggregate_byXnameX() {
-            ComputerTestHelper.compute("g.V.aggregate.by('name')", g)
+        public Traversal<Vertex, List<String>> get_g_V_aggregateXxX_byXnameX_capXxX() {
+            ComputerTestHelper.compute("g.V.aggregate('x').by('name').cap('x')", g)
         }
 
         @Override

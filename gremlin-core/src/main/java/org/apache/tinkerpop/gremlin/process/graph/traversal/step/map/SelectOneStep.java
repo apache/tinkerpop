@@ -65,7 +65,9 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
                         .filter(step -> step instanceof CollectingBarrierStep)
                         .filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal.asAdmin()).stream().filter(this.selectLabel::equals).findAny().isPresent()
                                 || (step.getLabel().isPresent() && this.selectLabel.equals(step.getLabel().get()))) // TODO: get rid of this (there is a test case to check it)
-                        .findAny().isPresent();
+                        .findAny().isPresent() ||
+                        TraversalHelper.getStepsUpTo(this, this.traversal.asAdmin()).stream().
+                                filter(step -> step instanceof TraversalParent).findAny().isPresent();
     }
 
     @Override
@@ -87,7 +89,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> selectTraversal) {
-        this.selectTraversal = this.integrateChild(selectTraversal, TYPICAL_LOCAL_OPERATIONS);
+        this.selectTraversal = this.integrateChild(selectTraversal);
     }
 
     @Override

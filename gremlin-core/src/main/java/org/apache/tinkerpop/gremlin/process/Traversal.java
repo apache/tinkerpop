@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.InterruptedRuntimeException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -91,7 +90,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
         final List<E> result = new ArrayList<>();
         int counter = 0;
         while (counter++ < amount && this.hasNext()) {
-            if (Thread.interrupted()) throw new TraversalInterruptedException(this);
             result.add(this.next());
         }
         return result;
@@ -137,7 +135,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
             // use the end step so the results are bulked
             final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
-                if (Thread.interrupted()) throw new TraversalInterruptedException(this);
                 final Traverser<E> traverser = endStep.next();
                 TraversalHelper.addToCollection(collection, traverser.get(), traverser.bulk());
             }
@@ -159,7 +156,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
             // use the end step so the results are bulked
             final Step<?, E> endStep = this.asAdmin().getEndStep();
             while (true) {
-                if (Thread.interrupted()) throw new TraversalInterruptedException(this);
                 endStep.next();
             }
         } catch (final NoSuchElementException ignored) {
@@ -178,7 +174,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
     public default <E2> void forEachRemaining(final Class<E2> endType, final Consumer<E2> consumer) {
         try {
             while (true) {
-                if (Thread.interrupted()) throw new TraversalInterruptedException(this);
                 consumer.accept((E2) next());
             }
         } catch (final NoSuchElementException ignore) {
@@ -190,7 +185,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
     public default void forEachRemaining(final Consumer<? super E> action) {
         try {
             while (true) {
-                if (Thread.interrupted()) throw new TraversalInterruptedException(this);
                 action.accept(next());
             }
         } catch (final NoSuchElementException ignore) {
@@ -322,12 +316,18 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
         public void applyStrategies() throws IllegalStateException;
 
         /**
-         * @return whether the traversal engine associated with this traversal.
+         * Get the {@link TraversalEngine} that will be used to execute this traversal.
+         *
+         * @return get the traversal engine associated with this traversal.
          */
         public TraversalEngine getEngine();
 
+        /**
+         * Set the {@link TraversalEngine} to be used for executing this traversal.
+         *
+         * @param engine the engine to execute the traversal with.
+         */
         public void setEngine(final TraversalEngine engine);
-
 
         /**
          * Get the {@link TraverserGenerator} associated with this traversal.
@@ -426,6 +426,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
          */
         public Traversal.Admin<S, E> clone() throws CloneNotSupportedException;
 
+        /**
+         * When the traversal has had its {@link TraversalStrategies} applied to it, it is locked.
+         *
+         * @return whether the traversal is locked
+         */
         public boolean isLocked();
 
     }

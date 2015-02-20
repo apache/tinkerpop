@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch
 import org.apache.tinkerpop.gremlin.process.T
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.LocalTest
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Order
@@ -33,7 +35,8 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.__
  */
 public abstract class GroovyLocalTest {
 
-    public static class StandardTest extends LocalTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends LocalTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
@@ -86,7 +89,8 @@ public abstract class GroovyLocalTest {
         }
     }
 
-    public static class ComputerTest extends LocalTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends LocalTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {

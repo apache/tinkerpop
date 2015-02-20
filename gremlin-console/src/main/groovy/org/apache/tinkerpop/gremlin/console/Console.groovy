@@ -51,7 +51,7 @@ class Console {
     private Iterator tempIterator = Collections.emptyIterator()
 
     private final IO io = new IO(System.in, System.out, System.err)
-    private final Groovysh groovy = new Groovysh()
+    private final Groovysh groovy = new GremlinGroovysh()
 
     public Console(final String initScriptFile) {
         io.out.println()

@@ -18,19 +18,24 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.junit.Test
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyCountTest {
 
-    public static class StandardTest extends CountTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends CountTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_count() {
             g.V.count()
@@ -67,7 +72,8 @@ public abstract class GroovyCountTest {
         }
     }
 
-    public static class ComputerTest extends CountTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends CountTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_count() {
             ComputerTestHelper.compute("g.V.count()", g)
@@ -99,9 +105,15 @@ public abstract class GroovyCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
-            g.engine(StandardTraversalEngine.instance());
-            g.V.fold.count(Scope.local);   // TODO: fold
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_fold_countXlocalX() {
+        }
+
+        @Override
+        Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
+            // override with nothing until the test itself is supported
+            return null
         }
     }
 }

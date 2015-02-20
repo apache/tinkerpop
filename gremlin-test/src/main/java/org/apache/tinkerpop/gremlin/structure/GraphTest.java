@@ -137,7 +137,7 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnVertex() {
-        final Object o = GraphManager.get().convertId("1");
+        final Object o = GraphManager.getGraphProvider().convertId("1");
         g.addVertex(T.id, o);
         try {
             g.addVertex(T.id, o);
@@ -269,7 +269,7 @@ public class GraphTest extends AbstractGremlinTest {
                 final Vertex a = vertices.get(random.nextInt(vertices.size()));
                 final Vertex b = vertices.get(random.nextInt(vertices.size()));
                 if (a != b) {
-                    edges.add(a.addEdge(GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
+                    edges.add(a.addEdge(GraphManager.getGraphProvider().convertLabel("a" + UUID.randomUUID()), b));
                     created = true;
                 }
             }
@@ -305,7 +305,7 @@ public class GraphTest extends AbstractGremlinTest {
         for (int i = 0; i < vertexCount; i = i + 2) {
             final Vertex a = vertices.get(i);
             final Vertex b = vertices.get(i + 1);
-            edges.add(a.addEdge(GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
+            edges.add(a.addEdge(GraphManager.getGraphProvider().convertLabel("a" + UUID.randomUUID()), b));
         }
 
         tryCommit(g, assertVertexEdgeCounts(vertexCount, vertexCount / 2));
@@ -373,7 +373,7 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldEvaluateConnectivityPatterns() {
-        final GraphProvider graphProvider = GraphManager.get();
+        final GraphProvider graphProvider = GraphManager.getGraphProvider();
         final Graph graph = this.g;
 
         final Vertex a;
@@ -466,7 +466,7 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldTraverseInOutFromVertexWithSingleEdgeLabelFilter() {
-        final GraphProvider graphProvider = GraphManager.get();
+        final GraphProvider graphProvider = GraphManager.getGraphProvider();
         final Graph graph = g;
 
         final Vertex a = graph.addVertex();
@@ -517,7 +517,7 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldTraverseInOutFromVertexWithMultipleEdgeLabelFilter() {
-        final GraphProvider graphProvider = GraphManager.get();
+        final GraphProvider graphProvider = GraphManager.getGraphProvider();
         final Graph graph = g;
         final Vertex a = graph.addVertex();
         final Vertex b = graph.addVertex();
@@ -555,7 +555,7 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldTestTreeConnectivity() {
-        final GraphProvider graphProvider = GraphManager.get();
+        final GraphProvider graphProvider = GraphManager.getGraphProvider();
         final Graph graph = g;
 
         int branchSize = 11;
@@ -603,7 +603,7 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_PERSISTENCE)
     public void shouldPersistDataOnClose() throws Exception {
-        final GraphProvider graphProvider = GraphManager.get();
+        final GraphProvider graphProvider = GraphManager.getGraphProvider();
         final Graph graph = g;
 
         final Vertex v = graph.addVertex();

@@ -23,10 +23,49 @@ import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.*;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.*;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.*;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.*;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.GroovyBranchTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.GroovyChooseTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.GroovyLocalTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.GroovyRepeatTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.GroovyUnionTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovyAndTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovyCoinTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovyCyclicPathTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovyDedupTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovyFilterTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovyHasNotTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovyHasTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovyIsTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovyOrTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovyRangeTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovySampleTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovySimplePathTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovyWhereTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyBackTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyCoalesceTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyCountTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyFoldTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyMapTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyMaxTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyMeanTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyMinTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyOrderTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyPathTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyPropertiesTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovySelectTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovySumTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyUnfoldTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyValueMapTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyVertexTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyAggregateTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyGroupCountTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyGroupTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyInjectTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyProfileTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovySackTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovySideEffectCapTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyStoreTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyTreeTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -44,67 +83,69 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             //GroovyGraphComputerTest.ComputerTest.class,
 
             //branch
-            GroovyBranchTest.ComputerTest.class,
-            GroovyChooseTest.ComputerTest.class,
-            GroovyLocalTest.ComputerTest.class,
-            GroovyRepeatTest.ComputerTest.class,
-            GroovyUnionTest.ComputerTest.class,
+            GroovyBranchTest.ComputerTraversals.class,
+            GroovyChooseTest.ComputerTraversals.class,
+            GroovyLocalTest.ComputerTraversals.class,
+            GroovyRepeatTest.ComputerTraversals.class,
+            GroovyUnionTest.ComputerTraversals.class,
 
             // filter
-            GroovyAndTest.ComputerTest.class,
-            GroovyCoinTest.ComputerTest.class,
-            GroovyCyclicPathTest.ComputerTest.class,
-            GroovyDedupTest.ComputerTest.class,
+            GroovyAndTest.ComputerTraversals.class,
+            GroovyCoinTest.ComputerTraversals.class,
+            GroovyCyclicPathTest.ComputerTraversals.class,
+            GroovyDedupTest.ComputerTraversals.class,
             // TODO: GroovyExceptTest.ComputerTest.class,
-            GroovyFilterTest.ComputerTest.class,
-            GroovyHasNotTest.ComputerTest.class,
-            GroovyHasTest.ComputerTest.class,
-            GroovyIsTest.ComputerTest.class,
-            GroovyOrTest.ComputerTest.class,
-            GroovyRangeTest.ComputerTest.class,
+            GroovyFilterTest.ComputerTraversals.class,
+            GroovyHasNotTest.ComputerTraversals.class,
+            GroovyHasTest.ComputerTraversals.class,
+            GroovyIsTest.ComputerTraversals.class,
+            GroovyOrTest.ComputerTraversals.class,
+            GroovyRangeTest.ComputerTraversals.class,
             // TODO: GroovyRetainTest.ComputerTest.class,
-            GroovySampleTest.ComputerTest.class,
-            GroovySimplePathTest.ComputerTest.class,
-            GroovyWhereTest.ComputerTest.class,
+            GroovySampleTest.ComputerTraversals.class,
+            GroovySimplePathTest.ComputerTraversals.class,
+            GroovyWhereTest.ComputerTraversals.class,
 
             // map
-            GroovyBackTest.ComputerTest.class,
-            GroovyCountTest.ComputerTest.class,
-            GroovyFoldTest.ComputerTest.class,
-            GroovyMapTest.ComputerTest.class,
+            GroovyBackTest.ComputerTraversals.class,
+            GroovyCoalesceTest.ComputerTraversals.class,
+            GroovyCountTest.ComputerTraversals.class,
+            GroovyFoldTest.ComputerTraversals.class,
+            GroovyMapTest.ComputerTraversals.class,
             // TODO: GroovyMatchTest.ComputerTest.class,
-            GroovyMaxTest.ComputerTest.class,
-            GroovyMeanTest.ComputerTest.class,
-            GroovyMinTest.ComputerTest.class,
-            GroovyOrderTest.ComputerTest.class,
-            GroovyPathTest.ComputerTest.class,
-            GroovyPropertiesTest.ComputerTest.class,
-            GroovySelectTest.ComputerTest.class,
-            GroovyUnfoldTest.ComputerTest.class,
-            GroovyValueMapTest.ComputerTest.class,
-            GroovyVertexTest.ComputerTest.class,
-            GroovyCoalesceTest.ComputerTest.class,
+            GroovyMaxTest.ComputerTraversals.class,
+            GroovyMeanTest.ComputerTraversals.class,
+            GroovyMinTest.ComputerTraversals.class,
+            GroovyOrderTest.ComputerTraversals.class,
+            GroovyPathTest.ComputerTraversals.class,
+            GroovyPropertiesTest.ComputerTraversals.class,
+            GroovySelectTest.ComputerTraversals.class,
+            GroovySumTest.ComputerTraversals.class,
+            GroovyUnfoldTest.ComputerTraversals.class,
+            GroovyValueMapTest.ComputerTraversals.class,
+            GroovyVertexTest.ComputerTraversals.class,
+
 
             // sideEffect
             // TODO: GroovyAddEdgeTest.ComputerTest.class,
-            GroovyAggregateTest.ComputerTest.class,
-            GroovyGroupTest.ComputerTest.class,
-            GroovyGroupCountTest.ComputerTest.class,
-            GroovyInjectTest.ComputerTest.class,
-            GroovyProfileTest.ComputerTest.class,
-            GroovySackTest.ComputerTest.class,
-            GroovySideEffectCapTest.ComputerTest.class,
+            GroovyAggregateTest.ComputerTraversals.class,
+            GroovyGroupTest.ComputerTraversals.class,
+            GroovyGroupCountTest.ComputerTraversals.class,
+            GroovyInjectTest.ComputerTraversals.class,
+            GroovyProfileTest.ComputerTraversals.class,
+            GroovySackTest.ComputerTraversals.class,
+            GroovySideEffectCapTest.ComputerTraversals.class,
             // TODO: GroovySideEffectTest.ComputerTest.class,
-            GroovyStoreTest.ComputerTest.class,
+            GroovyStoreTest.ComputerTraversals.class,
             // TODO: GroovySubgraphTest.ComputerTest.class,
-            GroovyTreeTest.ComputerTest.class,
+            GroovyTreeTest.ComputerTraversals.class,
 
             // algorithms
             PageRankVertexProgramTest.class,
     };
 
     public GroovyProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce);
+        super(klass, builder, testsToExecute, testsToExecute);
     }
 
     @Override
@@ -121,7 +162,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
 
     private void unloadSugar() {
         try {
-            SugarTestHelper.clearRegistry(GraphManager.get());
+            SugarTestHelper.clearRegistry(GraphManager.getGraphProvider());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

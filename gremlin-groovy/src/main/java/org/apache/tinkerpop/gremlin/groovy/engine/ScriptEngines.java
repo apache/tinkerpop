@@ -56,6 +56,8 @@ import java.util.stream.Collectors;
 public class ScriptEngines implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(ScriptEngines.class);
 
+    private final static ScriptEngineManager SCRIPT_ENGINE_MANAGER = new ScriptEngineManager();
+
     /**
      * {@code ScriptEngine} objects configured for the server keyed on the language name.
      */
@@ -294,8 +296,7 @@ public class ScriptEngines implements AutoCloseable {
             return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(
                     new DefaultImportCustomizerProvider(imports, staticImports), securityCustomizerProvider));
         } else {
-            final ScriptEngineManager manager = new ScriptEngineManager();
-            return Optional.ofNullable(manager.getEngineByName(language));
+            return Optional.ofNullable(SCRIPT_ENGINE_MANAGER.getEngineByName(language));
         }
     }
 

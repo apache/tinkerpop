@@ -33,8 +33,6 @@ public interface TraversalEngine extends Serializable {
 
     public Type getType();
 
-    public void setGraph(final Graph graph);
-
     public default boolean isStandard() {
         return this.getType().equals(Type.STANDARD);
     }
@@ -42,4 +40,6 @@ public interface TraversalEngine extends Serializable {
     public default boolean isComputer() {
         return this.getType().equals(Type.COMPUTER);
     }
+
+    public TraversalEngine create(final Graph graph);
 }

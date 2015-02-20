@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
@@ -155,6 +156,10 @@ public final class StringFactory {
 
     public static String graphComputerString(final GraphComputer graphComputer) {
         return graphComputer.getClass().getSimpleName().toLowerCase();
+    }
+
+    public static String traversalEngineString(final TraversalEngine traversalEngine) {
+        return traversalEngine.getClass().getSimpleName().toLowerCase();
     }
 
     public static String featureString(final Graph.Features features) {

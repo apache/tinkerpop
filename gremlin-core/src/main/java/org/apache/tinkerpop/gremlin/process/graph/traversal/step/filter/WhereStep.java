@@ -56,8 +56,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         this.firstKey = null;
         this.secondKey = null;
         this.biPredicate = null;
-        this.constraint = constraint;
-        this.integrateChild(this.constraint, Operation.SET_PARENT);
+        this.constraint = this.integrateChild(constraint);
     }
 
     @Override
@@ -122,7 +121,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
     public WhereStep<E> clone() throws CloneNotSupportedException {
         final WhereStep<E> clone = (WhereStep<E>) super.clone();
         if (null != this.constraint)
-            clone.constraint = clone.integrateChild(this.constraint.clone(), TYPICAL_LOCAL_OPERATIONS);
+            clone.constraint = clone.integrateChild(this.constraint.clone());
         return clone;
     }
 

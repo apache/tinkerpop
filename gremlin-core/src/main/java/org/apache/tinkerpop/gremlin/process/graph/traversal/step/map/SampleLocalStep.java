@@ -25,7 +25,12 @@ import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.util.BulkSet;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)

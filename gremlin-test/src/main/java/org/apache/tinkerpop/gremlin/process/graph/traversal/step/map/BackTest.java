@@ -20,7 +20,10 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -165,11 +168,9 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         });
     }
 
-    public static class StandardTest extends BackTest {
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends BackTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_asXhereX_out_backXhereX(final Object v1Id) {
             return g.V(v1Id).as("here").out().back("here");
@@ -208,59 +209,6 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_backXhereX() {
             return g.V().as("here").out().values("name").back("here");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_backXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_backXprojectXX_groupCount_byXnameX() {
-            return (Traversal) g.V().out("created")
-                    .union(as("project").in("created").has("name", "marko").back("project"),
-                            as("project").in("created").in("knows").has("name", "marko").back("project")).groupCount().by("name");
-        }
-    }
-
-    public static class ComputerTest extends BackTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_asXhereX_out_backXhereX(final Object v1Id) {
-            return g.V(v1Id).as("here").out().<Vertex>back("here");
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_VX4X_out_asXhereX_hasXlang_javaX_backXhereX(final Object v4Id) {
-            return g.V(v4Id).out().as("here").has("lang", "java").<Vertex>back("here");
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX4X_out_asXhereX_hasXlang_javaX_backXhereX_name(final Object v4Id) {
-            return g.V(v4Id).out().as("here").has("lang", "java").back("here").<String>values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Edge> get_g_VX1X_outE_asXhereX_inV_hasXname_vadasX_backXhereX(final Object v1Id) {
-            return g.V(v1Id).outE().as("here").inV().has("name", "vadas").<Edge>back("here");
-        }
-
-        @Override
-        public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(final Object v1Id) {
-            return g.V(v1Id).outE("knows").has("weight", 1.0d).as("here").inV().has("name", "josh").<Edge>back("here");
-        }
-
-        @Override
-        public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_backXhereX(final Object v1Id) {
-            return g.V(v1Id).outE("knows").as("here").has("weight", 1.0d).inV().has("name", "josh").<Edge>back("here");
-        }
-
-        @Override
-        public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_backXhereX(final Object v1Id) {
-            return g.V(v1Id).outE("knows").as("here").has("weight", 1.0d).as("fake").inV().has("name", "josh").<Edge>back("here");
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_backXhereX() {
-            return g.V().as("here").out().values("name").<Vertex>back("here");
         }
 
         @Override

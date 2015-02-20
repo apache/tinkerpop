@@ -19,6 +19,9 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.GraphManager;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.util.MapHelper;
 import org.junit.Before;
 
@@ -39,23 +42,33 @@ import static org.junit.Assume.assumeTrue;
 public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
 
     /**
-     * Determines if a test case implementation of a process test uses graph computer.  This value should be
-     * set in the constructor of the class that implements this.
-     */
-    protected boolean requiresGraphComputer;
-
-    /**
      * Determines if a graph meets requirements for execution.  All gremlin process tests should check this
      * method as part of a call to {@code assumeTrue} to ensure that the test doesn't require the computer
      * feature or if it does require the computer feature then ensure that the graph being tested supports it.
      */
     protected boolean graphMeetsTestRequirements() {
-        return !requiresGraphComputer || g.features().graph().supportsComputer();
+        return !hasGraphComputerRequirement() || g.features().graph().supportsComputer();
+    }
+
+    private boolean hasGraphComputerRequirement() {
+        // do the negation of STANDARD as we expect a type of REASONING that would infer computer support
+        return !GraphManager.getTraversalEngine().getType().equals(TraversalEngine.Type.STANDARD);
     }
 
     @Before
     public void setupTest() {
         assumeTrue(graphMeetsTestRequirements());
+
+        try {
+            // ignore tests that aren't supported by a specific TraversalEngine
+            final IgnoreEngine ignoreEngine = this.getClass().getMethod(name.getMethodName()).getAnnotation(IgnoreEngine.class);
+            if (ignoreEngine != null)
+                assumeTrue(String.format("This test is ignored for %s", ignoreEngine.value()), !ignoreEngine.value().equals(GraphManager.getTraversalEngine().getType()));
+        } catch (NoSuchMethodException nsme) {
+            throw new RuntimeException(String.format("Could not find test method %s in test case %s", name.getMethodName(), this.getClass().getName()));
+        }
+
+        g.engine(GraphManager.getTraversalEngine());
     }
 
     public <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {

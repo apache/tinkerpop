@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -59,12 +61,9 @@ public abstract class OrTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("marko", "ripple", "lop", "peter"), traversal);
     }
 
-    public static class StandardTest extends OrTest {
-
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends OrTest {
         @Override
         public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name() {
             return g.V().or(has("age", gt, 27), outE().count().is(gte, 2l)).values("name");
@@ -73,22 +72,6 @@ public abstract class OrTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_orXoutEXknowsX__hasXlabel_softwareX_or_hasXage_gte_35XX_name() {
             return g.V().or(outE("knows"), has(T.label, "software").or().has("age", Compare.gte, 35)).values("name");
-        }
-    }
-
-    public static class ComputerTest extends OrTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name() {
-            return g.V().or(has("age", gt, 27), outE().count().is(gte, 2l)).<String>values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_orXoutEXknowsX__hasXlabel_softwareX_or_hasXage_gte_35XX_name() {
-            return g.V().or(outE("knows"), has(T.label, "software").or().has("age", Compare.gte, 35)).<String>values("name");
         }
     }
 }

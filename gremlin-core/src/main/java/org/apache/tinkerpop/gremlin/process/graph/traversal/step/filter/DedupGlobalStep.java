@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reducing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -36,7 +35,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupGlobalStep<S> extends FilterStep<S> implements Reversible, Reducing<Set<Object>, S>, TraversalParent {
+public final class DedupGlobalStep<S> extends FilterStep<S> implements Reversible, TraversalParent {
 
     private Traversal.Admin<S, Object> dedupTraversal = new IdentityTraversal<>();
     private Set<Object> duplicateSet = new HashSet<>();
@@ -59,22 +58,14 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Reversibl
 
     @Override
     public void addLocalChild(final Traversal.Admin dedupTraversal) {
-        this.dedupTraversal = this.integrateChild(dedupTraversal, TYPICAL_LOCAL_OPERATIONS);
-    }
-
-    @Override
-    public Reducer<Set<Object>, S> getReducer() {
-        return new Reducer<>(HashSet::new, (set, start) -> {
-            set.add(TraversalUtil.apply(start, this.dedupTraversal));
-            return set;
-        }, true);
+        this.dedupTraversal = this.integrateChild(dedupTraversal);
     }
 
     @Override
     public DedupGlobalStep<S> clone() throws CloneNotSupportedException {
         final DedupGlobalStep<S> clone = (DedupGlobalStep<S>) super.clone();
         clone.duplicateSet = new HashSet<>();
-        clone.dedupTraversal = clone.integrateChild(this.dedupTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+        clone.dedupTraversal = clone.integrateChild(this.dedupTraversal.clone());
         return clone;
     }
 

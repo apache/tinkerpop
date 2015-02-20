@@ -20,22 +20,32 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.LocalBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
-import java.util.HashSet;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class DedupLocalStep<S> extends LocalBarrierStep<S, S> {
+public final class DedupLocalStep<E, S extends Iterable<E>> extends MapStep<S, Set<E>> {
 
     public DedupLocalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected S map(final Traverser.Admin<S> traverser) {
-        return (S) this.collect(traverser).stream().collect(Collectors.toCollection(HashSet::new));
+    protected Set<E> map(final Traverser.Admin<S> traverser) {
+        final Set<E> result = new LinkedHashSet<>();
+        for (final E item : traverser.get()) {
+            result.add(item);
+        }
+        return result;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.OBJECT);
     }
 }

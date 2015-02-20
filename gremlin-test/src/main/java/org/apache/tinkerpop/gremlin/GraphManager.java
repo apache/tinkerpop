@@ -18,21 +18,34 @@
  */
 package org.apache.tinkerpop.gremlin;
 
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+
 /**
- * Holds the GraphProvider specified by the implementer using the StructureSuite.
+ * Holds objects specified by the test suites supplying them in a static manner to the test cases.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphManager {
     private static GraphProvider graphProvider;
+    private static TraversalEngine traversalEngine;
 
-    public static GraphProvider set(final GraphProvider graphProvider) {
+    public static GraphProvider setGraphProvider(final GraphProvider graphProvider) {
         final GraphProvider old = GraphManager.graphProvider;
         GraphManager.graphProvider = graphProvider;
         return old;
     }
 
-    public static GraphProvider get() {
+    public static GraphProvider getGraphProvider() {
         return graphProvider;
+    }
+
+    public static TraversalEngine setTraversalEngine(final TraversalEngine traversalEngine) {
+        final TraversalEngine old = GraphManager.traversalEngine;
+        GraphManager.traversalEngine = traversalEngine;
+        return old;
+    }
+
+    public static TraversalEngine getTraversalEngine() {
+        return traversalEngine;
     }
 }

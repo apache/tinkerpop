@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Order;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -194,10 +196,9 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
         assertEquals(5, counter);
     }
 
-    public static class StandardTest extends LocalTest {
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends LocalTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
@@ -249,63 +250,6 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
             return g.V().local(inE("knows").limit(2)).outV().values("name");
         }
 
-
-    }
-
-    public static class ComputerTest extends LocalTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
-            return g.V().local(properties("location").order().by(T.value, Order.incr).range(0, 2)).<String>value();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXlabel_personX_asXaX_localXoutXcreatedX_asXbXX_selectXa_bX_byXnameX_byXidX() {
-            return g.V().has(T.label, "person").as("a").local(out("created").as("b")).select("a", "b").by("name").by(T.id);
-        }
-
-        @Override
-        public Traversal<Vertex, Long> get_g_V_localXoutE_countX() {
-            return g.V().local(outE().count());
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX1X_localXoutEXknowsX_limitX1XX_inV_name(final Object v1Id) {
-            return g.V(v1Id).local(outE("knows").limit(1)).inV().<String>values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_localXbothEXcreatedX_limitX1XX_otherV_name() {
-            return g.V().local(bothE("created").limit(1)).otherV().<String>values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX1XX_otherV_name(final Object v4Id) {
-            return g.V(v4Id).local(bothE().limit(1)).otherV().<String>values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX2XX_otherV_name(final Object v4Id) {
-            return g.V(v4Id).local(bothE().limit(2)).otherV().<String>values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Edge> get_g_VX4X_localXbothEX1_createdX_limitX1XX(final Object v4Id) {
-            return g.V(v4Id).local(bothE("created").limit(1));
-        }
-
-        @Override
-        public Traversal<Vertex, Edge> get_g_VX4X_localXbothEXknows_createdX_limitX1XX(final Object v4Id) {
-            return g.V(v4Id).local(bothE("knows", "created").limit(1));
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_localXinEXknowsX_limitX2XX_outV_name() {
-            return g.V().local(inE("knows").limit(2)).outV().<String>values("name");
-        }
 
     }
 }

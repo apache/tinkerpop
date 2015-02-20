@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -65,28 +67,10 @@ public abstract class CoinTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class StandardTest extends CoinTest {
 
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_coinX1X() {
-            return g.V().coin(1.0d);
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_coinX0X() {
-            return g.V().coin(0.0d);
-        }
-    }
-
-    public static class ComputerTest extends CoinTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends CoinTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX1X() {
             return g.V().coin(1.0d);

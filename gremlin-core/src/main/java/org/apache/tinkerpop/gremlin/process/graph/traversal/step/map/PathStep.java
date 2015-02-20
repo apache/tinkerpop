@@ -62,7 +62,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
         final PathStep<S> clone = (PathStep<S>) super.clone();
         clone.traversalRing = new TraversalRing<>();
         for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {
-            clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone(), TYPICAL_LOCAL_OPERATIONS));
+            clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone()));
         }
         return clone;
     }
@@ -80,7 +80,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> pathTraversal) {
-        this.traversalRing.addTraversal(this.integrateChild(pathTraversal, TYPICAL_LOCAL_OPERATIONS));
+        this.traversalRing.addTraversal(this.integrateChild(pathTraversal));
     }
 
     @Override

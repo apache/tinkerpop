@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.computer.util;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -36,6 +38,7 @@ import static org.junit.Assert.*;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@UseEngine(TraversalEngine.Type.COMPUTER)
 public class ComputerDataStrategyTest extends AbstractGremlinTest {
 
     @Test

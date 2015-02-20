@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
  */
 public abstract class GroovyGraphComputerTest {
 
-    public static class ComputerTest extends GraphComputerTest {
+    public static class ComputerTraversals extends GraphComputerTest {
         public GraphComputer get_g_compute() {
             g.compute();
         }

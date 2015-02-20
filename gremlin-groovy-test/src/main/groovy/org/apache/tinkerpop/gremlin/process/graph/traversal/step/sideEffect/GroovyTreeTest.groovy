@@ -18,19 +18,24 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
 import org.apache.tinkerpop.gremlin.process.T
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.TreeTest
 import org.apache.tinkerpop.gremlin.process.graph.util.Tree
 import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.junit.Test
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyTreeTest {
 
-    public static class StandardTest extends TreeTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends TreeTest {
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX() {
@@ -58,7 +63,8 @@ public abstract class GroovyTreeTest {
         }
     }
 
-    public static class ComputerTest extends TreeTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends TreeTest {
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX() {
@@ -71,20 +77,25 @@ public abstract class GroovyTreeTest {
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id) {
-            g.V(v1Id).out.out.tree.by('name');
-            // TODO
-        }
-
-        @Override
-        public Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
-            g.V(v1Id).out.out.tree('a').by('name').both.both.cap('a');
-            // TODO
-        }
-
-        @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX() {
             ComputerTestHelper.compute("g.V.out.out.tree('a')", g)
+        }
+
+        @Override
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        void g_VX1X_out_out_tree_byXnameX() {
+
+        }
+
+        @Override
+        Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(Object v1Id) {
+            return null
+        }
+
+        @Override
+        Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(Object v1Id) {
+            return null
         }
     }
 }

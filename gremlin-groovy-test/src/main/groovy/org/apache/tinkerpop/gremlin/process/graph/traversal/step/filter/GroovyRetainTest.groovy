@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter
 
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.RetainTest
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -28,7 +30,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyRetainTest {
 
-    public static class StandardTest extends RetainTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends RetainTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_retainXg_v2X(final Object v1Id, final Object v2Id) {
             g.V(v1Id).out.retain(g.V(v2Id).next())
@@ -45,7 +48,8 @@ public abstract class GroovyRetainTest {
         }
     }
 
-    public static class ComputerTest extends RetainTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends RetainTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_retainXg_v2X(final Object v1Id, final Object v2Id) {
             ComputerTestHelper.compute("g.V(${v1Id}).out.retain(g.V($v2Id).next())", g);

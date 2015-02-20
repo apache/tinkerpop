@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch
 
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -29,7 +31,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyChooseTest {
 
-    public static class StandardTest extends ChooseTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends ChooseTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {
@@ -37,7 +40,8 @@ public abstract class GroovyChooseTest {
         }
     }
 
-    public static class ComputerTest extends ChooseTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends ChooseTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {

@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.mapr
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
-import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectRegistrar;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -41,7 +40,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable, SideEffectRegistrar, Reversible, TraversalParent, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
+public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, TraversalParent, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
 
     private Traversal.Admin<S, Object> storeTraversal = new IdentityTraversal<>();
     private String sideEffectKey;
@@ -49,6 +48,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     public StoreStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
+        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSetSupplier.instance());
     }
 
     @Override
@@ -57,12 +57,6 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
                 traverser.sideEffects(this.sideEffectKey),
                 TraversalUtil.apply(traverser.asAdmin(), this.storeTraversal),
                 traverser.bulk());
-    }
-
-    @Override
-    public void registerSideEffects() {
-        if (null == this.sideEffectKey) this.sideEffectKey = this.getId();
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSetSupplier.instance());
     }
 
     @Override
@@ -87,7 +81,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> storeTraversal) {
-        this.storeTraversal = this.integrateChild(storeTraversal, TYPICAL_LOCAL_OPERATIONS);
+        this.storeTraversal = this.integrateChild(storeTraversal);
     }
 
     @Override
@@ -98,7 +92,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     @Override
     public StoreStep<S> clone() throws CloneNotSupportedException {
         final StoreStep<S> clone = (StoreStep<S>) super.clone();
-        clone.storeTraversal = clone.integrateChild(this.storeTraversal.clone(), TYPICAL_LOCAL_OPERATIONS);
+        clone.storeTraversal = clone.integrateChild(this.storeTraversal.clone());
         return clone;
     }
 }

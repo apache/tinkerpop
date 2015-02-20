@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -69,7 +71,9 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
         assertEquals(0.4, map.get("lop"));
     }
 
-    public static class StandardTest extends MaxTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends MaxTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_max() {
@@ -83,26 +87,7 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmaxXlocalXX() {
-            return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).by(max(Scope.local)).cap();
-        }
-    }
-
-    public static class ComputerTest extends MaxTest {
-
-        @Override
-        public Traversal<Vertex, Integer> get_g_V_age_max() {
-            return g.V().values("age").<Integer>max();
-        }
-
-        @Override
-        public Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_max() {
-            return g.V().repeat(both()).times(5).values("age").<Integer>max();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmaxXlocalXX() {
-            return g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).
-                    by(max(Scope.local)).<Map<String, Number>>cap();
+            return g.V().hasLabel("software").<String, Number>group().by("name").by(bothE().values("weight").fold()).by(max(Scope.local));
         }
     }
 }

@@ -48,7 +48,7 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
         this.isAnd = this.getClass().equals(AndStep.class);
         this.conjunctionTraversals = Arrays.asList(conjunctionTraversals);
         for (final Traversal.Admin<S, ?> conjunctionTraversal : this.conjunctionTraversals) {
-            this.integrateChild(conjunctionTraversal, TYPICAL_LOCAL_OPERATIONS);
+            this.integrateChild(conjunctionTraversal);
         }
     }
 
@@ -86,7 +86,7 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
         final ConjunctionStep<S> clone = (ConjunctionStep<S>) super.clone();
         clone.conjunctionTraversals = new ArrayList<>();
         for (final Traversal.Admin<S, ?> conjunctionTraversal : this.conjunctionTraversals) {
-            clone.conjunctionTraversals.add(clone.integrateChild(conjunctionTraversal.clone(), TYPICAL_LOCAL_OPERATIONS));
+            clone.conjunctionTraversals.add(clone.integrateChild(conjunctionTraversal.clone()));
         }
         return clone;
     }

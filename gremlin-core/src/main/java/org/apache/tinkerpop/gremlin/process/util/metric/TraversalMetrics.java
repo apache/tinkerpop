@@ -36,6 +36,16 @@ public interface TraversalMetrics {
     public static final String METRICS_KEY = Graph.Hidden.hide("metrics");
 
     /**
+     * The MetricsId used to obtain the element count via Metrics.getCount(String countKey)
+     */
+    public static final String ELEMENT_COUNT_ID = "elementCount";
+
+    /**
+     * The MetricsId used to obtain the traverser count via Metrics.getCount(String countKey)
+     */
+    public static final String TRAVERSER_COUNT_ID = "traverserCount";
+
+    /**
      * Get the total duration taken by the Traversal.
      *
      * @param unit

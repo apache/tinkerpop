@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.bothE
@@ -31,7 +33,8 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.mean
  */
 public abstract class GroovyMeanTest {
 
-    public static class StandardTest extends MeanTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends MeanTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_age_mean() {
@@ -40,11 +43,12 @@ public abstract class GroovyMeanTest {
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX() {
-            g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(mean(Scope.local)).cap()
+            g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(mean(Scope.local))
         }
     }
 
-    public static class ComputerTest extends MeanTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends MeanTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_age_mean() {
@@ -53,7 +57,7 @@ public abstract class GroovyMeanTest {
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXmeanXlocalXX() {
-            ComputerTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(mean(Scope.local)).cap()", g)
+            ComputerTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(mean(Scope.local))", g)
         }
     }
 }

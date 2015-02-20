@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch
 
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.UnionTest
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
@@ -32,7 +34,8 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*
  */
 public abstract class GroovyUnionTest {
 
-    public static class StandardTest extends UnionTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends UnionTest {
 
         public Traversal<Vertex, String> get_g_V_unionXout__inX_name() {
             g.V.union(__.out, __.in).name
@@ -68,7 +71,8 @@ public abstract class GroovyUnionTest {
 
     }
 
-    public static class ComputerTest extends UnionTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends UnionTest {
 
         public Traversal<Vertex, String> get_g_V_unionXout__inX_name() {
             ComputerTestHelper.compute("g.V.union(__.out, __.in).name", g)
@@ -101,7 +105,7 @@ public abstract class GroovyUnionTest {
         @Override
         public Traversal<Vertex, Number> get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(
                 final Object v1Id, final Object v2Id) {
-            g.engine(StandardTraversalEngine.instance());
+            g.engine(StandardTraversalEngine.standard);
             g.V(v1Id, v2Id).union(outE().count, inE().count, outE().weight.sum);
         }
     }

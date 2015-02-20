@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AddEdgeTest
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -27,7 +29,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyAddEdgeTest {
 
-    public static class StandardTest extends AddEdgeTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends AddEdgeTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(

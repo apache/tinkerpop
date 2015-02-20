@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.empty;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -29,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.commons.configuration.Configuration;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -71,13 +71,18 @@ public final class EmptyGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public GraphComputer compute(final Class... graphComputerClass) {
+    public void compute(final Class<? extends GraphComputer> graphComputerClass) {
+
+    }
+
+    @Override
+    public GraphComputer compute() {
         throw new IllegalStateException(MESSAGE);
     }
 
     @Override
     public TraversalEngine engine() {
-       return StandardTraversalEngine.instance();
+        return StandardTraversalEngine.standard;
     }
 
     @Override

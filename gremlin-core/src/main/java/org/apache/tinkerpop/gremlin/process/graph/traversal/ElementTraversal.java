@@ -18,14 +18,29 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal;
 
-import org.apache.tinkerpop.gremlin.process.*;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.process.Path;
+import org.apache.tinkerpop.gremlin.process.Scope;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -194,6 +209,14 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default GraphTraversal<A, Double> mean(final Scope scope) {
         return this.start().mean(scope);
+    }
+
+    public default <K, R> GraphTraversal<A, Map<K, R>> group() {
+        return this.start().group();
+    }
+
+    public default <B> GraphTraversal<A, Map<B, Long>> groupCount() {
+        return this.start().<B>groupCount();
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -372,32 +395,16 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().subgraph(sideEffectKey);
     }
 
-    public default GraphTraversal<A, Edge> subgraph() {
-        return this.start().subgraph();
-    }
-
     public default GraphTraversal<A, A> aggregate(final String sideEffectKey) {
         return this.start().aggregate(sideEffectKey);
-    }
-
-    public default GraphTraversal<A, A> aggregate() {
-        return this.start().aggregate();
     }
 
     public default GraphTraversal<A, A> group(final String sideEffectKey) {
         return this.start().group(sideEffectKey);
     }
 
-    public default GraphTraversal<A, A> group() {
-        return this.start().group();
-    }
-
     public default GraphTraversal<A, A> groupCount(final String sideEffectKey) {
         return this.start().groupCount(sideEffectKey);
-    }
-
-    public default GraphTraversal<A, A> groupCount() {
-        return this.start().groupCount();
     }
 
     public default GraphTraversal<A, Vertex> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
@@ -438,10 +445,6 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default GraphTraversal<A, A> store(final String sideEffectKey) {
         return this.start().store(sideEffectKey);
-    }
-
-    public default GraphTraversal<A, A> store() {
-        return this.start().store();
     }
 
     ///////////////////// BRANCH STEPS /////////////////////

@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -122,12 +124,9 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
     }
 
-    public static class StandardTest extends ValueMapTest {
-
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends ValueMapTest {
         @Override
         public Traversal<Vertex, Map<String, List>> get_g_V_valueMap() {
             return g.V().valueMap();
@@ -141,28 +140,6 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, List<String>>> get_g_VX1X_outXcreatedX_valueMap(final Object v1Id) {
             return g.V(v1Id).out("created").valueMap();
-        }
-    }
-
-    public static class ComputerTest extends ValueMapTest {
-
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, List>> get_g_V_valueMap() {
-            return (Traversal) g.V().valueMap();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, List>> get_g_V_valueMapXname_ageX() {
-            return (Traversal) g.V().valueMap("name", "age");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, List<String>>> get_g_VX1X_outXcreatedX_valueMap(final Object v1Id) {
-            return (Traversal) g.V(v1Id).out("created").valueMap();
         }
     }
 }

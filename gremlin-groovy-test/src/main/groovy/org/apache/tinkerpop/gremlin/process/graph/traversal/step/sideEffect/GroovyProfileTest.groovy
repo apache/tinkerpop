@@ -18,18 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Traversal
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.ProfileTest
 import org.apache.tinkerpop.gremlin.process.util.metric.StandardTraversalMetrics
 import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.junit.Ignore
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyProfileTest {
 
-    public static class StandardTest extends ProfileTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends ProfileTest {
 
         @Override
         Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile() {
@@ -41,13 +46,23 @@ public abstract class GroovyProfileTest {
             g.V.repeat(__.both()).times(3).profile();
         }
 
+//        @Override
+//        Traversal<Vertex, StandardTraversalMetrics> get_nested_profile() {
+//            g.V().has(__.in("created").count().is(1l)).values("name").profile();
+//        }
+
+        @org.junit.Ignore
+        void testProfileTimes() {
+        }
+
         @Override
-        Traversal<Vertex, StandardTraversalMetrics> get_nested_profile() {
-            g.V().has(__.in("created").count().is(1l)).values("name").profile();
+        Traversal<Vertex, StandardTraversalMetrics> get_g_V_sleep_sleep_profile() {
+            return null
         }
     }
 
-    public static class ComputerTest extends ProfileTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends ProfileTest {
 
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile() {
@@ -60,9 +75,19 @@ public abstract class GroovyProfileTest {
             ComputerTestHelper.compute("g.V.repeat(__.both()).times(3).profile()", g);
         }
 
+//        @Override
+//        Traversal<Vertex, StandardTraversalMetrics> get_nested_profile() {
+//            ComputerTestHelper.compute(" g.V().has(__.in('created').count().is(1l)).values('name').profile()", g);
+//        }
+
         @Override
-        Traversal<Vertex, StandardTraversalMetrics> get_nested_profile() {
-            ComputerTestHelper.compute(" g.V().has(__.in('created').count().is(1l)).values('name').profile()", g);
+        @org.junit.Ignore
+        void testProfileTimes() {
+        }
+
+        @Override
+        Traversal<Vertex, StandardTraversalMetrics> get_g_V_sleep_sleep_profile() {
+            return null
         }
     }
 }

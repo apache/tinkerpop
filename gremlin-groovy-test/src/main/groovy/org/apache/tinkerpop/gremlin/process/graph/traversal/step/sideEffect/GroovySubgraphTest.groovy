@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SubgraphTest
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -29,7 +31,8 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.__
  */
 public abstract class GroovySubgraphTest {
 
-    public static class StandardTest extends SubgraphTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends SubgraphTest {
 
         @Override
         public Traversal<Vertex, Graph> get_g_V_withSideEffectXsgX_outEXknowsX_subgraphXsgX_name_capXsgX(

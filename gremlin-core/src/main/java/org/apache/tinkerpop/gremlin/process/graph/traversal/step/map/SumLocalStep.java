@@ -20,19 +20,39 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.LocalBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class SumLocalStep<S> extends LocalBarrierStep<S, Double> {
+public final class SumLocalStep<E extends Number, S extends Iterable<E>> extends MapStep<S, E> {
 
     public SumLocalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected Double map(final Traverser.Admin<S> traverser) {
-        return this.<Number>collect(traverser).stream().mapToDouble(Number::doubleValue).sum();
+    protected E map(final Traverser.Admin<S> traverser) {
+        Number result;
+        final Iterator<E> iterator = traverser.get().iterator();
+        if (iterator.hasNext()) {
+            result = iterator.next();
+            while (iterator.hasNext()) {
+                result = result.doubleValue() + iterator.next().doubleValue();
+            }
+        } else {
+            result = 0.0d;
+        }
+        return (E) result;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return Collections.singleton(TraverserRequirement.OBJECT);
     }
 }

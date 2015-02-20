@@ -20,7 +20,10 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -46,6 +49,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_mapXnameX() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_mapXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -55,6 +59,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_outE_label_mapXlengthX() {
         final Traversal<Vertex, Integer> traversal = get_g_VX1X_outE_label_mapXlengthX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -67,6 +72,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_out_mapXnameX_mapXlengthX() {
         final Traversal<Vertex, Integer> traversal = get_g_VX1X_out_mapXnameX_mapXlengthX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -79,6 +85,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_asXaX_out_mapXa_nameX() {
         int marko = 0;
         int peter = 0;
@@ -102,6 +109,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_asXaX_out_out_mapXa_name_it_nameX() {
         final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_out_mapXa_name_it_nameX();
         int counter = 0;
@@ -114,12 +122,9 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-
-    public static class StandardTest extends MapTest {
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
-
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends MapTest {
         @Override
         public Traversal<Vertex, String> get_g_VX1X_mapXnameX(final Object v1Id) {
             return g.V(v1Id).<String>map(v -> v.get().value("name"));
@@ -142,45 +147,6 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
-            return g.V().as("a").out().out().map(v -> v.<Vertex>path("a").<String>value("name") + v.get().<String>value("name"));
-        }
-    }
-
-    public static class ComputerTest extends MapTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX1X_mapXnameX(final Object v1Id) {
-            g.engine(StandardTraversalEngine.instance()); // TODO
-            return g.V(v1Id).<String>map(v -> v.get().value("name"));// TODO: ;
-        }
-
-        @Override
-        public Traversal<Vertex, Integer> get_g_VX1X_outE_label_mapXlengthX(final Object v1Id) {
-            g.engine(StandardTraversalEngine.instance()); // TODO
-            return g.V(v1Id).<String>outE().label().map(l -> l.get().length());// TODO: ;
-        }
-
-        @Override
-        public Traversal<Vertex, Integer> get_g_VX1X_out_mapXnameX_mapXlengthX(final Object v1Id) {
-            g.engine(StandardTraversalEngine.instance()); // TODO
-            return g.V(v1Id).<String>out().map(v -> v.get().value("name")).map(n -> n.get().toString().length());// TODO: ;
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
-            // TODO: Doesn't work for graph computer because sideEffects are not accessible
-
-            g.engine(StandardTraversalEngine.instance()); // TODO
-            return g.V().as("a").out().<String>map(v -> v.<Vertex>path("a").value("name"));
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
-            // TODO: Doesn't work for graph computer because sideEffects are not accessible
-            g.engine(StandardTraversalEngine.instance()); // TODO
             return g.V().as("a").out().out().map(v -> v.<Vertex>path("a").<String>value("name") + v.get().<String>value("name"));
         }
     }

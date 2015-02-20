@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -81,7 +83,8 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
         assert_g_v1_out_sideEffectXincr_cX_valueXnameX(traversal);
     }
 
-    public static class StandardTest extends SideEffectTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class Traversals extends SideEffectTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_sideEffectXstore_aX_name(final Object v1Id) {

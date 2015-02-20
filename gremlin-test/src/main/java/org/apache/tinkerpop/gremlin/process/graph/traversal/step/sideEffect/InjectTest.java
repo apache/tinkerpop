@@ -18,11 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
-import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.Path;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -37,7 +39,7 @@ import static org.junit.Assert.assertFalse;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class InjectTest extends AbstractGremlinTest {
+public abstract class InjectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id);
 
@@ -45,6 +47,7 @@ public abstract class InjectTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_out_injectXv2X_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_out_injectXv2X_name(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
@@ -61,6 +64,7 @@ public abstract class InjectTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path() {
         final Traversal<Vertex, Path> traversal = get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -79,7 +83,9 @@ public abstract class InjectTest extends AbstractGremlinTest {
         assertEquals(4, counter);
     }
 
-    public static class StandardTest extends InjectTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends InjectTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
@@ -88,21 +94,6 @@ public abstract class InjectTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
-            return g.V(v1Id).out().<String>values("name").inject("daniel").as("a").map(t -> t.get().length()).path();
-        }
-    }
-
-    public static class ComputerTest extends InjectTest {
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
-            g.engine(StandardTraversalEngine.instance());
-            return g.V(v1Id).out().inject(g.V(v2Id).next()).<String>values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
-            g.engine(StandardTraversalEngine.instance());
             return g.V(v1Id).out().<String>values("name").inject("daniel").as("a").map(t -> t.get().length()).path();
         }
     }

@@ -306,9 +306,11 @@ NOTE: This model of graph traversal in a BSP system was first implemented by the
 ----
 g = TinkerFactory.createModern()
 g.V().both().hasLabel('person').values('age').groupCount().next() // OLTP
-g.engine(ComputerTraversalEngine.instance())
+g.engine(computer)
 g.V().both().hasLabel('person').values('age').groupCount().next() // OLAP
 ----
+
+image::olap-traversal.png[width=650]
 
 In the OLAP example above, a `TraversalVertexProgram` is (logically) sent to each vertex in the graph. Each instance evaluation requires (logically) 5 BSP iterations and each iteration is interpreted as such:
 
@@ -327,7 +329,7 @@ The same OLAP traversal can be executed using the standard `g.compute()` model, 
 
 [gremlin-groovy,modern]
 ----
-//g.engine(ComputerTraversalEngine.instance())
+//g.engine(computer)
 //result = g.compute().program(TraversalVertexProgram.build().traversal(g.V().both().hasLabel('person').values('age').groupCount('a')).create()).submit().get()
 //result.memory().a
 //result.memory().iteration

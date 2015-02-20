@@ -72,7 +72,7 @@ public abstract class AbstractGremlinTest {
 
     @Before
     public void setup() throws Exception {
-        graphProvider = GraphManager.get();
+        graphProvider = GraphManager.getGraphProvider();
         config = graphProvider.standardGraphConfiguration(this.getClass(), name.getMethodName());
 
         // this should clear state from a previously unfinished test. since the graph does not yet exist,
@@ -164,7 +164,7 @@ public abstract class AbstractGremlinTest {
     public Vertex convertToVertex(final Graph g, final String vertexName) {
         // all test graphs have "name" as a unique id which makes it easy to hardcode this...works for now
         final TraversalEngine temp = g.engine();
-        g.engine(StandardTraversalEngine.instance());
+        g.engine(StandardTraversalEngine.standard);
         final Vertex vertex = g.V().has("name", vertexName).next();
         g.engine(temp);
         return vertex;
@@ -176,7 +176,7 @@ public abstract class AbstractGremlinTest {
 
     public Object convertToEdgeId(final Graph g, final String outVertexName, String edgeLabel, final String inVertexName) {
         final TraversalEngine temp = g.engine();
-        g.engine(StandardTraversalEngine.instance());
+        g.engine(StandardTraversalEngine.standard);
         final Object edgeId = g.V().has("name", outVertexName).outE(edgeLabel).as("e").inV().has("name", inVertexName).<Edge>back("e").next().id();
         g.engine(temp);
         return edgeId;

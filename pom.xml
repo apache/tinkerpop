@@ -19,9 +19,9 @@ limitations under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
+        <groupId>org.apache</groupId>
+        <artifactId>apache</artifactId>
+        <version>16</version>
     </parent>
     <groupId>org.apache.tinkerpop</groupId>
     <artifactId>tinkerpop</artifactId>
@@ -92,7 +92,7 @@ limitations under the License.
         <url>https://git-wip-us.apache.org/repos/asf?p=incubator-tinkerpop.git</url>
     </scm>
     <properties>
-        <groovy.version>2.4.0</groovy.version>
+        <groovy.version>2.4.1</groovy.version>
         <junit.version>4.11</junit.version>
         <kuali.s3.wagon.version>1.1.20</kuali.s3.wagon.version>
         <!-- Directory containing the file ${log4j.properties} defined

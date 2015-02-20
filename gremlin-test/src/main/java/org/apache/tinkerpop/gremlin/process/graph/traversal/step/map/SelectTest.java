@@ -20,21 +20,22 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
 import org.apache.tinkerpop.gremlin.structure.Order;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.values;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -52,13 +53,17 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_select_byXnameX();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregateXxX_asXbX_select_byXnameX();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by_XitX();
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX();
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_asXxX_select();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -78,6 +83,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX() {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -108,6 +114,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -121,10 +128,11 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_asXaX_out_asXbX_select_byXnameX() {
         Arrays.asList(
                 get_g_V_asXaX_out_asXbX_select_byXnameX(),
-                get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX()).forEach(traversal -> {
+                get_g_V_asXaX_out_aggregateXxX_asXbX_select_byXnameX()).forEach(traversal -> {
             printTraversalForm(traversal);
             final List<Map<String, String>> expected = makeMapList(2,
                     "a", "marko", "b", "lop",
@@ -139,9 +147,10 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX() {
         Arrays.asList(
-                get_g_V_asXaX_name_order_asXbX_select_byXnameX_by()).forEach(traversal -> {
+                get_g_V_asXaX_name_order_asXbX_select_byXnameX_by_XitX()).forEach(traversal -> {
             printTraversalForm(traversal);
             final List<Map<String, String>> expected = makeMapList(2,
                     "a", "marko", "b", "marko",
@@ -156,6 +165,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(CREW)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX();
         printTraversalForm(traversal);
@@ -176,12 +186,72 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         checkResults(expected, traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    public void g_V_label_groupCount_asXxX_select() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_label_groupCount_asXxX_select();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Map<String, Object> map1 = traversal.next();
+        assertEquals(1, map1.size());
+        assertTrue(map1.containsKey("x"));
+        final Map<String, Long> map2 = (Map<String, Long>) map1.get("x");
+        assertEquals(2, map2.size());
+        assertTrue(map2.containsKey("person"));
+        assertTrue(map2.containsKey("software"));
+        assertEquals(2, map2.get("software").longValue());
+        assertEquals(4, map2.get("person").longValue());
+        assertFalse(traversal.hasNext());
+    }
 
-    public static class StandardTest extends SelectTest {
-        public StandardTest() {
-            requiresGraphComputer = false;
+    @Test
+    @Ignore
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    public void g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by();
+        printTraversalForm(traversal);
+        final Set<String> persons = new HashSet<>();
+        for (int i = 0; i < 4; i++) {
+            assertTrue(traversal.hasNext());
+            final Map<String, Object> map = traversal.next();
+            assertEquals(2, map.size());
+            assertTrue(map.containsKey("person"));
+            assertTrue(map.containsKey("relations"));
+            assertTrue(persons.add((String) map.get("person")));
+            final Map<String, Long> relations = (Map<String, Long>) map.get("relations");
+            switch ((String) map.get("person")) {
+                case "marko":
+                    assertEquals(2, relations.size());
+                    assertEquals(1, relations.get("created").longValue());
+                    assertEquals(2, relations.get("knows").longValue());
+                    break;
+                case "vadas":
+                    assertEquals(1, relations.size());
+                    assertEquals(1, relations.get("knows").longValue());
+                    break;
+                case "josh":
+                    assertEquals(2, relations.size());
+                    assertEquals(2, relations.get("created").longValue());
+                    assertEquals(1, relations.get("knows").longValue());
+                    break;
+                case "peter":
+                    assertEquals(1, relations.size());
+                    assertEquals(1, relations.get("created").longValue());
+                    break;
+                default:
+                    assertTrue(false);
+                    break;
+            }
         }
+        assertFalse(traversal.hasNext());
+        assertEquals(4, persons.size());
+    }
 
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends SelectTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
             return g.V(v1Id).as("a").out("knows").as("b").select();
@@ -208,12 +278,12 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX() {
-            return g.V().as("a").out().aggregate().as("b").<String>select().by("name");
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregateXxX_asXbX_select_byXnameX() {
+            return g.V().as("a").out().aggregate("x").as("b").<String>select().by("name");
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by_XitX() {
             return g.V().as("a").values("name").order().as("b").<String>select().by("name").by();
         }
 
@@ -226,69 +296,15 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select() {
             return g.V().has(values("name").is("marko")).as("a").select();
         }
-    }
 
-    public static class ComputerTest extends SelectTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_asXxX_select() {
+            return g.V().label().groupCount().as("x").select();
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
-            return g.V(v1Id).as("a").out("knows").as("b").<Vertex>select();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(final Object v1Id) {
-            // TODO: Micro elements do not store properties
-            g.engine(StandardTraversalEngine.instance()); // TODO
-            return g.V(v1Id).as("a").out("knows").as("b").<String>select().by("name"); //;
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
-            g.engine(StandardTraversalEngine.instance()); // TODO
-            return g.V(v1Id).as("a").out("knows").as("b").<Vertex>select("a");  // TODO
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX(final Object v1Id) {
-            // TODO: Micro elements do not store properties
-            g.engine(StandardTraversalEngine.instance()); // TODO
-            return g.V(v1Id).as("a").out("knows").as("b").<String>select("a").by("name");  // ;
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_select_byXnameX() {
-            // TODO: Micro elements do not store properties
-            g.engine(StandardTraversalEngine.instance()); // TODO
-            return g.V().as("a").out().as("b").<String>select().by("name");  // ;
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_select_byXnameX() {
-            // TODO: Micro elements do not store properties
-            g.engine(StandardTraversalEngine.instance()); // TODO
-            return g.V().as("a").out().aggregate().as("b").<String>select().by("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by() {
-            // TODO: Micro elements do not store properties
-            g.engine(StandardTraversalEngine.instance()); // TODO
-            return g.V().as("a").values("name").order().as("b").<String>select().by("name").by();
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
-            // TODO: Micro elements do not store properties
-            g.engine(StandardTraversalEngine.instance()); // TODO
-            return g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.incr).as("a").outV().as("b").select().by("skill").by("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select() {
-            return g.V().has(values("name").is("marko")).as("a").select();
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
+            return g.V().hasLabel("person").as("person").local(__.bothE().label().groupCount()).as("relations").select().by("name").by();
         }
     }
 }

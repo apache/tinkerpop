@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -56,71 +55,71 @@ import java.util.Optional;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_COMPUTER)
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MatchTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MatchTest$Traversals",
         method = "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MatchTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MatchTest$Traversals",
         method = "g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MatchTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MatchTest$Traversals",
         method = "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyMatchTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyMatchTest$StandardTraversals",
         method = "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyMatchTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyMatchTest$StandardTraversals",
         method = "g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyMatchTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyMatchTest$StandardTraversals",
         method = "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountTest$Traversals",
         method = "g_V_both_both_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountTest$Traversals",
         method = "g_V_repeatXoutX_timesX3X_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountTest$Traversals",
         method = "g_V_repeatXoutX_timesX8X_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyCountTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyCountTest$StandardTraversals",
         method = "g_V_both_both_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyCountTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyCountTest$StandardTraversals",
         method = "g_V_repeatXoutX_timesX3X_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyCountTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyCountTest$StandardTraversals",
         method = "g_V_repeatXoutX_timesX8X_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
+        test = "org.apache.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTraversals",
         method = "shouldNotAllowNullMemoryKeys",
         reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
+        test = "org.apache.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTraversals",
         method = "shouldNotAllowSettingUndeclaredMemoryKeys",
         reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
+        test = "org.apache.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTraversals",
         method = "shouldHaveConsistentMemoryVertexPropertiesAndExceptions",
         reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.ProfileTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.ProfileTest$Traversals",
         method = "g_V_out_out_grateful_profile",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyProfileTest$StandardTest",
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyProfileTest$StandardTraversals",
         method = "g_V_out_out_grateful_profile",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 public class HadoopGraph implements Graph, Graph.Iterators {
@@ -141,7 +140,7 @@ public class HadoopGraph implements Graph, Graph.Iterators {
     }};
 
     protected final HadoopConfiguration configuration;
-    private TraversalEngine traversalEngine = StandardTraversalEngine.instance();
+    private TraversalEngine traversalEngine = StandardTraversalEngine.standard;
 
     private HadoopGraph(final Configuration configuration) {
         this.configuration = new HadoopConfiguration(configuration);
@@ -161,12 +160,14 @@ public class HadoopGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public GraphComputer compute(final Class... graphComputerClass) {
-        GraphComputerHelper.validateComputeArguments(graphComputerClass);
-        if (graphComputerClass.length == 0 || graphComputerClass[0].equals(GiraphGraphComputer.class))
-            return new GiraphGraphComputer(this);
-        else
-            throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass[0]);
+    public void compute(final Class<? extends GraphComputer> graphComputerClass) {
+        if (!graphComputerClass.equals(GiraphGraphComputer.class))
+            throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+    }
+
+    @Override
+    public GraphComputer compute() {
+        return new GiraphGraphComputer(this);
     }
 
     @Override
@@ -177,7 +178,6 @@ public class HadoopGraph implements Graph, Graph.Iterators {
     @Override
     public void engine(final TraversalEngine traversalEngine) {
         this.traversalEngine = traversalEngine;
-        this.traversalEngine.setGraph(this);
     }
 
 

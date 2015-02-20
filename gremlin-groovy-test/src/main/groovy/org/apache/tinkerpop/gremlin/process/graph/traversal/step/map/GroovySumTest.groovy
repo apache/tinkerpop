@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Scope
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.bothE
@@ -31,7 +33,8 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.sum
  */
 public abstract class GroovySumTest {
 
-    public static class StandardTest extends SumTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends SumTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_valuesXageX_sum() {
@@ -40,20 +43,21 @@ public abstract class GroovySumTest {
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXsumXlocalXX() {
-            g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(sum(Scope.local)).cap()
+            g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(sum(Scope.local))
         }
     }
 
-    public static class ComputerTest extends SumTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends SumTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_valuesXageX_sum() {
-            ComputerTestHelper.compute("g.V.age.mean", g)
+            ComputerTestHelper.compute("g.V.age.sum", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXsumXlocalXX() {
-            ComputerTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(sum(Scope.local)).cap()", g)
+            ComputerTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(sum(Scope.local))", g)
         }
     }
 }

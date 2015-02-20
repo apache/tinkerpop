@@ -18,12 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.T
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasTest
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Compare
-import org.apache.tinkerpop.gremlin.structure.Contains
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
@@ -32,7 +31,8 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.__
  */
 public abstract class GroovyHasTest {
 
-    public static class StandardTest extends HasTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends HasTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
@@ -110,7 +110,8 @@ public abstract class GroovyHasTest {
         }
     }
 
-    public static class ComputerTest extends HasTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends HasTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {

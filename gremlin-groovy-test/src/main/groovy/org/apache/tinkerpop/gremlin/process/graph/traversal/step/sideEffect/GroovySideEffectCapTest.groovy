@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 import org.apache.tinkerpop.gremlin.process.T
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SideEffectCapTest
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
@@ -29,7 +31,8 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.__
  */
 public abstract class GroovySideEffectCapTest {
 
-    public static class StandardTest extends SideEffectCapTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends SideEffectCapTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX() {
             g.V.has('age').groupCount('a').by('name').out.cap('a')
@@ -43,7 +46,8 @@ public abstract class GroovySideEffectCapTest {
         }
     }
 
-    public static class ComputerTest extends SideEffectCapTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends SideEffectCapTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX() {
             ComputerTestHelper.compute("g.V.has('age').groupCount('a').by('name').out.cap('a')", g)

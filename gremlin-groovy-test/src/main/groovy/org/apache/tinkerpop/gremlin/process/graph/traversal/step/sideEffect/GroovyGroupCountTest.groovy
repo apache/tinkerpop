@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupCountTest
@@ -29,7 +31,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyGroupCountTest {
 
-    public static class StandardTest extends GroupCountTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends GroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
@@ -42,8 +45,8 @@ public abstract class GroovyGroupCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
-            g.V.out('created').name.groupCount('a')
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX_capXaX() {
+            g.V.out('created').name.groupCount('a').cap('a')
         }
 
         @Override
@@ -64,7 +67,8 @@ public abstract class GroovyGroupCountTest {
         }
     }
 
-    public static class ComputerTest extends GroupCountTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends GroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
@@ -77,8 +81,8 @@ public abstract class GroovyGroupCountTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
-            ComputerTestHelper.compute("g.V.out('created').name.groupCount('a')", g)
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX_capXaX() {
+            ComputerTestHelper.compute("g.V.out('created').name.groupCount('a').cap('a')", g)
         }
 
         @Override

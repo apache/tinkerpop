@@ -18,11 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
 
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Path
 import org.apache.tinkerpop.gremlin.process.T
 import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.junit.Test
 
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.out
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.outE
@@ -33,7 +37,8 @@ import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.outE
  */
 public abstract class GroovyCoalesceTest {
 
-    public static class StandardTest extends CoalesceTest {
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    public static class StandardTraversals extends CoalesceTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coalesceXoutXfooX_outXbarXX() {
@@ -52,7 +57,7 @@ public abstract class GroovyCoalesceTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX() {
-            g.V.coalesce(out('likes'), out('knows'), out('created')).groupCount().by('name').cap();
+            g.V.coalesce(out('likes'), out('knows'), out('created')).groupCount().by('name');
         }
 
         @Override
@@ -61,7 +66,8 @@ public abstract class GroovyCoalesceTest {
         }
     }
 
-    public static class ComputerTest extends CoalesceTest {
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends CoalesceTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coalesceXoutXfooX_outXbarXX() {
@@ -80,13 +86,19 @@ public abstract class GroovyCoalesceTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX() {
-            ComputerTestHelper.compute("g.V().coalesce(out('likes'), out('knows'), out('created')).groupCount().by('name').cap()", g)
+            ComputerTestHelper.compute("g.V().coalesce(out('likes'), out('knows'), out('created')).groupCount().by('name')", g)
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX() {
-            g.V.coalesce(outE('knows'), outE('created')).otherV.path.by('name').by(T.label);  // TODO
-            // ComputerTestHelper.compute("g.V().coalesce(outE('knows'), outE('created')).otherV().path().by('name').by(T.label)", g)
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX() {
+        }
+
+        @Override
+        Traversal<Vertex, Path> get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX() {
+            // override with nothing until the test itself is supported
+            return null
         }
     }
 }

@@ -19,14 +19,15 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.*;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.TraversalSideEffectsTest;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCountStrategyTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.util.PathTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -69,150 +70,74 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] allTests = new Class<?>[]{
             // branch
-            BranchTest.StandardTest.class,
-            ChooseTest.StandardTest.class,
-            LocalTest.StandardTest.class,
-            RepeatTest.StandardTest.class,
-            UnionTest.StandardTest.class,
+            BranchTest.Traversals.class,
+            ChooseTest.Traversals.class,
+            LocalTest.Traversals.class,
+            RepeatTest.Traversals.class,
+            UnionTest.Traversals.class,
 
             // filter
-            AndTest.StandardTest.class,
-            CoinTest.StandardTest.class,
-            CyclicPathTest.StandardTest.class,
-            DedupTest.StandardTest.class,
+            AndTest.Traversals.class,
+            CoinTest.Traversals.class,
+            CyclicPathTest.Traversals.class,
+            DedupTest.Traversals.class,
             ExceptTest.StandardTest.class,
-            FilterTest.StandardTest.class,
-            HasNotTest.StandardTest.class,
-            HasTest.StandardTest.class,
-            IsTest.StandardTest.class,
-            OrTest.StandardTest.class,
-            RangeTest.StandardTest.class,
-            RetainTest.StandardTest.class,
-            SampleTest.StandardTest.class,
-            SimplePathTest.StandardTest.class,
-            WhereTest.StandardTest.class,
+            FilterTest.Traversals.class,
+            HasNotTest.Traversals.class,
+            HasTest.Traversals.class,
+            IsTest.Traversals.class,
+            OrTest.Traversals.class,
+            RangeTest.Traversals.class,
+            RetainTest.Traversals.class,
+            SampleTest.Traversals.class,
+            SimplePathTest.Traversals.class,
+            WhereTest.Traversals.class,
 
             // map
-            BackTest.StandardTest.class,
-            CountTest.StandardTest.class,
-            FoldTest.StandardTest.class,
-            MapTest.StandardTest.class,
-            MatchTest.StandardTest.class,
-            MaxTest.StandardTest.class,
-            MeanTest.StandardTest.class,
-            MinTest.StandardTest.class,
-            SumTest.StandardTest.class,
-            OrderTest.StandardTest.class,
-            org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PathTest.StandardTest.class,
-            PropertiesTest.StandardTest.class,
-            SelectTest.StandardTest.class,
-            VertexTest.StandardTest.class,
-            UnfoldTest.StandardTest.class,
-            ValueMapTest.StandardTest.class,
-            CoalesceTest.StandardTest.class,
+            BackTest.Traversals.class,
+            CoalesceTest.Traversals.class,
+            CountTest.Traversals.class,
+            FoldTest.Traversals.class,
+            MapTest.Traversals.class,
+            MatchTest.Traversals.class,
+            MaxTest.Traversals.class,
+            MeanTest.Traversals.class,
+            MinTest.Traversals.class,
+            SumTest.Traversals.class,
+            OrderTest.Traversals.class,
+            org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PathTest.Traversals.class,
+            PropertiesTest.Traversals.class,
+            SelectTest.Traversals.class,
+            VertexTest.Traversals.class,
+            UnfoldTest.Traversals.class,
+            ValueMapTest.Traversals.class,
 
             // sideEffect
-            AddEdgeTest.StandardTest.class,
-            AggregateTest.StandardTest.class,
-            GroupTest.StandardTest.class,
-            GroupCountTest.StandardTest.class,
-            InjectTest.StandardTest.class,
-            ProfileTest.StandardTest.class,
-            SackTest.StandardTest.class,
-            SideEffectCapTest.StandardTest.class,
-            SideEffectTest.StandardTest.class,
-            StoreTest.StandardTest.class,
-            SubgraphTest.StandardTest.class,
-            TreeTest.StandardTest.class,
+            AddEdgeTest.Traversals.class,
+            AggregateTest.Traversals.class,
+            GroupTest.Traversals.class,
+            GroupCountTest.Traversals.class,
+            InjectTest.Traversals.class,
+            ProfileTest.Traversals.class,
+            SackTest.Traversals.class,
+            SideEffectCapTest.Traversals.class,
+            SideEffectTest.Traversals.class,
+            StoreTest.Traversals.class,
+            SubgraphTest.Traversals.class,
+            TreeTest.Traversals.class,
 
             // util
-            TraversalSideEffectsTest.StandardTest.class,
+            TraversalSideEffectsTest.Traversals.class,
 
             // compliance
             CoreTraversalTest.class,
             PathTest.class,
 
             // strategy
-            TraversalVerificationStrategyTest.StandardTest.class,
-            RangeByIsCountStrategyTest.StandardTest.class
+            TraversalVerificationStrategyTest.StandardTraversals.class
 
             // algorithms
             // PageRankVertexProgramTest.class
-    };
-
-    /**
-     * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
-     */
-    protected static Class<?>[] testsToEnforce = new Class<?>[]{
-            // branch
-            BranchTest.class,
-            ChooseTest.class,
-            LocalTest.class,
-            RepeatTest.class,
-            UnionTest.class,
-
-            // filter
-            AndTest.class,
-            CoinTest.class,
-            CyclicPathTest.class,
-            DedupTest.class,
-            ExceptTest.class,
-            FilterTest.class,
-            HasNotTest.class,
-            HasTest.class,
-            IsTest.class,
-            OrTest.class,
-            RangeTest.class,
-            RetainTest.class,
-            SampleTest.class,
-            SimplePathTest.class,
-            WhereTest.class,
-
-            // map
-            BackTest.class,
-            CountTest.class,
-            FoldTest.class,
-            MapTest.class,
-            MatchTest.class,
-            MaxTest.class,
-            MeanTest.class,
-            MinTest.class,
-            SumTest.class,
-            OrderTest.class,
-            org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PathTest.class,
-            SelectTest.class,
-            VertexTest.class,
-            UnfoldTest.class,
-            ValueMapTest.class,
-            CoalesceTest.class,
-
-            // sideEffect
-            AddEdgeTest.class,
-            AggregateTest.class,
-            GroupTest.class,
-            GroupCountTest.class,
-            InjectTest.class,
-            ProfileTest.class,
-            SackTest.class,
-            SideEffectCapTest.class,
-            SideEffectTest.class,
-            StoreTest.class,
-            SubgraphTest.class,
-            TreeTest.class,
-
-            // util
-            TraversalSideEffectsTest.class,
-
-            // compliance
-            CoreTraversalTest.class,
-            PathTest.class,
-
-            // algorithms
-            // PageRankVertexProgramTest.class
-
-            // strategy
-            TraversalVerificationStrategyTest.class,
-            RangeByIsCountStrategyTest.class
     };
 
     /**
@@ -231,12 +156,11 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
                     .filter(c -> filters.contains(c.getName()))
                     .collect(Collectors.toList());
             testsToExecute = allowed.toArray(new Class<?>[allowed.size()]);
-            testsToEnforce = testsToExecute;
         }
     }
 
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce);
+        super(klass, builder, testsToExecute, testsToExecute);
     }
 
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
@@ -244,6 +168,15 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
     }
 
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite);
+        super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, StandardTraversalEngine.standard);
+    }
+
+    @Override
+    public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
+        final UseEngine[] useEngines = testClass.getAnnotationsByType(UseEngine.class);
+        if (null == useEngines || !Stream.of(useEngines).anyMatch(useEngine -> useEngine.value().equals(TraversalEngine.Type.STANDARD)))
+            throw new RuntimeException(String.format("The %s expects all tests to be annotated with @UseEngine(%s) - check %s",
+                    ProcessComputerSuite.class.getName(), TraversalEngine.Type.STANDARD, testClass.getName()));
+        return super.beforeTestExecution(testClass);
     }
 }

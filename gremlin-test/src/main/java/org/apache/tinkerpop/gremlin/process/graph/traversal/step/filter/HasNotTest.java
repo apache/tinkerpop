@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -74,10 +76,9 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("vadas", "lop", "ripple"), traversal);
     }
 
-    public static class StandardTest extends HasNotTest {
-        public StandardTest() {
-            requiresGraphComputer = false;
-        }
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends HasNotTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasNotXprop(final Object v1Id, final String propertyKey) {
@@ -92,12 +93,6 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_hasNotXoutXcreatedXX() {
             return g.V().hasNot(__.out("created")).values("name");
-        }
-    }
-
-    public static class ComputerTest extends StandardTest {
-        public ComputerTest() {
-            requiresGraphComputer = true;
         }
     }
 }

@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -75,11 +77,9 @@ public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class StandardTest extends SideEffectCapTest {
-        public StandardTest() {
-            this.requiresGraphComputer = false;
-        }
-
+    @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class Traversals extends SideEffectCapTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX() {
             return g.V().has("age").groupCount("a").by("name").out().cap("a");
@@ -90,26 +90,6 @@ public abstract class SideEffectCapTest extends AbstractGremlinProcessTest {
             return g.V().choose(has(T.label, "person"),
                     values("age").groupCount("a"),
                     values("name").groupCount("b")).cap("a", "b");
-        }
-    }
-
-    public static class ComputerTest extends SideEffectCapTest {
-
-        public ComputerTest() {
-            this.requiresGraphComputer = true;
-        }
-
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX() {
-            return g.V().has("age").groupCount("a").by("name").out().<Map<String, Long>>cap("a");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Map<Object, Long>>> get_g_V_chooseXlabel_person__age_groupCountXaX__name_groupCountXbXX_capXa_bX() {
-            return g.V().choose(has(T.label, "person"),
-                    values("age").groupCount("a"),
-                    values("name").groupCount("b")).<Map<String, Map<Object, Long>>>cap("a", "b");
         }
     }
 }
