@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.graph.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -254,6 +255,10 @@ public class __ {
         return __.<A>start().<B>groupCount();
     }
 
+    public static <A> GraphTraversal<A, Tree> tree() {
+        return __.<A>start().tree();
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     public static <A> GraphTraversal<A, A> filter(final Predicate<Traverser<A>> predicate) {
@@ -464,10 +469,6 @@ public class __ {
 
     public static <A> GraphTraversal<A, A> tree(final String sideEffectKey) {
         return __.<A>start().tree(sideEffectKey);
-    }
-
-    public static <A> GraphTraversal<A, A> tree() {
-        return __.<A>start().tree();
     }
 
     public static <A, V> GraphTraversal<A, A> sack(final BiFunction<V, A, V> sackFunction) {

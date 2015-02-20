@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.Scope;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.graph.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -217,6 +218,10 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default <B> GraphTraversal<A, Map<B, Long>> groupCount() {
         return this.start().<B>groupCount();
+    }
+
+    public default GraphTraversal<A, Tree> tree() {
+        return this.start().tree();
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -429,10 +434,6 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default GraphTraversal<A, A> tree(final String sideEffectKey) {
         return this.start().tree(sideEffectKey);
-    }
-
-    public default GraphTraversal<A, A> tree() {
-        return this.start().tree();
     }
 
     public default <V> GraphTraversal<A, A> sack(final BiFunction<V, A, V> sackFunction) {

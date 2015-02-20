@@ -25,14 +25,13 @@ import java.util.Set;
 /**
  * A {@link TraversalStrategy} defines a particular atomic operation for mutating a {@link Traversal} prior to its evaluation.
  * Traversal strategies are typically used for optimizing a traversal for the particular underlying graph engine.
- * Traversal strategies implement {@link Comparable} and thus are sorted to determine their evaluation order.
  * A TraversalStrategy should not have a public constructor as they should not maintain state between applications.
  * Make use of a singleton instance() object to reduce object creation on the JVM.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface TraversalStrategy extends Serializable{
+public interface TraversalStrategy extends Serializable {
 
     // A TraversalStrategy should not have a public constructor
     // Make use of a singleton instance() object to reduce object creation on the JVM

@@ -45,12 +45,12 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, SideEffectCapable, TraversalParent, MapReducer<Object, Tree, Object, Tree, Tree> {
+public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Reversible, SideEffectCapable, TraversalParent, MapReducer<Object, Tree, Object, Tree, Tree> {
 
     private TraversalRing<Object, Object> traversalRing;
     private String sideEffectKey;
 
-    public TreeStep(final Traversal.Admin traversal, final String sideEffectKey) {
+    public TreeSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         this.traversalRing = new TraversalRing<>();
@@ -77,7 +77,7 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
 
     @Override
     public MapReduce<Object, Tree, Object, Tree, Tree> getMapReduce() {
-        return new TreeMapReduce(this);
+        return new TreeSideEffectMapReduce(this);
     }
 
     @Override
@@ -92,8 +92,8 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
     }
 
     @Override
-    public TreeStep<S> clone() throws CloneNotSupportedException {
-        final TreeStep<S> clone = (TreeStep<S>) super.clone();
+    public TreeSideEffectStep<S> clone() throws CloneNotSupportedException {
+        final TreeSideEffectStep<S> clone = (TreeSideEffectStep<S>) super.clone();
         clone.traversalRing = new TraversalRing<>();
         for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {
             clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone()));
@@ -118,17 +118,17 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
 
     ////////////////
 
-    public static final class TreeMapReduce extends StaticMapReduce<Object, Tree, Object, Tree, Tree> {
+    public static final class TreeSideEffectMapReduce extends StaticMapReduce<Object, Tree, Object, Tree, Tree> {
 
         public static final String TREE_STEP_SIDE_EFFECT_KEY = "gremlin.treeStep.sideEffectKey";
 
         private String sideEffectKey;
 
-        private TreeMapReduce() {
+        private TreeSideEffectMapReduce() {
 
         }
 
-        public TreeMapReduce(final TreeStep step) {
+        public TreeSideEffectMapReduce(final TreeSideEffectStep step) {
             this.sideEffectKey = step.getSideEffectKey();
         }
 

@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.graph.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -45,9 +44,9 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX();
 
-    public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX();
+    public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX_capXaX();
 
-    public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXaX();
+    public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_capXaX();
 
     public abstract Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id);
 
@@ -55,7 +54,6 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
     @Test
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
-    @Ignore("TreeStep needs to have a reducing form...")
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_out_tree_byXnameX() {
         List<Traversal<Vertex, Tree>> traversals = Arrays.asList(
@@ -75,10 +73,9 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore("TreeStep needs to have a reducing form...")
     @LoadGraphWith(MODERN)
     public void g_V_out_out_tree_byXidX() {
-        List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_tree_byXidX(), get_g_V_out_out_treeXaX_byXidX());
+        List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_tree_byXidX(), get_g_V_out_out_treeXaX_byXidX_capXaX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             final Tree tree = traversal.next();
@@ -93,10 +90,9 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore("TreeStep needs to have a reducing form...")
     @LoadGraphWith(MODERN)
-    public void g_V_out_out_treeXaX() {
-        List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_treeXaX());
+    public void g_V_out_out_treeXaX_capXaX() {
+        List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_treeXaX_capXaX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             final Tree tree = traversal.next();
@@ -129,13 +125,13 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX() {
-            return (Traversal) g.V().out().out().tree("a").by(T.id);
+        public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX_capXaX() {
+            return (Traversal) g.V().out().out().tree("a").by(T.id).cap("a");
         }
 
         @Override
-        public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX() {
-            return (Traversal) g.V().out().out().tree("a");
+        public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_capXaX() {
+            return (Traversal) g.V().out().out().tree("a").cap("a");
         }
     }
 }

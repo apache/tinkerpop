@@ -82,6 +82,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SelectOneSt
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SumGlobalStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.SumLocalStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.MatchStep;
@@ -99,10 +100,11 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.Side
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StoreStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SubgraphStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.TreeStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.TreeSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.PathIdentityStep;
 import org.apache.tinkerpop.gremlin.process.graph.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.graph.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FilterTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FilterTraverserTraversal;
@@ -364,6 +366,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new GroupCountStep<>(this.asAdmin()));
     }
 
+    public default GraphTraversal<S, Tree> tree() {
+        return this.asAdmin().addStep(new TreeStep<>(this.asAdmin()));
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     public default GraphTraversal<S, E> filter(final Predicate<Traverser<E>> predicate) {
@@ -581,11 +587,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> tree(final String sideEffectKey) {
-        return this.asAdmin().addStep(new TreeStep<>(this.asAdmin(), sideEffectKey));
-    }
-
-    public default GraphTraversal<S, E> tree() {
-        return this.tree(null);
+        return this.asAdmin().addStep(new TreeSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
     public default <V> GraphTraversal<S, E> sack(final BiFunction<V, E, V> sackFunction) {
