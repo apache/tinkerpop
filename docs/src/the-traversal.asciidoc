@@ -536,8 +536,6 @@ inject(1,2).map {it.get() + 1}
 inject(1,2).map {it.get() + 1}.map {g.V(it.get()).next()}.values('name')
 ----
 
-IMPORTANT: Note that a standalone anonymous traversal is a common use case which comes with a limitation: Anonymous traversals do not have all strategies applied to them by default. This can lead to some unexpected behaviors as shown in the following example.
-
 [[is-step]]
 Is Step
 ~~~~~~~
