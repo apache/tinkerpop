@@ -40,6 +40,7 @@ import java.util.concurrent.Future;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class TinkerGraphComputer implements GraphComputer {
 
@@ -101,61 +102,67 @@ public class TinkerGraphComputer implements GraphComputer {
                 // execute the vertex program
                 this.vertexProgram.setup(this.memory);
                 this.memory.completeSubRound();
-                final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), this.vertexProgram);
-                while (true) {
-                    workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationStart(this.memory.asImmutable()));
-                    final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.iterators().vertexIterator());
-                    workers.executeVertexProgram(vertexProgram -> {
-                        while (true) {
-                            final Vertex vertex = vertices.next();
-                            if (null == vertex) return;
-                            vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.memory);
+                try (final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), this.vertexProgram)) {
+                    while (true) {
+                        workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationStart(this.memory.asImmutable()));
+                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.iterators().vertexIterator());
+                        workers.executeVertexProgram(vertexProgram -> {
+                            while (true) {
+                                final Vertex vertex = vertices.next();
+                                if (null == vertex) return;
+                                vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.memory);
+                            }
+                        });
+                        workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationEnd(this.memory.asImmutable()));
+                        this.messageBoard.completeIteration();
+                        this.memory.completeSubRound();
+                        if (this.vertexProgram.terminate(this.memory)) {
+                            this.memory.incrIteration();
+                            this.memory.completeSubRound();
+                            break;
+                        } else {
+                            this.memory.incrIteration();
+                            this.memory.completeSubRound();
                         }
-                    });
-                    workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationEnd(this.memory.asImmutable()));
-                    this.messageBoard.completeIteration();
-                    this.memory.completeSubRound();
-                    if (this.vertexProgram.terminate(this.memory)) {
-                        this.memory.incrIteration();
-                        this.memory.completeSubRound();
-                        break;
-                    } else {
-                        this.memory.incrIteration();
-                        this.memory.completeSubRound();
                     }
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
                 }
             }
 
             // execute mapreduce jobs
             for (final MapReduce mapReduce : this.mapReducers) {
-                final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), mapReduce);
-                if (mapReduce.doStage(MapReduce.Stage.MAP)) {
-                    final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
-                    final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.iterators().vertexIterator());
-                    workers.executeMapReduce(workerMapReduce -> {
-                        while (true) {
-                            final Vertex vertex = vertices.next();
-                            if (null == vertex) return;
-                            workerMapReduce.map(vertex, mapEmitter);
-                        }
-                    });
-                    mapEmitter.complete(mapReduce); // sort results if a map output sort is defined
-                    // no need to run combiners as this is single machine
-                    if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
-                        final TinkerReduceEmitter<?, ?> reduceEmitter = new TinkerReduceEmitter<>();
-                        final SynchronizedIterator<Map.Entry<?, Queue<?>>> keyValues = new SynchronizedIterator((Iterator) mapEmitter.reduceMap.entrySet().iterator());
+                try (final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), mapReduce)) {
+                    if (mapReduce.doStage(MapReduce.Stage.MAP)) {
+                        final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
+                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.iterators().vertexIterator());
                         workers.executeMapReduce(workerMapReduce -> {
                             while (true) {
-                                final Map.Entry<?, Queue<?>> entry = keyValues.next();
-                                if (null == entry) return;
-                                workerMapReduce.reduce(entry.getKey(), entry.getValue().iterator(), reduceEmitter);
+                                final Vertex vertex = vertices.next();
+                                if (null == vertex) return;
+                                workerMapReduce.map(vertex, mapEmitter);
                             }
                         });
-                        reduceEmitter.complete(mapReduce); // sort results if a reduce output sort is defined
-                        mapReduce.addResultToMemory(this.memory, reduceEmitter.reduceQueue.iterator());
-                    } else {
-                        mapReduce.addResultToMemory(this.memory, mapEmitter.mapQueue.iterator());
+                        mapEmitter.complete(mapReduce); // sort results if a map output sort is defined
+                        // no need to run combiners as this is single machine
+                        if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
+                            final TinkerReduceEmitter<?, ?> reduceEmitter = new TinkerReduceEmitter<>();
+                            final SynchronizedIterator<Map.Entry<?, Queue<?>>> keyValues = new SynchronizedIterator((Iterator) mapEmitter.reduceMap.entrySet().iterator());
+                            workers.executeMapReduce(workerMapReduce -> {
+                                while (true) {
+                                    final Map.Entry<?, Queue<?>> entry = keyValues.next();
+                                    if (null == entry) return;
+                                    workerMapReduce.reduce(entry.getKey(), entry.getValue().iterator(), reduceEmitter);
+                                }
+                            });
+                            reduceEmitter.complete(mapReduce); // sort results if a reduce output sort is defined
+                            mapReduce.addResultToMemory(this.memory, reduceEmitter.reduceQueue.iterator());
+                        } else {
+                            mapReduce.addResultToMemory(this.memory, mapEmitter.mapQueue.iterator());
+                        }
                     }
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
                 }
             }
             // update runtime and return the newly computed graph
