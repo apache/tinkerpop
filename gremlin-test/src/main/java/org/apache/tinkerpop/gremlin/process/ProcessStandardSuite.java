@@ -134,7 +134,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             PathTest.class,
 
             // strategy
-            TraversalVerificationStrategyTest.ComputerTraversals.class
+            TraversalVerificationStrategyTest.StandardTraversals.class
 
             // algorithms
             // PageRankVertexProgramTest.class
