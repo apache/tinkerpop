@@ -106,7 +106,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             put(GiraphConstants.SPLIT_MASTER_WORKER.getKey(), false);
             //put("giraph.localTestMode", true);
             put(GiraphConstants.ZOOKEEPER_JAR, GiraphGraphComputer.class.getResource("zookeeper-3.3.3.jar").getPath());
-            put("giraph.zkServerPort", "22818");  // you must have a local zookeeper running on this port
+            put("giraph.zkServerPort", "2181");  // you must have a local zookeeper running on this port
             put("giraph.nettyServerUseExecutionHandler", false); // this prevents so many integration tests running out of threads
             put("giraph.nettyClientUseExecutionHandler", false); // this prevents so many integration tests running out of threads
             //put(Constants.GREMLIN_GIRAPH_INPUT_LOCATION, KryoInputFormat.class.getResource("tinkerpop-classic-vertices.gio").getPath());
