@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.giraph.conf.GiraphConstants;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
@@ -35,9 +38,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.script.ScriptResourceAccess;
-import org.apache.commons.configuration.Configuration;
-import org.apache.giraph.conf.GiraphConstants;
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -106,10 +106,11 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             put(GiraphConstants.SPLIT_MASTER_WORKER.getKey(), false);
             //put("giraph.localTestMode", true);
             put(GiraphConstants.ZOOKEEPER_JAR, GiraphGraphComputer.class.getResource("zookeeper-3.3.3.jar").getPath());
+            put("giraph.zkServerPort", "22818");  // you must have a local zookeeper running on this port
             //put(Constants.GREMLIN_GIRAPH_INPUT_LOCATION, KryoInputFormat.class.getResource("tinkerpop-classic-vertices.gio").getPath());
             put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "hadoop-gremlin/target/test-output");
             put(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, true);
-            put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true);
+            put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         }};
     }
 
