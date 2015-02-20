@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.Path;
 import org.apache.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -316,17 +317,9 @@ public class SerializationTest {
             final Map<String, Object> metrics0 = metrics.get(0);
             assertTrue(metrics0.containsKey(GraphSONTokens.ID));
             assertTrue(metrics0.containsKey(GraphSONTokens.NAME));
-            assertTrue(metrics0.containsKey(GraphSONTokens.COUNT));
+            assertTrue(metrics0.containsKey(GraphSONTokens.COUNTS));
             assertTrue(metrics0.containsKey(GraphSONTokens.DURATION));
-            assertTrue(metrics0.containsKey(GraphSONTokens.PERCENT_DURATION));
-            assertTrue(metrics0.containsKey(GraphSONTokens.METRICS));
 
-            final Map<String, Object> nestedMetrics = (Map<String, Object>) ((List<?>)metrics0.get(GraphSONTokens.METRICS)).get(0);
-            assertTrue(nestedMetrics.containsKey(GraphSONTokens.ID));
-            assertTrue(nestedMetrics.containsKey(GraphSONTokens.NAME));
-            assertTrue(nestedMetrics.containsKey(GraphSONTokens.COUNT));
-            assertTrue(nestedMetrics.containsKey(GraphSONTokens.DURATION));
-            assertTrue(nestedMetrics.containsKey(GraphSONTokens.PERCENT_DURATION));
         }
     }
 }

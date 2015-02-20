@@ -21,8 +21,10 @@ package org.apache.tinkerpop.gremlin.process.util.metric;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -33,11 +35,10 @@ public class ImmutableMetrics implements Metrics, Serializable {
 
     protected String id;
     protected String name;
-    protected long count;
+    protected Map<String, AtomicLong> counts = new HashMap<>();
     protected long durationNs = 0l;
-    protected double percentDuration = -1;
-    protected final Map<String, String> annotations = new HashMap<>();
-    protected final Map<String, ImmutableMetrics> nested = new HashMap<>();
+    protected final Map<String, Object> annotations = new HashMap<>();
+    protected final Map<String, ImmutableMetrics> nested = new LinkedHashMap<>();
 
     protected ImmutableMetrics() {
     }
@@ -48,8 +49,17 @@ public class ImmutableMetrics implements Metrics, Serializable {
     }
 
     @Override
-    public long getCount() {
-        return count;
+    public long getCount(String key) {
+        return counts.get(key).get();
+    }
+
+    @Override
+    public Map<String, Long> getCounts() {
+        Map<String, Long> ret = new HashMap<>();
+        for (Map.Entry<String, AtomicLong> count : counts.entrySet()) {
+            ret.put(count.getKey(), count.getValue().get());
+        }
+        return ret;
     }
 
     @Override
@@ -59,11 +69,6 @@ public class ImmutableMetrics implements Metrics, Serializable {
 
     public String getId() {
         return id;
-    }
-
-    @Override
-    public double getPercentDuration() {
-        return this.percentDuration;
     }
 
     @Override
@@ -77,17 +82,22 @@ public class ImmutableMetrics implements Metrics, Serializable {
     }
 
     @Override
-    public Map<String, String> getAnnotations() {
+    public Map<String, Object> getAnnotations() {
         return annotations;
     }
 
     @Override
+    public Object getAnnotation(final String key) {
+        return annotations.get(key);
+    }
+
+    @Override
     public String toString() {
-        return "Metrics{" +
-                "durationNs=" + durationNs +
-                ", count=" + count +
+        return "ImmutableMetrics{" +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
-                ", id='" + id + '\'' +
+                ", counts=" + counts +
+                ", durationNs=" + durationNs +
                 '}';
     }
 }

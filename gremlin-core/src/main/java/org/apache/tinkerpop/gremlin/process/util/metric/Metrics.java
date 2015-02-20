@@ -31,6 +31,9 @@ import java.util.concurrent.TimeUnit;
  */
 public interface Metrics {
 
+
+
+
     /**
      * Get the duration of execution time taken.
      *
@@ -40,12 +43,19 @@ public interface Metrics {
     public long getDuration(TimeUnit units);
 
     /**
-     * The number of items operated upon. For a Travseral Step, this will be the number of Traversers (which may be less
-     * than the number of Elements when Elements are bulked).
+     * Get the count for the corresponding countKey.
      *
-     * @return Number of items operated upon.
+     * @param countKey key for counter to get.
+     * @return
      */
-    public long getCount();
+    public long getCount(String countKey);
+
+    /**
+     * Get the map of all counters. This method copies the internal map.
+     *
+     * @return a Map where the key is the counter ID and the value is the counter value.
+     */
+    public Map<String, Long> getCounts();
 
     /**
      * Name of this Metrics.
@@ -61,16 +71,9 @@ public interface Metrics {
      */
     public String getId();
 
-    /**
-     * If this Metrics object has multiple peer Metrics then this value will represent the percentage of the total
-     * duration taken by this Metrics object.
-     *
-     * @return
-     */
-    public double getPercentDuration();
 
     /**
-     * Get the nested Metrics objects.
+     * Get the nested Metrics objects. Metrics will be ordered in the order they were inserted.
      *
      * @return the nested Metrics objects.
      */
@@ -85,9 +88,17 @@ public interface Metrics {
     Metrics getNested(String metricsId);
 
     /**
-     * Obtain the annotations for this Metrics.
+     * Obtain the annotations for this Metrics. Values may be of type String or Number.
      *
      * @return the annotations for this Metrics. Modifications to the returned object are persisted in the original.
      */
-    public Map<String, String> getAnnotations();
+    public Map<String, Object> getAnnotations();
+
+    /**
+     * Obtain the annotation with the specified key. Values may be of type String or Number.
+     *
+     * @param key key of the annotation to obtain.
+     * @return
+     */
+    public Object getAnnotation(String key);
 }

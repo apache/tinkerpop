@@ -35,11 +35,20 @@ public interface TraversalMetrics {
      */
     public static final String METRICS_KEY = Graph.Hidden.hide("metrics");
 
-
     /**
-     * The MetricsId used to obtain the element count via Metrics.getNested(String metricsId)
+     * The MetricsId used to obtain the element count via Metrics.getCount(String countKey)
      */
     public static final String ELEMENT_COUNT_ID = "elementCount";
+
+    /**
+     * The MetricsId used to obtain the traverser count via Metrics.getCount(String countKey)
+     */
+    public static final String TRAVERSER_COUNT_ID = "traverserCount";
+
+    /**
+     * The annotation key used to obtain the percent duration via Metrics.getAnnotation(String key)
+     */
+    public static final String PERCENT_DURATION_KEY = "percentDur";
 
     /**
      * Get the total duration taken by the Traversal.
@@ -58,12 +67,12 @@ public interface TraversalMetrics {
     public Metrics getMetrics(final int stepIndex);
 
     /**
-     * Get an individual Metrics object by the label of the profiled Step.
+     * Get an individual Metrics object by the id of the profiled Step.
      *
-     * @param stepLabel
+     * @param id
      * @return an individual Metrics object.
      */
-    public Metrics getMetrics(final String stepLabel);
+    public Metrics getMetrics(final String id);
 
     public Collection<? extends Metrics> getMetrics();
 }
