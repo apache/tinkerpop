@@ -25,9 +25,9 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.util.MapHelper;
@@ -49,7 +49,7 @@ import java.util.function.BiFunction;
  */
 public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Long>> implements MapReducer, TraversalParent {
 
-    private Traversal.Admin<S, E> groupTraversal = new IdentityTraversal<>();
+    private Traversal.Admin<S, E> groupTraversal = null;
 
     public GroupCountStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -65,7 +65,7 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
 
     @Override
     public List<Traversal.Admin<S, E>> getLocalChildren() {
-        return Collections.singletonList(this.groupTraversal);
+        return null == this.groupTraversal ? Collections.emptyList() : Collections.singletonList(this.groupTraversal);
     }
 
     @Override
@@ -81,7 +81,8 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
     @Override
     public GroupCountStep<S, E> clone() throws CloneNotSupportedException {
         final GroupCountStep<S, E> clone = (GroupCountStep<S, E>) super.clone();
-        clone.groupTraversal = this.integrateChild(this.groupTraversal.clone());
+        if (null != this.groupTraversal)
+            clone.groupTraversal = clone.integrateChild(this.groupTraversal.clone());
         return clone;
     }
 
@@ -89,10 +90,15 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
     public Traverser<Map<E, Long>> processNextStart() {
         if (this.byPass) {
             final Traverser.Admin<S> traverser = this.starts.next();
-            return traverser.asAdmin().split(TraversalUtil.apply(traverser, (Traversal.Admin<S, Map<E, Long>>) this.groupTraversal), this);
+            return traverser.asAdmin().split(TraversalUtil.applyNullable(traverser, (Traversal.Admin<S, Map<E, Long>>) this.groupTraversal), this);
         } else {
             return super.processNextStart();
         }
+    }
+
+    @Override
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.groupTraversal);
     }
 
     ///////////
@@ -105,7 +111,7 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
 
         @Override
         public Map<E, Long> apply(final Map<E, Long> mutatingSeed, final Traverser<S> traverser) {
-            MapHelper.incr(mutatingSeed, TraversalUtil.apply(traverser.get(), GroupCountStep.this.groupTraversal), traverser.bulk());
+            MapHelper.incr(mutatingSeed, TraversalUtil.applyNullable(traverser.asAdmin(), GroupCountStep.this.groupTraversal), traverser.bulk());
             return mutatingSeed;
         }
     }

@@ -44,6 +44,10 @@ public final class TraversalUtil {
         }
     }
 
+    public static final <S, E> E applyNullable(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
+        return null == traversal ? (E) traverser.get() : TraversalUtil.apply(traverser, traversal);
+    }
+
     public static final <S, E> boolean test(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
         final Traverser.Admin<S> split = traverser.split();
         split.setSideEffects(traversal.getSideEffects());
@@ -63,6 +67,10 @@ public final class TraversalUtil {
         } catch (final NoSuchElementException e) {
             throw new IllegalArgumentException("The provided start does not map to a value: " + start + "->" + traversal);
         }
+    }
+
+    public static final <S, E> E applyNullable(final S start, final Traversal.Admin<S, E> traversal) {
+        return null == traversal ? (E) start : TraversalUtil.apply(start, traversal);
     }
 
     public static final <S, E> boolean test(final S start, final Traversal.Admin<S, E> traversal) {

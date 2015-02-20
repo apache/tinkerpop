@@ -50,7 +50,7 @@ public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> imp
     public SumGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(new ConstantSupplier<>(0.0d));
-        this.setBiFunction(SumBiFunction.instance());
+        this.setBiFunction(SumGlobalBiFunction.instance());
     }
 
 
@@ -61,16 +61,16 @@ public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> imp
 
     @Override
     public MapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> getMapReduce() {
-        return SumMapReduce.instance();
+        return SumGlobalMapReduce.instance();
     }
 
     /////
 
-    private static class SumBiFunction<S extends Number> implements BiFunction<Double, Traverser<S>, Double>, Serializable {
+    private static class SumGlobalBiFunction<S extends Number> implements BiFunction<Double, Traverser<S>, Double>, Serializable {
 
-        private static final SumBiFunction INSTANCE = new SumBiFunction();
+        private static final SumGlobalBiFunction INSTANCE = new SumGlobalBiFunction();
 
-        private SumBiFunction() {
+        private SumGlobalBiFunction() {
 
         }
 
@@ -79,18 +79,18 @@ public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> imp
             return mutatingSeed + (traverser.get().doubleValue() * traverser.bulk());
         }
 
-        public final static <S extends Number> SumBiFunction<S> instance() {
+        public final static <S extends Number> SumGlobalBiFunction<S> instance() {
             return INSTANCE;
         }
     }
 
     ///////////
 
-    private static class SumMapReduce extends StaticMapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> {
+    private static class SumGlobalMapReduce extends StaticMapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> {
 
-        private static final SumMapReduce INSTANCE = new SumMapReduce();
+        private static final SumGlobalMapReduce INSTANCE = new SumGlobalMapReduce();
 
-        private SumMapReduce() {
+        private SumGlobalMapReduce() {
 
         }
 
@@ -130,7 +130,7 @@ public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> imp
             return keyValues.hasNext() ? keyValues.next().getValue() : 0.0d;
         }
 
-        public static final SumMapReduce instance() {
+        public static final SumGlobalMapReduce instance() {
             return INSTANCE;
         }
     }

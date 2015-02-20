@@ -58,7 +58,7 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
 
     @Override
     public MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> getMapReduce() {
-        return CountMapReduce.instance();
+        return CountGlobalMapReduce.instance();
     }
 
     ///////////
@@ -83,11 +83,11 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
 
     ///////////
 
-    private static class CountMapReduce extends StaticMapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
+    private static class CountGlobalMapReduce extends StaticMapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
 
-        private static CountMapReduce INSTANCE = new CountMapReduce();
+        private static CountGlobalMapReduce INSTANCE = new CountGlobalMapReduce();
 
-        private CountMapReduce() {
+        private CountGlobalMapReduce() {
 
         }
 
@@ -125,7 +125,7 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
             return keyValues.hasNext() ? keyValues.next().getValue() : 0L;
         }
 
-        public static final CountMapReduce instance() {
+        public static final CountGlobalMapReduce instance() {
             return INSTANCE;
         }
 
