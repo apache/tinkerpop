@@ -256,9 +256,8 @@ public class GraphSONModule extends SimpleModule {
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, metrics.getId());
             m.put(GraphSONTokens.NAME, metrics.getName());
-            m.put(GraphSONTokens.COUNT, metrics.getCount());
+            m.put(GraphSONTokens.COUNTS, metrics.getCounts());
             m.put(GraphSONTokens.DURATION, metrics.getDuration(TimeUnit.MILLISECONDS));
-            m.put(GraphSONTokens.PERCENT_DURATION, metrics.getPercentDuration());
 
             if (!metrics.getAnnotations().isEmpty()) {
                 m.put(GraphSONTokens.ANNOTATIONS, metrics.getAnnotations());

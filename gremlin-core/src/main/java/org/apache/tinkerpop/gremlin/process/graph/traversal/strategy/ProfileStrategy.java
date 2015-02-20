@@ -20,9 +20,10 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.HashSet;
@@ -34,12 +35,14 @@ import java.util.Set;
  */
 public final class ProfileStrategy extends AbstractTraversalStrategy {
 
+
     private static final ProfileStrategy INSTANCE = new ProfileStrategy();
     private static final Set<Class<? extends TraversalStrategy>> PRIORS = new HashSet<>();
 
     static {
         // Ensure that this strategy is applied last.
         PRIORS.add(ComparatorHolderRemovalStrategy.class);
+        PRIORS.add(ConjunctionStrategy.class);
         PRIORS.add(DedupOptimizerStrategy.class);
         PRIORS.add(EngineDependentStrategy.class);
         PRIORS.add(IdentityRemovalStrategy.class);
@@ -56,9 +59,21 @@ public final class ProfileStrategy extends AbstractTraversalStrategy {
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(ProfileStep.class, traversal))
+        if (!(traversal.getParent() instanceof EmptyStep)) {
+            // This strategy is applied to the top-level traversal only
             return;
+        }
 
+        if (!TraversalHelper.hasStepOfClass(ProfileStep.class, traversal)) {
+            // No ProfileStep present
+            return;
+        }
+
+        prepTraversalForProfiling(traversal);
+    }
+
+    // Walk the traversal steps and inject the .profile()-steps.
+    private void prepTraversalForProfiling(Traversal.Admin<?, ?> traversal) {
         // Remove user-specified .profile() steps
         final List<ProfileStep> profileSteps = TraversalHelper.getStepsOfClass(ProfileStep.class, traversal);
         for (ProfileStep step : profileSteps) {
@@ -67,9 +82,21 @@ public final class ProfileStrategy extends AbstractTraversalStrategy {
 
         // Add .profile() step after every pre-existing step.
         final List<Step> steps = traversal.getSteps();
-        for (int ii = 0; ii < steps.size(); ii++) {
-            traversal.addStep(ii + 1, new ProfileStep(traversal, steps.get(ii)));
-            ii++;
+        final int numSteps = steps.size();
+        for (int ii = 0; ii < numSteps; ii++) {
+            // Get the original step
+            Step step = steps.get(ii * 2);
+
+            // Create and inject ProfileStep
+            ProfileStep profileStep = new ProfileStep(traversal);
+            traversal.addStep((ii * 2) + 1, profileStep);
+
+            // Handle nested traversal
+            if (step instanceof TraversalParent) {
+                for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getLocalChildren()) {
+                    prepTraversalForProfiling(t);
+                }
+            }
         }
     }
 

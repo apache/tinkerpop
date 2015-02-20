@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.ProfileTest
+import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.util.metric.StandardTraversalMetrics
 import org.apache.tinkerpop.gremlin.structure.Vertex
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -41,6 +41,10 @@ public abstract class GroovyProfileTest {
             g.V.repeat(__.both()).times(3).profile();
         }
 
+        @Override
+        Traversal<Vertex, StandardTraversalMetrics> get_nested_profile() {
+            g.V().has(__.in("created").count().is(1l)).values("name").profile();
+        }
     }
 
     public static class ComputerTest extends ProfileTest {
@@ -53,7 +57,12 @@ public abstract class GroovyProfileTest {
 
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_repeat_both_profile() {
-           ComputerTestHelper.compute("g.V.repeat(__.both()).times(3).profile()", g);
+            ComputerTestHelper.compute("g.V.repeat(__.both()).times(3).profile()", g);
+        }
+
+        @Override
+        Traversal<Vertex, StandardTraversalMetrics> get_nested_profile() {
+            ComputerTestHelper.compute(" g.V().has(__.in('created').count().is(1l)).values('name').profile()", g);
         }
     }
 }

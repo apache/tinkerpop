@@ -31,39 +31,40 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
     // toString() specific headers
     private static final String[] HEADERS = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
 
-    private static final String ITEM_COUNT_DISPLAY = "item count";
-
     private boolean dirty = true;
     private final Map<String, MutableMetrics> metrics = new HashMap<>();
-    private final Map<Integer, String> indexToLabelMap = new TreeMap<>();
+    private final Map<String, MutableMetrics> allMetrics = new HashMap<>();
+    private final TreeMap<Integer, String> indexToLabelMap = new TreeMap<>();
 
     /*
     The following are computed values upon the completion of profiling in order to report the results back to the user
      */
     private long totalStepDuration;
     private Map<String, ImmutableMetrics> computedMetrics;
-    private boolean isComputer = false;
 
     public StandardTraversalMetrics() {
     }
 
     public void start(final String metricsId) {
         dirty = true;
-        metrics.get(metricsId).start();
+        if (allMetrics.get(metricsId) == null) {
+            System.out.println();
+        }
+        allMetrics.get(metricsId).start();
     }
 
     public void stop(final String metricsId) {
         dirty = true;
-        metrics.get(metricsId).stop();
+        allMetrics.get(metricsId).stop();
     }
 
     public void finish(final String metricsId, final long bulk) {
         dirty = true;
-        final MutableMetrics m = metrics.get(metricsId);
-        m.finish(1);
-        m.getNested(ELEMENT_COUNT_ID).incrementCount(bulk);
+        final MutableMetrics metrics = allMetrics.get(metricsId);
+        metrics.stop();
+        metrics.incrementCount(Metrics.TRAVERSER_COUNT_ID, 1);
+        metrics.incrementCount(Metrics.ELEMENT_COUNT_ID, bulk);
     }
-
 
     @Override
     public long getDuration(final TimeUnit unit) {
@@ -75,13 +76,13 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
     public Metrics getMetrics(final int index) {
         computeTotals();
         // adjust index to account for the injected profile steps
-        return (Metrics) computedMetrics.get(indexToLabelMap.get(index * 2 + 1));
+        return (Metrics) computedMetrics.get(indexToLabelMap.get(index));
     }
 
     @Override
-    public Metrics getMetrics(final String stepLabel) {
+    public Metrics getMetrics(final String id) {
         computeTotals();
-        return computedMetrics.get(stepLabel);
+        return computedMetrics.get(id);
     }
 
     @Override
@@ -98,23 +99,40 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
 
         // Append headers
         final StringBuilder sb = new StringBuilder("Traversal Metrics\n")
-                .append(String.format("%28s %21s %11s %15s %8s", HEADERS));
+                .append(String.format("%-50s %21s %11s %15s %8s", HEADERS));
 
-        // Append each StepMetric's row. indexToLabelMap values are ordered by index.
-        for (String label : indexToLabelMap.values()) {
-            final ImmutableMetrics s = computedMetrics.get(label);
-            final String rowName = StringUtils.abbreviate(s.getName(), 28);
-            final long itemCount = s.getNested(ELEMENT_COUNT_ID).getCount();
+        sb.append("\n=============================================================================================================");
 
-            sb.append(String.format("%n%28s %21d %11d %15.3f %8.2f",
-                    rowName, itemCount, s.getCount(), s.getDuration(TimeUnit.MICROSECONDS) / 1000.0, s.getPercentDuration()));
-        }
+        appendMetrics(computedMetrics.values(), sb, 0);
 
         // Append total duration
-        sb.append(String.format("%n%28s %21s %11s %15.3f %8s",
-                "TOTAL", "-", "-", getDuration(TimeUnit.MICROSECONDS) / 1000.0, "-"));
+        sb.append(String.format("%n%50s %21s %11s %15.3f %8s",
+                ">TOTAL", "-", "-", getDuration(TimeUnit.MICROSECONDS) / 1000.0, "-"));
 
         return sb.toString();
+    }
+
+    private void appendMetrics(final Collection<? extends Metrics> metrics, final StringBuilder sb, final int indent) {
+        // Append each StepMetric's row. indexToLabelMap values are ordered by index.
+        for (Metrics m : metrics) {
+            String rowName = m.getName();
+            for (int ii = 0; ii < indent; ii++) {
+                rowName = "  " + rowName;
+            }
+            rowName = StringUtils.abbreviate(rowName, 50);
+            final long itemCount = m.getCount(Metrics.ELEMENT_COUNT_ID);
+            final long traverserCount = m.getCount(Metrics.TRAVERSER_COUNT_ID);
+
+            String percentDur = m.getAnnotation(Metrics.PERCENT_DURATION_KEY);
+            if (percentDur != null) {
+                sb.append(String.format("%n%-50s %21d %11d %15.3f %8.2f",
+                        rowName, itemCount, traverserCount, m.getDuration(TimeUnit.MICROSECONDS) / 1000.0, Double.parseDouble(percentDur)));
+            } else {
+                sb.append(String.format("%n%-50s %21d %11d %15.3f",
+                        rowName, itemCount, traverserCount, m.getDuration(TimeUnit.MICROSECONDS) / 1000.0));
+            }
+            appendMetrics(m.getNested(), sb, indent + 1);
+        }
     }
 
     private void computeTotals() {
@@ -130,26 +148,18 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
             tempMetrics.add(metrics.get(label).clone());
         }
 
-        if (!isComputer) {
-            // Subtract upstream traversal time from each step
-            for (int ii = tempMetrics.size() - 1; ii > 0; ii--) {
-                MutableMetrics cur = tempMetrics.get(ii);
-                MutableMetrics upStream = tempMetrics.get(ii - 1);
-                cur.setDuration(cur.getDuration(MutableMetrics.SOURCE_UNIT) - upStream.getDuration(MutableMetrics.SOURCE_UNIT));
-            }
-        }
-
         // Calculate total duration
         this.totalStepDuration = 0;
         tempMetrics.forEach(m -> this.totalStepDuration += m.getDuration(MutableMetrics.SOURCE_UNIT));
 
         // Assign %'s
-        tempMetrics.forEach(m ->
-                        m.setPercentDuration(m.getDuration(TimeUnit.NANOSECONDS) * 100.d / this.totalStepDuration)
-        );
+        tempMetrics.forEach(m -> {
+            double dur = m.getDuration(TimeUnit.NANOSECONDS) * 100.d / this.totalStepDuration;
+            m.setAnnotation(Metrics.PERCENT_DURATION_KEY, String.valueOf(dur));
+        });
 
         // Store immutable instances of the calculated metrics
-        computedMetrics = new HashMap<>(metrics.size());
+        computedMetrics = new LinkedHashMap<>(metrics.size());
         tempMetrics.forEach(it -> computedMetrics.put(it.getId(), it.getImmutableClone()));
 
         dirty = false;
@@ -160,8 +170,6 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
 
         // iterate the incoming TraversalMetrics
         toMerge.forEachRemaining(inTraversalMetrics -> {
-            newTraversalMetrics.isComputer = inTraversalMetrics.isComputer;
-
             // aggregate the internal Metrics
             inTraversalMetrics.metrics.forEach((metricsId, toAggregate) -> {
 
@@ -185,18 +193,12 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
         return newTraversalMetrics;
     }
 
-    public void initializeIfNecessary(final String metricsId, final int index, final String displayName, final boolean isComputer) {
-        if (indexToLabelMap.containsKey(index)) {
-            return;
+    public void addMetrics(final MutableMetrics newMetrics, final String id, final int index, final boolean isTopLevel, final String profileStepId) {
+        if (isTopLevel) {
+            // The index is necessary to ensure that step order is preserved after a merge.
+            indexToLabelMap.put(index, id);
+            metrics.put(id, newMetrics);
         }
-
-        this.isComputer = isComputer;
-        final MutableMetrics newMetrics = new MutableMetrics(metricsId, displayName);
-        // Add a nested metric for item count
-        newMetrics.addNested(new MutableMetrics(ELEMENT_COUNT_ID, ITEM_COUNT_DISPLAY));
-
-        // The index is necessary to ensure that step order is preserved after a merge.
-        indexToLabelMap.put(index, metricsId);
-        metrics.put(metricsId, newMetrics);
+        allMetrics.put(profileStepId, newMetrics);
     }
 }

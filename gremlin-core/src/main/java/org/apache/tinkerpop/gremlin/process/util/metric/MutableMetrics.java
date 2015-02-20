@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.util.metric;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -59,18 +60,26 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         this.tempTime = -1;
     }
 
-    public void finish(final long count) {
-        stop();
-        this.count += count;
-    }
-
-    public void incrementCount(final long count) {
-        this.count += count;
+    public void incrementCount(String key, final long incr) {
+        AtomicLong count = this.counts.get(key);
+        if (count == null) {
+            count = new AtomicLong();
+            this.counts.put(key, count);
+        }
+        count.addAndGet(incr);
     }
 
     public void aggregate(MutableMetrics other) {
         this.durationNs += other.durationNs;
-        this.count += other.count;
+        for (Map.Entry<String, AtomicLong> otherCount : other.counts.entrySet()) {
+            AtomicLong thisCount = this.counts.get(otherCount.getKey());
+            if (thisCount == null) {
+                thisCount = new AtomicLong(otherCount.getValue().get());
+                this.counts.put(otherCount.getKey(), thisCount);
+            } else {
+                thisCount.addAndGet(otherCount.getValue().get());
+            }
+        }
 
         // Merge annotations. If multiple values for a given key are found then append it to a comma-separated list.
         for (Map.Entry<String, String> p : other.annotations.entrySet()) {
@@ -108,14 +117,6 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         annotations.put(key, value);
     }
 
-    public void setPercentDuration(final double percentDuration) {
-        this.percentDuration = percentDuration;
-    }
-
-    public void setDuration(final long duration) {
-        this.durationNs = duration;
-    }
-
     @Override
     public MutableMetrics getNested(String metricsId) {
         return (MutableMetrics) nested.get(metricsId);
@@ -131,9 +132,13 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
     private void copyMembers(final ImmutableMetrics clone) {
         clone.id = this.id;
         clone.name = this.name;
-        clone.count = this.count;
         clone.durationNs = this.durationNs;
-        clone.percentDuration = this.percentDuration;
+        for (Map.Entry<String, AtomicLong> c : this.counts.entrySet()) {
+            clone.counts.put(c.getKey(), new AtomicLong(c.getValue().get()));
+        }
+        for (Map.Entry<String, String> a : this.annotations.entrySet()) {
+            clone.annotations.put(a.getKey(), a.getValue());
+        }
     }
 
     @Override
