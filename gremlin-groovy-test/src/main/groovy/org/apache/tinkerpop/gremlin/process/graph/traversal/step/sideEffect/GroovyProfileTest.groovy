@@ -46,10 +46,10 @@ public abstract class GroovyProfileTest {
             g.V.repeat(__.both()).times(3).profile();
         }
 
-//        @Override
-//        Traversal<Vertex, StandardTraversalMetrics> get_nested_profile() {
-//            g.V().has(__.in("created").count().is(1l)).values("name").profile();
-//        }
+        @Override
+        Traversal<Vertex, StandardTraversalMetrics> get_nested_profile() {
+            g.V().has(__.in("created").count().is(1l)).values("name").profile();
+        }
 
         @org.junit.Ignore
         void testProfileTimes() {
@@ -75,10 +75,10 @@ public abstract class GroovyProfileTest {
             ComputerTestHelper.compute("g.V.repeat(__.both()).times(3).profile()", g);
         }
 
-//        @Override
-//        Traversal<Vertex, StandardTraversalMetrics> get_nested_profile() {
-//            ComputerTestHelper.compute(" g.V().has(__.in('created').count().is(1l)).values('name').profile()", g);
-//        }
+        @Override
+        Traversal<Vertex, StandardTraversalMetrics> get_nested_profile() {
+            ComputerTestHelper.compute(" g.V().has(__.in('created').count().is(1l)).values('name').profile()", g);
+        }
 
         @Override
         @org.junit.Ignore

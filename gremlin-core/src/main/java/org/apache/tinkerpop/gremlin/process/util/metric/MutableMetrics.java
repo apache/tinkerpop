@@ -108,7 +108,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
     }
 
     /**
-     * Set an annotation value. Duplicates will be overwritten.
+     * Set an annotation value.  
      *
      * @param key
      * @param value
