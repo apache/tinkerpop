@@ -28,6 +28,11 @@ public class DependantMutableMetrics extends MutableMetrics {
     private long prevDur = 0L;
     private DependantMutableMetrics upStreamMetrics;
 
+    private DependantMutableMetrics() {
+        // necessary for kryo serialization
+        super();
+    }
+
     public DependantMutableMetrics(final String id, final String name, final DependantMutableMetrics upStreamMetrics) {
         super(id, name);
         this.upStreamMetrics = upStreamMetrics;

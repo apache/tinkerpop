@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser
 import org.apache.tinkerpop.gremlin.process.traverser.B_O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traverser.O_Traverser;
 import org.apache.tinkerpop.gremlin.process.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.util.metric.DependantMutableMetrics;
 import org.apache.tinkerpop.gremlin.process.util.metric.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.util.metric.StandardTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
@@ -58,6 +59,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -279,7 +281,7 @@ public final class KryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_Traverser.class, null, 75));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(O_Traverser.class, null, 76));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_P_PA_S_SE_SL_Traverser.class, null, 77));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_PA_S_SE_SL_Traverser.class, null, 78));   // ***LAST ID***
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_PA_S_SE_SL_Traverser.class, null, 78));
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraverserSet.class, null, 58));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Tree.class, null, 61));
@@ -289,6 +291,8 @@ public final class KryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StandardTraversalMetrics.class, null, 70));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapMemory.class, null, 73));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapReduce.NullObject.class, null, 74));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(AtomicLong.class, null, 79));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DependantMutableMetrics.class, null, 80));  // ***LAST ID**
         }};
 
         private static final byte major = 1;
