@@ -44,11 +44,15 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX();
 
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX();
+
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount();
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX_capXaX();
 
     public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCount();
+
+    public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCountXaX_capXaX();
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX();
 
@@ -58,13 +62,14 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_groupCount_byXnameX() {
-        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_outXcreatedX_groupCount_byXnameX();
-        printTraversalForm(traversal);
-        final Map<String, Long> map = traversal.next();
-        assertEquals(map.size(), 2);
-        assertEquals(Long.valueOf(3l), map.get("lop"));
-        assertEquals(Long.valueOf(1l), map.get("ripple"));
-        assertFalse(traversal.hasNext());
+        Arrays.asList(get_g_V_outXcreatedX_groupCount_byXnameX(), get_g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX()).forEach(traversal -> {
+            printTraversalForm(traversal);
+            final Map<String, Long> map = traversal.next();
+            assertEquals(map.size(), 2);
+            assertEquals(Long.valueOf(3l), map.get("lop"));
+            assertEquals(Long.valueOf(1l), map.get("ripple"));
+            assertFalse(traversal.hasNext());
+        });
     }
 
     @Test
@@ -83,11 +88,12 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_filterXfalseX_groupCount() {
-        final Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_hasXnoX_groupCount();
-        printTraversalForm(traversal);
-        final Map<Object, Long> map = traversal.next();
-        assertEquals(0, map.size());
-        assertFalse(traversal.hasNext());
+        Arrays.asList(get_g_V_hasXnoX_groupCount(), get_g_V_hasXnoX_groupCountXaX_capXaX()).forEach(traversal -> {
+            printTraversalForm(traversal);
+            final Map<Object, Long> map = traversal.next();
+            assertEquals(0, map.size());
+            assertFalse(traversal.hasNext());
+        });
     }
 
     @Test
@@ -132,6 +138,11 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         }
 
         @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX() {
+            return g.V().out("created").<String>groupCount("a").by("name").cap("a");
+        }
+
+        @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount() {
             return g.V().out("created").values("name").groupCount();
         }
@@ -144,6 +155,11 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCount() {
             return g.V().has("no").groupCount();
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCountXaX_capXaX() {
+            return g.V().has("no").groupCount("a").cap("a");
         }
 
         @Override

@@ -18,12 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
+import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupCountTest
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -40,6 +39,11 @@ public abstract class GroovyGroupCountTest {
         }
 
         @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX() {
+            g.V.out('created').groupCount('a').by('name').cap('a')
+        }
+
+        @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount() {
             g.V.out('created').name.groupCount
         }
@@ -52,6 +56,11 @@ public abstract class GroovyGroupCountTest {
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCount() {
             g.V.has('no').groupCount;
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCountXaX_capXaX() {
+            g.V.has('no').groupCount('a').cap('a');
         }
 
         @Override
@@ -76,6 +85,11 @@ public abstract class GroovyGroupCountTest {
         }
 
         @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX() {
+            ComputerTestHelper.compute("g.V.out('created').groupCount('a').by('name').cap('a')", g)
+        }
+
+        @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount() {
             ComputerTestHelper.compute("g.V.out('created').name.groupCount", g)
         }
@@ -88,6 +102,11 @@ public abstract class GroovyGroupCountTest {
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCount() {
             ComputerTestHelper.compute("g.V.has('no').groupCount", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCountXaX_capXaX() {
+            ComputerTestHelper.compute("g.V.has('no').groupCount('a').cap('a')", g)
         }
 
         @Override
