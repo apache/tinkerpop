@@ -37,7 +37,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added Apache Rat plugin to detect the proper inclusion of license headers in files.
 * A `Traversal` now respects thread interruption during iteration, throwing a `TraversalInterruptionException` if it encounters interruption on the current thread.
 * Apache refactoring: `com.tinkerpop` -> `org.apache.tinkerpop`.
-* `Traversal` is now `Serializable` and with 99% of queries no longer needing lambdas, Gremlin-Java works over the wire.
+* `Traversal` is now `Serializable` and with most queries no longer needing lambdas, Gremlin-Java works over the wire.
 * Added `VertexProperty.Cardinality` with `list`, `set`, and `single`. No more `Vertex.singleProperty()` method.
 * Added `RangeByIsCountStrategy` that adds a `RangeStep` in front of `.count().is(<predicate>, <value>)` to minimize the amount of fetched elements.
 * Added `CoalesceStep` / `coalesce()` that emits the first traversal which emits at least one element.

@@ -46,7 +46,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_sleep_sleep_profile();
 
-    public abstract Traversal<Vertex, StandardTraversalMetrics> get_nested_profile();
+    public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -62,24 +62,24 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         Metrics metrics = traversalMetrics.getMetrics(0);
         assertEquals(6, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID));
         assertEquals(6, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID));
-        assertTrue("Percent duration should be positive.", (Double)metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
+        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
         assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) > 0);
 
         metrics = traversalMetrics.getMetrics(1);
         assertEquals(6, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID));
         assertNotEquals(0, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID));
-        assertTrue("Percent duration should be positive.", (Double)metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
+        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
         assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) > 0);
 
         metrics = traversalMetrics.getMetrics(2);
         assertEquals(2, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID));
         assertNotEquals(0, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID));
-        assertTrue("Percent duration should be positive.", (Double)metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
+        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
         assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) > 0);
 
         double totalPercentDuration = 0;
         for (Metrics m : traversalMetrics.getMetrics()) {
-            totalPercentDuration += (Double)m.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY);
+            totalPercentDuration += (Double) m.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY);
         }
         assertEquals(100, totalPercentDuration, 0.000001);
     }
@@ -98,24 +98,24 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         Metrics metrics = traversalMetrics.getMetrics(0);
         assertEquals(808, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID));
         assertEquals(808, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID));
-        assertTrue("Percent duration should be positive.", (Double)metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
+        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
         assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) > 0);
 
         metrics = traversalMetrics.getMetrics(1);
         assertEquals(8049, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID));
         assertNotEquals(0, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID));
-        assertTrue("Percent duration should be positive.", (Double)metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
+        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
         assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) > 0);
 
         metrics = traversalMetrics.getMetrics(2);
         assertEquals(327370, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID));
         assertNotEquals(0, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID));
-        assertTrue("Percent duration should be positive.", (Double)metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
+        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
         assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) > 0);
 
         double totalPercentDuration = 0;
         for (Metrics m : traversalMetrics.getMetrics()) {
-            totalPercentDuration += (Double)m.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY);
+            totalPercentDuration += (Double) m.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY);
         }
         assertEquals(100, totalPercentDuration, 0.000001);
     }
@@ -123,7 +123,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
-    public void testProfileTimes() {
+    public void g_V_sleep_sleep_profile() {
         final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_sleep_sleep_profile();
         printTraversalForm(traversal);
 
@@ -151,7 +151,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         double totalPercentDuration = 0;
         for (Metrics m : traversalMetrics.getMetrics()) {
-            totalPercentDuration += (Double)m.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY);
+            totalPercentDuration += (Double) m.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY);
         }
         assertEquals(100, totalPercentDuration, 0.000001);
     }
@@ -171,27 +171,27 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         Metrics metrics = traversalMetrics.getMetrics(0);
         assertEquals(6, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID));
         assertEquals(6, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID));
-        assertTrue("Percent duration should be positive.", (Double)metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
+        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
         assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) > 0);
 
         metrics = traversalMetrics.getMetrics(1);
         assertEquals(72, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID));
         assertNotEquals(0, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID));
         assertTrue("Count should be greater than traversers.", metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID) > metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID));
-        assertTrue("Percent duration should be positive.", (Double)metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
+        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
         assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) > 0);
 
         double totalPercentDuration = 0;
         for (Metrics m : traversalMetrics.getMetrics()) {
-            totalPercentDuration += (Double)m.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY);
+            totalPercentDuration += (Double) m.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY);
         }
         assertEquals(100, totalPercentDuration, 0.000001);
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    public void test_nested_profile() {
-        final Traversal<Vertex, StandardTraversalMetrics> traversal = get_nested_profile();
+    public void g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
+        final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile();
         printTraversalForm(traversal);
 
         traversal.iterate();
@@ -250,9 +250,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, StandardTraversalMetrics> get_nested_profile() {
+        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
             return (Traversal) g.V().has(__.in("created").count().is(1l)).values("name").profile();
         }
-
     }
 }

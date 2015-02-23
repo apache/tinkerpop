@@ -120,7 +120,7 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Re
 
     public static final class TreeSideEffectMapReduce extends StaticMapReduce<Object, Tree, Object, Tree, Tree> {
 
-        public static final String TREE_STEP_SIDE_EFFECT_KEY = "gremlin.treeStep.sideEffectKey";
+        public static final String TREE_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY = "gremlin.treeSideEffectStep.sideEffectKey";
 
         private String sideEffectKey;
 
@@ -135,12 +135,12 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Re
         @Override
         public void storeState(final Configuration configuration) {
             super.storeState(configuration);
-            configuration.setProperty(TREE_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
+            configuration.setProperty(TREE_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
         }
 
         @Override
         public void loadState(final Configuration configuration) {
-            this.sideEffectKey = configuration.getString(TREE_STEP_SIDE_EFFECT_KEY);
+            this.sideEffectKey = configuration.getString(TREE_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY);
         }
 
         @Override
@@ -152,6 +152,20 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Re
         public void map(final Vertex vertex, final MapEmitter<Object, Tree> emitter) {
             VertexTraversalSideEffects.of(vertex).<Tree<?>>ifPresent(this.sideEffectKey, tree -> tree.splitParents().forEach(branches -> emitter.emit(branches.keySet().iterator().next(), branches)));
         }
+
+        /*
+        @Override
+        public void combine(final NullObject key, final Iterator<Tree> values, final ReduceEmitter<NullObject, Tree> emitter) {
+            this.reduce(key, values, emitter);
+        }
+
+        @Override
+        public void reduce(final NullObject key, final Iterator<Tree> values, final ReduceEmitter<NullObject, Tree> emitter) {
+            final Tree tree = new Tree();
+            values.forEachRemaining(tree::addTree);
+            emitter.emit(tree);
+        }
+        */
 
         @Override
         public Tree generateFinalResult(final Iterator<KeyValue<Object, Tree>> keyValues) {

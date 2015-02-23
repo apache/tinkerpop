@@ -32,7 +32,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
 
     private long tempTime = -1l;
 
-    private MutableMetrics() {
+    protected MutableMetrics() {
         // necessary for kryo serialization
     }
 

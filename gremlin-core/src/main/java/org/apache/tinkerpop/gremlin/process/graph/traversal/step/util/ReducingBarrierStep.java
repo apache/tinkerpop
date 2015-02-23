@@ -48,8 +48,8 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
     public static final String REDUCING = Graph.Hidden.hide("reducing");
 
-    private Supplier<E> seedSupplier;
-    private BiFunction<E, Traverser<S>, E> reducingBiFunction;
+    protected Supplier<E> seedSupplier;
+    protected BiFunction<E, Traverser<S>, E> reducingBiFunction;
     private boolean done = false;
     protected boolean byPass = false;
 
