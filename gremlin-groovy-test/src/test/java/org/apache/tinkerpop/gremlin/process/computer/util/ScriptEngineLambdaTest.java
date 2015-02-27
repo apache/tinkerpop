@@ -1,15 +1,15 @@
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
-import java.util.HashSet;
-import java.util.Set;
+import org.junit.AfterClass;
+import org.junit.Test;
+
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Matt Frantz (matthew.h.frantz+tinkerpop@gmail.com)
@@ -106,6 +106,12 @@ public class ScriptEngineLambdaTest {
         assertEquals(lambda.apply(10), 12);
         assertEquals(lambda.apply("foo"), "foo2");
     }
+
+    @AfterClass
+    public static void clearScriptEngineCache() {
+        ScriptEngineCache.get(GROOVY_SCRIPT_ENGINE_NAME).getBindings(ScriptContext.GLOBAL_SCOPE).clear();
+    }
+
 
     // Utilities
 
