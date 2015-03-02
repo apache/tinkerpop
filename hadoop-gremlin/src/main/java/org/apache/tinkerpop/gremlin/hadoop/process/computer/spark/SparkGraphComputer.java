@@ -18,19 +18,27 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.Tuple2;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -61,8 +69,26 @@ public class SparkGraphComputer implements GraphComputer {
         configuration.setAppName(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX);
         configuration.setMaster("local");
         final JavaSparkContext sc = new JavaSparkContext(configuration);
-        JavaRDD<String> rdd = sc.textFile("README.asciidoc");
-        System.out.println("You made it: " + rdd.count());
+        //JavaRDD<String> rdd = sc.textFile("hdfs://localhost:9000/user/marko/religious-traversals.txt");
+        final Configuration conf = new Configuration();
+        conf.set("mapred.input.dir", "hdfs://localhost:9000/user/marko/grateful-dead-vertices.gio");
+        JavaPairRDD<NullWritable, VertexWritable> rdd = sc.newAPIHadoopRDD(conf, KryoInputFormat.class, NullWritable.class, VertexWritable.class);
+        JavaRDD<Tuple2<Vertex, MessageBox<String>>> rdd2 = rdd.map(tuple -> new Tuple2<>(DetachedFactory.detach(tuple._2().get(), true), new MessageBox<>()));
+
+        GraphRDD<String> g = new GraphRDD<>(rdd2.rdd());
+        g = GraphRDD.of(g.mapToPair(tuple -> {
+            tuple._2().sendMessage(1, "hello");
+            return tuple;
+        }));
+
+        g = g.completeIteration();
+        /*g = g.union(g);
+        g = g.<List<String>>reduceByKey((a, b) -> {
+            a.addAll(b);
+            return a;
+        });*/
+        g.foreach(t -> System.out.println(t));
+        System.out.println(g.count());
     }
 
 

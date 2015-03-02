@@ -310,10 +310,8 @@ public final class ElementHelper {
      * @throws IllegalArgumentException if either argument is null
      */
     public static boolean areEqual(final Element a, final Object b) {
-        if (null == a)
-            throw Graph.Exceptions.argumentCanNotBeNull("a");
-        if (null == b)
-            throw Graph.Exceptions.argumentCanNotBeNull("b");
+        if (null == b || null == a)
+            return false;
 
         if (a == b)
             return true;
