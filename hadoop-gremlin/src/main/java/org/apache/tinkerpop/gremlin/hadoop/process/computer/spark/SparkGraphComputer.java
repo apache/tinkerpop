@@ -61,8 +61,8 @@ public class SparkGraphComputer implements GraphComputer {
         configuration.setAppName(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX);
         configuration.setMaster("local");
         final JavaSparkContext sc = new JavaSparkContext(configuration);
-        JavaRDD<String> rdd = sc.textFile("religious-traversals.txt");
-        System.out.println(rdd.count());
+        JavaRDD<String> rdd = sc.textFile("README.asciidoc");
+        System.out.println("You made it: " + rdd.count());
     }
 
 
