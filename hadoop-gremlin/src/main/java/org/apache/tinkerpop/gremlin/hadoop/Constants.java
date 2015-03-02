@@ -35,6 +35,7 @@ public class Constants {
     public static final String GREMLIN_HADOOP_JOB_PREFIX = "HadoopGremlin: ";
     public static final String GREMLIN_HADOOP_GIRAPH_JOB_PREFIX = "HadoopGremlin(Giraph): ";
     public static final String GREMLIN_HADOOP_MAP_REDUCE_JOB_PREFIX = "HadoopGremlin(MapReduce): ";
+    public static final String GREMLIN_HADOOP_SPARK_JOB_PREFIX = "HadoopGremlin(Spark): ";
     public static final String HADOOP_GREMLIN_LIBS = "HADOOP_GREMLIN_LIBS";
     public static final String DOT_JAR = ".jar";
     public static final String GREMLIN_HADOOP_DERIVE_MEMORY = "gremlin.hadoop.deriveMemory";
