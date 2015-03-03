@@ -18,18 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
+import org.apache.spark.Accumulator;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.Rule;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
-import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.MemoryHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -39,28 +43,34 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class SparkMemory implements Memory.Admin, Serializable {
 
     public final Set<String> memoryKeys = new HashSet<>();
-    public Map<String, Object> previousMap;
-    public Map<String, Object> currentMap;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
+    private final Map<String, Accumulator<Rule>> memory = new HashMap<>();
 
-    public SparkMemory(final Set<MapReduce> mapReducers) {
-        this.currentMap = new ConcurrentHashMap<>();
-        this.previousMap = new ConcurrentHashMap<>();
-        //if (null != vertexProgram) {
-        for (final String key : (Set<String>) PageRankVertexProgram.build().create().getMemoryComputeKeys()) {
-            MemoryHelper.validateKey(key);
-            this.memoryKeys.add(key);
+    public SparkMemory(final VertexProgram<?> vertexProgram, final Set<MapReduce> mapReducers, final JavaSparkContext sparkContext) {
+        if (null != vertexProgram) {
+            for (final String key : vertexProgram.getMemoryComputeKeys()) {
+                MemoryHelper.validateKey(key);
+                this.memoryKeys.add(key);
+            }
         }
-        //}
         for (final MapReduce mapReduce : mapReducers) {
             this.memoryKeys.add(mapReduce.getMemoryKey());
         }
+        for (final String key : this.memoryKeys) {
+            this.memory.put(key, sparkContext.accumulator(new Rule(Rule.Operation.NO_OP, null), new RuleAccumulator()));
+        }
+
     }
 
     @Override
     public Set<String> keys() {
-        return this.previousMap.keySet();
+        final Set<String> trueKeys = new HashSet<>();
+        this.memory.forEach((key, value) -> {
+            if (value.value().object != null)
+                trueKeys.add(key);
+        });
+        return Collections.unmodifiableSet(trueKeys);
     }
 
     @Override
@@ -88,16 +98,6 @@ public final class SparkMemory implements Memory.Admin, Serializable {
         return this.runtime.get();
     }
 
-    protected void complete() {
-        this.iteration.decrementAndGet();
-        this.previousMap = this.currentMap;
-    }
-
-    protected void completeSubRound() {
-        this.previousMap = new ConcurrentHashMap<>(this.currentMap);
-
-    }
-
     @Override
     public boolean isInitialIteration() {
         return this.getIteration() == 0;
@@ -105,7 +105,7 @@ public final class SparkMemory implements Memory.Admin, Serializable {
 
     @Override
     public <R> R get(final String key) throws IllegalArgumentException {
-        final R r = (R) this.previousMap.get(key);
+        final R r = (R) this.memory.get(key).value().object;
         if (null == r)
             throw Memory.Exceptions.memoryDoesNotExist(key);
         else
@@ -115,28 +115,28 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     @Override
     public long incr(final String key, final long delta) {
         checkKeyValue(key, delta);
-        this.currentMap.compute(key, (k, v) -> null == v ? delta : delta + (Long) v);
-        return (Long) this.previousMap.getOrDefault(key, 0l) + delta;
+        this.memory.get(key).add(new Rule(Rule.Operation.INCR, delta));
+        return (Long) this.memory.get(key).value().object + delta;
     }
 
     @Override
     public boolean and(final String key, final boolean bool) {
         checkKeyValue(key, bool);
-        this.currentMap.compute(key, (k, v) -> null == v ? bool : bool && (Boolean) v);
-        return (Boolean) this.previousMap.getOrDefault(key, true) && bool;
+        this.memory.get(key).add(new Rule(Rule.Operation.AND, bool));
+        return bool;
     }
 
     @Override
     public boolean or(final String key, final boolean bool) {
         checkKeyValue(key, bool);
-        this.currentMap.compute(key, (k, v) -> null == v ? bool : bool || (Boolean) v);
-        return (Boolean) this.previousMap.getOrDefault(key, true) || bool;
+        this.memory.get(key).add(new Rule(Rule.Operation.OR, bool));
+        return bool;
     }
 
     @Override
     public void set(final String key, final Object value) {
         checkKeyValue(key, value);
-        this.currentMap.put(key, value);
+        this.memory.get(key).add(new Rule(Rule.Operation.SET, value));
     }
 
     @Override
@@ -145,8 +145,8 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     }
 
     private void checkKeyValue(final String key, final Object value) {
-        //if (!this.memoryKeys.contains(key))
-        //    throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
-        //MemoryHelper.validateValue(value);
+        if (!this.memoryKeys.contains(key))
+            throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
+        MemoryHelper.validateValue(value);
     }
 }

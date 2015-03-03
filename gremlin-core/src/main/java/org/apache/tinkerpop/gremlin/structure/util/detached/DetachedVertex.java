@@ -118,7 +118,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
         if (hostVertex.equals(this))
             return hostVertex;
         else
-            throw new IllegalStateException("The host vertex must be the detached vertex to attach: " + this);
+            throw new IllegalStateException("The host vertex must be the detached vertex to attach: " + this + "!=" + hostVertex);
     }
 
     @Override

@@ -18,14 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure;
 
-import org.apache.tinkerpop.gremlin.hadoop.Constants;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
@@ -82,6 +84,18 @@ public class HadoopConfiguration extends BaseConfiguration implements Serializab
 
     public void setOutputLocation(final String outputLocation) {
         this.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
+    }
+
+    public Class<? extends GraphComputer> getGraphComputer() {
+        if (!this.containsKey(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER))
+            return GiraphGraphComputer.class;
+        else {
+            try {
+                return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER));
+            } catch (final ClassNotFoundException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
     }
 
     @Override

@@ -16,27 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
-import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
-import scala.Tuple2;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
+import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SparkMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
-
-    private final List<Tuple2<K, V>> emissions = new ArrayList<>();
-
-    @Override
-    public void emit(final K key, final V value) {
-        this.emissions.add(new Tuple2<>(key, value));
-    }
-
-    public Iterable<Tuple2<K, V>> getEmissions() {
-        return this.emissions;
-    }
+@RunWith(ProcessComputerSuite.class)
+@ProcessComputerSuite.GraphProviderClass(provider = GiraphGraphProvider.class, graph = HadoopGraph.class)
+public class GiraphGraphComputerProcessIntegrateTest {
 }

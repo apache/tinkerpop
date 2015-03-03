@@ -19,12 +19,10 @@
 package org.apache.tinkerpop.gremlin.hadoop;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.giraph.conf.GiraphConstants;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopElement;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -96,23 +94,11 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName) {
         return new HashMap<String, Object>() {{
-            put("gremlin.graph", HadoopGraph.class.getName());
+            put(Graph.GRAPH, HadoopGraph.class.getName());
             put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
             put(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, GryoOutputFormat.class.getCanonicalName());
-            //put(Constants.GREMLIN_GIRAPH_MEMORY_OUTPUT_FORMAT_CLASS, TextOutputFormat.class.getCanonicalName());
             put(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class.getCanonicalName());
-            put(GiraphConstants.MIN_WORKERS, 1);
-            put(GiraphConstants.MAX_WORKERS, 1);
-            put(GiraphConstants.SPLIT_MASTER_WORKER.getKey(), false);
-            //put("giraph.localTestMode", true);
-            put(GiraphConstants.ZOOKEEPER_JAR, GiraphGraphComputer.class.getResource("zookeeper-3.3.3.jar").getPath());
-            put("giraph.zkServerPort", "2181");  // you must have a local zookeeper running on this port
-            put("giraph.nettyServerUseExecutionHandler", false); // this prevents so many integration tests running out of threads
-            put("giraph.nettyClientUseExecutionHandler", false); // this prevents so many integration tests running out of threads
-            //put(Constants.GREMLIN_GIRAPH_INPUT_LOCATION, GryoInputFormat.class.getResource("tinkerpop-classic-vertices.kryo").getPath());
             put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "hadoop-gremlin/target/test-output");
-            put(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, true);
-            put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         }};
     }
 

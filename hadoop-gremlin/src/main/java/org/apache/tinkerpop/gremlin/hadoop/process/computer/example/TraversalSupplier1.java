@@ -20,6 +20,9 @@ package org.apache.tinkerpop.gremlin.hadoop.process.computer.example;
 
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.function.Supplier;
 
@@ -29,6 +32,8 @@ import java.util.function.Supplier;
 public class TraversalSupplier1 implements Supplier<Traversal> {
     @Override
     public Traversal get() {
-        return HadoopGraph.open().V().out().out().values("name");
+        final Graph graph = HadoopGraph.open();
+        graph.engine(ComputerTraversalEngine.computer);
+        return graph.V().out().out().values("name");
     }
 }

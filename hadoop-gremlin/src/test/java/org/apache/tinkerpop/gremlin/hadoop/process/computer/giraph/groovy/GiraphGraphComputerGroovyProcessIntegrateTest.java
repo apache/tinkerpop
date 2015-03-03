@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.process.groovy;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.groovy;
 
-import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphProvider;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.process.GroovyProcessComputerSuite;
 import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
@@ -28,6 +28,6 @@ import org.junit.runner.RunWith;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(GroovyProcessComputerSuite.class)
-@ProcessComputerSuite.GraphProviderClass(provider = HadoopGraphProvider.class, graph = HadoopGraph.class)
-public class HadoopGraphGroovyProcessComputerIntegrateTest {
+@ProcessComputerSuite.GraphProviderClass(provider = GiraphGraphProvider.class, graph = HadoopGraph.class)
+public class GiraphGraphComputerGroovyProcessIntegrateTest {
 }

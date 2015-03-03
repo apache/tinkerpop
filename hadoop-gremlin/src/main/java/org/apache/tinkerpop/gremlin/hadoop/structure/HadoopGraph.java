@@ -24,6 +24,7 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.hadoop.process.graph.traversal.strategy.HadoopElementStepStrategy;
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopEdgeIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopVertexIterator;
@@ -141,9 +142,11 @@ public class HadoopGraph implements Graph, Graph.Iterators {
 
     protected final HadoopConfiguration configuration;
     private TraversalEngine traversalEngine = StandardTraversalEngine.standard;
+    private Class<? extends GraphComputer> graphComputerClass = GiraphGraphComputer.class;
 
     private HadoopGraph(final Configuration configuration) {
         this.configuration = new HadoopConfiguration(configuration);
+        this.graphComputerClass = this.configuration.getGraphComputer();
     }
 
     public static HadoopGraph open() {
@@ -161,13 +164,14 @@ public class HadoopGraph implements Graph, Graph.Iterators {
 
     @Override
     public void compute(final Class<? extends GraphComputer> graphComputerClass) {
-        if (!graphComputerClass.equals(GiraphGraphComputer.class))
+        if (!graphComputerClass.equals(GiraphGraphComputer.class) || !graphComputerClass.equals(SparkGraphComputer.class))
             throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+        this.graphComputerClass = graphComputerClass;
     }
 
     @Override
     public GraphComputer compute() {
-        return new GiraphGraphComputer(this);
+        return this.graphComputerClass.equals(GiraphGraphComputer.class) ? new GiraphGraphComputer(this) : new SparkGraphComputer(this);
     }
 
     @Override

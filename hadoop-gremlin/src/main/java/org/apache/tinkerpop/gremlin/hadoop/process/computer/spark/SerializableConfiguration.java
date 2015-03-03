@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
 import org.apache.commons.configuration.AbstractConfiguration;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationUtils;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -31,6 +33,14 @@ import java.util.Map;
 public final class SerializableConfiguration extends AbstractConfiguration implements Serializable {
 
     private final Map<String, Object> configurations = new HashMap<>();
+
+    public SerializableConfiguration() {
+
+    }
+
+    public SerializableConfiguration(final Configuration configuration) {
+        ConfigurationUtils.copy(configuration, this);
+    }
 
     @Override
     protected void addPropertyDirect(final String key, final Object value) {

@@ -16,17 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.process;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
-import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
-import org.junit.runner.RunWith;
+import org.apache.spark.AccumulatorParam;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.Rule;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessComputerSuite.class)
-@ProcessComputerSuite.GraphProviderClass(provider = HadoopGraphProvider.class, graph = HadoopGraph.class)
-public class HadoopGraphProcessComputerIntegrateTest {
+public class RuleAccumulator implements AccumulatorParam<Rule> {
+
+    @Override
+    public Rule addAccumulator(final Rule a, final Rule b) {
+        return new Rule(b.operation, b.operation.compute(a.object, b.object));
+    }
+
+    @Override
+    public Rule addInPlace(final Rule a, final Rule b) {
+        return new Rule(b.operation, b.operation.compute(a.object, b.object));
+    }
+
+    @Override
+    public Rule zero(final Rule rule) {
+        return new Rule(Rule.Operation.NO_OP, null);
+    }
+
+
 }
