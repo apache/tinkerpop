@@ -145,8 +145,8 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     }
 
     private void checkKeyValue(final String key, final Object value) {
-        if (!this.memoryKeys.contains(key))
-            throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
-        MemoryHelper.validateValue(value);
+        //if (!this.memoryKeys.contains(key))
+        //    throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
+        //MemoryHelper.validateValue(value);
     }
 }

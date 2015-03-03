@@ -27,11 +27,14 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.HadoopHelper;
@@ -39,6 +42,7 @@ import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -51,7 +55,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -133,8 +139,8 @@ public class SparkGraphComputer implements GraphComputer {
                                 (Class<InputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class),
                                 NullWritable.class,
                                 VertexWritable.class);
-                        final JavaPairRDD<Object, SparkMessenger<Double>> rdd2 = rdd.mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new SparkMessenger<>(new SparkVertex((TinkerVertex) tuple._2().get()), new ArrayList<>())));
-                        GraphComputerRDD<Double> g = GraphComputerRDD.of(rdd2);
+                        final JavaPairRDD<Object, SparkMessenger<Object>> rdd2 = rdd.mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new SparkMessenger<>(new SparkVertex((TinkerVertex) tuple._2().get()), new ArrayList<>())));
+                        GraphComputerRDD<Object> g = GraphComputerRDD.of(rdd2);
 
                         // set up the vertex program
                         this.vertexProgram.setup(memory);
@@ -164,16 +170,73 @@ public class SparkGraphComputer implements GraphComputer {
                                             VertexWritable.class,
                                             (Class<OutputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class));
                         }
+                        sparkContext.close();
                     }
 
                     // execute mapreduce jobs
                     for (final MapReduce mapReduce : this.mapReducers) {
-                        //TODO
-                       /* g.mapValues(messenger -> {
-                            mapReduce.map(messenger.vertex, null);
-                            return messenger;
-                        }).combine().reduce();*/
+                        // set up the map reduce job
+                        final org.apache.commons.configuration.Configuration mapReduceConfiguration = new SerializableConfiguration();
+                        mapReduce.storeState(mapReduceConfiguration);
+
+                        // set up spark job
+                        final SparkConf sparkConfiguration = new SparkConf();
+                        sparkConfiguration.setAppName(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + mapReduce);
+                        hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
+                        if (FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class)))
+                            hadoopConfiguration.set("mapred.input.dir", hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G);
+                        // set up the input format
+                        final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration);
+                        SparkGraphComputer.loadJars(sparkContext, hadoopConfiguration);
+                        final JavaPairRDD<NullWritable, VertexWritable> g = sparkContext.newAPIHadoopRDD(hadoopConfiguration,
+                                (Class<InputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class),
+                                NullWritable.class,
+                                VertexWritable.class);
+
+                        // map
+                        JavaPairRDD<?, ?> mapRDD = g.flatMapToPair(tuple -> {
+                            final MapReduce m = MapReduce.createMapReduce(mapReduceConfiguration);
+                            final SparkMapEmitter mapEmitter = new SparkMapEmitter();
+                            m.map(tuple._2().get(), mapEmitter);
+                            return mapEmitter.getEmissions();
+                        });
+                        if (mapReduce.getMapKeySort().isPresent())
+                            mapRDD = mapRDD.sortByKey((Comparator) mapReduce.getMapKeySort().get());
+                        // todo: combine
+                        // reduce
+                        JavaPairRDD<?, ?> reduceRDD = null;
+                        if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
+                            reduceRDD = mapRDD.groupByKey().flatMapToPair(tuple -> {
+                                final MapReduce m = MapReduce.createMapReduce(mapReduceConfiguration);
+                                final SparkReduceEmitter reduceEmitter = new SparkReduceEmitter();
+                                m.reduce(tuple._1(), tuple._2().iterator(), reduceEmitter);
+                                return reduceEmitter.getEmissions();
+                            });
+                            if (mapReduce.getReduceKeySort().isPresent())
+                                reduceRDD = reduceRDD.sortByKey((Comparator) mapReduce.getReduceKeySort().get());
+                        }
+                        // write the output graph back to disk
+                        final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
+                        if (null != outputLocation) {
+                            // map back to a <nullwritable,vertexwritable> stream for output
+                            ((null == reduceRDD) ? mapRDD : reduceRDD).mapToPair(tuple -> new Tuple2<>(new ObjectWritable<>(tuple._1()), new ObjectWritable<>(tuple._2()))).saveAsNewAPIHadoopFile(outputLocation + "/" + mapReduce.getMemoryKey(),
+                                    ObjectWritable.class,
+                                    ObjectWritable.class,
+                                    (Class<OutputFormat<ObjectWritable, ObjectWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, OutputFormat.class));
+                            // if its not a SequenceFile there is no certain way to convert to necessary Java objects.
+                            // to get results you have to look through HDFS directory structure. Oh the horror.
+                            try {
+                                if (hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
+                                    mapReduce.addResultToMemory(memory, new ObjectWritableIterator(hadoopConfiguration, new Path(outputLocation + "/" + mapReduce.getMemoryKey())));
+                                else
+                                    HadoopGraph.LOGGER.warn(Constants.SEQUENCE_WARNING);
+                            } catch (final IOException e) {
+                                throw new IllegalStateException(e.getMessage(), e);
+                            }
+                        }
+                        sparkContext.close();
                     }
+
                     // update runtime and return the newly computed graph
                     memory.setRuntime(System.currentTimeMillis() - startTime);
                     memory.complete();
@@ -210,8 +273,10 @@ public class SparkGraphComputer implements GraphComputer {
         final FileConfiguration configuration = new PropertiesConfiguration("/Users/marko/software/tinkerpop/tinkerpop3/hadoop-gremlin/conf/spark-kryo.properties");
         // TODO: final FileConfiguration configuration = new PropertiesConfiguration(args[0]);
         final HadoopGraph graph = HadoopGraph.open(configuration);
-        final ComputerResult result = new SparkGraphComputer(graph).program(VertexProgram.createVertexProgram(configuration)).submit().get();
+        final ComputerResult result = new SparkGraphComputer(graph).program(VertexProgram.createVertexProgram(configuration)).mapReduce(PageRankMapReduce.build().create()).submit().get();
+        // TODO: remove everything below
         System.out.println(result);
+        result.memory().<Iterator>get(PageRankMapReduce.DEFAULT_MEMORY_KEY).forEachRemaining(System.out::println);
         //result.graph().configuration().getKeys().forEachRemaining(key -> System.out.println(key + "-->" + result.graph().configuration().getString(key)));
         result.graph().V().valueMap().forEachRemaining(System.out::println);
     }

@@ -18,18 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.util;
 
-import org.apache.tinkerpop.gremlin.hadoop.Constants;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopCombine;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopMap;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopReduce;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableComparator;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
-import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
-import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
-import org.apache.tinkerpop.gremlin.process.computer.Memory;
-import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -43,6 +31,18 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopCombine;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopMap;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopReduce;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableComparator;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.Memory;
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -56,10 +56,6 @@ public final class MapReduceHelper {
     private MapReduceHelper() {
     }
 
-    private static final String SEQUENCE_WARNING = "The " + Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT
-            + " is not " + SequenceFileOutputFormat.class.getCanonicalName()
-            + " and thus, graph computer memory can not be converted to Java objects";
-
     public static void executeMapReduceJob(final MapReduce mapReduce, final Memory.Admin memory, final Configuration configuration) throws IOException, ClassNotFoundException, InterruptedException {
         final Configuration newConfiguration = new Configuration(configuration);
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
@@ -70,7 +66,7 @@ public final class MapReduceHelper {
             if (newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
                 mapReduce.addResultToMemory(memory, new ObjectWritableIterator(configuration, memoryPath));
             else
-                HadoopGraph.LOGGER.warn(SEQUENCE_WARNING);
+                HadoopGraph.LOGGER.warn(Constants.SEQUENCE_WARNING);
         } else {
             final Optional<Comparator<?>> mapSort = mapReduce.getMapKeySort();
             final Optional<Comparator<?>> reduceSort = mapReduce.getReduceKeySort();
@@ -137,7 +133,7 @@ public final class MapReduceHelper {
             if (newConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
                 mapReduce.addResultToMemory(memory, new ObjectWritableIterator(configuration, memoryPath));
             else
-                HadoopGraph.LOGGER.warn(SEQUENCE_WARNING);
+                HadoopGraph.LOGGER.warn(Constants.SEQUENCE_WARNING);
         }
     }
 }
