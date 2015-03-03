@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.util;
 
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -30,15 +30,16 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SerializableConfiguration extends AbstractConfiguration implements Serializable {
+public final class SApacheConfiguration extends AbstractConfiguration implements Serializable {
 
     private final Map<String, Object> configurations = new HashMap<>();
 
-    public SerializableConfiguration() {
-
+    public SApacheConfiguration() {
+        this.setDelimiterParsingDisabled(true); // gets me everytime (what a stupid default behavior)
     }
 
-    public SerializableConfiguration(final Configuration configuration) {
+    public SApacheConfiguration(final Configuration configuration) {
+        this();
         ConfigurationUtils.copy(configuration, this);
     }
 

@@ -140,7 +140,6 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                 this.loadJars(fs);
                 fs.delete(new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)), true);
                 ToolRunner.run(this, new String[]{});
-                // memory.keys().forEach(k -> LOGGER.error(k + "---" + memory.get(k)));
             } catch (Exception e) {
                 //e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);

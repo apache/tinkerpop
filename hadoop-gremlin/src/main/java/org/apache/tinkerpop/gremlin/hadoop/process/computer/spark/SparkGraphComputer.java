@@ -29,6 +29,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.util.SApacheConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.util.SparkHelper;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -112,8 +113,8 @@ public final class SparkGraphComputer implements GraphComputer {
             this.mapReducers.addAll(this.vertexProgram.getMapReducers());
         }
         // apache and hadoop configurations that are used throughout
-        final org.apache.commons.configuration.Configuration apacheConfiguration = this.hadoopGraph.configuration();
-        final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(this.hadoopGraph.configuration());
+        final org.apache.commons.configuration.Configuration apacheConfiguration = new SApacheConfiguration(this.hadoopGraph.configuration());
+        final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(apacheConfiguration);
 
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
                     final long startTime = System.currentTimeMillis();
@@ -143,15 +144,14 @@ public final class SparkGraphComputer implements GraphComputer {
                             // set up the vertex program and wire up configurations
                             memory = new SparkMemory(this.vertexProgram, this.mapReducers, sparkContext);
                             this.vertexProgram.setup(memory);
-                            final SerializableConfiguration vertexProgramConfiguration = new SerializableConfiguration();
+                            final SApacheConfiguration vertexProgramConfiguration = new SApacheConfiguration();
                             this.vertexProgram.storeState(vertexProgramConfiguration);
-                            ConfUtil.mergeApacheIntoHadoopConfiguration(vertexProgramConfiguration, hadoopConfiguration);
                             ConfigurationUtils.copy(vertexProgramConfiguration, apacheConfiguration);
-
+                            ConfUtil.mergeApacheIntoHadoopConfiguration(vertexProgramConfiguration, hadoopConfiguration);
                             // execute the vertex program
                             do {
                                 graphRDD = SparkHelper.executeStep(graphRDD, this.vertexProgram, memory, vertexProgramConfiguration);
-                                graphRDD.foreachPartition(iterator -> doNothing()); // i think this is a fast way to execute the rdd
+                                graphRDD.foreachPartition(iterator -> doNothing()); // TODO: i think this is a fast way to execute the rdd
                                 graphRDD.cache(); // TODO: learn about persistence and caching
                                 memory.incrIteration();
                             } while (!this.vertexProgram.terminate(memory));
@@ -185,7 +185,7 @@ public final class SparkGraphComputer implements GraphComputer {
                                     NullWritable.class,
                                     VertexWritable.class);
 
-                            final SerializableConfiguration newApacheConfiguration = new SerializableConfiguration(apacheConfiguration);
+                            final SApacheConfiguration newApacheConfiguration = new SApacheConfiguration(apacheConfiguration);
                             mapReduce.storeState(newApacheConfiguration);
                             // map
                             final JavaPairRDD mapRDD = SparkHelper.executeMap(hadoopGraphRDD, mapReduce, newApacheConfiguration);
@@ -243,7 +243,7 @@ public final class SparkGraphComputer implements GraphComputer {
         return new Features() {
             @Override
             public boolean supportsNonSerializableObjects() {
-                return true;  // TODO
+                return false;
             }
         };
     }
