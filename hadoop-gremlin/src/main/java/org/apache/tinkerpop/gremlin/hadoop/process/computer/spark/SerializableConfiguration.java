@@ -18,47 +18,42 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
+import org.apache.commons.configuration.AbstractConfiguration;
+
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MessageBox<M> implements Serializable {
+public class SerializableConfiguration extends AbstractConfiguration implements Serializable {
 
-    protected final List<M> incoming;
-    protected final Map<Object, List<M>> outgoing = new HashMap<>();
+    private final Map<String, Object> configurations = new HashMap<>();
 
-    public MessageBox() {
-        this(new ArrayList<>());
-    }
-
-    public MessageBox(final List<M> incomingMessages) {
-        this.incoming = incomingMessages;
-    }
-
-    public void sendMessage(final Object vertexId, final M message) {
-        List<M> messages = this.outgoing.get(vertexId);
-        if (null == messages) {
-            messages = new ArrayList<>();
-            this.outgoing.put(vertexId, messages);
-        }
-        messages.add(message);
-    }
-
-    public List<M> receiveMessages() {
-        return this.incoming;
-    }
-
-    public void clearIncomingMessages() {
-        this.incoming.clear();
+    @Override
+    protected void addPropertyDirect(final String key, final Object value) {
+        this.configurations.put(key, value);
     }
 
     @Override
-    public String toString() {
-        return "messageBox[incoming(" + this.incoming.size() + "):outgoing(" + this.outgoing.size() + ")]";
+    public boolean isEmpty() {
+        return this.configurations.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(final String key) {
+        return this.configurations.containsKey(key);
+    }
+
+    @Override
+    public Object getProperty(final String key) {
+        return this.configurations.get(key);
+    }
+
+    @Override
+    public Iterator<String> getKeys() {
+        return this.configurations.keySet().iterator();
     }
 }
