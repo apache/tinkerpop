@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 /**
  * Provides path access to test data resources.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class KryoResourceAccess {
+public class GryoResourceAccess {
 }

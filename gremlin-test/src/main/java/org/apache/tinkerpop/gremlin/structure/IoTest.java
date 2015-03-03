@@ -47,10 +47,10 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.VertexByteArrayInputStream;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.VertexByteArrayInputStream;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
@@ -304,12 +304,12 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
-    public void shouldProperlySerializeCustomIdWithKryo() throws Exception {
+    public void shouldProperlySerializeCustomIdWithGryo() throws Exception {
         g.addVertex(T.id, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
-        final KryoMapper kryo = KryoMapper.build().addCustom(CustomId.class).create();
+        final GryoMapper gryo = GryoMapper.build().addCustom(CustomId.class).create();
 
-        final KryoWriter writer = KryoWriter.build().mapper(kryo).create();
-        final KryoReader reader = KryoReader.build().mapper(kryo).create();
+        final GryoWriter writer = GryoWriter.build().mapper(gryo).create();
+        final GryoReader reader = GryoReader.build().mapper(gryo).create();
 
         final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
         graphProvider.clear(configuration);
@@ -335,8 +335,8 @@ public class IoTest extends AbstractGremlinTest {
         graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
-        final KryoReader reader = g.io().kryoReader().create();
-        final KryoWriter writer = g.io().kryoWriter().create();
+        final GryoReader reader = g.io().gryoReader().create();
+        final GryoWriter writer = g.io().gryoWriter().create();
 
         GraphMigrator.migrateGraph(g, g1, reader, writer);
 
@@ -355,8 +355,8 @@ public class IoTest extends AbstractGremlinTest {
         graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
-        final KryoReader reader = g.io().kryoReader().create();
-        final KryoWriter writer = g.io().kryoWriter().create();
+        final GryoReader reader = g.io().gryoReader().create();
+        final GryoWriter writer = g.io().gryoWriter().create();
 
         GraphMigrator.migrateGraph(g, g1, reader, writer);
 
@@ -373,15 +373,15 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteModernToKryo() throws Exception {
+    public void shouldReadWriteModernToGryo() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeGraph(os, g);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readGraph(bais, g1);
             }
@@ -400,14 +400,14 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteModernToKryoToFileWithHelpers() throws Exception {
-        final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".gio");
+    public void shouldReadWriteModernToGryoToFileWithHelpers() throws Exception {
+        final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".kryo");
         try {
-            g.io().writeKryo(f.getAbsolutePath());
+            g.io().writeGryo(f.getAbsolutePath());
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            g1.io().readKryo(f.getAbsolutePath());
+            g1.io().readGryo(f.getAbsolutePath());
 
             // by making this lossy for float it will assert floats for doubles
             assertModernGraph(g1, true, false);
@@ -426,17 +426,17 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteCrewToKryo() throws Exception {
+    public void shouldReadWriteCrewToGryo() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
 
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeGraph(os, g);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            final KryoReader reader = KryoReader.build()
-                    .mapper(g.io().kryoMapper().create())
+            final GryoReader reader = GryoReader.build()
+                    .mapper(g.io().gryoMapper().create())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readGraph(bais, g1);
@@ -457,15 +457,15 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteClassicToKryo() throws Exception {
+    public void shouldReadWriteClassicToGryo() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeGraph(os, g);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readGraph(bais, g1);
             }
@@ -579,17 +579,17 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldReadWriteEdgeToKryoUsingFloatProperty() throws Exception {
+    public void shouldReadWriteEdgeToGryoUsingFloatProperty() throws Exception {
         final Vertex v1 = g.addVertex(T.label, "person");
         final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, "acl", "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
@@ -615,17 +615,17 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteEdgeToKryo() throws Exception {
+    public void shouldReadWriteEdgeToGryo() throws Exception {
         final Vertex v1 = g.addVertex(T.label, "person");
         final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5d, "acl", "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
@@ -649,17 +649,17 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteDetachedEdgeAsReferenceToKryo() throws Exception {
+    public void shouldReadWriteDetachedEdgeAsReferenceToGryo() throws Exception {
         final Vertex v1 = g.addVertex(T.label, "person");
         final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5d, "acl", "rw"), false);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
@@ -683,17 +683,17 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteDetachedEdgeToKryo() throws Exception {
+    public void shouldReadWriteDetachedEdgeToGryo() throws Exception {
         final Vertex v1 = g.addVertex(T.label, "person");
         final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5d, "acl", "rw"), true);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
@@ -895,18 +895,18 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_SERIALIZABLE_VALUES)
-    public void shouldSupportUUIDInKryo() throws Exception {
+    public void shouldSupportUUIDInGryo() throws Exception {
         final UUID id = UUID.randomUUID();
         final Vertex v1 = g.addVertex(T.label, "person");
         final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v1.addEdge("friend", v2, "uuid", id);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
@@ -933,18 +933,18 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldReadWriteVertexNoEdgesToKryoUsingFloatProperty() throws Exception {
+    public void shouldReadWriteVertexNoEdgesToGryoUsingFloatProperty() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", "acl", "rw");
 
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5f);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertex(os, v1);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
@@ -965,17 +965,17 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexNoEdgesToKryo() throws Exception {
+    public void shouldReadWriteVertexNoEdgesToGryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", "acl", "rw");
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertex(os, v1);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
@@ -996,18 +996,18 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteDetachedVertexNoEdgesToKryo() throws Exception {
+    public void shouldReadWriteDetachedVertexNoEdgesToGryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", "acl", "rw");
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             final DetachedVertex dv = DetachedFactory.detach(v1, true);
             writer.writeVertex(os, dv);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
@@ -1028,18 +1028,18 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteDetachedVertexAsReferenceNoEdgesToKryo() throws Exception {
+    public void shouldReadWriteDetachedVertexAsReferenceNoEdgesToGryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", "acl", "rw");
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             final DetachedVertex dv = DetachedFactory.detach(v1, false);
             writer.writeVertex(os, dv);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
@@ -1060,18 +1060,18 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
-    public void shouldReadWriteVertexMultiPropsNoEdgesToKryo() throws Exception {
+    public void shouldReadWriteVertexMultiPropsNoEdgesToGryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", "name", "mark", "acl", "rw");
         v1.property("propsSquared", 123, "x", "a", "y", "b");
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertex(os, v1);
 
             final AtomicBoolean called = new AtomicBoolean(false);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
@@ -1229,13 +1229,13 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    public void shouldReadWriteVerticesNoEdgesToKryoManual() throws Exception {
+    public void shouldReadWriteVerticesNoEdgesToGryoManual() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertices(os, g.V().has("age", Compare.gt, 30));
 
             final AtomicInteger called = new AtomicInteger(0);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
 
             try (final VertexByteArrayInputStream vbais = new VertexByteArrayInputStream(new ByteArrayInputStream(os.toByteArray()))) {
                 reader.readVertex(new ByteArrayInputStream(vbais.readVertexBytes().toByteArray()),
@@ -1257,13 +1257,13 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldReadWriteVerticesNoEdgesToKryo() throws Exception {
+    public void shouldReadWriteVerticesNoEdgesToGryo() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertices(os, g.V().has("age", Compare.gt, 30));
 
             final AtomicInteger called = new AtomicInteger(0);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
 
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 final Iterator<Vertex> itty = reader.readVertices(bais, null,
@@ -1315,19 +1315,19 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithOUTOUTEdgesToKryo() throws Exception {
+    public void shouldReadWriteVertexWithOUTOUTEdgesToGryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
 
         final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertex(os, v1, Direction.OUT);
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final AtomicBoolean calledEdge = new AtomicBoolean(false);
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
 
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.OUT, detachedVertex -> {
@@ -1411,20 +1411,20 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithININEdgesToKryo() throws Exception {
+    public void shouldReadWriteVertexWithININEdgesToGryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
 
         final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v2.addEdge("friends", v1, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertex(os, v1, Direction.IN);
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final AtomicBoolean calledEdge = new AtomicBoolean(false);
 
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.IN, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
@@ -1508,7 +1508,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithBOTHBOTHEdgesToKryo() throws Exception {
+    public void shouldReadWriteVertexWithBOTHBOTHEdgesToGryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
 
         final Vertex v2 = g.addVertex(T.label, "person");
@@ -1516,14 +1516,14 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final AtomicBoolean calledEdge1 = new AtomicBoolean(false);
             final AtomicBoolean calledEdge2 = new AtomicBoolean(false);
 
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.BOTH, detachedVertex -> {
                             assertEquals(v1.id(), detachedVertex.id());
@@ -1699,7 +1699,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithBOTHINEdgesToKryo() throws Exception {
+    public void shouldReadWriteVertexWithBOTHINEdgesToGryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
 
         final Vertex v2 = g.addVertex(T.label, "person");
@@ -1707,13 +1707,13 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 1.0d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edge1Called = new AtomicBoolean(false);
 
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.IN, detachedVertex -> {
                             assertEquals(v1.id(), detachedVertex.id());
@@ -1805,7 +1805,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithBOTHOUTEdgesToKryo() throws Exception {
+    public void shouldReadWriteVertexWithBOTHOUTEdgesToGryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
 
         final Vertex v2 = g.addVertex(T.label, "person");
@@ -1813,13 +1813,13 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edgeCalled = new AtomicBoolean(false);
 
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.OUT, detachedVertex -> {
                             assertEquals(v1.id(), detachedVertex.id());
@@ -1911,16 +1911,16 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithOUTBOTHEdgesToKryo() throws Exception {
+    public void shouldReadWriteVertexWithOUTBOTHEdgesToGryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko");
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertex(os, v1, Direction.OUT);
 
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.BOTH,
@@ -1935,16 +1935,16 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithINBOTHEdgesToKryo() throws Exception {
+    public void shouldReadWriteVertexWithINBOTHEdgesToGryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko");
         final Vertex v2 = g.addVertex();
         v2.addEdge("friends", v1, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertex(os, v1, Direction.IN);
 
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.BOTH,
@@ -1959,16 +1959,16 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithINOUTEdgesToKryo() throws Exception {
+    public void shouldReadWriteVertexWithINOUTEdgesToGryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko");
         final Vertex v2 = g.addVertex();
         v2.addEdge("friends", v1, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertex(os, v1, Direction.IN);
 
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.OUT,
@@ -1983,16 +1983,16 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithOUTINEdgesToKryo() throws Exception {
+    public void shouldReadWriteVertexWithOUTINEdgesToGryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko");
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = g.io().kryoWriter().create();
+            final GryoWriter writer = g.io().gryoWriter().create();
             writer.writeVertex(os, v1, Direction.IN);
 
-            final KryoReader reader = g.io().kryoReader().workingDirectory(File.separator + "tmp").create();
+            final GryoReader reader = g.io().gryoReader().workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.OUT,
@@ -2527,7 +2527,7 @@ public class IoTest extends AbstractGremlinTest {
         private UUID elementId;
 
         private CustomId() {
-            // required no-arg for kryo serialization
+            // required no-arg for gryo serialization
         }
 
         public CustomId(final String cluster, final UUID elementId) {

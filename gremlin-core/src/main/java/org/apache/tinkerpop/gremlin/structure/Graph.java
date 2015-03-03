@@ -32,9 +32,9 @@ import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.strategy.SequenceStrategy;
 import org.apache.tinkerpop.gremlin.structure.strategy.StrategyGraph;
@@ -279,53 +279,53 @@ public interface Graph extends AutoCloseable {
      */
     public interface Io {
         /**
-         * Creates a {@link org.apache.tinkerpop.gremlin.structure.io.GraphReader} builder for Kryo serializations. This
-         * method calls the {@link Io#kryoMapper} method to supply to
-         * {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader.Builder#mapper} which means that implementers
-         * should usually just override {@link Io#kryoMapper} to append in their mapper classes.
+         * Creates a {@link org.apache.tinkerpop.gremlin.structure.io.GraphReader} builder for Gryo serializations. This
+         * method calls the {@link Io#gryoMapper} method to supply to
+         * {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader.Builder#mapper} which means that implementers
+         * should usually just override {@link Io#gryoMapper} to append in their mapper classes.
          */
-        public default KryoReader.Builder kryoReader() {
-            return KryoReader.build().mapper(kryoMapper().create());
+        public default GryoReader.Builder gryoReader() {
+            return GryoReader.build().mapper(gryoMapper().create());
         }
 
         /**
-         * Creates a {@link org.apache.tinkerpop.gremlin.structure.io.GraphWriter} builder for Kryo serializations. This
-         * method calls the {@link Io#kryoMapper} method to supply to
-         * {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter.Builder#mapper} which means that implementers
-         * should usually just override {@link Io#kryoMapper} to append in their mapper classes.
+         * Creates a {@link org.apache.tinkerpop.gremlin.structure.io.GraphWriter} builder for Gryo serializations. This
+         * method calls the {@link Io#gryoMapper} method to supply to
+         * {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter.Builder#mapper} which means that implementers
+         * should usually just override {@link Io#gryoMapper} to append in their mapper classes.
          */
-        public default KryoWriter.Builder kryoWriter() {
-            return KryoWriter.build().mapper(kryoMapper().create());
+        public default GryoWriter.Builder gryoWriter() {
+            return GryoWriter.build().mapper(gryoMapper().create());
         }
 
         /**
-         * Write a kryo file using the default configuration of the {@link KryoWriter}.
+         * Write a gryo file using the default configuration of the {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter}.
          */
-        public void writeKryo(final String file) throws IOException;
+        public void writeGryo(final String file) throws IOException;
 
         /**
-         * Read a kryo file using the default configuration of the {@link KryoReader}.
+         * Read a gryo file using the default configuration of the {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader}.
          */
-        public void readKryo(final String file) throws IOException;
+        public void readGryo(final String file) throws IOException;
 
         /**
-         * By default, this method creates an instance of the most current version of {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper} which is
+         * By default, this method creates an instance of the most current version of {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper} which is
          * used to serialize data to and from the graph.   Implementers with mapper classes (e.g. a non-primitive
          * class returned from {@link Element#id}) should override this method with those classes automatically
-         * registered to the returned {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper}.
+         * registered to the returned {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper}.
          * <br/>
          * Implementers should respect versions.  Once a class is registered, the order of its registration should be
          * maintained. Note that registering such classes will reduce the portability of the graph data as data
-         * written with {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper} will not be readable without this serializer configuration.  It is
+         * written with {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper} will not be readable without this serializer configuration.  It is
          * considered good practice to make serialization classes generally available so that users may
-         * register these classes themselves if necessary when building up a mapper {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper}
+         * register these classes themselves if necessary when building up a mapper {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper}
          * instance.
          * <br/>
          * Note that this method is meant to return current versions for serialization operations.  Users wishing
          * to use an "older" version should construct this instance as well as their readers and writers manually.
          */
-        public default KryoMapper.Builder kryoMapper() {
-            return KryoMapper.build();
+        public default GryoMapper.Builder gryoMapper() {
+            return GryoMapper.build();
         }
 
         /**

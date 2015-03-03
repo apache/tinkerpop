@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -31,19 +31,19 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class KryoRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
+public class GryoRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
 
     private final DataOutputStream out;
-    private static final KryoWriter KRYO_WRITER = KryoWriter.build().create();
+    private static final GryoWriter GRYO_WRITER = GryoWriter.build().create();
 
-    public KryoRecordWriter(final DataOutputStream out) {
+    public GryoRecordWriter(final DataOutputStream out) {
         this.out = out;
     }
 
     @Override
     public void write(final NullWritable key, final VertexWritable vertex) throws IOException {
         if (null != vertex) {
-            KRYO_WRITER.writeVertex(out, vertex.get(), Direction.BOTH);
+            GRYO_WRITER.writeVertex(out, vertex.get(), Direction.BOTH);
         }
     }
 

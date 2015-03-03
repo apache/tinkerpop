@@ -78,7 +78,7 @@ public class RuleWritable implements Writable {
             bytes[i] = input.readByte();
         }
         final Input in = new Input(new ByteArrayInputStream(bytes));
-        this.object = Constants.KRYO.readClassAndObject(in);
+        this.object = Constants.GRYO.readClassAndObject(in);
         in.close();*/
     }
 
@@ -92,7 +92,7 @@ public class RuleWritable implements Writable {
         /*
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final Output out = new Output(outputStream);
-        Constants.KRYO.writeClassAndObject(out, this.object);
+        Constants.GRYO.writeClassAndObject(out, this.object);
         out.flush();
         WritableUtils.writeVInt(output, this.rule.ordinal());
         WritableUtils.writeVInt(output, outputStream.toByteArray().length);

@@ -60,7 +60,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
         } catch (final ClassNotFoundException e) {
             throw new IOException(e.getMessage(), e);
         }
-        //this.t = (T) Constants.KRYO.readClassAndObject(new Input(new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input))));
+        //this.t = (T) Constants.GRYO.readClassAndObject(new Input(new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input))));
     }
 
     @Override
@@ -68,7 +68,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
         WritableUtils.writeCompressedByteArray(output, Serializer.serializeObject(this.t));
         /*final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final Output out = new Output(outputStream);
-        Constants.KRYO.writeClassAndObject(out, this.t);
+        Constants.GRYO.writeClassAndObject(out, this.t);
         out.flush();
         WritableUtils.writeCompressedByteArray(output, outputStream.toByteArray());
         out.close();*/

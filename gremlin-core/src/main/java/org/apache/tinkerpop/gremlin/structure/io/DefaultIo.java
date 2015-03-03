@@ -39,16 +39,16 @@ public class DefaultIo implements Graph.Io {
     }
 
     @Override
-    public void writeKryo(final String file) throws IOException {
+    public void writeGryo(final String file) throws IOException {
         try (final OutputStream out = new FileOutputStream(file)) {
-            kryoWriter().create().writeGraph(out, g);
+            gryoWriter().create().writeGraph(out, g);
         }
     }
 
     @Override
-    public void readKryo(final String file) throws IOException {
+    public void readGryo(final String file) throws IOException {
         try (final InputStream in = new FileInputStream(file)) {
-            kryoReader().create().readGraph(in, g);
+            gryoReader().create().readGraph(in, g);
         }
     }
 

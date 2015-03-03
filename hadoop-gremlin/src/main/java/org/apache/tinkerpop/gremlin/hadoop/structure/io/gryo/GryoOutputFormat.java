@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -30,14 +30,14 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class KryoOutputFormat extends CommonFileOutputFormat {
+public class GryoOutputFormat extends CommonFileOutputFormat {
 
     @Override
     public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
-        return new KryoRecordWriter(getDataOuputStream(job));
+        return new GryoRecordWriter(getDataOuputStream(job));
     }
 
     public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job, final DataOutputStream outputStream) throws IOException, InterruptedException {
-        return new KryoRecordWriter(outputStream);
+        return new GryoRecordWriter(outputStream);
     }
 }

@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.ReferenceCountUtil;
@@ -49,19 +49,19 @@ import java.util.stream.Collectors;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class KryoMessageSerializerV1d0 implements MessageSerializer {
-    private KryoMapper kryoMapper;
+public class GryoMessageSerializerV1d0 implements MessageSerializer {
+    private GryoMapper gryoMapper;
     private ThreadLocal<Kryo> kryoThreadLocal = new ThreadLocal<Kryo>() {
         @Override
         protected Kryo initialValue() {
-            return kryoMapper.createMapper();
+            return gryoMapper.createMapper();
         }
     };
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
-    private static final String MIME_TYPE = SerTokens.MIME_KRYO_V1D0;
-    private static final String MIME_TYPE_STRINGD = SerTokens.MIME_KRYO_V1D0 + "-stringd";
+    private static final String MIME_TYPE = SerTokens.MIME_GRYO_V1D0;
+    private static final String MIME_TYPE_STRINGD = SerTokens.MIME_GRYO_V1D0 + "-stringd";
 
     private static final String TOKEN_EXTENDED_VERSION = "extendedVersion";
     private static final String TOKEN_CUSTOM = "custom";
@@ -71,32 +71,32 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
     private boolean serializeToString;
 
     /**
-     * Creates an instance with a standard {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper} instance. Note that this instance
+     * Creates an instance with a standard {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper} instance. Note that this instance
      * will be overriden by {@link #configure} is called.
      */
-    public KryoMessageSerializerV1d0() {
-        kryoMapper = KryoMapper.build(KryoMapper.Version.V_1_0_0).create();
+    public GryoMessageSerializerV1d0() {
+        gryoMapper = GryoMapper.build(GryoMapper.Version.V_1_0_0).create();
     }
 
     /**
-     * Creates an instance with a provided mapper configured {@link org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper} instance. Note that this instance
+     * Creates an instance with a provided mapper configured {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper} instance. Note that this instance
      * will be overriden by {@link #configure} is called.
      */
-    public KryoMessageSerializerV1d0(final KryoMapper kryo) {
-        this.kryoMapper = kryo;
+    public GryoMessageSerializerV1d0(final GryoMapper kryo) {
+        this.gryoMapper = kryo;
     }
 
     @Override
     public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
         final byte extendedVersion;
         try {
-            extendedVersion = Byte.parseByte(config.getOrDefault(TOKEN_EXTENDED_VERSION, KryoMapper.DEFAULT_EXTENDED_VERSION).toString());
+            extendedVersion = Byte.parseByte(config.getOrDefault(TOKEN_EXTENDED_VERSION, GryoMapper.DEFAULT_EXTENDED_VERSION).toString());
         } catch (Exception ex) {
             throw new IllegalStateException(String.format("Invalid configuration value of [%s] for [%s] setting on %s serialization configuration",
                     config.getOrDefault(TOKEN_EXTENDED_VERSION, ""), TOKEN_EXTENDED_VERSION, this.getClass().getName()), ex);
         }
 
-        final KryoMapper.Builder initialBuilder;
+        final GryoMapper.Builder initialBuilder;
         final Object graphToUseForMapper = config.get(TOKEN_USE_MAPPER_FROM_GRAPH);
         if (graphToUseForMapper != null) {
             if (null == graphs) throw new IllegalStateException(String.format(
@@ -107,17 +107,17 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                     "There is no graph named [%s] configured to be used in the %s setting",
                     graphToUseForMapper, TOKEN_USE_MAPPER_FROM_GRAPH));
 
-            // a graph was found so use the mapper it constructs.  this allows kryo to be auto-configured with any
+            // a graph was found so use the mapper it constructs.  this allows gryo to be auto-configured with any
             // custom classes that the implementation allows for
-            initialBuilder = g.io().kryoMapper();
+            initialBuilder = g.io().gryoMapper();
         } else {
             // no graph was supplied so just use the default - this will likely be the case when using a graph
             // with no custom classes or a situation where the user needs complete control like when using two
             // distinct implementations each with their own custom classes.
-            initialBuilder = KryoMapper.build(KryoMapper.Version.V_1_0_0);
+            initialBuilder = GryoMapper.build(GryoMapper.Version.V_1_0_0);
         }
 
-        final KryoMapper.Builder builder = initialBuilder.extendedVersion(extendedVersion);
+        final GryoMapper.Builder builder = initialBuilder.extendedVersion(extendedVersion);
 
         final List<String> classNameList;
         try {
@@ -163,7 +163,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
 
         this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());
 
-        this.kryoMapper = builder.create();
+        this.gryoMapper = builder.create();
     }
 
     @Override
@@ -190,7 +190,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                         .create();
             }
         } catch (Exception ex) {
-            logger.warn("Response [{}] could not be deserialized by {}.", msg, KryoMessageSerializerV1d0.class.getName());
+            logger.warn("Response [{}] could not be deserialized by {}.", msg, GryoMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);
         }
     }
@@ -230,7 +230,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
         } catch (Exception ex) {
             if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
 
-            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), KryoMessageSerializerV1d0.class.getName());
+            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), GryoMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);
         }
     }
@@ -251,7 +251,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                 return builder.create();
             }
         } catch (Exception ex) {
-            logger.warn("Request [{}] could not be deserialized by {}.", msg, KryoMessageSerializerV1d0.class.getName());
+            logger.warn("Request [{}] could not be deserialized by {}.", msg, GryoMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);
         }
     }
@@ -287,7 +287,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
         } catch (Exception ex) {
             if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
 
-            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), KryoMessageSerializerV1d0.class.getName());
+            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), GryoMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);
         }
     }

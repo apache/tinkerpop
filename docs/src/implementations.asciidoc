@@ -557,7 +557,7 @@ NeoTechnology are the creators of the graph pattern-match query language link:ht
 [source,groovy]
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> g.io().readKryo('data/tinkerpop-modern.gio')
+gremlin> g.io().readGryo('data/tinkerpop-modern.kryo')
 ==>null
 gremlin> g.cypher('MATCH (a {name:"marko"}) RETURN a')
 ==>[a:v[0]]
@@ -662,7 +662,7 @@ Properties Files
 
 [source,text]
 gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
-gremlin.hadoop.inputLocation=tinkerpop-modern-vertices.gio
+gremlin.hadoop.inputLocation=tinkerpop-modern-vertices.kryo
 gremlin.hadoop.graphInputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat
 gremlin.hadoop.outputLocation=output
 gremlin.hadoop.graphOutputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoOutputFormat
@@ -705,12 +705,12 @@ image:hadoop-pipes.png[width=180,float=left] It is possible to execute OLTP oper
 CAUTION: OLTP operations on `HadoopGraph` are not efficient. They require linear scans to execute and are unreasonable for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>> which is the OLAP implementation of the Gremlin language. Hadoop-Gremlin provides various `GraphComputer` implementations to execute OLAP computations over a `HadoopGraph`.
 
 [source,text]
-gremlin> hdfs.copyFromLocal('data/tinkerpop-modern-vertices.gio', 'tinkerpop-modern-vertices.gio')
+gremlin> hdfs.copyFromLocal('data/tinkerpop-modern-vertices.kryo', 'tinkerpop-modern-vertices.kryo')
 ==>null
 gremlin> hdfs.ls()
-==>rw-r--r-- marko supergroup 1439 tinkerpop-modern-vertices.gio
-gremlin> g = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-kryo.properties')
-==>hadoopgraph[kryoinputformat->kryooutputformat]
+==>rw-r--r-- marko supergroup 1439 tinkerpop-modern-vertices.kryo
+gremlin> g = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-gryo.properties')
+==>hadoopgraph[gryoinputformat->gryooutputformat]
 gremlin> g.V().count()
 ==>6
 gremlin> g.V().out().out().values('name')
@@ -830,7 +830,7 @@ The distributed file system of Hadoop is called link:http://en.wikipedia.org/wik
 [source,text]
 gremlin> hdfs.ls()
 ==>rwxr-xr-x marko supergroup 0 (D) output
-==>rw-r--r-- marko supergroup 1439 tinkerpop-modern-vertices.gio
+==>rw-r--r-- marko supergroup 1439 tinkerpop-modern-vertices.kryo
 gremlin> hdfs.ls('output')
 ==>rwxr-xr-x marko supergroup 0 (D) a
 ==>rwxr-xr-x marko supergroup 0 (D) ~g

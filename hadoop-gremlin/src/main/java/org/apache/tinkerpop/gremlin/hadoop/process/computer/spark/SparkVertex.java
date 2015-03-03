@@ -23,8 +23,8 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
@@ -41,8 +41,8 @@ import java.util.Iterator;
  */
 public final class SparkVertex implements Vertex, Vertex.Iterators, Serializable {
 
-    private static KryoWriter KRYO_WRITER = KryoWriter.build().create();
-    private static KryoReader KRYO_READER = KryoReader.build().create();
+    private static GryoWriter GRYO_WRITER = GryoWriter.build().create();
+    private static GryoReader GRYO_READER = GryoReader.build().create();
     private static final String VERTEX_ID = Graph.Hidden.hide("giraph.gremlin.vertexId");
 
     private transient TinkerVertex vertex;
@@ -122,7 +122,7 @@ public final class SparkVertex implements Vertex, Vertex.Iterators, Serializable
         try {
             final ByteArrayInputStream bis = new ByteArrayInputStream(this.vertexBytes);
             final TinkerGraph tinkerGraph = TinkerGraph.open();
-            KRYO_READER.readGraph(bis, tinkerGraph);
+            GRYO_READER.readGraph(bis, tinkerGraph);
             bis.close();
             this.vertexBytes = null;
             this.vertex = (TinkerVertex) tinkerGraph.iterators().vertexIterator(tinkerGraph.variables().get(VERTEX_ID).get()).next();
@@ -137,7 +137,7 @@ public final class SparkVertex implements Vertex, Vertex.Iterators, Serializable
 
         try {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            KRYO_WRITER.writeGraph(bos, this.vertex.graph());
+            GRYO_WRITER.writeGraph(bos, this.vertex.graph());
             bos.flush();
             bos.close();
             this.vertex = null;

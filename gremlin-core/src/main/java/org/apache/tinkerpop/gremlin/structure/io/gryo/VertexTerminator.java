@@ -16,31 +16,38 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.Serializer;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-
-import java.util.UUID;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
+ * Represents the end of a vertex in a serialization stream.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class UUIDSerializer extends Serializer<UUID> {
-    public UUIDSerializer() {
-        setImmutable(true);
+class VertexTerminator {
+    public static final VertexTerminator INSTANCE = new VertexTerminator();
+
+    public final byte[] terminal;
+
+    private VertexTerminator() {
+        terminal = ByteBuffer.allocate(8).putLong(4185403236219066774L).array();
     }
 
     @Override
-    public void write(final Kryo kryo, final Output output, final UUID uuid) {
-        output.writeLong(uuid.getMostSignificantBits());
-        output.writeLong(uuid.getLeastSignificantBits());
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final VertexTerminator that = (VertexTerminator) o;
+
+        return terminal == that.terminal;
+
     }
 
     @Override
-    public UUID read(final Kryo kryo, final Input input, final Class<UUID> uuidClass) {
-        return new UUID(input.readLong(), input.readLong());
+    public int hashCode() {
+        return Arrays.hashCode(terminal);
     }
 }

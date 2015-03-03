@@ -16,28 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
-import java.util.AbstractMap;
-import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class EntrySerializer extends Serializer<Map.Entry> {
-    @Override
-    public void write(final Kryo kryo, final Output output, final Map.Entry entry) {
-        kryo.writeClassAndObject(output, entry.getKey());
-        kryo.writeClassAndObject(output, entry.getValue());
+class UUIDSerializer extends Serializer<UUID> {
+    public UUIDSerializer() {
+        setImmutable(true);
     }
 
     @Override
-    public Map.Entry read(final Kryo kryo, final Input input, final Class<Map.Entry> entryClass) {
-        return new AbstractMap.SimpleEntry(kryo.readClassAndObject(input), kryo.readClassAndObject(input));
+    public void write(final Kryo kryo, final Output output, final UUID uuid) {
+        output.writeLong(uuid.getMostSignificantBits());
+        output.writeLong(uuid.getLeastSignificantBits());
+    }
+
+    @Override
+    public UUID read(final Kryo kryo, final Input input, final Class<UUID> uuidClass) {
+        return new UUID(input.readLong(), input.readLong());
     }
 }

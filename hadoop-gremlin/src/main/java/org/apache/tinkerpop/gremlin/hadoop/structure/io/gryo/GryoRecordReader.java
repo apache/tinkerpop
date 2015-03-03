@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoMapper;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
@@ -35,14 +35,14 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class KryoRecordReader extends RecordReader<NullWritable, VertexWritable> {
+public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
     private VertexStreamIterator vertexStreamIterator;
     private FSDataInputStream inputStream;
 
-    private static final byte[] PATTERN = KryoMapper.build().create().getVersionedHeader();
+    private static final byte[] PATTERN = GryoMapper.build().create().getVersionedHeader();
 
-    public KryoRecordReader() {
+    public GryoRecordReader() {
     }
 
     @Override
@@ -52,7 +52,7 @@ public class KryoRecordReader extends RecordReader<NullWritable, VertexWritable>
         long start = split.getStart();
         final Path file = split.getPath();
         if (null != new CompressionCodecFactory(job).getCodec(file)) {
-            throw new IllegalStateException("Compression is not supported for the (binary) Gremlin Kryo format");
+            throw new IllegalStateException("Compression is not supported for the (binary) Gryo format");
         }
         // open the file and seek to the start of the split
         this.inputStream = file.getFileSystem(job).open(split.getPath());

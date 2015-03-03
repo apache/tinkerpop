@@ -36,5 +36,5 @@ public class SerTokens {
 
     public static final String MIME_JSON = "application/json";
     public static final String MIME_JSON_V1D0 = "application/vnd.gremlin-v1.0+json";
-    public static final String MIME_KRYO_V1D0 = "application/vnd.gremlin-v1.0+kryo";
+    public static final String MIME_GRYO_V1D0 = "application/vnd.gremlin-v1.0+gryo";
 }

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -43,9 +43,9 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class KryoReader implements GraphReader {
+public class GryoReader implements GraphReader {
     private final Kryo kryo;
-    private final KryoMapper.HeaderReader headerReader;
+    private final GryoMapper.HeaderReader headerReader;
 
     private final long batchSize;
     private final String vertexIdKey;
@@ -55,11 +55,11 @@ public class KryoReader implements GraphReader {
 
     final AtomicLong counter = new AtomicLong(0);
 
-    private KryoReader(final File tempFile, final long batchSize,
+    private GryoReader(final File tempFile, final long batchSize,
                        final String vertexIdKey, final String edgeIdKey,
-                       final KryoMapper kryoMapper) {
-        this.kryo = kryoMapper.createMapper();
-        this.headerReader = kryoMapper.getHeaderReader();
+                       final GryoMapper gryoMapper) {
+        this.kryo = gryoMapper.createMapper();
+        this.headerReader = gryoMapper.getHeaderReader();
         this.vertexIdKey = vertexIdKey;
         this.edgeIdKey = edgeIdKey;
         this.tempFile = tempFile;
@@ -335,9 +335,9 @@ public class KryoReader implements GraphReader {
         private String edgeIdKey = T.id.getAccessor();
 
         /**
-         * Always use the most recent kryo version by default
+         * Always use the most recent gryo version by default
          */
-        private KryoMapper kryoMapper = KryoMapper.build().create();
+        private GryoMapper gryoMapper = GryoMapper.build().create();
 
         private Builder() {
             this.tempFile = new File(UUID.randomUUID() + ".tmp");
@@ -353,10 +353,10 @@ public class KryoReader implements GraphReader {
         }
 
         /**
-         * Supply a mapper {@link KryoMapper} instance to use as the serializer for the {@code KryoWriter}.
+         * Supply a mapper {@link GryoMapper} instance to use as the serializer for the {@code KryoWriter}.
          */
-        public Builder mapper(final KryoMapper kryoMapper) {
-            this.kryoMapper = kryoMapper;
+        public Builder mapper(final GryoMapper gryoMapper) {
+            this.gryoMapper = gryoMapper;
             return this;
         }
 
@@ -393,8 +393,8 @@ public class KryoReader implements GraphReader {
             return this;
         }
 
-        public KryoReader create() {
-            return new KryoReader(tempFile, batchSize, this.vertexIdKey, this.edgeIdKey, this.kryoMapper);
+        public GryoReader create() {
+            return new GryoReader(tempFile, batchSize, this.vertexIdKey, this.edgeIdKey, this.gryoMapper);
         }
     }
 }

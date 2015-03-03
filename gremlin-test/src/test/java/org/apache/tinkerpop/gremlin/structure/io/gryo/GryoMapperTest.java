@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.junit.Test;
 
@@ -25,10 +25,10 @@ import static org.junit.Assert.assertNotSame;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class KryoMapperTest {
+public class GryoMapperTest {
     @Test
     public void shouldGetMostRecentVersion() {
-        final KryoMapper.Builder b = KryoMapper.build();
-        assertNotSame(b, KryoMapper.build());
+        final GryoMapper.Builder b = GryoMapper.build();
+        assertNotSame(b, GryoMapper.build());
     }
 }

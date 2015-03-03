@@ -19,33 +19,33 @@
 package org.apache.tinkerpop.gremlin.structure.io;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
 /**
- * {@link GraphMigrator} takes the data in one graph and pipes it to another graph.  Uses the {@link KryoReader}
- * and {@link KryoWriter} by default.
+ * {@link GraphMigrator} takes the data in one graph and pipes it to another graph.  Uses the {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader}
+ * and {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter} by default.
  *
  * @author Alex Averbuch (alex.averbuch@gmail.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class GraphMigrator {
 
-    private static final KryoReader defaultKryoReader = KryoReader.build().create();
-    private static final KryoWriter defaultKryoWriter = KryoWriter.build().create();
+    private static final GryoReader DEFAULT_GRYO_READER = GryoReader.build().create();
+    private static final GryoWriter DEFAULT_GRYO_WRITER = GryoWriter.build().create();
 
     /**
-     * Use Kryo to pipe the data from one graph to another graph.  Uses all default settings for reader/writers.
-     * Refer to {@link KryoReader} and {@link KryoWriter} for those settings.  To use features like incremental
+     * Use Gryo to pipe the data from one graph to another graph.  Uses all default settings for reader/writers.
+     * Refer to {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader} and {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter} for those settings.  To use features like incremental
      * loading, construct the reader/writers manually and utilize
      * {@link #migrateGraph(org.apache.tinkerpop.gremlin.structure.Graph, org.apache.tinkerpop.gremlin.structure.Graph, GraphReader, GraphWriter)}
      */
     public static void migrateGraph(final Graph fromGraph, final Graph toGraph) throws IOException {
-        migrateGraph(fromGraph, toGraph, defaultKryoReader, defaultKryoWriter);
+        migrateGraph(fromGraph, toGraph, DEFAULT_GRYO_READER, DEFAULT_GRYO_WRITER);
     }
 
     /**

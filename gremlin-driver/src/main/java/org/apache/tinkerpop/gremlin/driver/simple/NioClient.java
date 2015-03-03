@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -62,7 +62,7 @@ public class NioClient implements SimpleClient {
         final Bootstrap b = new Bootstrap().group(group);
 
         try {
-            final MessageSerializer serializer = new KryoMessageSerializerV1d0();
+            final MessageSerializer serializer = new GryoMessageSerializerV1d0();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override

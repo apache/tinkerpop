@@ -185,7 +185,7 @@ public class Cluster {
     public static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
-        private MessageSerializer serializer = Serializers.KRYO_V1D0.simpleInstance();
+        private MessageSerializer serializer = Serializers.GRYO_V1D0.simpleInstance();
         private int nioPoolSize = Runtime.getRuntime().availableProcessors();
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
         private int minConnectionPoolSize = ConnectionPool.MIN_POOL_SIZE;

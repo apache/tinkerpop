@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.hadoop.conf.Configurable;
@@ -35,13 +35,13 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class KryoInputFormat extends FileInputFormat<NullWritable, VertexWritable> implements Configurable {
+public class GryoInputFormat extends FileInputFormat<NullWritable, VertexWritable> implements Configurable {
 
     private Configuration config;
 
     @Override
     public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
-        RecordReader<NullWritable, VertexWritable> reader = new KryoRecordReader();
+        final RecordReader<NullWritable, VertexWritable> reader = new GryoRecordReader();
         reader.initialize(split, context);
         return reader;
     }
