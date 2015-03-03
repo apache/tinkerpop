@@ -222,8 +222,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
 
     public static void main(final String[] args) throws Exception {
         try {
-            final FileConfiguration configuration = new PropertiesConfiguration();
-            configuration.load(new File(args[0]));
+            final FileConfiguration configuration = new PropertiesConfiguration(args[0]);
             final GiraphGraphComputer computer = new GiraphGraphComputer(HadoopGraph.open(configuration));
             computer.program(VertexProgram.createVertexProgram(configuration)).submit().get();
         } catch (Exception e) {

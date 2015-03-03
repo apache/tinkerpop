@@ -57,7 +57,7 @@ public class GraphComputerRDD<M> extends JavaPairRDD<Object, SparkMessenger<M>> 
             });
         });
         // clear all previous incoming messages
-        if(!memory.isInitialIteration()) {
+        if (!memory.isInitialIteration()) {
             current = current.mapValues(messenger -> {
                 messenger.clearIncomingMessages();
                 return messenger;
@@ -97,6 +97,7 @@ public class GraphComputerRDD<M> extends JavaPairRDD<Object, SparkMessenger<M>> 
 
     //////////////
 
+    // TODO: What the hell is this for?
     @Override
     public JavaRDD zipPartitions(JavaRDDLike uJavaRDDLike, FlatMapFunction2 iteratorIteratorVFlatMapFunction2) {
         return (JavaRDD) new JavaRDD<>(null, null);

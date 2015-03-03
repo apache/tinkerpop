@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SerializableConfiguration extends AbstractConfiguration implements Serializable {
+public final class SerializableConfiguration extends AbstractConfiguration implements Serializable {
 
     private final Map<String, Object> configurations = new HashMap<>();
 

@@ -64,11 +64,6 @@ public class SparkMessenger<M> implements Serializable, Messenger<M> {
     }
 
     @Override
-    public String toString() {
-        return "messageBox[incoming(" + this.incoming.size() + "):outgoing(" + this.outgoing.size() + ")]";
-    }
-
-    @Override
     public Iterable<M> receiveMessages(final MessageScope messageScope) {
         return this.incoming;
     }

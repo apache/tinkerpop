@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
@@ -38,54 +39,47 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SparkVertex implements Vertex, Vertex.Iterators, Serializable {
+public final class SparkVertex implements Vertex, Vertex.Iterators, Serializable {
 
     private static KryoWriter KRYO_WRITER = KryoWriter.build().create();
     private static KryoReader KRYO_READER = KryoReader.build().create();
     private static final String VERTEX_ID = Graph.Hidden.hide("giraph.gremlin.vertexId");
 
     private transient TinkerVertex vertex;
-    private byte[] serializedForm;
+    private byte[] vertexBytes;
 
     public SparkVertex(final TinkerVertex vertex) {
         this.vertex = vertex;
         this.vertex.graph().variables().set(VERTEX_ID, this.vertex.id());
-        this.deflateVertex();
     }
 
     @Override
-    public Edge addEdge(String label, Vertex inVertex, Object... keyValues) {
-        inflateVertex();
+    public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
         return this.vertex.addEdge(label, inVertex, keyValues);
     }
 
     @Override
     public Object id() {
-        inflateVertex();
         return this.vertex.id();
     }
 
     @Override
     public String label() {
-        inflateVertex();
         return this.vertex.label();
     }
 
     @Override
     public Graph graph() {
-        inflateVertex();
         return this.vertex.graph();
     }
 
     @Override
-    public <V> VertexProperty<V> property(String key, V value) {
-        inflateVertex();
+    public <V> VertexProperty<V> property(final String key, final V value) {
         return this.vertex.property(key, value);
     }
 
     @Override
     public void remove() {
-        inflateVertex();
         this.vertex.remove();
     }
 
@@ -95,27 +89,30 @@ public class SparkVertex implements Vertex, Vertex.Iterators, Serializable {
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(Direction direction, String... edgeLabels) {
-        inflateVertex();
+    public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
         return this.vertex.iterators().edgeIterator(direction, edgeLabels);
     }
 
     @Override
-    public Iterator<Vertex> vertexIterator(Direction direction, String... edgeLabels) {
-        inflateVertex();
+    public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels) {
         return this.vertex.iterators().vertexIterator(direction, edgeLabels);
     }
 
     @Override
-    public <V> Iterator<VertexProperty<V>> propertyIterator(String... propertyKeys) {
-        inflateVertex();
+    public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
         return this.vertex.iterators().propertyIterator(propertyKeys);
     }
 
+    ///////////////////////////////
+
     private void writeObject(final ObjectOutputStream outputStream) throws IOException {
-        this.inflateVertex();
         this.deflateVertex();
         outputStream.defaultWriteObject();
+    }
+
+    private void readObject(final ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+        inputStream.defaultReadObject();
+        this.inflateVertex();
     }
 
     private final void inflateVertex() {
@@ -123,23 +120,28 @@ public class SparkVertex implements Vertex, Vertex.Iterators, Serializable {
             return;
 
         try {
-            final ByteArrayInputStream bis = new ByteArrayInputStream(this.serializedForm);
+            final ByteArrayInputStream bis = new ByteArrayInputStream(this.vertexBytes);
             final TinkerGraph tinkerGraph = TinkerGraph.open();
             KRYO_READER.readGraph(bis, tinkerGraph);
             bis.close();
+            this.vertexBytes = null;
             this.vertex = (TinkerVertex) tinkerGraph.iterators().vertexIterator(tinkerGraph.variables().get(VERTEX_ID).get()).next();
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
     private final void deflateVertex() {
+        if (null != this.vertexBytes)
+            return;
+
         try {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             KRYO_WRITER.writeGraph(bos, this.vertex.graph());
             bos.flush();
             bos.close();
-            this.serializedForm = bos.toByteArray();
+            this.vertex = null;
+            this.vertexBytes = bos.toByteArray();
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
