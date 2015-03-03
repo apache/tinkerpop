@@ -670,11 +670,4 @@ public class TinkerGraphTest {
         GraphSONWriter.build().create().writeVertices(os5, g.V(), Direction.BOTH);
         os.close();
     }
-
-    protected void deleteFile(final String path) throws IOException {
-        final File file = new File(path);
-        if (file.exists()) {
-            file.delete();
-        }
-    }
 }
