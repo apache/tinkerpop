@@ -28,26 +28,29 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class SparkMessenger<M> implements Serializable, Messenger<M> {
 
-    protected Vertex vertex;
-    protected List<M> incoming;
-    protected Map<Object, List<M>> outgoing = new HashMap<>();
+    private Vertex vertex;
+    private List<M> incoming;
+    private Map<Object, List<M>> outgoing = new HashMap<>();
 
     public SparkMessenger() {
 
+    }
+
+    public SparkMessenger(final Vertex vertex) {
+        this.vertex = vertex;
+        this.incoming = new ArrayList<>();
     }
 
     public SparkMessenger(final Vertex vertex, final List<M> incomingMessages) {
@@ -61,6 +64,22 @@ public class SparkMessenger<M> implements Serializable, Messenger<M> {
 
     public void clearOutgoingMessages() {
         this.outgoing.clear();
+    }
+
+    public Vertex getVertex() {
+        return this.vertex;
+    }
+
+    public void setVertex(final Vertex vertex) {
+        this.vertex = vertex;
+    }
+
+    public void addIncomingMessages(final SparkMessenger<M> otherMessenger) {
+        this.incoming.addAll(otherMessenger.incoming);
+    }
+
+    public Set<Map.Entry<Object, List<M>>> getOutgoingMessages() {
+        return this.outgoing.entrySet();
     }
 
     @Override

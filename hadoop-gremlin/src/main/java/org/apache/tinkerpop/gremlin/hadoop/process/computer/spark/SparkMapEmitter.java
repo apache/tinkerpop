@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SparkMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
+public final class SparkMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
 
     private final List<Tuple2<K, V>> emissions = new ArrayList<>();
 

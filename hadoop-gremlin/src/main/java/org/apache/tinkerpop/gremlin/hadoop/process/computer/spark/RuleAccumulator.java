@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.Rule;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RuleAccumulator implements AccumulatorParam<Rule> {
+public final class RuleAccumulator implements AccumulatorParam<Rule> {
 
     @Override
     public Rule addAccumulator(final Rule a, final Rule b) {

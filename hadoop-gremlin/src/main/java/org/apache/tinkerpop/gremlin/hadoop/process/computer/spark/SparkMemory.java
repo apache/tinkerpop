@@ -60,7 +60,6 @@ public final class SparkMemory implements Memory.Admin, Serializable {
         for (final String key : this.memoryKeys) {
             this.memory.put(key, sparkContext.accumulator(new Rule(Rule.Operation.NO_OP, null), new RuleAccumulator()));
         }
-
     }
 
     @Override

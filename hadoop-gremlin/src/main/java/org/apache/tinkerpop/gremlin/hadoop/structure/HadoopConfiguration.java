@@ -24,7 +24,6 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
@@ -86,9 +85,9 @@ public class HadoopConfiguration extends BaseConfiguration implements Serializab
         this.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
     }
 
-    public Class<? extends GraphComputer> getGraphComputer() {
+    public Class<? extends GraphComputer> getGraphComputer(final Class<? extends GraphComputer> defaultGraphComputer) {
         if (!this.containsKey(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER))
-            return GiraphGraphComputer.class;
+            return defaultGraphComputer;
         else {
             try {
                 return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER));

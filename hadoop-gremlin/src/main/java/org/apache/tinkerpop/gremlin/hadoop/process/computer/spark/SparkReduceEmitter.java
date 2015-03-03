@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SparkReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
+public final class SparkReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
 
     private final List<Tuple2<OK, OV>> emissions = new ArrayList<>();
 

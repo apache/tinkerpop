@@ -146,7 +146,7 @@ public class HadoopGraph implements Graph, Graph.Iterators {
 
     private HadoopGraph(final Configuration configuration) {
         this.configuration = new HadoopConfiguration(configuration);
-        this.graphComputerClass = this.configuration.getGraphComputer();
+        this.graphComputerClass = this.configuration.getGraphComputer(GiraphGraphComputer.class);
     }
 
     public static HadoopGraph open() {

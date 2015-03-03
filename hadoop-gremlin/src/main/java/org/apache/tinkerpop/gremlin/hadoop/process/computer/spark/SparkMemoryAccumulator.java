@@ -23,7 +23,7 @@ import org.apache.spark.AccumulatorParam;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SparkMemoryAccumulator implements AccumulatorParam<SparkMemory> {
+public final class SparkMemoryAccumulator implements AccumulatorParam<SparkMemory> {
     @Override
     public SparkMemory addAccumulator(final SparkMemory first, final SparkMemory second) {
         return first;
