@@ -19,12 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
-import org.apache.tinkerpop.gremlin.process.T;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
+import org.apache.tinkerpop.gremlin.process.*;
 import org.apache.tinkerpop.gremlin.process.graph.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -45,6 +40,8 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX();
 
     public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX_capXaX();
+
+    public abstract Traversal<Vertex, Tree> get_g_V_out_out_tree();
 
     public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_capXaX();
 
@@ -92,7 +89,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_out_out_treeXaX_capXaX() {
-        List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_treeXaX_capXaX());
+        List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_tree(), get_g_V_out_out_treeXaX_capXaX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             final Tree tree = traversal.next();
@@ -127,6 +124,11 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX_capXaX() {
             return (Traversal) g.V().out().out().tree("a").by(T.id).cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, Tree> get_g_V_out_out_tree() {
+            return (Traversal) g.V().out().out().tree();
         }
 
         @Override

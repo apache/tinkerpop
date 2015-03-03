@@ -18,11 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.Scope
-import org.apache.tinkerpop.gremlin.process.Traversal
-import org.apache.tinkerpop.gremlin.process.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
+import org.apache.tinkerpop.gremlin.process.*
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -37,6 +33,11 @@ public abstract class GroovyGroupTest {
         @Override
         public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX() {
             g.V.group.by('name')
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_groupXaX_byXnameX_capXaX() {
+            g.V.group('a').by('name').cap('a')
         }
 
         @Override
@@ -66,6 +67,11 @@ public abstract class GroovyGroupTest {
         @Override
         public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX() {
             ComputerTestHelper.compute("g.V.group.by('name')", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_groupXaX_byXnameX_capXaX() {
+            ComputerTestHelper.compute("g.V.group('a').by('name').cap('a')", g)
         }
 
         @Override

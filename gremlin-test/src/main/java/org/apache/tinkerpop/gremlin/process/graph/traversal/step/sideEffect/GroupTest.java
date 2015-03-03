@@ -19,18 +19,11 @@
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.Scope;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
+import org.apache.tinkerpop.gremlin.process.*;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*;
@@ -44,6 +37,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX();
 
+    public abstract Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_groupXaX_byXnameX_capXaX();
+
     public abstract Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX();
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXcountXlocalXX();
@@ -55,15 +50,16 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_group_byXnameX() {
-        final Traversal<Vertex, Map<String, Collection<Vertex>>> traversal = get_g_V_group_byXnameX();
-        printTraversalForm(traversal);
-        final Map<String, Collection<Vertex>> map = traversal.next();
-        assertEquals(6, map.size());
-        map.forEach((key, values) -> {
-            assertEquals(1, values.size());
-            assertEquals(convertToVertexId(key), values.iterator().next().id());
+        Arrays.asList(get_g_V_group_byXnameX(), get_g_V_groupXaX_byXnameX_capXaX()).forEach(traversal -> {
+            printTraversalForm(traversal);
+            final Map<String, Collection<Vertex>> map = traversal.next();
+            assertEquals(6, map.size());
+            map.forEach((key, values) -> {
+                assertEquals(1, values.size());
+                assertEquals(convertToVertexId(key), values.iterator().next().id());
+            });
+            assertFalse(traversal.hasNext());
         });
-        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -145,6 +141,11 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX() {
             return g.V().<String, Collection<Vertex>>group().by("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_groupXaX_byXnameX_capXaX() {
+            return g.V().<String, Collection<Vertex>>group("a").by("name").cap("a");
         }
 
         @Override
