@@ -25,6 +25,7 @@ import org.apache.spark.api.java.JavaRDDLike;
 import org.apache.spark.api.java.function.FlatMapFunction2;
 import org.apache.spark.rdd.RDD;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import scala.Tuple2;
 import scala.reflect.ManifestFactory;
 
@@ -45,20 +46,30 @@ public class GraphComputerRDD<M> extends JavaPairRDD<Object, SparkMessenger<M>> 
         super(rdd.rdd(), ManifestFactory.classType(Object.class), ManifestFactory.classType(SparkMessenger.class));
     }
 
-    public GraphComputerRDD completeIteration() {
+    public GraphComputerRDD execute(final Configuration configuration, final SparkMemory memory) {
         JavaPairRDD<Object, SparkMessenger<M>> current = this;
-        // clear all previous incoming messages
-        current = current.mapValues(messenger -> {
-            messenger.clearIncomingMessages();
-            return messenger;
+        // execute vertex program
+        current = current.mapPartitionsToPair(iterator -> {
+            final VertexProgram<M> vertexProgram = VertexProgram.createVertexProgram(configuration);
+            return () -> IteratorUtils.<Tuple2<Object, SparkMessenger<M>>, Tuple2<Object, SparkMessenger<M>>>map(iterator, tuple -> {
+                vertexProgram.execute(tuple._2().vertex, tuple._2(), memory);
+                return tuple;
+            });
         });
+        // clear all previous incoming messages
+        if(!memory.isInitialIteration()) {
+            current = current.mapValues(messenger -> {
+                messenger.clearIncomingMessages();
+                return messenger;
+            });
+        }
         // emit messages
         current = current.<Object, SparkMessenger<M>>flatMapToPair(tuple -> {
             final List<Tuple2<Object, SparkMessenger<M>>> list = tuple._2().outgoing.entrySet()
                     .stream()
                     .map(entry -> new Tuple2<>(entry.getKey(), new SparkMessenger<>(new ToyVertex(entry.getKey()), entry.getValue())))
-                    .collect(Collectors.toList());
-            list.add(new Tuple2<>(tuple._1(), tuple._2()));
+                    .collect(Collectors.toList());          // the message vertices
+            list.add(new Tuple2<>(tuple._1(), tuple._2())); // the raw vertex
             return list;
         });
         // "message pass" via reduction
@@ -71,20 +82,6 @@ public class GraphComputerRDD<M> extends JavaPairRDD<Object, SparkMessenger<M>> 
         // clear all previous outgoing messages
         current = current.mapValues(messenger -> {
             messenger.clearOutgoingMessages();
-            return messenger;
-        });
-        current.count(); // TODO: necessary for BSP?
-        return GraphComputerRDD.of(current);
-    }
-
-    private static void doNothing() {
-
-    }
-
-    public GraphComputerRDD execute(final Configuration configuration, final SparkMemory memory) {
-        JavaPairRDD<Object, SparkMessenger<M>> current = this;
-        current = current.mapValues(messenger -> {
-            VertexProgram.createVertexProgram(configuration).execute(messenger.vertex, messenger, memory);
             return messenger;
         });
         return GraphComputerRDD.of(current);

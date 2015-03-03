@@ -18,12 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -41,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -81,8 +78,6 @@ public class SparkGraphComputer implements GraphComputer {
         JavaPairRDD<Object, SparkMessenger<Double>> rdd2 = rdd.mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new SparkMessenger<>(new SparkVertex((TinkerVertex) tuple._2().get()), new ArrayList<>())));
 
         GraphComputerRDD<Double> g = GraphComputerRDD.of(rdd2);
-        FileUtils.deleteDirectory(new File("/tmp/test"));
-        g.saveAsObjectFile("/tmp/test");
 
         final org.apache.commons.configuration.Configuration vertexProgram = new SerializableConfiguration();
         final PageRankVertexProgram pageRankVertexProgram = PageRankVertexProgram.build().create();
@@ -90,16 +85,15 @@ public class SparkGraphComputer implements GraphComputer {
         final SparkMemory memory = new SparkMemory(Collections.emptySet());
 
         while (!pageRankVertexProgram.terminate(memory)) {
-            g = GraphComputerRDD.of((JavaRDD) sc.objectFile("/tmp/test"));
             g = g.execute(vertexProgram, memory);
-            g = g.completeIteration();
+            g.foreachPartition(iterator -> doNothing());
             memory.incrIteration();
-            FileUtils.deleteDirectory(new File("/tmp/test"));
-            g.saveAsObjectFile("/tmp/test");
-
         }
         g.foreach(t -> System.out.println(t._2().vertex.property(PageRankVertexProgram.PAGE_RANK) + "-->" + t._2().vertex.value("name")));
         System.out.println(g.count());
+    }
+
+    private static final void doNothing() {
     }
 
 
