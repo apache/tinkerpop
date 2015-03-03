@@ -162,6 +162,9 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements Reversib
                 for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getLocalChildren()) {
                     prepTraversalForProfiling(t, metrics);
                 }
+                for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getGlobalChildren()) {
+                    prepTraversalForProfiling(t, metrics);
+                }
             }
         }
     }
