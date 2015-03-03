@@ -24,8 +24,8 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderKryoSerializer;
-import org.apache.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
@@ -239,7 +239,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldSerializeToStringWhenRequested() throws Exception {
         final Map<String, Object> m = new HashMap<>();
         m.put("serializeResultToString", true);
-        final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0();
+        final GryoMessageSerializerV1d0 serializer = new GryoMessageSerializerV1d0();
         serializer.configure(m, null);
 
         final Cluster cluster = Cluster.build().serializer(serializer).create();
@@ -256,8 +256,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldDeserializeWithCustomClasses() throws Exception {
         final Map<String, Object> m = new HashMap<>();
-        m.put("custom", Arrays.asList(String.format("%s;%s", JsonBuilder.class.getCanonicalName(), JsonBuilderKryoSerializer.class.getCanonicalName())));
-        final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0();
+        m.put("custom", Arrays.asList(String.format("%s;%s", JsonBuilder.class.getCanonicalName(), JsonBuilderGryoSerializer.class.getCanonicalName())));
+        final GryoMessageSerializerV1d0 serializer = new GryoMessageSerializerV1d0();
         serializer.configure(m, null);
 
         final Cluster cluster = Cluster.build().serializer(serializer).create();

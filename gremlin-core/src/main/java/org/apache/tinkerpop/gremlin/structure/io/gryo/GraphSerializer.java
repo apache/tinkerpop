@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
@@ -152,12 +152,12 @@ class GraphSerializer {
 
         @Override
         public void write(final Kryo kryo, final Output output, final Traverser.Admin traverser) {
-            kryo.writeClassAndObject(output, traverser.asAdmin().detach());
+            gryo.writeClassAndObject(output, traverser.asAdmin().detach());
         }
 
         @Override
         public Traverser.Admin read(final Kryo kryo, final Input input, final Class<Traverser.Admin> traverser) {
-            return (Traverser.Admin) kryo.readClassAndObject(input);
+            return (Traverser.Admin) gryo.readClassAndObject(input);
         }
 
     }*/

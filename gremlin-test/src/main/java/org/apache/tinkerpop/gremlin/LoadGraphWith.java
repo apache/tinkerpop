@@ -107,13 +107,13 @@ public @interface LoadGraphWith {
         public String location() {
             switch (this) {
                 case CLASSIC:
-                    return RESOURCE_PATH_PREFIX + "tinkerpop-classic.gio";
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-classic.kryo";
                 case CREW:
-                    return RESOURCE_PATH_PREFIX + "tinkerpop-crew.gio";
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-crew.kryo";
                 case MODERN:
-                    return RESOURCE_PATH_PREFIX + "tinkerpop-modern.gio";
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-modern.kryo";
                 case GRATEFUL:
-                    return RESOURCE_PATH_PREFIX + "grateful-dead.gio";
+                    return RESOURCE_PATH_PREFIX + "grateful-dead.kryo";
             }
 
             throw new RuntimeException("No file for this GraphData type");
@@ -135,7 +135,7 @@ public @interface LoadGraphWith {
         }
     }
 
-    public static final String RESOURCE_PATH_PREFIX = "/org/apache/tinkerpop/gremlin/structure/io/kryo/";
+    public static final String RESOURCE_PATH_PREFIX = "/org/apache/tinkerpop/gremlin/structure/io/gryo/";
 
     /**
      * The name of the resource to load with full path.

@@ -29,8 +29,8 @@ import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -39,7 +39,6 @@ import org.junit.Test;
 import java.io.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -198,9 +197,9 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphAsKryo() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic.gio");
-        KryoWriter.build().create().writeGraph(os, TinkerFactory.createClassic());
+    public void shouldWriteClassicGraphAsGryo() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic.kryo");
+        GryoWriter.build().create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
 
@@ -208,9 +207,9 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernGraphAsKryo() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern.gio");
-        KryoWriter.build().create().writeGraph(os, TinkerFactory.createModern());
+    public void shouldWriteModernGraphAsGryo() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern.kryo");
+        GryoWriter.build().create().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
 
@@ -218,9 +217,9 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteCrewGraphAsKryo() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew.gio");
-        KryoWriter.build().create().writeGraph(os, TinkerFactory.createTheCrew());
+    public void shouldWriteCrewGraphAsGryo() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew.kryo");
+        GryoWriter.build().create().writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
     }
 
@@ -228,9 +227,9 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicVerticesAsKryo() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-vertices.gio");
-        KryoWriter.build().create().writeVertices(os, TinkerFactory.createClassic().V(), Direction.BOTH);
+    public void shouldWriteClassicVerticesAsGryo() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-vertices.kryo");
+        GryoWriter.build().create().writeVertices(os, TinkerFactory.createClassic().V(), Direction.BOTH);
         os.close();
     }
 
@@ -248,9 +247,9 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernVerticesAsKryo() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-vertices.gio");
-        KryoWriter.build().create().writeVertices(os, TinkerFactory.createModern().V(), Direction.BOTH);
+    public void shouldWriteModernVerticesAsGryo() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-vertices.kryo");
+        GryoWriter.build().create().writeVertices(os, TinkerFactory.createModern().V(), Direction.BOTH);
         os.close();
     }
 
@@ -268,9 +267,9 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteCrewVerticesAsKryo() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-vertices.gio");
-        KryoWriter.build().create().writeVertices(os, TinkerFactory.createTheCrew().V(), Direction.BOTH);
+    public void shouldWriteCrewVerticesAsGryo() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-vertices.kryo");
+        GryoWriter.build().create().writeVertices(os, TinkerFactory.createTheCrew().V(), Direction.BOTH);
         os.close();
     }
 
@@ -612,12 +611,12 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteGratefulDead() throws IOException {
         final Graph g = TinkerGraph.open();
-        final GraphReader reader = KryoReader.build().create();
-        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/kryo/grateful-dead.gio")) {
+        final GraphReader reader = GryoReader.build().create();
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/gryo/grateful-dead.kryo")) {
             reader.readGraph(stream, g);
         }
 
-        /* keep this hanging around because changes to kryo format will need grateful dead generated from json so you can generate the gio
+        /* keep this hanging around because changes to gryo format will need grateful dead generated from json so you can generate the gio
         final GraphReader reader = GraphSONReader.build().embedTypes(true).create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/graphson/grateful-dead.json")) {
             reader.readGraph(stream, g);
@@ -651,8 +650,8 @@ public class TinkerGraphTest {
 
         }).iterate();
 
-        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead.gio");
-        KryoWriter.build().create().writeGraph(os, ng);
+        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead.kryo");
+        GryoWriter.build().create().writeGraph(os, ng);
         os.close();
 
         final OutputStream os2 = new FileOutputStream(tempPath + "grateful-dead.json");
@@ -663,8 +662,8 @@ public class TinkerGraphTest {
         GraphMLWriter.build().create().writeGraph(os3, g);
         os3.close();
 
-        final OutputStream os4 = new FileOutputStream(tempPath + "grateful-dead-vertices.gio");
-        KryoWriter.build().create().writeVertices(os4, g.V(), Direction.BOTH);
+        final OutputStream os4 = new FileOutputStream(tempPath + "grateful-dead-vertices.kryo");
+        GryoWriter.build().create().writeVertices(os4, g.V(), Direction.BOTH);
         os.close();
 
         final OutputStream os5 = new FileOutputStream(tempPath + "grateful-dead-vertices.ldjson");

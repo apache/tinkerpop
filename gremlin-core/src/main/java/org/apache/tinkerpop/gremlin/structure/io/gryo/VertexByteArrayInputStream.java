@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
@@ -27,8 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * An {@link InputStream} implementation that can independently process a Gremlin Kryo file written with
- * {@link KryoWriter#writeVertices(java.io.OutputStream, org.apache.tinkerpop.gremlin.process.Traversal)}.
+ * An {@link InputStream} implementation that can independently process a Gryo file written with
+ * {@link GryoWriter#writeVertices(java.io.OutputStream, org.apache.tinkerpop.gremlin.process.Traversal)}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -43,7 +43,7 @@ public class VertexByteArrayInputStream extends FilterInputStream {
 
     /**
      * Read the bytes of the next {@link org.apache.tinkerpop.gremlin.structure.Vertex} in the stream. The returned
-     * stream can then be passed to {@link KryoReader#readVertex(java.io.InputStream, java.util.function.Function)}.
+     * stream can then be passed to {@link GryoReader#readVertex(java.io.InputStream, java.util.function.Function)}.
      */
     public ByteArrayOutputStream readVertexBytes() throws IOException {
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();

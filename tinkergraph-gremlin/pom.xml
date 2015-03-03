@@ -128,19 +128,19 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <outputDirectory>
-                                        ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/kryo
+                                        ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/gryo
                                     </outputDirectory>
                                     <resources>
                                         <resource>
                                             <directory>${io.tmp.dir}</directory>
                                             <filtering>false</filtering>
                                             <includes>
-                                                <include>**/*.gio</include>
+                                                <include>**/*.kryo</include>
                                             </includes>
                                         </resource>
                                     </resources>
                                     <nonFilteredFileExtensions>
-                                        <nonFilteredFileExtension>gio</nonFilteredFileExtension>
+                                        <nonFilteredFileExtension>kryo</nonFilteredFileExtension>
                                     </nonFilteredFileExtensions>
                                 </configuration>
                             </execution>

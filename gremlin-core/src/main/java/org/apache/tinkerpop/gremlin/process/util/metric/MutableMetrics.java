@@ -33,7 +33,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
     private long tempTime = -1l;
 
     protected MutableMetrics() {
-        // necessary for kryo serialization
+        // necessary for gryo serialization
     }
 
     public MutableMetrics(final String id, final String name) {

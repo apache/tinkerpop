@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Output;
@@ -42,9 +42,9 @@ import java.util.UUID;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class KryoWriter implements GraphWriter {
+public class GryoWriter implements GraphWriter {
     private Kryo kryo;
-    private final KryoMapper.HeaderWriter headerWriter;
+    private final GryoMapper.HeaderWriter headerWriter;
     private static final UUID delimiter = UUID.fromString("2DEE3ABF-9963-4546-A578-C1C48690D7F7");
     public static final byte[] DELIMITER = new byte[16];
 
@@ -54,9 +54,9 @@ public class KryoWriter implements GraphWriter {
         bb.putLong(delimiter.getLeastSignificantBits());
     }
 
-    private KryoWriter(final KryoMapper kryoMapper) {
-        this.kryo = kryoMapper.createMapper();
-        this.headerWriter = kryoMapper.getHeaderWriter();
+    private GryoWriter(final GryoMapper gryoMapper) {
+        this.kryo = gryoMapper.createMapper();
+        this.headerWriter = gryoMapper.getHeaderWriter();
     }
 
     @Override
@@ -157,24 +157,24 @@ public class KryoWriter implements GraphWriter {
         /**
          * Always creates the most current version available.
          */
-        private KryoMapper kryoMapper = KryoMapper.build().create();
+        private GryoMapper gryoMapper = GryoMapper.build().create();
 
         private Builder() {
         }
 
         /**
-         * Supply a mapper {@link KryoMapper} instance to use as the serializer for the {@code KryoWriter}.
+         * Supply a mapper {@link GryoMapper} instance to use as the serializer for the {@code KryoWriter}.
          */
-        public Builder mapper(final KryoMapper kryoMapper) {
-            this.kryoMapper = kryoMapper;
+        public Builder mapper(final GryoMapper gryoMapper) {
+            this.gryoMapper = gryoMapper;
             return this;
         }
 
         /**
-         * Create the {@code KryoWriter}.
+         * Create the {@code GryoWriter}.
          */
-        public KryoWriter create() {
-            return new KryoWriter(this.kryoMapper);
+        public GryoWriter create() {
+            return new GryoWriter(this.gryoMapper);
         }
     }
 }

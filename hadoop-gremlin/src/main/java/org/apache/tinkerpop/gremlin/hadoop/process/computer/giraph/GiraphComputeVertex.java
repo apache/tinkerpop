@@ -27,8 +27,8 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.strategy.StrategyVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -57,8 +57,8 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
     private static final String VERTEX_ID = Graph.Hidden.hide("giraph.gremlin.vertexId");
     private TinkerVertex tinkerVertex;
     private StrategyVertex wrappedVertex;
-    private static KryoWriter KRYO_WRITER = KryoWriter.build().create();
-    private static KryoReader KRYO_READER = KryoReader.build().create();
+    private static GryoWriter KRYO_WRITER = GryoWriter.build().create();
+    private static GryoReader KRYO_READER = GryoReader.build().create();
 
     public GiraphComputeVertex() {
     }

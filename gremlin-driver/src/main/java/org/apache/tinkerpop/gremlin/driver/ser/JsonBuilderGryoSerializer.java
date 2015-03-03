@@ -16,31 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.driver.ser;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-
-import java.net.URI;
+import groovy.json.JsonBuilder;
+import groovy.json.JsonSlurper;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class URISerializer extends Serializer<URI> {
+public class JsonBuilderGryoSerializer extends Serializer<JsonBuilder> {
 
-    public URISerializer() {
-        setImmutable(true);
+    final JsonSlurper slurper = new JsonSlurper();
+
+    @Override
+    public void write(final Kryo kryo, final Output output, final JsonBuilder jsonBuilder) {
+        output.writeString(jsonBuilder.toString());
     }
 
     @Override
-    public void write(final Kryo kryo, final Output output, final URI uri) {
-        output.writeString(uri.toString());
-    }
-
-    @Override
-    public URI read(final Kryo kryo, final Input input, final Class<URI> uriClass) {
-        return URI.create(input.readString());
+    public JsonBuilder read(final Kryo kryo, final Input input, final Class<JsonBuilder> jsonBuilderClass) {
+        final String jsonString = input.readString();
+        return new JsonBuilder(slurper.parseText(jsonString));
     }
 }

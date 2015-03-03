@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson;
 
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo.VertexStreamIterator;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.VertexStreamIterator;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
 
@@ -42,7 +42,7 @@ public class VertexStreamIteratorTest {
         Graph g = TinkerFactory.createClassic();
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final GryoWriter writer = GryoWriter.build().create();
             writer.writeVertices(os, g.V(), Direction.BOTH);
             final AtomicInteger called = new AtomicInteger(0);
             VertexStreamIterator vsi = new VertexStreamIterator(new ByteArrayInputStream(os.toByteArray()), Long.MAX_VALUE);

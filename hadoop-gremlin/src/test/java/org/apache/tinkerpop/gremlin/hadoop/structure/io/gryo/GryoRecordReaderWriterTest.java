@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -44,26 +44,26 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class KryoRecordReaderWriterTest {
+public class GryoRecordReaderWriterTest {
     @Test
     public void testAll() throws Exception {
         Configuration conf = new Configuration(false);
         conf.set("fs.file.impl", LocalFileSystem.class.getName());
         conf.set("fs.default.name", "file:///");
 
-        File testFile = new File(HadoopGraphProvider.PATHS.get("grateful-dead-vertices.gio"));
+        File testFile = new File(HadoopGraphProvider.PATHS.get("grateful-dead-vertices.kryo"));
         FileSplit split = new FileSplit(
                 new Path(testFile.getAbsoluteFile().toURI().toString()), 0,
                 testFile.length(), null);
-        System.out.println("reading Gremlin Kryo file " + testFile.getAbsolutePath() + " (" + testFile.length() + " bytes)");
+        System.out.println("reading Gryo file " + testFile.getAbsolutePath() + " (" + testFile.length() + " bytes)");
 
-        KryoInputFormat inputFormat = ReflectionUtils.newInstance(KryoInputFormat.class, conf);
+        GryoInputFormat inputFormat = ReflectionUtils.newInstance(GryoInputFormat.class, conf);
         TaskAttemptContext job = new TaskAttemptContext(conf, new TaskAttemptID());
         RecordReader reader = inputFormat.createRecordReader(split, job);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try (DataOutputStream dos = new DataOutputStream(bos)) {
-            KryoOutputFormat outputFormat = new KryoOutputFormat();
+            GryoOutputFormat outputFormat = new GryoOutputFormat();
             RecordWriter writer = outputFormat.getRecordWriter(job, dos);
 
             float lastProgress = -1f;

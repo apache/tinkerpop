@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoSerializable;
@@ -70,7 +70,7 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class KryoMapper implements Mapper<Kryo> {
+public final class GryoMapper implements Mapper<Kryo> {
     static final byte[] GIO = "gio".getBytes();
     private final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList;
     private final HeaderWriter headerWriter;
@@ -79,7 +79,7 @@ public final class KryoMapper implements Mapper<Kryo> {
 
     public static final byte DEFAULT_EXTENDED_VERSION = Byte.MIN_VALUE;
 
-    private KryoMapper(final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList,
+    private GryoMapper(final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList,
                        final HeaderWriter headerWriter,
                        final HeaderReader headerReader) {
         this.serializationList = serializationList;
@@ -137,14 +137,14 @@ public final class KryoMapper implements Mapper<Kryo> {
     }
 
     /**
-     * Use a specific version of Gremlin Kryo.
+     * Use a specific version of Gryo.
      */
     public static Builder build(final Version version) {
         return version.getBuilder();
     }
 
     /**
-     * Use the most current version of Gremlin Kryo.
+     * Use the most current version of Gryo.
      */
     public static Builder build() {
         return Version.V_1_0_0.getBuilder();
@@ -152,7 +152,7 @@ public final class KryoMapper implements Mapper<Kryo> {
 
     public static interface Builder {
         /**
-         * Add mapper classes to serializes with kryo using standard serialization.
+         * Add mapper classes to serializes with gryo using standard serialization.
          */
         public Builder addCustom(final Class... custom);
 
@@ -168,7 +168,7 @@ public final class KryoMapper implements Mapper<Kryo> {
 
         /**
          * If using mapper classes it might be useful to tag the version stamped to the serialization with a mapper
-         * value, such that Kryo serialization at 1.0.0 would have a fourth byte for an extended version.  The user
+         * value, such that Gryo serialization at 1.0.0 would have a fourth byte for an extended version.  The user
          * supplied fourth byte can then be used to ensure the right deserializer is used to read the data. If this
          * value is not supplied then it is written as {@link Byte#MIN_VALUE}. The value supplied here should be greater
          * than or equal to zero.
@@ -179,13 +179,13 @@ public final class KryoMapper implements Mapper<Kryo> {
          * By default the {@link #extendedVersion(byte)} is checked against what is read from an input source and if
          * those values are equal the version being read is considered "compliant".  To alter this behavior, supply a
          * mapper compliance {@link Predicate} to evaluate the value read from the input source (i.e. first argument)
-         * and the value marked in the {@code GremlinKryo} instance {i.e. second argument}.  Supplying this function is
+         * and the value marked in the {@code GryoMapper} instance {i.e. second argument}.  Supplying this function is
          * useful when versions require backward compatibility or other more complex checks.  This function is only used
          * if the {@link #extendedVersion(byte)} is set to something other than its default.
          */
         public Builder compliant(final BiPredicate<Byte, Byte> compliant);
 
-        public KryoMapper create();
+        public GryoMapper create();
     }
 
     public enum Version {
@@ -201,7 +201,7 @@ public final class KryoMapper implements Mapper<Kryo> {
             try {
                 return builder.newInstance();
             } catch (Exception x) {
-                throw new RuntimeException("GremlinKryo Builder implementation cannot be instantiated", x);
+                throw new RuntimeException("Gryo Builder implementation cannot be instantiated", x);
             }
         }
     }
@@ -277,7 +277,7 @@ public final class KryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexProperty.class, kryo -> new GraphSerializer.VertexPropertySerializer(), 68));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Path.class, kryo -> new GraphSerializer.PathSerializer(), 59));
             // HACK!
-            //add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Traverser.Admin.class, kryo -> new GraphSerializer.TraverserSerializer(), 55));
+            //add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Traverser.Admin.class, gryo -> new GraphSerializer.TraverserSerializer(), 55));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_Traverser.class, null, 75));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(O_Traverser.class, null, 76));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_P_PA_S_SE_SL_Traverser.class, null, 77));
@@ -303,7 +303,7 @@ public final class KryoMapper implements Mapper<Kryo> {
         private BiPredicate<Byte, Byte> compliant = (readExt, serExt) -> readExt.equals(serExt);
 
         /**
-         * Starts numbering classes for Kryo serialization at 65536 to leave room for future usage by TinkerPop.
+         * Starts numbering classes for Gryo serialization at 65536 to leave room for future usage by TinkerPop.
          */
         private final AtomicInteger currentSerializationId = new AtomicInteger(65536);
 
@@ -362,8 +362,8 @@ public final class KryoMapper implements Mapper<Kryo> {
         }
 
         @Override
-        public KryoMapper create() {
-            return new KryoMapper(serializationList, this::writeHeader, this::readHeader);
+        public GryoMapper create() {
+            return new GryoMapper(serializationList, this::writeHeader, this::readHeader);
         }
 
         private void writeHeader(final Kryo kryo, final Output output) throws IOException {
@@ -399,7 +399,7 @@ public final class KryoMapper implements Mapper<Kryo> {
 
             if (extendedVersion >= 0 && !compliant.test(extension, extendedVersion))
                 throw new IOException(String.format(
-                        "The extension [%s] in the input source is not compliant with this configuration of GremlinKryo - [%s]",
+                        "The extension [%s] in the input source is not compliant with this configuration of Gryo - [%s]",
                         extension, extendedVersion));
         }
     }

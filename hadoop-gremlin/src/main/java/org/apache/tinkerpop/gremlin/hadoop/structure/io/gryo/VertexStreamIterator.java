@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -46,7 +46,7 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
     private static int BUFLEN = TERMINATOR.length;
 
     private final InputStream inputStream;
-    private static final KryoReader KRYO_READER = KryoReader.build().create();
+    private static final GryoReader GRYO_READER = GryoReader.build().create();
     private final ByteArrayOutputStream output = new ByteArrayOutputStream();
     private final int[] buffer = new int[BUFLEN];
 
@@ -138,7 +138,7 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
                     final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
                     final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
                     try (InputStream in = new ByteArrayInputStream(this.output.toByteArray())) {
-                        return KRYO_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
+                        return GRYO_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
                     }
                 }
             }

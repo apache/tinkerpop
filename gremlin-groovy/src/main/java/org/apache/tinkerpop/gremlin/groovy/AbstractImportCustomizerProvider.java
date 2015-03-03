@@ -48,7 +48,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
@@ -105,7 +105,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(GraphReader.class.getPackage().getName() + DOT_STAR);
         imports.add(GraphMLReader.class.getPackage().getName() + DOT_STAR);
         imports.add(GraphSONReader.class.getPackage().getName() + DOT_STAR);
-        imports.add(KryoReader.class.getPackage().getName() + DOT_STAR);
+        imports.add(GryoReader.class.getPackage().getName() + DOT_STAR);
 
         // algorithms
         imports.add(AbstractGenerator.class.getPackage().getName() + DOT_STAR);

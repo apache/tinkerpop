@@ -652,7 +652,7 @@ In the above code, the `embedTypes` option is set to `true` and the output below
 The ambiguity of components of the GraphSON is now removed by the `@class` property, which contains Java class information for the data it is associated with.  The `@class` property is used for all non-final types, with the exception of a small number of "natural" types (String, Boolean, Integer, and Double) which can be correctly inferred from JSON typing.  While the output is more verbose, it comes with the security of not losing type information.  While non-JVM languages won't be able to consume this information automatically, at least there is a hint as to how the values should be coerced back into the correct types in the target language.
 
 [[gremlin-kryo]]
-Kryo Reader/Writer
+Gryo Reader/Writer
 ~~~~~~~~~~~~~~~~~~
 
 image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSoftware/kryo[Kryo] is a popular serialization package for the JVM. Gremlin-Kryo is a binary Graph serialization format for use on the JVM by JVM languages. It is designed to be space efficient, non-lossy and is promoted as the standard format to use when working with graph data inside of the TinkerPop stack. A list of common use cases is presented below:
@@ -663,16 +663,16 @@ image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSof
 
 CAUTION: When migrating between Gremlin Structure implementations, Kryo may not lose data, but it is important to consider the features of each `Graph` and whether or not the data types supported in one will be supported in the other.  Failure to do so, may result in errors.
 
-Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-modern.gio` and then how to read that file back into a different instance:
+Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-modern.kryo` and then how to read that file back into a different instance:
 
 
 [source,java]
 ----
 final Graph g = TinkerFactory.createModern();
-g.io().writeKryo("tinkerpop-modern.gio");
+g.io().writeGryo("tinkerpop-modern.kryo");
 
 final Graph newGraph = TinkerGraph.open();
-newGraph.io().readKryo("tinkerpop-modern.gio")'
+newGraph.io().readGryo("tinkerpop-modern.kryo")'
 ----
 
 If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:
@@ -680,17 +680,17 @@ If a custom configuration is required, then have the `Graph` generate a `GraphRe
 [source,java]
 ----
 final Graph g = TinkerFactory.createModern();
-try (final OutputStream os = new FileOutputStream("tinkerpop-modern.gio")) {
-    g.io().kryoWriter().create().writeGraph(os);
+try (final OutputStream os = new FileOutputStream("tinkerpop-modern.kryo")) {
+    g.io().gryoWriter().create().writeGraph(os);
 }
 
 final Graph newGraph = TinkerGraph.open();
-try (final InputStream stream = new FileInputStream("tinkerpop-modern.gio")) {
-    newGraph.io().kryoReader().vertexIdKey("name").create().readGraph(stream);
+try (final InputStream stream = new FileInputStream("tinkerpop-modern.kryo")) {
+    newGraph.io().gryoReader().vertexIdKey("name").create().readGraph(stream);
 }
 ----
 
-NOTE: The preferred extension for files names produced by Kryo is `.gio`.
+NOTE: The preferred extension for files names produced by Gryo is `.kryo`.
 
 TinkerPop2 Data Migration
 ~~~~~~~~~~~~~~~~~~~~~~~~~

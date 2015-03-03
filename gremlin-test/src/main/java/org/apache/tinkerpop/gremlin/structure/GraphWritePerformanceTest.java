@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -94,8 +94,8 @@ public class GraphWritePerformanceTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
         @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 0, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
-        public void writeKryo() throws Exception {
-            final GraphWriter writer = KryoWriter.build().create();
+        public void writeGryo() throws Exception {
+            final GraphWriter writer = GryoWriter.build().create();
             final OutputStream os = new ByteArrayOutputStream();
             writer.writeGraph(os, g);
         }

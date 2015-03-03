@@ -50,7 +50,7 @@ import static org.junit.Assert.assertNull;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class KryoMessageSerializerV1d0Test {
+public class GryoMessageSerializerV1D0Test {
     private static final Map<String, Object> config = new HashMap<String, Object>() {{
         put("serializeResultToString", true);
     }};
@@ -59,11 +59,11 @@ public class KryoMessageSerializerV1d0Test {
     private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    public MessageSerializer binarySerializer = new KryoMessageSerializerV1d0();
+    public MessageSerializer binarySerializer = new GryoMessageSerializerV1d0();
 
-    public MessageSerializer textSerializer = new KryoMessageSerializerV1d0();
+    public MessageSerializer textSerializer = new GryoMessageSerializerV1d0();
 
-    public KryoMessageSerializerV1d0Test() {
+    public GryoMessageSerializerV1D0Test() {
         textSerializer.configure(config, null);
     }
 

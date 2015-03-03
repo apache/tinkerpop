@@ -29,7 +29,7 @@ public class DependantMutableMetrics extends MutableMetrics {
     private DependantMutableMetrics upStreamMetrics;
 
     private DependantMutableMetrics() {
-        // necessary for kryo serialization
+        // necessary for gryo serialization
         super();
     }
 

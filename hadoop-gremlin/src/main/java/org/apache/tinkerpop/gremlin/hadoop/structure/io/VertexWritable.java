@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import org.apache.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -42,8 +42,8 @@ import java.io.IOException;
 public final class VertexWritable<V extends Vertex> implements Writable {
 
     private Vertex vertex;
-    private static final KryoWriter KRYO_WRITER = KryoWriter.build().create();
-    private static final KryoReader KRYO_READER = KryoReader.build().create();
+    private static final GryoWriter KRYO_WRITER = GryoWriter.build().create();
+    private static final GryoReader KRYO_READER = GryoReader.build().create();
 
     public VertexWritable(final Vertex vertex) {
         this.vertex = vertex;

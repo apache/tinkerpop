@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 public enum Serializers {
     JSON(SerTokens.MIME_JSON),
     JSON_V1D0(SerTokens.MIME_JSON_V1D0),
-    KRYO_V1D0(SerTokens.MIME_KRYO_V1D0);
+    GRYO_V1D0(SerTokens.MIME_GRYO_V1D0);
 
     private String value;
 
@@ -60,8 +60,8 @@ public enum Serializers {
                 return new JsonMessageSerializerV1d0();
             case SerTokens.MIME_JSON_V1D0:
                 return new JsonMessageSerializerGremlinV1d0();
-            case SerTokens.MIME_KRYO_V1D0:
-                return new KryoMessageSerializerV1d0();
+            case SerTokens.MIME_GRYO_V1D0:
+                return new GryoMessageSerializerV1d0();
             default:
                 throw new RuntimeException("Could not create a simple MessageSerializer instance of " + value);
         }

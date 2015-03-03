@@ -35,7 +35,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 
@@ -62,7 +62,7 @@ public class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT_SPACE + HadoopConfiguration.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + ConfUtil.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + VertexWritable.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT_SPACE + KryoInputFormat.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + GryoInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + GraphSONInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + ScriptInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + HDFSTools.class.getPackage().getName() + DOT_STAR);
