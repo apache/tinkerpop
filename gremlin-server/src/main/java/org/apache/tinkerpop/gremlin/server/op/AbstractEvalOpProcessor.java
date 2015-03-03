@@ -125,7 +125,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
      * @param bindingsSupplier A function that returns the {@link Bindings} to provide to the
      *                         {@link GremlinExecutor#eval} method.
      */
-    public static void evalOp(final Context context, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
+    protected void evalOpInternal(final Context context, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
                               final Supplier<Bindings> bindingsSupplier) throws OpProcessorException {
         final Timer.Context timerContext = evalOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
@@ -158,25 +158,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
             stopWatch.start();
 
-            List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
-            while (itty.hasNext()) {
-                aggregate.add(itty.next());
-
-                // send back a page of results if batch size is met or if it's the end of the results being
-                // iterated
-                if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
-                    ctx.writeAndFlush(ResponseMessage.build(msg)
-                            .code(ResponseStatusCode.SUCCESS)
-                            .result(aggregate).create());
-                    aggregate = new ArrayList<>(resultIterationBatchSize);
-                }
-
-                stopWatch.split();
-                if (stopWatch.getSplitTime() > settings.serializedResponseTimeout)
-                    throw new RuntimeException(new TimeoutException("Serialization of the entire response exceeded the serializeResponseTimeout setting"));
-
-                stopWatch.unsplit();
-            }
+            handleIterator(ctx, msg, settings, itty, resultIterationBatchSize, stopWatch);
 
             stopWatch.stop();
         }, executor);
@@ -193,5 +175,27 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS_TERMINATOR).create());
             return null;
         }, executor);
+    }
+
+    protected void handleIterator(final ChannelHandlerContext ctx, final RequestMessage msg, final Settings settings, final Iterator itty, final int resultIterationBatchSize, final StopWatch stopWatch) {
+        List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
+        while (itty.hasNext()) {
+            aggregate.add(itty.next());
+
+            // send back a page of results if batch size is met or if it's the end of the results being
+            // iterated
+            if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
+                ctx.writeAndFlush(ResponseMessage.build(msg)
+                        .code(ResponseStatusCode.SUCCESS)
+                        .result(aggregate).create());
+                aggregate = new ArrayList<>(resultIterationBatchSize);
+            }
+
+            stopWatch.split();
+            if (stopWatch.getSplitTime() > settings.serializedResponseTimeout)
+                throw new RuntimeException(new TimeoutException("Serialization of the entire response exceeded the serializeResponseTimeout setting"));
+
+            stopWatch.unsplit();
+        }
     }
 }

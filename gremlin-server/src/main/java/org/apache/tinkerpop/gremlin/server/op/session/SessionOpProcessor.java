@@ -23,13 +23,23 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.server.Context;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.handler.StateKey;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
+import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.script.Bindings;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * Simple {@link org.apache.tinkerpop.gremlin.server.OpProcessor} implementation that handles {@code ScriptEngine}
@@ -38,7 +48,17 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class SessionOpProcessor extends AbstractEvalOpProcessor {
+    private static final Logger logger = LoggerFactory.getLogger(SessionOpProcessor.class);
     public static final String OP_PROCESSOR_NAME = "session";
+
+    /**
+     * Script engines are evaluated in a per session context where imports/scripts are isolated per session.
+     */
+    private static ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
+
+    static {
+        MetricManager.INSTANCE.getGuage(sessions::size, name(GremlinServer.class, "sessions"));
+    }
 
     /**
      * Configuration setting for how long a session will be available before it timesout.
@@ -66,7 +86,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
 
     @Override
     public ThrowingConsumer<Context> getEvalOp() {
-        return SessionOps::evalOp;
+        return this::evalOp;
     }
 
     @Override
@@ -79,5 +99,36 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         }
 
         return Optional.empty();
+    }
+
+    private void evalOp(final Context context) throws OpProcessorException {
+        final RequestMessage msg = context.getRequestMessage();
+        final Session session = getSession(context, msg);
+
+        // place the session on the channel context so that it can be used during serialization.  in this way
+        // the serialization can occur on the same thread used to execute the gremlin within the session.  this
+        // is important given the threadlocal nature of Graph implementation transactions.
+        context.getChannelHandlerContext().channel().attr(StateKey.SESSION).set(session);
+
+        evalOpInternal(context, session::getGremlinExecutor, () -> {
+            final Bindings bindings = session.getBindings();
+
+            // parameter bindings override session bindings if present
+            Optional.ofNullable((Map<String, Object>) msg.getArgs().get(Tokens.ARGS_BINDINGS)).ifPresent(bindings::putAll);
+
+            return bindings;
+        });
+    }
+
+
+    private static Session getSession(final Context context, final RequestMessage msg) {
+        final String sessionId = (String) msg.getArgs().get(Tokens.ARGS_SESSION);
+
+        logger.debug("In-session request {} for eval for session {} in thread {}",
+                msg.getRequestId(), sessionId, Thread.currentThread().getName());
+
+        final Session session = sessions.computeIfAbsent(sessionId, k -> new Session(k, context, sessions));
+        session.touch();
+        return session;
     }
 }
