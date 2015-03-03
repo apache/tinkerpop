@@ -93,6 +93,9 @@ public final class ProfileStrategy extends AbstractTraversalStrategy {
                 for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getLocalChildren()) {
                     prepTraversalForProfiling(t);
                 }
+                for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getGlobalChildren()) {
+                    prepTraversalForProfiling(t);
+                }
             }
         }
     }
