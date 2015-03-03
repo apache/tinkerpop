@@ -18,10 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.server.op.standard;
 
+import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
+import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.script.Bindings;
+import javax.script.SimpleBindings;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Simple {@link OpProcessor} implementation that handles {@code ScriptEngine} script evaluation outside the context
@@ -30,6 +40,7 @@ import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StandardOpProcessor extends AbstractEvalOpProcessor {
+    private static final Logger logger = LoggerFactory.getLogger(StandardOpProcessor.class);
     public static final String OP_PROCESSOR_NAME = "";
 
     @Override
@@ -39,6 +50,18 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
 
     @Override
     public ThrowingConsumer<Context> getEvalOp() {
-        return StandardOps::evalOp;
+        return this::evalOp;
+    }
+
+    private void evalOp(final Context context) throws OpProcessorException {
+        final RequestMessage msg = context.getRequestMessage();
+
+        logger.debug("Sessionless request {} for eval in thread {}", msg.getRequestId(), Thread.currentThread().getName());
+
+        super.evalOpInternal(context, context::getGremlinExecutor, () -> {
+            final Bindings bindings = new SimpleBindings();
+            Optional.ofNullable((Map<String, Object>) msg.getArgs().get(Tokens.ARGS_BINDINGS)).ifPresent(bindings::putAll);
+            return bindings;
+        });
     }
 }
