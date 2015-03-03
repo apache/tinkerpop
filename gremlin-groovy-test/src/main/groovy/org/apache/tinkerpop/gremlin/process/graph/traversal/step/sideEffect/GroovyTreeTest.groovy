@@ -18,13 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest
-import org.apache.tinkerpop.gremlin.process.T
-import org.apache.tinkerpop.gremlin.process.Traversal
-import org.apache.tinkerpop.gremlin.process.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.TreeTest
+import org.apache.tinkerpop.gremlin.process.*
 import org.apache.tinkerpop.gremlin.process.graph.util.Tree
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
@@ -58,8 +52,13 @@ public abstract class GroovyTreeTest {
         }
 
         @Override
+        public Traversal<Vertex, Tree> get_g_V_out_out_tree() {
+            g.V.out.out.tree();
+        }
+
+        @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_capXaX() {
-            g.V.out.out.tree("a").cap('a');
+            g.V.out.out.tree('a').cap('a');
         }
     }
 
@@ -74,6 +73,11 @@ public abstract class GroovyTreeTest {
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX_capXaX() {
             ComputerTestHelper.compute("g.V.out.out.tree('a').by(id).cap('a')", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Tree> get_g_V_out_out_tree() {
+            ComputerTestHelper.compute("g.V.out.out.tree()", g)
         }
 
         @Override
