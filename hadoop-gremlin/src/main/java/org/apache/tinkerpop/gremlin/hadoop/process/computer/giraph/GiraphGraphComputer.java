@@ -191,11 +191,11 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
     private void loadJars(final FileSystem fs) {
         final String hadoopGremlinLibsRemote = "hadoop-gremlin-libs";
         if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true)) {
-            final String giraphGremlinLibsLocal = System.getenv(Constants.HADOOP_GREMLIN_LIBS);
-            if (null == giraphGremlinLibsLocal)
+            final String hadoopGremlinLocalLibs = System.getenv(Constants.HADOOP_GREMLIN_LIBS);
+            if (null == hadoopGremlinLocalLibs)
                 LOGGER.warn(Constants.HADOOP_GREMLIN_LIBS + " is not set -- proceeding regardless");
             else {
-                final String[] paths = giraphGremlinLibsLocal.split(":");
+                final String[] paths = hadoopGremlinLocalLibs.split(":");
                 for (final String path : paths) {
                     final File file = new File(path);
                     if (file.exists()) {

@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,6 +55,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -125,8 +127,9 @@ public class SparkGraphComputer implements GraphComputer {
                             hadoopConfiguration.set("mapred.input.dir", hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
 
                         // set up the input format
-                        final JavaSparkContext sc = new JavaSparkContext(sparkConfiguration);
-                        final JavaPairRDD<NullWritable, VertexWritable> rdd = sc.newAPIHadoopRDD(hadoopConfiguration,
+                        final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration);
+                        SparkGraphComputer.loadJars(sparkContext, hadoopConfiguration);
+                        final JavaPairRDD<NullWritable, VertexWritable> rdd = sparkContext.newAPIHadoopRDD(hadoopConfiguration,
                                 (Class<InputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class),
                                 NullWritable.class,
                                 VertexWritable.class);
@@ -181,6 +184,24 @@ public class SparkGraphComputer implements GraphComputer {
 
     private static final void doNothing() {
         // a cheap action
+    }
+
+    private static void loadJars(final JavaSparkContext sparkContext, final Configuration hadoopConfiguration) {
+        if (hadoopConfiguration.getBoolean(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true)) {
+            final String hadoopGremlinLocalLibs = System.getenv(Constants.HADOOP_GREMLIN_LIBS);
+            if (null == hadoopGremlinLocalLibs)
+                LOGGER.warn(Constants.HADOOP_GREMLIN_LIBS + " is not set -- proceeding regardless");
+            else {
+                final String[] paths = hadoopGremlinLocalLibs.split(":");
+                for (final String path : paths) {
+                    final File file = new File(path);
+                    if (file.exists())
+                        Stream.of(file.listFiles()).filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> sparkContext.addJar(f.getAbsolutePath()));
+                    else
+                        LOGGER.warn(path + " does not reference a valid directory -- proceeding regardless");
+                }
+            }
+        }
     }
 
     /////////////////
