@@ -117,7 +117,9 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
     /**
      * A generalized implementation of the "eval" operation.  It handles script evaluation and iteration of results
      * so as to write {@link ResponseMessage} objects down the Netty pipeline.  It also handles script timeouts,
-     * iteration timeouts, metrics and building bindings.
+     * iteration timeouts, metrics and building bindings.  Note that result iteration is delegated to the
+     * {@link #handleIterator} method, so those extending this class could override that method for better control
+     * over result iteration.
      *
      * @param context The current Gremlin Server {@link Context}
      * @param gremlinExecutorSupplier A function that returns the {@link GremlinExecutor} to use in executing the
