@@ -117,7 +117,9 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
     /**
      * A generalized implementation of the "eval" operation.  It handles script evaluation and iteration of results
      * so as to write {@link ResponseMessage} objects down the Netty pipeline.  It also handles script timeouts,
-     * iteration timeouts, metrics and building bindings.
+     * iteration timeouts, metrics and building bindings.  Note that result iteration is delegated to the
+     * {@link #handleIterator} method, so those extending this class could override that method for better control
+     * over result iteration.
      *
      * @param context The current Gremlin Server {@link Context}
      * @param gremlinExecutorSupplier A function that returns the {@link GremlinExecutor} to use in executing the
@@ -130,7 +132,6 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final Timer.Context timerContext = evalOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
-        final Settings settings = context.getSettings();
         final GremlinExecutor gremlinExecutor = gremlinExecutorSupplier.get();
         final ExecutorService executor = gremlinExecutor.getExecutorService();
 
@@ -148,19 +149,14 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
         final CompletableFuture<Void> iterationFuture = evalFuture.thenAcceptAsync(o -> {
             final Iterator itty = IteratorUtils.convertToIterator(o);
-            // the batch size can be overridden by the request
-            final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE).orElse(settings.resultIterationBatchSize);
-
-            // timer for the total serialization time
-            final StopWatch stopWatch = new StopWatch();
 
             logger.debug("Preparing to iterate results from - {} - in thread [{}]", msg, Thread.currentThread().getName());
 
-            stopWatch.start();
-
-            handleIterator(ctx, msg, settings, itty, resultIterationBatchSize, stopWatch);
-
-            stopWatch.stop();
+            try {
+                handleIterator(context, itty);
+            } catch (TimeoutException te) {
+                throw new RuntimeException(te);
+            }
         }, executor);
 
         iterationFuture.handleAsync((r, ex) -> {
@@ -177,7 +173,27 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         }, executor);
     }
 
-    protected void handleIterator(final ChannelHandlerContext ctx, final RequestMessage msg, final Settings settings, final Iterator itty, final int resultIterationBatchSize, final StopWatch stopWatch) {
+    /**
+     * Called by {@link #evalOpInternal} when iterating a result set. Implementers should respect the
+     * {@link Settings#serializedResponseTimeout} configuration and break the serialization process if
+     * it begins to take too long to do so, throwing a {@link java.util.concurrent.TimeoutException} in such
+     * cases.
+     *
+     * @param context The Gremlin Server {@link Context} object containing settings, request message, etc.
+     * @param itty The result to iterator
+     * @throws TimeoutException if the time taken to serialize the entire result set exceeds the allowable time.
+     */
+    protected void handleIterator(final Context context, final Iterator itty) throws TimeoutException {
+        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
+        final RequestMessage msg = context.getRequestMessage();
+        final Settings settings = context.getSettings();
+
+        // timer for the total serialization time
+        final StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
+        // the batch size can be overridden by the request
+        final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE).orElse(settings.resultIterationBatchSize);
         List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
         while (itty.hasNext()) {
             aggregate.add(itty.next());
@@ -193,9 +209,11 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
             stopWatch.split();
             if (stopWatch.getSplitTime() > settings.serializedResponseTimeout)
-                throw new RuntimeException(new TimeoutException("Serialization of the entire response exceeded the serializeResponseTimeout setting"));
+                throw new TimeoutException("Serialization of the entire response exceeded the serializeResponseTimeout setting");
 
             stopWatch.unsplit();
         }
+
+        stopWatch.stop();
     }
 }

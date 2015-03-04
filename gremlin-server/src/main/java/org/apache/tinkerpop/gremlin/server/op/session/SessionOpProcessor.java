@@ -101,7 +101,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         return Optional.empty();
     }
 
-    private void evalOp(final Context context) throws OpProcessorException {
+    protected void evalOp(final Context context) throws OpProcessorException {
         final RequestMessage msg = context.getRequestMessage();
         final Session session = getSession(context, msg);
 
