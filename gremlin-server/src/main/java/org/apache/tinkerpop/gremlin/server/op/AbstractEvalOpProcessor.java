@@ -148,20 +148,13 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final CompletableFuture<Void> iterationFuture = evalFuture.thenAcceptAsync(o -> {
             final Iterator itty = IteratorUtils.convertToIterator(o);
 
-            // timer for the total serialization time
-            final StopWatch stopWatch = new StopWatch();
-
             logger.debug("Preparing to iterate results from - {} - in thread [{}]", msg, Thread.currentThread().getName());
 
-            stopWatch.start();
-
             try {
-                handleIterator(context, itty, stopWatch);
+                handleIterator(context, itty);
             } catch (TimeoutException te) {
                 throw new RuntimeException(te);
             }
-
-            stopWatch.stop();
         }, executor);
 
         iterationFuture.handleAsync((r, ex) -> {
@@ -179,14 +172,23 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
     }
 
     /**
-     * Called by {@link #evalOpInternal} when iterating a result set.
+     * Called by {@link #evalOpInternal} when iterating a result set. Implementers should respect the
+     * {@link Settings#serializedResponseTimeout} configuration and break the serialization process if
+     * it begins to take too long to do so, throwing a {@link java.util.concurrent.TimeoutException} in such
+     * cases.
      *
+     * @param context The Gremlin Server {@link Context} object containing settings, request message, etc.
+     * @param itty The result to iterator
      * @throws TimeoutException if the time taken to serialize the entire result set exceeds the allowable time.
      */
-    protected void handleIterator(final Context context, final Iterator itty, final StopWatch stopWatch) throws TimeoutException {
+    protected void handleIterator(final Context context, final Iterator itty) throws TimeoutException {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
+
+        // timer for the total serialization time
+        final StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
 
         // the batch size can be overridden by the request
         final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE).orElse(settings.resultIterationBatchSize);
@@ -209,5 +211,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
             stopWatch.unsplit();
         }
+
+        stopWatch.stop();
     }
 }
