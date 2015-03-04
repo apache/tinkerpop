@@ -29,7 +29,8 @@ import org.apache.spark.api.java.function.Function2;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkMapEmitter;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkMemory;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkMessenger;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkMessagePayload;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkPayload;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkReduceEmitter;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
@@ -39,7 +40,6 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import scala.Tuple2;
 
@@ -54,49 +54,51 @@ public final class SparkHelper {
     private SparkHelper() {
     }
 
-    public static <M> JavaPairRDD<Object, SparkMessenger<M>> executeStep(final JavaPairRDD<Object, SparkMessenger<M>> graphRDD, final SparkMemory memory, final Configuration apacheConfiguration) {
-        JavaPairRDD<Object, SparkMessenger<M>> current = graphRDD;
+    public static <M> JavaPairRDD<Object, SparkPayload<M>> executeStep(final JavaPairRDD<Object, SparkPayload<M>> graphRDD, final SparkMemory memory, final Configuration apacheConfiguration) {
+        JavaPairRDD<Object, SparkPayload<M>> current = graphRDD;
         // execute vertex program
         current = current.mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
             final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration);
             workerVertexProgram.workerIterationStart(memory);
-            return () -> IteratorUtils.<Tuple2<Object, SparkMessenger<M>>, Tuple2<Object, SparkMessenger<M>>>map(partitionIterator, keyValue -> {
-                workerVertexProgram.execute(keyValue._2().getVertex(), keyValue._2(), memory);
+            return () -> IteratorUtils.<Tuple2<Object, SparkPayload<M>>, Tuple2<Object, SparkPayload<M>>>map(partitionIterator, keyValue -> {
+                workerVertexProgram.execute(keyValue._2().asVertexPayload().getVertex(), keyValue._2().asVertexPayload(), memory);
                 if (!partitionIterator.hasNext()) workerVertexProgram.workerIterationEnd(memory);  // is this safe?
                 return keyValue;
             });
         });
 
         // emit messages by appending them to the graph vertices as message "vertices"
-        current = current.<Object, SparkMessenger<M>>flatMapToPair(keyValue -> () -> {
-            keyValue._2().clearIncomingMessages(); // the graph vertex should not have any incoming messages (should be cleared from the previous stage)
-            return IteratorUtils.<Tuple2<Object, SparkMessenger<M>>>concat(
+        current = current.<Object, SparkPayload<M>>flatMapToPair(keyValue -> () -> {
+            keyValue._2().asVertexPayload().getMessages().clear(); // the graph vertex should not have any incoming messages (should be cleared from the previous stage)
+            return IteratorUtils.<Tuple2<Object, SparkPayload<M>>>concat(
                     IteratorUtils.of(keyValue),
-                    IteratorUtils.map(keyValue._2().getOutgoingMessages().iterator(),                                      // this is the graph vertex
-                            entry -> new Tuple2<>(entry._1(), SparkMessenger.forMessageVertex(entry._2(), entry._2()))));  // this is a message "vertex";
+                    IteratorUtils.map(keyValue._2().asVertexPayload().getOutgoingMessages().iterator(),            // this is a vertex
+                            entry -> new Tuple2<>(entry._1(), new SparkMessagePayload<>(entry._2()))));            // this is a message;
         });
 
         // "message pass" via reduction joining the "message vertices" with the graph vertices
-        // addIncomingMessages is provided the vertex program message combiner for partition and global level combining
-        current = current.reduceByKey(new Function2<SparkMessenger<M>, SparkMessenger<M>, SparkMessenger<M>>() {
+        // addMessages is provided the vertex program message combiner for partition and global level combining
+        current = current.reduceByKey(new Function2<SparkPayload<M>, SparkPayload<M>, SparkPayload<M>>() {
             private Optional<MessageCombiner<M>> messageCombinerOptional = null; // a hack to simulate partition(Spark)/worker(TP3) local variables
 
             @Override
-            public SparkMessenger<M> call(final SparkMessenger<M> messengerA, final SparkMessenger<M> messengerB) throws Exception {
+            public SparkPayload<M> call(final SparkPayload<M> payloadA, final SparkPayload<M> payloadB) throws Exception {
                 if (null == this.messageCombinerOptional)
                     this.messageCombinerOptional = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner();
 
-                if (messengerA.getVertex() instanceof DetachedVertex && !(messengerB.getVertex() instanceof DetachedVertex)) // fold the message vertices into the graph vertices
-                    messengerA.mergeInMessenger(messengerB);
-                messengerA.addIncomingMessages(messengerB, this.messageCombinerOptional);
-
-                return messengerA;  // always reduce on the first argument
+                if (payloadA.isVertex()) {
+                    payloadA.addMessages(payloadB.getMessages(), this.messageCombinerOptional);
+                    return payloadA;
+                } else {
+                    payloadB.addMessages(payloadA.getMessages(), this.messageCombinerOptional);
+                    return payloadB;
+                }
             }
         });
 
         // clear all previous outgoing messages (why can't we do this prior to the shuffle?)
         current = current.mapValues(messenger -> {
-            messenger.clearOutgoingMessages();
+            messenger.asVertexPayload().getOutgoingMessages().clear();
             return messenger;
         });
 
@@ -140,11 +142,11 @@ public final class SparkHelper {
         }
     }
 
-    public static <M> void saveVertexProgramRDD(final JavaPairRDD<Object, SparkMessenger<M>> graphRDD, final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
+    public static <M> void saveVertexProgramRDD(final JavaPairRDD<Object, SparkPayload<M>> graphRDD, final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
         final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         if (null != outputLocation) {
             // map back to a <nullwritable,vertexwritable> stream for output
-            graphRDD.mapToPair(tuple -> new Tuple2<>(NullWritable.get(), new VertexWritable<>(tuple._2().getVertex())))
+            graphRDD.mapToPair(tuple -> new Tuple2<>(NullWritable.get(), new VertexWritable<>(tuple._2().asVertexPayload().getVertex())))
                     .saveAsNewAPIHadoopFile(outputLocation + "/" + Constants.SYSTEM_G,
                             NullWritable.class,
                             VertexWritable.class,

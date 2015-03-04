@@ -136,15 +136,15 @@ public final class SparkGraphComputer implements GraphComputer {
                             // add the project jars to the cluster
                             SparkGraphComputer.loadJars(sparkContext, hadoopConfiguration);
                             // create a message-passing friendly rdd from the hadoop input format
-                            JavaPairRDD<Object, SparkMessenger<Object>> graphRDD = sparkContext.newAPIHadoopRDD(hadoopConfiguration,
+                            JavaPairRDD<Object, SparkPayload<Object>> graphRDD = sparkContext.newAPIHadoopRDD(hadoopConfiguration,
                                     (Class<InputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class),
                                     NullWritable.class,
                                     VertexWritable.class)
-                                    .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), SparkMessenger.forGraphVertex(new SparkVertex((TinkerVertex) tuple._2().get()))));
+                                    .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new SparkVertexPayload<>(new SparkVertex((TinkerVertex) tuple._2().get()))));
 
                             // set up the vertex program and wire up configurations
                             memory = new SparkMemory(this.vertexProgram, this.mapReducers, sparkContext);
-                            this.vertexProgram.setup(memory); // TODO: setup variables are not being broadcasted on first call
+                            this.vertexProgram.setup(memory); // TODO: setup variables are not being broadcasted on first call (force using broadcast or dummy reduce that has a memory reference?)
                             final SApacheConfiguration vertexProgramConfiguration = new SApacheConfiguration();
                             this.vertexProgram.storeState(vertexProgramConfiguration);
                             ConfigurationUtils.copy(vertexProgramConfiguration, apacheConfiguration);
