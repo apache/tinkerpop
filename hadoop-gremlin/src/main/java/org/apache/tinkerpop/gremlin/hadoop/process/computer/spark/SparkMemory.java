@@ -115,21 +115,21 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     public long incr(final String key, final long delta) {
         checkKeyValue(key, delta);
         this.memory.get(key).add(new Rule(Rule.Operation.INCR, delta));
-        return (Long) this.memory.get(key).value().object + delta;
+        return (Long) this.memory.get(key).localValue().object + delta;
     }
 
     @Override
     public boolean and(final String key, final boolean bool) {
         checkKeyValue(key, bool);
         this.memory.get(key).add(new Rule(Rule.Operation.AND, bool));
-        return bool;
+        return (Boolean) this.memory.get(key).localValue().object && bool;
     }
 
     @Override
     public boolean or(final String key, final boolean bool) {
         checkKeyValue(key, bool);
         this.memory.get(key).add(new Rule(Rule.Operation.OR, bool));
-        return bool;
+        return (Boolean) this.memory.get(key).localValue().object || bool;
     }
 
     @Override

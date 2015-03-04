@@ -487,7 +487,8 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public GraphComputer get_g_compute_programXTraversalVertexProgram_build_traversalXg_V_both_hasXlabel_personX_age_groupCountXaXX_create() {
             return g.compute().program(TraversalVertexProgram.build().
-                    traversal("GraphFactory.open(['gremlin.graph':'" + g.getClass().getCanonicalName() + "']).V().both().has(label,'person').values('age').groupCount('a')").
+                    // TODO: need to set the engine to be computer
+                            traversal("GraphFactory.open(['gremlin.graph':'" + g.getClass().getCanonicalName() + "']).V().both().has(label,'person').values('age').groupCount('a')").
                     create());
         }
 

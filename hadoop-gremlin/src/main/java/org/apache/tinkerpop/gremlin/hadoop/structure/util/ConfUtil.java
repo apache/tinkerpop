@@ -28,6 +28,7 @@ public class ConfUtil {
 
     public static org.apache.commons.configuration.Configuration makeApacheConfiguration(final Configuration hadoopConfiguration) {
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
+        apacheConfiguration.setDelimiterParsingDisabled(true);
         hadoopConfiguration.iterator().forEachRemaining(e -> apacheConfiguration.setProperty(e.getKey(), e.getValue()));
         return apacheConfiguration;
     }
@@ -47,17 +48,4 @@ public class ConfUtil {
             hadoopConfiguration.set(key, object.toString());
         });
     }
-
-    /*public static HadoopGraph getOutputGraph(final HadoopGraph hadoopGraph) {
-        final BaseConfiguration newConfiguration = new BaseConfiguration();
-        newConfiguration.copy(hadoopGraph.configuration());
-        if (hadoopGraph.configuration().containsKey(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)) {
-            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, hadoopGraph.configuration().getOutputLocation() + "/" + Constants.SYSTEM_G);
-            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, hadoopGraph.configuration().getOutputLocation() + "_");
-        }
-        if (hadoopGraph.configuration().containsKey(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT)) {
-            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, hadoopGraph.configuration().getString(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT).replace("OutputFormat", "InputFormat"));
-        }
-        return HadoopGraph.open(newConfiguration);
-    }*/
 }

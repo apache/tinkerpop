@@ -47,6 +47,8 @@ public final class SparkVertex implements Vertex, Vertex.Iterators, Serializable
     private static GryoReader GRYO_READER = GryoReader.build().create();
     private static final String VERTEX_ID = Graph.Hidden.hide("giraph.gremlin.vertexId");
 
+    // TODO: Wrapped vertex -- need VertexProgram in partition (broadcast variable?)
+
     private transient TinkerVertex vertex;
     private byte[] vertexBytes;
 

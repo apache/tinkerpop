@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MemoryMapReduce extends StaticMapReduce<MapReduce.NullObject, MapMemory, MapReduce.NullObject, MapMemory, MapMemory> {
+public final class MemoryMapReduce extends StaticMapReduce<MapReduce.NullObject, MapMemory, MapReduce.NullObject, MapMemory, MapMemory> {
 
     public Set<String> memoryKeys = new HashSet<>();
 

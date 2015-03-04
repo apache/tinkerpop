@@ -23,7 +23,7 @@ import java.io.Serializable;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Rule implements Serializable {
+public final class Rule implements Serializable {
 
     public enum Operation {
         OR {

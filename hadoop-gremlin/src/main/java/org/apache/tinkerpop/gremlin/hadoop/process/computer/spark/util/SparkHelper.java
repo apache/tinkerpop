@@ -106,10 +106,10 @@ public final class SparkHelper {
     }
 
     public static <K, V> JavaPairRDD<K, V> executeMap(final JavaPairRDD<NullWritable, VertexWritable> hadoopGraphRDD, final MapReduce<K, V, ?, ?, ?> mapReduce, final Configuration apacheConfiguration) {
-        JavaPairRDD<K, V> mapRDD = hadoopGraphRDD.flatMapToPair(tuple -> {
-            final MapReduce<K, V, ?, ?, ?> m = MapReduce.createMapReduce(apacheConfiguration);    // todo create only for each partition
+        JavaPairRDD<K, V> mapRDD = hadoopGraphRDD.mapPartitionsToPair(iterator -> {
+            final MapReduce<K, V, ?, ?, ?> m = MapReduce.createMapReduce(apacheConfiguration);
             final SparkMapEmitter<K, V> mapEmitter = new SparkMapEmitter<>();
-            m.map(tuple._2().get(), mapEmitter);
+            iterator.forEachRemaining(tuple -> m.map(tuple._2().get(), mapEmitter));
             return mapEmitter.getEmissions();
         });
         if (mapReduce.getMapKeySort().isPresent())
@@ -120,10 +120,10 @@ public final class SparkHelper {
     // TODO: public static executeCombine()
 
     public static <K, V, OK, OV> JavaPairRDD<OK, OV> executeReduce(final JavaPairRDD<K, V> mapRDD, final MapReduce<K, V, OK, OV, ?> mapReduce, final Configuration apacheConfiguration) {
-        JavaPairRDD<OK, OV> reduceRDD = mapRDD.groupByKey().flatMapToPair(tuple -> {
-            final MapReduce<K, V, OK, OV, ?> m = MapReduce.createMapReduce(apacheConfiguration);     // todo create only for each partition
+        JavaPairRDD<OK, OV> reduceRDD = mapRDD.groupByKey().mapPartitionsToPair(iterator -> {
+            final MapReduce<K, V, OK, OV, ?> m = MapReduce.createMapReduce(apacheConfiguration);
             final SparkReduceEmitter<OK, OV> reduceEmitter = new SparkReduceEmitter<>();
-            m.reduce(tuple._1(), tuple._2().iterator(), reduceEmitter);
+            iterator.forEachRemaining(tuple -> m.reduce(tuple._1(), tuple._2().iterator(), reduceEmitter));
             return reduceEmitter.getEmissions();
         });
         if (mapReduce.getReduceKeySort().isPresent())
