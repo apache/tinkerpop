@@ -44,8 +44,9 @@ import scala.Tuple2;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -58,28 +59,43 @@ public final class SparkHelper {
     public static <M> JavaPairRDD<Object, SparkMessenger<M>> executeStep(final JavaPairRDD<Object, SparkMessenger<M>> graphRDD, final VertexProgram<M> globalVertexProgram, final SparkMemory memory, final Configuration apacheConfiguration) {
         JavaPairRDD<Object, SparkMessenger<M>> current = graphRDD;
         // execute vertex program
-        current = current.mapPartitionsToPair(iterator -> {     // each partition has a copy of the vertex program
-            final VertexProgram<M> vertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration);
-            return () -> IteratorUtils.<Tuple2<Object, SparkMessenger<M>>, Tuple2<Object, SparkMessenger<M>>>map(iterator, tuple -> {
-                vertexProgram.execute(tuple._2().getVertex(), tuple._2(), memory);
-                return tuple;
+        current = current.mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program
+            final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration);
+            workerVertexProgram.workerIterationStart(memory);
+            return () -> IteratorUtils.<Tuple2<Object, SparkMessenger<M>>, Tuple2<Object, SparkMessenger<M>>>map(partitionIterator, keyValue -> {
+                workerVertexProgram.execute(keyValue._2().getVertex(), keyValue._2(), memory);
+                if (!partitionIterator.hasNext()) workerVertexProgram.workerIterationEnd(memory);  // is this safe?
+                return keyValue;
             });
         });
+
         // clear all previous incoming messages
-        if (!memory.isInitialIteration()) {
+        if (!memory.isInitialIteration()) {  // a quick savings as the initial iteration has no messages yet
             current = current.mapValues(messenger -> {
                 messenger.clearIncomingMessages();
                 return messenger;
             });
         }
-        // emit messages
-        current = current.<Object, SparkMessenger<M>>flatMapToPair(tuple -> {
-            final List<Tuple2<Object, SparkMessenger<M>>> list = tuple._2().getOutgoingMessages()
-                    .stream()
-                    .map(entry -> new Tuple2<>(entry.getKey(), new SparkMessenger<>(new DetachedVertex(entry.getKey(), Vertex.DEFAULT_LABEL, Collections.emptyMap()), entry.getValue()))) // maybe go back to toy vertex if label is expensive
-                    .collect(Collectors.toList());          // the message vertices
-            list.add(new Tuple2<>(tuple._1(), tuple._2())); // the raw vertex
-            return list;
+        // emit messages by appending them to the graph vertices data as "message vertices"
+        current = current.<Object, SparkMessenger<M>>flatMapToPair(keyValue -> () -> new Iterator<Tuple2<Object, SparkMessenger<M>>>() {
+            boolean first = true;
+            final Iterator<Map.Entry<Object, List<M>>> iterator = keyValue._2().getOutgoingMessages().iterator();
+
+            @Override
+            public boolean hasNext() {
+                return this.first || this.iterator.hasNext();
+            }
+
+            @Override
+            public Tuple2<Object, SparkMessenger<M>> next() {
+                if (this.first) {
+                    this.first = false;
+                    return new Tuple2<Object, SparkMessenger<M>>(keyValue._1(), keyValue._2()); // this is the raw vertex data
+                } else {
+                    final Map.Entry<Object, List<M>> entry = this.iterator.next();
+                    return new Tuple2<Object, SparkMessenger<M>>(entry.getKey(), new SparkMessenger<>(new DetachedVertex(entry.getKey(), Vertex.DEFAULT_LABEL, Collections.emptyMap()), entry.getValue()));  // these are the messages
+                }
+            }
         });
 
         // TODO: local message combiner
@@ -89,12 +105,12 @@ public final class SparkHelper {
             });*/
         }
 
-        // "message pass" via reduction
+        // "message pass" via reduction joining the "message vertices" with the graph vertices
         current = current.reduceByKey((a, b) -> {
             if (a.getVertex() instanceof DetachedVertex && !(b.getVertex() instanceof DetachedVertex))
                 a.setVertex(b.getVertex());
             a.addIncomingMessages(b);
-            return a;
+            return a;  // always reduce on the first argument
         });
 
         // clear all previous outgoing messages
@@ -105,29 +121,29 @@ public final class SparkHelper {
         return current;
     }
 
-    public static <K, V> JavaPairRDD<K, V> executeMap(final JavaPairRDD<NullWritable, VertexWritable> hadoopGraphRDD, final MapReduce<K, V, ?, ?, ?> mapReduce, final Configuration apacheConfiguration) {
+    public static <K, V> JavaPairRDD<K, V> executeMap(final JavaPairRDD<NullWritable, VertexWritable> hadoopGraphRDD, final MapReduce<K, V, ?, ?, ?> globalMapReduce, final Configuration apacheConfiguration) {
         JavaPairRDD<K, V> mapRDD = hadoopGraphRDD.mapPartitionsToPair(iterator -> {
-            final MapReduce<K, V, ?, ?, ?> m = MapReduce.createMapReduce(apacheConfiguration);
+            final MapReduce<K, V, ?, ?, ?> workerMapReduce = MapReduce.createMapReduce(apacheConfiguration);
             final SparkMapEmitter<K, V> mapEmitter = new SparkMapEmitter<>();
-            iterator.forEachRemaining(tuple -> m.map(tuple._2().get(), mapEmitter));
+            iterator.forEachRemaining(tuple -> workerMapReduce.map(tuple._2().get(), mapEmitter));
             return mapEmitter.getEmissions();
         });
-        if (mapReduce.getMapKeySort().isPresent())
-            mapRDD = mapRDD.sortByKey(mapReduce.getMapKeySort().get());
+        if (globalMapReduce.getMapKeySort().isPresent())
+            mapRDD = mapRDD.sortByKey(globalMapReduce.getMapKeySort().get());
         return mapRDD;
     }
 
     // TODO: public static executeCombine()
 
-    public static <K, V, OK, OV> JavaPairRDD<OK, OV> executeReduce(final JavaPairRDD<K, V> mapRDD, final MapReduce<K, V, OK, OV, ?> mapReduce, final Configuration apacheConfiguration) {
+    public static <K, V, OK, OV> JavaPairRDD<OK, OV> executeReduce(final JavaPairRDD<K, V> mapRDD, final MapReduce<K, V, OK, OV, ?> globalMapReduce, final Configuration apacheConfiguration) {
         JavaPairRDD<OK, OV> reduceRDD = mapRDD.groupByKey().mapPartitionsToPair(iterator -> {
-            final MapReduce<K, V, OK, OV, ?> m = MapReduce.createMapReduce(apacheConfiguration);
+            final MapReduce<K, V, OK, OV, ?> workerMapReduce = MapReduce.createMapReduce(apacheConfiguration);
             final SparkReduceEmitter<OK, OV> reduceEmitter = new SparkReduceEmitter<>();
-            iterator.forEachRemaining(tuple -> m.reduce(tuple._1(), tuple._2().iterator(), reduceEmitter));
+            iterator.forEachRemaining(tuple -> workerMapReduce.reduce(tuple._1(), tuple._2().iterator(), reduceEmitter));
             return reduceEmitter.getEmissions();
         });
-        if (mapReduce.getReduceKeySort().isPresent())
-            reduceRDD = reduceRDD.sortByKey(mapReduce.getReduceKeySort().get());
+        if (globalMapReduce.getReduceKeySort().isPresent())
+            reduceRDD = reduceRDD.sortByKey(globalMapReduce.getReduceKeySort().get());
         return reduceRDD;
     }
 

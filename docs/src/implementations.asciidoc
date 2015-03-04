@@ -810,7 +810,7 @@ gremlin> result.memory.get('~reducing')
 SparkGraphComputer
 ^^^^^^^^^^^^^^^^^^
 
-image:spark-logo.png[width=175,float=left] link:http://spark.apache.org[Spark] is an Apache Software Foundation project focused on general-purpose OLAP data processing. Spark provides a hybrid in-memory/disk-based distributed computing model that is similar to Hadoop's MapReduce model. Spark provides a fluent function chaining DSL that is arguably easier for developers to work with than native Hadoop MapReduce. While Spark has a shorter startup time between "jobs" (a scatter/gather-step), the actual message passing algorithm (as designed by TinkerPop) is less efficient than that of Giraph. For small graphs, Spark will typically be much faster than Giraph, but as the graph becomes larger, the Hadoop MapReduce startup time incurred by Giraph will amortize as more time is spent passing messages (i.e. traversers) between the vertices of the graph.
+image:spark-logo.png[width=175,float=left] link:http://spark.apache.org[Spark] is an Apache Software Foundation project focused on general-purpose OLAP data processing. Spark provides a hybrid in-memory/disk-based distributed computing model that is similar to Hadoop's MapReduce model. Spark maintains a fluent function chaining DSL that is arguably easier for developers to work with than native Hadoop MapReduce. While Spark has a shorter startup time between "jobs" (a scatter/gather-step), the actual message passing algorithm (as designed by TinkerPop) is less efficient than that of Giraph. For small graphs, Spark will typically be much faster than Giraph, but as the graph becomes larger, the Hadoop MapReduce startup time incurred by Giraph will amortize as more time is spent passing messages (i.e. traversers) between the vertices of the graph.
 
 [source,text]
 gremlin> :remote connect tinkerpop.hadoop ../../../hadoop-gremlin/conf/spark-gryo.properties
@@ -832,7 +832,7 @@ gremlin> result.memory.get('~reducing')
 ==>i={ripple=1}
 ==>o={josh=1, lop=1}
 
-<1> If lambdas are leverages in the traversal, then use `:>` to submit the string representation of the traversal to the cluster.
+<1> If lambdas are leveraged in the traversal, then use `:>` to submit the string representation of the traversal to the cluster.
 <2> `SparkGraphComputer` is nearly 10x faster than `GiraphGraphComputer` on such small graphs due to the start-up time costs of Hadoop's MapReduce engine.
 
 [[mapreducegraphcomputer]]

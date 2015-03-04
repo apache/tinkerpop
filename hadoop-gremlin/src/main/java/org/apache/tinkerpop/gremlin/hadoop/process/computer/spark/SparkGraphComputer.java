@@ -153,8 +153,7 @@ public final class SparkGraphComputer implements GraphComputer {
                             while (true) {
                                 memory.setInTask(true);
                                 graphRDD = SparkHelper.executeStep(graphRDD, this.vertexProgram, memory, vertexProgramConfiguration);
-                                graphRDD.foreachPartition(iterator -> doNothing()); // TODO: i think this is a fast way to execute the rdd
-                                graphRDD.cache(); // TODO: learn about persistence and caching
+                                graphRDD.foreachPartition(iterator -> doNothing()); // TODO: i think this is a fast way to execute the rdd (wish there was a "execute()" method.
                                 memory.setInTask(false);
                                 if (this.vertexProgram.terminate(memory)) {
                                     memory.incrIteration();
