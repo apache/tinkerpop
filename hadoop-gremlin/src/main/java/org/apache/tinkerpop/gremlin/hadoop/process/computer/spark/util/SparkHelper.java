@@ -25,6 +25,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.function.Function2;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkMapEmitter;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkMemory;
@@ -78,16 +79,20 @@ public final class SparkHelper {
         // "message pass" via reduction joining the "message vertices" with the graph vertices
         // addIncomingMessages is provided the vertex program message combiner for partition and global level combining
         final boolean hasMessageCombiner = globalVertexProgram.getMessageCombiner().isPresent();
-        current = current.reduceByKey((messengerA, messengerB) -> {
-            final Optional<MessageCombiner<M>> messageCombinerOptional = hasMessageCombiner ?
-                    VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner() :  // this is expensive but there is no "reduceByKeyPartition" :(
-                    Optional.empty();
+        current = current.reduceByKey(new Function2<SparkMessenger<M>, SparkMessenger<M>, SparkMessenger<M>>() {
+            private Optional<MessageCombiner<M>> messageCombinerOptional = null; // a hack to simulate partition(Spark)/worker(TP3) local variables
 
-            if (messengerA.getVertex() instanceof DetachedVertex && !(messengerB.getVertex() instanceof DetachedVertex)) // fold the message vertices into the graph vertices
-                messengerA.mergeInMessenger(messengerB);
-            messengerA.addIncomingMessages(messengerB, messageCombinerOptional);
+            @Override
+            public SparkMessenger<M> call(final SparkMessenger<M> messengerA, final SparkMessenger<M> messengerB) throws Exception {
+                if (null == this.messageCombinerOptional)
+                    this.messageCombinerOptional = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner();
 
-            return messengerA;  // always reduce on the first argument
+                if (messengerA.getVertex() instanceof DetachedVertex && !(messengerB.getVertex() instanceof DetachedVertex)) // fold the message vertices into the graph vertices
+                    messengerA.mergeInMessenger(messengerB);
+                messengerA.addIncomingMessages(messengerB, this.messageCombinerOptional);
+
+                return messengerA;  // always reduce on the first argument
+            }
         });
 
         // clear all previous outgoing messages (why can't we do this prior to the shuffle?)
