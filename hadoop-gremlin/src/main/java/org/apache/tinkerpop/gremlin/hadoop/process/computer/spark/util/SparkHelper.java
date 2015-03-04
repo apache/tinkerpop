@@ -67,17 +67,16 @@ public final class SparkHelper {
             });
         });
 
-        // emit messages by appending them to the graph vertices as message "vertices"
+        // emit messages by appending them to the graph as message payloads
         current = current.<Object, SparkPayload<M>>flatMapToPair(keyValue -> () -> {
             keyValue._2().asVertexPayload().getMessages().clear(); // the graph vertex should not have any incoming messages (should be cleared from the previous stage)
-            return IteratorUtils.<Tuple2<Object, SparkPayload<M>>>concat(
-                    IteratorUtils.of(keyValue),
-                    IteratorUtils.map(keyValue._2().asVertexPayload().getOutgoingMessages().iterator(),            // this is a vertex
-                            entry -> new Tuple2<>(entry._1(), new SparkMessagePayload<>(entry._2()))));            // this is a message;
+            return IteratorUtils.concat(
+                    IteratorUtils.of(keyValue),                                                                    // this is a vertex
+                    IteratorUtils.map(keyValue._2().asVertexPayload().getOutgoingMessages().iterator(),
+                            entry -> new Tuple2<>(entry._1(), new SparkMessagePayload<M>(entry._2()))));           // this is a message;
         });
 
-        // "message pass" via reduction joining the "message vertices" with the graph vertices
-        // addMessages is provided the vertex program message combiner for partition and global level combining
+        // "message pass" by merging the message payloads with the vertex payloads
         current = current.reduceByKey(new Function2<SparkPayload<M>, SparkPayload<M>, SparkPayload<M>>() {
             private Optional<MessageCombiner<M>> messageCombinerOptional = null; // a hack to simulate partition(Spark)/worker(TP3) local variables
 
@@ -96,10 +95,10 @@ public final class SparkHelper {
             }
         });
 
-        // clear all previous outgoing messages (why can't we do this prior to the shuffle?)
-        current = current.mapValues(messenger -> {
-            messenger.asVertexPayload().getOutgoingMessages().clear();
-            return messenger;
+        // clear all previous outgoing messages (why can't we do this prior to the shuffle? -- this is probably cause of concurrent modification issues prior to reduceByKey)
+        current = current.mapValues(vertexPayload -> {
+            vertexPayload.asVertexPayload().getOutgoingMessages().clear();
+            return vertexPayload;
         });
 
         return current;
