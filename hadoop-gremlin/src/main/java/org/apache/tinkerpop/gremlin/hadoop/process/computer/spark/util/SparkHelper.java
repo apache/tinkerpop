@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
+import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -47,6 +48,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -69,13 +71,6 @@ public final class SparkHelper {
             });
         });
 
-        // clear all previous incoming messages
-        if (!memory.isInitialIteration()) {  // a quick savings as the initial iteration has no messages yet
-            current = current.mapValues(messenger -> {
-                messenger.clearIncomingMessages();
-                return messenger;
-            });
-        }
         // emit messages by appending them to the graph vertices data as "message vertices"
         current = current.<Object, SparkMessenger<M>>flatMapToPair(keyValue -> () -> new Iterator<Tuple2<Object, SparkMessenger<M>>>() {
             boolean first = true;
@@ -90,6 +85,7 @@ public final class SparkHelper {
             public Tuple2<Object, SparkMessenger<M>> next() {
                 if (this.first) {
                     this.first = false;
+                    keyValue._2().clearIncomingMessages(); // the raw vertex should not have any incoming messages (should be cleared from the previous stage)
                     return new Tuple2<Object, SparkMessenger<M>>(keyValue._1(), keyValue._2()); // this is the raw vertex data
                 } else {
                     final Map.Entry<Object, List<M>> entry = this.iterator.next();
@@ -98,19 +94,19 @@ public final class SparkHelper {
             }
         });
 
-        // TODO: local message combiner
-        if (globalVertexProgram.getMessageCombiner().isPresent()) {
-           /* current = current.combineByKey(messenger -> {
-                return messenger;
-            });*/
-        }
-
         // "message pass" via reduction joining the "message vertices" with the graph vertices
-        current = current.reduceByKey((a, b) -> {
-            if (a.getVertex() instanceof DetachedVertex && !(b.getVertex() instanceof DetachedVertex))
-                a.setVertex(b.getVertex());
-            a.addIncomingMessages(b);
-            return a;  // always reduce on the first argument
+        // addIncomingMessages is provided the vertex program message combiner for partition and global level combining
+        final boolean hasMessageCombiner = globalVertexProgram.getMessageCombiner().isPresent();
+        current = current.reduceByKey((messengerA, messengerB) -> {
+            final Optional<MessageCombiner<M>> messageCombinerOptional = hasMessageCombiner ?
+                    VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner() :  // this is expensive but there is no "reduceByKeyPartition" :(
+                    Optional.empty();
+
+            if (messengerA.getVertex() instanceof DetachedVertex && !(messengerB.getVertex() instanceof DetachedVertex)) // fold the message vertices into the graph vertices
+                messengerA.mergeInMessenger(messengerB);
+            messengerA.addIncomingMessages(messengerB, messageCombinerOptional);
+
+            return messengerA;  // always reduce on the first argument
         });
 
         // clear all previous outgoing messages
@@ -122,10 +118,10 @@ public final class SparkHelper {
     }
 
     public static <K, V> JavaPairRDD<K, V> executeMap(final JavaPairRDD<NullWritable, VertexWritable> hadoopGraphRDD, final MapReduce<K, V, ?, ?, ?> globalMapReduce, final Configuration apacheConfiguration) {
-        JavaPairRDD<K, V> mapRDD = hadoopGraphRDD.mapPartitionsToPair(iterator -> {
+        JavaPairRDD<K, V> mapRDD = hadoopGraphRDD.mapPartitionsToPair(partitionIterator -> {
             final MapReduce<K, V, ?, ?, ?> workerMapReduce = MapReduce.createMapReduce(apacheConfiguration);
             final SparkMapEmitter<K, V> mapEmitter = new SparkMapEmitter<>();
-            iterator.forEachRemaining(tuple -> workerMapReduce.map(tuple._2().get(), mapEmitter));
+            partitionIterator.forEachRemaining(keyValue -> workerMapReduce.map(keyValue._2().get(), mapEmitter));
             return mapEmitter.getEmissions();
         });
         if (globalMapReduce.getMapKeySort().isPresent())
@@ -136,10 +132,10 @@ public final class SparkHelper {
     // TODO: public static executeCombine()
 
     public static <K, V, OK, OV> JavaPairRDD<OK, OV> executeReduce(final JavaPairRDD<K, V> mapRDD, final MapReduce<K, V, OK, OV, ?> globalMapReduce, final Configuration apacheConfiguration) {
-        JavaPairRDD<OK, OV> reduceRDD = mapRDD.groupByKey().mapPartitionsToPair(iterator -> {
+        JavaPairRDD<OK, OV> reduceRDD = mapRDD.groupByKey().mapPartitionsToPair(partitionIterator -> {
             final MapReduce<K, V, OK, OV, ?> workerMapReduce = MapReduce.createMapReduce(apacheConfiguration);
             final SparkReduceEmitter<OK, OV> reduceEmitter = new SparkReduceEmitter<>();
-            iterator.forEachRemaining(tuple -> workerMapReduce.reduce(tuple._1(), tuple._2().iterator(), reduceEmitter));
+            partitionIterator.forEachRemaining(keyValue -> workerMapReduce.reduce(keyValue._1(), keyValue._2().iterator(), reduceEmitter));
             return reduceEmitter.getEmissions();
         });
         if (globalMapReduce.getReduceKeySort().isPresent())
@@ -174,7 +170,7 @@ public final class SparkHelper {
         final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         if (null != outputLocation) {
             // map back to a Hadoop stream for output
-            mapReduceRDD.mapToPair(tuple -> new Tuple2<>(new ObjectWritable<>(tuple._1()), new ObjectWritable<>(tuple._2()))).saveAsNewAPIHadoopFile(outputLocation + "/" + mapReduce.getMemoryKey(),
+            mapReduceRDD.mapToPair(keyValue -> new Tuple2<>(new ObjectWritable<>(keyValue._1()), new ObjectWritable<>(keyValue._2()))).saveAsNewAPIHadoopFile(outputLocation + "/" + mapReduce.getMemoryKey(),
                     ObjectWritable.class,
                     ObjectWritable.class,
                     (Class<OutputFormat<ObjectWritable, ObjectWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, OutputFormat.class));

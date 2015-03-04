@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
@@ -27,13 +28,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -42,7 +47,7 @@ public class SparkMessenger<M> implements Serializable, Messenger<M> {
 
     private Vertex vertex;
     private List<M> incoming;
-    private Map<Object, List<M>> outgoing = new HashMap<>();
+    private Map<Object, List<M>> outgoing;
 
     public SparkMessenger() {
 
@@ -51,6 +56,7 @@ public class SparkMessenger<M> implements Serializable, Messenger<M> {
     public SparkMessenger(final Vertex vertex) {
         this.vertex = vertex;
         this.incoming = new ArrayList<>();
+        this.outgoing = this.vertex instanceof DetachedVertex ? null : new HashMap<>();
     }
 
     public SparkMessenger(final Vertex vertex, final List<M> incomingMessages) {
@@ -70,12 +76,20 @@ public class SparkMessenger<M> implements Serializable, Messenger<M> {
         return this.vertex;
     }
 
-    public void setVertex(final Vertex vertex) {
-        this.vertex = vertex;
+    public void mergeInMessenger(final SparkMessenger<M> otherMessenger) {
+        this.vertex = otherMessenger.vertex;
+        this.outgoing = otherMessenger.outgoing;
     }
 
-    public void addIncomingMessages(final SparkMessenger<M> otherMessenger) {
-        this.incoming.addAll(otherMessenger.incoming);
+    public void addIncomingMessages(final SparkMessenger<M> otherMessenger, final Optional<MessageCombiner<M>> messageCombinerOptional) {
+        if (messageCombinerOptional.isPresent()) {
+            final MessageCombiner<M> messageCombiner = messageCombinerOptional.get();
+            final M combinedMessage = Stream.concat(this.incoming.stream(), otherMessenger.incoming.stream()).reduce(messageCombiner::combine).get();
+            this.incoming.clear();
+            this.incoming.add(combinedMessage);
+        } else {
+            this.incoming.addAll(otherMessenger.incoming);
+        }
     }
 
     public Set<Map.Entry<Object, List<M>>> getOutgoingMessages() {
@@ -84,11 +98,17 @@ public class SparkMessenger<M> implements Serializable, Messenger<M> {
 
     @Override
     public Iterable<M> receiveMessages(final MessageScope messageScope) {
-        return this.incoming;
+        if (null == this.outgoing)
+            throw new IllegalStateException("Message vertices can not receive messages");
+
+        return null == this.incoming ? Collections.emptyList() : this.incoming;
     }
 
     @Override
     public void sendMessage(final MessageScope messageScope, final M message) {
+        if (null == this.outgoing)
+            throw new IllegalStateException("Message vertices can not send messages");
+
         if (messageScope instanceof MessageScope.Local) {
             final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
             final Traversal.Admin<Vertex, Edge> incidentTraversal = SparkMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get(), this.vertex);
