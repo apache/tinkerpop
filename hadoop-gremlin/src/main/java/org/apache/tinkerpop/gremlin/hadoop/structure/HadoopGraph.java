@@ -164,7 +164,7 @@ public class HadoopGraph implements Graph, Graph.Iterators {
 
     @Override
     public void compute(final Class<? extends GraphComputer> graphComputerClass) {
-        if (!graphComputerClass.equals(GiraphGraphComputer.class) || !graphComputerClass.equals(SparkGraphComputer.class))
+        if (!graphComputerClass.equals(GiraphGraphComputer.class) && !graphComputerClass.equals(SparkGraphComputer.class))
             throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
         this.graphComputerClass = graphComputerClass;
     }
@@ -203,7 +203,7 @@ public class HadoopGraph implements Graph, Graph.Iterators {
         final String toString = this.configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT) ?
                 hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class).getSimpleName() :
                 "no-output";
-        return StringFactory.graphString(this, fromString.toLowerCase() + "->" + toString.toLowerCase());
+        return StringFactory.graphString(this, fromString.toLowerCase() + "->" + toString.toLowerCase() + "[" + this.graphComputerClass.getSimpleName().toLowerCase() + "]");
     }
 
     @Override
