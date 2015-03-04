@@ -181,7 +181,7 @@ public class ElementHelperTest {
         }
     }
 
-    @Test
+    /*@Test
     public void shouldFailElementAreEqualTestBecauseFirstArgumentIsNull() {
         try {
             ElementHelper.areEqual((Element) null, "some object");
@@ -200,7 +200,7 @@ public class ElementHelperTest {
         } catch (IllegalArgumentException iae) {
             assertEquals(Graph.Exceptions.argumentCanNotBeNull("b").getMessage(), iae.getMessage());
         }
-    }
+    }*/
 
     @Test
     public void shouldDetermineElementsAreEqualAsTheyAreSameObject() {

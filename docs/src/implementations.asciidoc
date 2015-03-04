@@ -658,7 +658,7 @@ gremlin>
 Properties Files
 ~~~~~~~~~~~~~~~~
 
-`HadoopGraph` makes heavy use of properties files which ultimately get turned into Apache Configurations and Hadoop configurations. The properties file presented below is located at `conf/hadoop-kryo.properties'.
+`HadoopGraph` makes heavy use of properties files which ultimately get turned into Apache configurations and Hadoop configurations. The properties file presented below is located at `conf/giraph-kryo.properties'.
 
 [source,text]
 gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
@@ -809,12 +809,20 @@ The `TraversalSupplier1` class mentioned in the `hadoop-kryo.properties` file is
 // gremlin.traversalVertexProgram.traversalSupplier.type=CLASS
 // gremlin.traversalVertexProgram.traversalSupplier.object=org.apache.tinkerpop.gremlin.hadoop.process.computer.example.TraversalSupplier1
 
-public class TraversalSupplier1 implements SSupplier<Traversal> {
+public class TraversalSupplier1 implements Supplier<Traversal> {
     public Traversal get() {
         return HadoopGraph.open().V().out().out().values("name");
     }
 }
 ----
+
+[[sparkgraphcomputer]]
+SparkGraphComputer
+^^^^^^^^^^^^^^^^^^
+
+image:spark-logo.png[width=100,float=left] link:http://spark.apache.org[Spark] is an Apache Foundation project that provides a in-memory and disk-based distributed computing via a paradigm similar to Hadoop's MapReduce though more expressive and easier to use.
+
+
 
 [[mapreducegraphcomputer]]
 MapReduceGraphComputer
@@ -958,6 +966,7 @@ $ hadoop fs -cat output/~g/*
 {"inE":[{"inV":4,"inVLabel":"person","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"person","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"person","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}}],"id":4,"label":"person","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.19250000000000003,"properties":{}}],"name":[{"id":6,"label":"name","value":"josh","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":2.0,"properties":{}}],"age":[{"id":7,"label":"age","value":32,"properties":{}}]}}
 {"inE":[{"inV":2,"inVLabel":"person","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"person","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.19250000000000003,"properties":{}}],"name":[{"id":2,"label":"name","value":"vadas","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"age":[{"id":3,"label":"age","value":27,"properties":{}}]}}
 {"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"person","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"id":6,"label":"person","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.15000000000000002,"properties":{}}],"name":[{"id":10,"label":"name","value":"peter","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":1.0,"properties":{}}],"age":[{"id":11,"label":"age","value":35,"properties":{}}]}}
+
 Vertex 4 ("josh") is isolated below:
 
 [source,js]
