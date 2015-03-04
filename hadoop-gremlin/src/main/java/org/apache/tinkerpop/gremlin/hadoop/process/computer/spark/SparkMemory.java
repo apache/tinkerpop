@@ -46,6 +46,7 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
     private final Map<String, Accumulator<Rule>> memory = new HashMap<>();
+    private boolean inTask = false;
 
     public SparkMemory(final VertexProgram<?> vertexProgram, final Set<MapReduce> mapReducers, final JavaSparkContext sparkContext) {
         if (null != vertexProgram) {
@@ -104,7 +105,7 @@ public final class SparkMemory implements Memory.Admin, Serializable {
 
     @Override
     public <R> R get(final String key) throws IllegalArgumentException {
-        final R r = (R) this.memory.get(key).value().object;
+        final R r = (R) (this.inTask ? this.memory.get(key).localValue() : this.memory.get(key).value()).object;
         if (null == r)
             throw Memory.Exceptions.memoryDoesNotExist(key);
         else
@@ -115,32 +116,36 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     public long incr(final String key, final long delta) {
         checkKeyValue(key, delta);
         this.memory.get(key).add(new Rule(Rule.Operation.INCR, delta));
-        return (Long) this.memory.get(key).localValue().object + delta;
+        return (Long) (this.inTask ? this.memory.get(key).localValue() : this.memory.get(key).value()).object + delta;
     }
 
     @Override
     public boolean and(final String key, final boolean bool) {
         checkKeyValue(key, bool);
         this.memory.get(key).add(new Rule(Rule.Operation.AND, bool));
-        return (Boolean) this.memory.get(key).localValue().object && bool;
+        return (Boolean) (this.inTask ? this.memory.get(key).localValue() : this.memory.get(key).value()).object && bool;
     }
 
     @Override
     public boolean or(final String key, final boolean bool) {
         checkKeyValue(key, bool);
         this.memory.get(key).add(new Rule(Rule.Operation.OR, bool));
-        return (Boolean) this.memory.get(key).localValue().object || bool;
+        return (Boolean) (this.inTask ? this.memory.get(key).localValue() : this.memory.get(key).value()).object || bool;
     }
 
     @Override
     public void set(final String key, final Object value) {
         checkKeyValue(key, value);
-        this.memory.get(key).add(new Rule(Rule.Operation.SET, value));
+        this.memory.get(key).setValue(new Rule(Rule.Operation.SET, value));
     }
 
     @Override
     public String toString() {
         return StringFactory.memoryString(this);
+    }
+
+    public void setInTask(final boolean inTask) {
+        this.inTask = inTask;
     }
 
     private void checkKeyValue(final String key, final Object value) {

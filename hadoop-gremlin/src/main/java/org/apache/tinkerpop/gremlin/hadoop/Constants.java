@@ -49,6 +49,8 @@ public class Constants {
     public static final String GREMLIN_HADOOP_HALT = "gremlin.hadoop.halt";
     public static final String MAP_MEMORY = "gremlin.hadoop.mapMemory";
 
+    public static final String MAPRED_INPUT_DIR = "mapred.input.dir";
+
     public static final String SEQUENCE_WARNING = "The " + Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT
             + " is not " + SequenceFileOutputFormat.class.getCanonicalName()
             + " and thus, graph computer memory can not be converted to Java objects";

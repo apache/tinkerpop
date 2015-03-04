@@ -129,7 +129,7 @@ public final class SparkGraphComputer implements GraphComputer {
                         sparkConfiguration.setAppName(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + this.vertexProgram);
                         hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
                         if (FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class)))
-                            hadoopConfiguration.set("mapred.input.dir", hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION)); // necessary for Spark and newAPIHadoopRDD
+                            hadoopConfiguration.set(Constants.MAPRED_INPUT_DIR, hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION)); // necessary for Spark and newAPIHadoopRDD
                         final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration);
                         SparkGraphComputer.loadJars(sparkContext, hadoopConfiguration);
                         ///
@@ -143,18 +143,25 @@ public final class SparkGraphComputer implements GraphComputer {
 
                             // set up the vertex program and wire up configurations
                             memory = new SparkMemory(this.vertexProgram, this.mapReducers, sparkContext);
-                            this.vertexProgram.setup(memory);
+                            this.vertexProgram.setup(memory); // TODO: setup variables are not being broadcasted on first call
                             final SApacheConfiguration vertexProgramConfiguration = new SApacheConfiguration();
                             this.vertexProgram.storeState(vertexProgramConfiguration);
                             ConfigurationUtils.copy(vertexProgramConfiguration, apacheConfiguration);
                             ConfUtil.mergeApacheIntoHadoopConfiguration(vertexProgramConfiguration, hadoopConfiguration);
+
                             // execute the vertex program
-                            do {
+                            while (true) {
+                                memory.setInTask(true);
                                 graphRDD = SparkHelper.executeStep(graphRDD, this.vertexProgram, memory, vertexProgramConfiguration);
                                 graphRDD.foreachPartition(iterator -> doNothing()); // TODO: i think this is a fast way to execute the rdd
                                 graphRDD.cache(); // TODO: learn about persistence and caching
-                                memory.incrIteration();
-                            } while (!this.vertexProgram.terminate(memory));
+                                memory.setInTask(false);
+                                if (this.vertexProgram.terminate(memory)) {
+                                    memory.incrIteration();
+                                    break;
+                                } else
+                                    memory.incrIteration();
+                            }
 
                             // write the output graph back to disk
                             SparkHelper.saveVertexProgramRDD(graphRDD, hadoopConfiguration);
@@ -175,7 +182,10 @@ public final class SparkGraphComputer implements GraphComputer {
                         sparkConfiguration.setAppName(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + mapReduce);
                         hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
                         if (FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class)))
-                            hadoopConfiguration.set("mapred.input.dir", hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G);
+                            hadoopConfiguration.set(Constants.MAPRED_INPUT_DIR, null == this.vertexProgram ?
+                                    hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION) : // if no vertex program grab the graph from the input location
+                                    hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G);
+
                         final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration);
                         SparkGraphComputer.loadJars(sparkContext, hadoopConfiguration);
                         // execute the map reduce job

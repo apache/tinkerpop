@@ -125,8 +125,8 @@ public class TinkerGraphComputer implements GraphComputer {
                             this.memory.completeSubRound();
                         }
                     }
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
+                } catch (final Exception ex) {
+                    throw new IllegalStateException(ex.getMessage(), ex);
                 }
             }
 
