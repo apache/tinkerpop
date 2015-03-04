@@ -29,15 +29,13 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import scala.Tuple2;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -47,21 +45,26 @@ public class SparkMessenger<M> implements Serializable, Messenger<M> {
 
     private Vertex vertex;
     private List<M> incoming;
-    private Map<Object, List<M>> outgoing;
+    private List<Tuple2<Object, M>> outgoing;
 
-    public SparkMessenger() {
+    private SparkMessenger() {
 
     }
 
-    public SparkMessenger(final Vertex vertex) {
-        this.vertex = vertex;
-        this.incoming = new ArrayList<>();
-        this.outgoing = this.vertex instanceof DetachedVertex ? null : new HashMap<>();
+    public static final <M> SparkMessenger<M> forGraphVertex(final Vertex graphVertex) {
+        final SparkMessenger<M> messenger = new SparkMessenger<>();
+        messenger.vertex = graphVertex;
+        messenger.incoming = new ArrayList<>();
+        messenger.outgoing = new ArrayList<>();
+        return messenger;
     }
 
-    public SparkMessenger(final Vertex vertex, final List<M> incomingMessages) {
-        this.vertex = vertex;
-        this.incoming = incomingMessages;
+    public static final <M> SparkMessenger<M> forMessageVertex(final Object vertexId, final M message) {
+        final SparkMessenger<M> messenger = new SparkMessenger<>();
+        messenger.vertex = new DetachedVertex(vertexId, Vertex.DEFAULT_LABEL, Collections.emptyMap());
+        messenger.incoming = new ArrayList<>();
+        messenger.incoming.add(message);
+        return messenger;
     }
 
     public void clearIncomingMessages() {
@@ -69,7 +72,8 @@ public class SparkMessenger<M> implements Serializable, Messenger<M> {
     }
 
     public void clearOutgoingMessages() {
-        this.outgoing.clear();
+        if (null != this.outgoing)
+            this.outgoing.clear();
     }
 
     public Vertex getVertex() {
@@ -92,45 +96,24 @@ public class SparkMessenger<M> implements Serializable, Messenger<M> {
         }
     }
 
-    public Set<Map.Entry<Object, List<M>>> getOutgoingMessages() {
-        return this.outgoing.entrySet();
+    public List<Tuple2<Object, M>> getOutgoingMessages() {
+        return this.outgoing;
     }
 
     @Override
     public Iterable<M> receiveMessages(final MessageScope messageScope) {
-        if (null == this.outgoing)
-            throw new IllegalStateException("Message vertices can not receive messages");
-
-        return null == this.incoming ? Collections.emptyList() : this.incoming;
+        return this.incoming;
     }
 
     @Override
     public void sendMessage(final MessageScope messageScope, final M message) {
-        if (null == this.outgoing)
-            throw new IllegalStateException("Message vertices can not send messages");
-
         if (messageScope instanceof MessageScope.Local) {
             final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
             final Traversal.Admin<Vertex, Edge> incidentTraversal = SparkMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get(), this.vertex);
             final Direction direction = SparkMessenger.getOppositeDirection(incidentTraversal);
-            incidentTraversal.forEachRemaining(edge -> {
-                final Object otherVertexId = edge.iterators().vertexIterator(direction).next().id();
-                List<M> messages = this.outgoing.get(otherVertexId);
-                if (null == messages) {
-                    messages = new ArrayList<>();
-                    this.outgoing.put(otherVertexId, messages);
-                }
-                messages.add(message);
-            });
+            incidentTraversal.forEachRemaining(edge -> this.outgoing.add(new Tuple2<>(edge.iterators().vertexIterator(direction).next().id(), message)));
         } else {
-            ((MessageScope.Global) messageScope).vertices().forEach(v -> {
-                List<M> messages = this.outgoing.get(v.id());
-                if (null == messages) {
-                    messages = new ArrayList<>();
-                    this.outgoing.put(v.id(), messages);
-                }
-                messages.add(message);
-            });
+            ((MessageScope.Global) messageScope).vertices().forEach(v -> this.outgoing.add(new Tuple2<>(v.id(), message)));
         }
     }
 

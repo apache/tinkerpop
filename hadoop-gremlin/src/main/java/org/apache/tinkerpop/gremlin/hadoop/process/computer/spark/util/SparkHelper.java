@@ -38,16 +38,11 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import scala.Tuple2;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -61,7 +56,7 @@ public final class SparkHelper {
     public static <M> JavaPairRDD<Object, SparkMessenger<M>> executeStep(final JavaPairRDD<Object, SparkMessenger<M>> graphRDD, final VertexProgram<M> globalVertexProgram, final SparkMemory memory, final Configuration apacheConfiguration) {
         JavaPairRDD<Object, SparkMessenger<M>> current = graphRDD;
         // execute vertex program
-        current = current.mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program
+        current = current.mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
             final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration);
             workerVertexProgram.workerIterationStart(memory);
             return () -> IteratorUtils.<Tuple2<Object, SparkMessenger<M>>, Tuple2<Object, SparkMessenger<M>>>map(partitionIterator, keyValue -> {
@@ -71,27 +66,13 @@ public final class SparkHelper {
             });
         });
 
-        // emit messages by appending them to the graph vertices data as "message vertices"
-        current = current.<Object, SparkMessenger<M>>flatMapToPair(keyValue -> () -> new Iterator<Tuple2<Object, SparkMessenger<M>>>() {
-            boolean first = true;
-            final Iterator<Map.Entry<Object, List<M>>> iterator = keyValue._2().getOutgoingMessages().iterator();
-
-            @Override
-            public boolean hasNext() {
-                return this.first || this.iterator.hasNext();
-            }
-
-            @Override
-            public Tuple2<Object, SparkMessenger<M>> next() {
-                if (this.first) {
-                    this.first = false;
-                    keyValue._2().clearIncomingMessages(); // the raw vertex should not have any incoming messages (should be cleared from the previous stage)
-                    return new Tuple2<Object, SparkMessenger<M>>(keyValue._1(), keyValue._2()); // this is the raw vertex data
-                } else {
-                    final Map.Entry<Object, List<M>> entry = this.iterator.next();
-                    return new Tuple2<Object, SparkMessenger<M>>(entry.getKey(), new SparkMessenger<>(new DetachedVertex(entry.getKey(), Vertex.DEFAULT_LABEL, Collections.emptyMap()), entry.getValue()));  // these are the messages
-                }
-            }
+        // emit messages by appending them to the graph vertices as message "vertices"
+        current = current.<Object, SparkMessenger<M>>flatMapToPair(keyValue -> () -> {
+            keyValue._2().clearIncomingMessages(); // the graph vertex should not have any incoming messages (should be cleared from the previous stage)
+            return IteratorUtils.<Tuple2<Object, SparkMessenger<M>>>concat(
+                    IteratorUtils.of(keyValue),
+                    IteratorUtils.map(keyValue._2().getOutgoingMessages().iterator(),                                      // this is the graph vertex
+                            entry -> new Tuple2<>(entry._1(), SparkMessenger.forMessageVertex(entry._2(), entry._2()))));  // this is a message "vertex";
         });
 
         // "message pass" via reduction joining the "message vertices" with the graph vertices
@@ -109,11 +90,12 @@ public final class SparkHelper {
             return messengerA;  // always reduce on the first argument
         });
 
-        // clear all previous outgoing messages
+        // clear all previous outgoing messages (why can't we do this prior to the shuffle?)
         current = current.mapValues(messenger -> {
             messenger.clearOutgoingMessages();
             return messenger;
         });
+
         return current;
     }
 

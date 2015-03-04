@@ -130,16 +130,17 @@ public final class SparkGraphComputer implements GraphComputer {
                         hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
                         if (FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class)))
                             hadoopConfiguration.set(Constants.MAPRED_INPUT_DIR, hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION)); // necessary for Spark and newAPIHadoopRDD
-                        final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration);
-                        SparkGraphComputer.loadJars(sparkContext, hadoopConfiguration);
-                        ///
-                        try {
+
+                        // execute the vertex program
+                        try (final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration)) {
+                            // add the project jars to the cluster
+                            SparkGraphComputer.loadJars(sparkContext, hadoopConfiguration);
                             // create a message-passing friendly rdd from the hadoop input format
                             JavaPairRDD<Object, SparkMessenger<Object>> graphRDD = sparkContext.newAPIHadoopRDD(hadoopConfiguration,
                                     (Class<InputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class),
                                     NullWritable.class,
                                     VertexWritable.class)
-                                    .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new SparkMessenger<>(new SparkVertex((TinkerVertex) tuple._2().get()))));
+                                    .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), SparkMessenger.forGraphVertex(new SparkVertex((TinkerVertex) tuple._2().get()))));
 
                             // set up the vertex program and wire up configurations
                             memory = new SparkMemory(this.vertexProgram, this.mapReducers, sparkContext);
@@ -164,11 +165,7 @@ public final class SparkGraphComputer implements GraphComputer {
 
                             // write the output graph back to disk
                             SparkHelper.saveVertexProgramRDD(graphRDD, hadoopConfiguration);
-                        } finally {
-                            // must close the context or bad things happen
-                            sparkContext.close();
                         }
-                        sparkContext.close(); // why not try again todo
                     }
 
                     //////////////////////////////
@@ -185,10 +182,9 @@ public final class SparkGraphComputer implements GraphComputer {
                                     hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION) : // if no vertex program grab the graph from the input location
                                     hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G);
 
-                        final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration);
-                        SparkGraphComputer.loadJars(sparkContext, hadoopConfiguration);
                         // execute the map reduce job
-                        try {
+                        try (final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration)) {
+                            SparkGraphComputer.loadJars(sparkContext, hadoopConfiguration);
                             final JavaPairRDD<NullWritable, VertexWritable> hadoopGraphRDD = sparkContext.newAPIHadoopRDD(hadoopConfiguration,
                                     (Class<InputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class),
                                     NullWritable.class,
@@ -204,11 +200,7 @@ public final class SparkGraphComputer implements GraphComputer {
 
                             // write the map reduce output back to disk (memory)
                             SparkHelper.saveMapReduceRDD(null == reduceRDD ? mapRDD : reduceRDD, mapReduce, finalMemory, hadoopConfiguration);
-                        } finally {
-                            // must close the context or bad things happen
-                            sparkContext.close();
                         }
-                        sparkContext.close(); // why not try again todo
                     }
 
                     // update runtime and return the newly computed graph
