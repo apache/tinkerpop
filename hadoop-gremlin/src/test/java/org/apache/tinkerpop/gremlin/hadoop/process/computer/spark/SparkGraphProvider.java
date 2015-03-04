@@ -47,6 +47,7 @@ public final class SparkGraphProvider extends HadoopGraphProvider {
             ///////////
             put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
             put("spark.master", "local[4]");
+            put("spark.serializer","org.apache.spark.serializer.JavaSerializer");
         }};
     }
 }
