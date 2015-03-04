@@ -158,7 +158,11 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
             stopWatch.start();
 
-            handleIterator(ctx, msg, settings, itty, resultIterationBatchSize, stopWatch);
+            try {
+                handleIterator(ctx, msg, settings, itty, resultIterationBatchSize, stopWatch);
+            } catch (TimeoutException te) {
+                throw new RuntimeException(te);
+            }
 
             stopWatch.stop();
         }, executor);
@@ -177,7 +181,13 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         }, executor);
     }
 
-    protected void handleIterator(final ChannelHandlerContext ctx, final RequestMessage msg, final Settings settings, final Iterator itty, final int resultIterationBatchSize, final StopWatch stopWatch) {
+    /**
+     * Called by {@link #evalOpInternal} when iterating a result set.
+     *
+     * @throws TimeoutException if the time taken to serialize the entire result set exceeds the allowable time.
+     */
+    protected void handleIterator(final ChannelHandlerContext ctx, final RequestMessage msg, final Settings settings,
+                                  final Iterator itty, final int resultIterationBatchSize, final StopWatch stopWatch) throws TimeoutException {
         List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
         while (itty.hasNext()) {
             aggregate.add(itty.next());
@@ -193,7 +203,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
             stopWatch.split();
             if (stopWatch.getSplitTime() > settings.serializedResponseTimeout)
-                throw new RuntimeException(new TimeoutException("Serialization of the entire response exceeded the serializeResponseTimeout setting"));
+                throw new TimeoutException("Serialization of the entire response exceeded the serializeResponseTimeout setting");
 
             stopWatch.unsplit();
         }
