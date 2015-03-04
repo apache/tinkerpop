@@ -130,7 +130,6 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final Timer.Context timerContext = evalOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
-        final Settings settings = context.getSettings();
         final GremlinExecutor gremlinExecutor = gremlinExecutorSupplier.get();
         final ExecutorService executor = gremlinExecutor.getExecutorService();
 
@@ -148,8 +147,6 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
         final CompletableFuture<Void> iterationFuture = evalFuture.thenAcceptAsync(o -> {
             final Iterator itty = IteratorUtils.convertToIterator(o);
-            // the batch size can be overridden by the request
-            final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE).orElse(settings.resultIterationBatchSize);
 
             // timer for the total serialization time
             final StopWatch stopWatch = new StopWatch();
@@ -159,7 +156,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             stopWatch.start();
 
             try {
-                handleIterator(ctx, msg, settings, itty, resultIterationBatchSize, stopWatch);
+                handleIterator(context, itty, stopWatch);
             } catch (TimeoutException te) {
                 throw new RuntimeException(te);
             }
@@ -186,8 +183,13 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
      *
      * @throws TimeoutException if the time taken to serialize the entire result set exceeds the allowable time.
      */
-    protected void handleIterator(final ChannelHandlerContext ctx, final RequestMessage msg, final Settings settings,
-                                  final Iterator itty, final int resultIterationBatchSize, final StopWatch stopWatch) throws TimeoutException {
+    protected void handleIterator(final Context context, final Iterator itty, final StopWatch stopWatch) throws TimeoutException {
+        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
+        final RequestMessage msg = context.getRequestMessage();
+        final Settings settings = context.getSettings();
+
+        // the batch size can be overridden by the request
+        final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE).orElse(settings.resultIterationBatchSize);
         List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
         while (itty.hasNext()) {
             aggregate.add(itty.next());
