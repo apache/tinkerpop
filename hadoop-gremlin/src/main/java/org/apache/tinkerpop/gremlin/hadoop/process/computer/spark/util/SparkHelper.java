@@ -54,7 +54,7 @@ public final class SparkHelper {
     private SparkHelper() {
     }
 
-    public static <M> JavaPairRDD<Object, SparkMessenger<M>> executeStep(final JavaPairRDD<Object, SparkMessenger<M>> graphRDD, final VertexProgram<M> globalVertexProgram, final SparkMemory memory, final Configuration apacheConfiguration) {
+    public static <M> JavaPairRDD<Object, SparkMessenger<M>> executeStep(final JavaPairRDD<Object, SparkMessenger<M>> graphRDD, final SparkMemory memory, final Configuration apacheConfiguration) {
         JavaPairRDD<Object, SparkMessenger<M>> current = graphRDD;
         // execute vertex program
         current = current.mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
@@ -78,7 +78,6 @@ public final class SparkHelper {
 
         // "message pass" via reduction joining the "message vertices" with the graph vertices
         // addIncomingMessages is provided the vertex program message combiner for partition and global level combining
-        final boolean hasMessageCombiner = globalVertexProgram.getMessageCombiner().isPresent();
         current = current.reduceByKey(new Function2<SparkMessenger<M>, SparkMessenger<M>, SparkMessenger<M>>() {
             private Optional<MessageCombiner<M>> messageCombinerOptional = null; // a hack to simulate partition(Spark)/worker(TP3) local variables
 
