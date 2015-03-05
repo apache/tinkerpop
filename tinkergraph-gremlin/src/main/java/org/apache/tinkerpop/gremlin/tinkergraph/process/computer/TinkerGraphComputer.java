@@ -96,15 +96,15 @@ public class TinkerGraphComputer implements GraphComputer {
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
-            if (null != this.vertexProgram) {
-                TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
+            try (final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors())) {
+                if (null != this.vertexProgram) {
+                    TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
 
-                // execute the vertex program
-                this.vertexProgram.setup(this.memory);
-                this.memory.completeSubRound();
-                try (final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), this.vertexProgram)) {
+                    // execute the vertex program
+                    this.vertexProgram.setup(this.memory);
+                    this.memory.completeSubRound();
                     while (true) {
-                        workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationStart(this.memory.asImmutable()));
+                        workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationStart(this.memory.asImmutable()), vertexProgram);
                         final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.iterators().vertexIterator());
                         workers.executeVertexProgram(vertexProgram -> {
                             while (true) {
@@ -112,8 +112,8 @@ public class TinkerGraphComputer implements GraphComputer {
                                 if (null == vertex) return;
                                 vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.memory);
                             }
-                        });
-                        workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationEnd(this.memory.asImmutable()));
+                        }, vertexProgram);
+                        workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationEnd(this.memory.asImmutable()), vertexProgram);
                         this.messageBoard.completeIteration();
                         this.memory.completeSubRound();
                         if (this.vertexProgram.terminate(this.memory)) {
@@ -125,14 +125,10 @@ public class TinkerGraphComputer implements GraphComputer {
                             this.memory.completeSubRound();
                         }
                     }
-                } catch (final Exception ex) {
-                    throw new IllegalStateException(ex.getMessage(), ex);
                 }
-            }
 
-            // execute mapreduce jobs
-            for (final MapReduce mapReduce : this.mapReducers) {
-                try (final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), mapReduce)) {
+                // execute mapreduce jobs
+                for (final MapReduce mapReduce : mapReducers) {
                     if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                         final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
                         final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.iterators().vertexIterator());
@@ -142,8 +138,11 @@ public class TinkerGraphComputer implements GraphComputer {
                                 if (null == vertex) return;
                                 workerMapReduce.map(vertex, mapEmitter);
                             }
-                        });
-                        mapEmitter.complete(mapReduce); // sort results if a map output sort is defined
+                        }, mapReduce);
+
+                        // sort results if a map output sort is defined
+                        mapEmitter.complete(mapReduce);
+
                         // no need to run combiners as this is single machine
                         if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                             final TinkerReduceEmitter<?, ?> reduceEmitter = new TinkerReduceEmitter<>();
@@ -154,21 +153,22 @@ public class TinkerGraphComputer implements GraphComputer {
                                     if (null == entry) return;
                                     workerMapReduce.reduce(entry.getKey(), entry.getValue().iterator(), reduceEmitter);
                                 }
-                            });
+                            }, mapReduce);
                             reduceEmitter.complete(mapReduce); // sort results if a reduce output sort is defined
                             mapReduce.addResultToMemory(this.memory, reduceEmitter.reduceQueue.iterator());
                         } else {
                             mapReduce.addResultToMemory(this.memory, mapEmitter.mapQueue.iterator());
                         }
                     }
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
                 }
+                // update runtime and return the newly computed graph
+                this.memory.setRuntime(System.currentTimeMillis() - time);
+                this.memory.complete();
+                return new TinkerComputerResult(sg, this.memory.asImmutable());
+
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
             }
-            // update runtime and return the newly computed graph
-            this.memory.setRuntime(System.currentTimeMillis() - time);
-            this.memory.complete();
-            return new TinkerComputerResult(sg, this.memory.asImmutable());
         });
     }
 

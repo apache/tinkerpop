@@ -39,61 +39,26 @@ import java.util.stream.Collectors;
 public class TinkerWorkerPool implements AutoCloseable {
 
     private static final BasicThreadFactory threadFactoryWorker = new BasicThreadFactory.Builder().namingPattern("tinker-worker-%d").build();
-    public static enum State {VERTEX_PROGRAM, MAP_REDUCE}
 
-    private final List<MapReduce> mapReducers;
-    private final List<VertexProgram> vertexPrograms;
-    private final State state;
-
+    private final int numberOfWorkers;
     private final ExecutorService workerPool;
 
-    public TinkerWorkerPool(final int numberOfWorkers, final VertexProgram vertexProgram) {
-        try {
-            this.state = State.VERTEX_PROGRAM;
-            this.vertexPrograms = new ArrayList<>(numberOfWorkers);
-            this.mapReducers = Collections.emptyList();
-            for (int i = 0; i < numberOfWorkers; i++) {
-                this.vertexPrograms.add(vertexProgram.clone());
-            }
-
-            workerPool = Executors.newFixedThreadPool(numberOfWorkers, threadFactoryWorker);
-
-        } catch (final CloneNotSupportedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+    public TinkerWorkerPool(final int numberOfWorkers) {
+        this.numberOfWorkers = numberOfWorkers;
+        workerPool = Executors.newFixedThreadPool(numberOfWorkers, threadFactoryWorker);
     }
 
-    public TinkerWorkerPool(final int numberOfWorkers, final MapReduce mapReduce) {
-        try {
-            this.state = State.MAP_REDUCE;
-            this.vertexPrograms = Collections.emptyList();
-            this.mapReducers = new ArrayList<>(numberOfWorkers);
-            for (int i = 0; i < numberOfWorkers; i++) {
-                this.mapReducers.add(mapReduce.clone());
-            }
-
-            workerPool = Executors.newFixedThreadPool(numberOfWorkers, threadFactoryWorker);
-
-        } catch (final CloneNotSupportedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
-    public void executeVertexProgram(final Consumer<VertexProgram> worker) {
-        if (!this.state.equals(State.VERTEX_PROGRAM))
-            throw new IllegalStateException("The provided TinkerWorkerPool is not setup for VertexProgram: " + this.state);
-
-        this.vertexPrograms.stream()
+    public void executeVertexProgram(final Consumer<VertexProgram> worker, final VertexProgram vertexProgram) {
+        final List<VertexProgram> vertexPrograms = cloneVertexProgram(vertexProgram);
+        vertexPrograms.stream()
                 .map(vp -> (Future<Void>) workerPool.submit(() -> worker.accept(vp)))
                 .collect(Collectors.toList())
                 .forEach(FunctionUtils.wrapConsumer(Future::get));
     }
 
-    public void executeMapReduce(final Consumer<MapReduce> worker) {
-        if (!this.state.equals(State.MAP_REDUCE))
-            throw new IllegalStateException("The provided TinkerWorkerPool is not setup for MapReduce: " + this.state);
-
-        this.mapReducers.stream()
+    public void executeMapReduce(final Consumer<MapReduce> worker, final MapReduce mapReduce) {
+        final List<MapReduce> mapReducers = cloneMapReducer(mapReduce);
+        mapReducers.stream()
                 .map(mr -> (Future<Void>) workerPool.submit(() -> worker.accept(mr)))
                 .collect(Collectors.toList())
                 .forEach(FunctionUtils.wrapConsumer(Future::get));
@@ -102,5 +67,31 @@ public class TinkerWorkerPool implements AutoCloseable {
     @Override
     public void close() throws Exception {
         workerPool.shutdown();
+    }
+
+    private List<VertexProgram> cloneVertexProgram(final VertexProgram vertexProgram) {
+        final List<VertexProgram> vertexPrograms;
+        try {
+            vertexPrograms = new ArrayList<>(numberOfWorkers);
+            for (int i = 0; i < numberOfWorkers; i++) {
+                vertexPrograms.add(vertexProgram.clone());
+            }
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+        return vertexPrograms;
+    }
+
+    private List<MapReduce> cloneMapReducer(final MapReduce mapReduce) {
+        final List<MapReduce> mapReducers;
+        try {
+            mapReducers = new ArrayList<>(numberOfWorkers);
+            for (int i = 0; i < numberOfWorkers; i++) {
+                mapReducers.add(mapReduce.clone());
+            }
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+        return mapReducers;
     }
 }

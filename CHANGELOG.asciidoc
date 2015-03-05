@@ -27,6 +27,7 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Renamed "Gremlin Kryo" to "Gryo".
 * Implement profiling for nested traversals.
+* Refactored `TinkerWorkerPool` to use `ExecutorService` so as to reuse threads when executing graph computer functions.
 * Removed `Reducing.Reducer` and `ReducingStrategy`. Previous `Reducing` classes are now `MapReducer` classes.
 * Refactored the "process" test suite to allow for better test configuration with respect to different `TraversalEngine` implementations.
 * Added `hasNot(traversal)` which is a faster way of doing `has(traversal.count().is(0L))`.
