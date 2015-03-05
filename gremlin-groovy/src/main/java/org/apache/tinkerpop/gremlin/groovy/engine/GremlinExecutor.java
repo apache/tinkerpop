@@ -28,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.io.File;
@@ -112,6 +114,31 @@ public class GremlinExecutor implements AutoCloseable {
         this.scriptEngines = createScriptEngines();
         this.suppliedExecutor = suppliedExecutor;
         this.suppliedScheduledExecutor = suppliedScheduledExecutor;
+    }
+
+    /**
+     * Attempts to compile a script and cache it in the default {@link javax.script.ScriptEngine}.  This is only
+     * possible if the {@link javax.script.ScriptEngine} implementation implements {@link javax.script.Compilable}.
+     * In the event that the default {@link javax.script.ScriptEngine} does not implement it, the method will
+     * return empty.
+     */
+    public Optional<CompiledScript> compile(final String script) throws ScriptException {
+        return compile(script, Optional.empty());
+    }
+
+    /**
+     * Attempts to compile a script and cache it in the request {@link javax.script.ScriptEngine}.  This is only
+     * possible if the {@link javax.script.ScriptEngine} implementation implements {@link javax.script.Compilable}.
+     * In the event that the requested {@link javax.script.ScriptEngine} does not implement it, the method will
+     * return empty.
+     */
+    public Optional<CompiledScript> compile(final String script, final Optional<String> language) throws ScriptException {
+        final String lang = language.orElse("gremlin-groovy");
+        try {
+            return Optional.of(scriptEngines.compile(script, lang));
+        } catch (UnsupportedOperationException uoe) {
+            return Optional.empty();
+        }
     }
 
     public CompletableFuture<Object> eval(final String script) {

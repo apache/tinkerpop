@@ -30,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -101,6 +103,52 @@ public class ScriptEngines implements AutoCloseable {
         try {
             evaluationCount.incrementAndGet();
             return scriptEngines.get(language).eval(reader, bindings);
+        } finally {
+            evaluationCount.decrementAndGet();
+        }
+    }
+
+    /**
+     * Compiles a script without executing it.
+     *
+     * @throws java.lang.UnsupportedOperationException if the {@link ScriptEngine} implementation does not implement
+     * the {@link javax.script.Compilable} interface.
+     */
+    public CompiledScript compile(final String script, final String language) throws ScriptException {
+        if (!scriptEngines.containsKey(language))
+            throw new IllegalArgumentException("Language [%s] not supported");
+
+        try {
+            evaluationCount.incrementAndGet();
+            final ScriptEngine scriptEngine = scriptEngines.get(language);
+            if (!Compilable.class.isAssignableFrom(scriptEngine.getClass()))
+                throw new UnsupportedOperationException(String.format("ScriptEngine for %s does not implement %s", language, Compilable.class.getName()));
+
+            final Compilable compilable = (Compilable) scriptEngine;
+            return compilable.compile(script);
+        } finally {
+            evaluationCount.decrementAndGet();
+        }
+    }
+
+    /**
+     * Compiles a script without executing it.
+     *
+     * @throws java.lang.UnsupportedOperationException if the {@link ScriptEngine} implementation does not implement
+     * the {@link javax.script.Compilable} interface.
+     */
+    public CompiledScript compile(final Reader script, final String language) throws ScriptException {
+        if (!scriptEngines.containsKey(language))
+            throw new IllegalArgumentException("Language [%s] not supported");
+
+        try {
+            evaluationCount.incrementAndGet();
+            final ScriptEngine scriptEngine = scriptEngines.get(language);
+            if (scriptEngine instanceof Compilable)
+                throw new UnsupportedOperationException(String.format("ScriptEngine for %s does not implement %s", language, Compilable.class.getName()));
+
+            final Compilable compilable = (Compilable) scriptEngine;
+            return compilable.compile(script);
         } finally {
             evaluationCount.decrementAndGet();
         }

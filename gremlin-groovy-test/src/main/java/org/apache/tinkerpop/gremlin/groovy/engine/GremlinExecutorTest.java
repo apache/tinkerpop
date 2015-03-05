@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 
 import javax.script.Bindings;
+import javax.script.CompiledScript;
 import javax.script.SimpleBindings;
 import java.sql.Time;
 import java.util.Arrays;
@@ -39,6 +40,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -77,6 +79,14 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
     public void shouldEvalScript() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
         assertEquals(2, gremlinExecutor.eval("1+1").get());
+        gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldCompileScript() throws Exception {
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
+        final CompiledScript script = gremlinExecutor.compile("1+1").get();
+        assertEquals(2, script.eval());
         gremlinExecutor.close();
     }
 
