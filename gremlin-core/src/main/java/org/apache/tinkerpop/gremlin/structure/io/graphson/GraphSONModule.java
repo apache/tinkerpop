@@ -244,7 +244,7 @@ public class GraphSONModule extends SimpleModule {
         private static void serializeInternal(final TraversalMetrics traversalMetrics, final JsonGenerator jsonGenerator) throws IOException {
             final Map<String, Object> m = new HashMap<>();
 
-            m.put(GraphSONTokens.DURATION, traversalMetrics.getDuration(TimeUnit.MILLISECONDS));
+            m.put(GraphSONTokens.DURATION, traversalMetrics.getDuration(TimeUnit.NANOSECONDS) / 1000000d);
             List<Map<String, Object>> metrics = new ArrayList<>();
             traversalMetrics.getMetrics().forEach(it -> metrics.add(metricsToMap(it)));
             m.put(GraphSONTokens.METRICS, metrics);
@@ -257,7 +257,7 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.ID, metrics.getId());
             m.put(GraphSONTokens.NAME, metrics.getName());
             m.put(GraphSONTokens.COUNTS, metrics.getCounts());
-            m.put(GraphSONTokens.DURATION, metrics.getDuration(TimeUnit.MILLISECONDS));
+            m.put(GraphSONTokens.DURATION, metrics.getDuration(TimeUnit.NANOSECONDS) / 1000000d);
 
             if (!metrics.getAnnotations().isEmpty()) {
                 m.put(GraphSONTokens.ANNOTATIONS, metrics.getAnnotations());
