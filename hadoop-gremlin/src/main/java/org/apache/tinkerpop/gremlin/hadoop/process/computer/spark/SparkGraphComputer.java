@@ -28,7 +28,6 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.storage.StorageLevel;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.util.SApacheConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.util.SparkHelper;
@@ -124,7 +123,7 @@ public final class SparkGraphComputer implements GraphComputer {
 
                     // wire up a spark context
                     final SparkConf sparkConfiguration = new SparkConf();
-                    sparkConfiguration.setAppName(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + this.vertexProgram + "[" + this.mapReducers + "]");
+                    sparkConfiguration.setAppName(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + (null == this.vertexProgram ? "No VertexProgram" : this.vertexProgram) + "[" + this.mapReducers + "]");
                     hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
                     if (FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class)))
                         hadoopConfiguration.set(Constants.MAPRED_INPUT_DIR, hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION)); // necessary for Spark and newAPIHadoopRDD
@@ -146,7 +145,8 @@ public final class SparkGraphComputer implements GraphComputer {
                         if (null != this.vertexProgram) {
                             // set up the vertex program and wire up configurations
                             memory = new SparkMemory(this.vertexProgram, this.mapReducers, sparkContext);
-                            this.vertexProgram.setup(memory); // TODO: setup variables are not being broadcasted on first call (force using broadcast or dummy reduce that has a memory reference?)
+                            this.vertexProgram.setup(memory);
+                            memory.broadcastMemory(sparkContext);
                             final SApacheConfiguration vertexProgramConfiguration = new SApacheConfiguration();
                             this.vertexProgram.storeState(vertexProgramConfiguration);
                             ConfigurationUtils.copy(vertexProgramConfiguration, apacheConfiguration);
@@ -156,18 +156,20 @@ public final class SparkGraphComputer implements GraphComputer {
                             while (true) {
                                 memory.setInTask(true);
                                 graphRDD = SparkHelper.executeStep(graphRDD, memory, vertexProgramConfiguration);
-                                graphRDD.foreachPartition(iterator -> doNothing()); // TODO: i think this is a fast way to execute the rdd (wish there was a "execute()" method.
+                                graphRDD.foreachPartition(iterator -> doNothing()); // TODO: i think this is a fast way to execute the rdd (wish there was a "execute()" method).
                                 memory.setInTask(false);
-                                if (this.vertexProgram.terminate(memory)) {
-                                    memory.incrIteration();
+                                if (this.vertexProgram.terminate(memory))
                                     break;
-                                } else
+                                else {
                                     memory.incrIteration();
+                                    memory.broadcastMemory(sparkContext);
+                                }
                             }
                             // write the output graph back to disk
                             SparkHelper.saveGraphRDD(graphRDD, hadoopConfiguration);
                         }
 
+                        // reuse the graphRDD for all map reduce jobs
                         graphRDD = graphRDD.cache();
                         //////////////////////////////
                         // process the map reducers //

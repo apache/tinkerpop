@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
 import org.apache.spark.Accumulator;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.Rule;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
@@ -43,9 +44,10 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class SparkMemory implements Memory.Admin, Serializable {
 
     public final Set<String> memoryKeys = new HashSet<>();
-    private final AtomicInteger iteration = new AtomicInteger(0);
+    private final AtomicInteger iteration = new AtomicInteger(0);   // do these need to be atomics?
     private final AtomicLong runtime = new AtomicLong(0l);
     private final Map<String, Accumulator<Rule>> memory = new HashMap<>();
+    private Broadcast<Map<String, Object>> broadcast;
     private boolean inTask = false;
 
     public SparkMemory(final VertexProgram<?> vertexProgram, final Set<MapReduce> mapReducers, final JavaSparkContext sparkContext) {
@@ -59,18 +61,23 @@ public final class SparkMemory implements Memory.Admin, Serializable {
             this.memoryKeys.add(mapReduce.getMemoryKey());
         }
         for (final String key : this.memoryKeys) {
-            this.memory.put(key, sparkContext.accumulator(new Rule(Rule.Operation.NO_OP, null), new RuleAccumulator()));
+            this.memory.put(key, sparkContext.accumulator(new Rule(Rule.Operation.NO_OP, null), key, new RuleAccumulator()));
         }
+        this.broadcast = sparkContext.broadcast(new HashMap<>());
     }
 
     @Override
     public Set<String> keys() {
-        final Set<String> trueKeys = new HashSet<>();
-        this.memory.forEach((key, value) -> {
-            if (value.value().object != null)
-                trueKeys.add(key);
-        });
-        return Collections.unmodifiableSet(trueKeys);
+        if (this.inTask)
+            return this.broadcast.getValue().keySet();
+        else {
+            final Set<String> trueKeys = new HashSet<>();
+            this.memory.forEach((key, value) -> {
+                if (value.value().object != null)
+                    trueKeys.add(key);
+            });
+            return Collections.unmodifiableSet(trueKeys);
+        }
     }
 
     @Override
@@ -105,7 +112,7 @@ public final class SparkMemory implements Memory.Admin, Serializable {
 
     @Override
     public <R> R get(final String key) throws IllegalArgumentException {
-        final R r = (R) (this.inTask ? this.memory.get(key).localValue() : this.memory.get(key).value()).object;
+        final R r = this.getValue(key);
         if (null == r)
             throw Memory.Exceptions.memoryDoesNotExist(key);
         else
@@ -115,28 +122,43 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     @Override
     public long incr(final String key, final long delta) {
         checkKeyValue(key, delta);
-        this.memory.get(key).add(new Rule(Rule.Operation.INCR, delta));
-        return (Long) (this.inTask ? this.memory.get(key).localValue() : this.memory.get(key).value()).object + delta;
+        final Long returnValue = this.<Long>getValue(key) + delta;
+        if (this.inTask)
+            this.memory.get(key).add(new Rule(Rule.Operation.INCR, delta));
+        else
+            this.memory.get(key).setValue(new Rule(Rule.Operation.INCR, returnValue));
+        return returnValue;
     }
 
     @Override
     public boolean and(final String key, final boolean bool) {
         checkKeyValue(key, bool);
-        this.memory.get(key).add(new Rule(Rule.Operation.AND, bool));
-        return (Boolean) (this.inTask ? this.memory.get(key).localValue() : this.memory.get(key).value()).object && bool;
+        final Boolean returnValue = this.<Boolean>getValue(key) && bool;
+        if (this.inTask)
+            this.memory.get(key).add(new Rule(Rule.Operation.AND, bool));
+        else
+            this.memory.get(key).setValue(new Rule(Rule.Operation.AND, returnValue));
+        return returnValue;
     }
 
     @Override
     public boolean or(final String key, final boolean bool) {
         checkKeyValue(key, bool);
-        this.memory.get(key).add(new Rule(Rule.Operation.OR, bool));
-        return (Boolean) (this.inTask ? this.memory.get(key).localValue() : this.memory.get(key).value()).object || bool;
+        final Boolean returnValue = this.<Boolean>getValue(key) || bool;
+        if (this.inTask)
+            this.memory.get(key).add(new Rule(Rule.Operation.OR, bool));
+        else
+            this.memory.get(key).setValue(new Rule(Rule.Operation.OR, returnValue));
+        return returnValue;
     }
 
     @Override
     public void set(final String key, final Object value) {
         checkKeyValue(key, value);
-        this.memory.get(key).setValue(new Rule(Rule.Operation.SET, value));
+        if (this.inTask)
+            this.memory.get(key).add(new Rule(Rule.Operation.SET, value));
+        else
+            this.memory.get(key).setValue(new Rule(Rule.Operation.SET, value));
     }
 
     @Override
@@ -144,13 +166,27 @@ public final class SparkMemory implements Memory.Admin, Serializable {
         return StringFactory.memoryString(this);
     }
 
-    public void setInTask(final boolean inTask) {
+    protected void setInTask(final boolean inTask) {
         this.inTask = inTask;
+    }
+
+    protected void broadcastMemory(final JavaSparkContext sparkContext) {
+        this.broadcast.destroy(true); // do we need to block?
+        final Map<String, Object> toBroadcast = new HashMap<>();
+        this.memory.forEach((key, rule) -> {
+            if (null != rule.value().object)
+                toBroadcast.put(key, rule.value().object);
+        });
+        this.broadcast = sparkContext.broadcast(toBroadcast);
     }
 
     private void checkKeyValue(final String key, final Object value) {
         if (!this.memoryKeys.contains(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);
+    }
+
+    private <R> R getValue(final String key) {
+        return this.inTask ? (R) this.broadcast.getValue().get(key) : (R) this.memory.get(key).value().object;
     }
 }

@@ -28,12 +28,22 @@ public final class RuleAccumulator implements AccumulatorParam<Rule> {
 
     @Override
     public Rule addAccumulator(final Rule a, final Rule b) {
-        return new Rule(b.operation, b.operation.compute(a.object, b.object));
+        if (a.operation.equals(Rule.Operation.NO_OP))
+            return b;
+        if (b.operation.equals(Rule.Operation.NO_OP))
+            return a;
+        else
+            return new Rule(b.operation, b.operation.compute(a.object, b.object));
     }
 
     @Override
     public Rule addInPlace(final Rule a, final Rule b) {
-        return new Rule(b.operation, b.operation.compute(a.object, b.object));
+        if (a.operation.equals(Rule.Operation.NO_OP))
+            return b;
+        if (b.operation.equals(Rule.Operation.NO_OP))
+            return a;
+        else
+            return new Rule(b.operation, b.operation.compute(a.object, b.object));
     }
 
     @Override

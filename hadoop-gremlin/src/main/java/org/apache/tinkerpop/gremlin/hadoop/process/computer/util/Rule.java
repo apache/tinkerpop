@@ -56,7 +56,7 @@ public final class Rule implements Serializable {
             }
         }, SET {
             public Object compute(final Object first, final Object second) {
-                return second;
+                return null == first ? second : first;
             }
         }, NO_OP {
             public Object compute(final Object first, final Object second) {
