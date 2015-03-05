@@ -135,8 +135,10 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final GremlinExecutor gremlinExecutor = gremlinExecutorSupplier.get();
         final ExecutorService executor = gremlinExecutor.getExecutorService();
 
-        final String script = (String) msg.getArgs().get(Tokens.ARGS_GREMLIN);
-        final Optional<String> language = Optional.ofNullable((String) msg.getArgs().get(Tokens.ARGS_LANGUAGE));
+        final Map<String, Object> args = msg.getArgs();
+
+        final String script = (String) args.get(Tokens.ARGS_GREMLIN);
+        final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : null;
         final Bindings bindings = bindingsSupplier.get();
 
         final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(script, language, bindings);

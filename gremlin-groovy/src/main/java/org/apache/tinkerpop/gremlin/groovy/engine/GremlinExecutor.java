@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
-import javax.script.Compilable;
 import javax.script.CompiledScript;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
@@ -142,33 +141,33 @@ public class GremlinExecutor implements AutoCloseable {
     }
 
     public CompletableFuture<Object> eval(final String script) {
-        return eval(script, Optional.empty(), new SimpleBindings());
+        return eval(script, null, new SimpleBindings());
     }
 
     public CompletableFuture<Object> eval(final String script, final Bindings boundVars) {
-        return eval(script, Optional.empty(), boundVars);
+        return eval(script, null, boundVars);
     }
 
     public CompletableFuture<Object> eval(final String script, final Map<String, Object> boundVars) {
-        return eval(script, Optional.empty(), new SimpleBindings(boundVars));
+        return eval(script, null, new SimpleBindings(boundVars));
     }
 
-    public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Map<String, Object> boundVars) {
+    public CompletableFuture<Object> eval(final String script, final String language, final Map<String, Object> boundVars) {
         return eval(script, language, new SimpleBindings(boundVars));
     }
 
-    public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Bindings boundVars) {
+    public CompletableFuture<Object> eval(final String script, final String language, final Bindings boundVars) {
         return eval(script, language, boundVars, null);
     }
 
-    public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Map<String, Object> boundVars,
+    public CompletableFuture<Object> eval(final String script, final String language, final Map<String, Object> boundVars,
                                           final Function<Object, Object> transformResult) {
         return eval(script, language, new SimpleBindings(boundVars), transformResult);
     }
 
-    public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Bindings boundVars,
+    public CompletableFuture<Object> eval(final String script, final String language, final Bindings boundVars,
                                           final Function<Object, Object> transformResult) {
-        final String lang = language.orElse("gremlin-groovy");
+        final String lang = Optional.ofNullable(language).orElse("gremlin-groovy");
 
         logger.debug("Preparing to evaluate script - {} - in thread [{}]", script, Thread.currentThread().getName());
 

@@ -122,7 +122,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
 
-            final Triplet<String, Map<String, Object>, Optional<String>> requestArguments;
+            final Triplet<String, Map<String, Object>, String> requestArguments;
             try {
                 requestArguments = getGremlinScript(req);
             } catch (IllegalArgumentException iae) {
@@ -218,7 +218,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-    private static Triplet<String, Map<String, Object>, Optional<String>> getGremlinScript(final FullHttpRequest request) {
+    private static Triplet<String, Map<String, Object>, String> getGremlinScript(final FullHttpRequest request) {
         if (request.getMethod() == GET) {
             final QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
             final List<String> gremlinParms = decoder.parameters().get(Tokens.ARGS_GREMLIN);
@@ -233,8 +233,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                     .forEach(kv -> bindings.put(kv.getKey(), kv.getValue().get(0)));
 
             final List<String> languageParms = decoder.parameters().get(Tokens.ARGS_LANGUAGE);
-            final Optional<String> language = (null == languageParms || languageParms.size() == 0) ?
-                    Optional.empty() : Optional.ofNullable(languageParms.get(0));
+            final String language = (null == languageParms || languageParms.size() == 0) ? null : languageParms.get(0);
 
             return Triplet.with(script, bindings, language);
         } else {
@@ -257,8 +256,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
 
             final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
-            final Optional<String> language = null == languageNode ?
-                    Optional.empty() : Optional.ofNullable(languageNode.asText());
+            final String language = null == languageNode ? null : languageNode.asText();
 
             return Triplet.with(scriptNode.asText(), bindings, language);
         }
