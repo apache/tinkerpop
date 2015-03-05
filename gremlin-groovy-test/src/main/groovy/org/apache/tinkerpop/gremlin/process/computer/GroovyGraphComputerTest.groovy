@@ -108,11 +108,11 @@ public abstract class GroovyGraphComputerTest {
                         assertTrue(c.get("e"));
 
                         // update current step values and make sure returns are correct
-                        assertEquals(Long.valueOf(6 * c.getIteration()) + 1l, c.incr("a", 1l));
-                        assertEquals(Long.valueOf(0) + 1l, c.incr("b", 1l));
-                        assertFalse(c.and("c", false));
-                        assertTrue(c.or("d", true));
-                        assertFalse(c.and("e", false));
+                        c.incr("a", 1l);
+                        c.incr("b", 1l);
+                        c.and("c", false);
+                        c.or("d", true);
+                        c.and("e", false);
 
                         // test current step values, should be the same as previous prior to update
                         assertEquals(Long.valueOf(6 * c.getIteration()), c.get("a"));

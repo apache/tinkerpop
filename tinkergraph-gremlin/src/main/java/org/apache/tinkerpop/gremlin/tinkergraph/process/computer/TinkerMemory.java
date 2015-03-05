@@ -113,24 +113,21 @@ public class TinkerMemory implements Memory.Admin {
     }
 
     @Override
-    public long incr(final String key, final long delta) {
+    public void incr(final String key, final long delta) {
         checkKeyValue(key, delta);
         this.currentMap.compute(key, (k, v) -> null == v ? delta : delta + (Long) v);
-        return (Long) this.previousMap.getOrDefault(key, 0l) + delta;
     }
 
     @Override
-    public boolean and(final String key, final boolean bool) {
+    public void and(final String key, final boolean bool) {
         checkKeyValue(key, bool);
         this.currentMap.compute(key, (k, v) -> null == v ? bool : bool && (Boolean) v);
-        return (Boolean) this.previousMap.getOrDefault(key, true) && bool;
     }
 
     @Override
-    public boolean or(final String key, final boolean bool) {
+    public void or(final String key, final boolean bool) {
         checkKeyValue(key, bool);
         this.currentMap.compute(key, (k, v) -> null == v ? bool : bool || (Boolean) v);
-        return (Boolean) this.previousMap.getOrDefault(key, true) || bool;
     }
 
     @Override

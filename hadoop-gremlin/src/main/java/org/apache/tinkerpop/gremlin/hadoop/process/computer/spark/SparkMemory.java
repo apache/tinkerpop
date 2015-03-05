@@ -120,36 +120,30 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     }
 
     @Override
-    public long incr(final String key, final long delta) {
+    public void incr(final String key, final long delta) {
         checkKeyValue(key, delta);
-        final Long returnValue = this.<Long>getValue(key) + delta;
         if (this.inTask)
             this.memory.get(key).add(new Rule(Rule.Operation.INCR, delta));
         else
-            this.memory.get(key).setValue(new Rule(Rule.Operation.INCR, returnValue));
-        return returnValue;
+            this.memory.get(key).setValue(new Rule(Rule.Operation.INCR, this.<Long>getValue(key) + delta));
     }
 
     @Override
-    public boolean and(final String key, final boolean bool) {
+    public void and(final String key, final boolean bool) {
         checkKeyValue(key, bool);
-        final Boolean returnValue = this.<Boolean>getValue(key) && bool;
         if (this.inTask)
             this.memory.get(key).add(new Rule(Rule.Operation.AND, bool));
         else
-            this.memory.get(key).setValue(new Rule(Rule.Operation.AND, returnValue));
-        return returnValue;
+            this.memory.get(key).setValue(new Rule(Rule.Operation.AND, this.<Boolean>getValue(key) && bool));
     }
 
     @Override
-    public boolean or(final String key, final boolean bool) {
+    public void or(final String key, final boolean bool) {
         checkKeyValue(key, bool);
-        final Boolean returnValue = this.<Boolean>getValue(key) || bool;
         if (this.inTask)
             this.memory.get(key).add(new Rule(Rule.Operation.OR, bool));
         else
-            this.memory.get(key).setValue(new Rule(Rule.Operation.OR, returnValue));
-        return returnValue;
+            this.memory.get(key).setValue(new Rule(Rule.Operation.OR, this.<Boolean>getValue(key) || bool));
     }
 
     @Override

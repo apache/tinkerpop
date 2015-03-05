@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
+import org.apache.giraph.master.MasterCompute;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -25,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.MemoryHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.giraph.master.MasterCompute;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -137,47 +137,38 @@ public class GiraphMemory extends MasterCompute implements Memory {
     }
 
     @Override
-    public boolean and(final String key, final boolean bool) {
+    public void and(final String key, final boolean bool) {
         this.checkKeyValue(key, bool);
         if (this.isMasterCompute) {  // only called on setup() and terminate()
             Boolean value = this.<RuleWritable>getAggregatedValue(key).<Boolean>getObject();
             value = null == value ? bool : bool && value;
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.AND, value));
-            return value;
         } else {
-            final Boolean result = ((RuleWritable) this.worker.getAggregatedValue(key)).getObject();
             this.worker.aggregate(key, new RuleWritable(RuleWritable.Rule.AND, bool));
-            return null == result ? bool : result && bool;
         }
     }
 
     @Override
-    public boolean or(final String key, final boolean bool) {
+    public void or(final String key, final boolean bool) {
         this.checkKeyValue(key, bool);
         if (this.isMasterCompute) {   // only called on setup() and terminate()
             Boolean value = this.<RuleWritable>getAggregatedValue(key).<Boolean>getObject();
             value = null == value ? bool : bool || value;
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.OR, value));
-            return value;
         } else {
-            final Boolean result = ((RuleWritable) this.worker.getAggregatedValue(key)).getObject();
             this.worker.aggregate(key, new RuleWritable(RuleWritable.Rule.OR, bool));
-            return null == result ? bool : result || bool;
         }
     }
 
     @Override
-    public long incr(final String key, final long delta) {
+    public void incr(final String key, final long delta) {
         this.checkKeyValue(key, delta);
         if (this.isMasterCompute) {   // only called on setup() and terminate()
             Number value = this.<RuleWritable>getAggregatedValue(key).<Number>getObject();
             value = null == value ? delta : value.longValue() + delta;
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.INCR, value));
-            return value.longValue();
         } else {
-            final Long result = ((RuleWritable) this.worker.getAggregatedValue(key)).getObject();
             this.worker.aggregate(key, new RuleWritable(RuleWritable.Rule.INCR, delta));
-            return null == result ? delta : result + delta;
         }
     }
 

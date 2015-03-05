@@ -40,6 +40,17 @@ public final class MapMemory implements Memory.Admin, Serializable {
     private final Map<String, Object> memoryMap = new HashMap<>();
     private final Set<String> memoryComputeKeys = new HashSet<>();
 
+    public MapMemory() {
+
+    }
+
+    public MapMemory(final Memory otherMemory) {
+        otherMemory.keys().forEach(key -> {
+            this.memoryMap.put(key, otherMemory.get(key));
+        });
+        this.iteration = otherMemory.getIteration();
+    }
+
     public void addVertexProgramMemoryComputeKeys(final VertexProgram<?> vertexProgram) {
         this.memoryComputeKeys.addAll(vertexProgram.getMemoryComputeKeys());
     }
@@ -78,41 +89,35 @@ public final class MapMemory implements Memory.Admin, Serializable {
     }
 
     @Override
-    public long incr(final String key, final long delta) {
+    public void incr(final String key, final long delta) {
         this.checkKeyValue(key, delta);
         if (this.memoryMap.containsKey(key)) {
             final long newValue = (long) this.memoryMap.get(key) + delta;
             this.memoryMap.put(key, newValue);
-            return newValue;
         } else {
             this.memoryMap.put(key, delta);
-            return delta;
         }
     }
 
     @Override
-    public boolean and(final String key, final boolean bool) {
+    public void and(final String key, final boolean bool) {
         this.checkKeyValue(key, bool);
         if (this.memoryMap.containsKey(key)) {
             final boolean newValue = (boolean) this.memoryMap.get(key) && bool;
             this.memoryMap.put(key, newValue);
-            return newValue;
         } else {
             this.memoryMap.put(key, bool);
-            return bool;
         }
     }
 
     @Override
-    public boolean or(final String key, final boolean bool) {
+    public void or(final String key, final boolean bool) {
         this.checkKeyValue(key, bool);
         if (this.memoryMap.containsKey(key)) {
             final boolean newValue = (boolean) this.memoryMap.get(key) || bool;
             this.memoryMap.put(key, newValue);
-            return newValue;
         } else {
             this.memoryMap.put(key, bool);
-            return bool;
         }
     }
 

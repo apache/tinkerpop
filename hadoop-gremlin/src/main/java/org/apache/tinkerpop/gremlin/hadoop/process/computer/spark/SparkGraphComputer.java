@@ -41,8 +41,8 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
-import org.apache.tinkerpop.gremlin.process.computer.util.DefaultMemory;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.slf4j.Logger;
@@ -174,7 +174,7 @@ public final class SparkGraphComputer implements GraphComputer {
                         //////////////////////////////
                         // process the map reducers //
                         //////////////////////////////
-                        final Memory.Admin finalMemory = null == memory ? new DefaultMemory() : new DefaultMemory(memory);
+                        final Memory.Admin finalMemory = null == memory ? new MapMemory() : new MapMemory(memory);
                         for (final MapReduce mapReduce : this.mapReducers) {
                             // execute the map reduce job
                             final SApacheConfiguration newApacheConfiguration = new SApacheConfiguration(apacheConfiguration);

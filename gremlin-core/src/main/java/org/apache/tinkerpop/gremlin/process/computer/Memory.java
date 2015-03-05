@@ -69,7 +69,7 @@ public interface Memory {
      * @param key   they key to set a value for
      * @param value the value to set for the key
      */
-    public void set(final String key, Object value);
+    public void set(final String key, final Object value);
 
     /**
      * A helper method that generates a {@link Map} of the memory key/values.
@@ -103,27 +103,24 @@ public interface Memory {
      *
      * @param key   the key of the long value
      * @param delta the adjusting amount (can be negative for decrement)
-     * @return the adjusted value (according to the previous iterations current value + delta)
      */
-    public long incr(final String key, final long delta);
+    public void incr(final String key, final long delta);
 
     /**
      * Logically AND the provided boolean value with the boolean value currently stored at the key.
      *
      * @param key  the key of the boolean value
      * @param bool the boolean to AND
-     * @return the adjusted value (according to the previous iterations current value && bool)
      */
-    public boolean and(final String key, final boolean bool);
+    public void and(final String key, final boolean bool);
 
     /**
      * Logically OR the provided boolean value with the boolean value currently stored at the key.
      *
      * @param key  the key of the boolean value
      * @param bool the boolean to OR
-     * @return the adjusted value (according to the previous iterations current value || bool)
      */
-    public boolean or(final String key, final boolean bool);
+    public void or(final String key, final boolean bool);
 
     /**
      * A helper method that states whether the current iteration is 0.
