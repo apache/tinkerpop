@@ -45,16 +45,16 @@ public final class SparkVertex implements Vertex, Vertex.Iterators, Serializable
 
     private static GryoWriter GRYO_WRITER = GryoWriter.build().create();
     private static GryoReader GRYO_READER = GryoReader.build().create();
-    private static final String VERTEX_ID = Graph.Hidden.hide("giraph.gremlin.vertexId");
 
     // TODO: Wrapped vertex -- need VertexProgram in partition (broadcast variable?)
 
+    private final Object vertexId;
     private transient TinkerVertex vertex;
     private byte[] vertexBytes;
 
     public SparkVertex(final TinkerVertex vertex) {
         this.vertex = vertex;
-        this.vertex.graph().variables().set(VERTEX_ID, this.vertex.id());
+        this.vertexId = vertex.id();
     }
 
     @Override
@@ -64,7 +64,7 @@ public final class SparkVertex implements Vertex, Vertex.Iterators, Serializable
 
     @Override
     public Object id() {
-        return this.vertex.id();
+        return this.vertexId;
     }
 
     @Override
@@ -114,7 +114,7 @@ public final class SparkVertex implements Vertex, Vertex.Iterators, Serializable
 
     @Override
     public int hashCode() {
-        return ElementHelper.hashCode(this);
+        return this.vertexId.hashCode();
     }
 
     @Override
@@ -134,7 +134,7 @@ public final class SparkVertex implements Vertex, Vertex.Iterators, Serializable
         this.inflateVertex();
     }
 
-    private final void inflateVertex() {
+    public final void inflateVertex() {
         if (null != this.vertex)
             return;
 
@@ -144,7 +144,7 @@ public final class SparkVertex implements Vertex, Vertex.Iterators, Serializable
             GRYO_READER.readGraph(bis, tinkerGraph);
             bis.close();
             this.vertexBytes = null;
-            this.vertex = (TinkerVertex) tinkerGraph.iterators().vertexIterator(tinkerGraph.variables().get(VERTEX_ID).get()).next();
+            this.vertex = (TinkerVertex) tinkerGraph.iterators().vertexIterator(this.vertexId).next();
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
