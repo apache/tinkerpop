@@ -317,8 +317,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         try {
             return new GroovyCompiledScript(this, getScriptClass(scriptSource));
         } catch (SyntaxException e) {
-            throw new ScriptException(e.getMessage(),
-                    e.getSourceLocator(), e.getLine());
+            throw new ScriptException(e.getMessage(), e.getSourceLocator(), e.getLine());
         } catch (IOException e) {
             throw new ScriptException(e);
         } catch (CompilationFailedException ee) {
@@ -368,6 +367,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         return clazz;
     }
 
+    boolean isCached(final String script) {
+        return classMap.get(script) != null;
+    }
+
     Object eval(final Class scriptClass, final ScriptContext context) throws ScriptException {
         ensureSandbox();
 
@@ -403,12 +406,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
             for (Method m : scriptClass.getMethods()) {
                 final String name = m.getName();
                 globalClosures.put(name, new MethodClosure(scriptObject, name));
-            };
+            }
 
             final MetaClass oldMetaClass = scriptObject.getMetaClass();
             scriptObject.setMetaClass(new DelegatingMetaClass(oldMetaClass) {
                 @Override
-                public Object invokeMethod(Object object, String name, Object args) {
+                public Object invokeMethod(final Object object, final String name, final Object args) {
                     if (args == null) {
                         return invokeMethod(object, name, MetaClassHelper.EMPTY_ARRAY);
                     } else if (args instanceof Tuple) {
@@ -421,7 +424,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 }
 
                 @Override
-                public Object invokeMethod(Object object, String name, Object args[]) {
+                public Object invokeMethod(final Object object, final String name, final Object args[]) {
                     try {
                         return super.invokeMethod(object, name, args);
                     } catch (MissingMethodException mme) {
@@ -430,7 +433,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 }
 
                 @Override
-                public Object invokeStaticMethod(Object object, String name, Object args[]) {
+                public Object invokeStaticMethod(final Object object, final String name, final Object args[]) {
                     try {
                         return super.invokeStaticMethod(object, name, args);
                     } catch (MissingMethodException mme) {

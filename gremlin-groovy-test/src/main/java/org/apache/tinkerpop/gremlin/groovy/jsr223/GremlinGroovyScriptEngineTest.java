@@ -74,6 +74,21 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
     }
 
     @Test
+    public void shouldCompileScriptWithoutRequiringVariableBindings() throws Exception {
+        // compile() should cache the script to avoid future compilation
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+
+        final String script = "g.V(x).out()";
+        assertFalse(engine.isCached(script));
+        assertNotNull(engine.compile(script));
+        assertTrue(engine.isCached(script));
+
+        engine.reset();
+
+        assertFalse(engine.isCached(script));
+    }
+
+    @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldLoadImports() throws Exception {
         final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
