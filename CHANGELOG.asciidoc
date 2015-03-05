@@ -26,8 +26,8 @@ TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Added `compile` method to `GremlinExecutor` and related classes.
-* Changed the `Memory` API to not return the mutated value on `or`, `and`, `incr` as it is too difficult to implement faithfully in distributed systems.
-* Added `SparkGraphComputer` to Hadoop-Gremlin.
+* Changed the `Memory` API to not return the mutated value on `or`, `and`, `incr` as it is too difficult to implement faithfully in a distributed system.
+* Added `SparkGraphComputer` to Hadoop-Gremlin which uses Apache Spark as the underlying computing engine.
 * Renamed "Gremlin Kryo" to "Gryo".
 * Implement profiling for nested traversals.
 * Refactored `TinkerWorkerPool` to use `ExecutorService` so as to reuse threads when executing graph computer functions.
