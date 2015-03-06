@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatus;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.driver.simple.NioClient;
@@ -340,6 +341,68 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         cluster.close();
+    }
+
+    @Test
+    public void shouldEvalAndOnlyReturnTwoMessages() throws Exception {
+        try (SimpleClient client = new WebSocketClient()) {
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "10").create();
+
+            // set the latch to two as there should be two responses when you include the terminator -
+            // the error and the terminator
+            final CountDownLatch latch = new CountDownLatch(2);
+            final AtomicInteger messages = new AtomicInteger(0);
+            final AtomicBoolean errorReceived = new AtomicBoolean(false);
+            final AtomicBoolean terminatorReceived = new AtomicBoolean(false);
+            client.submit(request, r -> {
+                if (latch.getCount() == 2)
+                    errorReceived.set(r.getStatus().equals(ResponseStatusCode.SUCCESS));
+                else if (latch.getCount() == 1)
+                    terminatorReceived.set(r.getStatus().equals(ResponseStatusCode.SUCCESS_TERMINATOR));
+                latch.countDown();
+                messages.incrementAndGet();
+            });
+
+            assertTrue(latch.await(1500, TimeUnit.MILLISECONDS));
+
+            // make sure no extra message sneak in
+            Thread.sleep(1000);
+
+            assertEquals(2, messages.get());
+        }
+    }
+
+    @Test
+    public void shouldFailWithBadScriptEval() throws Exception {
+        try (SimpleClient client = new WebSocketClient()) {
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "new String().doNothingAtAllBecauseThis is a syntax error").create();
+
+            // set the latch to two as there should be two responses when you include the terminator -
+            // the error and the terminator
+            final CountDownLatch latch = new CountDownLatch(2);
+            final AtomicInteger messages = new AtomicInteger(0);
+            final AtomicBoolean errorReceived = new AtomicBoolean(false);
+            final AtomicBoolean terminatorReceived = new AtomicBoolean(false);
+            client.submit(request, r -> {
+                if (latch.getCount() == 2)
+                    errorReceived.set(r.getStatus().equals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION));
+                else if (latch.getCount() == 1)
+                    terminatorReceived.set(r.getStatus().equals(ResponseStatusCode.SUCCESS_TERMINATOR));
+                latch.countDown();
+                System.out.println("*******" + r);
+                messages.incrementAndGet();
+            });
+
+            assertTrue(latch.await(1500, TimeUnit.MILLISECONDS));
+
+            // make sure no extra message sneak in
+            Thread.sleep(1000);
+
+            assertEquals(2, messages.get());
+
+        }
     }
 
     // todo: get this test to pass - count connection and block incoming requests.

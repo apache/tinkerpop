@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.op;
 
 import com.codahale.metrics.Timer;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -152,7 +153,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final CompletableFuture<Void> iterationFuture = evalFuture.thenAcceptAsync(o -> {
             final Iterator itty = IteratorUtils.convertToIterator(o);
 
-            logger.debug("Preparing to iterate results from - {} - in thread [{}]", msg, Thread.currentThread().getName());
+            logger.info("Preparing to iterate results from - {} - in thread [{}]", msg, Thread.currentThread().getName());
 
             try {
                 handleIterator(context, itty);
@@ -162,15 +163,22 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         }, executor);
 
         iterationFuture.handleAsync((r, ex) -> {
-            // iteration has completed - if there was an exception then write it
+            // iteration has completed
             if (ex != null) {
-                final String errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, ex.getCause().getMessage());
-                logger.warn(errorMessage);
-                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                // an exception could have fired in the evalFuture - it interestingly bubbles up here so we have to
+                // check for the iteration exception (which is a TimeoutException).  otherwise the exception would
+                // have been dealt with from a messaging perspective as part of the "exceptionally" completion stage
+                // of the evalFuture itself.
+                if (ExceptionUtils.getRootCause(ex).getClass().equals(TimeoutException.class)) {
+                    final String errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, ex.getCause().getMessage());
+                    logger.warn(errorMessage);
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                }
+            } else {
+                // since this is not an error we need to terminate.  termination for errors is handled in the
+                // ResponseEncoder
+                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS_TERMINATOR).create());
             }
-
-            // either way - terminate the request
-            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS_TERMINATOR).create());
             return null;
         }, executor);
     }
