@@ -19,7 +19,11 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphml;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -30,7 +34,14 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * GraphMLWriter writes a Graph to a GraphML OutputStream. Note that this format is lossy, in the sense that data
@@ -267,8 +278,9 @@ public class GraphMLWriter implements GraphWriter {
         final Iterable<Vertex> vertices;
         if (normalize) {
             vertices = new ArrayList<>();
-            for (Vertex v : graph.V().toList()) {
-                ((Collection<Vertex>) vertices).add(v);
+            final Iterator<Vertex> vertexIterator = graph.vertices();
+            while (vertexIterator.hasNext()) {
+                ((Collection<Vertex>) vertices).add(vertexIterator.next());
             }
             Collections.sort((List<Vertex>) vertices, Comparators.ELEMENT_COMPARATOR);
         } else
@@ -314,7 +326,9 @@ public class GraphMLWriter implements GraphWriter {
 
     private static Map<String, String> determineVertexTypes(final Graph graph) {
         final Map<String, String> vertexKeyTypes = new HashMap<>();
-        for (Vertex vertex : graph.V().toList()) {
+        final Iterator<Vertex> vertices = graph.vertices();
+        while (vertices.hasNext()) {
+            final Vertex vertex = vertices.next();
             for (String key : vertex.keys()) {
                 if (!vertexKeyTypes.containsKey(key)) {
                     vertexKeyTypes.put(key, GraphMLWriter.getStringType(vertex.property(key).value()));
@@ -327,7 +341,9 @@ public class GraphMLWriter implements GraphWriter {
 
     private static Map<String, String> determineEdgeTypes(final Graph graph) {
         final Map<String, String> edgeKeyTypes = new HashMap<>();
-        for (Edge edge : graph.E().toList()) {
+        final Iterator<Edge> edges = graph.edges();
+        while (edges.hasNext()) {
+            final Edge edge = edges.next();
             for (String key : edge.keys()) {
                 if (!edgeKeyTypes.containsKey(key))
                     edgeKeyTypes.put(key, GraphMLWriter.getStringType(edge.property(key).value()));

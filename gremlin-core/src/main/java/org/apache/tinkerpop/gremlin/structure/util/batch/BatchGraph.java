@@ -23,7 +23,6 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -54,7 +53,6 @@ import java.util.function.Function;
  * That is, BatchGraph only supports the following methods:
  * - {@link #addVertex(Object...)} for adding vertices
  * - {@link Vertex#addEdge(String, org.apache.tinkerpop.gremlin.structure.Vertex, Object...)} for adding edges
- * - {@link #V(Object...)} to be used when adding edges
  * - Property getter, setter and removal methods for vertices and edges.
  * <br />
  * An important limitation of BatchGraph is that edge properties can only be set immediately after the edge has been added.
@@ -153,7 +151,7 @@ public class BatchGraph<G extends Graph> implements Graph {
         if (internal instanceof Vertex) {
             return (Vertex) internal;
         } else if (internal != null) { //its an internal id
-            final Vertex v = baseGraph.V(internal).next();
+            final Vertex v = baseGraph.traversal().V(internal).next();
             cache.set(v, externalID);
             return v;
         } else return null;
@@ -186,7 +184,7 @@ public class BatchGraph<G extends Graph> implements Graph {
         if (!incrementalLoading)
             currentVertex = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
         else {
-            final Traversal<Vertex, Vertex> traversal = baseGraph.V().has(vertexIdKey, id);
+            final Traversal<Vertex, Vertex> traversal = baseGraph.traversal().V().has(vertexIdKey, id);
             if (traversal.hasNext()) {
                 final Vertex v = traversal.next();
                 if (traversal.hasNext())
@@ -205,11 +203,6 @@ public class BatchGraph<G extends Graph> implements Graph {
     }
 
     @Override
-    public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        throw retrievalNotSupported();
-    }
-
-    @Override
     public Iterator<Vertex> vertices(final Object... vertexIds) {
         if (vertexIds.length > 1)
             throw new IllegalArgumentException("BatchGraph only allows a single vertex id at one time");
@@ -220,7 +213,7 @@ public class BatchGraph<G extends Graph> implements Graph {
             if (null == vertex) {
                 if (!this.incrementalLoading) return Collections.emptyIterator();
                 else {
-                    final Iterator<Vertex> iterator = this.baseGraph.V().has(this.vertexIdKey, vertexIds[0]);
+                    final Iterator<Vertex> iterator = this.baseGraph.traversal().V().has(this.vertexIdKey, vertexIds[0]);
                     if (!iterator.hasNext()) return Collections.emptyIterator();
                     vertex = iterator.next();
                     if (iterator.hasNext())
@@ -387,7 +380,7 @@ public class BatchGraph<G extends Graph> implements Graph {
                         Optional.ofNullable(keyValues) : ElementHelper.remove(T.id, keysVals);
 
                 if (id.isPresent()) {
-                    final Traversal<Edge, Edge> traversal = baseGraph.E().has(edgeIdKey, id.get());
+                    final Traversal<Edge, Edge> traversal = baseGraph.traversal().E().has(edgeIdKey, id.get());
                     if (traversal.hasNext()) {
                         final Edge e = traversal.next();
                         // let the user decide how to handle conflict

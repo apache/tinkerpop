@@ -47,16 +47,6 @@ public final class EmptyGraph implements Graph {
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        return EmptyGraphTraversal.instance();
-    }
-
-    @Override
-    public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        return EmptyGraphTraversal.instance();
-    }
-
-    @Override
     public Vertex addVertex(final Object... keyValues) {
         throw Exceptions.vertexAdditionsNotSupported();
     }

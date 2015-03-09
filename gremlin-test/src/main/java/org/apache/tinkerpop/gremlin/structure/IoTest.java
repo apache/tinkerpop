@@ -128,7 +128,7 @@ public class IoTest extends AbstractGremlinTest {
             reader.readGraph(stream, g);
         }
 
-        final Vertex v = g.V().next();
+        final Vertex v = g.vertices().next();
         assertEquals(123.45d, v.value("d"), 0.000001d);
         assertEquals("some-string", v.<String>value("s"));
         assertEquals(29, v.<Integer>value("i").intValue());
@@ -244,7 +244,7 @@ public class IoTest extends AbstractGremlinTest {
             r.readGraph(in, g2);
         }
 
-        final Vertex v2 = g2.V("1").next();
+        final Vertex v2 = g2.vertices("1").next();
         assertEquals("\u00E9", v2.property("text").value());
 
         // need to manually close the "g2" instance
@@ -291,7 +291,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readGraph(is, g2);
             }
 
-            final Vertex v2 = g2.V().next();
+            final Vertex v2 = g2.vertices().next();
             final CustomId customId = (CustomId) v2.id();
             assertEquals(id, customId.getElementId());
             assertEquals("vertex", customId.getCluster());

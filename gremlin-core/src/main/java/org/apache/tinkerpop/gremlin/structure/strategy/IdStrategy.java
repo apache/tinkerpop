@@ -98,22 +98,22 @@ public final class IdStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
-        return supportsVertexId ? (f) -> (ids) -> ctx.getStrategyGraph().getBaseGraph().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
+        return supportsVertexId ? (f) -> (ids) -> ctx.getStrategyGraph().getBaseGraph().traversal().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
     public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVertexIteratorStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
-        return supportsVertexId ? (f) -> (ids) -> ctx.getStrategyGraph().getBaseGraph().V().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
+        return supportsVertexId ? (f) -> (ids) -> ctx.getStrategyGraph().getBaseGraph().traversal().V().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
     public UnaryOperator<Function<Object[], GraphTraversal<Edge, Edge>>> getGraphEStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
-        return supportsEdgeId ? (f) -> (ids) -> ctx.getStrategyGraph().getBaseGraph().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
+        return supportsEdgeId ? (f) -> (ids) -> ctx.getStrategyGraph().getBaseGraph().traversal().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
     public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
-        return supportsVertexId ? (f) -> (ids) -> ctx.getStrategyGraph().getBaseGraph().V().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
+        return supportsVertexId ? (f) -> (ids) -> ctx.getStrategyGraph().getBaseGraph().traversal().V().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override

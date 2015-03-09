@@ -133,29 +133,6 @@ public interface Graph extends AutoCloseable {
     }
 
     /**
-     * Starts a {@link GraphTraversal} over the vertices in the graph.
-     * If vertexIds are provided, then the traversal starts at those vertices, else all vertices in the graph.
-     *
-     * @param vertexIds the ids of the vertices to get (if none are provided, get all vertices)
-     * @return a graph traversal over the vertices of the graph
-     */
-    public default GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        return this.traversal().V(vertexIds);
-    }
-
-    /**
-     * Starts a {@link GraphTraversal} over the edges in the graph.
-     * If edgeIds are provided, then the traversal starts at those edges, else all edges in the graph.
-     *
-     * @param edgeIds the ids of the edges to get (if none are provided, get all edges)
-     * @return a graph traversal over the edges of the graph
-     */
-    public default GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        return this.traversal().E(edgeIds);
-    }
-
-
-    /**
      * Declare the {@link GraphComputer} to use for OLAP operations on the graph.
      * If the graph does not support graph computer then an {@link java.lang.UnsupportedOperationException} is thrown.
      *

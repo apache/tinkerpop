@@ -99,25 +99,6 @@ public class StrategyGraph implements Graph, StrategyWrapped, WrappedGraph<Graph
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        return this.compose(s -> s.getGraphVStrategy(this.graphContext, this.strategy), this.baseGraph::V).apply(vertexIds).map(vertex -> new StrategyVertex(vertex.get(), this));
-       /* final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this.getClass());
-        return traversal.asAdmin().addStep(new StrategyGraphStep<>(traversal, this, Vertex.class, this.compose(
-                s -> s.getGraphVStrategy(this.graphContext, strategy),
-                this.baseGraph::V).apply(vertexIds))); */
-    }
-
-    @Override
-    public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        return this.compose(s -> s.getGraphEStrategy(this.graphContext, this.strategy), this.baseGraph::E).apply(edgeIds).map(edge -> new StrategyEdge(edge.get(), this));
-        /*final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this.getClass());
-        return traversal.asAdmin().addStep(new StrategyGraphStep<>(traversal, this, Edge.class, this.compose(
-                s -> s.getGraphEStrategy(this.graphContext, strategy),
-                this.baseGraph::E).apply(edgeIds)));*/
-    }
-
-
-    @Override
     public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
         return this.baseGraph.compute(graphComputerClass);
     }
