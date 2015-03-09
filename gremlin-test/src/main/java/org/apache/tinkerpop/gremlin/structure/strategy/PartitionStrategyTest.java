@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.NoSuchElementException;
@@ -58,8 +59,8 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
         assertFalse(v.property(partition).isPresent());
-        assertFalse(v.iterators().propertyIterator(partition).hasNext());
-        assertFalse(v.iterators().valueIterator(partition).hasNext());
+        assertFalse(v.properties(partition).hasNext());
+        assertFalse(v.values(partition).hasNext());
         assertFalse(v.keys().contains(partition));
         assertEquals("A", ((StrategyVertex) v).getBaseVertex().property(partition).value());
     }
@@ -96,8 +97,8 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
         assertEquals("thing", e.property("every").value());
         assertEquals("connectsTo", e.label());
         assertFalse(e.property(partition).isPresent());
-        assertFalse(e.iterators().propertyIterator(partition).hasNext());
-        assertFalse(e.iterators().valueIterator(partition).hasNext());
+        assertFalse(e.properties(partition).hasNext());
+        assertFalse(e.values(partition).hasNext());
         assertFalse(e.keys().contains(partition));
         assertEquals("A", ((StrategyEdge) e).getBaseEdge().property(partition).value());
     }
@@ -207,10 +208,10 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
         assertEquals(vAA.id(), g.V(vA.id()).out().next().id());
 
         final Vertex vA1 = g.V(vA.id()).next();
-        assertEquals(new Long(1), vA1.outE().count().next());
-        assertEquals(eAtoAA.id(), vA1.outE().next().id());
-        assertEquals(new Long(1), vA1.out().count().next());
-        assertEquals(vAA.id(), vA1.out().next().id());
+        assertEquals(1, IteratorUtils.count(vA1.edges(Direction.OUT)));
+        assertEquals(eAtoAA.id(), vA1.edges(Direction.OUT).next().id());
+        assertEquals(1, IteratorUtils.count(vA1.vertices(Direction.OUT)));
+        assertEquals(vAA.id(), vA1.vertices(Direction.OUT).next().id());
 
         strategy.addReadPartition("B");
         assertEquals(new Long(3), g.V().count().next());
