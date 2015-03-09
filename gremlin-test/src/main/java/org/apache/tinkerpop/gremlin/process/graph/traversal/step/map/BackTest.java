@@ -99,8 +99,8 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         final Edge edge = traversal.next();
         assertEquals("knows", edge.label());
-        assertEquals(convertToVertexId("vadas"), edge.inV().id().next());
-        assertEquals(convertToVertexId("marko"), edge.outV().id().next());
+        assertEquals(convertToVertexId("vadas"), edge.inVertex().id());
+        assertEquals(convertToVertexId("marko"), edge.outVertex().id());
         assertEquals(0.5d, edge.<Double>value("weight"), 0.0001d);
         assertFalse(traversal.hasNext());
     }
