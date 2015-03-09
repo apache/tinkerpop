@@ -47,7 +47,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
      * feature or if it does require the computer feature then ensure that the graph being tested supports it.
      */
     protected boolean graphMeetsTestRequirements() {
-        return !hasGraphComputerRequirement() || g.features().graph().supportsComputer();
+        return !hasGraphComputerRequirement() || graph.features().graph().supportsComputer();
     }
 
     private boolean hasGraphComputerRequirement() {
