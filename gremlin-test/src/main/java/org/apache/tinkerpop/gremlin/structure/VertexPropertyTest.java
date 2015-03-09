@@ -335,7 +335,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             assertEquals(4, IteratorUtils.count(daniel.properties()));
             assertEquals(12, IteratorUtils.list(IteratorUtils.map(daniel.properties(), p -> IteratorUtils.count(p.properties()))).stream().mapToInt(kv -> kv.intValue()).sum());
 
-            daniel.properties().forEachRemaining(Property::remove);
+            daniel.properties().forEachRemaining(p -> p.properties().forEachRemaining(Property::remove));
             assertEquals(4, IteratorUtils.count(daniel.properties()));
             assertEquals(0, IteratorUtils.list(IteratorUtils.map(daniel.properties(), p -> IteratorUtils.count(p.properties()))).stream().mapToInt(kv -> kv.intValue()).sum());
 
