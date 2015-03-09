@@ -31,7 +31,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopVertex extends HadoopElement implements Vertex, Vertex.Iterators, WrappedVertex<Vertex> {
+public class HadoopVertex extends HadoopElement implements Vertex, WrappedVertex<Vertex> {
 
     protected HadoopVertex() {
     }
@@ -64,22 +64,17 @@ public class HadoopVertex extends HadoopElement implements Vertex, Vertex.Iterat
     }
 
     @Override
-    public Vertex.Iterators iterators() {
-        return this;
+    public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
+        return IteratorUtils.map(this.getBaseVertex().vertices(direction, edgeLabels), vertex -> HadoopVertex.this.graph.vertices(vertex.id()).next());
     }
 
     @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels) {
-        return IteratorUtils.map(this.getBaseVertex().iterators().vertexIterator(direction, edgeLabels), vertex -> HadoopVertex.this.graph.vertices(vertex.id()).next());
+    public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
+        return IteratorUtils.map(this.getBaseVertex().edges(direction, edgeLabels), edge -> HadoopVertex.this.graph.edges(edge.id()).next());
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
-        return IteratorUtils.map(this.getBaseVertex().iterators().edgeIterator(direction, edgeLabels), edge -> HadoopVertex.this.graph.edges(edge.id()).next());
-    }
-
-    @Override
-    public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
-        return IteratorUtils.<VertexProperty<V>, VertexProperty<V>>map(this.getBaseVertex().iterators().propertyIterator(propertyKeys), property -> new HadoopVertexProperty<>(property, HadoopVertex.this));
+    public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
+        return IteratorUtils.<VertexProperty<V>, VertexProperty<V>>map(this.getBaseVertex().properties(propertyKeys), property -> new HadoopVertexProperty<>(property, HadoopVertex.this));
     }
 }

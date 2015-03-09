@@ -47,7 +47,7 @@ import java.util.stream.Stream;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterators, WrappedVertex<Node> {
+public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<Node> {
 
     protected static final String LABEL_DELIMINATOR = "::";
 
@@ -195,12 +195,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     }
 
     @Override
-    public Vertex.Iterators iterators() {
-        return this;
-    }
-
-    @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels) {
+    public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
         this.graph.tx().readWrite();
         return new Iterator<Vertex>() {
             final Iterator<Relationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
@@ -220,7 +215,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
+    public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
         this.graph.tx().readWrite();
         return new Iterator<Edge>() {
             final Iterator<Relationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
@@ -240,7 +235,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     }
 
     @Override
-    public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
+    public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
         this.graph.tx().readWrite();
         return StreamFactory.stream(getBaseVertex().getPropertyKeys())
                 .filter(key -> ElementHelper.keyExists(key, propertyKeys))
