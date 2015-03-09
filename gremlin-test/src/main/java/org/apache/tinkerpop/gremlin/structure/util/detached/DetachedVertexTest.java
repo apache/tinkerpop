@@ -46,7 +46,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotConstructNewWithSomethingAlreadyDetached() {
-        final Vertex v = g.addVertex();
+        final Vertex v = graph.addVertex();
         final DetachedVertex dv = DetachedFactory.detach(v, true);
         assertSame(dv, DetachedFactory.detach(dv, true));
     }
@@ -54,7 +54,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldConstructDetachedVertex() {
-        final Vertex v = g.addVertex("test", "123");
+        final Vertex v = graph.addVertex("test", "123");
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
 
         assertEquals(v.id(), detachedVertex.id());
@@ -66,7 +66,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldConstructDetachedVertexAsReference() {
-        final Vertex v = g.addVertex("test", "123", "test", "321");
+        final Vertex v = graph.addVertex("test", "123", "test", "321");
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, false);
 
         assertEquals(v.id(), detachedVertex.id());
@@ -77,7 +77,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     public void shouldDetachVertexWithMultiPropertiesAndMetaProperties() {
-        final DetachedVertex v1 = DetachedFactory.detach(convertToVertex(g, "marko"), true);
+        final DetachedVertex v1 = DetachedFactory.detach(convertToVertex(graph, "marko"), true);
 
         assertEquals("person", v1.label());
         assertEquals(2, v1.keys().size());
@@ -121,7 +121,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     public void shouldAttachToGraph() {
         final Vertex toDetach = g.V(convertToVertexId("josh")).next();
         final DetachedVertex detachedVertex = DetachedFactory.detach(toDetach, true);
-        final Vertex attached = detachedVertex.attach(g);
+        final Vertex attached = detachedVertex.attach(graph);
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedVertex);
@@ -144,7 +144,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_INTEGER_VALUES)
     public void shouldNotEvaluateToEqualDifferentId() {
         final DetachedVertex originalMarko = DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true);
-        final Vertex secondMarko = g.addVertex("name", "marko", "age", 29);
+        final Vertex secondMarko = graph.addVertex("name", "marko", "age", 29);
         assertFalse(DetachedFactory.detach(secondMarko, true).equals(originalMarko));
     }
 
@@ -235,7 +235,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test(expected = UnsupportedOperationException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowAddEdge() {
-        final Vertex v = g.addVertex();
+        final Vertex v = graph.addVertex();
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
         detachedVertex.addEdge("test", null);
     }
@@ -243,7 +243,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test(expected = UnsupportedOperationException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowSetProperty() {
-        final Vertex v = g.addVertex();
+        final Vertex v = graph.addVertex();
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
         detachedVertex.property("test", "test");
     }
@@ -251,7 +251,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test(expected = UnsupportedOperationException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowRemove() {
-        final Vertex v = g.addVertex();
+        final Vertex v = graph.addVertex();
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
         detachedVertex.remove();
     }
