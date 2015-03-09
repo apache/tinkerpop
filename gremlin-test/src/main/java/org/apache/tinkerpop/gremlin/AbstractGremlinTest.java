@@ -230,9 +230,10 @@ public abstract class AbstractGremlinTest {
     public void printTraversalForm(final Traversal traversal) {
         final boolean muted = Boolean.parseBoolean(System.getProperty("muteTestLogs", "false"));
 
-        if (!muted) System.out.println("Testing: " + traversal);
+        if (!muted) System.out.println(String.format("Testing: %s", name.getMethodName()));
+        if (!muted) System.out.println("   pre-strategy:" + traversal);
         traversal.hasNext();
-        if (!muted) System.out.println("         " + traversal);
+        if (!muted) System.out.println("  post-strategy:" + traversal);
     }
 
     public static Consumer<Graph> assertVertexEdgeCounts(final int expectedVertexCount, final int expectedEdgeCount) {
