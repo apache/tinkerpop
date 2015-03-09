@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -78,7 +79,7 @@ public class TransactionTest extends AbstractGremlinTest {
             g.tx().open();
 
         try {
-            g.close();
+            graph.close();
             fail("An exception should be thrown when close behavior is manual and the graph is close with an open transaction");
         } catch (Exception ex) {
             validateException(Transaction.Exceptions.openTransactionsOnClose(), ex);
@@ -92,7 +93,7 @@ public class TransactionTest extends AbstractGremlinTest {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
 
         try {
-            g.addVertex();
+            graph.addVertex();
             fail("An exception should be thrown when read/write behavior is manual and no transaction is opened");
         } catch (Exception ex) {
             validateException(Transaction.Exceptions.transactionMustBeOpenToReadWrite(), ex);
@@ -180,22 +181,22 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
     public void shouldCommitElementAutoTransactionByDefault() {
-        final Vertex v1 = g.addVertex();
+        final Vertex v1 = graph.addVertex();
         final Edge e1 = v1.addEdge("l", v1);
         assertVertexEdgeCounts(1, 1);
-        assertEquals(v1.id(), g.vertices(v1.id()).next().id());
-        assertEquals(e1.id(), g.edges(e1.id()).next().id());
+        assertEquals(v1.id(), graph.vertices(v1.id()).next().id());
+        assertEquals(e1.id(), graph.edges(e1.id()).next().id());
         g.tx().commit();
         assertVertexEdgeCounts(1, 1);
-        assertEquals(v1.id(), g.vertices(v1.id()).next().id());
-        assertEquals(e1.id(), g.edges(e1.id()).next().id());
+        assertEquals(v1.id(), graph.vertices(v1.id()).next().id());
+        assertEquals(e1.id(), graph.edges(e1.id()).next().id());
 
-        g.vertices(v1.id()).forEachRemaining(Element::remove);
+        graph.vertices(v1.id()).forEachRemaining(Element::remove);
         assertVertexEdgeCounts(0, 0);
         g.tx().rollback();
         assertVertexEdgeCounts(1, 1);
 
-        g.vertices(v1.id()).forEachRemaining(Element::remove);
+        graph.vertices(v1.id()).forEachRemaining(Element::remove);
         assertVertexEdgeCounts(0, 0);
         g.tx().commit();
         assertVertexEdgeCounts(0, 0);
@@ -206,11 +207,11 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldRollbackElementAutoTransactionByDefault() {
-        final Vertex v1 = g.addVertex();
+        final Vertex v1 = graph.addVertex();
         final Edge e1 = v1.addEdge("l", v1);
         assertVertexEdgeCounts(1, 1);
-        assertEquals(v1.id(), g.vertices(v1.id()).next().id());
-        assertEquals(e1.id(), g.edges(e1.id()).next().id());
+        assertEquals(v1.id(), graph.vertices(v1.id()).next().id());
+        assertEquals(e1.id(), graph.edges(e1.id()).next().id());
         g.tx().rollback();
         assertVertexEdgeCounts(0, 0);
     }
@@ -219,81 +220,81 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldCommitPropertyAutoTransactionByDefault() {
-        final Vertex v1 = g.addVertex();
+        final Vertex v1 = graph.addVertex();
         final Edge e1 = v1.addEdge("l", v1);
         g.tx().commit();
         assertVertexEdgeCounts(1, 1);
-        assertEquals(v1.id(), g.vertices(v1.id()).next().id());
-        assertEquals(e1.id(), g.edges(e1.id()).next().id());
+        assertEquals(v1.id(), graph.vertices(v1.id()).next().id());
+        assertEquals(e1.id(), graph.edges(e1.id()).next().id());
 
         v1.property("name", "marko");
         assertEquals("marko", v1.<String>value("name"));
-        assertEquals("marko", g.vertices(v1.id()).next().<String>value("name"));
+        assertEquals("marko", graph.vertices(v1.id()).next().<String>value("name"));
         g.tx().commit();
 
         assertEquals("marko", v1.<String>value("name"));
-        assertEquals("marko", g.vertices(v1.id()).next().<String>value("name"));
+        assertEquals("marko", graph.vertices(v1.id()).next().<String>value("name"));
 
         v1.property(VertexProperty.Cardinality.single, "name", "stephen");
 
         assertEquals("stephen", v1.<String>value("name"));
-        assertEquals("stephen", g.vertices(v1.id()).next().<String>value("name"));
+        assertEquals("stephen", graph.vertices(v1.id()).next().<String>value("name"));
 
         g.tx().commit();
 
         assertEquals("stephen", v1.<String>value("name"));
-        assertEquals("stephen", g.vertices(v1.id()).next().<String>value("name"));
+        assertEquals("stephen", graph.vertices(v1.id()).next().<String>value("name"));
 
         e1.property("name", "xxx");
 
         assertEquals("xxx", e1.<String>value("name"));
-        assertEquals("xxx", g.edges(e1.id()).next().<String>value("name"));
+        assertEquals("xxx", graph.edges(e1.id()).next().<String>value("name"));
 
         g.tx().commit();
 
         assertEquals("xxx", e1.<String>value("name"));
-        assertEquals("xxx", g.edges(e1.id()).next().<String>value("name"));
+        assertEquals("xxx", graph.edges(e1.id()).next().<String>value("name"));
 
         assertVertexEdgeCounts(1, 1);
-        assertEquals(v1.id(), g.vertices(v1.id()).next().id());
-        assertEquals(e1.id(), g.edges(e1.id()).next().id());
+        assertEquals(v1.id(), graph.vertices(v1.id()).next().id());
+        assertEquals(e1.id(), graph.edges(e1.id()).next().id());
     }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldRollbackPropertyAutoTransactionByDefault() {
-        final Vertex v1 = g.addVertex("name", "marko");
+        final Vertex v1 = graph.addVertex("name", "marko");
         final Edge e1 = v1.addEdge("l", v1, "name", "xxx");
         assertVertexEdgeCounts(1, 1);
-        assertEquals(v1.id(), g.vertices(v1.id()).next().id());
-        assertEquals(e1.id(), g.edges(e1.id()).next().id());
+        assertEquals(v1.id(), graph.vertices(v1.id()).next().id());
+        assertEquals(e1.id(), graph.edges(e1.id()).next().id());
         assertEquals("marko", v1.<String>value("name"));
         assertEquals("xxx", e1.<String>value("name"));
         g.tx().commit();
 
         assertEquals("marko", v1.<String>value("name"));
-        assertEquals("marko", g.vertices(v1.id()).next().<String>value("name"));
+        assertEquals("marko", graph.vertices(v1.id()).next().<String>value("name"));
 
         v1.property(VertexProperty.Cardinality.single, "name", "stephen");
 
         assertEquals("stephen", v1.<String>value("name"));
-        assertEquals("stephen", g.vertices(v1.id()).next().<String>value("name"));
+        assertEquals("stephen", graph.vertices(v1.id()).next().<String>value("name"));
 
         g.tx().rollback();
 
         assertEquals("marko", v1.<String>value("name"));
-        assertEquals("marko", g.vertices(v1.id()).next().<String>value("name"));
+        assertEquals("marko", graph.vertices(v1.id()).next().<String>value("name"));
 
         e1.property("name", "yyy");
 
         assertEquals("yyy", e1.<String>value("name"));
-        assertEquals("yyy", g.edges(e1.id()).next().<String>value("name"));
+        assertEquals("yyy", graph.edges(e1.id()).next().<String>value("name"));
 
         g.tx().rollback();
 
         assertEquals("xxx", e1.<String>value("name"));
-        assertEquals("xxx", g.edges(e1.id()).next().<String>value("name"));
+        assertEquals("xxx", graph.edges(e1.id()).next().<String>value("name"));
 
         assertVertexEdgeCounts(1, 1);
     }
@@ -302,12 +303,12 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldCommitOnShutdownByDefault() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko");
+        final Vertex v1 = graph.addVertex("name", "marko");
         final Object oid = v1.id();
-        g.close();
+        graph.close();
 
-        g = graphProvider.openTestGraph(config);
-        final Vertex v2 = g.vertices(oid).next();
+        graph = graphProvider.openTestGraph(config);
+        final Vertex v2 = graph.vertices(oid).next();
         assertEquals("marko", v2.<String>value("name"));
     }
 
@@ -315,14 +316,14 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldRollbackOnShutdownWhenConfigured() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko");
+        final Vertex v1 = graph.addVertex("name", "marko");
         final Object oid = v1.id();
         g.tx().onClose(Transaction.CLOSE_BEHAVIOR.ROLLBACK);
-        g.close();
+        graph.close();
 
-        g = graphProvider.openTestGraph(config);
+        graph = graphProvider.openTestGraph(config);
         try {
-            g.vertices(oid).next();
+            graph.vertices(oid).next();
             fail("Vertex should not be found as close behavior was set to rollback");
         } catch (Exception ex) {
             validateException(Graph.Exceptions.elementNotFound(Vertex.class, oid), ex);
@@ -338,7 +339,6 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_INTEGER_VALUES)
     public void shouldExecuteWithCompetingThreads() {
-        final Graph graph = g;
         int totalThreads = 250;
         final AtomicInteger vertices = new AtomicInteger(0);
         final AtomicInteger edges = new AtomicInteger(0);
@@ -402,7 +402,7 @@ public class TransactionTest extends AbstractGremlinTest {
         final Thread threadModFirstGraph = new Thread() {
             @Override
             public void run() {
-                g.addVertex();
+                graph.addVertex();
                 g.tx().commit();
             }
         };
@@ -413,10 +413,10 @@ public class TransactionTest extends AbstractGremlinTest {
         final Thread threadReadBothGraphs = new Thread() {
             @Override
             public void run() {
-                final long gCounter = g.V().count().next();
+                final long gCounter = IteratorUtils.count(graph.vertices());
                 assertEquals(1l, gCounter);
 
-                final long g1Counter = g1.V().count().next();
+                final long g1Counter = IteratorUtils.count(g1.vertices());
                 assertEquals(0l, g1Counter);
             }
         };
@@ -434,8 +434,6 @@ public class TransactionTest extends AbstractGremlinTest {
     public void shouldSupportTransactionIsolationCommitCheck() throws Exception {
         // the purpose of this test is to simulate gremlin server access to a graph instance, where one thread modifies
         // the graph and a separate thread cannot affect the transaction of the first
-        final Graph graph = g;
-
         final CountDownLatch latchCommittedInOtherThread = new CountDownLatch(1);
         final CountDownLatch latchCommitInOtherThread = new CountDownLatch(1);
 
@@ -457,7 +455,7 @@ public class TransactionTest extends AbstractGremlinTest {
                 graph.tx().rollback();
 
                 // there should be no vertices here
-                noVerticesInFirstThread.set(!graph.V().hasNext());
+                noVerticesInFirstThread.set(!graph.vertices().hasNext());
             }
         };
 
@@ -521,8 +519,6 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldSupportTransactionFireAndForget() {
-        final Graph graph = g;
-
         // first fail the tx
         g.tx().submit(FunctionUtils.wrapFunction(grx -> {
             grx.addVertex();
@@ -543,8 +539,6 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldSupportTransactionOneAndDone() {
-        final Graph graph = g;
-
         // first fail the tx
         try {
             g.tx().submit(FunctionUtils.wrapFunction(grx -> {
@@ -570,7 +564,6 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldSupportTransactionExponentialBackoff() {
-        final Graph graph = g;
 
         // first fail the tx
         final AtomicInteger attempts = new AtomicInteger(0);
@@ -609,7 +602,6 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldSupportTransactionExponentialBackoffWithExceptionChecks() {
-        final Graph graph = g;
         final Set<Class> exceptions = new HashSet<Class>() {{
             add(IllegalStateException.class);
         }};
@@ -668,8 +660,6 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldSupportTransactionRetry() {
-        final Graph graph = g;
-
         // first fail the tx
         final AtomicInteger attempts = new AtomicInteger(0);
         try {
@@ -707,7 +697,6 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldSupportTransactionRetryWhenUsingManualTransactions() {
-        final Graph graph = g;
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
 
         // first fail the tx
@@ -748,7 +737,6 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldCountVerticesEdgesOnPreTransactionCommit() {
         // see a more complex version of this test at GraphTest.shouldProperlyCountVerticesAndEdgesOnAddRemove()
-        final Graph graph = g;
         Vertex v1 = graph.addVertex();
         graph.tx().commit();
 
@@ -773,8 +761,6 @@ public class TransactionTest extends AbstractGremlinTest {
         // one thread modifies the graph and a separate thread reads before the transaction is committed.
         // the expectation is that the changes in the transaction are isolated to the thread that made the change
         // and the second thread should not see the change until commit() in the first thread.
-        final Graph graph = g;
-
         final CountDownLatch latchCommit = new CountDownLatch(1);
         final CountDownLatch latchFirstRead = new CountDownLatch(1);
         final CountDownLatch latchSecondRead = new CountDownLatch(1);
@@ -813,7 +799,7 @@ public class TransactionTest extends AbstractGremlinTest {
                 }
 
                 // reading vertex before tx from other thread is committed...should have zero vertices
-                beforeCommitInOtherThread.set(graph.V().count().next());
+                beforeCommitInOtherThread.set(IteratorUtils.count(graph.vertices()));
 
                 latchCommit.countDown();
 
@@ -825,9 +811,9 @@ public class TransactionTest extends AbstractGremlinTest {
 
                 // tx in other thread is committed...should have one vertex.  rollback first to start a new tx
                 // to get a fresh read given the commit
-                afterCommitInOtherThreadButBeforeRollbackInCurrentThread.set(graph.V().count().next());
+                afterCommitInOtherThreadButBeforeRollbackInCurrentThread.set(IteratorUtils.count(graph.vertices()));
                 graph.tx().rollback();
-                afterCommitInOtherThread.set(graph.V().count().next());
+                afterCommitInOtherThread.set(IteratorUtils.count(graph.vertices()));
             }
         };
 
@@ -847,7 +833,7 @@ public class TransactionTest extends AbstractGremlinTest {
     public void shouldAllowReferenceOfVertexOutsideOfOriginalTransactionalContextManual() {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
         g.tx().open();
-        final Vertex v1 = g.addVertex("name", "stephen");
+        final Vertex v1 = graph.addVertex("name", "stephen");
         g.tx().commit();
 
         g.tx().open();
@@ -865,7 +851,7 @@ public class TransactionTest extends AbstractGremlinTest {
     public void shouldAllowReferenceOfEdgeOutsideOfOriginalTransactionalContextManual() {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
         g.tx().open();
-        final Vertex v1 = g.addVertex();
+        final Vertex v1 = graph.addVertex();
         final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
         g.tx().commit();
 
@@ -882,7 +868,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldAllowReferenceOfVertexOutsideOfOriginalTransactionalContextAuto() {
-        final Vertex v1 = g.addVertex("name", "stephen");
+        final Vertex v1 = graph.addVertex("name", "stephen");
         g.tx().commit();
 
         assertEquals("stephen", v1.value("name"));
@@ -896,7 +882,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldAllowReferenceOfEdgeOutsideOfOriginalTransactionalContextAuto() {
-        final Vertex v1 = g.addVertex();
+        final Vertex v1 = graph.addVertex();
         final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
         g.tx().commit();
 
@@ -912,7 +898,7 @@ public class TransactionTest extends AbstractGremlinTest {
     public void shouldAllowReferenceOfVertexIdOutsideOfOriginalThreadManual() throws Exception {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
         g.tx().open();
-        final Vertex v1 = g.addVertex("name", "stephen");
+        final Vertex v1 = graph.addVertex("name", "stephen");
 
         final AtomicReference<Object> id = new AtomicReference<>();
         final Thread t = new Thread(() -> {
@@ -934,7 +920,7 @@ public class TransactionTest extends AbstractGremlinTest {
     public void shouldAllowReferenceOfEdgeIdOutsideOfOriginalThreadManual() throws Exception {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
         g.tx().open();
-        final Vertex v1 = g.addVertex();
+        final Vertex v1 = graph.addVertex();
         final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
 
         final AtomicReference<Object> id = new AtomicReference<>();
@@ -955,7 +941,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldAllowReferenceOfVertexIdOutsideOfOriginalThreadAuto() throws Exception {
-        final Vertex v1 = g.addVertex("name", "stephen");
+        final Vertex v1 = graph.addVertex("name", "stephen");
 
         final AtomicReference<Object> id = new AtomicReference<>();
         final Thread t = new Thread(() -> id.set(v1.id()));
@@ -971,7 +957,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldAllowReferenceOfEdgeIdOutsideOfOriginalThreadAuto() throws Exception {
-        final Vertex v1 = g.addVertex();
+        final Vertex v1 = graph.addVertex();
         final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
 
         final AtomicReference<Object> id = new AtomicReference<>();
