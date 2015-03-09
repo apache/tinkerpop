@@ -39,7 +39,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotConstructNewWithSomethingAlreadyDetached() {
-        final Vertex v = g.addVertex();
+        final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("test", v, "xxx", "yyy");
         final DetachedProperty dp = DetachedFactory.detach(e.property("xxx"));
         assertSame(dp, DetachedFactory.detach(dp));
@@ -72,7 +72,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
         final Edge e = g.E(convertToEdgeId("josh", "created", "lop")).next();
         final Property toDetach = e.properties("weight").next();
         final DetachedProperty detachedProperty = DetachedFactory.detach(toDetach);
-        final Property attached = detachedProperty.attach(g);
+        final Property attached = detachedProperty.attach(graph);
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedProperty);

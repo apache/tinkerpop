@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.algorithm.generator;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -83,26 +83,26 @@ public class CommunityGeneratorTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldGenerateDifferentGraph() throws Exception {
             final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName());
-            final Graph g1 = graphProvider.openTestGraph(configuration);
+            final Graph graph1 = graphProvider.openTestGraph(configuration);
 
             try {
-                communityGeneratorTest(g, () -> 123456789l);
+                communityGeneratorTest(graph, () -> 123456789l);
 
-                afterLoadGraphWith(g1);
-                communityGeneratorTest(g1, () -> 987654321l);
+                afterLoadGraphWith(graph1);
+                communityGeneratorTest(graph1, () -> 987654321l);
 
-                assertTrue(g.E().count().next() > 0);
-                assertTrue(g.V().count().next() > 0);
-                assertTrue(g1.E().count().next() > 0);
-                assertTrue(g1.V().count().next() > 0);
+                assertTrue(IteratorUtils.count(graph.edges()) > 0);
+                assertTrue(IteratorUtils.count(graph.vertices()) > 0);
+                assertTrue(IteratorUtils.count(graph1.edges()) > 0);
+                assertTrue(IteratorUtils.count(graph1.vertices()) > 0);
 
                 // don't assert counts of edges...those may be the same, just ensure that not every vertex has the
                 // same number of edges between graphs.  that should make it harder for the test to fail.
-                assertFalse(same(g, g1));
+                assertFalse(same(graph, graph1));
             } catch (Exception ex) {
                 throw ex;
             } finally {
-                graphProvider.clear(g1, configuration);
+                graphProvider.clear(graph1, configuration);
             }
 
             assertFalse(failures.get() >= ultimateFailureThreshold);
@@ -112,26 +112,26 @@ public class CommunityGeneratorTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldGenerateSameGraph() throws Exception {
             final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName());
-            final Graph g1 = graphProvider.openTestGraph(configuration);
+            final Graph graph1 = graphProvider.openTestGraph(configuration);
 
             try {
-                communityGeneratorTest(g, () -> 123456789l);
+                communityGeneratorTest(graph, () -> 123456789l);
 
-                afterLoadGraphWith(g1);
-                communityGeneratorTest(g1, () -> 123456789l);
+                afterLoadGraphWith(graph1);
+                communityGeneratorTest(graph1, () -> 123456789l);
 
-                assertTrue(g.E().count().next() > 0);
-                assertTrue(g.V().count().next() > 0);
-                assertTrue(g1.E().count().next() > 0);
-                assertTrue(g1.V().count().next() > 0);
-                assertEquals(g.E().count().next(), g1.E().count().next());
+                assertTrue(IteratorUtils.count(graph.edges()) > 0);
+                assertTrue(IteratorUtils.count(graph.vertices()) > 0);
+                assertTrue(IteratorUtils.count(graph1.edges()) > 0);
+                assertTrue(IteratorUtils.count(graph1.vertices()) > 0);
+                assertEquals(IteratorUtils.count(graph.edges()), IteratorUtils.count(graph1.edges()));
 
                 // ensure that every vertex has the same number of edges between graphs.
-                assertTrue(same(g, g1));
+                assertTrue(same(graph, graph1));
             } catch (Exception ex) {
                 throw ex;
             } finally {
-                graphProvider.clear(g1, configuration);
+                graphProvider.clear(graph1, configuration);
             }
 
             assertFalse(failures.get() >= ultimateFailureThreshold);
@@ -145,7 +145,7 @@ public class CommunityGeneratorTest {
         }
 
         protected Iterable<Vertex> verticesByOid(final Graph graph) {
-            List<Vertex> vertices = graph.V().toList();
+            List<Vertex> vertices = IteratorUtils.list(graph.vertices());
             Collections.sort(vertices,
                     (v1, v2) -> ((Integer) v1.value("oid")).compareTo((Integer) v2.value("oid")));
             return vertices;
@@ -193,7 +193,7 @@ public class CommunityGeneratorTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldProcessVerticesEdges() {
             final Distribution dist = new NormalDistribution(2);
-            final CommunityGenerator generator = CommunityGenerator.build(g)
+            final CommunityGenerator generator = CommunityGenerator.build(graph)
                     .label("knows")
                     .edgeProcessor(e -> e.<String>property("data", "test"))
                     .vertexProcessor((v, m) -> {
@@ -207,11 +207,11 @@ public class CommunityGeneratorTest {
                     .expectedNumEdges(1000).create();
             final long edgesGenerated = generator.generate();
             assertTrue(edgesGenerated > 0);
-            tryCommit(g, g -> {
-                assertEquals(new Long(edgesGenerated), new Long(IteratorUtils.count(g.edges())));
-                assertTrue(IteratorUtils.count(g.vertices()) > 0);
-                assertTrue(StreamFactory.stream(g.edges()).allMatch(e -> e.value("data").equals("test")));
-                assertTrue(StreamFactory.stream(g.vertices()).allMatch(
+            tryCommit(graph, graph -> {
+                assertEquals(new Long(edgesGenerated), new Long(IteratorUtils.count(graph.edges())));
+                assertTrue(IteratorUtils.count(graph.vertices()) > 0);
+                assertTrue(StreamFactory.stream(graph.edges()).allMatch(e -> e.value("data").equals("test")));
+                assertTrue(StreamFactory.stream(graph.vertices()).allMatch(
                         v -> v.value("test").equals("data") && v.property("communityIndex").isPresent()
                 ));
             });

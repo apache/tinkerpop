@@ -18,13 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.script;
 
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.process.T;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineCache;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -33,10 +26,17 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineCache;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import javax.script.ScriptEngine;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -121,8 +121,8 @@ public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritabl
         }
 
         public Vertex vertex(final Object id, final String label) {
-            final Traversal<Vertex, Vertex> t = graph.V(id);
-            return t.hasNext() ? t.next() : graph.addVertex(T.id, id, T.label, label);
+            final Iterator<Vertex> vertices = graph.vertices(id);
+            return vertices.hasNext() ? vertices.next() : graph.addVertex(T.id, id, T.label, label);
         }
 
         public Edge edge(final Vertex out, final Vertex in) {

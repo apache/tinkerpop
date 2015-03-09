@@ -44,7 +44,7 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldAppendPartitionToVertex() {
-        final Vertex v = g.addVertex("any", "thing");
+        final Vertex v = graph.addVertex("any", "thing");
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
@@ -54,7 +54,7 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldHidePartitionKeyOnVertex() {
-        final Vertex v = g.addVertex("any", "thing");
+        final Vertex v = graph.addVertex("any", "thing");
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
@@ -68,8 +68,8 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldAppendPartitionToEdge() {
-        final Vertex v1 = g.addVertex("any", "thing");
-        final Vertex v2 = g.addVertex("some", "thing");
+        final Vertex v1 = graph.addVertex("any", "thing");
+        final Vertex v2 = graph.addVertex("some", "thing");
         final Edge e = v1.addEdge("connectsTo", v2, "every", "thing");
 
         assertNotNull(v1);
@@ -89,8 +89,8 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldHidePartitionKeyOnEdge() {
-        final Vertex v1 = g.addVertex("any", "thing");
-        final Vertex v2 = g.addVertex("some", "thing");
+        final Vertex v1 = graph.addVertex("any", "thing");
+        final Vertex v2 = graph.addVertex("some", "thing");
         final Edge e = v1.addEdge("connectsTo", v2, "every", "thing");
 
         assertNotNull(e);
@@ -106,10 +106,10 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldWriteVerticesToMultiplePartitions() {
-        final Vertex vA = g.addVertex("any", "a");
-        final PartitionStrategy strategy = (PartitionStrategy) ((StrategyGraph) g).getStrategy();
+        final Vertex vA = graph.addVertex("any", "a");
+        final PartitionStrategy strategy = (PartitionStrategy) ((StrategyGraph) graph).getStrategy();
         strategy.setWritePartition("B");
-        final Vertex vB = g.addVertex("any", "b");
+        final Vertex vB = graph.addVertex("any", "b");
 
         assertNotNull(vA);
         assertEquals("a", vA.property("any").value());
@@ -144,10 +144,10 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldThrowExceptionOnvInDifferentPartition() {
-        final Vertex vA = g.addVertex("any", "a");
+        final Vertex vA = graph.addVertex("any", "a");
         assertEquals(vA.id(), g.V(vA.id()).id().next());
 
-        final PartitionStrategy strategy = (PartitionStrategy) ((StrategyGraph) g).getStrategy();
+        final PartitionStrategy strategy = (PartitionStrategy) ((StrategyGraph) graph).getStrategy();
         strategy.clearReadPartitions();
 
         try {
@@ -162,11 +162,11 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldThrowExceptionOneInDifferentPartition() {
-        final Vertex vA = g.addVertex("any", "a");
+        final Vertex vA = graph.addVertex("any", "a");
         final Edge e = vA.addEdge("knows", vA);
         assertEquals(e.id(), g.E(e.id()).id().next());
 
-        final PartitionStrategy strategy = (PartitionStrategy) ((StrategyGraph) g).getStrategy();
+        final PartitionStrategy strategy = (PartitionStrategy) ((StrategyGraph) graph).getStrategy();
         strategy.clearReadPartitions();
 
         try {
@@ -181,17 +181,17 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldWriteToMultiplePartitions() {
-        final Vertex vA = g.addVertex("any", "a");
-        final Vertex vAA = g.addVertex("any", "aa");
+        final Vertex vA = graph.addVertex("any", "a");
+        final Vertex vAA = graph.addVertex("any", "aa");
         final Edge eAtoAA = vA.addEdge("a->a", vAA);
 
-        final PartitionStrategy strategy = (PartitionStrategy) ((StrategyGraph) g).getStrategy();
+        final PartitionStrategy strategy = (PartitionStrategy) ((StrategyGraph) graph).getStrategy();
         strategy.setWritePartition("B");
-        final Vertex vB = g.addVertex("any", "b");
+        final Vertex vB = graph.addVertex("any", "b");
         vA.addEdge("a->b", vB);
 
         strategy.setWritePartition("C");
-        final Vertex vC = g.addVertex("any", "c");
+        final Vertex vC = graph.addVertex("any", "c");
         final Edge eBtovC = vB.addEdge("b->c", vC);
         final Edge eAtovC = vA.addEdge("a->c", vC);
 

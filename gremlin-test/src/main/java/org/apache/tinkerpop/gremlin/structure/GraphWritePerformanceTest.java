@@ -59,11 +59,11 @@ public class GraphWritePerformanceTest {
         public void writeEmptyVertices() throws Exception {
             final int verticesToGenerate = 100000;
             for (int ix = 0; ix < verticesToGenerate; ix++) {
-                g.addVertex();
-                tryBatchCommit(g, ix);
+                graph.addVertex();
+                tryBatchCommit(graph, ix);
             }
 
-            assertVertexEdgeCounts(verticesToGenerate, 0).accept(g);
+            assertVertexEdgeCounts(verticesToGenerate, 0).accept(graph);
         }
 
         @Test
@@ -72,15 +72,15 @@ public class GraphWritePerformanceTest {
             final int verticesToGenerate = 100000;
             Optional<Vertex> lastVertex = Optional.empty();
             for (int ix = 0; ix < verticesToGenerate; ix++) {
-                final Vertex v = g.addVertex();
+                final Vertex v = graph.addVertex();
                 if (lastVertex.isPresent())
                     v.addEdge("parent", lastVertex.get());
 
                 lastVertex = Optional.of(v);
-                tryBatchCommit(g, ix);
+                tryBatchCommit(graph, ix);
             }
 
-            assertVertexEdgeCounts(verticesToGenerate, verticesToGenerate - 1).accept(g);
+            assertVertexEdgeCounts(verticesToGenerate, verticesToGenerate - 1).accept(graph);
         }
     }
 
@@ -97,7 +97,7 @@ public class GraphWritePerformanceTest {
         public void writeGryo() throws Exception {
             final GraphWriter writer = GryoWriter.build().create();
             final OutputStream os = new ByteArrayOutputStream();
-            writer.writeGraph(os, g);
+            writer.writeGraph(os, graph);
         }
 
         @Test
@@ -106,7 +106,7 @@ public class GraphWritePerformanceTest {
         public void writeGraphML() throws Exception {
             final GraphWriter writer = GraphMLWriter.build().create();
             final OutputStream os = new ByteArrayOutputStream();
-            writer.writeGraph(os, g);
+            writer.writeGraph(os, graph);
         }
 
         @Test
@@ -115,7 +115,7 @@ public class GraphWritePerformanceTest {
         public void writeGraphSON() throws Exception {
             final GraphWriter writer = GraphSONWriter.build().create();
             final OutputStream os = new ByteArrayOutputStream();
-            writer.writeGraph(os, g);
+            writer.writeGraph(os, graph);
         }
     }
 

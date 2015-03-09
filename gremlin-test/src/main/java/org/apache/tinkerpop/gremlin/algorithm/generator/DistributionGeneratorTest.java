@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.algorithm.generator;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -115,9 +115,9 @@ public class DistributionGeneratorTest {
             final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName());
             final Graph g1 = graphProvider.openTestGraph(configuration);
             try {
-                final Iterable<Vertex> vordered = verticesByOid(g);
-                final DistributionGenerator generator = makeGenerator(g).seedGenerator(() -> 123456789l).inVertices(vordered).outVertices(vordered).create();
-                distributionGeneratorTest(g, generator);
+                final Iterable<Vertex> vordered = verticesByOid(graph);
+                final DistributionGenerator generator = makeGenerator(graph).seedGenerator(() -> 123456789l).inVertices(vordered).outVertices(vordered).create();
+                distributionGeneratorTest(graph, generator);
 
                 afterLoadGraphWith(g1);
                 final Iterable<Vertex> vordered1 = verticesByOid(g1);
@@ -125,7 +125,7 @@ public class DistributionGeneratorTest {
                 distributionGeneratorTest(g1, generator1);
 
                 // ensure that every vertex has the same number of edges between graphs.
-                assertTrue(same(g, g1));
+                assertTrue(same(graph, g1));
             } catch (Exception ex) {
                 throw ex;
             } finally {
@@ -141,7 +141,7 @@ public class DistributionGeneratorTest {
         }
 
         protected Iterable<Vertex> verticesByOid(final Graph graph) {
-            List<Vertex> vertices = graph.V().toList();
+            List<Vertex> vertices = IteratorUtils.list(graph.vertices());
             Collections.sort(vertices,
                     (v1, v2) -> ((Integer) v1.value("oid")).compareTo((Integer) v2.value("oid")));
             return vertices;
@@ -150,7 +150,7 @@ public class DistributionGeneratorTest {
         private void distributionGeneratorTest(final Graph graph, final DistributionGenerator generator) {
             final int numEdges = generator.generate();
             assertTrue(numEdges > 0);
-            tryCommit(graph, g -> assertEquals(new Long(numEdges), g.E().count().next()));
+            tryCommit(graph, g -> assertEquals(numEdges, IteratorUtils.count(g.edges())));
         }
     }
 
@@ -161,7 +161,7 @@ public class DistributionGeneratorTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldProcessEdges() {
             final Distribution dist = new NormalDistribution(2);
-            final DistributionGenerator generator = DistributionGenerator.build(g)
+            final DistributionGenerator generator = DistributionGenerator.build(graph)
                     .label("knows")
                     .edgeProcessor(e -> e.<String>property("data", "test"))
                     .outDistribution(dist)
@@ -169,7 +169,7 @@ public class DistributionGeneratorTest {
                     .expectedNumEdges(100).create();
             final int edgesGenerated = generator.generate();
             assertTrue(edgesGenerated > 0);
-            tryCommit(g, g -> {
+            tryCommit(graph, g -> {
                 assertEquals(new Long(edgesGenerated), new Long(IteratorUtils.count(g.edges())));
                 assertTrue(IteratorUtils.count(g.vertices()) > 0);
                 assertTrue(StreamFactory.stream(g.edges()).allMatch(e -> e.value("data").equals("test")));

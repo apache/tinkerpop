@@ -125,12 +125,12 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_out_bX();
         printTraversalForm(traversal);
         assertResults(vertexToStr, traversal,
-                new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "lop")),
-                new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")),
-                new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "vadas")),
-                new Bindings<Vertex>().put("a", convertToVertex(g, "josh")).put("b", convertToVertex(g, "ripple")),
-                new Bindings<Vertex>().put("a", convertToVertex(g, "josh")).put("b", convertToVertex(g, "lop")),
-                new Bindings<Vertex>().put("a", convertToVertex(g, "peter")).put("b", convertToVertex(g, "lop")));
+                new Bindings<Vertex>().put("a", convertToVertex(graph, "marko")).put("b", convertToVertex(graph, "lop")),
+                new Bindings<Vertex>().put("a", convertToVertex(graph, "marko")).put("b", convertToVertex(graph, "josh")),
+                new Bindings<Vertex>().put("a", convertToVertex(graph, "marko")).put("b", convertToVertex(graph, "vadas")),
+                new Bindings<Vertex>().put("a", convertToVertex(graph, "josh")).put("b", convertToVertex(graph, "ripple")),
+                new Bindings<Vertex>().put("a", convertToVertex(graph, "josh")).put("b", convertToVertex(graph, "lop")),
+                new Bindings<Vertex>().put("a", convertToVertex(graph, "peter")).put("b", convertToVertex(graph, "lop")));
     }
 
     @Test
@@ -162,8 +162,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_knows_b__b_created_cX();
         printTraversalForm(traversal);
         assertResults(vertexToStr, traversal,
-                new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "lop")),
-                new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "ripple")));
+                new Bindings<Vertex>().put("a", convertToVertex(graph, "marko")).put("b", convertToVertex(graph, "josh")).put("c", convertToVertex(graph, "lop")),
+                new Bindings<Vertex>().put("a", convertToVertex(graph, "marko")).put("b", convertToVertex(graph, "josh")).put("c", convertToVertex(graph, "ripple")));
     }
 
     @Test
@@ -172,8 +172,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_knows_b__a_created_cX();
         printTraversalForm(traversal);
         assertResults(vertexToStr, traversal,
-                new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "vadas")).put("c", convertToVertex(g, "lop")),
-                new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "lop")));
+                new Bindings<Vertex>().put("a", convertToVertex(graph, "marko")).put("b", convertToVertex(graph, "vadas")).put("c", convertToVertex(graph, "lop")),
+                new Bindings<Vertex>().put("a", convertToVertex(graph, "marko")).put("b", convertToVertex(graph, "josh")).put("c", convertToVertex(graph, "lop")));
     }
 
     @Test
@@ -182,8 +182,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXd_0knows_a__d_hasXname_vadasX__a_knows_b__b_created_cX();
         printTraversalForm(traversal);
         assertResults(vertexToStr, traversal,
-                new Bindings<Vertex>().put("d", convertToVertex(g, "vadas")).put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "lop")),
-                new Bindings<Vertex>().put("d", convertToVertex(g, "vadas")).put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "ripple")));
+                new Bindings<Vertex>().put("d", convertToVertex(graph, "vadas")).put("a", convertToVertex(graph, "marko")).put("b", convertToVertex(graph, "josh")).put("c", convertToVertex(graph, "lop")),
+                new Bindings<Vertex>().put("d", convertToVertex(graph, "vadas")).put("a", convertToVertex(graph, "marko")).put("b", convertToVertex(graph, "josh")).put("c", convertToVertex(graph, "ripple")));
     }
 
     @Test
@@ -298,8 +298,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX();
         printTraversalForm(traversal);
         assertResults(vertexToStr, traversal,
-                new Bindings<Vertex>().put("a", convertToVertex(g, "Garcia")).put("b", convertToVertex(g, "CREAM PUFF WAR")),
-                new Bindings<Vertex>().put("a", convertToVertex(g, "Garcia")).put("b", convertToVertex(g, "CRYPTICAL ENVELOPMENT")));
+                new Bindings<Vertex>().put("a", convertToVertex(graph, "Garcia")).put("b", convertToVertex(graph, "CREAM PUFF WAR")),
+                new Bindings<Vertex>().put("a", convertToVertex(graph, "Garcia")).put("b", convertToVertex(graph, "CRYPTICAL ENVELOPMENT")));
     }
 
     @Test
@@ -309,11 +309,11 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         assertResults(vertexToStr, traversal,
                 new Bindings<Vertex>()
-                        .put("a", convertToVertex(g, "Garcia"))
-                        .put("b", convertToVertex(g, "I WANT TO TELL YOU"))
-                        .put("c", convertToVertex(g, "STIR IT UP"))
-                        .put("d", convertToVertex(g, "George_Harrison"))
-                        .put("e", convertToVertex(g, "Bob_Marley")));
+                        .put("a", convertToVertex(graph, "Garcia"))
+                        .put("b", convertToVertex(graph, "I WANT TO TELL YOU"))
+                        .put("c", convertToVertex(graph, "STIR IT UP"))
+                        .put("d", convertToVertex(graph, "George_Harrison"))
+                        .put("e", convertToVertex(graph, "Bob_Marley")));
     }
 
     @Test
@@ -341,35 +341,35 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             printTraversalForm(traversal);
             assertResults(vertexToStr, traversal,
                     new Bindings<Vertex>()
-                            .put("a", convertToVertex(g, "Garcia"))
-                            .put("b", convertToVertex(g, "CREAM PUFF WAR"))
-                            .put("c", convertToVertex(g, "CREAM PUFF WAR"))
-                            .put("d", convertToVertex(g, "Garcia")),
+                            .put("a", convertToVertex(graph, "Garcia"))
+                            .put("b", convertToVertex(graph, "CREAM PUFF WAR"))
+                            .put("c", convertToVertex(graph, "CREAM PUFF WAR"))
+                            .put("d", convertToVertex(graph, "Garcia")),
                     new Bindings<Vertex>()
-                            .put("a", convertToVertex(g, "Garcia"))
-                            .put("b", convertToVertex(g, "CREAM PUFF WAR"))
-                            .put("c", convertToVertex(g, "CRYPTICAL ENVELOPMENT"))
-                            .put("d", convertToVertex(g, "Garcia")),
+                            .put("a", convertToVertex(graph, "Garcia"))
+                            .put("b", convertToVertex(graph, "CREAM PUFF WAR"))
+                            .put("c", convertToVertex(graph, "CRYPTICAL ENVELOPMENT"))
+                            .put("d", convertToVertex(graph, "Garcia")),
                     new Bindings<Vertex>()
-                            .put("a", convertToVertex(g, "Garcia"))
-                            .put("b", convertToVertex(g, "CRYPTICAL ENVELOPMENT"))
-                            .put("c", convertToVertex(g, "CREAM PUFF WAR"))
-                            .put("d", convertToVertex(g, "Garcia")),
+                            .put("a", convertToVertex(graph, "Garcia"))
+                            .put("b", convertToVertex(graph, "CRYPTICAL ENVELOPMENT"))
+                            .put("c", convertToVertex(graph, "CREAM PUFF WAR"))
+                            .put("d", convertToVertex(graph, "Garcia")),
                     new Bindings<Vertex>()
-                            .put("a", convertToVertex(g, "Garcia"))
-                            .put("b", convertToVertex(g, "CRYPTICAL ENVELOPMENT"))
-                            .put("c", convertToVertex(g, "CRYPTICAL ENVELOPMENT"))
-                            .put("d", convertToVertex(g, "Garcia")),
+                            .put("a", convertToVertex(graph, "Garcia"))
+                            .put("b", convertToVertex(graph, "CRYPTICAL ENVELOPMENT"))
+                            .put("c", convertToVertex(graph, "CRYPTICAL ENVELOPMENT"))
+                            .put("d", convertToVertex(graph, "Garcia")),
                     new Bindings<Vertex>()
-                            .put("a", convertToVertex(g, "Grateful_Dead"))
-                            .put("b", convertToVertex(g, "CANT COME DOWN"))
-                            .put("c", convertToVertex(g, "DOWN SO LONG"))
-                            .put("d", convertToVertex(g, "Garcia")),
+                            .put("a", convertToVertex(graph, "Grateful_Dead"))
+                            .put("b", convertToVertex(graph, "CANT COME DOWN"))
+                            .put("c", convertToVertex(graph, "DOWN SO LONG"))
+                            .put("d", convertToVertex(graph, "Garcia")),
                     new Bindings<Vertex>()
-                            .put("a", convertToVertex(g, "Grateful_Dead"))
-                            .put("b", convertToVertex(g, "THE ONLY TIME IS NOW"))
-                            .put("c", convertToVertex(g, "DOWN SO LONG"))
-                            .put("d", convertToVertex(g, "Garcia")));
+                            .put("a", convertToVertex(graph, "Grateful_Dead"))
+                            .put("b", convertToVertex(graph, "THE ONLY TIME IS NOW"))
+                            .put("c", convertToVertex(graph, "DOWN SO LONG"))
+                            .put("d", convertToVertex(graph, "Garcia")));
         });
     }
 
@@ -431,8 +431,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
         // apply the query to the graph, gathering non-trivial branch factors
         assertResults(query.solveFor(iter),
-                new Bindings<>().put("d", convertToVertex(g, "vadas")).put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "lop")),
-                new Bindings<>().put("d", convertToVertex(g, "vadas")).put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "ripple")));
+                new Bindings<>().put("d", convertToVertex(graph, "vadas")).put("a", convertToVertex(graph, "marko")).put("b", convertToVertex(graph, "josh")).put("c", convertToVertex(graph, "lop")),
+                new Bindings<>().put("d", convertToVertex(graph, "vadas")).put("a", convertToVertex(graph, "marko")).put("b", convertToVertex(graph, "josh")).put("c", convertToVertex(graph, "ripple")));
         query.optimize();
         //System.out.println(query.summarize());
 

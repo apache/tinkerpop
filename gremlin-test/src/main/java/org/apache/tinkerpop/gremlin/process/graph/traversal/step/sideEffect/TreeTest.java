@@ -95,11 +95,11 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
             final Tree tree = traversal.next();
             assertFalse(traversal.hasNext());
             assertEquals(1, tree.size());
-            assertTrue(tree.containsKey(convertToVertex(g, "marko")));
-            assertEquals(1, ((Map) tree.get(convertToVertex(g, "marko"))).size());
-            assertTrue(((Map) tree.get(convertToVertex(g, "marko"))).containsKey(convertToVertex(g, "josh")));
-            assertTrue(((Map) ((Map) tree.get(convertToVertex(g, "marko"))).get(convertToVertex(g, "josh"))).containsKey(convertToVertex(g, "lop")));
-            assertTrue(((Map) ((Map) tree.get(convertToVertex(g, "marko"))).get(convertToVertex(g, "josh"))).containsKey(convertToVertex(g, "ripple")));
+            assertTrue(tree.containsKey(convertToVertex(graph, "marko")));
+            assertEquals(1, ((Map) tree.get(convertToVertex(graph, "marko"))).size());
+            assertTrue(((Map) tree.get(convertToVertex(graph, "marko"))).containsKey(convertToVertex(graph, "josh")));
+            assertTrue(((Map) ((Map) tree.get(convertToVertex(graph, "marko"))).get(convertToVertex(graph, "josh"))).containsKey(convertToVertex(graph, "lop")));
+            assertTrue(((Map) ((Map) tree.get(convertToVertex(graph, "marko"))).get(convertToVertex(graph, "josh"))).containsKey(convertToVertex(graph, "ripple")));
         });
     }
 

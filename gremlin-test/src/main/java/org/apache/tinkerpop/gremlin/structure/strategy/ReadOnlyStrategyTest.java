@@ -51,18 +51,18 @@ public class ReadOnlyStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     public void shouldNotAllowRemoveVertex() {
-        g.addVertex();
-        assertException(g -> g.V().next().remove());
+        graph.addVertex();
+        assertException(g -> graph.vertices().forEachRemaining(Vertex::remove));
     }
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = FEATURE_ADD_EDGES)
     public void shouldNotAllowRemoveEdge() {
-        final Vertex v = g.addVertex();
+        final Vertex v = graph.addVertex();
         v.addEdge("friend", v);
         assertException(g -> {
-            final Edge e = g.E().next();
+            final Edge e = g.traversal().E().next();
             e.remove();
         });
     }
@@ -71,9 +71,9 @@ public class ReadOnlyStrategyTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = FEATURE_ADD_EDGES)
     public void shouldNotAllowAddEdge() {
-        g.addVertex();
+        graph.addVertex();
         assertException(g -> {
-            final Vertex v = g.V().next();
+            final Vertex v = g.traversal().V().next();
             v.addEdge("friend", v);
         });
     }
@@ -81,24 +81,24 @@ public class ReadOnlyStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowVertexSetProperties() {
-        g.addVertex();
-        assertException(g -> g.V().next().<String>property("test", "test"));
+        graph.addVertex();
+        assertException(g -> g.traversal().V().next().<String>property("test", "test"));
     }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowVertexSetProperty() {
-        g.addVertex();
-        assertException(g -> g.V().next().<String>property("test", "test"));
+        graph.addVertex();
+        assertException(g -> g.traversal().V().next().<String>property("test", "test"));
     }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldNotAllowVertexPropertySetProperty() {
-        g.addVertex();
+        graph.addVertex();
         assertException(g -> {
-            final VertexProperty p = g.V().next().<String>property("test", "test");
+            final VertexProperty p = g.traversal().V().next().<String>property("test", "test");
             p.property("property", "on-a-property");
         });
     }
@@ -106,29 +106,29 @@ public class ReadOnlyStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotAllowEdgeSetProperties() {
-        final Vertex v = g.addVertex();
+        final Vertex v = graph.addVertex();
         v.addEdge("friend", v);
-        assertException(g -> g.E().next().<String>property("test", "test"));
+        assertException(g -> g.traversal().E().next().<String>property("test", "test"));
     }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotAllowEdgeSetProperty() {
-        final Vertex v = g.addVertex();
+        final Vertex v = graph.addVertex();
         v.addEdge("friend", v);
-        assertException(g -> g.E().next().<String>property("test", "test"));
+        assertException(g -> g.traversal().E().next().<String>property("test", "test"));
     }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotAllowVertexPropertyRemoval() {
-        final Vertex v = g.addVertex();
+        final Vertex v = graph.addVertex();
         v.property("test", "test");
         final Property<String> p = v.property("test");
         assertEquals("test", p.value());
 
         assertException(g -> {
-            final VertexProperty<Object> prop = g.V().next().properties("test").next();
+            final VertexProperty<Object> prop = g.traversal().V().next().properties("test").next();
             prop.remove();
         });
     }
@@ -136,14 +136,14 @@ public class ReadOnlyStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotAllowEdgePropertyRemoval() {
-        final Vertex v = g.addVertex();
+        final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("friend", v);
         e.property("test", "test");
         final Property<String> p = e.property("test");
         assertEquals("test", p.value());
 
         assertException(g -> {
-            final Property<String> prop = g.E().next().property("test");
+            final Property<String> prop = g.traversal().E().next().property("test");
             prop.remove();
         });
     }
@@ -159,14 +159,14 @@ public class ReadOnlyStrategyTest extends AbstractGremlinTest {
     @Test(expected = UnsupportedOperationException.class)
     @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
     public void shouldNotAllowVariableAsMapModifications() {
-        g.variables().set("will", "be read-only");
-        final StrategyGraph swg = g.strategy(ReadOnlyStrategy.instance());
+        graph.variables().set("will", "be read-only");
+        final StrategyGraph swg = graph.strategy(ReadOnlyStrategy.instance());
         swg.variables().asMap().put("will", "not work");
     }
 
     private void assertException(final ThrowingConsumer<Graph> stt) {
         try {
-            final StrategyGraph swg = g.strategy(ReadOnlyStrategy.instance());
+            final StrategyGraph swg = graph.strategy(ReadOnlyStrategy.instance());
             stt.accept(swg);
             fail();
         } catch (Exception ex) {

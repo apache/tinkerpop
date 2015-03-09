@@ -147,9 +147,9 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         Traversal<Vertex, Vertex> traversal = get_g_V_asXhereXout_name_backXhereX();
         printTraversalForm(traversal);
         super.checkResults(new HashMap<Vertex, Long>() {{
-            put(convertToVertex(g, "marko"), 3l);
-            put(convertToVertex(g, "josh"), 2l);
-            put(convertToVertex(g, "peter"), 1l);
+            put(convertToVertex(graph, "marko"), 3l);
+            put(convertToVertex(graph, "josh"), 2l);
+            put(convertToVertex(graph, "peter"), 1l);
         }}, traversal);
     }
 

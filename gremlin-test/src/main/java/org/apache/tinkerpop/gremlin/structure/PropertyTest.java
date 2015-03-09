@@ -60,7 +60,7 @@ public class PropertyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldHaveStandardStringRepresentation() {
-            final Vertex v = g.addVertex("name", "marko");
+            final Vertex v = graph.addVertex("name", "marko");
             final Property p = v.property("name");
             assertEquals(StringFactory.propertyString(p), p.toString());
         }
@@ -68,9 +68,9 @@ public class PropertyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldReturnEmptyPropertyIfKeyNonExistent() {
-            final Vertex v = g.addVertex("name", "marko");
-            tryCommit(g, (graph) -> {
-                final Vertex v1 = g.vertices(v.id()).next();
+            final Vertex v = graph.addVertex("name", "marko");
+            tryCommit(graph, (graph) -> {
+                final Vertex v1 = graph.vertices(v.id()).next();
                 final VertexProperty p = v1.property("nonexistent-key");
                 assertEquals(VertexProperty.empty(), p);
             });
@@ -80,9 +80,9 @@ public class PropertyTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_PROPERTY)
         public void shouldAllowRemovalFromVertexWhenAlreadyRemoved() {
-            final Vertex v = g.addVertex("name", "marko");
-            tryCommit(g);
-            final Vertex v1 = g.vertices(v.id()).next();
+            final Vertex v = graph.addVertex("name", "marko");
+            tryCommit(graph);
+            final Vertex v1 = graph.vertices(v.id()).next();
             try {
                 final Property p = v1.property("name");
                 p.remove();
@@ -99,12 +99,12 @@ public class PropertyTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_PROPERTY)
         public void shouldAllowRemovalFromEdgeWhenAlreadyRemoved() {
-            final Vertex v = g.addVertex("name", "marko");
-            tryCommit(g);
-            final Vertex v1 = g.vertices(v.id()).next();
+            final Vertex v = graph.addVertex("name", "marko");
+            tryCommit(graph);
+            final Vertex v1 = graph.vertices(v.id()).next();
 
             try {
-                final Edge edge = v1.addEdge("knows", g.addVertex());
+                final Edge edge = v1.addEdge("knows", graph.addVertex());
                 final Property p = edge.property("stars", 5);
                 p.remove();
                 p.remove();
@@ -156,7 +156,7 @@ public class PropertyTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
         public void shouldThrowOnGraphAddVertex() throws Exception {
             try {
-                this.g.addVertex(arguments);
+                this.graph.addVertex(arguments);
                 fail(String.format("Call to addVertex should have thrown an exception with these arguments [%s]", arguments));
             } catch (Exception ex) {
                 validateException(expectedException, ex);
@@ -169,7 +169,7 @@ public class PropertyTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_PROPERTIES)
         public void shouldThrowOnGraphAddEdge() throws Exception {
             try {
-                final Vertex v = this.g.addVertex();
+                final Vertex v = this.graph.addVertex();
                 v.addEdge("label", v, arguments);
                 fail(String.format("Call to addVertex should have thrown an exception with these arguments [%s]", arguments));
             } catch (Exception ex) {
@@ -189,7 +189,7 @@ public class PropertyTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
         public void shouldGetValueThatIsNotPresentOnVertex() {
-            final Vertex v = g.addVertex();
+            final Vertex v = graph.addVertex();
             try {
                 v.value("does-not-exist");
                 fail("Call to Element.value() with a key that is not present should throw an exception");
@@ -204,7 +204,7 @@ public class PropertyTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
         public void shouldGetValueThatIsNotPresentOnEdge() {
-            final Vertex v = g.addVertex();
+            final Vertex v = graph.addVertex();
             final Edge e = v.addEdge("label", v);
             try {
                 e.value("does-not-exist");
@@ -258,7 +258,7 @@ public class PropertyTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_ADD_PROPERTY)
         public void testGraphVertexSetPropertyStandard() throws Exception {
             try {
-                final Vertex v = this.g.addVertex();
+                final Vertex v = this.graph.addVertex();
                 v.property(key, val);
                 fail(String.format("Call to Vertex.setProperty should have thrown an exception with these arguments [%s, %s]", key, val));
             } catch (Exception ex) {
@@ -273,7 +273,7 @@ public class PropertyTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
         public void shouldThrowOnGraphEdgeSetPropertyStandard() throws Exception {
             try {
-                final Vertex v = this.g.addVertex();
+                final Vertex v = this.graph.addVertex();
                 v.addEdge("label", v).property(key, val);
                 fail(String.format("Call to Edge.setProperty should have thrown an exception with these arguments [%s, %s]", key, val));
             } catch (Exception ex) {
@@ -364,7 +364,7 @@ public class PropertyTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
         public void shouldSetValueOnEdge() throws Exception {
-            assumeThat(g.features().supports(EdgePropertyFeatures.class, featureName), is(true));
+            assumeThat(graph.features().supports(EdgePropertyFeatures.class, featureName), is(true));
             final Edge edge = createEdgeForPropertyFeatureTests();
             edge.property("aKey", value);
             assertPropertyValue(edge);
@@ -374,8 +374,8 @@ public class PropertyTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
         public void shouldSetValueOnVertex() throws Exception {
-            assumeThat(g.features().supports(VertexPropertyFeatures.class, featureName), is(true));
-            final Vertex vertex = g.addVertex();
+            assumeThat(graph.features().supports(VertexPropertyFeatures.class, featureName), is(true));
+            final Vertex vertex = graph.addVertex();
             vertex.property("aKey", value);
             assertPropertyValue(vertex);
         }
@@ -384,7 +384,7 @@ public class PropertyTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldSetValueOnEdgeOnAdd() throws Exception {
-            assumeThat(g.features().supports(EdgePropertyFeatures.class, featureName), is(true));
+            assumeThat(graph.features().supports(EdgePropertyFeatures.class, featureName), is(true));
             final Edge edge = createEdgeForPropertyFeatureTests("aKey", value);
             assertPropertyValue(edge);
         }
@@ -392,20 +392,20 @@ public class PropertyTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldSetValueOnVertexOnAdd() throws Exception {
-            assumeThat(g.features().supports(VertexPropertyFeatures.class, featureName), is(true));
-            final Vertex vertex = g.addVertex("aKey", value);
+            assumeThat(graph.features().supports(VertexPropertyFeatures.class, featureName), is(true));
+            final Vertex vertex = graph.addVertex("aKey", value);
             assertPropertyValue(vertex);
         }
 
         private void assertPropertyValue(final Element element) {
             if (value instanceof Map)
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final Map map = element.<Map>property("aKey").value();
                     assertEquals(((Map) value).size(), map.size());
                     ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
                 });
             else if (value instanceof List)
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final List l = element.<List>property("aKey").value();
                     assertEquals(((List) value).size(), l.size());
                     for (int ix = 0; ix < ((List) value).size(); ix++) {
@@ -413,12 +413,12 @@ public class PropertyTest {
                     }
                 });
             else if (value instanceof MockSerializable)
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final MockSerializable mock = element.<MockSerializable>property("aKey").value();
                     assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
                 });
             else if (value instanceof boolean[])
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final boolean[] l = element.<boolean[]>property("aKey").value();
                     assertEquals(((boolean[]) value).length, l.length);
                     for (int ix = 0; ix < ((boolean[]) value).length; ix++) {
@@ -426,7 +426,7 @@ public class PropertyTest {
                     }
                 });
             else if (value instanceof double[])
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final double[] l = element.<double[]>property("aKey").value();
                     assertEquals(((double[]) value).length, l.length);
                     for (int ix = 0; ix < ((double[]) value).length; ix++) {
@@ -434,7 +434,7 @@ public class PropertyTest {
                     }
                 });
             else if (value instanceof float[])
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final float[] l = element.<float[]>property("aKey").value();
                     assertEquals(((float[]) value).length, l.length);
                     for (int ix = 0; ix < ((float[]) value).length; ix++) {
@@ -442,7 +442,7 @@ public class PropertyTest {
                     }
                 });
             else if (value instanceof int[])
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final int[] l = element.<int[]>property("aKey").value();
                     assertEquals(((int[]) value).length, l.length);
                     for (int ix = 0; ix < ((int[]) value).length; ix++) {
@@ -450,7 +450,7 @@ public class PropertyTest {
                     }
                 });
             else if (value instanceof long[])
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final long[] l = element.<long[]>property("aKey").value();
                     assertEquals(((long[]) value).length, l.length);
                     for (int ix = 0; ix < ((long[]) value).length; ix++) {
@@ -458,7 +458,7 @@ public class PropertyTest {
                     }
                 });
             else if (value instanceof String[])
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final String[] l = element.<String[]>property("aKey").value();
                     assertEquals(((String[]) value).length, l.length);
                     for (int ix = 0; ix < ((String[]) value).length; ix++) {
@@ -466,18 +466,18 @@ public class PropertyTest {
                     }
                 });
             else
-                tryCommit(g, graph -> assertEquals(value, element.property("aKey").value()));
+                tryCommit(graph, graph -> assertEquals(value, element.property("aKey").value()));
         }
 
         private Edge createEdgeForPropertyFeatureTests() {
-            final Vertex vertexA = g.addVertex();
-            final Vertex vertexB = g.addVertex();
+            final Vertex vertexA = graph.addVertex();
+            final Vertex vertexB = graph.addVertex();
             return vertexA.addEdge(GraphManager.getGraphProvider().convertLabel("knows"), vertexB);
         }
 
         private Edge createEdgeForPropertyFeatureTests(final String k, Object v) {
-            final Vertex vertexA = g.addVertex();
-            final Vertex vertexB = g.addVertex();
+            final Vertex vertexA = graph.addVertex();
+            final Vertex vertexB = graph.addVertex();
             return vertexA.addEdge(GraphManager.getGraphProvider().convertLabel("knows"), vertexB, k, v);
         }
     }
