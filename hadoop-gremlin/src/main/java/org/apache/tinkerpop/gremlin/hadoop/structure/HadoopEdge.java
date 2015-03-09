@@ -30,7 +30,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopEdge extends HadoopElement implements Edge, Edge.Iterators, WrappedEdge<Edge> {
+public class HadoopEdge extends HadoopElement implements Edge, WrappedEdge<Edge> {
 
     protected HadoopEdge() {
     }
@@ -45,26 +45,21 @@ public class HadoopEdge extends HadoopElement implements Edge, Edge.Iterators, W
     }
 
     @Override
-    public Edge.Iterators iterators() {
-        return this;
-    }
-
-    @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction) {
+    public Iterator<Vertex> vertices(final Direction direction) {
         switch (direction) {
             case OUT:
-                return IteratorUtils.of(this.graph.vertices(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id())).next();
+                return IteratorUtils.of(this.graph.vertices(getBaseEdge().vertices(Direction.OUT).next().id())).next();
             case IN:
-                return IteratorUtils.of(this.graph.vertices(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id())).next();
+                return IteratorUtils.of(this.graph.vertices(getBaseEdge().vertices(Direction.IN).next().id())).next();
             default: {
-                final Iterator<Vertex> iterator = getBaseEdge().iterators().vertexIterator(Direction.BOTH);
+                final Iterator<Vertex> iterator = getBaseEdge().vertices(Direction.BOTH);
                 return IteratorUtils.of(this.graph.vertices(iterator.next().id()).next(), this.graph.vertices(iterator.next().id()).next());
             }
         }
     }
 
     @Override
-    public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
-        return IteratorUtils.<Property<V>, Property<V>>map(this.getBaseEdge().iterators().propertyIterator(propertyKeys), property -> new HadoopProperty<>(property, HadoopEdge.this));
+    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+        return IteratorUtils.<Property<V>, Property<V>>map(this.getBaseEdge().properties(propertyKeys), property -> new HadoopProperty<>(property, HadoopEdge.this));
     }
 }

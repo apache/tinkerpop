@@ -131,7 +131,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
             if (edge.<Double>value("weight") == 1.0d && edge.label().equals("knows"))
                 return true;
                 // 9
-            else if (edge.<Double>value("weight") == 0.4d && edge.label().equals("created") && edge.outV().next().value("name").equals("marko"))
+            else if (edge.<Double>value("weight") == 0.4d && edge.label().equals("created") && edge.outVertex().value("name").equals("marko"))
                 return true;
                 // 10
             else if (edge.<Double>value("weight") == 1.0d && edge.label().equals("created"))
@@ -322,7 +322,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
             if (edge.<Double>value("weight") == 1.0d && edge.label().equals("knows"))
                 return true;
                 // 9
-            else if (edge.<Double>value("weight") == 0.4d && edge.label().equals("created") && edge.outV().next().value("name").equals("marko"))
+            else if (edge.<Double>value("weight") == 0.4d && edge.label().equals("created") && edge.outVertex().value("name").equals("marko"))
                 return true;
                 // 10
             else if (edge.<Double>value("weight") == 1.0d && edge.label().equals("created"))

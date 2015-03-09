@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeature
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -748,7 +748,7 @@ public class FeatureSupportTest {
         public void shouldSupportMultiPropertyIfTheSameKeyCanBeAssignedMoreThanOnce() throws Exception {
             try {
                 final Vertex v = g.addVertex("name", "stephen", "name", "steve");
-                if (StreamFactory.stream(v.iterators().propertyIterator()).count() == 2)
+                if (2 == IteratorUtils.count(v.properties()))
                     fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_MULTI_PROPERTIES));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.multiPropertiesNotSupported(), ex);
@@ -793,7 +793,7 @@ public class FeatureSupportTest {
         public void shouldSupportMetaPropertyIfPropertiesHaveAnIteratorViaVertexProperty() throws Exception {
             try {
                 final Vertex v = g.addVertex("name", "stephen");
-                v.property("name").iterators();
+                v.property("name").properties();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_META_PROPERTIES));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.metaPropertiesNotSupported(), ex);

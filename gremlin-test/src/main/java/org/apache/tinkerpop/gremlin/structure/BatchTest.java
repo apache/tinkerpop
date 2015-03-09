@@ -25,7 +25,10 @@ import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.batch.Exists;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES;
@@ -57,7 +60,7 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
         assertEquals(29, vMarko.property("age").value());
@@ -80,7 +83,7 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
         assertEquals(29, vMarko.property("age").value());
@@ -140,7 +143,7 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
         assertEquals(34, vMarko.property("age").value());
@@ -163,7 +166,7 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
         assertEquals(34, vMarko.property("age").value());
@@ -175,7 +178,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadVerticesIncrementallyWithSuppliedIdentifierOverwriteExistingVertex() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph<?> graph = BatchGraph.build(g)
                 .incrementalLoading(true, Exists.OVERWRITE, Exists.IGNORE)
                 .bufferSize(1).create();
         final Object id1 = GraphManager.getGraphProvider().convertId("1");
@@ -188,13 +191,13 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
-        assertEquals(2, vMarko.properties("age").count().next().intValue());
-        assertEquals(2, vMarko.properties("name").count().next().intValue());
-        assertTrue(vMarko.valueMap().next().get("age").contains(29));
-        assertTrue(vMarko.valueMap().next().get("age").contains(34));
+        assertEquals(2, IteratorUtils.count(vMarko.properties("age")));
+        assertEquals(2, IteratorUtils.count(vMarko.properties("name")));
+        assertTrue(((List) g.V(vMarko).valueMap().next().get("age")).contains(29));
+        assertTrue(((List) g.V(vMarko).valueMap().next().get("age")).contains(34));
     }
 
     @Test
@@ -215,13 +218,13 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
-        assertEquals(2, vMarko.properties("age").count().next().intValue());
-        assertEquals(2, vMarko.properties("name").count().next().intValue());
-        assertTrue(vMarko.valueMap().next().get("age").contains(29));
-        assertTrue(vMarko.valueMap().next().get("age").contains(34));
+        assertEquals(2, IteratorUtils.count(vMarko.properties("age")));
+        assertEquals(2, IteratorUtils.count(vMarko.properties("name")));
+        assertTrue(((List) g.V(vMarko).valueMap().next().get("age")).contains(29));
+        assertTrue(((List) g.V(vMarko).valueMap().next().get("age")).contains(34));
     }
 
     @Test
@@ -245,8 +248,8 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
-        assertEquals(new Long(0), vStephen.outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(0), g.V(vStephen).outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
         assertEquals(29, vMarko.property("age").value());
@@ -270,8 +273,8 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(1), vStephen.outE("knows").has("uid", "abcde").has("weight", 1.0d).inV().has("name", "marko").count().next());
-        assertEquals(new Long(0), vStephen.outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("uid", "abcde").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(0), g.V(vStephen).outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
         assertEquals(29, vMarko.property("age").value());
@@ -296,8 +299,8 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(0), vStephen.outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(0), g.V(vStephen).outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
         assertEquals(29, vMarko.property("age").value());
@@ -321,8 +324,8 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(0), vStephen.outE("knows").has("uid", "abcde").has("weight", 1.0d).inV().has("name", "marko").count().next());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(0), g.V(vStephen).outE("knows").has("uid", "abcde").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
         assertEquals(29, vMarko.property("age").value());
@@ -347,8 +350,8 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(0), vStephen.outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(0), g.V(vStephen).outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
         assertEquals(29, vMarko.property("age").value());
@@ -372,8 +375,8 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(0), vStephen.outE("knows").has("uid", "abcde").has("weight", 1.0d).inV().has("name", "marko").count().next());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(0), g.V(vStephen).outE("knows").has("uid", "abcde").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
         assertEquals(29, vMarko.property("age").value());
@@ -439,8 +442,8 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
         assertEquals(29, vMarko.property("age").value());
@@ -464,8 +467,8 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
-        assertEquals(new Long(1), vStephen.outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
+        assertEquals(new Long(1), g.V(vStephen).outE("knows").has("weight", 0.5d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().has("name", "marko").next();
         assertEquals(29, vMarko.property("age").value());

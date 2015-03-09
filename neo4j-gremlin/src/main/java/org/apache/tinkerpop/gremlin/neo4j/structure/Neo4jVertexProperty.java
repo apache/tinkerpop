@@ -45,7 +45,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty.Iterators, WrappedVertex<Node> {
+public class Neo4jVertexProperty<V> implements VertexProperty<V>, WrappedVertex<Node> {
 
     public static final Label VERTEX_PROPERTY_LABEL = DynamicLabel.label("vertexProperty");
     public static final String VERTEX_PROPERTY_PREFIX = Graph.Hidden.hide("");
@@ -196,20 +196,12 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
     }
 
     @Override
-    public VertexProperty.Iterators iterators() {
-        if (!this.vertex.graph.supportsMetaProperties)
-            throw VertexProperty.Exceptions.metaPropertiesNotSupported();
-        else
-            return this;
-    }
-
-    @Override
     public String toString() {
         return StringFactory.propertyString(this);
     }
 
     @Override
-    public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
+    public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
         if (!isNode()) return Collections.emptyIterator();
         else {
             this.vertex.graph().tx().readWrite();

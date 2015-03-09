@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class Neo4jElement implements Element, Element.Iterators, WrappedElement<PropertyContainer> {
+public abstract class Neo4jElement implements Element, WrappedElement<PropertyContainer> {
     protected final Neo4jGraph graph;
     protected final PropertyContainer baseElement;
     protected boolean removed = false;
@@ -103,7 +103,7 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
     }
 
     @Override
-    public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
+    public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
         this.graph.tx().readWrite();
         return IteratorUtils.map(IteratorUtils.filter(this.baseElement.getPropertyKeys().iterator(), key -> ElementHelper.keyExists(key, propertyKeys)), key -> new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key)));
     }

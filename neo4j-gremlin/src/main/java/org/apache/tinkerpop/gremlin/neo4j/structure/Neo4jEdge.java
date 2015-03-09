@@ -34,7 +34,7 @@ import java.util.Iterator;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, WrappedEdge<Relationship> {
+public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relationship> {
 
     public Neo4jEdge(final Relationship relationship, final Neo4jGraph graph) {
         super(relationship, graph);
@@ -69,17 +69,12 @@ public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, Wra
     }
 
     @Override
-    public Edge.Iterators iterators() {
-        return this;
+    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+        return (Iterator) super.properties(propertyKeys);
     }
 
     @Override
-    public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) super.propertyIterator(propertyKeys);
-    }
-
-    @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction) {
+    public Iterator<Vertex> vertices(final Direction direction) {
         this.graph.tx().readWrite();
         switch (direction) {
             case OUT:
