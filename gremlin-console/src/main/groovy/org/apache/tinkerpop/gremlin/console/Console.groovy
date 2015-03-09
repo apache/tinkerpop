@@ -20,10 +20,10 @@ package org.apache.tinkerpop.gremlin.console
 
 import org.apache.tinkerpop.gremlin.console.commands.*
 import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
-import org.apache.tinkerpop.gremlin.console.util.ArrayIterator
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import jline.console.history.FileHistory
+import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator
 import org.codehaus.groovy.tools.shell.ExitNotification
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
