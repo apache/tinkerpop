@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalContext;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
@@ -200,6 +201,18 @@ public interface Graph extends AutoCloseable {
      * @param traversalEngine the new traversal engine to use.
      */
     public void engine(final TraversalEngine traversalEngine);
+
+    public default <C extends TraversalContext> C traversal(final TraversalContext.Builder<C> contextBuilder) {
+        return contextBuilder.create(this);
+    }
+
+    public default Iterator<Vertex> vertices(final Object... vertexIds) {
+        return this.iterators().vertexIterator(vertexIds);
+    }
+
+    public default Iterator<Edge> edges(final Object... edgeIds) {
+        return this.iterators().edgeIterator(edgeIds);
+    }
 
     /**
      * Configure and control the transactions for those graphs that support this feature.

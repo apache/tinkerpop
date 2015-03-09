@@ -20,10 +20,10 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
-import org.apache.tinkerpop.gremlin.process.Scope;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
@@ -136,13 +136,9 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay3() throws Exception {
-        Graph g = TinkerFactory.createModern();
-        g.engine(ComputerTraversalEngine.computer);
-        Traversal t = g.V().hasLabel("software").group().by("name").by(bothE().values("weight").fold()).by(max(Scope.local));
-        //Traversal t  = ComputerTestHelper.compute("g.V().out('created').groupCount().by('name').values('name')", g);
-        System.out.println(t);
-        t.forEachRemaining(System.out::println);
-        System.out.println(t);
+        Graph graph = TinkerFactory.createModern();
+        GraphTraversalContext g = graph.traversal(GraphTraversalContext.of().engine(StandardTraversalEngine.standard));
+        g.V().out().out().values("name").forEachRemaining(System.out::println);
     }
 
     @Test
