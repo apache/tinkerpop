@@ -56,12 +56,12 @@ public class VariablesTest {
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_VARIABLES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
         public void testVariables() {
-            final Graph.Variables variables = g.variables();
+            final Graph.Variables variables = graph.variables();
             variables.set("xo", "test1");
             variables.set("yo", "test2");
             variables.set("zo", "test3");
 
-            tryCommit(g, graph -> assertEquals(StringFactory.graphVariablesString(variables), variables.toString()));
+            tryCommit(graph, graph -> assertEquals(StringFactory.graphVariablesString(variables), variables.toString()));
         }
     }
 
@@ -99,7 +99,7 @@ public class VariablesTest {
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
         public void testGraphVariablesSet() throws Exception {
             try {
-                g.variables().set(key, val);
+                graph.variables().set(key, val);
                 fail(String.format("Setting an annotation with these arguments [key: %s value: %s] should throw an exception", key, val));
             } catch (Exception ex) {
                 validateException(expectedException, ex);
@@ -116,7 +116,7 @@ public class VariablesTest {
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_VARIABLES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
         public void shouldHoldVariableNone() {
-            final Graph.Variables variables = g.variables();
+            final Graph.Variables variables = graph.variables();
             final Map<String, Object> mapOfAnnotations = variables.asMap();
             assertNotNull(mapOfAnnotations);
             assertEquals(0, mapOfAnnotations.size());
@@ -132,12 +132,12 @@ public class VariablesTest {
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_VARIABLES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
         public void shouldHoldVariableString() {
-            final Graph.Variables variables = g.variables();
+            final Graph.Variables variables = graph.variables();
             variables.set("test1", "1");
             variables.set("test2", "2");
             variables.set("test3", "3");
 
-            tryCommit(g, graph -> {
+            tryCommit(graph, graph -> {
                 final Map<String, Object> m = variables.asMap();
                 assertEquals("1", m.get("test1"));
                 assertEquals("2", m.get("test2"));
@@ -149,12 +149,12 @@ public class VariablesTest {
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_VARIABLES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_INTEGER_VALUES)
         public void shouldHoldVariableInteger() {
-            final Graph.Variables variables = g.variables();
+            final Graph.Variables variables = graph.variables();
             variables.set("test1", 1);
             variables.set("test2", 2);
             variables.set("test3", 3);
 
-            tryCommit(g, graph -> {
+            tryCommit(graph, graph -> {
                 final Map<String, Object> m = variables.asMap();
                 assertEquals(1, m.get("test1"));
                 assertEquals(2, m.get("test2"));
@@ -166,12 +166,12 @@ public class VariablesTest {
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_VARIABLES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_LONG_VALUES)
         public void shouldHoldVariableLong() {
-            final Graph.Variables variables = g.variables();
+            final Graph.Variables variables = graph.variables();
             variables.set("test1", 1l);
             variables.set("test2", 2l);
             variables.set("test3", 3l);
 
-            tryCommit(g, graph -> {
+            tryCommit(graph, graph -> {
                 final Map<String, Object> m = variables.asMap();
                 assertEquals(1l, m.get("test1"));
                 assertEquals(2l, m.get("test2"));
@@ -185,12 +185,12 @@ public class VariablesTest {
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_INTEGER_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_LONG_VALUES)
         public void shouldHoldVariableMixed() {
-            final Graph.Variables variables = g.variables();
+            final Graph.Variables variables = graph.variables();
             variables.set("test1", "1");
             variables.set("test2", 2);
             variables.set("test3", 3l);
 
-            tryCommit(g, graph -> {
+            tryCommit(graph, graph -> {
                 final Map<String, Object> m = variables.asMap();
                 assertEquals("1", m.get("test1"));
                 assertEquals(2, m.get("test2"));
@@ -281,18 +281,18 @@ public class VariablesTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
         public void shouldSetValueOnGraph() throws Exception {
-            assumeThat(g.features().supports(Graph.Features.VariableFeatures.class, featureName), is(true));
-            final Graph.Variables variables = g.variables();
+            assumeThat(graph.features().supports(Graph.Features.VariableFeatures.class, featureName), is(true));
+            final Graph.Variables variables = graph.variables();
             variables.set("aKey", value);
 
             if (value instanceof Map)
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final Map map = variables.<Map>get("aKey").get();
                     assertEquals(((Map) value).size(), map.size());
                     ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
                 });
             else if (value instanceof List)
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final List l = variables.<List>get("aKey").get();
                     assertEquals(((List) value).size(), l.size());
                     for (int ix = 0; ix < ((List) value).size(); ix++) {
@@ -300,12 +300,12 @@ public class VariablesTest {
                     }
                 });
             else if (value instanceof MockSerializable)
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final MockSerializable mock = variables.<MockSerializable>get("aKey").get();
                     assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
                 });
             else if (value instanceof boolean[])
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final boolean[] l = variables.<boolean[]>get("aKey").get();
                     assertEquals(((boolean[]) value).length, l.length);
                     for (int ix = 0; ix < ((boolean[]) value).length; ix++) {
@@ -313,7 +313,7 @@ public class VariablesTest {
                     }
                 });
             else if (value instanceof double[])
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final double[] l = variables.<double[]>get("aKey").get();
                     assertEquals(((double[]) value).length, l.length);
                     for (int ix = 0; ix < ((double[]) value).length; ix++) {
@@ -321,7 +321,7 @@ public class VariablesTest {
                     }
                 });
             else if (value instanceof float[])
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final float[] l = variables.<float[]>get("aKey").get();
                     assertEquals(((float[]) value).length, l.length);
                     for (int ix = 0; ix < ((float[]) value).length; ix++) {
@@ -329,7 +329,7 @@ public class VariablesTest {
                     }
                 });
             else if (value instanceof int[])
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final int[] l = variables.<int[]>get("aKey").get();
                     assertEquals(((int[]) value).length, l.length);
                     for (int ix = 0; ix < ((int[]) value).length; ix++) {
@@ -337,7 +337,7 @@ public class VariablesTest {
                     }
                 });
             else if (value instanceof long[])
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final long[] l = variables.<long[]>get("aKey").get();
                     assertEquals(((long[]) value).length, l.length);
                     for (int ix = 0; ix < ((long[]) value).length; ix++) {
@@ -345,7 +345,7 @@ public class VariablesTest {
                     }
                 });
             else if (value instanceof String[])
-                tryCommit(g, graph -> {
+                tryCommit(graph, graph -> {
                     final String[] l = variables.<String[]>get("aKey").get();
                     assertEquals(((String[]) value).length, l.length);
                     for (int ix = 0; ix < ((String[]) value).length; ix++) {
@@ -353,7 +353,7 @@ public class VariablesTest {
                     }
                 });
             else
-                tryCommit(g, graph -> assertEquals(value, variables.get("aKey").get()));
+                tryCommit(graph, graph -> assertEquals(value, variables.get("aKey").get()));
         }
     }
 }
