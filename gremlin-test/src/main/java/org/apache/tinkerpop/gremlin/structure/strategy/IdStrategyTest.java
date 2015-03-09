@@ -51,9 +51,9 @@ public class IdStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldInjectAnIdAndReturnBySpecifiedIdForVertex() {
-            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) g).getStrategy();
-            final Vertex v = g.addVertex(T.id, "test", "something", "else");
-            tryCommit(g, c -> {
+            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) graph).getStrategy();
+            final Vertex v = graph.addVertex(T.id, "test", "something", "else");
+            tryCommit(graph, c -> {
                 assertNotNull(v);
                 assertEquals("test", v.id());
                 assertEquals("test", v.property(strategy.getIdKey()).value());
@@ -70,10 +70,10 @@ public class IdStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldInjectAnIdAndReturnBySpecifiedIdForEdge() {
-            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) g).getStrategy();
-            final Vertex v = g.addVertex(T.id, "test", "something", "else");
+            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) graph).getStrategy();
+            final Vertex v = graph.addVertex(T.id, "test", "something", "else");
             final Edge e = v.addEdge("self", v, T.id, "edge-id", "try", "this");
-            tryCommit(g, c -> {
+            tryCommit(graph, c -> {
                 assertNotNull(e);
                 assertEquals("edge-id", e.id());
                 assertEquals("edge-id", e.property(strategy.getIdKey()).value());
@@ -89,9 +89,9 @@ public class IdStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldCreateAnIdAndReturnByCreatedIdForVertex() {
-            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) g).getStrategy();
-            final Vertex v = g.addVertex("something", "else");
-            tryCommit(g, c -> {
+            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) graph).getStrategy();
+            final Vertex v = graph.addVertex("something", "else");
+            tryCommit(graph, c -> {
                 assertNotNull(v);
                 assertNotNull(UUID.fromString(v.id().toString()));
                 assertNotNull(UUID.fromString(v.property(strategy.getIdKey()).value().toString()));
@@ -107,10 +107,10 @@ public class IdStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldCreateAnIdAndReturnByCreatedIdForEdge() {
-            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) g).getStrategy();
-            final Vertex v = g.addVertex("something", "else");
+            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) graph).getStrategy();
+            final Vertex v = graph.addVertex("something", "else");
             final Edge e = v.addEdge("self", v, "try", "this");
-            tryCommit(g, c -> {
+            tryCommit(graph, c -> {
                 assertNotNull(e);
                 assertNotNull(UUID.fromString(e.id().toString()));
                 assertNotNull(UUID.fromString(e.property(strategy.getIdKey()).value().toString()));
@@ -132,9 +132,9 @@ public class IdStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldCreateAnIdAndReturnByCreatedId() {
-            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) g).getStrategy();
-            final Vertex v = g.addVertex("something", "else");
-            tryCommit(g, c -> {
+            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) graph).getStrategy();
+            final Vertex v = graph.addVertex("something", "else");
+            tryCommit(graph, c -> {
                 assertNotNull(v);
                 assertEquals("100", v.id());
                 assertEquals("100", v.property(strategy.getIdKey()).value());
@@ -157,10 +157,10 @@ public class IdStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldCreateAnIdAndReturnByCreatedId() {
-            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) g).getStrategy();
-            final Vertex v = g.addVertex("something", "else");
+            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) graph).getStrategy();
+            final Vertex v = graph.addVertex("something", "else");
             final Edge e = v.addEdge("self", v, "try", "this");
-            tryCommit(g, c -> {
+            tryCommit(graph, c -> {
                 assertNotNull(e);
                 assertEquals("100", e.id());
                 assertEquals("100", e.property(strategy.getIdKey()).value());
@@ -183,10 +183,10 @@ public class IdStrategyTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldInjectAnIdAndReturnBySpecifiedId() {
-            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) g).getStrategy();
+            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) graph).getStrategy();
             final Object o = GraphManager.getGraphProvider().convertId("1");
-            final Vertex v = g.addVertex(T.id, o, "something", "else");
-            tryCommit(g, c -> {
+            final Vertex v = graph.addVertex(T.id, o, "something", "else");
+            tryCommit(graph, c -> {
                 assertNotNull(v);
                 assertEquals(o, v.id());
                 assertFalse(v.property(strategy.getIdKey()).isPresent());
@@ -203,10 +203,10 @@ public class IdStrategyTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldAllowDirectSettingOfIdField() {
-            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) g).getStrategy();
+            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) graph).getStrategy();
             final Object o = GraphManager.getGraphProvider().convertId("1");
-            final Vertex v = g.addVertex(T.id, o, "something", "else", strategy.getIdKey(), "should be ok to set this as supportsEdgeId=true");
-            tryCommit(g, c -> {
+            final Vertex v = graph.addVertex(T.id, o, "something", "else", strategy.getIdKey(), "should be ok to set this as supportsEdgeId=true");
+            tryCommit(graph, c -> {
                 assertNotNull(v);
                 assertEquals(o, v.id());
                 assertEquals("should be ok to set this as supportsEdgeId=true", v.property(strategy.getIdKey()).value());
@@ -244,10 +244,10 @@ public class IdStrategyTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
         public void shouldInjectAnIdAndReturnBySpecifiedId() {
-            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) g).getStrategy();
-            final Vertex v = g.addVertex(T.id, "test", "something", "else");
+            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) graph).getStrategy();
+            final Vertex v = graph.addVertex(T.id, "test", "something", "else");
             final Edge e = v.addEdge("self", v, T.id, "edge-id", "try", "this");
-            tryCommit(g, c -> {
+            tryCommit(graph, c -> {
                 assertNotNull(e);
                 assertEquals("edge-id", e.id());
                 assertFalse(e.property(strategy.getIdKey()).isPresent());
@@ -264,10 +264,10 @@ public class IdStrategyTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
         public void shouldAllowDirectSettingOfIdField() {
-            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) g).getStrategy();
-            final Vertex v = g.addVertex(T.id, "test", "something", "else");
+            final IdStrategy strategy = (IdStrategy) ((StrategyGraph) graph).getStrategy();
+            final Vertex v = graph.addVertex(T.id, "test", "something", "else");
             final Edge e = v.addEdge("self", v, T.id, "edge-id", "try", "this", strategy.getIdKey(), "should be ok to set this as supportsEdgeId=false");
-            tryCommit(g, c -> {
+            tryCommit(graph, c -> {
                 assertNotNull(e);
                 assertEquals("edge-id", e.id());
                 assertEquals("this", e.property("try").value());
@@ -280,7 +280,7 @@ public class IdStrategyTest {
             });
 
             try {
-                g.addVertex(T.id, "test", "something", "else", strategy.getIdKey(), "this should toss and exception as supportsVertexId=true");
+                graph.addVertex(T.id, "test", "something", "else", strategy.getIdKey(), "this should toss and exception as supportsVertexId=true");
                 fail("An exception should be tossed here because supportsVertexId=true");
             } catch (IllegalArgumentException iae) {
                 assertNotNull(iae);

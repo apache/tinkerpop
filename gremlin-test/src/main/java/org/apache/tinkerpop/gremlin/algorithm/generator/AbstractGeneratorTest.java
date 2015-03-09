@@ -43,7 +43,7 @@ public class AbstractGeneratorTest extends AbstractGremlinTest {
         return StreamFactory.stream(g1.vertices())
                 .map(v -> Triplet.<Integer, List<Vertex>, List<Vertex>>with(v.value("oid"), IteratorUtils.list(v.vertices(Direction.IN)), IteratorUtils.list(v.vertices(Direction.OUT))))
                 .allMatch(p -> {
-                    final Vertex v = (Vertex) g2.V().has("oid", p.getValue0()).next();
+                    final Vertex v = IteratorUtils.filter(g2.vertices(), vx -> vx.value("oid").equals(p.getValue0())).next();
                     return sameInVertices(v, p.getValue1()) && sameOutVertices(v, p.getValue2());
                 });
     }
