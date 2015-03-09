@@ -99,8 +99,8 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 validateException(Vertex.Exceptions.multiplePropertiesExistForProvidedKey("name"), e);
             }
 
-            assertTrue(IteratorUtils.collectMap(v.properties(), Property::key, p -> IteratorUtils.list(p.values())).get("name").contains("marko"));
-            assertTrue(IteratorUtils.collectMap(v.properties(), Property::key, p -> IteratorUtils.list(p.values())).get("name").contains("marko a. rodriguez"));
+            assertTrue(IteratorUtils.list(v.values("name")).contains("marko"));
+            assertTrue(IteratorUtils.list(v.values("name")).contains("marko a. rodriguez"));
             assertEquals(3, IteratorUtils.count(v.properties()));
             assertEquals(2, IteratorUtils.count(v.properties("name")));
             assertVertexEdgeCounts(1, 0);
