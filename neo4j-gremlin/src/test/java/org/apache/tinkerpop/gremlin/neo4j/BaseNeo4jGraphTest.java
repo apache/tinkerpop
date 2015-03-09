@@ -18,8 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.neo4j;
 
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,7 +42,8 @@ import static org.junit.Assert.assertEquals;
 public class BaseNeo4jGraphTest {
     protected Configuration conf;
     protected final DefaultNeo4jGraphProvider graphProvider = new DefaultNeo4jGraphProvider();
-    protected Neo4jGraph g;
+    protected Neo4jGraph graph;
+    protected GraphTraversalContext g;
 
     @Rule
     public TestName name = new TestName();
@@ -63,13 +66,14 @@ public class BaseNeo4jGraphTest {
                 this.graphProvider.newGraphConfiguration("standard", this.getClass(), name.getMethodName(), neo4jSettings);
 
         this.graphProvider.clear(this.conf);
-        this.g = Neo4jGraph.open(this.conf);
+        this.graph = Neo4jGraph.open(this.conf);
+        this.g = this.graph.traversal();
 
     }
 
     @After
     public void after() throws Exception {
-        this.graphProvider.clear(this.g, this.conf);
+        this.graphProvider.clear(this.graph, this.conf);
     }
 
     protected void tryCommit(final Neo4jGraph g, final Consumer<Neo4jGraph> assertFunction) {
@@ -89,8 +93,8 @@ public class BaseNeo4jGraphTest {
     }
 
     protected static void validateCounts(final Neo4jGraph graph, int gV, int gE, int gN, int gR) {
-        assertEquals(gV, graph.V().count().next().intValue());
-        assertEquals(gE, graph.E().count().next().intValue());
+        assertEquals(gV, IteratorUtils.count(graph.vertices()));
+        assertEquals(gE, IteratorUtils.count(graph.edges()));
         assertEquals(gN, countIterable(GlobalGraphOperations.at(graph.getBaseGraph()).getAllNodes()));
         assertEquals(gR, countIterable(GlobalGraphOperations.at(graph.getBaseGraph()).getAllRelationships()));
     }

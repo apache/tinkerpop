@@ -230,22 +230,6 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        this.tx().readWrite();
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
-        traversal.addStep(new Neo4jGraphStep<>(traversal, this, Vertex.class, vertexIds));
-        return traversal;
-    }
-
-    @Override
-    public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        this.tx().readWrite();
-        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
-        traversal.addStep(new Neo4jGraphStep<>(traversal, this, Edge.class, edgeIds));
-        return traversal;
-    }
-
-    @Override
     public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
         throw Graph.Exceptions.graphComputerNotSupported();
     }
