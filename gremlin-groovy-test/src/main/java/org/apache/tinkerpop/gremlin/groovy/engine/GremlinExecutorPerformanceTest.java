@@ -107,10 +107,10 @@ public class GremlinExecutorPerformanceTest extends AbstractGremlinTest {
         public String generateGremlin() {
             final int targetStepCount = rand.nextInt(10);
             final StringBuilder sb = new StringBuilder("g.V()");
-            final Vertex start = syntaxGraph.V().has("starter", true).order().by(this::shuffle).next();
+            final Vertex start = syntaxGraph.traversal().V().has("starter", true).order().by(this::shuffle).next();
             sb.append((String) start.value("step"));
 
-            syntaxGraph.V(start).times(targetStepCount - 1).repeat(
+            syntaxGraph.traversal().V(start).times(targetStepCount - 1).repeat(
                     __.local(__.outE().has("weight", Compare.gte, rand.nextDouble())
                             .inV().order().by(this::shuffle).limit(1)).sideEffect(t -> sb.append((String) t.get().value("step")))
             ).iterate();

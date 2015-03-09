@@ -47,16 +47,16 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadVerticesIncrementallyWithSuppliedIdentifier() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true)
                 .bufferSize(1).create();
         final Object id1 = GraphManager.getGraphProvider().convertId("1");
         final Object id2 = GraphManager.getGraphProvider().convertId("2");
-        graph.addVertex(T.id, id1, "name", "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, id2, "name", "stephen", "age", 37);
-        final Vertex v2 = graph.addVertex(T.id, id1, "name", "marko", "age", 34);
+        batchGraph.addVertex(T.id, id1, "name", "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, id2, "name", "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, id1, "name", "marko", "age", 34);
         v1.addEdge("knows", v2, "weight", 1.0d);
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
@@ -71,15 +71,15 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldLoadVerticesIncrementallyWithNamedIdentifier() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true)
                 .vertexIdKey("name")
                 .bufferSize(1).create();
-        graph.addVertex(T.id, "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, "stephen", "age", 37);
-        final Vertex v2 = graph.addVertex(T.id, "marko", "age", 34);
+        batchGraph.addVertex(T.id, "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 34);
         v1.addEdge("knows", v2, "weight", 1.0d);
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
@@ -94,13 +94,13 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadVerticesIncrementallyWithSuppliedIdentifierThrowOnExistingVertex() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.THROW, Exists.IGNORE)
                 .bufferSize(1).create();
         final Object id1 = GraphManager.getGraphProvider().convertId("1");
-        graph.addVertex(T.id, id1, "name", "marko", "age", 29);
+        batchGraph.addVertex(T.id, id1, "name", "marko", "age", 29);
         try {
-            graph.addVertex(T.id, id1, "name", "marko", "age", 34);
+            batchGraph.addVertex(T.id, id1, "name", "marko", "age", 34);
             fail("Should have thrown an error because the vertex already exists");
         } catch (Exception ex) {
             assertTrue(ex instanceof IllegalStateException);
@@ -111,13 +111,13 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     public void shouldLoadVerticesIncrementallyWithNamedIdentifierThrowOnExistingVertex() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.THROW, Exists.IGNORE)
                 .vertexIdKey("name")
                 .bufferSize(1).create();
-        graph.addVertex(T.id, "marko", "age", 29);
+        batchGraph.addVertex(T.id, "marko", "age", 29);
         try {
-            graph.addVertex(T.id, "marko", "age", 34);
+            batchGraph.addVertex(T.id, "marko", "age", 34);
             fail("Should have thrown an error because the vertex already exists");
         } catch (Exception ex) {
             assertTrue(ex instanceof IllegalStateException);
@@ -130,16 +130,16 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadVerticesIncrementallyWithSuppliedIdentifierOverwriteSingleExistingVertex() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.OVERWRITE_SINGLE, Exists.IGNORE)
                 .bufferSize(1).create();
         final Object id1 = GraphManager.getGraphProvider().convertId("1");
         final Object id2 = GraphManager.getGraphProvider().convertId("2");
-        graph.addVertex(T.id, id1, "name", "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, id2, "name", "stephen", "age", 37);
-        final Vertex v2 = graph.addVertex(T.id, id1, "name", "marko", "age", 34);
+        batchGraph.addVertex(T.id, id1, "name", "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, id2, "name", "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, id1, "name", "marko", "age", 34);
         v1.addEdge("knows", v2, "weight", 1.0d);
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
@@ -154,15 +154,15 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldLoadVerticesIncrementallyWithNamedIdentifierOverwriteSingleExistingVertex() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.OVERWRITE_SINGLE, Exists.IGNORE)
                 .vertexIdKey("name")
                 .bufferSize(1).create();
-        graph.addVertex(T.id, "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, "stephen", "age", 37);
-        final Vertex v2 = graph.addVertex(T.id, "marko", "age", 34);
+        batchGraph.addVertex(T.id, "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 34);
         v1.addEdge("knows", v2, "weight", 1.0d);
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
@@ -178,16 +178,16 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadVerticesIncrementallyWithSuppliedIdentifierOverwriteExistingVertex() {
-        final BatchGraph<?> graph = BatchGraph.build(g)
+        final BatchGraph<?> batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.OVERWRITE, Exists.IGNORE)
                 .bufferSize(1).create();
         final Object id1 = GraphManager.getGraphProvider().convertId("1");
         final Object id2 = GraphManager.getGraphProvider().convertId("2");
-        graph.addVertex(T.id, id1, "name", "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, id2, "name", "stephen", "age", 37);
-        final Vertex v2 = graph.addVertex(T.id, id1, "name", "marko", "age", 34);
+        batchGraph.addVertex(T.id, id1, "name", "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, id2, "name", "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, id1, "name", "marko", "age", 34);
         v1.addEdge("knows", v2, "weight", 1.0d);
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
@@ -206,15 +206,15 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
     public void shouldLoadVerticesIncrementallyWithNamedIdentifierAddMultiPropertyExistingVertex() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.OVERWRITE, Exists.IGNORE)
                 .vertexIdKey("name")
                 .bufferSize(1).create();
-        graph.addVertex(T.id, "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, "stephen", "age", 37);
-        final Vertex v2 = graph.addVertex(T.id, "marko", "age", 34);
+        batchGraph.addVertex(T.id, "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 34);
         v1.addEdge("knows", v2, "weight", 1.0d);
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
@@ -233,18 +233,18 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadEdgesIncrementallyWithSuppliedIdentifier() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true)
                 .vertexIdKey("name")
                 .bufferSize(1).create();
-        final Vertex v2 = graph.addVertex(T.id, "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
 
         final Object id1 = GraphManager.getGraphProvider().convertId("1");
 
         v1.addEdge("knows", v2, "weight", 1.0d, T.id, id1);
         v1.addEdge("knows", v2, "weight", 0.5d, T.id, id1); // second edge is ignored as it already exists
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
@@ -260,16 +260,16 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldLoadEdgesIncrementallyWithNamedIdentifier() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true)
                 .vertexIdKey("name")
                 .edgeIdKey("uid")
                 .bufferSize(1).create();
-        final Vertex v2 = graph.addVertex(T.id, "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
         v1.addEdge("knows", v2, "weight", 1.0d, T.id, "abcde");
         v1.addEdge("knows", v2, "weight", 0.5d, T.id, "abcde"); // second edge is ignored as it already exists
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
@@ -286,16 +286,16 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadEdgesIncrementallyWithSuppliedIdentifierOverwriteSingleExistingEdge() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.IGNORE, Exists.OVERWRITE_SINGLE)
                 .vertexIdKey("name")
                 .bufferSize(1).create();
-        final Vertex v2 = graph.addVertex(T.id, "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
         final Object id1 = GraphManager.getGraphProvider().convertId("1");
         v1.addEdge("knows", v2, "weight", 1.0d, T.id, id1);
         v1.addEdge("knows", v2, "weight", 0.5d, T.id, id1); // second edge is overwrites properties of the first
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
@@ -311,16 +311,16 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldLoadEdgesIncrementallyWithNamedIdentifierOverwriteSingleExistingEdge() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.IGNORE, Exists.OVERWRITE_SINGLE)
                 .vertexIdKey("name")
                 .edgeIdKey("uid")
                 .bufferSize(1).create();
-        final Vertex v2 = graph.addVertex(T.id, "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
         v1.addEdge("knows", v2, "weight", 1.0d, T.id, "abcde");
         v1.addEdge("knows", v2, "weight", 0.5d, T.id, "abcde"); // second edge overwrites properties of the first
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
@@ -337,16 +337,16 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadEdgesIncrementallyWithSuppliedIdentifierOverwriteExistingEdge() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.IGNORE, Exists.OVERWRITE)
                 .vertexIdKey("name")
                 .bufferSize(1).create();
-        final Vertex v2 = graph.addVertex(T.id, "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
         final Object id1 = GraphManager.getGraphProvider().convertId("1");
         v1.addEdge("knows", v2, "weight", 1.0d, T.id, id1);
         v1.addEdge("knows", v2, "weight", 0.5d, T.id, id1); // second edge is overwrites properties of the first
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
@@ -362,16 +362,16 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldLoadEdgesIncrementallyWithNamedIdentifierOverwriteExistingEdge() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.IGNORE, Exists.OVERWRITE)
                 .vertexIdKey("name")
                 .edgeIdKey("uid")
                 .bufferSize(1).create();
-        final Vertex v2 = graph.addVertex(T.id, "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
         v1.addEdge("knows", v2, "weight", 1.0d, T.id, "abcde");
         v1.addEdge("knows", v2, "weight", 0.5d, T.id, "abcde"); // second edge overwrites properties of the first
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
@@ -388,12 +388,12 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadEdgesIncrementallyWithSuppliedIdentifierThrowOnExistingEdge() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.IGNORE, Exists.THROW)
                 .vertexIdKey("name")
                 .bufferSize(1).create();
-        final Vertex v2 = graph.addVertex(T.id, "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
         final Object id1 = GraphManager.getGraphProvider().convertId("1");
         v1.addEdge("knows", v2, "weight", 1.0d, T.id, id1);
         try {
@@ -409,13 +409,13 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldLoadEdgesIncrementallyWithNamedIdentifierThrowOnExistingEdge() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.IGNORE, Exists.THROW)
                 .vertexIdKey("name")
                 .edgeIdKey("uid")
                 .bufferSize(1).create();
-        final Vertex v2 = graph.addVertex(T.id, "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
         v1.addEdge("knows", v2, "weight", 1.0d, T.id, "abcde");
         try {
             v1.addEdge("knows", v2, "weight", 0.5d, T.id, "abcde"); // second edge is overwrites properties of the first
@@ -430,15 +430,15 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldLoadEdgesIncrementallyNoIdSpecified() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true)
                 .vertexIdKey("name")
                 .bufferSize(1).create();
-        final Vertex v2 = graph.addVertex(T.id, "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
         v1.addEdge("knows", v2, "weight", 1.0d);
         v1.addEdge("knows", v2, "weight", 0.5d);
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());
@@ -454,16 +454,16 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldLoadEdgesIncrementallyWithNamedIdentifierAndNoIdSpecified() {
-        final BatchGraph graph = BatchGraph.build(g)
+        final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true)
                 .vertexIdKey("name")
                 .edgeIdKey("uid")
                 .bufferSize(1).create();
-        final Vertex v2 = graph.addVertex(T.id, "marko", "age", 29);
-        final Vertex v1 = graph.addVertex(T.id, "stephen", "age", 37);
+        final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
+        final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
         v1.addEdge("knows", v2, "weight", 1.0d);
         v1.addEdge("knows", v2, "weight", 0.5d);
-        tryCommit(graph);
+        tryCommit(batchGraph);
 
         final Vertex vStephen = g.V().has("name", "stephen").next();
         assertEquals(37, vStephen.property("age").value());

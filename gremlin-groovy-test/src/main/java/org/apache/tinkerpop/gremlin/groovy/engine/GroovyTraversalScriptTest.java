@@ -36,7 +36,7 @@ public class GroovyTraversalScriptTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldSubmitTraversalCorrectly() throws Exception {
-        final List<String> names = GroovyTraversalScript.<Vertex, String>of("g.V().out().out().values('name')").over(g).using(g.compute()).traversal().get().toList();
+        final List<String> names = GroovyTraversalScript.<Vertex, String>of("g.V().out().out().values('name')").over(graph).using(graph.compute()).traversal().get().toList();
         assertEquals(2, names.size());
         assertTrue(names.contains("lop"));
         assertTrue(names.contains("ripple"));
@@ -45,7 +45,7 @@ public class GroovyTraversalScriptTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldSubmitTraversalCorrectly2() throws Exception {
-        final List<String> names = GroovyTraversalScript.<Vertex, String>of("g.V(1).out().out().values('name')").over(g).using(g.compute()).traversal().get().toList();
+        final List<String> names = GroovyTraversalScript.<Vertex, String>of("g.V(1).out().out().values('name')").over(graph).using(graph.compute()).traversal().get().toList();
         assertEquals(2, names.size());
         assertTrue(names.contains("lop"));
         assertTrue(names.contains("ripple"));

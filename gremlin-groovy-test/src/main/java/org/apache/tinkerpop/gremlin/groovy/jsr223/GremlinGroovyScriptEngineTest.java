@@ -594,8 +594,8 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldProcessUTF8Query() throws Exception {
-        final Vertex nonUtf8 = g.addVertex(T.id, "1", "name", "marko", "age", 29);
-        final Vertex utf8Name = g.addVertex(T.id, "2", "name", "轉注", "age", 32);
+        final Vertex nonUtf8 = graph.addVertex(T.id, "1", "name", "marko", "age", 29);
+        final Vertex utf8Name = graph.addVertex(T.id, "2", "name", "轉注", "age", 32);
 
         final ScriptEngine engine = new GremlinGroovyScriptEngine();
 

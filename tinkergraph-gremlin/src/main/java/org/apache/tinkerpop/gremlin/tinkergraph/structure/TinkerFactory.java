@@ -160,7 +160,7 @@ public class TinkerFactory {
             }
 
             public SocialTraversal<S, Vertex> people(final String name) {
-                return (SocialTraversal) this.addStep(new StartStep<>(this, this.graph.V().has("name", name)));
+                return (SocialTraversal) this.addStep(new StartStep<>(this, this.graph.traversal().V().has("name", name)));
             }
 
         }

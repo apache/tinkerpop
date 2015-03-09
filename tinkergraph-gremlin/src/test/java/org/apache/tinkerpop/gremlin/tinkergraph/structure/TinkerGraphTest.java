@@ -20,11 +20,15 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Operator;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
@@ -36,7 +40,11 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -96,7 +104,7 @@ public class TinkerGraphTest {
         v7.addEdge("link", v9, "weight", 1f);
         v8.addEdge("link", v9, "weight", 7f);
 
-        g.V(v1).withSack(Float.MIN_VALUE).repeat(outE().sack(Operator.max, "weight").inV()).times(5).sack().forEachRemaining(System.out::println);
+        g.traversal().V(v1).withSack(Float.MIN_VALUE).repeat(outE().sack(Operator.max, "weight").inV()).times(5).sack().forEachRemaining(System.out::println);
     }
 
    /* @Test
@@ -111,8 +119,9 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void benchmarkStandardTraversals() throws Exception {
-        Graph g = TinkerGraph.open();
-        g.io().readGraphML("data/grateful-dead.xml");
+        Graph graph = TinkerGraph.open();
+        GraphTraversalContext g = graph.traversal();
+        graph.io().readGraphML("data/grateful-dead.xml");
         final List<Supplier<Traversal>> traversals = Arrays.asList(
                 () -> g.V().outE().inV().outE().inV().outE().inV(),
                 () -> g.V().out().out().out(),
@@ -144,8 +153,9 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay4() throws Exception {
-        Graph g = TinkerGraph.open();
-        g.io().readGraphML("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
+        Graph graph = TinkerGraph.open();
+        graph.io().readGraphML("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
+        GraphTraversalContext g = graph.traversal();
         final List<Supplier<Traversal>> traversals = Arrays.asList(
                 () -> g.V().has(T.label, "song").out().groupCount().<Vertex>by(t ->
                         g.V(t).choose(r -> g.V(r).has(T.label, "artist").hasNext(),
@@ -175,7 +185,7 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlayDK() throws Exception {
-        Graph g = TinkerFactory.createModern();
+        GraphTraversalContext g = TinkerFactory.createModern().traversal();
         Traversal t = g.V().hasLabel("person").as("person").local(bothE().label().groupCount().cap()).as("relations").select().by("name").by();
         t.forEachRemaining(System.out::println);
         System.out.println("--");
@@ -225,7 +235,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteClassicVerticesAsGryo() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-vertices.kryo");
-        GryoWriter.build().create().writeVertices(os, TinkerFactory.createClassic().V(), Direction.BOTH);
+        GryoWriter.build().create().writeVertices(os, TinkerFactory.createClassic().traversal().V(), Direction.BOTH);
         os.close();
     }
 
@@ -235,7 +245,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteClassicVerticesAsGraphSON() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-vertices.ldjson");
-        GraphSONWriter.build().create().writeVertices(os, TinkerFactory.createClassic().V(), Direction.BOTH);
+        GraphSONWriter.build().create().writeVertices(os, TinkerFactory.createClassic().traversal().V(), Direction.BOTH);
         os.close();
     }
 
@@ -245,7 +255,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernVerticesAsGryo() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-vertices.kryo");
-        GryoWriter.build().create().writeVertices(os, TinkerFactory.createModern().V(), Direction.BOTH);
+        GryoWriter.build().create().writeVertices(os, TinkerFactory.createModern().traversal().V(), Direction.BOTH);
         os.close();
     }
 
@@ -255,7 +265,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernVerticesAsGraphSON() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-vertices.ldjson");
-        GraphSONWriter.build().create().writeVertices(os, TinkerFactory.createModern().V(), Direction.BOTH);
+        GraphSONWriter.build().create().writeVertices(os, TinkerFactory.createModern().traversal().V(), Direction.BOTH);
         os.close();
     }
 
@@ -265,7 +275,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteCrewVerticesAsGryo() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-vertices.kryo");
-        GryoWriter.build().create().writeVertices(os, TinkerFactory.createTheCrew().V(), Direction.BOTH);
+        GryoWriter.build().create().writeVertices(os, TinkerFactory.createTheCrew().traversal().V(), Direction.BOTH);
         os.close();
     }
 
@@ -461,7 +471,7 @@ public class TinkerGraphTest {
         // is used because only "stephen" ages should pass through the pipeline due to the inclusion of the
         // key index lookup on "name".  If there's an age of something other than 35 in the pipeline being evaluated
         // then something is wrong.
-        assertEquals(1, StreamFactory.stream(g.V().has("age", (t, u) -> {
+        assertEquals(1, StreamFactory.stream(g.traversal().V().has("age", (t, u) -> {
             assertEquals(35, t);
             return true;
         }, 35).has("name", "stephen")).count());
@@ -482,13 +492,13 @@ public class TinkerGraphTest {
         // is used because only "stephen" ages should pass through the pipeline due to the inclusion of the
         // key index lookup on "name".  If there's an age of something other than 35 in the pipeline being evaluated
         // then something is wrong.
-        assertEquals(2, StreamFactory.stream(g.V().has("age", (t, u) -> {
+        assertEquals(2, StreamFactory.stream(g.traversal().V().has("age", (t, u) -> {
             assertEquals(35, t);
             return true;
         }, 35).has("name", "stephen")).count());
 
         v.remove();
-        assertEquals(1, StreamFactory.stream(g.V().has("age", (t, u) -> {
+        assertEquals(1, StreamFactory.stream(g.traversal().V().has("age", (t, u) -> {
             assertEquals(35, t);
             return true;
         }, 35).has("name", "stephen")).count());
@@ -505,7 +515,7 @@ public class TinkerGraphTest {
         // a tricky way to evaluate if indices are actually being used is to pass a fake BiPredicate to has()
         // to get into the Pipeline and evaluate what's going through it.  in this case, we know that at index
         // is not used because "stephen" and "marko" ages both pass through the pipeline.
-        assertEquals(1, StreamFactory.stream(g.V().has("age", (t, u) -> {
+        assertEquals(1, StreamFactory.stream(g.traversal().V().has("age", (t, u) -> {
             assertTrue(t.equals(35) || t.equals(29));
             return true;
         }, 35).has("name", "stephen")).count());
@@ -516,7 +526,7 @@ public class TinkerGraphTest {
         // is used because only "stephen" ages should pass through the pipeline due to the inclusion of the
         // key index lookup on "name".  If there's an age of something other than 35 in the pipeline being evaluated
         // then something is wrong.
-        assertEquals(1, StreamFactory.stream(g.V().has("age", (t, u) -> {
+        assertEquals(1, StreamFactory.stream(g.traversal().V().has("age", (t, u) -> {
             assertEquals(35, t);
             return true;
         }, 35).has("name", "stephen")).count());
@@ -537,7 +547,7 @@ public class TinkerGraphTest {
         // is used because only oid 1 should pass through the pipeline due to the inclusion of the
         // key index lookup on "oid".  If there's an weight of something other than 0.5f in the pipeline being
         // evaluated then something is wrong.
-        assertEquals(1, StreamFactory.stream(g.E().has("weight", (t, u) -> {
+        assertEquals(1, StreamFactory.stream(g.traversal().E().has("weight", (t, u) -> {
             assertEquals(0.5f, t);
             return true;
         }, 0.5).has("oid", "1")).count());
@@ -559,13 +569,13 @@ public class TinkerGraphTest {
         // is used because only oid 1 should pass through the pipeline due to the inclusion of the
         // key index lookup on "oid".  If there's an weight of something other than 0.5f in the pipeline being
         // evaluated then something is wrong.
-        assertEquals(2, StreamFactory.stream(g.E().has("weight", (t, u) -> {
+        assertEquals(2, StreamFactory.stream(g.traversal().E().has("weight", (t, u) -> {
             assertEquals(0.5f, t);
             return true;
         }, 0.5).has("oid", "1")).count());
 
         e.remove();
-        assertEquals(1, StreamFactory.stream(g.E().has("weight", (t, u) -> {
+        assertEquals(1, StreamFactory.stream(g.traversal().E().has("weight", (t, u) -> {
             assertEquals(0.5f, t);
             return true;
         }, 0.5).has("oid", "1")).count());
@@ -583,7 +593,7 @@ public class TinkerGraphTest {
         // a tricky way to evaluate if indices are actually being used is to pass a fake BiPredicate to has()
         // to get into the Pipeline and evaluate what's going through it.  in this case, we know that at index
         // is not used because "1" and "2" weights both pass through the pipeline.
-        assertEquals(1, StreamFactory.stream(g.E().has("weight", (t, u) -> {
+        assertEquals(1, StreamFactory.stream(g.traversal().E().has("weight", (t, u) -> {
             assertTrue(t.equals(0.5f) || t.equals(0.6f));
             return true;
         }, 0.5).has("oid", "1")).count());
@@ -594,7 +604,7 @@ public class TinkerGraphTest {
         // is used because only oid 1 should pass through the pipeline due to the inclusion of the
         // key index lookup on "oid".  If there's an weight of something other than 0.5f in the pipeline being
         // evaluated then something is wrong.
-        assertEquals(1, StreamFactory.stream(g.E().has("weight", (t, u) -> {
+        assertEquals(1, StreamFactory.stream(g.traversal().E().has("weight", (t, u) -> {
             assertEquals(0.5f, t);
             return true;
         }, 0.5).has("oid", "1")).count());
@@ -620,7 +630,7 @@ public class TinkerGraphTest {
         */
 
         final Graph ng = TinkerGraph.open();
-        g.V().sideEffect(ov -> {
+        g.traversal().V().sideEffect(ov -> {
             final Vertex v = ov.get();
             if (v.label().equals("song"))
                 ng.addVertex(T.id, Integer.parseInt(v.id().toString()), T.label, "song", "name", v.value("name"), "performances", v.property("performances").orElse(0), "songType", v.property("songType").orElse(""));
@@ -630,10 +640,10 @@ public class TinkerGraphTest {
                 throw new RuntimeException("damn");
         }).iterate();
 
-        g.E().sideEffect(oe -> {
+        g.traversal().E().sideEffect(oe -> {
             final Edge e = oe.get();
-            final Vertex v2 = ng.V(Integer.parseInt(e.inVertex().id().toString())).next();
-            final Vertex v1 = ng.V(Integer.parseInt(e.outVertex().id().toString())).next();
+            final Vertex v2 = ng.traversal().V(Integer.parseInt(e.inVertex().id().toString())).next();
+            final Vertex v1 = ng.traversal().V(Integer.parseInt(e.outVertex().id().toString())).next();
 
             if (e.label().equals("followedBy"))
                 v1.addEdge("followedBy", v2, T.id, Integer.parseInt(e.id().toString()), "weight", e.value("weight"));
@@ -659,11 +669,11 @@ public class TinkerGraphTest {
         os3.close();
 
         final OutputStream os4 = new FileOutputStream(tempPath + "grateful-dead-vertices.kryo");
-        GryoWriter.build().create().writeVertices(os4, g.V(), Direction.BOTH);
+        GryoWriter.build().create().writeVertices(os4, g.traversal().V(), Direction.BOTH);
         os.close();
 
         final OutputStream os5 = new FileOutputStream(tempPath + "grateful-dead-vertices.ldjson");
-        GraphSONWriter.build().create().writeVertices(os5, g.V(), Direction.BOTH);
+        GraphSONWriter.build().create().writeVertices(os5, g.traversal().V(), Direction.BOTH);
         os.close();
     }
 }
