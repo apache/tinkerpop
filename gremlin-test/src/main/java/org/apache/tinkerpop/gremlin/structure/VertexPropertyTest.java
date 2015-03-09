@@ -153,7 +153,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertTrue(values.contains("marko a. rodriguez"));
                 assertTrue(values.contains("marko rodriguez"));
             });
-            v.properties("name").remove();
+            v.properties("name").forEachRemaining(Property::remove);
             tryCommit(g, g -> {
                 assertEquals(0, IteratorUtils.count(v.properties()));
                 assertEquals(0, IteratorUtils.count(v.properties("name")));
@@ -186,7 +186,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
 
             final Vertex u = g.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
             tryCommit(g);
-            u.properties().remove();
+            u.properties().forEachRemaining(Property::remove);
             u.property(VertexProperty.Cardinality.single, "name", "okram", "acl", "private", "date", 2014);
             tryCommit(g, g -> {
                 assertEquals(1, IteratorUtils.count(u.properties("name")));
@@ -312,11 +312,11 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             a.property("name").remove();
             a.property("name").remove();
             a.property("name").remove();
-            b.properties("name").remove();
+            b.properties("name").forEachRemaining(Property::remove);
             b.property("name").remove();
-            b.properties("name").remove();
+            b.properties("name").forEachRemaining(Property::remove);
             b.property("name").remove();
-            b.properties("name").remove();
+            b.properties("name").forEachRemaining(Property::remove);
             b.property("name").remove();
         }
 

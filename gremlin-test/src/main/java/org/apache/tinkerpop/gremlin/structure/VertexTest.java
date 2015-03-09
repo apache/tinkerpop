@@ -219,7 +219,7 @@ public class VertexTest {
             assertFalse(v.keys().contains("location"));
             assertVertexEdgeCounts(1, 0).accept(g);
 
-            v.properties("name").remove();
+            v.properties("name").forEachRemaining(Property::remove);
             v.property("name", "marko rodriguez");
             assertEquals(34, (int) v.value("age"));
             assertEquals("marko rodriguez", v.<String>value("name"));
@@ -244,7 +244,7 @@ public class VertexTest {
             v.property("location").remove();
             assertVertexEdgeCounts(1, 0).accept(g);
             assertEquals(2, IteratorUtils.count(v.properties()));
-            v.properties().remove();
+            v.properties().forEachRemaining(Property::remove);
             assertEquals(0, IteratorUtils.count(v.properties()));
             assertVertexEdgeCounts(1, 0).accept(g);
         }
@@ -397,7 +397,7 @@ public class VertexTest {
             assertTrue(keys.contains("name"));
             assertTrue(keys.contains("location"));
 
-            v.properties().remove();
+            v.properties().forEachRemaining(Property::remove);
 
             keys = v.keys();
             assertEquals(0, keys.size());

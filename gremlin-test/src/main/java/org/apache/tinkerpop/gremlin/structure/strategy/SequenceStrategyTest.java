@@ -433,7 +433,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                             // the implementation
                             assertEquals("working2", v.property("anonymous").value());
                             // now do something with that vertex after the fact
-                            v.properties("anonymous").remove();
+                            v.properties("anonymous").forEachRemaining(Property::remove);
                             v.property("anonymous", "working1");
                             return v;
                         };
@@ -449,7 +449,7 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
                             // the implementation
                             assertEquals("working3", v.property("anonymous").value());
                             // now do something with that vertex after the fact
-                            v.properties("anonymous").remove();
+                            v.properties("anonymous").forEachRemaining(Property::remove);
                             v.property("anonymous", "working2");
                             return v;
                         };

@@ -133,23 +133,23 @@ public class SerializationTest {
         public void shouldSerializeVertexPropertyWithPropertiesAsDetached() throws Exception {
             final GryoMapper gryoMapper = g.io().gryoMapper().create();
             final Kryo kryo = gryoMapper.createMapper();
-            final VertexProperty vp = g.vertices(convertToVertexId("marko")).next().properties("location").next();
+            final VertexProperty<?> vp = g.vertices(convertToVertexId("marko")).next().properties("location").next();
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
             final Output output = new Output(stream);
             kryo.writeObject(output, vp);
             output.close();
 
             final Input input = new Input(stream.toByteArray());
-            final VertexProperty detached = kryo.readObject(input, VertexProperty.class);
+            final VertexProperty<?> detached = kryo.readObject(input, VertexProperty.class);
             input.close();
             assertNotNull(detached);
             assertEquals(vp.label(), detached.label());
             assertEquals(vp.id(), detached.id());
             assertEquals(vp.value(), detached.value());
             assertEquals(vp.values("startTime").next(), detached.values("startTime").next());
-            assertEquals(((VertexProperty) vp.properties("startTime").next()).key(), ((VertexProperty) detached.properties("startTime").next()).key());
+            assertEquals(vp.properties("startTime").next().key(), detached.properties("startTime").next().key());
             assertEquals(vp.values("endTime").next(), detached.values("endTime").next());
-            assertEquals(((VertexProperty) vp.properties("endTime").next()).key(), ((VertexProperty) detached.properties("endTime").next()).key());
+            assertEquals(vp.properties("endTime").next().key(), detached.properties("endTime").next().key());
         }
 
         @Test

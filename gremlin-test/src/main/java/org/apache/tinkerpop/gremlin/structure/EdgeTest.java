@@ -226,7 +226,7 @@ public class EdgeTest {
             assertTrue(keys.contains("name"));
             assertTrue(keys.contains("location"));
 
-            e.properties().remove();
+            e.properties().forEachRemaining(Property::remove);
 
             keys = e.keys();
             assertEquals(0, keys.size());

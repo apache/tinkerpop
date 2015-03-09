@@ -49,6 +49,10 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
         this.graph = graph;
         this.returnClass = returnClass;
         this.ids = ids;
+        for (int i = 0; i < this.ids.length; i++) {
+            if (this.ids[i] instanceof Element)
+                this.ids[i] = ((Element) this.ids[i]).id();
+        }
         this.iteratorSupplier = () -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ?
                 this.graph.vertices(this.ids) :
                 this.graph.edges(this.ids));
