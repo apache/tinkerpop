@@ -24,16 +24,17 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -66,11 +67,11 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
 
         for (Vertex vertex : cocreators) {
             if (vertex.id().equals(convertToVertexId("marko"))) {
-                assertEquals(vertex.outE("cocreator").count().next(), new Long(4));
-                assertEquals(vertex.inE("cocreator").count().next(), new Long(4));
+                assertEquals(4, IteratorUtils.count(vertex.edges(Direction.OUT, "cocreator")));
+                assertEquals(4, IteratorUtils.count(vertex.edges(Direction.IN, "cocreator")));
             } else {
-                assertEquals(vertex.outE("cocreator").count().next(), new Long(1));
-                assertEquals(vertex.inE("cocreator").count().next(), new Long(1));
+                assertEquals(1, IteratorUtils.count(vertex.edges(Direction.OUT, "cocreator")));
+                assertEquals(1, IteratorUtils.count(vertex.edges(Direction.IN, "cocreator")));
             }
         }
     }
@@ -85,9 +86,9 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
         while (traversal.hasNext()) {
             final Vertex vertex = traversal.next();
             assertEquals(convertToVertexId("lop"), vertex.id());
-            assertEquals(1, vertex.out("createdBy").count().next().longValue());
-            assertEquals(convertToVertexId("marko"), vertex.out("createdBy").id().next());
-            assertEquals(0, vertex.outE("createdBy").valueMap().next().size());
+            assertEquals(1, IteratorUtils.count(vertex.vertices(Direction.OUT, "createdBy")));
+            assertEquals(convertToVertexId("marko"), vertex.vertices(Direction.OUT, "createdBy").next().id());
+            assertFalse(vertex.edges(Direction.OUT, "createdBy").next().properties().hasNext());
             count++;
 
         }
@@ -104,10 +105,10 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
         while (traversal.hasNext()) {
             final Vertex vertex = traversal.next();
             assertEquals(convertToVertexId("lop"), vertex.id());
-            assertEquals(Long.valueOf(1l), vertex.out("createdBy").count().next());
-            assertEquals(convertToVertexId("marko"), vertex.out("createdBy").id().next());
-            assertEquals(2, vertex.outE("createdBy").values("weight").next());
-            assertEquals(1, vertex.outE("createdBy").valueMap().next().size());
+            assertEquals(1, IteratorUtils.count(vertex.vertices(Direction.OUT, "createdBy")));
+            assertEquals(convertToVertexId("marko"), vertex.vertices(Direction.OUT, "createdBy").next().id());
+            assertEquals(2, vertex.edges(Direction.OUT, "createdBy").next().values("weight").next());
+            assertEquals(1, IteratorUtils.count(vertex.edges(Direction.OUT, "createdBy").next().properties()));
             count++;
 
 

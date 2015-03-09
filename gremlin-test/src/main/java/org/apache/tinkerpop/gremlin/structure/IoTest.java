@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
@@ -54,7 +55,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.VertexByteArrayInputStream
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
-import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import javax.xml.XMLConstants;
@@ -593,13 +594,13 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                    assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
-                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(v1.id(), detachedEdge.outVertex().id());
+                    assertEquals(v2.id(), detachedEdge.inVertex().id());
+                    assertEquals(v1.label(), detachedEdge.outVertex().label());
+                    assertEquals(v2.label(), detachedEdge.inVertex().label());
                     assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(0.5f, detachedEdge.iterators().propertyIterator("weight").next().value());
-                    assertEquals("rw", detachedEdge.iterators().propertyIterator("acl").next().value());
+                    assertEquals(0.5f, detachedEdge.properties("weight").next().value());
+                    assertEquals("rw", detachedEdge.properties("acl").next().value());
 
                     called.set(true);
 
@@ -629,13 +630,13 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                    assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
-                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(v1.id(), detachedEdge.outVertex().id());
+                    assertEquals(v2.id(), detachedEdge.inVertex().id());
+                    assertEquals(v1.label(), detachedEdge.outVertex().label());
+                    assertEquals(v2.label(), detachedEdge.inVertex().label());
                     assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(0.5d, e.iterators().propertyIterator("weight").next().value());
-                    assertEquals("rw", e.iterators().propertyIterator("acl").next().value());
+                    assertEquals(0.5d, e.properties("weight").next().value());
+                    assertEquals("rw", e.properties("acl").next().value());
                     called.set(true);
                     return null;
                 });
@@ -663,12 +664,12 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                    assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
-                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(v1.id(), detachedEdge.outVertex().id());
+                    assertEquals(v2.id(), detachedEdge.inVertex().id());
+                    assertEquals(v1.label(), detachedEdge.outVertex().label());
+                    assertEquals(v2.label(), detachedEdge.inVertex().label());
                     assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                    assertEquals(e.keys().size(), IteratorUtils.count(detachedEdge.properties()));
                     called.set(true);
 
                     return null;
@@ -697,13 +698,13 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                    assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
-                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(v1.id(), detachedEdge.outVertex().id());
+                    assertEquals(v2.id(), detachedEdge.inVertex().id());
+                    assertEquals(v1.label(), detachedEdge.outVertex().label());
+                    assertEquals(v2.label(), detachedEdge.inVertex().label());
                     assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(0.5d, detachedEdge.iterators().propertyIterator("weight").next().value());
-                    assertEquals("rw", detachedEdge.iterators().propertyIterator("acl").next().value());
+                    assertEquals(0.5d, detachedEdge.properties("weight").next().value());
+                    assertEquals("rw", detachedEdge.properties("acl").next().value());
                     called.set(true);
                     return null;
                 });
@@ -732,13 +733,13 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id().toString(), detachedEdge.id().toString()); // lossy
-                    assertEquals(v1.id().toString(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id().toString()); // lossy
-                    assertEquals(v2.id().toString(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id().toString());  // lossy
-                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(v1.id().toString(), detachedEdge.outVertex().id().toString()); // lossy
+                    assertEquals(v2.id().toString(), detachedEdge.inVertex().id().toString());  // lossy
+                    assertEquals(v1.label(), detachedEdge.outVertex().label());
+                    assertEquals(v2.label(), detachedEdge.inVertex().label());
                     assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(0.5d, detachedEdge.iterators().propertyIterator("weight").next().value());
-                    assertEquals("rw", detachedEdge.iterators().propertyIterator("acl").next().value());
+                    assertEquals(0.5d, detachedEdge.properties("weight").next().value());
+                    assertEquals("rw", detachedEdge.properties("acl").next().value());
                     called.set(true);
                     return null;
                 });
@@ -767,12 +768,12 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id().toString(), detachedEdge.id().toString()); // lossy
-                    assertEquals(v1.id().toString(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id().toString()); // lossy
-                    assertEquals(v2.id().toString(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id().toString());  // lossy
-                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(v1.id().toString(), detachedEdge.outVertex().id().toString()); // lossy
+                    assertEquals(v2.id().toString(), detachedEdge.inVertex().id().toString());  // lossy
+                    assertEquals(v1.label(), detachedEdge.outVertex().label());
+                    assertEquals(v2.label(), detachedEdge.inVertex().label());
                     assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.properties()).count());
                     called.set(true);
                     return null;
                 });
@@ -801,13 +802,13 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id().toString(), detachedEdge.id().toString()); // lossy
-                    assertEquals(v1.id().toString(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id().toString()); // lossy
-                    assertEquals(v2.id().toString(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id().toString());  // lossy
-                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(v1.id().toString(), detachedEdge.outVertex().id().toString()); // lossy
+                    assertEquals(v2.id().toString(), detachedEdge.inVertex().id().toString());  // lossy
+                    assertEquals(v1.label(), detachedEdge.outVertex().label());
+                    assertEquals(v2.label(), detachedEdge.inVertex().label());
                     assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(0.5d, detachedEdge.iterators().propertyIterator("weight").next().value());
-                    assertEquals("rw", detachedEdge.iterators().propertyIterator("acl").next().value());
+                    assertEquals(0.5d, detachedEdge.properties("weight").next().value());
+                    assertEquals("rw", detachedEdge.properties("acl").next().value());
                     called.set(true);
                     return null;
                 });
@@ -837,13 +838,13 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                    assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
-                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(v1.id(), detachedEdge.outVertex().id());
+                    assertEquals(v2.id(), detachedEdge.inVertex().id());
+                    assertEquals(v1.label(), detachedEdge.outVertex().label());
+                    assertEquals(v2.label(), detachedEdge.inVertex().label());
                     assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(0.5f, detachedEdge.iterators().propertyIterator("weight").next().value());
-                    assertEquals("rw", detachedEdge.iterators().propertyIterator("acl").next().value());
+                    assertEquals(0.5f, detachedEdge.properties("weight").next().value());
+                    assertEquals("rw", detachedEdge.properties("acl").next().value());
                     called.set(true);
 
                     return null;
@@ -873,12 +874,12 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), graphProvider.reconstituteGraphSONIdentifier(Edge.class, detachedEdge.id()));
-                    assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()));
-                    assertEquals(v2.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.iterators().vertexIterator(Direction.IN).next().id()));
-                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.outVertex().id()));
+                    assertEquals(v2.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.inVertex().id()));
+                    assertEquals(v1.label(), detachedEdge.outVertex().label());
+                    assertEquals(v2.label(), detachedEdge.inVertex().label());
                     assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.properties()).count());
                     assertEquals(id, detachedEdge.value("uuid"));
 
                     called.set(true);
@@ -910,12 +911,12 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                    assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
-                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(v1.id(), detachedEdge.outVertex().id());
+                    assertEquals(v2.id(), detachedEdge.inVertex().id());
+                    assertEquals(v1.label(), detachedEdge.outVertex().label());
+                    assertEquals(v2.label(), detachedEdge.inVertex().label());
                     assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.properties()).count());
                     assertEquals(id, detachedEdge.value("uuid"));
 
                     called.set(true);
@@ -949,7 +950,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(2, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                    assertEquals(2, StreamFactory.stream(detachedVertex.properties()).count());
                     assertEquals(v1.value("name"), detachedVertex.value("name").toString());
                     assertEquals(v1.value("acl"), detachedVertex.value("acl").toString());
                     called.set(true);
@@ -980,7 +981,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(2, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                    assertEquals(2, StreamFactory.stream(detachedVertex.properties()).count());
                     assertEquals(v1.value("name"), detachedVertex.value("name").toString());
                     assertEquals(v1.value("acl"), detachedVertex.value("acl").toString());
                     called.set(true);
@@ -1012,9 +1013,9 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(2, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
-                    assertEquals("marko", detachedVertex.iterators().propertyIterator("name").next().value());
-                    assertEquals("rw", detachedVertex.iterators().propertyIterator("acl").next().value());
+                    assertEquals(2, StreamFactory.stream(detachedVertex.properties()).count());
+                    assertEquals("marko", detachedVertex.properties("name").next().value());
+                    assertEquals("rw", detachedVertex.properties("acl").next().value());
                     called.set(true);
                     return mock(Vertex.class);
                 });
@@ -1044,7 +1045,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                    assertEquals(0, StreamFactory.stream(detachedVertex.properties()).count());
                     called.set(true);
                     return mock(Vertex.class);
                 });
@@ -1076,11 +1077,11 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(4, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                    assertEquals(4, StreamFactory.stream(detachedVertex.properties()).count());
                     assertEquals("a", detachedVertex.property("propsSquared").value("x"));
                     assertEquals("b", detachedVertex.property("propsSquared").value("y"));
-                    assertEquals(2, StreamFactory.stream(detachedVertex.iterators().propertyIterator("name")).count());
-                    assertTrue(StreamFactory.stream(detachedVertex.iterators().propertyIterator("name")).allMatch(p -> p.key().equals("name") && (p.value().equals("marko") || p.value().equals("mark"))));
+                    assertEquals(2, StreamFactory.stream(detachedVertex.properties("name")).count());
+                    assertTrue(StreamFactory.stream(detachedVertex.properties("name")).allMatch(p -> p.key().equals("name") && (p.value().equals("marko") || p.value().equals("mark"))));
                     assertEquals(v1.value("acl"), detachedVertex.value("acl").toString());
                     called.set(true);
                     return mock(Vertex.class);
@@ -1111,9 +1112,9 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id().toString(), detachedVertex.id().toString()); // lossy
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(2, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
-                    assertEquals("marko", detachedVertex.iterators().propertyIterator("name").next().value());
-                    assertEquals("rw", detachedVertex.iterators().propertyIterator("acl").next().value());
+                    assertEquals(2, StreamFactory.stream(detachedVertex.properties()).count());
+                    assertEquals("marko", detachedVertex.properties("name").next().value());
+                    assertEquals("rw", detachedVertex.properties("acl").next().value());
                     called.set(true);
                     return detachedVertex;
                 });
@@ -1145,9 +1146,9 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id().toString(), detachedVertex.id().toString()); // lossy
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(2, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
-                    assertEquals("marko", detachedVertex.iterators().propertyIterator("name").next().value());
-                    assertEquals("rw", detachedVertex.iterators().propertyIterator("acl").next().value());
+                    assertEquals(2, StreamFactory.stream(detachedVertex.properties()).count());
+                    assertEquals("marko", detachedVertex.properties("name").next().value());
+                    assertEquals("rw", detachedVertex.properties("acl").next().value());
                     called.set(true);
                     return detachedVertex;
                 });
@@ -1179,7 +1180,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id().toString(), detachedVertex.id().toString()); // lossy
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                    assertEquals(0, StreamFactory.stream(detachedVertex.properties()).count());
 
                     called.set(true);
                     return detachedVertex;
@@ -1213,11 +1214,11 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id().toString(), detachedVertex.id().toString()); // lossy
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(4, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                    assertEquals(4, StreamFactory.stream(detachedVertex.properties()).count());
                     assertEquals("a", detachedVertex.property("propsSquared").value("x"));
                     assertEquals("b", detachedVertex.property("propsSquared").value("y"));
-                    assertEquals(2, StreamFactory.stream(detachedVertex.iterators().propertyIterator("name")).count());
-                    assertTrue(StreamFactory.stream(detachedVertex.iterators().propertyIterator("name")).allMatch(p -> p.key().equals("name") && (p.value().equals("marko") || p.value().equals("mark"))));
+                    assertEquals(2, StreamFactory.stream(detachedVertex.properties("name")).count());
+                    assertTrue(StreamFactory.stream(detachedVertex.properties("name")).allMatch(p -> p.key().equals("name") && (p.value().equals("marko") || p.value().equals("mark"))));
                     assertEquals(v1.value("acl"), detachedVertex.value("acl").toString());
                     called.set(true);
                     return mock(Vertex.class);
@@ -1333,19 +1334,19 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, Direction.OUT, detachedVertex -> {
                             assertEquals(v1.id(), detachedVertex.id());
                             assertEquals(v1.label(), detachedVertex.label());
-                            assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                            assertEquals(1, StreamFactory.stream(detachedVertex.properties()).count());
                             assertEquals(v1.value("name"), detachedVertex.value("name").toString());
                             calledVertex.set(true);
                             return detachedVertex;
                         },
                         detachedEdge -> {
                             assertEquals(e.id(), detachedEdge.id());
-                            assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                            assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
-                            assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                            assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                            assertEquals(v1.id(), detachedEdge.outVertex().id());
+                            assertEquals(v2.id(), detachedEdge.inVertex().id());
+                            assertEquals(v1.label(), detachedEdge.outVertex().label());
+                            assertEquals(v2.label(), detachedEdge.inVertex().label());
                             assertEquals(e.label(), detachedEdge.label());
-                            assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                            assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                             assertEquals(0.5d, detachedEdge.value("weight"), 0.00001d);
 
                             calledEdge.set(true);
@@ -1381,19 +1382,19 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, Direction.OUT, detachedVertex -> {
                             assertEquals(v1.id().toString(), detachedVertex.id().toString());  // lossy
                             assertEquals(v1.label(), detachedVertex.label());
-                            assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                            assertEquals(1, StreamFactory.stream(detachedVertex.properties()).count());
                             assertEquals("marko", detachedVertex.value("name"));
                             calledVertex.set(true);
                             return null;
                         },
                         detachedEdge -> {
                             assertEquals(e.id().toString(), detachedEdge.id().toString());  // lossy
-                            assertEquals(v1.id().toString(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id().toString());  // lossy
-                            assertEquals(v2.id().toString(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id().toString());   // lossy
-                            assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                            assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                            assertEquals(v1.id().toString(), detachedEdge.outVertex().id().toString());  // lossy
+                            assertEquals(v2.id().toString(), detachedEdge.inVertex().id().toString());   // lossy
+                            assertEquals(v1.label(), detachedEdge.outVertex().label());
+                            assertEquals(v2.label(), detachedEdge.inVertex().label());
                             assertEquals(e.label(), detachedEdge.label());
-                            assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                            assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                             assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
 
                             calledEdge.set(true);
@@ -1429,19 +1430,19 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, Direction.IN, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.properties()).count());
                     assertEquals(v1.value("name"), detachedVertex.value("name").toString());
                     calledVertex.set(true);
 
                     return detachedVertex;
                 }, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                    assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
-                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(v2.id(), detachedEdge.outVertex().id());
+                    assertEquals(v1.id(), detachedEdge.inVertex().id());
+                    assertEquals(v1.label(), detachedEdge.outVertex().label());
+                    assertEquals(v2.label(), detachedEdge.inVertex().label());
                     assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                    assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                     assertEquals(0.5d, detachedEdge.value("weight"), 0.00001d);
 
                     calledEdge.set(true);
@@ -1478,19 +1479,19 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, Direction.IN, detachedVertex -> {
                             assertEquals(v1.id().toString(), detachedVertex.id().toString());  // lossy
                             assertEquals(v1.label(), detachedVertex.label());
-                            assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                            assertEquals(1, StreamFactory.stream(detachedVertex.properties()).count());
                             assertEquals("marko", detachedVertex.value("name"));
                             calledVertex.set(true);
                             return null;
                         },
                         detachedEdge -> {
                             assertEquals(e.id().toString(), detachedEdge.id().toString());  // lossy
-                            assertEquals(v1.id().toString(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id().toString());  // lossy
-                            assertEquals(v2.id().toString(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id().toString());   // lossy
-                            assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                            assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                            assertEquals(v1.id().toString(), detachedEdge.inVertex().id().toString());  // lossy
+                            assertEquals(v2.id().toString(), detachedEdge.outVertex().id().toString());   // lossy
+                            assertEquals(v1.label(), detachedEdge.outVertex().label());
+                            assertEquals(v2.label(), detachedEdge.inVertex().label());
                             assertEquals(e.label(), detachedEdge.label());
-                            assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                            assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                             assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
 
                             calledEdge.set(true);
@@ -1528,7 +1529,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, Direction.BOTH, detachedVertex -> {
                             assertEquals(v1.id(), detachedVertex.id());
                             assertEquals(v1.label(), detachedVertex.label());
-                            assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                            assertEquals(1, StreamFactory.stream(detachedVertex.properties()).count());
                             assertEquals(v1.value("name"), detachedVertex.value("name").toString());
                             calledVertex.set(true);
 
@@ -1536,21 +1537,21 @@ public class IoTest extends AbstractGremlinTest {
                         },
                         detachedEdge -> {
                             if (detachedEdge.id().equals(e1.id())) {
-                                assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                                assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
-                                assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                                assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                                assertEquals(v2.id(), detachedEdge.outVertex().id());
+                                assertEquals(v1.id(), detachedEdge.inVertex().id());
+                                assertEquals(v1.label(), detachedEdge.outVertex().label());
+                                assertEquals(v2.label(), detachedEdge.inVertex().label());
                                 assertEquals(e1.label(), detachedEdge.label());
-                                assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                                assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                                 assertEquals(0.5d, detachedEdge.value("weight"), 0.00001d);
                                 calledEdge1.set(true);
                             } else if (detachedEdge.id().equals(e2.id())) {
-                                assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                                assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
-                                assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                                assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                                assertEquals(v1.id(), detachedEdge.outVertex().id());
+                                assertEquals(v2.id(), detachedEdge.inVertex().id());
+                                assertEquals(v1.label(), detachedEdge.outVertex().label());
+                                assertEquals(v2.label(), detachedEdge.inVertex().label());
                                 assertEquals(e1.label(), detachedEdge.label());
-                                assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                                assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                                 assertEquals(1.0d, detachedEdge.value("weight"), 0.00001d);
                                 calledEdge2.set(true);
                             } else {
@@ -1592,7 +1593,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, Direction.BOTH, detachedVertex -> {
                             assertEquals(v1.id().toString(), detachedVertex.id().toString());  // lossy
                             assertEquals(v1.label(), detachedVertex.label());
-                            assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                            assertEquals(1, StreamFactory.stream(detachedVertex.properties()).count());
                             assertEquals("marko", detachedVertex.value("name"));
                             vertexCalled.set(true);
                             return null;
@@ -1600,22 +1601,22 @@ public class IoTest extends AbstractGremlinTest {
                         detachedEdge -> {
                             if (detachedEdge.id().toString().equals(e1.id().toString())) {      // lossy
                                 assertEquals(e1.id().toString(), detachedEdge.id().toString());  // lossy
-                                assertEquals(v1.id().toString(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id().toString());  // lossy
-                                assertEquals(v2.id().toString(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id().toString());   // lossy
-                                assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                                assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                                assertEquals(v1.id().toString(), detachedEdge.inVertex().id().toString());  // lossy
+                                assertEquals(v2.id().toString(), detachedEdge.outVertex().id().toString());   // lossy
+                                assertEquals(v1.label(), detachedEdge.outVertex().label());
+                                assertEquals(v2.label(), detachedEdge.inVertex().label());
                                 assertEquals(e1.label(), detachedEdge.label());
-                                assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                                assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                                 assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
                                 edge1Called.set(true);
                             } else if (detachedEdge.id().toString().equals(e2.id().toString())) { // lossy
                                 assertEquals(e2.id().toString(), detachedEdge.id().toString());  // lossy
-                                assertEquals(v2.id().toString(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id().toString());  // lossy
-                                assertEquals(v1.id().toString(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id().toString());   // lossy
-                                assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                                assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                                assertEquals(v2.id().toString(), detachedEdge.inVertex().id().toString());  // lossy
+                                assertEquals(v1.id().toString(), detachedEdge.outVertex().id().toString());   // lossy
+                                assertEquals(v1.label(), detachedEdge.outVertex().label());
+                                assertEquals(v2.label(), detachedEdge.inVertex().label());
                                 assertEquals(e2.label(), detachedEdge.label());
-                                assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                                assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                                 assertEquals(1.0d, detachedEdge.value("weight"), 0.000001d);                      // lossy
                                 edge2Called.set(true);
                             } else {
@@ -1657,27 +1658,27 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, Direction.BOTH, detachedVertex -> {
                     assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedVertex.id()));
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.properties()).count());
                     assertEquals(v1.value("name"), detachedVertex.value("name").toString());
                     vertexCalled.set(true);
                     return null;
                 }, detachedEdge -> {
                     if (graphProvider.reconstituteGraphSONIdentifier(Edge.class, detachedEdge.id()).equals(e1.id())) {
-                        assertEquals(v2.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()));
-                        assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.iterators().vertexIterator(Direction.IN).next().id()));
-                        assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                        assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                        assertEquals(v2.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.outVertex().id()));
+                        assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.inVertex().id()));
+                        assertEquals(v1.label(), detachedEdge.outVertex().label());
+                        assertEquals(v2.label(), detachedEdge.inVertex().label());
                         assertEquals(e1.label(), detachedEdge.label());
-                        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                        assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                         assertEquals(0.5f, detachedEdge.value("weight"), 0.00001f);
                         edge1Called.set(true);
                     } else if (graphProvider.reconstituteGraphSONIdentifier(Edge.class, detachedEdge.id()).equals(e2.id())) {
-                        assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()));
-                        assertEquals(v2.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.iterators().vertexIterator(Direction.IN).next().id()));
-                        assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                        assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                        assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.outVertex().id()));
+                        assertEquals(v2.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.inVertex().id()));
+                        assertEquals(v1.label(), detachedEdge.outVertex().label());
+                        assertEquals(v2.label(), detachedEdge.inVertex().label());
                         assertEquals(e1.label(), detachedEdge.label());
-                        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                        assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                         assertEquals(1.0f, detachedEdge.value("weight"), 0.00001f);
                         edge2Called.set(true);
                     } else {
@@ -1718,7 +1719,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, Direction.IN, detachedVertex -> {
                             assertEquals(v1.id(), detachedVertex.id());
                             assertEquals(v1.label(), detachedVertex.label());
-                            assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                            assertEquals(1, StreamFactory.stream(detachedVertex.properties()).count());
                             assertEquals(v1.value("name"), detachedVertex.value("name").toString());
                             vertexCalled.set(true);
 
@@ -1726,12 +1727,12 @@ public class IoTest extends AbstractGremlinTest {
                         },
                         detachedEdge -> {
                             if (detachedEdge.id().equals(e1.id())) {
-                                assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                                assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
-                                assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                                assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                                assertEquals(v2.id(), detachedEdge.outVertex().id());
+                                assertEquals(v1.id(), detachedEdge.inVertex().id());
+                                assertEquals(v1.label(), detachedEdge.outVertex().label());
+                                assertEquals(v2.label(), detachedEdge.inVertex().label());
                                 assertEquals(e1.label(), detachedEdge.label());
-                                assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                                assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                                 assertEquals(0.5d, detachedEdge.value("weight"), 0.00001d);
                                 edge1Called.set(true);
                             } else {
@@ -1771,7 +1772,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, Direction.IN, detachedVertex -> {
                     assertEquals(v1.id().toString(), detachedVertex.id().toString());  // lossy
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.properties()).count());
                     assertEquals("marko", detachedVertex.value("name"));
                     vertexCalled.set(true);
 
@@ -1779,12 +1780,12 @@ public class IoTest extends AbstractGremlinTest {
                 }, detachedEdge -> {
                     if (detachedEdge.id().toString().equals(e1.id().toString())) { // lossy
                         assertEquals(e1.id().toString(), detachedEdge.id().toString());  // lossy
-                        assertEquals(v1.id().toString(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id().toString());  // lossy
-                        assertEquals(v2.id().toString(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id().toString());   // lossy
-                        assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                        assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                        assertEquals(v1.id().toString(), detachedEdge.inVertex().id().toString());  // lossy
+                        assertEquals(v2.id().toString(), detachedEdge.outVertex().id().toString());   // lossy
+                        assertEquals(v1.label(), detachedEdge.outVertex().label());
+                        assertEquals(v2.label(), detachedEdge.inVertex().label());
                         assertEquals(e1.label(), detachedEdge.label());
-                        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                        assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                         assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
                         edgeCalled.set(true);
                     } else {
@@ -1824,7 +1825,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, Direction.OUT, detachedVertex -> {
                             assertEquals(v1.id(), detachedVertex.id());
                             assertEquals(v1.label(), detachedVertex.label());
-                            assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                            assertEquals(1, StreamFactory.stream(detachedVertex.properties()).count());
                             assertEquals(v1.value("name"), detachedVertex.value("name").toString());
                             vertexCalled.set(true);
 
@@ -1832,12 +1833,12 @@ public class IoTest extends AbstractGremlinTest {
                         },
                         detachedEdge -> {
                             if (detachedEdge.id().equals(e2.id())) {
-                                assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                                assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
-                                assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                                assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                                assertEquals(v1.id(), detachedEdge.outVertex().id());
+                                assertEquals(v2.id(), detachedEdge.inVertex().id());
+                                assertEquals(v1.label(), detachedEdge.outVertex().label());
+                                assertEquals(v2.label(), detachedEdge.inVertex().label());
                                 assertEquals(e2.label(), detachedEdge.label());
-                                assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                                assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                                 assertEquals(1.0d, detachedEdge.value("weight"), 0.00001d);
 
                                 edgeCalled.set(true);
@@ -1878,19 +1879,19 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, Direction.OUT, detachedVertex -> {
                     assertEquals(v1.id().toString(), detachedVertex.id().toString());  // lossy
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.properties()).count());
                     assertEquals("marko", detachedVertex.value("name"));
                     vertexCalled.set(true);
                     return null;
                 }, detachedEdge -> {
                     if (detachedEdge.id().toString().equals(e2.id().toString())) {     // lossy
                         assertEquals(e2.id().toString(), detachedEdge.id().toString());  // lossy
-                        assertEquals(v2.id().toString(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id().toString());  // lossy
-                        assertEquals(v1.id().toString(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id().toString());   // lossy
-                        assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-                        assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                        assertEquals(v2.id().toString(), detachedEdge.inVertex().id().toString());  // lossy
+                        assertEquals(v1.id().toString(), detachedEdge.outVertex().id().toString());   // lossy
+                        assertEquals(v1.label(), detachedEdge.outVertex().label());
+                        assertEquals(v2.label(), detachedEdge.inVertex().label());
                         assertEquals(e2.label(), detachedEdge.label());
-                        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                        assertEquals(1, StreamFactory.stream(detachedEdge.properties()).count());
                         assertEquals(1.0d, detachedEdge.value("weight"), 0.000001d);                      // lossy
                         edgeCalled.set(true);
                     } else {
@@ -2029,45 +2030,45 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v1 = (Vertex) g1.V().has("name", "marko").next();
         assertEquals("person", v1.label());
         assertEquals(2, v1.keys().size());
-        assertEquals(4, (int) StreamFactory.stream(v1.iterators().propertyIterator("location")).count());
-        v1.iterators().propertyIterator("location").forEachRemaining(vp -> {
+        assertEquals(4, (int) StreamFactory.stream(v1.properties("location")).count());
+        v1.properties("location").forEachRemaining(vp -> {
             if (vp.value().equals("san diego")) {
                 assertEquals(1997, (int) vp.value("startTime"));
                 assertEquals(2001, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
             } else if (vp.value().equals("santa cruz")) {
                 assertEquals(2001, (int) vp.value("startTime"));
                 assertEquals(2004, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
             } else if (vp.value().equals("brussels")) {
                 assertEquals(2004, (int) vp.value("startTime"));
                 assertEquals(2005, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
             } else if (vp.value().equals("santa fe")) {
                 assertEquals(2005, (int) vp.value("startTime"));
-                assertEquals(1, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(1, (int) StreamFactory.stream(vp.properties()).count());
             } else {
                 fail("Found a value that should be there");
             }
         });
         assertId(g1, lossyForId, v1, 1);
 
-        final List<Edge> v1Edges = v1.bothE().toList();
+        final List<Edge> v1Edges = IteratorUtils.list(v1.edges(Direction.BOTH));
         assertEquals(4, v1Edges.size());
         v1Edges.forEach(e -> {
-            if (e.inV().values("name").next().equals("gremlin") && e.label().equals("develops")) {
+            if (e.inVertex().value("name").equals("gremlin") && e.label().equals("develops")) {
                 assertEquals(2009, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 13);
-            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("develops")) {
+            } else if (e.inVertex().value("name").equals("tinkergraph") && e.label().equals("develops")) {
                 assertEquals(2010, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 14);
-            } else if (e.inV().values("name").next().equals("gremlin") && e.label().equals("uses")) {
+            } else if (e.inVertex().value("name").equals("gremlin") && e.label().equals("uses")) {
                 assertEquals(4, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 15);
-            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("uses")) {
+            } else if (e.inVertex().value("name").equals("tinkergraph") && e.label().equals("uses")) {
                 assertEquals(5, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 16);
@@ -2079,41 +2080,41 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v7 = (Vertex) g1.V().has("name", "stephen").next();
         assertEquals("person", v7.label());
         assertEquals(2, v7.keys().size());
-        assertEquals(3, (int) StreamFactory.stream(v7.iterators().propertyIterator("location")).count());
-        v7.iterators().propertyIterator("location").forEachRemaining(vp -> {
+        assertEquals(3, (int) StreamFactory.stream(v7.properties("location")).count());
+        v7.properties("location").forEachRemaining(vp -> {
             if (vp.value().equals("centreville")) {
                 assertEquals(1990, (int) vp.value("startTime"));
                 assertEquals(2000, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
             } else if (vp.value().equals("dulles")) {
                 assertEquals(2000, (int) vp.value("startTime"));
                 assertEquals(2006, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
             } else if (vp.value().equals("purcellville")) {
                 assertEquals(2006, (int) vp.value("startTime"));
-                assertEquals(1, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(1, (int) StreamFactory.stream(vp.properties()).count());
             } else {
                 fail("Found a value that should be there");
             }
         });
         assertId(g1, lossyForId, v7, 7);
 
-        final List<Edge> v7Edges = v7.bothE().toList();
+        final List<Edge> v7Edges = IteratorUtils.list(v7.edges(Direction.BOTH));
         assertEquals(4, v7Edges.size());
         v7Edges.forEach(e -> {
-            if (e.inV().values("name").next().equals("gremlin") && e.label().equals("develops")) {
+            if (e.inVertex().value("name").equals("gremlin") && e.label().equals("develops")) {
                 assertEquals(2010, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 17);
-            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("develops")) {
+            } else if (e.inVertex().value("name").equals("tinkergraph") && e.label().equals("develops")) {
                 assertEquals(2011, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 18);
-            } else if (e.inV().values("name").next().equals("gremlin") && e.label().equals("uses")) {
+            } else if (e.inVertex().value("name").equals("gremlin") && e.label().equals("uses")) {
                 assertEquals(5, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 19);
-            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("uses")) {
+            } else if (e.inVertex().value("name").equals("tinkergraph") && e.label().equals("uses")) {
                 assertEquals(4, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 20);
@@ -2125,41 +2126,41 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v8 = (Vertex) g1.V().has("name", "matthias").next();
         assertEquals("person", v8.label());
         assertEquals(2, v8.keys().size());
-        assertEquals(4, (int) StreamFactory.stream(v8.iterators().propertyIterator("location")).count());
-        v8.iterators().propertyIterator("location").forEachRemaining(vp -> {
+        assertEquals(4, (int) StreamFactory.stream(v8.properties("location")).count());
+        v8.properties("location").forEachRemaining(vp -> {
             if (vp.value().equals("bremen")) {
                 assertEquals(2004, (int) vp.value("startTime"));
                 assertEquals(2007, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
             } else if (vp.value().equals("baltimore")) {
                 assertEquals(2007, (int) vp.value("startTime"));
                 assertEquals(2011, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
             } else if (vp.value().equals("oakland")) {
                 assertEquals(2011, (int) vp.value("startTime"));
                 assertEquals(2014, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
             } else if (vp.value().equals("seattle")) {
                 assertEquals(2014, (int) vp.value("startTime"));
-                assertEquals(1, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(1, (int) StreamFactory.stream(vp.properties()).count());
             } else {
                 fail("Found a value that should be there");
             }
         });
         assertId(g1, lossyForId, v8, 8);
 
-        final List<Edge> v8Edges = v8.bothE().toList();
+        final List<Edge> v8Edges = IteratorUtils.list(v8.edges(Direction.BOTH));
         assertEquals(3, v8Edges.size());
         v8Edges.forEach(e -> {
-            if (e.inV().values("name").next().equals("gremlin") && e.label().equals("develops")) {
+            if (e.inVertex().value("name").equals("gremlin") && e.label().equals("develops")) {
                 assertEquals(2012, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 21);
-            } else if (e.inV().values("name").next().equals("gremlin") && e.label().equals("uses")) {
+            } else if (e.inVertex().value("name").equals("gremlin") && e.label().equals("uses")) {
                 assertEquals(3, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 22);
-            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("uses")) {
+            } else if (e.inVertex().value("name").equals("tinkergraph") && e.label().equals("uses")) {
                 assertEquals(3, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 23);
@@ -2171,33 +2172,33 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v9 = (Vertex) g1.V().has("name", "daniel").next();
         assertEquals("person", v9.label());
         assertEquals(2, v9.keys().size());
-        assertEquals(3, (int) StreamFactory.stream(v9.iterators().propertyIterator("location")).count());
-        v9.iterators().propertyIterator("location").forEachRemaining(vp -> {
+        assertEquals(3, (int) StreamFactory.stream(v9.properties("location")).count());
+        v9.properties("location").forEachRemaining(vp -> {
             if (vp.value().equals("spremberg")) {
                 assertEquals(1982, (int) vp.value("startTime"));
                 assertEquals(2005, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
             } else if (vp.value().equals("kaiserslautern")) {
                 assertEquals(2005, (int) vp.value("startTime"));
                 assertEquals(2009, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
             } else if (vp.value().equals("aachen")) {
                 assertEquals(2009, (int) vp.value("startTime"));
-                assertEquals(1, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(1, (int) StreamFactory.stream(vp.properties()).count());
             } else {
                 fail("Found a value that should be there");
             }
         });
         assertId(g1, lossyForId, v9, 9);
 
-        final List<Edge> v9Edges = v9.bothE().toList();
+        final List<Edge> v9Edges = IteratorUtils.list(v9.edges(Direction.BOTH));
         assertEquals(2, v9Edges.size());
         v9Edges.forEach(e -> {
-            if (e.inV().values("name").next().equals("gremlin") && e.label().equals("uses")) {
+            if (e.inVertex().value("name").equals("gremlin") && e.label().equals("uses")) {
                 assertEquals(5, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 24);
-            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("uses")) {
+            } else if (e.inVertex().value("name").equals("tinkergraph") && e.label().equals("uses")) {
                 assertEquals(3, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 25);
@@ -2211,38 +2212,38 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(1, v10.keys().size());
         assertId(g1, lossyForId, v10, 10);
 
-        final List<Edge> v10Edges = v10.bothE().toList();
+        final List<Edge> v10Edges = IteratorUtils.list(v10.edges(Direction.BOTH));
         assertEquals(8, v10Edges.size());
         v10Edges.forEach(e -> {
-            if (e.outV().values("name").next().equals("marko") && e.label().equals("develops")) {
+            if (e.outVertex().value("name").equals("marko") && e.label().equals("develops")) {
                 assertEquals(2009, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 13);
-            } else if (e.outV().values("name").next().equals("marko") && e.label().equals("uses")) {
+            } else if (e.outVertex().value("name").equals("marko") && e.label().equals("uses")) {
                 assertEquals(4, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 15);
-            } else if (e.outV().values("name").next().equals("stephen") && e.label().equals("develops")) {
+            } else if (e.outVertex().value("name").equals("stephen") && e.label().equals("develops")) {
                 assertEquals(2010, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 17);
-            } else if (e.outV().values("name").next().equals("stephen") && e.label().equals("uses")) {
+            } else if (e.outVertex().value("name").equals("stephen") && e.label().equals("uses")) {
                 assertEquals(5, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 19);
-            } else if (e.outV().values("name").next().equals("matthias") && e.label().equals("develops")) {
+            } else if (e.outVertex().value("name").equals("matthias") && e.label().equals("develops")) {
                 assertEquals(2012, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 21);
-            } else if (e.outV().values("name").next().equals("matthias") && e.label().equals("uses")) {
+            } else if (e.outVertex().value("name").equals("matthias") && e.label().equals("uses")) {
                 assertEquals(3, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 22);
-            } else if (e.outV().values("name").next().equals("daniel") && e.label().equals("uses")) {
+            } else if (e.outVertex().value("name").equals("daniel") && e.label().equals("uses")) {
                 assertEquals(5, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 24);
-            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("traverses")) {
+            } else if (e.inVertex().value("name").equals("tinkergraph") && e.label().equals("traverses")) {
                 assertEquals(0, e.keys().size());
                 assertId(g1, lossyForId, e, 26);
             } else {
@@ -2255,34 +2256,34 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(1, v11.keys().size());
         assertId(g1, lossyForId, v11, 11);
 
-        final List<Edge> v11Edges = v11.bothE().toList();
+        final List<Edge> v11Edges = IteratorUtils.list(v11.edges(Direction.BOTH));
         assertEquals(7, v11Edges.size());
         v11Edges.forEach(e -> {
-            if (e.outV().values("name").next().equals("marko") && e.label().equals("develops")) {
+            if (e.outVertex().value("name").equals("marko") && e.label().equals("develops")) {
                 assertEquals(2010, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 14);
-            } else if (e.outV().values("name").next().equals("marko") && e.label().equals("uses")) {
+            } else if (e.outVertex().value("name").equals("marko") && e.label().equals("uses")) {
                 assertEquals(5, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 16);
-            } else if (e.outV().values("name").next().equals("stephen") && e.label().equals("develops")) {
+            } else if (e.outVertex().value("name").equals("stephen") && e.label().equals("develops")) {
                 assertEquals(2011, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 18);
-            } else if (e.outV().values("name").next().equals("stephen") && e.label().equals("uses")) {
+            } else if (e.outVertex().value("name").equals("stephen") && e.label().equals("uses")) {
                 assertEquals(4, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 20);
-            } else if (e.outV().values("name").next().equals("matthias") && e.label().equals("uses")) {
+            } else if (e.outVertex().value("name").equals("matthias") && e.label().equals("uses")) {
                 assertEquals(3, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 23);
-            } else if (e.outV().values("name").next().equals("daniel") && e.label().equals("uses")) {
+            } else if (e.outVertex().value("name").equals("daniel") && e.label().equals("uses")) {
                 assertEquals(3, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 25);
-            } else if (e.outV().values("name").next().equals("gremlin") && e.label().equals("traverses")) {
+            } else if (e.outVertex().value("name").equals("gremlin") && e.label().equals("traverses")) {
                 assertEquals(0, e.keys().size());
                 assertId(g1, lossyForId, e, 26);
             } else {
@@ -2309,10 +2310,10 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(assertSpecificLabel ? "person" : Vertex.DEFAULT_LABEL, v1.label());
         assertId(g1, lossyForId, v1, 1);
 
-        final List<Edge> v1Edges = v1.bothE().toList();
+        final List<Edge> v1Edges = IteratorUtils.list(v1.edges(Direction.BOTH));
         assertEquals(3, v1Edges.size());
         v1Edges.forEach(e -> {
-            if (e.inV().values("name").next().equals("vadas")) {
+            if (e.inVertex().value("name").equals("vadas")) {
                 assertEquals("knows", e.label());
                 if (assertDouble)
                     assertEquals(0.5d, e.value("weight"), 0.0001d);
@@ -2320,7 +2321,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(0.5f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 7);
-            } else if (e.inV().values("name").next().equals("josh")) {
+            } else if (e.inVertex().value("name").equals("josh")) {
                 assertEquals("knows", e.label());
                 if (assertDouble)
                     assertEquals(1.0, e.value("weight"), 0.0001d);
@@ -2328,7 +2329,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(1.0f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 8);
-            } else if (e.inV().values("name").next().equals("lop")) {
+            } else if (e.inVertex().value("name").equals("lop")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
@@ -2347,10 +2348,10 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(assertSpecificLabel ? "person" : Vertex.DEFAULT_LABEL, v2.label());
         assertId(g1, lossyForId, v2, 2);
 
-        final List<Edge> v2Edges = v2.bothE().toList();
+        final List<Edge> v2Edges = IteratorUtils.list(v2.edges(Direction.BOTH));
         assertEquals(1, v2Edges.size());
         v2Edges.forEach(e -> {
-            if (e.outV().values("name").next().equals("marko")) {
+            if (e.outVertex().value("name").equals("marko")) {
                 assertEquals("knows", e.label());
                 if (assertDouble)
                     assertEquals(0.5d, e.value("weight"), 0.0001d);
@@ -2369,10 +2370,10 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(assertSpecificLabel ? "software" : Vertex.DEFAULT_LABEL, v3.label());
         assertId(g1, lossyForId, v3, 3);
 
-        final List<Edge> v3Edges = v3.bothE().toList();
+        final List<Edge> v3Edges = IteratorUtils.list(v3.edges(Direction.BOTH));
         assertEquals(3, v3Edges.size());
         v3Edges.forEach(e -> {
-            if (e.outV().values("name").next().equals("peter")) {
+            if (e.outVertex().value("name").equals("peter")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(0.2d, e.value("weight"), 0.0001d);
@@ -2380,7 +2381,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(0.2f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 12);
-            } else if (e.outV().next().value("name").equals("josh")) {
+            } else if (e.outVertex().value("name").equals("josh")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
@@ -2388,7 +2389,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(0.4f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 11);
-            } else if (e.outV().values("name").next().equals("marko")) {
+            } else if (e.outVertex().value("name").equals("marko")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
@@ -2407,10 +2408,10 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(assertSpecificLabel ? "person" : Vertex.DEFAULT_LABEL, v4.label());
         assertId(g1, lossyForId, v4, 4);
 
-        final List<Edge> v4Edges = v4.bothE().toList();
+        final List<Edge> v4Edges = IteratorUtils.list(v4.edges(Direction.BOTH));
         assertEquals(3, v4Edges.size());
         v4Edges.forEach(e -> {
-            if (e.inV().values("name").next().equals("ripple")) {
+            if (e.inVertex().value("name").equals("ripple")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(1.0d, e.value("weight"), 0.0001d);
@@ -2418,7 +2419,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(1.0f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 10);
-            } else if (e.inV().values("name").next().equals("lop")) {
+            } else if (e.inVertex().value("name").equals("lop")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
@@ -2426,7 +2427,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(0.4f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 11);
-            } else if (e.outV().values("name").next().equals("marko")) {
+            } else if (e.outVertex().value("name").equals("marko")) {
                 assertEquals("knows", e.label());
                 if (assertDouble)
                     assertEquals(1.0d, e.value("weight"), 0.0001d);
@@ -2445,10 +2446,10 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(assertSpecificLabel ? "software" : Vertex.DEFAULT_LABEL, v5.label());
         assertId(g1, lossyForId, v5, 5);
 
-        final List<Edge> v5Edges = v5.bothE().toList();
+        final List<Edge> v5Edges = IteratorUtils.list(v5.edges(Direction.BOTH));
         assertEquals(1, v5Edges.size());
         v5Edges.forEach(e -> {
-            if (e.outV().values("name").next().equals("josh")) {
+            if (e.outVertex().value("name").equals("josh")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(1.0d, e.value("weight"), 0.0001d);
@@ -2467,10 +2468,10 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(assertSpecificLabel ? "person" : Vertex.DEFAULT_LABEL, v6.label());
         assertId(g1, lossyForId, v6, 6);
 
-        final List<Edge> v6Edges = v6.bothE().toList();
+        final List<Edge> v6Edges = IteratorUtils.list(v6.edges(Direction.BOTH));
         assertEquals(1, v6Edges.size());
         v6Edges.forEach(e -> {
-            if (e.inV().values("name").next().equals("lop")) {
+            if (e.inVertex().value("name").equals("lop")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(0.2d, e.value("weight"), 0.0001d);
