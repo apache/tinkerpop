@@ -55,7 +55,7 @@ public class SerializationTest {
         public void shouldSerializeVertexAsDetached() throws Exception {
             final GryoMapper gryoMapper = g.io().gryoMapper().create();
             final Kryo kryo = gryoMapper.createMapper();
-            final Vertex v = g.V(convertToVertexId("marko")).next();
+            final Vertex v = g.vertices(convertToVertexId("marko")).next();
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
             final Output output = new Output(stream);
             kryo.writeObject(output, v);
@@ -113,7 +113,7 @@ public class SerializationTest {
         public void shouldSerializeVertexPropertyAsDetached() throws Exception {
             final GryoMapper gryoMapper = g.io().gryoMapper().create();
             final Kryo kryo = gryoMapper.createMapper();
-            final VertexProperty vp = g.V(convertToVertexId("marko")).next().property("name");
+            final VertexProperty vp = g.vertices(convertToVertexId("marko")).next().property("name");
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
             final Output output = new Output(stream);
             kryo.writeObject(output, vp);
@@ -133,7 +133,7 @@ public class SerializationTest {
         public void shouldSerializeVertexPropertyWithPropertiesAsDetached() throws Exception {
             final GryoMapper gryoMapper = g.io().gryoMapper().create();
             final Kryo kryo = gryoMapper.createMapper();
-            final VertexProperty vp = g.V(convertToVertexId("marko")).next().iterators().propertyIterator("location").next();
+            final VertexProperty vp = g.vertices(convertToVertexId("marko")).next().properties("location").next();
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
             final Output output = new Output(stream);
             kryo.writeObject(output, vp);
@@ -146,10 +146,10 @@ public class SerializationTest {
             assertEquals(vp.label(), detached.label());
             assertEquals(vp.id(), detached.id());
             assertEquals(vp.value(), detached.value());
-            assertEquals(vp.iterators().propertyIterator("startTime").next().value(), detached.iterators().propertyIterator("startTime").next().value());
-            assertEquals(vp.iterators().propertyIterator("startTime").next().key(), detached.iterators().propertyIterator("startTime").next().key());
-            assertEquals(vp.iterators().propertyIterator("endTime").next().value(), detached.iterators().propertyIterator("endTime").next().value());
-            assertEquals(vp.iterators().propertyIterator("endTime").next().key(), detached.iterators().propertyIterator("endTime").next().key());
+            assertEquals(vp.values("startTime").next(), detached.values("startTime").next());
+            assertEquals(((VertexProperty) vp.properties("startTime").next()).key(), ((VertexProperty) detached.properties("startTime").next()).key());
+            assertEquals(vp.values("endTime").next(), detached.values("endTime").next());
+            assertEquals(((VertexProperty) vp.properties("endTime").next()).key(), ((VertexProperty) detached.properties("endTime").next()).key());
         }
 
         @Test
@@ -180,7 +180,7 @@ public class SerializationTest {
             assertEquals(vOut.id(), detachedVOut.id());
 
             // this is a SimpleTraverser so no properties are present in detachment
-            assertFalse(detachedVOut.iterators().propertyIterator().hasNext());
+            assertFalse(detachedVOut.properties().hasNext());
 
             final Edge e = p.get("b");
             final Edge detachedE = detached.get("b");
@@ -188,7 +188,7 @@ public class SerializationTest {
             assertEquals(e.id(), detachedE.id());
 
             // this is a SimpleTraverser so no properties are present in detachment
-            assertFalse(detachedE.iterators().propertyIterator().hasNext());
+            assertFalse(detachedE.properties().hasNext());
 
             final Vertex vIn = p.get("c");
             final Vertex detachedVIn = detached.get("c");
@@ -196,7 +196,7 @@ public class SerializationTest {
             assertEquals(vIn.id(), detachedVIn.id());
 
             // this is a SimpleTraverser so no properties are present in detachment
-            assertFalse(detachedVIn.iterators().propertyIterator().hasNext());
+            assertFalse(detachedVIn.properties().hasNext());
         }
     }
 
@@ -208,7 +208,7 @@ public class SerializationTest {
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeVertex() throws Exception {
             final ObjectMapper mapper = g.io().graphSONMapper().create().createMapper();
-            final Vertex v = g.V(convertToVertexId("marko")).next();
+            final Vertex v = g.vertices(convertToVertexId("marko")).next();
             final String json = mapper.writeValueAsString(v);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
@@ -248,7 +248,7 @@ public class SerializationTest {
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeVertexProperty() throws Exception {
             final ObjectMapper mapper = g.io().graphSONMapper().create().createMapper();
-            final VertexProperty vp = g.V(convertToVertexId("marko")).next().property("name");
+            final VertexProperty vp = g.vertices(convertToVertexId("marko")).next().property("name");
             final String json = mapper.writeValueAsString(vp);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
@@ -261,15 +261,15 @@ public class SerializationTest {
         @LoadGraphWith(LoadGraphWith.GraphData.CREW)
         public void shouldSerializeVertexPropertyWithProperties() throws Exception {
             final ObjectMapper mapper = g.io().graphSONMapper().create().createMapper();
-            final VertexProperty vp = g.V(convertToVertexId("marko")).next().iterators().propertyIterator("location").next();
+            final VertexProperty vp = g.vertices(convertToVertexId("marko")).next().properties("location").next();
             final String json = mapper.writeValueAsString(vp);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
             assertEquals(vp.label(), m.get(GraphSONTokens.LABEL));
             assertNotNull(m.get(GraphSONTokens.ID));
             assertEquals(vp.value(), m.get(GraphSONTokens.VALUE));
-            assertEquals(vp.iterators().propertyIterator("startTime").next().value(), ((Map) m.get(GraphSONTokens.PROPERTIES)).get("startTime"));
-            assertEquals(vp.iterators().propertyIterator("endTime").next().value(), ((Map) m.get(GraphSONTokens.PROPERTIES)).get("endTime"));
+            assertEquals(vp.values("startTime").next(), ((Map) m.get(GraphSONTokens.PROPERTIES)).get("startTime"));
+            assertEquals(vp.values("endTime").next(), ((Map) m.get(GraphSONTokens.PROPERTIES)).get("endTime"));
         }
 
         @Test
