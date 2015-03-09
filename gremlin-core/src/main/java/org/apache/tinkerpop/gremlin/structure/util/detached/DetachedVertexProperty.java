@@ -35,7 +35,7 @@ import java.util.Map;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> implements VertexProperty<V>, VertexProperty.Iterators {
+public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> implements VertexProperty<V> {
 
     protected V value;
     protected transient DetachedVertex vertex;
@@ -52,7 +52,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
         // this prevents unnecessary object creation of a new HashMap which will just be empty.  it will use
         // Collections.emptyMap() by default
         if (withProperties && vertexProperty.graph().features().vertex().supportsMetaProperties()) {
-            final Iterator<Property<Object>> propertyIterator = vertexProperty.iterators().propertyIterator();
+            final Iterator<Property<Object>> propertyIterator = vertexProperty.properties();
             if (propertyIterator.hasNext()) {
                 this.properties = new HashMap<>();
                 propertyIterator.forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
@@ -111,7 +111,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
     @Override
     public VertexProperty<V> attach(final Vertex hostVertex) {
-        final Iterator<VertexProperty<V>> vertexPropertyIterator = IteratorUtils.filter(hostVertex.iterators().propertyIterator(this.label), vp -> ElementHelper.areEqual(this, vp));
+        final Iterator<VertexProperty<V>> vertexPropertyIterator = IteratorUtils.filter(hostVertex.<V>properties(this.label), vp -> ElementHelper.areEqual(this, vp));
         if (!vertexPropertyIterator.hasNext())
             throw new IllegalStateException("The detached vertex property could not be be found at the provided vertex: " + this);
         return vertexPropertyIterator.next();
@@ -122,14 +122,8 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
         return this.attach(this.vertex.attach(hostGraph));
     }
 
-
     @Override
-    public VertexProperty.Iterators iterators() {
-        return this;
-    }
-
-    @Override
-    public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) super.propertyIterator(propertyKeys);
+    public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
+        return (Iterator) super.properties(propertyKeys);
     }
 }

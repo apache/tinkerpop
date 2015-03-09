@@ -56,7 +56,7 @@ public final class SubgraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVertexIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy composingStrategy) {
         return (f) -> (direction, labels) -> StreamFactory
-                .stream(ctx.getCurrent().getBaseVertex().iterators().edgeIterator(direction, labels))
+                .stream(ctx.getCurrent().getBaseVertex().edges(direction, labels))
                 .filter(this::testEdge)
                 .map(edge -> otherVertex(direction, ctx.getCurrent(), edge))
                 .filter(this::testVertex).iterator();
@@ -100,18 +100,18 @@ public final class SubgraphStrategy implements GraphStrategy {
         // inV() and/or outV() will be empty if they do not.  it is sometimes the case that an edge is unwrapped
         // in which case it may not be filtered.  in such cases, the vertices on such edges should be tested.
         return edgePredicate.test(edge)
-                && (edge instanceof StrategyWrapped ? edge.inV().hasNext() && edge.outV().hasNext()
-                : testVertex(edge.inV().next()) && testVertex(edge.outV().next()));
+                && (edge instanceof StrategyWrapped ? edge.vertices(Direction.IN).hasNext() && edge.vertices(Direction.OUT).hasNext()
+                : testVertex(edge.inVertex()) && testVertex(edge.outVertex()));
     }
 
     private static final Vertex otherVertex(final Direction direction, final Vertex start, final Edge edge) {
         if (direction.equals(Direction.BOTH)) {
-            final Vertex inVertex = edge.iterators().vertexIterator(Direction.IN).next();
+            final Vertex inVertex = edge.vertices(Direction.IN).next();
             return ElementHelper.areEqual(start, inVertex) ?
-                    edge.iterators().vertexIterator(Direction.OUT).next() :
+                    edge.vertices(Direction.OUT).next() :
                     inVertex;
         } else {
-            return edge.iterators().vertexIterator(direction.opposite()).next();
+            return edge.vertices(direction.opposite()).next();
         }
     }
 

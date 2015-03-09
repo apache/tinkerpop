@@ -47,13 +47,13 @@ public class ComputerDataStrategyTest extends AbstractGremlinTest {
         final StrategyGraph sg = g.strategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
 
         final Vertex v = sg.addVertex("***hidden-guy", "X", "not-hidden-guy", "Y");
-        final Iterator<VertexProperty<String>> props = v.iterators().propertyIterator();
+        final Iterator<VertexProperty<String>> props = v.properties();
         final VertexProperty v1 = props.next();
         assertEquals("Y", v1.value());
         assertEquals("not-hidden-guy", v1.key());
         assertFalse(props.hasNext());
 
-        final Iterator<String> values = v.iterators().valueIterator();
+        final Iterator<String> values = v.values();
         assertEquals("Y", values.next());
         assertFalse(values.hasNext());
     }
@@ -64,13 +64,13 @@ public class ComputerDataStrategyTest extends AbstractGremlinTest {
         final StrategyGraph sg = g.strategy(new ComputerDataStrategy(new HashSet<>(Arrays.asList("***hidden-guy"))));
 
         final Vertex v = sg.addVertex("***hidden-guy", "X", "not-hidden-guy", "Y");
-        final Iterator<VertexProperty<String>> props = v.iterators().propertyIterator("***hidden-guy");
+        final Iterator<VertexProperty<String>> props = v.properties("***hidden-guy");
         final VertexProperty<String> v1 = props.next();
         assertEquals("X", v1.value());
         assertEquals("***hidden-guy", v1.key());
         assertFalse(props.hasNext());
 
-        final Iterator<String> values = v.iterators().valueIterator("***hidden-guy");
+        final Iterator<String> values = v.values("***hidden-guy");
         assertEquals("X", values.next());
         assertFalse(values.hasNext());
     }

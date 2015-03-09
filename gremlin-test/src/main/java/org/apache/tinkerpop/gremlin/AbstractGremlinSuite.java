@@ -63,16 +63,12 @@ public abstract class AbstractGremlinSuite extends Suite {
     // todo: perhaps there is a test that validates against the implementations to be sure that the Graph constructed matches what's defined???
     private static final Set<Class> STRUCTURE_INTERFACES = new HashSet<Class>() {{
         add(Edge.class);
-        add(Edge.Iterators.class);
         add(Element.class);
-        add(Element.Iterators.class);
         add(Graph.class);
         add(Graph.Variables.class);
         add(Property.class);
         add(Vertex.class);
-        add(Vertex.Iterators.class);
         add(VertexProperty.class);
-        add(VertexProperty.Iterators.class);
     }};
 
     /**
@@ -155,8 +151,6 @@ public abstract class AbstractGremlinSuite extends Suite {
 
         // not all graphs implement all features and therefore may not have implementations of certain "core" interfaces
         if (!g.features().graph().variables().supportsVariables()) structureInterfaces.remove(Graph.Variables.class);
-        if (!g.features().vertex().supportsMultiProperties())
-            structureInterfaces.remove(VertexProperty.Iterators.class);
 
         graphProvider.clear(g, conf);
 

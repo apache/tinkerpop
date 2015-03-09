@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.VertexTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -350,7 +349,7 @@ public class BatchGraph<G extends Graph> implements Graph {
         }
     }
 
-    private class BatchVertex implements Vertex, Vertex.Iterators, VertexTraversal {
+    private class BatchVertex implements Vertex {
 
         private final Object externalID;
 
@@ -452,27 +451,22 @@ public class BatchGraph<G extends Graph> implements Graph {
         }
 
         @Override
-        public Vertex.Iterators iterators() {
-            return this;
-        }
-
-        @Override
-        public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
+        public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
+        public Iterator<Vertex> vertices(final Direction direction, final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
-            return getCachedVertex(externalID).iterators().propertyIterator(propertyKeys);
+        public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
+            return getCachedVertex(externalID).properties(propertyKeys);
         }
     }
 
-    private class BatchEdge implements Edge, Edge.Iterators {
+    private class BatchEdge implements Edge {
 
 
         @Override
@@ -523,18 +517,13 @@ public class BatchGraph<G extends Graph> implements Graph {
         }
 
         @Override
-        public Edge.Iterators iterators() {
-            return this;
+        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+            return getWrappedEdge().properties(propertyKeys);
         }
 
         @Override
-        public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
-            return getWrappedEdge().iterators().propertyIterator(propertyKeys);
-        }
-
-        @Override
-        public Iterator<Vertex> vertexIterator(final Direction direction) {
-            return getWrappedEdge().iterators().vertexIterator(direction);
+        public Iterator<Vertex> vertices(final Direction direction) {
+            return getWrappedEdge().vertices(direction);
         }
     }
 

@@ -104,9 +104,9 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
         final Iterator<Vertex> vertexIterator = subgraph.vertices(vertex.id());
         if (vertexIterator.hasNext()) return vertexIterator.next();
         final Vertex subgraphVertex = subgraph.addVertex(T.id, vertex.id(), T.label, vertex.label());
-        vertex.iterators().propertyIterator().forEachRemaining(vertexProperty -> {
+        vertex.properties().forEachRemaining(vertexProperty -> {
             final VertexProperty<?> subgraphVertexProperty = subgraphVertex.property(vertexProperty.key(), vertexProperty.value(), T.id, vertexProperty.id()); // TODO: demand vertex property id?
-            vertexProperty.iterators().propertyIterator().forEachRemaining(property -> subgraphVertexProperty.<Object>property(property.key(), property.value()));
+            vertexProperty.properties().forEachRemaining(property -> subgraphVertexProperty.<Object>property(property.key(), property.value()));
         });
         return subgraphVertex;
     }
@@ -114,10 +114,10 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
     private static void addEdgeToSubgraph(final Graph subgraph, final Edge edge) {
         final Iterator<Edge> edgeIterator = subgraph.edges(edge.id());
         if (edgeIterator.hasNext()) return;
-        final Iterator<Vertex> vertexIterator = edge.iterators().vertexIterator(Direction.BOTH);
+        final Iterator<Vertex> vertexIterator = edge.vertices(Direction.BOTH);
         final Vertex subGraphOutVertex = getOrCreate(subgraph, vertexIterator.next());
         final Vertex subGraphInVertex = getOrCreate(subgraph, vertexIterator.next());
         final Edge subGraphEdge = subGraphOutVertex.addEdge(edge.label(), subGraphInVertex, T.id, edge.id());
-        edge.iterators().propertyIterator().forEachRemaining(property -> subGraphEdge.<Object>property(property.key(), property.value()));
+        edge.properties().forEachRemaining(property -> subGraphEdge.<Object>property(property.key(), property.value()));
     }
 }

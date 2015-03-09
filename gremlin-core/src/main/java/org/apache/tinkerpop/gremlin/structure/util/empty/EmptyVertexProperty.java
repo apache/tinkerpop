@@ -90,12 +90,7 @@ public final class EmptyVertexProperty<V> implements VertexProperty<V> {
     }
 
     @Override
-    public VertexProperty.Iterators iterators() {
-        return new Iterators() {
-            @Override
-            public <U> Iterator<Property<U>> propertyIterator(String... propertyKeys) {
-                return Collections.emptyIterator();
-            }
-        };
+    public <U> Iterator<Property<U>> properties(String... propertyKeys) {
+        return Collections.emptyIterator();
     }
 }

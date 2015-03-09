@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -59,7 +60,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         assertEquals(v.id(), detachedVertex.id());
         assertEquals(v.label(), detachedVertex.label());
         assertEquals("123", detachedVertex.value("test"));
-        assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+        assertEquals(1, IteratorUtils.count(detachedVertex.properties()));
     }
 
     @Test
@@ -70,7 +71,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
 
         assertEquals(v.id(), detachedVertex.id());
         assertEquals(v.label(), detachedVertex.label());
-        assertEquals(0, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+        assertEquals(0, IteratorUtils.count(detachedVertex.properties()));
     }
 
     @Test
@@ -80,23 +81,23 @@ public class DetachedVertexTest extends AbstractGremlinTest {
 
         assertEquals("person", v1.label());
         assertEquals(2, v1.keys().size());
-        v1.iterators().propertyIterator("location").forEachRemaining(vp -> {
+        v1.properties("location").forEachRemaining(vp -> {
             assertTrue(vp instanceof DetachedVertexProperty);
             if (vp.value().equals("san diego")) {
                 assertEquals(1997, (int) vp.value("startTime"));
                 assertEquals(2001, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
             } else if (vp.value().equals("santa cruz")) {
                 assertEquals(2001, (int) vp.value("startTime"));
                 assertEquals(2004, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
             } else if (vp.value().equals("brussels")) {
                 assertEquals(2004, (int) vp.value("startTime"));
                 assertEquals(2005, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
             } else if (vp.value().equals("santa fe")) {
                 assertEquals(2005, (int) vp.value("startTime"));
-                assertEquals(1, (int) StreamFactory.stream(vp.iterators().propertyIterator()).count());
+                assertEquals(1, (int) StreamFactory.stream(vp.properties()).count());
             } else {
                 fail("Found a value that should be there");
             }
@@ -175,13 +176,13 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         assertEquals(1, dv.id());
         assertEquals("test", dv.label());
 
-        final List<VertexProperty> propertyX = StreamFactory.stream(dv.iterators().propertyIterator("x")).collect(Collectors.toList());
+        final List<VertexProperty> propertyX = StreamFactory.stream(dv.properties("x")).collect(Collectors.toList());
         assertEquals(2, propertyX.size());
         assertTrue(propertyX.stream().allMatch(p ->
                 p.label().equals(p.key())
                         && (p.id().equals(123) || p.id().equals(124))
                         && (p.value().equals("a") || p.value().equals("c"))
-                        && !p.iterators().propertyIterator().hasNext()));
+                        && !p.properties().hasNext()));
 
     }
 
@@ -214,7 +215,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         assertEquals(1, dv.id());
         assertEquals("test", dv.label());
 
-        final List<VertexProperty> propertyX = StreamFactory.stream(dv.iterators().propertyIterator("x")).collect(Collectors.toList());
+        final List<VertexProperty> propertyX = StreamFactory.stream(dv.properties("x")).collect(Collectors.toList());
         assertEquals(2, propertyX.size());
         assertTrue(propertyX.stream().allMatch(p ->
                 p.label().equals(p.key())
@@ -222,12 +223,12 @@ public class DetachedVertexTest extends AbstractGremlinTest {
                         && (p.value().equals("a") || p.value().equals("c"))));
 
         // there should be only one with properties on properties
-        final VertexProperty propertyOnProperty = propertyX.stream().filter(p -> p.iterators().propertyIterator().hasNext()).findAny().get();
-        assertEquals("a", propertyOnProperty.iterators().propertyIterator("propX1a").next().value());
-        assertEquals(1, propertyOnProperty.iterators().propertyIterator("propX11").next().value());
-        assertEquals(123.01d, propertyOnProperty.iterators().propertyIterator("same").next().value());
-        assertEquals("something", propertyOnProperty.iterators().propertyIterator("extra").next().value());
-        assertEquals(4, StreamFactory.stream(propertyOnProperty.iterators().propertyIterator()).count());
+        final VertexProperty<?> propertyOnProperty = propertyX.stream().filter(p -> p.properties().hasNext()).findAny().get();
+        assertEquals("a", propertyOnProperty.properties("propX1a").next().value());
+        assertEquals(1, propertyOnProperty.properties("propX11").next().value());
+        assertEquals(123.01d, propertyOnProperty.properties("same").next().value());
+        assertEquals("something", propertyOnProperty.properties("extra").next().value());
+        assertEquals(4, StreamFactory.stream(propertyOnProperty.properties()).count());
     }
 
 

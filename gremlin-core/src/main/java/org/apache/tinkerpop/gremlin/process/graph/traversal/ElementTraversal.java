@@ -128,13 +128,13 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().order(scope);
     }
 
-    public default <E2> GraphTraversal<A, ? extends Property<E2>> properties(final String... propertyKeys) {
+    /*public default <E2> GraphTraversal<A, ? extends Property<E2>> properties(final String... propertyKeys) {
         return this.start().properties(propertyKeys);
-    }
+    }*/
 
-    public default <E2> GraphTraversal<A, E2> values(final String... propertyKeys) {
+    /*public default <E2> GraphTraversal<A, E2> values(final String... propertyKeys) {
         return this.start().values(propertyKeys);
-    }
+    }*/
 
     public default GraphTraversal<A, Path> path() {
         return this.start().path();

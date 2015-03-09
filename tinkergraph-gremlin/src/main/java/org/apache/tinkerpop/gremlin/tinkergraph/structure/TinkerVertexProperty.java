@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerVertexProperty<V> extends TinkerElement implements VertexProperty<V>, VertexProperty.Iterators {
+public class TinkerVertexProperty<V> extends TinkerElement implements VertexProperty<V> {
 
     private final TinkerVertex vertex;
     private final String key;
@@ -106,7 +106,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
                 this.graph.vertexIndex.remove(this.key, this.value, this.vertex);
             }
             final AtomicBoolean delete = new AtomicBoolean(true);
-            this.vertex.propertyIterator(this.key).forEachRemaining(property -> {
+            this.vertex.properties(this.key).forEachRemaining(property -> {
                 if (property.value().equals(this.value))
                     delete.set(false);
             });
@@ -116,14 +116,8 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
         }
     }
 
-    //////////////////////////////////////////////
-
-    public VertexProperty.Iterators iterators() {
-        return this;
-    }
-
     @Override
-    public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) super.propertyIterator(propertyKeys);
+    public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
+        return (Iterator) super.properties(propertyKeys);
     }
 }

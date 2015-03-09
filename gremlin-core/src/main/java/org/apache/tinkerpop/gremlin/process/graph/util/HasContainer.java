@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.graph.util;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -73,7 +72,7 @@ public final class HasContainer implements Serializable {
                 return this.predicate.test(((VertexProperty) element).key(), this.value);
             else {
                 if (element instanceof Vertex) {
-                    final Iterator<? extends Property> itty = element.iterators().propertyIterator(this.key);
+                    final Iterator<? extends Property> itty = element.properties(this.key);
                     while (itty.hasNext()) {
                         if (this.predicate.test(itty.next().value(), this.value))
                             return true;

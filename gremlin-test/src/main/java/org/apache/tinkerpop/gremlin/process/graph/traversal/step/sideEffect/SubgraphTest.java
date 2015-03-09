@@ -65,11 +65,11 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
         assertVertexEdgeCounts(3, 2).accept(subgraph);
         subgraph.E().forEachRemaining(e -> {
             assertEquals("knows", e.label());
-            assertEquals("marko", e.outV().values("name").next());
-            assertEquals(new Integer(29), e.outV().<Integer>values("age").next());
-            assertEquals("person", e.outV().label().next());
+            assertEquals("marko", e.outVertex().values("name").next());
+            assertEquals(new Integer(29), e.outVertex().<Integer>values("age").next());
+            assertEquals("person", e.outVertex().label());
 
-            final String name = e.inV().<String>values("name").next();
+            final String name = e.inVertex().<String>values("name").next();
             if (name.equals("vadas"))
                 assertEquals(0.5d, e.value("weight"), 0.0001d);
             else if (name.equals("josh"))

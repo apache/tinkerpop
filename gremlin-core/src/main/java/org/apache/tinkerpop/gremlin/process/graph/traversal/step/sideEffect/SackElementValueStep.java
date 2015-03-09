@@ -49,7 +49,7 @@ public final class SackElementValueStep<S extends Element, V> extends SideEffect
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        traverser.get().iterators().valueIterator(this.propertyKey).forEachRemaining(value -> {
+        traverser.get().values(this.propertyKey).forEachRemaining(value -> {
             traverser.sack(this.operator.apply(traverser.sack(), (V) value));
         });
     }

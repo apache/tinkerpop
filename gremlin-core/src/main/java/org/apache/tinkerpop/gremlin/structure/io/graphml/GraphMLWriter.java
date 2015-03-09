@@ -179,8 +179,8 @@ public class GraphMLWriter implements GraphWriter {
             for (Edge edge : edges) {
                 writer.writeStartElement(GraphMLTokens.EDGE);
                 writer.writeAttribute(GraphMLTokens.ID, edge.id().toString());
-                writer.writeAttribute(GraphMLTokens.SOURCE, edge.outV().next().id().toString());
-                writer.writeAttribute(GraphMLTokens.TARGET, edge.inV().next().id().toString());
+                writer.writeAttribute(GraphMLTokens.SOURCE, edge.outVertex().id().toString());
+                writer.writeAttribute(GraphMLTokens.TARGET, edge.inVertex().id().toString());
 
                 writer.writeStartElement(GraphMLTokens.DATA);
                 writer.writeAttribute(GraphMLTokens.KEY, this.edgeLabelKey);
@@ -206,8 +206,8 @@ public class GraphMLWriter implements GraphWriter {
                 final Edge edge = iterator.next();
                 writer.writeStartElement(GraphMLTokens.EDGE);
                 writer.writeAttribute(GraphMLTokens.ID, edge.id().toString());
-                writer.writeAttribute(GraphMLTokens.SOURCE, edge.outV().next().id().toString());
-                writer.writeAttribute(GraphMLTokens.TARGET, edge.inV().next().id().toString());
+                writer.writeAttribute(GraphMLTokens.SOURCE, edge.outVertex().id().toString());
+                writer.writeAttribute(GraphMLTokens.TARGET, edge.inVertex().id().toString());
 
                 writer.writeStartElement(GraphMLTokens.DATA);
                 writer.writeAttribute(GraphMLTokens.KEY, this.edgeLabelKey);

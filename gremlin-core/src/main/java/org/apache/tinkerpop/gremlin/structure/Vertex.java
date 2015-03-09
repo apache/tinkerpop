@@ -37,7 +37,7 @@ import java.util.Optional;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Vertex extends Element, VertexTraversal {
+public interface Vertex extends Element {
 
     /**
      * The default label to use for a vertex.
@@ -58,7 +58,7 @@ public interface Vertex extends Element, VertexTraversal {
 
     @Override
     public default <V> VertexProperty<V> property(final String key) {
-        final Iterator<VertexProperty<V>> iterator = this.iterators().propertyIterator(key);
+        final Iterator<VertexProperty<V>> iterator = this.properties(key);
         if (iterator.hasNext()) {
             final VertexProperty<V> property = iterator.next();
             if (iterator.hasNext())
@@ -88,10 +88,10 @@ public interface Vertex extends Element, VertexTraversal {
         if (cardinality.equals(VertexProperty.Cardinality.list))
             return this.property(key, value, keyValues);
         else if (cardinality.equals(VertexProperty.Cardinality.single)) {
-            this.iterators().propertyIterator(key).forEachRemaining(VertexProperty::remove);
+            this.properties(key).forEachRemaining(VertexProperty::remove);
             return this.property(key, value, keyValues);
         } else if (cardinality.equals(VertexProperty.Cardinality.set)) {
-            final Iterator<VertexProperty<V>> iterator = this.iterators().propertyIterator(key);
+            final Iterator<VertexProperty<V>> iterator = this.properties(key);
             while (iterator.hasNext()) {
                 final VertexProperty<V> property = iterator.next();
                 if (property.value().equals(value)) {
@@ -105,44 +105,30 @@ public interface Vertex extends Element, VertexTraversal {
         }
     }
 
+
     /**
-     * Get the {@link Vertex.Iterators} implementation associated with this {@code Vertex}.
-     * <p/>
+     * Gets an {@link Iterator} of incident edges.
+     *
+     * @param direction  The incident direction of the edges to retrieve off this vertex
+     * @param edgeLabels The labels of the edges to retrieve. If no labels are provided, then get all edges.
+     * @return An iterator of edges meeting the provided specification
+     */
+    public Iterator<Edge> edges(final Direction direction, final String... edgeLabels);
+
+    /**
+     * Gets an {@link Iterator} of adjacent vertices.
+     *
+     * @param direction  The adjacency direction of the vertices to retrieve off this vertex
+     * @param edgeLabels The labels of the edges associated with the vertices to retrieve. If no labels are provided, then get all edges.
+     * @return An iterator of vertices meeting the provided specification
+     */
+    public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels);
+
+    /**
      * {@inheritDoc}
      */
     @Override
-    public Vertex.Iterators iterators();
-
-    /**
-     * An interface that provides access to iterators over {@link VertexProperty} objects, {@link Edge} objects
-     * and adjacent vertices, associated with the {@code Vertex}, without constructing a
-     * {@link org.apache.tinkerpop.gremlin.process.Traversal} object.
-     */
-    public interface Iterators extends Element.Iterators {
-        /**
-         * Gets an {@link Iterator} of incident edges.
-         *
-         * @param direction  The incident direction of the edges to retrieve off this vertex
-         * @param edgeLabels The labels of the edges to retrieve. If no labels are provided, then get all edges.
-         * @return An iterator of edges meeting the provided specification
-         */
-        public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels);
-
-        /**
-         * Gets an {@link Iterator} of adjacent vertices.
-         *
-         * @param direction  The adjacency direction of the vertices to retrieve off this vertex
-         * @param edgeLabels The labels of the edges associated with the vertices to retrieve. If no labels are provided, then get all edges.
-         * @return An iterator of vertices meeting the provided specification
-         */
-        public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels);
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys);
-    }
+    public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys);
 
     /**
      * Common exceptions to use with a vertex.

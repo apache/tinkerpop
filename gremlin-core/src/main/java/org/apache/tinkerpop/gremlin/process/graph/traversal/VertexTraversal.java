@@ -36,10 +36,10 @@ public interface VertexTraversal extends ElementTraversal<Vertex> {
         return traversal.addStep(new StartStep<>(traversal, this));
     }
 
-    @Override
+    /*@Override
     public default <E2> GraphTraversal<Vertex, VertexProperty<E2>> properties(final String... propertyKeys) {
         return (GraphTraversal) this.start().properties(propertyKeys);
-    }
+    }*/
 
     public default <E2> GraphTraversal<Vertex, Map<String, List<VertexProperty<E2>>>> propertyMap(final String... propertyKeys) {
         return this.start().propertyMap(propertyKeys);

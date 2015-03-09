@@ -394,19 +394,19 @@ public final class ElementHelper {
 
     public static Map<String, Object> propertyValueMap(final Element element, final String... propertyKeys) {
         final Map<String, Object> values = new HashMap<>();
-        element.iterators().propertyIterator(propertyKeys).forEachRemaining(property -> values.put(property.key(), property.value()));
+        element.properties(propertyKeys).forEachRemaining(property -> values.put(property.key(), property.value()));
         return values;
     }
 
     public static Map<String, Property> propertyMap(final Element element, final String... propertyKeys) {
         final Map<String, Property> propertyMap = new HashMap<>();
-        element.iterators().propertyIterator(propertyKeys).forEachRemaining(property -> propertyMap.put(property.key(), property));
+        element.properties(propertyKeys).forEachRemaining(property -> propertyMap.put(property.key(), property));
         return propertyMap;
     }
 
     public static Map<String, List> vertexPropertyValueMap(final Vertex vertex, final String... propertyKeys) {
         final Map<String, List> valueMap = new HashMap<>();
-        vertex.iterators().propertyIterator(propertyKeys).forEachRemaining(property -> {
+        vertex.properties(propertyKeys).forEachRemaining(property -> {
             if (valueMap.containsKey(property.key()))
                 valueMap.get(property.key()).add(property.value());
             else {
@@ -420,7 +420,7 @@ public final class ElementHelper {
 
     public static Map<String, List<VertexProperty>> vertexPropertyMap(final Vertex vertex, final String... propertyKeys) {
         final Map<String, List<VertexProperty>> propertyMap = new HashMap<>();
-        vertex.iterators().propertyIterator(propertyKeys).forEachRemaining(property -> {
+        vertex.properties(propertyKeys).forEachRemaining(property -> {
             if (propertyMap.containsKey(property.key()))
                 propertyMap.get(property.key()).add(property);
             else {

@@ -76,16 +76,16 @@ public class GraphSONVertexProperty {
             jsonGenerator.writeObject(m);
         }
 
-        private static Map<String, Object> props(final VertexProperty property) {
+        private static Map<String, Object> props(final VertexProperty<?> property) {
             if (property instanceof DetachedVertexProperty) {
                 try {
-                    return IteratorUtils.collectMap(property.iterators().propertyIterator(), Property::key, Property::value);
+                    return IteratorUtils.collectMap(property.properties(), Property::key, Property::value);
                 } catch (UnsupportedOperationException uoe) {
                     return new HashMap<>();
                 }
             } else {
                 return (property.graph().features().vertex().supportsMetaProperties()) ?
-                        IteratorUtils.collectMap(property.iterators().propertyIterator(), Property::key, Property::value) :
+                        IteratorUtils.collectMap(property.properties(), Property::key, Property::value) :
                         new HashMap<>();
             }
         }

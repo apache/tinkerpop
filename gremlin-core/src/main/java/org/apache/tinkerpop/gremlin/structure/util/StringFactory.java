@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -89,9 +88,7 @@ public final class StringFactory {
      * Construct the representation for a {@link org.apache.tinkerpop.gremlin.structure.Edge}.
      */
     public static String edgeString(final Edge edge) {
-        final Vertex inV = edge.iterators().vertexIterator(Direction.IN).next();
-        final Vertex outV = edge.iterators().vertexIterator(Direction.OUT).next();
-        return E + L_BRACKET + edge.id() + R_BRACKET + L_BRACKET + outV.id() + DASH + edge.label() + ARROW + inV.id() + R_BRACKET;
+        return E + L_BRACKET + edge.id() + R_BRACKET + L_BRACKET + edge.outVertex().id() + DASH + edge.label() + ARROW + edge.inVertex().id() + R_BRACKET;
     }
 
     /**

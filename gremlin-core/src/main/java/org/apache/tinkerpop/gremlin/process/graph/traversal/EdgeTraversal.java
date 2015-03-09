@@ -35,10 +35,10 @@ public interface EdgeTraversal extends ElementTraversal<Edge> {
         return traversal.addStep(new StartStep<>(traversal, this));
     }
 
-    @Override
+    /*@Override
     public default <E2> GraphTraversal<Edge, Property<E2>> properties(final String... propertyKeys) {
         return (GraphTraversal) this.start().properties(propertyKeys);
-    }
+    }*/
 
     public default <E2> GraphTraversal<Edge, Map<String, Property<E2>>> propertyMap(final String... propertyKeys) {
         return this.start().propertyMap(propertyKeys);

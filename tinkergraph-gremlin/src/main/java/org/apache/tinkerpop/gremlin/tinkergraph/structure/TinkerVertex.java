@@ -39,7 +39,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterators {
+public class TinkerVertex extends TinkerElement implements Vertex {
 
     protected Map<String, Set<Edge>> outEdges = new HashMap<>();
     protected Map<String, Set<Edge>> inEdges = new HashMap<>();
@@ -112,7 +112,7 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
     public void remove() {
         if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
         final List<Edge> edges = new ArrayList<>();
-        this.iterators().edgeIterator(Direction.BOTH).forEachRemaining(edges::add);
+        this.edges(Direction.BOTH).forEachRemaining(edges::add);
         edges.stream().filter(edge -> !((TinkerEdge) edge).removed).forEach(Edge::remove);
         this.properties.clear();
         this.graph.vertexIndex.removeElement(this);
@@ -125,25 +125,18 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
         return StringFactory.vertexString(this);
     }
 
-    //////////////////////////////////////////////
-
     @Override
-    public Vertex.Iterators iterators() {
-        return this;
-    }
-
-    @Override
-    public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
+    public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
         return (Iterator) super.propertyIterator(propertyKeys);
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
+    public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
         return (Iterator) TinkerHelper.getEdges(this, direction, edgeLabels);
     }
 
     @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels) {
+    public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
         return (Iterator) TinkerHelper.getVertices(this, direction, edgeLabels);
     }
 }

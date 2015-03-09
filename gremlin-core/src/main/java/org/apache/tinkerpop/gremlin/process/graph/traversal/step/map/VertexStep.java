@@ -51,8 +51,8 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
     @Override
     protected Iterator<E> flatMap(final Traverser.Admin<Vertex> traverser) {
         return Vertex.class.isAssignableFrom(this.returnClass) ?
-                (Iterator<E>) traverser.get().iterators().vertexIterator(this.direction, this.edgeLabels) :
-                (Iterator<E>) traverser.get().iterators().edgeIterator(this.direction, this.edgeLabels);
+                (Iterator<E>) traverser.get().vertices(this.direction, this.edgeLabels) :
+                (Iterator<E>) traverser.get().edges(this.direction, this.edgeLabels);
     }
 
     @Override

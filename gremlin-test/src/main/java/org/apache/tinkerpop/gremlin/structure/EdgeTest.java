@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -209,7 +210,7 @@ public class EdgeTest {
             assertTrue(keys.contains("location"));
             assertTrue(keys.contains("status"));
 
-            final List<Property<Object>> m = e.properties().toList();
+            final List<Property<Object>> m = IteratorUtils.list(e.properties());
             assertEquals(3, m.size());
             assertTrue(m.stream().anyMatch(p -> p.key().equals("name")));
             assertTrue(m.stream().anyMatch(p -> p.key().equals("location")));
@@ -263,18 +264,18 @@ public class EdgeTest {
             v1.addEdge("pets", v2);
             v1.addEdge("walks", v2, "location", "arroyo");
             v2.addEdge("knows", v1, "since", 2010);
-            assertEquals(4, v1.bothE().count().next().intValue());
-            assertEquals(4, v2.bothE().count().next().intValue());
-            v1.iterators().edgeIterator(Direction.BOTH).forEachRemaining(edge -> {
+            assertEquals(4l, IteratorUtils.count(v1.edges(Direction.BOTH)));
+            assertEquals(4l, IteratorUtils.count(v2.edges(Direction.BOTH)));
+            v1.edges(Direction.BOTH).forEachRemaining(edge -> {
                 v1.addEdge("livesWith", v2);
                 v1.addEdge("walks", v2, "location", "river");
                 edge.remove();
             });
             //assertEquals(8, v1.outE().count().next().intValue());  TODO: Neo4j is not happy
             //assertEquals(8, v2.outE().count().next().intValue());
-            v1.iterators().edgeIterator(Direction.BOTH).forEachRemaining(Edge::remove);
-            assertEquals(0, v1.bothE().count().next().intValue());
-            assertEquals(0, v2.bothE().count().next().intValue());
+            v1.edges(Direction.BOTH).forEachRemaining(Edge::remove);
+            assertEquals(0, IteratorUtils.count(v1.edges(Direction.BOTH)));
+            assertEquals(0, IteratorUtils.count(v2.edges(Direction.BOTH)));
         }
 
         @Test
@@ -283,7 +284,7 @@ public class EdgeTest {
         public void shouldReturnEmptyIteratorIfNoProperties() {
             final Vertex v = g.addVertex();
             final Edge e = v.addEdge("knows", v);
-            assertEquals(0, e.properties().count().next().intValue());
+            assertEquals(0, IteratorUtils.count(e.properties()));
         }
 
         @Test
@@ -293,9 +294,9 @@ public class EdgeTest {
             final Vertex a = g.addVertex();
             final Vertex b = g.addVertex();
             final Edge e = a.addEdge("knows", b);
-            assertEquals(a, e.iterators().vertexIterator(Direction.OUT).next());
-            assertEquals(b, e.iterators().vertexIterator(Direction.IN).next());
-            final Iterator<Vertex> iterator = e.iterators().vertexIterator(Direction.BOTH);
+            assertEquals(a, e.outVertex());
+            assertEquals(b, e.inVertex());
+            final Iterator<Vertex> iterator = e.vertices(Direction.BOTH);
             assertTrue(iterator.hasNext());
             assertEquals(a, iterator.next());
             assertTrue(iterator.hasNext());

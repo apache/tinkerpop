@@ -35,7 +35,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerEdge extends TinkerElement implements Edge, Edge.Iterators {
+public class TinkerEdge extends TinkerElement implements Edge {
 
     protected final Vertex inVertex;
     protected final Vertex outVertex;
@@ -95,12 +95,7 @@ public class TinkerEdge extends TinkerElement implements Edge, Edge.Iterators {
     //////////////////////////////////////////////
 
     @Override
-    public Edge.Iterators iterators() {
-        return this;
-    }
-
-    @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction) {
+    public Iterator<Vertex> vertices(final Direction direction) {
         switch (direction) {
             case OUT:
                 return IteratorUtils.of(this.outVertex);
@@ -112,7 +107,7 @@ public class TinkerEdge extends TinkerElement implements Edge, Edge.Iterators {
     }
 
     @Override
-    public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) super.propertyIterator(propertyKeys);
+    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+        return (Iterator) super.properties(propertyKeys);
     }
 }

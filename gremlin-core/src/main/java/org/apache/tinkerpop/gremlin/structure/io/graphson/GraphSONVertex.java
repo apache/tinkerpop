@@ -77,15 +77,15 @@ class GraphSONVertex {
             m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
 
-            final Object properties = IteratorUtils.groupBy(vertex.iterators().propertyIterator(), Property::key);
+            final Object properties = IteratorUtils.groupBy(vertex.properties(), Property::key);
             m.put(GraphSONTokens.PROPERTIES, properties);
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
-                m.put(GraphSONTokens.OUT_E, IteratorUtils.fill(vertex.iterators().edgeIterator(Direction.OUT), new ArrayList()));
+                m.put(GraphSONTokens.OUT_E, IteratorUtils.fill(vertex.edges(Direction.OUT), new ArrayList()));
             }
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.IN) {
-                m.put(GraphSONTokens.IN_E, IteratorUtils.fill(vertex.iterators().edgeIterator(Direction.IN), new ArrayList()));
+                m.put(GraphSONTokens.IN_E, IteratorUtils.fill(vertex.edges(Direction.IN), new ArrayList()));
             }
 
             jsonGenerator.writeObject(m);

@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
-import org.apache.tinkerpop.gremlin.process.graph.traversal.VertexPropertyTraversal;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyVertexProperty;
 
 import java.util.Iterator;
@@ -36,7 +35,7 @@ import java.util.Iterator;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyTraversal {
+public interface VertexProperty<V> extends Property<V>, Element {
 
     public static final String DEFAULT_LABEL = "vertexProperty";
 
@@ -76,24 +75,11 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
     }
 
     /**
-     * Gets the {@link VertexProperty.Iterators} set.
-     * <p/>
      * {@inheritDoc}
      */
     @Override
-    public VertexProperty.Iterators iterators();
+    public <U> Iterator<Property<U>> properties(final String... propertyKeys);
 
-    /**
-     * An interface that provides access to iterators over properties, without constructing a
-     * {@link org.apache.tinkerpop.gremlin.process.Traversal} object.
-     */
-    public interface Iterators extends Element.Iterators {
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys);
-    }
 
     /**
      * Common exceptions to use with a property.

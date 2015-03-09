@@ -66,16 +66,16 @@ public abstract interface Element {
      */
     public default Set<String> keys() {
         final Set<String> keys = new HashSet<>();
-        this.iterators().propertyIterator().forEachRemaining(property -> keys.add(property.key()));
+        this.properties().forEachRemaining(property -> keys.add(property.key()));
         return Collections.unmodifiableSet(keys);
     }
 
     /**
      * Get a {@link Property} for the {@code Element} given its key.
-     * The default implementation calls the raw {@link Element#iterators#propertyIterator}.
+     * The default implementation calls the raw {@link Element#properties}.
      */
     public default <V> Property<V> property(final String key) {
-        final Iterator<? extends Property<V>> iterator = this.iterators().propertyIterator(key);
+        final Iterator<? extends Property<V>> iterator = this.properties(key);
         return iterator.hasNext() ? iterator.next() : Property.<V>empty();
     }
 
@@ -101,32 +101,20 @@ public abstract interface Element {
      */
     public void remove();
 
-    /**
-     * Gets the iterators for the {@code Element}.  Iterators provide low-level access to the data associated with
-     * an {@code Element} as they do not come with the overhead of {@link org.apache.tinkerpop.gremlin.process.Traversal}
-     * construction.  Use iterators in places where performance is most crucial.
-     */
-    public Element.Iterators iterators();
 
     /**
-     * An interface that provides access to iterators over properties of an {@code Element}, without constructing a
-     * {@link org.apache.tinkerpop.gremlin.process.Traversal} object.
+     * Get the values of properties as an {@link Iterator}.
      */
-    public interface Iterators {
-
-        /**
-         * Get the values of properties as an {@link Iterator}.
-         */
-        @Graph.Helper
-        public default <V> Iterator<V> valueIterator(final String... propertyKeys) {
-            return IteratorUtils.map(this.<V>propertyIterator(propertyKeys), property -> property.value());
-        }
-
-        /**
-         * Get an {@link Iterator} of properties.
-         */
-        public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys);
+    @Graph.Helper
+    public default <V> Iterator<V> values(final String... propertyKeys) {
+        return IteratorUtils.map(this.<V>properties(propertyKeys), property -> property.value());
     }
+
+    /**
+     * Get an {@link Iterator} of properties.
+     */
+    public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys);
+
 
     /**
      * Common exceptions to use with an element.

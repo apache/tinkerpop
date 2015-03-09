@@ -55,7 +55,7 @@ public class ComputerDataStrategy implements GraphStrategy {
 
     @Override
     public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsValueIteratorStrategy(final StrategyContext<StrategyVertex> ctx, final GraphStrategy strategyComposer) {
-        return (f) -> (keys) -> IteratorUtils.map(ctx.getCurrent().iterators().<V>propertyIterator(keys), vertexProperty -> vertexProperty.value());
+        return (f) -> (keys) -> IteratorUtils.map(ctx.getCurrent().<V>properties(keys), vertexProperty -> vertexProperty.value());
     }
 
     @Override

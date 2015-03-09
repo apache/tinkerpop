@@ -33,7 +33,7 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class DetachedElement<E> implements Element, Element.Iterators, Serializable, Attachable<E> {
+public abstract class DetachedElement<E> implements Element, Serializable, Attachable<E> {
 
     protected Object id;
     protected String label;
@@ -94,12 +94,7 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
     }
 
     @Override
-    public Element.Iterators iterators() {
-        return this;
-    }
-
-    @Override
-    public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
+    public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
         return (Iterator) this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).flatMap(entry -> entry.getValue().stream()).iterator();
     }
 }

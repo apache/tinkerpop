@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
-import org.apache.tinkerpop.gremlin.process.graph.traversal.EdgeTraversal;
-
 import java.util.Iterator;
 
 /**
@@ -37,7 +35,7 @@ import java.util.Iterator;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Edge extends Element, EdgeTraversal {
+public interface Edge extends Element {
 
     /**
      * The default label to use for an edge.
@@ -45,36 +43,30 @@ public interface Edge extends Element, EdgeTraversal {
      */
     public static final String DEFAULT_LABEL = "edge";
 
+
     /**
-     * Gets the {@link Edge.Iterators} set.
-     * <p/>
+     * Retrieve the vertex (or vertices) associated with this edge as defined by the direction.
+     * If the direction is {@link Direction#BOTH} then the iterator order is: {@link Direction#OUT} then {@link Direction#IN}.
+     *
+     * @param direction Get the incoming vertex, outgoing vertex, or both vertices
+     * @return An iterator with 1 or 2 vertices
+     */
+    public Iterator<Vertex> vertices(final Direction direction);
+
+    public default Vertex outVertex() {
+        return this.vertices(Direction.OUT).next();
+    }
+
+    public default Vertex inVertex() {
+        return this.vertices(Direction.IN).next();
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
-    public Edge.Iterators iterators();
+    public <V> Iterator<Property<V>> properties(final String... propertyKeys);
 
-    /**
-     * An interface that provides access to iterators over properties and vertices, without constructing a
-     * {@link org.apache.tinkerpop.gremlin.process.Traversal} object.
-     */
-    public interface Iterators extends Element.Iterators {
-
-        /**
-         * Retrieve the vertex (or vertices) associated with this edge as defined by the direction.
-         * If the direction is {@link Direction#BOTH} then the iterator order is: {@link Direction#OUT} then {@link Direction#IN}.
-         *
-         * @param direction Get the incoming vertex, outgoing vertex, or both vertices
-         * @return An iterator with 1 or 2 vertices
-         */
-        public Iterator<Vertex> vertexIterator(final Direction direction);
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys);
-
-    }
 
     /**
      * Common exceptions to use with an edge.

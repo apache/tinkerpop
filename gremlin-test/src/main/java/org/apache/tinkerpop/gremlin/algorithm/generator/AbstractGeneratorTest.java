@@ -19,9 +19,11 @@
 package org.apache.tinkerpop.gremlin.algorithm.generator;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Triplet;
 
 import java.util.List;
@@ -39,7 +41,7 @@ public class AbstractGeneratorTest extends AbstractGremlinTest {
      */
     protected boolean same(final Graph g1, final Graph g2) {
         return StreamFactory.stream(g1.vertices())
-                .map(v -> Triplet.<Integer, List<Vertex>, List<Vertex>>with(v.value("oid"), v.in().toList(), v.out().toList()))
+                .map(v -> Triplet.<Integer, List<Vertex>, List<Vertex>>with(v.value("oid"), IteratorUtils.list(v.vertices(Direction.IN)), IteratorUtils.list(v.vertices(Direction.OUT))))
                 .allMatch(p -> {
                     final Vertex v = (Vertex) g2.V().has("oid", p.getValue0()).next();
                     return sameInVertices(v, p.getValue1()) && sameOutVertices(v, p.getValue2());
@@ -48,11 +50,11 @@ public class AbstractGeneratorTest extends AbstractGremlinTest {
 
     private boolean sameInVertices(final Vertex v, final List<Vertex> inVertices) {
         return inVertices.stream()
-                .allMatch(inVertex -> v.in().filter(hv -> hv.get().value("oid").equals(inVertex.value("oid"))).hasNext());
+                .allMatch(inVertex -> IteratorUtils.filter(v.vertices(Direction.IN), hv -> hv.value("oid").equals(inVertex.value("oid"))).hasNext());
     }
 
     private boolean sameOutVertices(final Vertex v, final List<Vertex> outVertices) {
         return outVertices.stream()
-                .allMatch(outVertex -> v.out().filter(hv -> hv.get().value("oid").equals(outVertex.value("oid"))).hasNext());
+                .allMatch(outVertex -> IteratorUtils.filter(v.vertices(Direction.OUT), hv -> hv.value("oid").equals(outVertex.value("oid"))).hasNext());
     }
 }

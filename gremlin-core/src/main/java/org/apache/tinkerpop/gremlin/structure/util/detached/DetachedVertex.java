@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, Vertex.Iterators {
+public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     private static final String ID = "id";
     private static final String VALUE = "value";
@@ -63,7 +63,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
         // object creation of a new HashMap of a new HashMap which will just be empty.  it will use
         // Collections.emptyMap() by default
         if (withProperties) {
-            final Iterator<VertexProperty<Object>> propertyIterator = vertex.iterators().propertyIterator();
+            final Iterator<VertexProperty<Object>> propertyIterator = vertex.properties();
             if (propertyIterator.hasNext()) {
                 this.properties = new HashMap<>();
                 propertyIterator.forEachRemaining(property -> {
@@ -130,9 +130,9 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
         final Vertex vertex = graph.addVertex(T.id, detachedVertex.id(), T.label, detachedVertex.label());
         detachedVertex.properties.entrySet().forEach(kv ->
                         kv.getValue().forEach(property -> {
-                            final VertexProperty vertexProperty = (VertexProperty) property;
+                            final VertexProperty<?> vertexProperty = (VertexProperty) property;
                             final List<Object> propsOnProps = new ArrayList<>();
-                            vertexProperty.iterators().propertyIterator().forEachRemaining(h -> {
+                            vertexProperty.properties().forEachRemaining(h -> {
                                 propsOnProps.add(h.key());
                                 propsOnProps.add(h.value());
                             });
@@ -145,22 +145,17 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
     }
 
     @Override
-    public Vertex.Iterators iterators() {
-        return this;
+    public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
+        return (Iterator) super.properties(propertyKeys);
     }
 
     @Override
-    public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) super.propertyIterator(propertyKeys);
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
+    public GraphTraversal<Vertex, Edge> edges(final Direction direction, final String... edgeLabels) {
         throw new UnsupportedOperationException("Detached vertices do not have edges");
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> vertexIterator(final Direction direction, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> vertices(final Direction direction, final String... labels) {
         throw new UnsupportedOperationException("Detached vertices do not have edges and thus, adjacent vertices can not be accessed");
     }
 }

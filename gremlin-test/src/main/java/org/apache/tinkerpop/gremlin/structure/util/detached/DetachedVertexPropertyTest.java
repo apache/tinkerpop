@@ -97,23 +97,23 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     public void shouldDetachMultiPropertiesAndMetaProperties() {
         final Vertex v1 = convertToVertex(g, "marko");
-        v1.iterators().propertyIterator("location").forEachRemaining(vp -> {
+        v1.properties("location").forEachRemaining(vp -> {
             final DetachedVertexProperty detached = DetachedFactory.detach(vp, true);
             if (detached.value().equals("san diego")) {
                 assertEquals(1997, (int) detached.value("startTime"));
                 assertEquals(2001, (int) detached.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(detached.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(detached.properties()).count());
             } else if (vp.value().equals("santa cruz")) {
                 assertEquals(2001, (int) detached.value("startTime"));
                 assertEquals(2004, (int) detached.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(detached.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(detached.properties()).count());
             } else if (detached.value().equals("brussels")) {
                 assertEquals(2004, (int) vp.value("startTime"));
                 assertEquals(2005, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(detached.iterators().propertyIterator()).count());
+                assertEquals(2, (int) StreamFactory.stream(detached.properties()).count());
             } else if (detached.value().equals("santa fe")) {
                 assertEquals(2005, (int) detached.value("startTime"));
-                assertEquals(1, (int) StreamFactory.stream(detached.iterators().propertyIterator()).count());
+                assertEquals(1, (int) StreamFactory.stream(detached.properties()).count());
             } else {
                 fail("Found a value that should be there");
             }

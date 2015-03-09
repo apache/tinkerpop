@@ -35,7 +35,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StrategyVertex extends StrategyElement implements Vertex, StrategyWrapped, WrappedVertex<Vertex>, Vertex.Iterators {
+public class StrategyVertex extends StrategyElement implements Vertex, StrategyWrapped, WrappedVertex<Vertex> {
 
     private final StrategyContext<StrategyVertex> strategyContext;
 
@@ -70,11 +70,6 @@ public class StrategyVertex extends StrategyElement implements Vertex, StrategyW
         return this.strategyGraph.compose(
                 s -> s.getVertexKeysStrategy(this.strategyContext, strategy),
                 this.getBaseVertex()::keys).get();
-    }
-
-    @Override
-    public Vertex.Iterators iterators() {
-        return this;
     }
 
     @Override
@@ -128,31 +123,31 @@ public class StrategyVertex extends StrategyElement implements Vertex, StrategyW
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
+    public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
         return new StrategyEdge.StrategyEdgeIterator(this.strategyGraph.compose(
                 s -> s.getVertexIteratorsEdgeIteratorStrategy(this.strategyContext, strategy),
-                (Direction d, String[] l) -> this.getBaseVertex().iterators().edgeIterator(d, l)).apply(direction, edgeLabels), this.strategyGraph);
+                (Direction d, String[] l) -> this.getBaseVertex().edges(d, l)).apply(direction, edgeLabels), this.strategyGraph);
     }
 
     @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
+    public Iterator<Vertex> vertices(final Direction direction, final String... labels) {
         return new StrategyVertexIterator(this.strategyGraph.compose(
                 s -> s.getVertexIteratorsVertexIteratorStrategy(strategyContext, strategy),
-                (Direction d, String[] l) -> this.getBaseVertex().iterators().vertexIterator(d, l)).apply(direction, labels), this.strategyGraph);
+                (Direction d, String[] l) -> this.getBaseVertex().vertices(d, l)).apply(direction, labels), this.strategyGraph);
     }
 
     @Override
-    public <V> Iterator<V> valueIterator(final String... propertyKeys) {
+    public <V> Iterator<V> values(final String... propertyKeys) {
         return this.strategyGraph.compose(
                 s -> s.<V>getVertexIteratorsValueIteratorStrategy(strategyContext, strategy),
-                (String[] pks) -> this.getBaseVertex().iterators().valueIterator(pks)).apply(propertyKeys);
+                (String[] pks) -> this.getBaseVertex().values(pks)).apply(propertyKeys);
     }
 
     @Override
-    public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
+    public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
         return IteratorUtils.map(this.strategyGraph.compose(
                         s -> s.<V>getVertexIteratorsPropertyIteratorStrategy(this.strategyContext, strategy),
-                        (String[] pks) -> this.getBaseVertex().iterators().propertyIterator(pks)).apply(propertyKeys),
+                        (String[] pks) -> this.getBaseVertex().properties(pks)).apply(propertyKeys),
                 property -> new StrategyVertexProperty<>(property, this.strategyGraph));
     }
 

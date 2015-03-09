@@ -34,18 +34,13 @@ import java.util.Set;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class StrategyEdge extends StrategyElement implements Edge, Edge.Iterators, StrategyWrapped, WrappedEdge<Edge> {
+public class StrategyEdge extends StrategyElement implements Edge, StrategyWrapped, WrappedEdge<Edge> {
 
     private final StrategyContext<StrategyEdge> strategyContext;
 
     public StrategyEdge(final Edge baseEdge, final StrategyGraph strategyGraph) {
         super(baseEdge, strategyGraph);
         this.strategyContext = new StrategyContext<>(strategyGraph, this);
-    }
-
-    @Override
-    public Edge.Iterators iterators() {
-        return this;
     }
 
     @Override
@@ -119,24 +114,24 @@ public class StrategyEdge extends StrategyElement implements Edge, Edge.Iterator
 
 
     @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction) {
+    public Iterator<Vertex> vertices(final Direction direction) {
         return new StrategyVertex.StrategyVertexIterator(this.strategyGraph.compose(
                 s -> s.getEdgeIteratorsVertexIteratorStrategy(this.strategyContext, strategy),
-                (Direction d) -> this.getBaseEdge().iterators().vertexIterator(d)).apply(direction), this.strategyGraph);
+                (Direction d) -> this.getBaseEdge().vertices(d)).apply(direction), this.strategyGraph);
     }
 
     @Override
-    public <V> Iterator<V> valueIterator(final String... propertyKeys) {
+    public <V> Iterator<V> values(final String... propertyKeys) {
         return this.strategyGraph.compose(
                 s -> s.<V>getEdgeIteratorsValueIteratorStrategy(this.strategyContext, strategy),
-                (String[] pks) -> this.getBaseEdge().iterators().valueIterator(pks)).apply(propertyKeys);
+                (String[] pks) -> this.getBaseEdge().values(pks)).apply(propertyKeys);
     }
 
     @Override
-    public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
+    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
         return IteratorUtils.map(this.strategyGraph.compose(
                         s -> s.<V>getEdgeIteratorsPropertyIteratorStrategy(this.strategyContext, strategy),
-                        (String[] pks) -> this.getBaseEdge().iterators().propertyIterator(pks)).apply(propertyKeys),
+                        (String[] pks) -> this.getBaseEdge().properties(pks)).apply(propertyKeys),
                 property -> new StrategyProperty<>(property, this.strategyGraph));
     }
 

@@ -166,7 +166,7 @@ public class GryoReader implements GraphReader {
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
                     vertexArgs.clear();
-                    current.iterators().propertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
+                    current.properties().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
 
                     // the gio file should have been written with a direction specified
                     final boolean hasDirectionSpecified = input.readBoolean();
@@ -207,7 +207,7 @@ public class GryoReader implements GraphReader {
         final List<Object> propertyArgs = new ArrayList<>();
         if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
             appendToArgList(propertyArgs, T.id, p.id());
-        p.iterators().propertyIterator().forEachRemaining(it -> appendToArgList(propertyArgs, it.key(), it.value()));
+        p.properties().forEachRemaining(it -> appendToArgList(propertyArgs, it.key(), it.value()));
         v.property(p.key(), p.value(), propertyArgs.toArray());
     }
 
@@ -312,10 +312,10 @@ public class GryoReader implements GraphReader {
             Object next = kryo.readClassAndObject(input);
             while (!next.equals(EdgeTerminator.INSTANCE)) {
                 final DetachedEdge detachedEdge = (DetachedEdge) next;
-                final Vertex vOut = graphToWriteTo.vertices(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()).next();
-                final Vertex inV = graphToWriteTo.vertices(detachedEdge.iterators().vertexIterator(Direction.IN).next().id()).next();
+                final Vertex vOut = graphToWriteTo.vertices(detachedEdge.vertices(Direction.OUT).next().id()).next();
+                final Vertex inV = graphToWriteTo.vertices(detachedEdge.vertices(Direction.IN).next().id()).next();
 
-                detachedEdge.iterators().propertyIterator().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(p.key(), p.value())));
+                detachedEdge.properties().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(p.key(), p.value())));
 
                 appendToArgList(edgeArgs, T.id, detachedEdge.id());
 

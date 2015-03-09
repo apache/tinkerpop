@@ -125,10 +125,10 @@ public class GryoWriter implements GraphWriter {
                 final Vertex v = (Vertex) e;
                 kryo.writeObject(output, direction);
                 if (direction == Direction.BOTH || direction == Direction.OUT)
-                    writeDirectionalEdges(output, Direction.OUT, v.iterators().edgeIterator(Direction.OUT));
+                    writeDirectionalEdges(output, Direction.OUT, v.edges(Direction.OUT));
 
                 if (direction == Direction.BOTH || direction == Direction.IN)
-                    writeDirectionalEdges(output, Direction.IN, v.iterators().edgeIterator(Direction.IN));
+                    writeDirectionalEdges(output, Direction.IN, v.edges(Direction.IN));
             }
 
             kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);

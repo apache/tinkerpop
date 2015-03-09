@@ -34,7 +34,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StrategyVertexProperty<V> extends StrategyElement implements VertexProperty<V>, StrategyWrapped, WrappedVertexProperty<VertexProperty<V>>, VertexProperty.Iterators {
+public class StrategyVertexProperty<V> extends StrategyElement implements VertexProperty<V>, StrategyWrapped, WrappedVertexProperty<VertexProperty<V>> {
 
     private final StrategyContext<StrategyVertexProperty<V>> strategyContext;
 
@@ -76,11 +76,6 @@ public class StrategyVertexProperty<V> extends StrategyElement implements Vertex
         return new StrategyVertex(this.strategyGraph.compose(
                 s -> s.getVertexPropertyGetElementStrategy(strategyContext, strategy),
                 this.getBaseVertexProperty()::element).get(), strategyGraph);
-    }
-
-    @Override
-    public VertexProperty.Iterators iterators() {
-        return this;
     }
 
     @Override
@@ -129,17 +124,17 @@ public class StrategyVertexProperty<V> extends StrategyElement implements Vertex
 
 
     @Override
-    public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
+    public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
         return IteratorUtils.map(this.strategyGraph.compose(
                         s -> s.<U, V>getVertexPropertyIteratorsPropertyIteratorStrategy(this.strategyContext, strategy),
-                        (String[] pks) -> this.getBaseVertexProperty().iterators().propertyIterator(pks)).apply(propertyKeys),
+                        (String[] pks) -> this.getBaseVertexProperty().properties(pks)).apply(propertyKeys),
                 property -> new StrategyProperty<>(property, this.strategyGraph));
     }
 
     @Override
-    public <U> Iterator<U> valueIterator(final String... propertyKeys) {
+    public <U> Iterator<U> values(final String... propertyKeys) {
         return this.strategyGraph.compose(
                 s -> s.<U, V>getVertexPropertyIteratorsValueIteratorStrategy(this.strategyContext, strategy),
-                (String[] pks) -> this.getBaseVertexProperty().iterators().valueIterator(pks)).apply(propertyKeys);
+                (String[] pks) -> this.getBaseVertexProperty().values(pks)).apply(propertyKeys);
     }
 }

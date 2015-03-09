@@ -49,7 +49,7 @@ import java.util.NoSuchElementException;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.Iterators {
+public class DetachedEdge extends DetachedElement<Edge> implements Edge {
 
     private DetachedVertex outVertex;
     private DetachedVertex inVertex;
@@ -60,14 +60,14 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
 
     protected DetachedEdge(final Edge edge, final boolean withProperties) {
         super(edge);
-        this.outVertex = DetachedFactory.detach(edge.iterators().vertexIterator(Direction.OUT).next(), false);
-        this.inVertex = DetachedFactory.detach(edge.iterators().vertexIterator(Direction.IN).next(), false);
+        this.outVertex = DetachedFactory.detach(edge.vertices(Direction.OUT).next(), false);
+        this.inVertex = DetachedFactory.detach(edge.vertices(Direction.IN).next(), false);
 
         // only serialize properties if requested, the graph supports it and there are meta properties present.
         // this prevents unnecessary object creation of a new HashMap of a new HashMap which will just be empty.
         // it will use Collections.emptyMap() by default
         if (withProperties) {
-            final Iterator<Property<Object>> propertyIterator = edge.iterators().propertyIterator();
+            final Iterator<Property<Object>> propertyIterator = edge.properties();
             if (propertyIterator.hasNext()) {
                 this.properties = new HashMap<>();
                 propertyIterator.forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
@@ -96,7 +96,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
 
     @Override
     public Edge attach(final Vertex hostVertex) {
-        final Iterator<Edge> edges = IteratorUtils.filter(hostVertex.iterators().edgeIterator(Direction.OUT, this.label), edge -> edge.equals(this));
+        final Iterator<Edge> edges = IteratorUtils.filter(hostVertex.edges(Direction.OUT, this.label), edge -> edge.equals(this));
         if (!edges.hasNext())
             throw new IllegalStateException("The detached edge could not be be found incident to the provided vertex: " + this);
         return edges.next();
@@ -129,7 +129,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
         }
 
         if (ElementHelper.areEqual(outV, inV)) {
-            final Iterator<Edge> itty = outV.iterators().edgeIterator(Direction.OUT, detachedEdge.label());
+            final Iterator<Edge> itty = outV.edges(Direction.OUT, detachedEdge.label());
             while (itty.hasNext()) {
                 final Edge e = itty.next();
                 if (ElementHelper.areEqual(detachedEdge, e))
@@ -143,12 +143,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
     }
 
     @Override
-    public Edge.Iterators iterators() {
-        return this;
-    }
-
-    @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction) {
+    public Iterator<Vertex> vertices(final Direction direction) {
         switch (direction) {
             case OUT:
                 return IteratorUtils.of(this.outVertex);
@@ -160,7 +155,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
     }
 
     @Override
-    public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) super.propertyIterator(propertyKeys);
+    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+        return (Iterator) super.properties(propertyKeys);
     }
 }

@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.TriFunction;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -102,10 +103,10 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
-        assertEquals(3, v.values("anonymous").toList().size());
-        assertTrue(v.values("anonymous").toList().contains("working1"));
-        assertTrue(v.values("anonymous").toList().contains("working2"));
-        assertTrue(v.values("anonymous").toList().contains("working3"));
+        assertEquals(3, IteratorUtils.list(v.values("anonymous")).size());
+        assertTrue(IteratorUtils.list(v.values("anonymous")).contains("working1"));
+        assertTrue(IteratorUtils.list(v.values("anonymous")).contains("working2"));
+        assertTrue(IteratorUtils.list(v.values("anonymous")).contains("working3"));
         assertEquals("anything", v.property("try").value());
     }
 
@@ -160,8 +161,8 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
-        assertEquals(1, v.values("anonymous").toList().size());
-        assertTrue(v.values("anonymous").toList().contains("working3"));
+        assertEquals(1, IteratorUtils.list(v.values("anonymous")).size());
+        assertTrue(IteratorUtils.list(v.values("anonymous")).contains("working3"));
         assertEquals("anything", v.property("try").value());
     }
 
@@ -214,14 +215,14 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
-        assertEquals(1, v.values("anonymous").toList().size());
-        assertTrue(v.values("ts").toList().contains("timestamped"));
-        assertTrue(v.values("set").toList().contains("prop"));
+        assertEquals(1, IteratorUtils.list(v.values("anonymous")).size());
+        assertTrue(IteratorUtils.list(v.values("ts")).contains("timestamped"));
+        assertTrue(IteratorUtils.list(v.values("set")).contains("prop"));
 
         final Vertex vStrat = (Vertex) g.V().has("strategy", "bypassed").next();
-        assertEquals(0, vStrat.values("anonymous").toList().size());
-        assertTrue(v.values("ts").toList().contains("timestamped"));
-        assertTrue(v.values("timestamp").toList().contains("timestamped"));
+        assertEquals(0, IteratorUtils.list(vStrat.values("anonymous")).size());
+        assertTrue(IteratorUtils.list(v.values("ts")).contains("timestamped"));
+        assertTrue(IteratorUtils.list(v.values("timestamp")).contains("timestamped"));
     }
 
     @Test
@@ -283,16 +284,16 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
-        assertEquals(1, v.values("anonymous").toList().size());
-        assertTrue(v.values("ts1").toList().contains("timestamped"));
-        assertTrue(v.values("ts2").toList().contains("timestamped"));
-        assertTrue(v.values("set").toList().contains("prop"));
+        assertEquals(1, IteratorUtils.list(v.values("anonymous")).size());
+        assertTrue(IteratorUtils.list(v.values("ts1")).contains("timestamped"));
+        assertTrue(IteratorUtils.list(v.values("ts2")).contains("timestamped"));
+        assertTrue(IteratorUtils.list(v.values("set")).contains("prop"));
 
         final Vertex vStrat = (Vertex) g.V().has("strategy", "bypassed").next();
-        assertEquals(0, vStrat.values("anonymous").toList().size());
-        assertTrue(v.values("ts1").toList().contains("timestamped"));
-        assertTrue(v.values("ts2").toList().contains("timestamped"));
-        assertTrue(v.values("timestamp").toList().contains("timestamped"));
+        assertEquals(0, IteratorUtils.list(vStrat.values("anonymous")).size());
+        assertTrue(IteratorUtils.list(v.values("ts1")).contains("timestamped"));
+        assertTrue(IteratorUtils.list(v.values("ts2")).contains("timestamped"));
+        assertTrue(IteratorUtils.list(v.values("timestamp")).contains("timestamped"));
     }
 
     @Test

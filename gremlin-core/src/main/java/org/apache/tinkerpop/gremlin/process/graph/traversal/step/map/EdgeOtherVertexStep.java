@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -44,9 +43,9 @@ public final class EdgeOtherVertexStep extends MapStep<Edge, Vertex> {
         final List<Object> objects = traverser.path().objects();
         for (int i = objects.size() - 2; i >= 0; i--) {
             if (objects.get(i) instanceof Vertex) {
-                return ElementHelper.areEqual((Vertex) objects.get(i), traverser.get().iterators().vertexIterator(Direction.OUT).next()) ?
-                        traverser.get().iterators().vertexIterator(Direction.IN).next() :
-                        traverser.get().iterators().vertexIterator(Direction.OUT).next();
+                return ElementHelper.areEqual((Vertex) objects.get(i), traverser.get().outVertex()) ?
+                        traverser.get().inVertex() :
+                        traverser.get().outVertex();
             }
         }
         throw new IllegalStateException("The path history of the traverser does not contain a previous vertex: " + traverser.path());

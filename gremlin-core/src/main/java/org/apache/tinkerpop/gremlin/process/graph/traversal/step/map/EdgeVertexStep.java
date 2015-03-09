@@ -45,7 +45,7 @@ public final class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements R
 
     @Override
     protected Iterator<Vertex> flatMap(final Traverser.Admin<Edge> traverser) {
-        return traverser.get().iterators().vertexIterator(this.direction);
+        return traverser.get().vertices(this.direction);
     }
 
     @Override

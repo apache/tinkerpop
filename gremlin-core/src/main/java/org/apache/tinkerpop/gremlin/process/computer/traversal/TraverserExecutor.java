@@ -94,7 +94,7 @@ public final class TraverserExecutor {
             if (obj instanceof Vertex)
                 return (Vertex) obj;
             else if (obj instanceof Edge)
-                return ((Edge) obj).iterators().vertexIterator(Direction.OUT).next();
+                return ((Edge) obj).outVertex();
             else if (obj instanceof Property)
                 obj = ((Property) obj).element();
             else

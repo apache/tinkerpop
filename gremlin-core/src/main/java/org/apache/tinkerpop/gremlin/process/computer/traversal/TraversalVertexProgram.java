@@ -149,7 +149,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             final TraverserGenerator traverserGenerator = this.traversal.getTraverserGenerator();
             final String future = startStep.getNextStep().getId();
             boolean voteToHalt = true;
-            final Iterator<? extends Element> starts = startStep.returnsVertices() ? IteratorUtils.of(vertex) : vertex.iterators().edgeIterator(Direction.OUT);
+            final Iterator<? extends Element> starts = startStep.returnsVertices() ? IteratorUtils.of(vertex) : vertex.edges(Direction.OUT);
             while (starts.hasNext()) {
                 final Element start = starts.next();
                 if (ElementHelper.idExists(start.id(), startStep.getIds())) {

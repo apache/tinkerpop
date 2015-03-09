@@ -29,12 +29,20 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.apache.tinkerpop.gremlin.process.Path;
 import org.apache.tinkerpop.gremlin.process.util.metric.Metrics;
 import org.apache.tinkerpop.gremlin.process.util.metric.TraversalMetrics;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -82,16 +90,16 @@ public class GraphSONModule extends SimpleModule {
             jsonGenerator.writeObject(m);
         }
 
-        private static Map<String, Object> props(final VertexProperty property) {
+        private static Map<String, Object> props(final VertexProperty<?> property) {
             if (property instanceof DetachedVertexProperty) {
                 try {
-                    return IteratorUtils.collectMap(property.iterators().propertyIterator(), Property::key, Property::value);
+                    return IteratorUtils.collectMap(property.properties(), Property::key, Property::value);
                 } catch (UnsupportedOperationException uoe) {
                     return new HashMap<>();
                 }
             } else {
                 return (property.graph().features().vertex().supportsMetaProperties()) ?
-                        IteratorUtils.collectMap(property.iterators().propertyIterator(), Property::key, Property::value) :
+                        IteratorUtils.collectMap(property.properties(), Property::key, Property::value) :
                         new HashMap<>();
             }
         }
@@ -145,14 +153,14 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.LABEL, edge.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
 
-            final Map<String, Object> properties = IteratorUtils.collectMap(edge.iterators().propertyIterator(), Property::key, Property::value);
+            final Map<String, Object> properties = IteratorUtils.collectMap(edge.properties(), Property::key, Property::value);
             m.put(GraphSONTokens.PROPERTIES, properties);
 
-            final Vertex inV = edge.iterators().vertexIterator(Direction.IN).next();
+            final Vertex inV = edge.inVertex();
             m.put(GraphSONTokens.IN, inV.id());
             m.put(GraphSONTokens.IN_LABEL, inV.label());
 
-            final Vertex outV = edge.iterators().vertexIterator(Direction.OUT).next();
+            final Vertex outV = edge.outVertex();
             m.put(GraphSONTokens.OUT, outV.id());
             m.put(GraphSONTokens.OUT_LABEL, outV.label());
 
@@ -188,7 +196,7 @@ public class GraphSONModule extends SimpleModule {
 
             // convert to GraphSONVertexProperty so that the label does not get serialized in the output - it is
             // redundant because the key in the map is the same as the label.
-            final Iterator<GraphSONVertexProperty> vertexPropertyList = IteratorUtils.map(vertex.iterators().propertyIterator(), GraphSONVertexProperty::new);
+            final Iterator<GraphSONVertexProperty> vertexPropertyList = IteratorUtils.map(vertex.properties(), GraphSONVertexProperty::new);
             final Object properties = IteratorUtils.groupBy(vertexPropertyList, vp -> vp.getToSerialize().key());
             m.put(GraphSONTokens.PROPERTIES, properties);
 

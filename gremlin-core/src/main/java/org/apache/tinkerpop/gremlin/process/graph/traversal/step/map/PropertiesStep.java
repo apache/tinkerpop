@@ -48,8 +48,8 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Revers
     @Override
     protected Iterator<E> flatMap(final Traverser.Admin<Element> traverser) {
         return this.returnType.equals(PropertyType.VALUE) ?
-                traverser.get().iterators().valueIterator(this.propertyKeys) :
-                (Iterator) traverser.get().iterators().propertyIterator(this.propertyKeys);
+                traverser.get().values(this.propertyKeys) :
+                (Iterator) traverser.get().properties(this.propertyKeys);
     }
 
     public PropertyType getReturnType() {

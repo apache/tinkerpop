@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class TinkerElement implements Element, Element.Iterators {
+public abstract class TinkerElement implements Element {
 
     protected Map<String, List<Property>> properties = new HashMap<>();
     protected final Object id;
@@ -97,7 +97,7 @@ public abstract class TinkerElement implements Element, Element.Iterators {
     //////////////////////////////////////////////
 
     @Override
-    public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
+    public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
         if (TinkerHelper.inComputerMode(this.graph))
             return (Iterator) this.graph.graphView.getProperties(TinkerElement.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
         else {
