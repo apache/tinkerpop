@@ -96,7 +96,7 @@ public class TinkerGraphTest {
         v7.addEdge("link", v9, "weight", 1f);
         v8.addEdge("link", v9, "weight", 7f);
 
-        v1.withSack(Float.MIN_VALUE).repeat(outE().sack(Operator.max, "weight").inV()).times(5).sack().forEachRemaining(System.out::println);
+        g.V(v1).withSack(Float.MIN_VALUE).repeat(outE().sack(Operator.max, "weight").inV()).times(5).sack().forEachRemaining(System.out::println);
     }
 
    /* @Test
@@ -121,7 +121,7 @@ public class TinkerGraphTest {
                 () -> g.V().repeat(out()).times(3),
                 () -> g.V().local(out().out().values("name").fold()),
                 () -> g.V().out().local(out().out().values("name").fold()),
-                () -> g.V().out().map(v -> v.get().out().out().values("name").toList())
+                () -> g.V().out().map(v -> g.V(v.get()).out().out().values("name").toList())
         );
         traversals.forEach(traversal -> {
             System.out.println("\nTESTING: " + traversal.get());
@@ -148,18 +148,18 @@ public class TinkerGraphTest {
         g.io().readGraphML("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
         final List<Supplier<Traversal>> traversals = Arrays.asList(
                 () -> g.V().has(T.label, "song").out().groupCount().<Vertex>by(t ->
-                        t.choose(r -> r.has(T.label, "artist").hasNext(),
+                        g.V(t).choose(r -> g.V(r).has(T.label, "artist").hasNext(),
                                 in("writtenBy", "sungBy"),
                                 both("followedBy")).values("name").next()).fold(),
                 () -> g.V().has(T.label, "song").out().groupCount().<Vertex>by(t ->
-                        t.choose(has(T.label, "artist"),
+                        g.V(t).choose(has(T.label, "artist"),
                                 in("writtenBy", "sungBy"),
                                 both("followedBy")).values("name").next()).fold(),
                 () -> g.V().has(T.label, "song").out().groupCount().by(
                         choose(has(T.label, "artist"),
                                 in("writtenBy", "sungBy"),
                                 both("followedBy")).values("name")).fold(),
-                () -> g.V().has(T.label, "song").both().groupCount().<Vertex>by(t -> t.both().values("name").next()),
+                () -> g.V().has(T.label, "song").both().groupCount().<Vertex>by(t -> g.V(t).both().values("name").next()),
                 () -> g.V().has(T.label, "song").both().groupCount().by(both().values("name")));
         traversals.forEach(traversal -> {
             System.out.println("\nTESTING: " + traversal.get());
@@ -632,8 +632,8 @@ public class TinkerGraphTest {
 
         g.E().sideEffect(oe -> {
             final Edge e = oe.get();
-            final Vertex v2 = ng.V(Integer.parseInt(e.inV().next().id().toString())).next();
-            final Vertex v1 = ng.V(Integer.parseInt(e.outV().next().id().toString())).next();
+            final Vertex v2 = ng.V(Integer.parseInt(e.inVertex().id().toString())).next();
+            final Vertex v1 = ng.V(Integer.parseInt(e.outVertex().id().toString())).next();
 
             if (e.label().equals("followedBy"))
                 v1.addEdge("followedBy", v2, T.id, Integer.parseInt(e.id().toString()), "weight", e.value("weight"));

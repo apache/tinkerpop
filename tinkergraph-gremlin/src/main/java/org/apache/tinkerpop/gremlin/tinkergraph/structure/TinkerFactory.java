@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.LambdaFlatM
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.LambdaMapStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -135,11 +136,11 @@ public class TinkerFactory {
         public SocialTraversal<S, Vertex> people(final String name);
 
         public default SocialTraversal<S, Vertex> knows() {
-            return (SocialTraversal) this.addStep(new LambdaFlatMapStep<Vertex, Vertex>(this, v -> v.get().out("knows")));
+            return (SocialTraversal) this.addStep(new LambdaFlatMapStep<Vertex, Vertex>(this, v -> v.get().vertices(Direction.OUT, "knows")));
         }
 
         public default SocialTraversal<S, Vertex> created() {
-            return (SocialTraversal) this.addStep(new LambdaFlatMapStep<Vertex, Vertex>(this, v -> v.get().out("created")));
+            return (SocialTraversal) this.addStep(new LambdaFlatMapStep<Vertex, Vertex>(this, v -> v.get().vertices(Direction.OUT,"created")));
         }
 
         public default SocialTraversal<S, String> name() {

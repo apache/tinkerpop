@@ -59,7 +59,7 @@ public class TinkerMessenger<M> implements Messenger<M> {
             final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
             final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
             return StreamFactory.iterable(StreamFactory.stream(incidentTraversal.asAdmin().reverse())
-                    .map(e -> this.messageBoard.receiveMessages.get((edge[0] = e).iterators().vertexIterator(direction).next()))
+                    .map(e -> this.messageBoard.receiveMessages.get((edge[0] = e).vertices(direction).next()))
                     .filter(q -> null != q)
                     .flatMap(q -> q.stream())
                     .map(message -> localMessageScope.getEdgeFunction().apply(message, edge[0])));

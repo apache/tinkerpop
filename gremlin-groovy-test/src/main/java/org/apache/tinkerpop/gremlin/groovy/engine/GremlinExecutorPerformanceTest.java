@@ -24,13 +24,13 @@ import com.carrotsearch.junitbenchmarks.annotation.AxisRange;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 import com.carrotsearch.junitbenchmarks.annotation.LabelType;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.commons.configuration.Configuration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -47,7 +47,7 @@ import java.util.concurrent.CompletableFuture;
 @AxisRange(min = 0, max = 1)
 @BenchmarkMethodChart(filePrefix = "gremlin-executor")
 @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-gremlin-executor")
-public class GremlinExecutorPerformanceTest extends AbstractGremlinTest  {
+public class GremlinExecutorPerformanceTest extends AbstractGremlinTest {
 
     private static final Random rand = new Random(9585834534l);
     private static final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
@@ -75,7 +75,7 @@ public class GremlinExecutorPerformanceTest extends AbstractGremlinTest  {
 
     @Override
     public void tearDown() throws Exception {
-        if (syntaxGraph != null)  graphProvider.clear(syntaxGraph, syntaxGraphConfig);
+        if (syntaxGraph != null) graphProvider.clear(syntaxGraph, syntaxGraphConfig);
         super.tearDown();
     }
 
@@ -110,9 +110,9 @@ public class GremlinExecutorPerformanceTest extends AbstractGremlinTest  {
             final Vertex start = syntaxGraph.V().has("starter", true).order().by(this::shuffle).next();
             sb.append((String) start.value("step"));
 
-            start.times(targetStepCount - 1).repeat(
+            syntaxGraph.V(start).times(targetStepCount - 1).repeat(
                     __.local(__.outE().has("weight", Compare.gte, rand.nextDouble())
-                    .inV().order().by(this::shuffle).limit(1)).sideEffect(t -> sb.append((String) t.get().value("step")))
+                            .inV().order().by(this::shuffle).limit(1)).sideEffect(t -> sb.append((String) t.get().value("step")))
             ).iterate();
 
             return sb.toString();

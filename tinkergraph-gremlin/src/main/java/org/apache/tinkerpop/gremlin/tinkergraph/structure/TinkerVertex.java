@@ -127,7 +127,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-        return (Iterator) super.propertyIterator(propertyKeys);
+        return (Iterator) super.properties(propertyKeys);
     }
 
     @Override
