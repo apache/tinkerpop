@@ -232,7 +232,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
             Edge edge = traversal.next();
             edges.add(edge);
             assertTrue(edge.label().equals("created"));
-            assertEquals(edge.outV().id().next(), convertToVertexId("josh"));
+            assertEquals(edge.outVertex().id(), convertToVertexId("josh"));
         }
         assertEquals(2, counter);
         assertEquals(2, edges.size());
