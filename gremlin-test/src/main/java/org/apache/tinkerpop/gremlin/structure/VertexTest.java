@@ -212,7 +212,7 @@ public class VertexTest {
             assertEquals("marko", v.<String>value("name"));
             assertEquals(34, (int) v.property("age").value());
             assertEquals("marko", v.<String>property("name").value());
-            assertEquals(2, v.properties().count().next().intValue());
+            assertEquals(2, IteratorUtils.count(v.properties()));
             assertEquals(2, v.keys().size());
             assertTrue(v.keys().contains("name"));
             assertTrue(v.keys().contains("age"));
@@ -225,7 +225,7 @@ public class VertexTest {
             assertEquals("marko rodriguez", v.<String>value("name"));
             assertEquals(34, (int) v.property("age").value());
             assertEquals("marko rodriguez", v.<String>property("name").value());
-            assertEquals(2, v.properties().count().next().intValue());
+            assertEquals(2, IteratorUtils.count(v.properties()));
             assertEquals(2, v.keys().size());
             assertTrue(v.keys().contains("name"));
             assertTrue(v.keys().contains("age"));
@@ -233,7 +233,7 @@ public class VertexTest {
             assertVertexEdgeCounts(1, 0).accept(g);
 
             v.property("location", "santa fe");
-            assertEquals(3, v.properties().count().next().intValue());
+            assertEquals(3, IteratorUtils.count(v.properties()));
             assertEquals(3, v.keys().size());
             assertEquals("santa fe", v.property("location").value());
             assertEquals(v.property("location"), v.property("location"));
@@ -243,9 +243,9 @@ public class VertexTest {
             assertTrue(v.keys().contains("location"));
             v.property("location").remove();
             assertVertexEdgeCounts(1, 0).accept(g);
-            assertEquals(2, v.properties().count().next().intValue());
+            assertEquals(2, IteratorUtils.count(v.properties()));
             v.properties().remove();
-            assertEquals(0, v.properties().count().next().intValue());
+            assertEquals(0, IteratorUtils.count(v.properties()));
             assertVertexEdgeCounts(1, 0).accept(g);
         }
 
@@ -381,7 +381,7 @@ public class VertexTest {
             assertTrue(keys.contains("location"));
             assertTrue(keys.contains("status"));
 
-            final List<VertexProperty<Object>> m = v.properties().toList();
+            final List<VertexProperty<Object>> m = IteratorUtils.list(v.properties());
             assertEquals(3, m.size());
             assertTrue(m.stream().anyMatch(p -> p.key().equals("name")));
             assertTrue(m.stream().anyMatch(p -> p.key().equals("location")));
@@ -431,7 +431,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldReturnEmptyIteratorIfNoProperties() {
             final Vertex v = g.addVertex();
-            assertEquals(0, v.properties().count().next().intValue());
+            assertEquals(0, IteratorUtils.count(v.properties()));
         }
     }
 
