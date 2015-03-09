@@ -104,13 +104,13 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
 
     @Override
     public Edge attach(final Graph hostGraph) {
-        return hostGraph.iterators().edgeIterator(this.id).next();
+        return hostGraph.edges(this.id).next();
     }
 
     public static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
         Vertex outV;
         try {
-            outV = graph.iterators().vertexIterator(detachedEdge.outVertex.id()).next();
+            outV = graph.vertices(detachedEdge.outVertex.id()).next();
         } catch (final NoSuchElementException e) {
             outV = null;
         }
@@ -120,7 +120,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
 
         Vertex inV;
         try {
-            inV = graph.iterators().vertexIterator(detachedEdge.inVertex.id()).next();
+            inV = graph.vertices(detachedEdge.inVertex.id()).next();
         } catch (final NoSuchElementException e) {
             inV = null;
         }

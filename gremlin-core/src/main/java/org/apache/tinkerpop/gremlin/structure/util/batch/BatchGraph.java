@@ -22,11 +22,9 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.VertexTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -79,7 +77,7 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
+public class BatchGraph<G extends Graph> implements Graph {
     /**
      * Default buffer size is 10000.
      */
@@ -213,12 +211,7 @@ public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
     }
 
     @Override
-    public Iterators iterators() {
-        return this;
-    }
-
-    @Override
-    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+    public Iterator<Vertex> vertices(final Object... vertexIds) {
         if (vertexIds.length > 1)
             throw new IllegalArgumentException("BatchGraph only allows a single vertex id at one time");
         if ((this.previousOutVertexId != null) && (this.previousOutVertexId.equals(vertexIds[0]))) {
@@ -241,33 +234,18 @@ public class BatchGraph<G extends Graph> implements Graph, Graph.Iterators {
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+    public Iterator<Edge> edges(final Object... edgeIds) {
         throw retrievalNotSupported();
     }
 
     @Override
-    public <T extends Traversal<S, S>, S> T of(final Class<T> traversalClass) {
-        throw retrievalNotSupported();
-    }
-
-    @Override
-    public void compute(final Class<? extends GraphComputer> graphComputerClass) {
+    public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
         throw Exceptions.graphComputerNotSupported();
     }
 
     @Override
     public GraphComputer compute() {
         throw Exceptions.graphComputerNotSupported();
-    }
-
-    @Override
-    public TraversalEngine engine() {
-        return StandardTraversalEngine.standard;
-    }
-
-    @Override
-    public void engine(final TraversalEngine traversalEngine) {
-
     }
 
     @Override

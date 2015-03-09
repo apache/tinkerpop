@@ -68,7 +68,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
             throw new RuntimeException(String.format("Could not find test method %s in test case %s", name.getMethodName(), this.getClass().getName()));
         }
 
-        g.engine(GraphManager.getTraversalEngine());
+       // TODO: g.engine(GraphManager.getTraversalEngine());
     }
 
     public <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {

@@ -170,9 +170,9 @@ public class DistributionGeneratorTest {
             final int edgesGenerated = generator.generate();
             assertTrue(edgesGenerated > 0);
             tryCommit(g, g -> {
-                assertEquals(new Long(edgesGenerated), new Long(IteratorUtils.count(g.iterators().edgeIterator())));
-                assertTrue(IteratorUtils.count(g.iterators().vertexIterator()) > 0);
-                assertTrue(StreamFactory.stream(g.iterators().edgeIterator()).allMatch(e -> e.value("data").equals("test")));
+                assertEquals(new Long(edgesGenerated), new Long(IteratorUtils.count(g.edges())));
+                assertTrue(IteratorUtils.count(g.vertices()) > 0);
+                assertTrue(StreamFactory.stream(g.edges()).allMatch(e -> e.value("data").equals("test")));
             });
         }
 

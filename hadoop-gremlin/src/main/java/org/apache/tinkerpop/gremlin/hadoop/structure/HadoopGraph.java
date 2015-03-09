@@ -29,10 +29,8 @@ import org.apache.tinkerpop.gremlin.hadoop.process.graph.traversal.strategy.Hado
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopEdgeIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopVertexIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -123,7 +121,7 @@ import java.util.Optional;
         test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyProfileTest$StandardTraversals",
         method = "g_V_out_out_grateful_profile",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
-public class HadoopGraph implements Graph, Graph.Iterators {
+public class HadoopGraph implements Graph {
 
     static {
         try {
@@ -141,12 +139,9 @@ public class HadoopGraph implements Graph, Graph.Iterators {
     }};
 
     protected final HadoopConfiguration configuration;
-    private TraversalEngine traversalEngine = StandardTraversalEngine.standard;
-    private Class<? extends GraphComputer> graphComputerClass = GiraphGraphComputer.class;
 
     private HadoopGraph(final Configuration configuration) {
         this.configuration = new HadoopConfiguration(configuration);
-        this.graphComputerClass = this.configuration.getGraphComputer(GiraphGraphComputer.class);
     }
 
     public static HadoopGraph open() {
@@ -163,27 +158,19 @@ public class HadoopGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public void compute(final Class<? extends GraphComputer> graphComputerClass) {
-        if (!graphComputerClass.equals(GiraphGraphComputer.class) && !graphComputerClass.equals(SparkGraphComputer.class))
+    public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
+        if (graphComputerClass.equals(GiraphGraphComputer.class))
+            return (C) new GiraphGraphComputer(this);
+        else if (graphComputerClass.equals(SparkGraphComputer.class))
+            return (C) new GiraphGraphComputer(this);
+        else
             throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
-        this.graphComputerClass = graphComputerClass;
     }
 
     @Override
     public GraphComputer compute() {
-        return this.graphComputerClass.equals(GiraphGraphComputer.class) ? new GiraphGraphComputer(this) : new SparkGraphComputer(this);
+        return this.compute(GiraphGraphComputer.class);
     }
-
-    @Override
-    public TraversalEngine engine() {
-        return this.traversalEngine;
-    }
-
-    @Override
-    public void engine(final TraversalEngine traversalEngine) {
-        this.traversalEngine = traversalEngine;
-    }
-
 
     @Override
     public Variables variables() {
@@ -203,7 +190,7 @@ public class HadoopGraph implements Graph, Graph.Iterators {
         final String toString = this.configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT) ?
                 hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class).getSimpleName() :
                 "no-output";
-        return StringFactory.graphString(this, fromString.toLowerCase() + "->" + toString.toLowerCase() + "[" + this.graphComputerClass.getSimpleName().toLowerCase() + "]");
+        return StringFactory.graphString(this, fromString.toLowerCase() + "->" + toString.toLowerCase());
     }
 
     @Override
@@ -217,12 +204,7 @@ public class HadoopGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public Iterators iterators() {
-        return this;
-    }
-
-    @Override
-    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+    public Iterator<Vertex> vertices(final Object... vertexIds) {
         try {
             return 0 == vertexIds.length ? new HadoopVertexIterator(this) : IteratorUtils.filter(new HadoopVertexIterator(this), vertex -> ElementHelper.idExists(vertex.id(), vertexIds));
         } catch (final IOException e) {
@@ -231,7 +213,7 @@ public class HadoopGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+    public Iterator<Edge> edges(final Object... edgeIds) {
         try {
             return 0 == edgeIds.length ? new HadoopEdgeIterator(this) : IteratorUtils.filter(new HadoopEdgeIterator(this), edge -> ElementHelper.idExists(edge.id(), edgeIds));
         } catch (final IOException e) {

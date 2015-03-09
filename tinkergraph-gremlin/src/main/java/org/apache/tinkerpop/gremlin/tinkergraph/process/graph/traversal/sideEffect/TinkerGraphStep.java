@@ -53,10 +53,10 @@ public class TinkerGraphStep<S extends Element> extends GraphStep<S> {
         final HasContainer indexedContainer = getIndexKey(Edge.class);
         // ids are present, filter on them first
         if (this.ids != null && this.ids.length > 0)
-            return this.iteratorList(this.getGraph(TinkerGraph.class).iterators().edgeIterator(this.ids));
+            return this.iteratorList(this.getGraph(TinkerGraph.class).edges(this.ids));
         else
             return null == indexedContainer ?
-                    this.iteratorList(this.getGraph(TinkerGraph.class).iterators().edgeIterator()) :
+                    this.iteratorList(this.getGraph(TinkerGraph.class).edges()) :
                     TinkerHelper.queryEdgeIndex(this.getGraph(TinkerGraph.class), indexedContainer.key, indexedContainer.value).stream()
                             .filter(edge -> HasContainer.testAll(edge, this.hasContainers))
                             .collect(Collectors.<Edge>toList()).iterator();
@@ -66,10 +66,10 @@ public class TinkerGraphStep<S extends Element> extends GraphStep<S> {
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
         // ids are present, filter on them first
         if (this.ids != null && this.ids.length > 0)
-            return this.iteratorList(this.getGraph(TinkerGraph.class).iterators().vertexIterator(this.ids));
+            return this.iteratorList(this.getGraph(TinkerGraph.class).vertices(this.ids));
         else
             return null == indexedContainer ?
-                    this.iteratorList(this.getGraph(TinkerGraph.class).iterators().vertexIterator()) :
+                    this.iteratorList(this.getGraph(TinkerGraph.class).vertices()) :
                     TinkerHelper.queryVertexIndex(this.getGraph(TinkerGraph.class), indexedContainer.key, indexedContainer.value).stream()
                             .filter(vertex -> HasContainer.testAll(vertex, this.hasContainers))
                             .collect(Collectors.<Vertex>toList()).iterator();

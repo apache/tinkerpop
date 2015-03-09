@@ -20,29 +20,29 @@ package org.apache.tinkerpop.gremlin.process.traversal.engine;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class ComputerTraversalEngine implements TraversalEngine {
 
-    public static final ComputerTraversalEngine computer = new ComputerTraversalEngine(EmptyGraph.instance());
-
     private final transient Graph graph;
+    private Class<? extends GraphComputer> graphComputerClass;
 
-    private ComputerTraversalEngine(final Graph graph) {
+    private ComputerTraversalEngine(final Graph graph, final Class<? extends GraphComputer> graphComputerClass) {
         this.graph = graph;
+        this.graphComputerClass = graphComputerClass;
     }
 
     @Override
     public void processTraversal(final Traversal.Admin<?, ?> traversal) {
         if (traversal.getParent() instanceof EmptyStep)
-            traversal.addStep(new ComputerResultStep<>(traversal, this.graph.compute(), true));
+            traversal.addStep(new ComputerResultStep<>(traversal, this.graph.compute(this.graphComputerClass), true));
     }
 
     @Override
@@ -51,12 +51,27 @@ public final class ComputerTraversalEngine implements TraversalEngine {
     }
 
     @Override
-    public ComputerTraversalEngine create(final Graph graph) {
-        return new ComputerTraversalEngine(graph);
-    }
-
-    @Override
     public String toString() {
         return StringFactory.traversalEngineString(this);
+    }
+
+    public static class Builder {
+
+        private Class<? extends GraphComputer> graphComputerClass;
+        private Graph graph;
+
+        public Builder computer(final Class<? extends GraphComputer> graphComputerClass) {
+            this.graphComputerClass = graphComputerClass;
+            return this;
+        }
+
+        public Builder graph(final Graph graph) {
+            this.graph = graph;
+            return this;
+        }
+
+        public ComputerTraversalEngine create() {
+            return new ComputerTraversalEngine(this.graph, this.graphComputerClass);
+        }
     }
 }

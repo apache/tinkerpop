@@ -247,7 +247,6 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         } catch (IllegalArgumentException e) {
             assertEquals(Memory.Exceptions.memoryDoesNotExist("BAD").getMessage(), e.getMessage());
         }
-        results.graph().engine(StandardTraversalEngine.standard); // TODO -- dah.
         assertEquals(Long.valueOf(6), results.graph().V().count().next());
 
         results.graph().V().forEachRemaining(v -> {

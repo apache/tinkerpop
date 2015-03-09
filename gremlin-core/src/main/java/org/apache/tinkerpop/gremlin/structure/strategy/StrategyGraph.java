@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.structure.strategy;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -46,7 +44,7 @@ import java.util.function.UnaryOperator;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, WrappedGraph<Graph> {
+public class StrategyGraph implements Graph, StrategyWrapped, WrappedGraph<Graph> {
     private final Graph baseGraph;
     private final GraphStrategy strategy;
     private final StrategyContext<StrategyGraph> graphContext;
@@ -118,29 +116,15 @@ public class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, W
                 this.baseGraph::E).apply(edgeIds)));*/
     }
 
-    @Override
-    public <T extends Traversal<S, S>, S> T of(final Class<T> traversalClass) {
-        return this.baseGraph.of(traversalClass);  // TODO: wrap the users traversal in StrategyWrappedTraversal
-    }
 
     @Override
-    public void compute(final Class<? extends GraphComputer> graphComputerClass) {
-        this.baseGraph.compute(graphComputerClass);
+    public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
+        return this.baseGraph.compute(graphComputerClass);
     }
 
     @Override
     public GraphComputer compute() {
         return this.baseGraph.compute();
-    }
-
-    @Override
-    public TraversalEngine engine() {
-        return this.baseGraph.engine();
-    }
-
-    @Override
-    public void engine(final TraversalEngine traversalEngine) {
-        this.baseGraph.engine(traversalEngine);
     }
 
     @Override
@@ -164,18 +148,13 @@ public class StrategyGraph implements Graph, Graph.Iterators, StrategyWrapped, W
     }
 
     @Override
-    public Iterators iterators() {
-        return this;
+    public Iterator<Vertex> vertices(final Object... vertexIds) {
+        return new StrategyVertex.StrategyVertexIterator(compose(s -> s.getGraphIteratorsVertexIteratorStrategy(this.graphContext, strategy), this.baseGraph::vertices).apply(vertexIds), this);
     }
 
     @Override
-    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
-        return new StrategyVertex.StrategyVertexIterator(compose(s -> s.getGraphIteratorsVertexIteratorStrategy(this.graphContext, strategy), this.baseGraph.iterators()::vertexIterator).apply(vertexIds), this);
-    }
-
-    @Override
-    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
-        return new StrategyEdge.StrategyEdgeIterator(compose(s -> s.getGraphIteratorsEdgeIteratorStrategy(this.graphContext, strategy), this.baseGraph.iterators()::edgeIterator).apply(edgeIds), this);
+    public Iterator<Edge> edges(final Object... edgeIds) {
+        return new StrategyEdge.StrategyEdgeIterator(compose(s -> s.getGraphIteratorsEdgeIteratorStrategy(this.graphContext, strategy), this.baseGraph::edges).apply(edgeIds), this);
     }
 
     @Override

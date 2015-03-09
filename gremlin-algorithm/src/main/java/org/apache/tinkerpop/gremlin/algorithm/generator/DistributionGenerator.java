@@ -118,7 +118,7 @@ public class DistributionGenerator extends AbstractGenerator {
         private Builder(final Graph g) {
             super(Builder.class);
             this.g = g;
-            final List<Vertex> allVertices = IteratorUtils.list(g.iterators().vertexIterator());
+            final List<Vertex> allVertices = IteratorUtils.list(g.vertices());
             this.out = allVertices;
             this.in = allVertices;
             this.expectedNumEdges = allVertices.size() * 2;

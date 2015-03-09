@@ -20,13 +20,12 @@ package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.T;
-import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalContext;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.io.DefaultIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
@@ -141,8 +140,7 @@ public interface Graph extends AutoCloseable {
      * @return a graph traversal over the vertices of the graph
      */
     public default GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.addStep(new GraphStep<>(traversal, this, Vertex.class, vertexIds));
+        return this.traversal().V(vertexIds);
     }
 
     /**
@@ -153,66 +151,45 @@ public interface Graph extends AutoCloseable {
      * @return a graph traversal over the edges of the graph
      */
     public default GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.addStep(new GraphStep<>(traversal, this, Edge.class, edgeIds));
+        return this.traversal().E(edgeIds);
     }
 
-    /**
-     * Constructs a new domain specific {@link Traversal} for this graph.
-     *
-     * @param traversalClass the domain specific {@link Traversal} bound to this graph
-     */
-    public default <T extends Traversal<S, S>, S> T of(final Class<T> traversalClass) {
-        try {
-            return (T) traversalClass.getMethod(Traversal.OF, Graph.class).invoke(null, this);
-        } catch (final Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
 
     /**
      * Declare the {@link GraphComputer} to use for OLAP operations on the graph.
      * If the graph does not support graph computer then an {@link java.lang.UnsupportedOperationException} is thrown.
      *
      * @param graphComputerClass The graph computer class to use.
+     * @return A graph computer for processing this graph
      * @throws IllegalArgumentException if the provided {@link GraphComputer} class is not supported.
      */
-    public void compute(final Class<? extends GraphComputer> graphComputerClass) throws IllegalArgumentException;
+    public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) throws IllegalArgumentException;
 
-    /**
-     * Create an OLAP {@link GraphComputer} to execute a vertex program over this graph.
-     * The {@link GraphComputer} to use is declared by {@link Graph#compute(Class)}.
-     * If the graph does not support graph computer then an {@link java.lang.UnsupportedOperationException} is thrown.
-     *
-     * @return A graph computer for processing this graph
-     */
-    public GraphComputer compute();
-
-    /**
-     * Get the declared {@link TraversalEngine} used by all {@link Traversal}s spawned from the graph or its elements.
-     *
-     * @return the current {@link TraversalEngine}
-     */
-    public TraversalEngine engine();
-
-    /**
-     * Set the {@link TraversalEngine} to use for all {@link Traversal}s spawned off the graph or its elements.
-     *
-     * @param traversalEngine the new traversal engine to use.
-     */
-    public void engine(final TraversalEngine traversalEngine);
+    public GraphComputer compute() throws IllegalArgumentException;
 
     public default <C extends TraversalContext> C traversal(final TraversalContext.Builder<C> contextBuilder) {
         return contextBuilder.create(this);
     }
 
-    public default Iterator<Vertex> vertices(final Object... vertexIds) {
-        return this.iterators().vertexIterator(vertexIds);
+    public default GraphTraversalContext traversal() {
+        return this.traversal(GraphTraversalContext.of().engine(StandardTraversalEngine.instance()));
     }
 
-    public default Iterator<Edge> edges(final Object... edgeIds) {
-        return this.iterators().edgeIterator(edgeIds);
-    }
+    /**
+     * Get the {@link Vertex} objects in this graph with the provided vertex ids. If no ids are provided, get all vertices.
+     *
+     * @param vertexIds the ids of the vertices to get
+     * @return an {@link Iterator} of vertices that match the provided vertex ids
+     */
+    public Iterator<Vertex> vertices(final Object... vertexIds);
+
+    /**
+     * Get the {@link Edge} objects in this graph with the provided edge ids. If no ids are provided, get all edges.
+     *
+     * @param edgeIds the ids of the edges to get
+     * @return an {@link Iterator} of edges that match the provided edge ids
+     */
+    public Iterator<Edge> edges(final Object... edgeIds);
 
     /**
      * Configure and control the transactions for those graphs that support this feature.
@@ -254,35 +231,6 @@ public interface Graph extends AutoCloseable {
      * @return the configuration used during graph construction.
      */
     public Configuration configuration();
-
-    /**
-     * Get the {@link Graph.Iterators} associated with this graph.
-     *
-     * @return the graph iterators of this graph
-     */
-    public Iterators iterators();
-
-    /**
-     * An interface that provides access to iterators over {@link Vertex} objects and {@link Edge} objects of the graph
-     * without constructing a {@link org.apache.tinkerpop.gremlin.process.Traversal} object.
-     */
-    public interface Iterators {
-        /**
-         * Get the {@link Vertex} objects in this graph with the provided vertex ids. If no ids are provided, get all vertices.
-         *
-         * @param vertexIds the ids of the vertices to get
-         * @return an {@link Iterator} of vertices that match the provided vertex ids
-         */
-        public Iterator<Vertex> vertexIterator(final Object... vertexIds);
-
-        /**
-         * Get the {@link Edge} objects in this graph with the provided edge ids. If no ids are provided, get all edges.
-         *
-         * @param edgeIds the ids of the edges to get
-         * @return an {@link Iterator} of edges that match the provided edge ids
-         */
-        public Iterator<Edge> edgeIterator(final Object... edgeIds);
-    }
 
     /**
      * Provides access to functions related to reading and writing graph data.  Implementers can override these

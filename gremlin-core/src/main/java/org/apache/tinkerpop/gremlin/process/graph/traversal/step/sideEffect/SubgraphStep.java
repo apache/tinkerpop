@@ -101,7 +101,7 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
     ///
 
     private static Vertex getOrCreate(final Graph subgraph, final Vertex vertex) {
-        final Iterator<Vertex> vertexIterator = subgraph.iterators().vertexIterator(vertex.id());
+        final Iterator<Vertex> vertexIterator = subgraph.vertices(vertex.id());
         if (vertexIterator.hasNext()) return vertexIterator.next();
         final Vertex subgraphVertex = subgraph.addVertex(T.id, vertex.id(), T.label, vertex.label());
         vertex.iterators().propertyIterator().forEachRemaining(vertexProperty -> {
@@ -112,7 +112,7 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
     }
 
     private static void addEdgeToSubgraph(final Graph subgraph, final Edge edge) {
-        final Iterator<Edge> edgeIterator = subgraph.iterators().edgeIterator(edge.id());
+        final Iterator<Edge> edgeIterator = subgraph.edges(edge.id());
         if (edgeIterator.hasNext()) return;
         final Iterator<Vertex> vertexIterator = edge.iterators().vertexIterator(Direction.BOTH);
         final Vertex subGraphOutVertex = getOrCreate(subgraph, vertexIterator.next());

@@ -81,7 +81,7 @@ public final class ElementHelper {
      * @return a pre-existing vertex or a newly created vertex
      */
     public static Vertex getOrAddVertex(final Graph graph, final Object id, final String label) {
-        final Iterator<Vertex> iterator = graph.iterators().vertexIterator(id);
+        final Iterator<Vertex> iterator = graph.vertices(id);
         return iterator.hasNext() ? iterator.next() : graph.addVertex(T.id, id, T.label, label);
     }
 

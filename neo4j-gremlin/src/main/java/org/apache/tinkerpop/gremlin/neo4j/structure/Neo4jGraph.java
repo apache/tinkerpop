@@ -24,13 +24,11 @@ import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.neo4j.process.graph.traversal.step.sideEffect.Neo4jGraphStep;
 import org.apache.tinkerpop.gremlin.neo4j.process.graph.traversal.step.util.Neo4jCypherIterator;
 import org.apache.tinkerpop.gremlin.neo4j.process.graph.traversal.strategy.Neo4jGraphStepStrategy;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -72,7 +70,7 @@ import java.util.stream.Stream;
         method = "shouldThrowExceptionIfVertexWasRemovedWhenCallingProperty",
         specific = "property(single,k,v)",
         reason = "Neo4j throws a NodeNotFoundException instead of the desired IllegalStateException")
-public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDatabaseService> {
+public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
     static {
         try {
@@ -248,25 +246,13 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     }
 
     @Override
-    public void compute(final Class<? extends GraphComputer> graphComputerClass) {
+    public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
         throw Graph.Exceptions.graphComputerNotSupported();
     }
 
     @Override
     public GraphComputer compute() {
         throw Graph.Exceptions.graphComputerNotSupported();
-    }
-
-
-    @Override
-    public TraversalEngine engine() {
-        return StandardTraversalEngine.standard;
-    }
-
-    @Override
-    public void engine(final TraversalEngine traversalEngine) {
-        if (!traversalEngine.getClass().equals(StandardTraversalEngine.class))
-            throw Graph.Exceptions.traversalEngineNotSupported(traversalEngine);
     }
 
     @Override
@@ -285,12 +271,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     }
 
     @Override
-    public Iterators iterators() {
-        return this;
-    }
-
-    @Override
-    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+    public Iterator<Vertex> vertices(final Object... vertexIds) {
         this.tx().readWrite();
         if (0 == vertexIds.length) {
             return StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllNodes())
@@ -311,7 +292,7 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+    public Iterator<Edge> edges(final Object... edgeIds) {
         this.tx().readWrite();
         if (0 == edgeIds.length) {
             return StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllRelationships())

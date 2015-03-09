@@ -76,7 +76,7 @@ public class GraphReadPerformanceTest {
                     .seedGenerator(r::nextLong)
                     .outDistribution(outDist)
                     .inDistribution(inDist)
-                    .edgeProcessor(e -> e.property("weight", r.nextDouble()))
+                    .edgeProcessor(e -> e.<Double>property("weight", r.nextDouble()))
                     .expectedNumEdges(numVertices * 3).create();
             edgeCount = generator.generate();
         }
@@ -88,7 +88,7 @@ public class GraphReadPerformanceTest {
 
             // read the vertices 10 times over
             for (int ix = 0; ix < 10; ix++) {
-                g.iterators().vertexIterator().forEachRemaining(vertex -> {
+                g.vertices().forEachRemaining(vertex -> {
                     assertNotNull(vertex.value("name"));
                     counter.incrementAndGet();
                 });
@@ -105,7 +105,7 @@ public class GraphReadPerformanceTest {
 
             // read the vertices 10 times over
             for (int ix = 0; ix < 10; ix++) {
-                g.iterators().edgeIterator().forEachRemaining(edge -> {
+                g.edges().forEachRemaining(edge -> {
                     assertNotNull(edge.value("weight"));
                     counter.incrementAndGet();
                 });

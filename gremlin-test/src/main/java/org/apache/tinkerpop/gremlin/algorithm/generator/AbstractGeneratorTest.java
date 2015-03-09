@@ -38,7 +38,7 @@ public class AbstractGeneratorTest extends AbstractGremlinTest {
      * attach to the same IN/OUT vertices given their "oid" properties.
      */
     protected boolean same(final Graph g1, final Graph g2) {
-        return StreamFactory.stream(g1.iterators().vertexIterator())
+        return StreamFactory.stream(g1.vertices())
                 .map(v -> Triplet.<Integer, List<Vertex>, List<Vertex>>with(v.value("oid"), v.in().toList(), v.out().toList()))
                 .allMatch(p -> {
                     final Vertex v = (Vertex) g2.V().has("oid", p.getValue0()).next();

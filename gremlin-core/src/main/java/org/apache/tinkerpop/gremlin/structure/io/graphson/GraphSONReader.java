@@ -77,7 +77,7 @@ public class GraphSONReader implements GraphReader {
 
     @Override
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
-        final BatchGraph graph;
+        final BatchGraph<?> graph;
         try {
             // will throw an exception if not constructed properly
             graph = BatchGraph.build(graphToWriteTo)
@@ -106,7 +106,7 @@ public class GraphSONReader implements GraphReader {
                     while (parser.nextToken() != JsonToken.END_ARRAY) {
                         final Map<String, Object> vertexData = parser.readValueAs(mapTypeReference);
                         readVertexData(vertexData, detachedVertex -> {
-                            final Iterator<Vertex> iterator = graph.iterators().vertexIterator(detachedVertex.id());
+                            final Iterator<Vertex> iterator = graph.vertices(detachedVertex.id());
                             final Vertex v = iterator.hasNext() ? iterator.next() : graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id());
                             detachedVertex.iterators().propertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
                             return v;
@@ -116,8 +116,8 @@ public class GraphSONReader implements GraphReader {
                     while (parser.nextToken() != JsonToken.END_ARRAY) {
                         final Map<String, Object> edgeData = parser.readValueAs(mapTypeReference);
                         readEdgeData(edgeData, detachedEdge -> {
-                            final Vertex vOut = graph.iterators().vertexIterator(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()).next();
-                            final Vertex vIn = graph.iterators().vertexIterator(detachedEdge.iterators().vertexIterator(Direction.IN).next().id()).next();
+                            final Vertex vOut = graph.vertices(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()).next();
+                            final Vertex vIn = graph.vertices(detachedEdge.iterators().vertexIterator(Direction.IN).next().id()).next();
                             // batchgraph checks for edge id support and uses it if possible.
                             final Edge e = vOut.addEdge(edgeData.get(GraphSONTokens.LABEL).toString(), vIn, T.id, detachedEdge.id());
                             detachedEdge.iterators().propertyIterator().forEachRemaining(p -> e.<Object>property(p.key(), p.value()));

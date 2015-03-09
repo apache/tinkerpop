@@ -23,9 +23,7 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
-import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -41,7 +39,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldExecutePageRank() throws Exception {
         final ComputerResult result = g.compute().program(PageRankVertexProgram.build().create()).submit().get();
-        result.graph().engine(StandardTraversalEngine.standard);
+        //result.graph().engine(StandardTraversalEngine.standard);
         result.graph().V().forEachRemaining(v -> {
             assertTrue(v.keys().contains("name"));
             assertFalse(v.keys().contains(PageRankVertexProgram.PAGE_RANK));

@@ -91,7 +91,7 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
 
     public void populateTraversers(final ComputerResult result) {
         this.graph = result.graph();
-        this.graph.engine(StandardTraversalEngine.standard);
+        //this.graph.engine(StandardTraversalEngine.standard);
         result.memory().keys().forEach(key -> this.getTraversal().getSideEffects().set(key, result.memory().get(key)));
         final Step endStep = this.getPreviousStep();
         if (endStep instanceof SideEffectCapStep) {

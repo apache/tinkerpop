@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerDataStrategyTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.BranchTest;
@@ -62,14 +61,13 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AggregateTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupCountTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupTest;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.InjectTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.ProfileTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SackTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SideEffectCapTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StoreTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.TreeTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -198,15 +196,15 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
     }
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToExecute, false, ComputerTraversalEngine.computer);
+        super(klass, builder, testsToExecute, testsToExecute, false, StandardTraversalEngine.instance());
     }
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce, false, ComputerTraversalEngine.computer);
+        super(klass, builder, testsToExecute, testsToEnforce, false, StandardTraversalEngine.instance());
     }
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, ComputerTraversalEngine.computer);
+        super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, StandardTraversalEngine.instance());
     }
 
     @Override

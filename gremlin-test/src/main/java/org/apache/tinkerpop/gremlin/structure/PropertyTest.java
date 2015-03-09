@@ -70,7 +70,7 @@ public class PropertyTest {
         public void shouldReturnEmptyPropertyIfKeyNonExistent() {
             final Vertex v = g.addVertex("name", "marko");
             tryCommit(g, (graph) -> {
-                final Vertex v1 = g.iterators().vertexIterator(v.id()).next();
+                final Vertex v1 = g.vertices(v.id()).next();
                 final VertexProperty p = v1.property("nonexistent-key");
                 assertEquals(VertexProperty.empty(), p);
             });
@@ -82,7 +82,7 @@ public class PropertyTest {
         public void shouldAllowRemovalFromVertexWhenAlreadyRemoved() {
             final Vertex v = g.addVertex("name", "marko");
             tryCommit(g);
-            final Vertex v1 = g.iterators().vertexIterator(v.id()).next();
+            final Vertex v1 = g.vertices(v.id()).next();
             try {
                 final Property p = v1.property("name");
                 p.remove();
@@ -101,7 +101,7 @@ public class PropertyTest {
         public void shouldAllowRemovalFromEdgeWhenAlreadyRemoved() {
             final Vertex v = g.addVertex("name", "marko");
             tryCommit(g);
-            final Vertex v1 = g.iterators().vertexIterator(v.id()).next();
+            final Vertex v1 = g.vertices(v.id()).next();
 
             try {
                 final Edge edge = v1.addEdge("knows", g.addVertex());

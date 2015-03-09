@@ -61,7 +61,7 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE)
-public class TinkerGraph implements Graph, Graph.Iterators {
+public class TinkerGraph implements Graph {
 
     static {
         try {
@@ -148,26 +148,16 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public void compute(final Class<? extends GraphComputer> graphComputerClass) {
+    public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
         if (!graphComputerClass.equals(TinkerGraphComputer.class))
             throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+        return (C) new TinkerGraphComputer(this);
     }
 
     @Override
     public GraphComputer compute() {
         return new TinkerGraphComputer(this);
     }
-
-    @Override
-    public TraversalEngine engine() {
-        return this.engine;
-    }
-
-    @Override
-    public void engine(final TraversalEngine traversalEngine) {
-        this.engine = traversalEngine;
-    }
-
 
     @Override
     public Variables variables() {
@@ -204,12 +194,7 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public Iterators iterators() {
-        return this;
-    }
-
-    @Override
-    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+    public Iterator<Vertex> vertices(final Object... vertexIds) {
         if (0 == vertexIds.length) {
             return this.vertices.values().iterator();
         } else if (1 == vertexIds.length) {
@@ -220,7 +205,7 @@ public class TinkerGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+    public Iterator<Edge> edges(final Object... edgeIds) {
         if (0 == edgeIds.length) {
             return this.edges.values().iterator();
         } else if (1 == edgeIds.length) {

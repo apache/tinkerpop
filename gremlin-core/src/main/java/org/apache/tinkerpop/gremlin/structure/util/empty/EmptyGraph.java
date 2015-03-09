@@ -19,13 +19,9 @@
 package org.apache.tinkerpop.gremlin.structure.util.empty;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.util.EmptyGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -37,7 +33,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EmptyGraph implements Graph, Graph.Iterators {
+public final class EmptyGraph implements Graph {
 
     private static final String MESSAGE = "The graph is immutable and empty";
     private static final EmptyGraph INSTANCE = new EmptyGraph();
@@ -61,43 +57,28 @@ public final class EmptyGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public <T extends Traversal<S, S>, S> T of(final Class<T> traversal) {
-        return (T) EmptyTraversal.instance();
+    public Vertex addVertex(final Object... keyValues) {
+        throw Exceptions.vertexAdditionsNotSupported();
     }
 
     @Override
-    public Vertex addVertex(Object... keyValues) {
-        throw new IllegalStateException(MESSAGE);
-    }
-
-    @Override
-    public void compute(final Class<? extends GraphComputer> graphComputerClass) {
-
+    public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
+        throw Exceptions.graphComputerNotSupported();
     }
 
     @Override
     public GraphComputer compute() {
-        throw new IllegalStateException(MESSAGE);
-    }
-
-    @Override
-    public TraversalEngine engine() {
-        return StandardTraversalEngine.standard;
-    }
-
-    @Override
-    public void engine(final TraversalEngine traversalEngine) {
-
+        throw Exceptions.graphComputerNotSupported();
     }
 
     @Override
     public Transaction tx() {
-        throw new IllegalStateException(MESSAGE);
+        throw Exceptions.transactionsNotSupported();
     }
 
     @Override
     public Variables variables() {
-        throw new IllegalStateException(MESSAGE);
+        throw Exceptions.variablesNotSupported();
     }
 
     @Override
@@ -111,17 +92,12 @@ public final class EmptyGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public Iterators iterators() {
-        return this;
-    }
-
-    @Override
-    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+    public Iterator<Vertex> vertices(final Object... vertexIds) {
         return Collections.emptyIterator();
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+    public Iterator<Edge> edges(final Object... edgeIds) {
         return Collections.emptyIterator();
     }
 }

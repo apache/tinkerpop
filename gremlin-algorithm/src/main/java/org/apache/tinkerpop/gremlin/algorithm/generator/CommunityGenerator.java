@@ -173,7 +173,7 @@ public class CommunityGenerator extends AbstractGenerator {
         private Builder(final Graph g) {
             super(Builder.class);
             this.g = g;
-            final List<Vertex> allVertices = IteratorUtils.list(g.iterators().vertexIterator());
+            final List<Vertex> allVertices = IteratorUtils.list(g.vertices());
             this.vertices = allVertices;
             this.expectedNumEdges = allVertices.size() * 2;
         }

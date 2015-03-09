@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -51,6 +52,13 @@ public class GraphTraversalContext implements TraversalContext {
         traversal.setEngine(this.engine);
         traversal.setStrategies(this.strategies);
         return traversal.addStep(new GraphStep<>(traversal, this.graph, Vertex.class, vertexIds));
+    }
+
+    public GraphTraversal<Edge, Edge> E(final Object... edgesIds) {
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
+        traversal.setEngine(this.engine);
+        traversal.setStrategies(this.strategies);
+        return traversal.addStep(new GraphStep<>(traversal, this.graph, Edge.class, edgesIds));
     }
 
     public Transaction tx() {

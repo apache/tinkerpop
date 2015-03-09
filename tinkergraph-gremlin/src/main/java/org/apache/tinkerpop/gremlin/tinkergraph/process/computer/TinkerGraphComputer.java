@@ -105,7 +105,7 @@ public class TinkerGraphComputer implements GraphComputer {
                     this.memory.completeSubRound();
                     while (true) {
                         workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationStart(this.memory.asImmutable()), vertexProgram);
-                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.iterators().vertexIterator());
+                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.vertices());
                         workers.executeVertexProgram(vertexProgram -> {
                             while (true) {
                                 final Vertex vertex = vertices.next();
@@ -131,7 +131,7 @@ public class TinkerGraphComputer implements GraphComputer {
                 for (final MapReduce mapReduce : mapReducers) {
                     if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                         final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
-                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.iterators().vertexIterator());
+                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.vertices());
                         workers.executeMapReduce(workerMapReduce -> {
                             while (true) {
                                 final Vertex vertex = vertices.next();

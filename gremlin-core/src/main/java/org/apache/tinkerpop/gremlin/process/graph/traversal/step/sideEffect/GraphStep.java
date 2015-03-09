@@ -50,8 +50,8 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
         this.returnClass = returnClass;
         this.ids = ids;
         this.iteratorSupplier = () -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ?
-                this.graph.iterators().<S>vertexIterator(this.ids) :
-                this.graph.iterators().edgeIterator(this.ids));
+                this.graph.vertices(this.ids) :
+                this.graph.edges(this.ids));
     }
 
     public String toString() {

@@ -144,7 +144,7 @@ public final class SparkVertex implements Vertex, Vertex.Iterators, Serializable
             GRYO_READER.readGraph(bis, tinkerGraph);
             bis.close();
             this.vertexBytes = null;
-            this.vertex = (TinkerVertex) tinkerGraph.iterators().vertexIterator(this.vertexId).next();
+            this.vertex = (TinkerVertex) tinkerGraph.vertices(this.vertexId).next();
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

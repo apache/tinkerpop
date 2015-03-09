@@ -168,13 +168,13 @@ public class CommunityGeneratorTest {
                             .create();
                     final int numEdges = generator.generate();
                     assertTrue(numEdges > 0);
-                    tryCommit(graph, g -> assertEquals(new Long(numEdges), new Long(IteratorUtils.count(g.iterators().edgeIterator()))));
+                    tryCommit(graph, g -> assertEquals(new Long(numEdges), new Long(IteratorUtils.count(g.edges()))));
                     generated = true;
                 } catch (IllegalArgumentException iae) {
                     localCrossPcent = localCrossPcent - 0.005d;
                     generated = localCrossPcent < 0d;
 
-                    graph.iterators().vertexIterator().forEachRemaining(Vertex::remove);
+                    graph.vertices().forEachRemaining(Vertex::remove);
                     tryCommit(graph);
                     afterLoadGraphWith(graph);
 
@@ -208,10 +208,10 @@ public class CommunityGeneratorTest {
             final long edgesGenerated = generator.generate();
             assertTrue(edgesGenerated > 0);
             tryCommit(g, g -> {
-                assertEquals(new Long(edgesGenerated), new Long(IteratorUtils.count(g.iterators().edgeIterator())));
-                assertTrue(IteratorUtils.count(g.iterators().vertexIterator()) > 0);
-                assertTrue(StreamFactory.stream(g.iterators().edgeIterator()).allMatch(e -> e.value("data").equals("test")));
-                assertTrue(StreamFactory.stream(g.iterators().vertexIterator()).allMatch(
+                assertEquals(new Long(edgesGenerated), new Long(IteratorUtils.count(g.edges())));
+                assertTrue(IteratorUtils.count(g.vertices()) > 0);
+                assertTrue(StreamFactory.stream(g.edges()).allMatch(e -> e.value("data").equals("test")));
+                assertTrue(StreamFactory.stream(g.vertices()).allMatch(
                         v -> v.value("test").equals("data") && v.property("communityIndex").isPresent()
                 ));
             });

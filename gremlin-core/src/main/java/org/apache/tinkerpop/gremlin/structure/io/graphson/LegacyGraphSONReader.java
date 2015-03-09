@@ -62,7 +62,7 @@ public class LegacyGraphSONReader implements GraphReader {
 
     @Override
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
-        final BatchGraph graph;
+        final BatchGraph<?> graph;
         try {
             // will throw an exception if not constructed properly
             graph = BatchGraph.build(graphToWriteTo)
@@ -98,8 +98,8 @@ public class LegacyGraphSONReader implements GraphReader {
                         parser.nextToken();
                         while (parser.nextToken() != JsonToken.END_ARRAY) {
                             final JsonNode node = parser.readValueAsTree();
-                            final Vertex inV = graph.iterators().vertexIterator(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._IN_V))).next();
-                            final Vertex outV = graph.iterators().vertexIterator(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._OUT_V))).next();
+                            final Vertex inV = graph.vertices(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._IN_V))).next();
+                            final Vertex outV = graph.vertices(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._OUT_V))).next();
                             GraphSONUtility.edgeFromJson(node, outV, inV);
                         }
                         break;

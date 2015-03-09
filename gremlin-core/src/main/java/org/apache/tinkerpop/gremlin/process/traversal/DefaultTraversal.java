@@ -28,8 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEn
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,12 +55,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     public DefaultTraversal(final Object emanatingObject) {
         this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(emanatingObject.getClass()));
-        if (emanatingObject instanceof Graph)
-            this.traversalEngine = ((Graph) emanatingObject).engine().create((Graph) emanatingObject);
-        else if (emanatingObject instanceof Element)
-            this.traversalEngine = ((Element) emanatingObject).graph().engine().create(((Element) emanatingObject).graph());
-        else
-            this.traversalEngine = StandardTraversalEngine.standard;
+        this.traversalEngine = StandardTraversalEngine.instance(); // TODO: remove and then clean up v.outE
     }
 
     @Override

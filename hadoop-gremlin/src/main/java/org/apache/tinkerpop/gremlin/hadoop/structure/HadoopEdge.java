@@ -53,12 +53,12 @@ public class HadoopEdge extends HadoopElement implements Edge, Edge.Iterators, W
     public Iterator<Vertex> vertexIterator(final Direction direction) {
         switch (direction) {
             case OUT:
-                return IteratorUtils.of(this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id())).next();
+                return IteratorUtils.of(this.graph.vertices(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id())).next();
             case IN:
-                return IteratorUtils.of(this.graph.iterators().vertexIterator(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id())).next();
+                return IteratorUtils.of(this.graph.vertices(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id())).next();
             default: {
                 final Iterator<Vertex> iterator = getBaseEdge().iterators().vertexIterator(Direction.BOTH);
-                return IteratorUtils.of(this.graph.iterators().vertexIterator(iterator.next().id()).next(), this.graph.iterators().vertexIterator(iterator.next().id()).next());
+                return IteratorUtils.of(this.graph.vertices(iterator.next().id()).next(), this.graph.vertices(iterator.next().id()).next());
             }
         }
     }

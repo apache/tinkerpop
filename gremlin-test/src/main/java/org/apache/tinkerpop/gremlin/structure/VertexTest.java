@@ -143,7 +143,7 @@ public class VertexTest {
         @Test(expected = NoSuchElementException.class)
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldThrowNoSuchElementExceptionIfVertexWithIdNotPresentViaIterators() {
-            g.iterators().vertexIterator("this-id-should-not-be-in-the-modern-graph").next();
+            g.vertices("this-id-should-not-be-in-the-modern-graph").next();
         }
 
         @Test
@@ -263,7 +263,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldEvaluateVerticesEquivalentWithSuppliedIdsViaIterators() {
             final Vertex v = g.addVertex(T.id, GraphManager.getGraphProvider().convertId("1"));
-            final Vertex u = g.iterators().vertexIterator(GraphManager.getGraphProvider().convertId("1")).next();
+            final Vertex u = g.vertices(GraphManager.getGraphProvider().convertId("1")).next();
             assertEquals(v, u);
         }
 
@@ -273,13 +273,13 @@ public class VertexTest {
             final Vertex v = g.addVertex();
             assertNotNull(v);
 
-            final Vertex u = g.iterators().vertexIterator(v.id()).next();
+            final Vertex u = g.vertices(v.id()).next();
             assertNotNull(u);
             assertEquals(v, u);
 
-            assertEquals(g.iterators().vertexIterator(u.id()).next(), g.iterators().vertexIterator(u.id()).next());
-            assertEquals(g.iterators().vertexIterator(v.id()).next(), g.iterators().vertexIterator(u.id()).next());
-            assertEquals(g.iterators().vertexIterator(v.id()).next(), g.iterators().vertexIterator(v.id()).next());
+            assertEquals(g.vertices(u.id()).next(), g.vertices(u.id()).next());
+            assertEquals(g.vertices(v.id()).next(), g.vertices(u.id()).next());
+            assertEquals(g.vertices(v.id()).next(), g.vertices(v.id()).next());
         }
 
         @Test
@@ -287,7 +287,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
             final Vertex v = g.addVertex(T.id, GraphManager.getGraphProvider().convertId("1"));
-            final Vertex u = g.iterators().vertexIterator(GraphManager.getGraphProvider().convertId("1")).next();
+            final Vertex u = g.vertices(GraphManager.getGraphProvider().convertId("1")).next();
             assertEquals(v, u);
 
             final Set<Vertex> set = new HashSet<>();
@@ -295,8 +295,8 @@ public class VertexTest {
             set.add(v);
             set.add(u);
             set.add(u);
-            set.add(g.iterators().vertexIterator(GraphManager.getGraphProvider().convertId("1")).next());
-            set.add(g.iterators().vertexIterator(GraphManager.getGraphProvider().convertId("1")).next());
+            set.add(g.vertices(GraphManager.getGraphProvider().convertId("1")).next());
+            set.add(g.vertices(GraphManager.getGraphProvider().convertId("1")).next());
 
             assertEquals(1, set.size());
             assertEquals(v.hashCode(), u.hashCode());
@@ -413,12 +413,12 @@ public class VertexTest {
             for (int i = 0; i < 25; i++) {
                 g.addVertex("myId", i);
             }
-            g.V().forEachRemaining(v -> g.iterators().vertexIterator().forEachRemaining(u -> v.addEdge("knows", u, "myEdgeId", 12)));
+            g.V().forEachRemaining(v -> g.vertices().forEachRemaining(u -> v.addEdge("knows", u, "myEdgeId", 12)));
 
             tryCommit(g, assertVertexEdgeCounts(25, 625));
 
             final List<Vertex> vertices = new ArrayList<>();
-            IteratorUtils.fill(g.iterators().vertexIterator(), vertices);
+            IteratorUtils.fill(g.vertices(), vertices);
             for (Vertex v : vertices) {
                 v.remove();
                 tryCommit(g);
