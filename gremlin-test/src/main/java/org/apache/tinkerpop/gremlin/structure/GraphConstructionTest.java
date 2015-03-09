@@ -41,7 +41,7 @@ public class GraphConstructionTest extends AbstractGremlinTest {
      */
     @Test
     public void shouldOpenGraphThroughGraphFactoryViaApacheConfig() throws Exception {
-        final Graph expectedGraph = g;
+        final Graph expectedGraph = graph;
         final Configuration c = graphProvider.newGraphConfiguration("temp1", this.getClass(), name.getMethodName());
         final Graph createdGraph = GraphFactory.open(c);
 
@@ -56,7 +56,7 @@ public class GraphConstructionTest extends AbstractGremlinTest {
      */
     @Test
     public void shouldConstructAnEmptyGraph() {
-        assertVertexEdgeCounts(0, 0).accept(g);
+        assertVertexEdgeCounts(0, 0).accept(graph);
     }
 
     /**

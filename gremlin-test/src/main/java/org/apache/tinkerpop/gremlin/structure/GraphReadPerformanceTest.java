@@ -88,7 +88,7 @@ public class GraphReadPerformanceTest {
 
             // read the vertices 10 times over
             for (int ix = 0; ix < 10; ix++) {
-                g.vertices().forEachRemaining(vertex -> {
+                graph.vertices().forEachRemaining(vertex -> {
                     assertNotNull(vertex.value("name"));
                     counter.incrementAndGet();
                 });
@@ -105,7 +105,7 @@ public class GraphReadPerformanceTest {
 
             // read the vertices 10 times over
             for (int ix = 0; ix < 10; ix++) {
-                g.edges().forEachRemaining(edge -> {
+                graph.edges().forEachRemaining(edge -> {
                     assertNotNull(edge.value("weight"));
                     counter.incrementAndGet();
                 });

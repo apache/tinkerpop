@@ -131,7 +131,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldNotAllowBadGraphComputers() {
         try {
-            g.compute(BadGraphComputer.class);
+            graph.compute(BadGraphComputer.class);
             fail("Providing a bad graph computer class should fail");
         } catch (Exception ex) {
             validateException(Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(BadGraphComputer.class), ex);
@@ -247,9 +247,9 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         } catch (IllegalArgumentException e) {
             assertEquals(Memory.Exceptions.memoryDoesNotExist("BAD").getMessage(), e.getMessage());
         }
-        assertEquals(Long.valueOf(6), results.graph().V().count().next());
+        assertEquals(Long.valueOf(6), results.graph().traversal().V().count().next());
 
-        results.graph().V().forEachRemaining(v -> {
+        results.graph().traversal().V().forEachRemaining(v -> {
             assertTrue(v.property("nameLengthCounter").isPresent());
             assertEquals(Integer.valueOf(v.<String>value("name").length() * 2), Integer.valueOf(v.<Integer>value("nameLengthCounter")));
         });
@@ -320,39 +320,39 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
     public static class ComputerTest extends GraphComputerTest {
         @Override
         public GraphComputer get_g_compute() {
-            return g.compute();
+            return graph.compute();
         }
 
         @Override
         public GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX() {
-            return g.compute().program(LambdaVertexProgram.build().create());
+            return graph.compute().program(LambdaVertexProgram.build().create());
         }
 
         @Override
         public GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysXset_incr_and_orX() {
-            return g.compute().program(LambdaVertexProgram.build().memoryComputeKeys("set", "incr", "and", "or").create());
+            return graph.compute().program(LambdaVertexProgram.build().memoryComputeKeys("set", "incr", "and", "or").create());
         }
 
         @Override
         public GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysXnullX() {
-            return g.compute().program(LambdaVertexProgram.build().memoryComputeKeys(new HashSet<String>() {{
+            return graph.compute().program(LambdaVertexProgram.build().memoryComputeKeys(new HashSet<String>() {{
                 add(null);
             }}).create());
         }
 
         @Override
         public GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysX_X() {
-            return g.compute().program(LambdaVertexProgram.build().memoryComputeKeys("").create());
+            return graph.compute().program(LambdaVertexProgram.build().memoryComputeKeys("").create());
         }
 
         @Override
         public GraphComputer get_g_compute_setupXsetXa_trueXX_executeXX_terminateXtrueX() {
-            return g.compute().program(LambdaVertexProgram.build().setup(m -> m.set("a", true)).create());
+            return graph.compute().program(LambdaVertexProgram.build().setup(m -> m.set("a", true)).create());
         }
 
         @Override
         public GraphComputer get_g_compute_setupXX_executeXv_blah_m_incrX_terminateX1X_elementKeysXnameLengthCounterX_memoryKeysXa_bX() {
-            return g.compute().program(LambdaVertexProgram.build().
+            return graph.compute().program(LambdaVertexProgram.build().
                     setup(memory -> {
                     }).
                     execute((vertex, messenger, memory) -> {
@@ -381,7 +381,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public GraphComputer get_g_compute_setupXabcdeX_executeXtestMemoryX_terminateXtestMemoryXmemoryKeysXabcdeX() {
-            return g.compute().program(LambdaVertexProgram.build().
+            return graph.compute().program(LambdaVertexProgram.build().
                     setup(memory -> {
                         memory.set("a", 0l);
                         memory.set("b", 0l);
@@ -436,7 +436,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public GraphComputer get_g_compute_mapXageX_reduceXsumX_memoryXnextX_memoryKeyXageSumX() {
-            return g.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
+            return graph.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
                     .map((v, e) -> v.<Integer>property("age").ifPresent(age -> e.emit(MapReduce.NullObject.instance(), age)))
                     .reduce((k, vv, e) -> e.emit(StreamFactory.stream(vv).mapToInt(i -> i).sum()))
                     .memory(i -> i.next().getValue())
@@ -445,7 +445,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public GraphComputer get_g_compute_executeXcounterX_terminateX8X_mapreduceXcounter_aX_mapreduceXcounter_bX() {
-            return g.compute().program(LambdaVertexProgram.build()
+            return graph.compute().program(LambdaVertexProgram.build()
                     .execute((vertex, messenger, memory) -> {
                         vertex.property(VertexProperty.Cardinality.single, "counter", memory.isInitialIteration() ? 1 : vertex.<Integer>value("counter") + 1);
                     })
@@ -474,7 +474,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public GraphComputer get_g_compute_mapXidX_reduceXidX_reduceKeySortXreverseX_memoryKeyXidsX() {
-            return g.compute().mapReduce(LambdaMapReduce.<Long, Long, Long, Long, List<Long>>build()
+            return graph.compute().mapReduce(LambdaMapReduce.<Long, Long, Long, Long, List<Long>>build()
                     .map((vertex, emitter) -> emitter.emit(Long.valueOf(vertex.id().toString()), Long.valueOf(vertex.id().toString())))
                     .reduce((key, values, emitter) -> values.forEachRemaining(id -> emitter.emit(id, id)))
                     .memoryKey("ids")
@@ -489,7 +489,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public GraphComputer get_g_compute_programXTraversalVertexProgram_build_traversalXg_V_both_hasXlabel_personX_age_groupCountXaXX_create() {
-            return g.compute().program(TraversalVertexProgram.build().
+            return graph.compute().program(TraversalVertexProgram.build().
                     // TODO: need to set the engine to be computer
                             traversal("GraphFactory.open(['gremlin.graph':'" + g.getClass().getCanonicalName() + "']).V().both().has(label,'person').values('age').groupCount('a')").
                     create());
