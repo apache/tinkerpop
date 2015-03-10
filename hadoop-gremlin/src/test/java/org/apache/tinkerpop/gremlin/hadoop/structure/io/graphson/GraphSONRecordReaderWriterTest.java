@@ -18,10 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson;
 
-import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
@@ -32,6 +28,12 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -85,8 +87,8 @@ public class GraphSONRecordReaderWriterTest {
                 Object value = vertex.property("name");
                 if (null != value && ((Property) value).value().equals("SUGAR MAGNOLIA")) {
                     foundKeyValue = true;
-                    assertEquals(92, count(vertex.outE().toList()));
-                    assertEquals(77, count(vertex.inE().toList()));
+                    assertEquals(92, IteratorUtils.count(vertex.edges(Direction.OUT)));
+                    assertEquals(77, IteratorUtils.count(vertex.edges(Direction.IN)));
                 }
 
                 lastProgress = progress;
@@ -102,15 +104,6 @@ public class GraphSONRecordReaderWriterTest {
         assertTrue(line42.contains("outVLabel"));
         assertTrue(line42.contains("ITS ALL OVER NOW"));
 
-    }
-
-    private <T> long count(final Iterable<T> iter) {
-        long count = 0;
-        for (T anIter : iter) {
-            count++;
-        }
-
-        return count;
     }
 }
 

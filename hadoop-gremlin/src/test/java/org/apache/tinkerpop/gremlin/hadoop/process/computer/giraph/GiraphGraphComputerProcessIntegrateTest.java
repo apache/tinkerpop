@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
-import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
 import org.junit.runner.RunWith;
@@ -27,6 +26,6 @@ import org.junit.runner.RunWith;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(ProcessComputerSuite.class)
-@ProcessComputerSuite.GraphProviderClass(provider = GiraphGraphProvider.class, graph = HadoopGraph.class)
+@ProcessComputerSuite.GraphProviderClass(provider = HadoopGiraphGraphProvider.class, graph = HadoopGraph.class)
 public class GiraphGraphComputerProcessIntegrateTest {
 }

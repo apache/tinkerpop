@@ -40,7 +40,7 @@ import java.util.Set;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TinkerGraphGraphProvider extends AbstractGraphProvider {
+public class TinkerGraphProvider extends AbstractGraphProvider {
 
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(TinkerEdge.class);
@@ -60,9 +60,9 @@ public class TinkerGraphGraphProvider extends AbstractGraphProvider {
     }
 
     @Override
-    public void clear(final Graph g, final Configuration configuration) throws Exception {
-        if (g != null)
-            g.close();
+    public void clear(final Graph graph, final Configuration configuration) throws Exception {
+        if (graph != null)
+            graph.close();
     }
 
     @Override

@@ -16,20 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph.process;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphComputerProvider extends TinkerGraphProvider {
+public final class HadoopSparkGraphProvider extends HadoopGraphProvider {
 
     public GraphTraversalContext traversal(final Graph graph) {
-        return GraphTraversalContext.of().engine(ComputerTraversalEngine.build().computer(TinkerGraphComputer.class)).create(graph);
+        return GraphTraversalContext.of().engine(ComputerTraversalEngine.build().computer(SparkGraphComputer.class)).create(graph);
     }
 }

@@ -105,8 +105,8 @@ public interface GraphProvider {
      * already been modified by the implementation as necessary for {@link Graph} creation.
      */
     default public Graph openTestGraph(final Configuration config, final GraphStrategy... strategies) {
-        final Graph g = GraphFactory.open(config);
-        return null == strategies ? g : g.strategy(strategies);
+        final Graph graph = GraphFactory.open(config);
+        return null == strategies ? graph : graph.strategy(strategies);
     }
 
     /**
@@ -138,7 +138,7 @@ public interface GraphProvider {
      * that can be performed is a clear given the configuration.  The method will typically be called this way
      * as clean up task on setup to ensure that a persisted graph has a clear space to create a test graph.
      */
-    public void clear(final Graph g, final Configuration configuration) throws Exception;
+    public void clear(final Graph graph, final Configuration configuration) throws Exception;
 
     /**
      * Converts an identifier from a test to an identifier accepted by the Graph instance.  Test that try to
@@ -193,13 +193,13 @@ public interface GraphProvider {
      * be configured according the the {@link Graph} implementation's API. Implementers can use the {@code testClass}
      * and {@code testName} arguments to implement test specific configurations to their graphs.
      *
-     * @param g             the {@link Graph} instance to load data into constructed by this {@code GraphProvider}
+     * @param graph             the {@link Graph} instance to load data into constructed by this {@code GraphProvider}
      * @param loadGraphWith the annotation for the currently running test - this value may be null if no graph
      *                      data is to be loaded in front of the test.
      * @param testClass     the test class being executed
      * @param testName      the name of the test method being executed
      */
-    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith, final Class testClass, final String testName);
+    public void loadGraphData(final Graph graph, final LoadGraphWith loadGraphWith, final Class testClass, final String testName);
 
     /**
      * Converts the GraphSON representation of an identifier to the implementation's representation of an identifier.

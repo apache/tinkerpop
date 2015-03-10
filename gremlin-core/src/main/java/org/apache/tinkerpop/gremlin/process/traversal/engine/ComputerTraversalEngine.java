@@ -33,7 +33,7 @@ import java.io.Serializable;
  */
 public final class ComputerTraversalEngine implements TraversalEngine {
 
-    private final GraphComputer graphComputer;
+    private final transient GraphComputer graphComputer;
 
     private ComputerTraversalEngine(final GraphComputer graphComputer) {
         this.graphComputer = graphComputer;

@@ -145,13 +145,13 @@ public abstract class AbstractGremlinSuite extends Suite {
         final Set<Class> noImplementationRegistered = new HashSet<>();
 
         final Configuration conf = graphProvider.newGraphConfiguration("prototype", AbstractGremlinSuite.class, "validateStructureInterfacesRegistered");
-        final Graph g = graphProvider.openTestGraph(conf);
+        final Graph graph = graphProvider.openTestGraph(conf);
         final Set<Class> structureInterfaces = new HashSet<>(STRUCTURE_INTERFACES);
 
         // not all graphs implement all features and therefore may not have implementations of certain "core" interfaces
-        if (!g.features().graph().variables().supportsVariables()) structureInterfaces.remove(Graph.Variables.class);
+        if (!graph.features().graph().variables().supportsVariables()) structureInterfaces.remove(Graph.Variables.class);
 
-        graphProvider.clear(g, conf);
+        graphProvider.clear(graph, conf);
 
         final boolean missingImplementations = structureInterfaces.stream().anyMatch(iface -> {
             final boolean noneMatch = implementations.stream().noneMatch(c -> iface.isAssignableFrom(c));

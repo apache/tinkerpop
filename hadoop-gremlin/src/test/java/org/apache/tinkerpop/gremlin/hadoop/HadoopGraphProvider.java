@@ -19,10 +19,13 @@
 package org.apache.tinkerpop.gremlin.hadoop;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.giraph.conf.GiraphConstants;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopElement;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -99,13 +102,26 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             put(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, GryoOutputFormat.class.getCanonicalName());
             put(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class.getCanonicalName());
             put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "hadoop-gremlin/target/test-output");
+            put(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, true);
+            put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
+            /// giraph configuration
+            put(GiraphConstants.MIN_WORKERS, 1);
+            put(GiraphConstants.MAX_WORKERS, 1);
+            put(GiraphConstants.SPLIT_MASTER_WORKER.getKey(), false);
+            put(GiraphConstants.ZOOKEEPER_JAR, GiraphGraphComputer.class.getResource("zookeeper-3.3.3.jar").getPath());
+            put("giraph.zkServerPort", "2181");  // you must have a local zookeeper running on this port
+            put("giraph.nettyServerUseExecutionHandler", false); // this prevents so many integration tests running out of threads
+            put("giraph.nettyClientUseExecutionHandler", false); // this prevents so many integration tests running out of threads
+            /// spark configuration
+            put("spark.master", "local[4]");
+            put("spark.serializer", "org.apache.spark.serializer.JavaSerializer");
         }};
     }
 
     @Override
-    public void clear(final Graph g, final Configuration configuration) throws Exception {
-        if (g != null)
-            g.close();
+    public void clear(final Graph graph, final Configuration configuration) throws Exception {
+        if (graph != null)
+            graph.close();
     }
 
     @Override

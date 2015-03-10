@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -43,7 +44,7 @@ public class VertexStreamIteratorTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GryoWriter writer = GryoWriter.build().create();
-            writer.writeVertices(os, g.V(), Direction.BOTH);
+            writer.writeVertices(os, g.traversal().V(), Direction.BOTH);
             final AtomicInteger called = new AtomicInteger(0);
             VertexStreamIterator vsi = new VertexStreamIterator(new ByteArrayInputStream(os.toByteArray()), Long.MAX_VALUE);
 
@@ -58,24 +59,15 @@ public class VertexStreamIteratorTest {
                 //System.out.println("name: " + name);
                 if (name.equals("ripple")) {
                     found = true;
-                    assertEquals(1, count(v.in().toList()));
-                    assertEquals(0, count(v.out().toList()));
+                    assertEquals(1, IteratorUtils.count(v.vertices(Direction.IN)));
+                    assertEquals(0, IteratorUtils.count(v.vertices(Direction.OUT)));
                 }
 
                 called.incrementAndGet();
             }
             assertTrue(found);
 
-            assertEquals(count(g.V().toList()), called.get());
+            assertEquals(IteratorUtils.count(g.vertices()), called.get());
         }
-    }
-
-    private <T> long count(final Iterable<T> iter) {
-        long count = 0;
-        for (T anIter : iter) {
-            count++;
-        }
-
-        return count;
     }
 }

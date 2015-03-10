@@ -162,7 +162,7 @@ public class HadoopGraph implements Graph {
         if (graphComputerClass.equals(GiraphGraphComputer.class))
             return (C) new GiraphGraphComputer(this);
         else if (graphComputerClass.equals(SparkGraphComputer.class))
-            return (C) new GiraphGraphComputer(this);
+            return (C) new SparkGraphComputer(this);
         else
             throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
     }

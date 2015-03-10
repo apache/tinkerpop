@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure.groovy;
 import org.apache.tinkerpop.gremlin.groovy.GroovyEnvironmentPerformanceSuite;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
-import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
+import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.runner.RunWith;
 
@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(GroovyEnvironmentPerformanceSuite.class)
-@ProcessStandardSuite.GraphProviderClass(provider = TinkerGraphGraphProvider.class, graph = TinkerGraph.class)
+@ProcessStandardSuite.GraphProviderClass(provider = TinkerGraphProvider.class, graph = TinkerGraph.class)
 public class TinkerGraphGroovyEnvironmentPerformanceTest {
     static {
         SugarLoader.load();

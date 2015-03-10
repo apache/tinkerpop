@@ -51,11 +51,11 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
     }};
 
     @Override
-    public void clear(final Graph g, final Configuration configuration) throws Exception {
-        if (null != g) {
-            if (g.features().graph().supportsTransactions() && g.tx().isOpen())
-                g.tx().rollback();
-            g.close();
+    public void clear(final Graph graph, final Configuration configuration) throws Exception {
+        if (null != graph) {
+            if (graph.features().graph().supportsTransactions() && graph.tx().isOpen())
+                graph.tx().rollback();
+            graph.close();
         }
 
         if (configuration.containsKey("gremlin.neo4j.directory")) {
