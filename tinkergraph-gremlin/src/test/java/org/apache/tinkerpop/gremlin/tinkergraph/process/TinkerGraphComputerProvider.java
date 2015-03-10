@@ -16,22 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph.process.groovy;
+package org.apache.tinkerpop.gremlin.tinkergraph.process;
 
-import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
-import org.apache.tinkerpop.gremlin.process.GroovyProcessComputerSuite;
-import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.TinkerGraphComputerProvider;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.junit.runner.RunWith;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(GroovyProcessComputerSuite.class)
-@ProcessStandardSuite.GraphProviderClass(provider = TinkerGraphComputerProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphGroovyProcessComputerTest {
-    static {
-        SugarLoader.load();
+public class TinkerGraphComputerProvider extends TinkerGraphGraphProvider {
+
+    public GraphTraversalContext traversal(final Graph graph) {
+        return GraphTraversalContext.of().engine(ComputerTraversalEngine.build().computer(TinkerGraphComputer.class)).create(graph);
     }
 }

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process
 import org.apache.tinkerpop.gremlin.groovy.engine.GroovyTraversalScript
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext
 import org.apache.tinkerpop.gremlin.structure.Graph
 
 /**
@@ -32,7 +33,7 @@ public class ComputerTestHelper {
         return GroovyTraversalScript.of(script).over(g).using(computer).withSugar().traversal().get();
     }
 
-    public static final Traversal compute(final String script, final Graph g) {
+    public static final Traversal compute(final String script, final GraphTraversalContext g) {
         return GroovyTraversalScript.of(script).over(g).using(g.compute()).withSugar().traversal().get();
     }
 }
