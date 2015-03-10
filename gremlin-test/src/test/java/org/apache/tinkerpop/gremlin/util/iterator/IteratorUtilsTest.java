@@ -295,6 +295,26 @@ public class IteratorUtilsTest {
         assertEquals(1, m2.size());
     }
 
+    @Test
+    public void shouldApplyMapOverIterator() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("1");
+        iterable.add("2");
+        iterable.add("3");
+
+        assertIterator(IteratorUtils.map(iterable.iterator(), s -> "test" + s), 3);
+    }
+
+    @Test
+    public void shouldApplyMapOverIterable() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("1");
+        iterable.add("2");
+        iterable.add("3");
+
+        assertIterator(IteratorUtils.map(iterable, s -> "test" + s).iterator(), 3);
+    }
+
     public <S> void assertIterator(final Iterator<S> itty, final int size) {
         for (int ix = 0; ix < size; ix++) {
             assertEquals("test" + (ix + 1), itty.next());
