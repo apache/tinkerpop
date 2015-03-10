@@ -92,8 +92,7 @@ public abstract interface Element {
      */
     @Graph.Helper
     public default <V> V value(final String key) throws NoSuchElementException {
-        final Property<V> property = this.property(key);
-        return property.orElseThrow(() -> Property.Exceptions.propertyDoesNotExist(key));
+        return this.<V>property(key).orElseThrow(() -> Property.Exceptions.propertyDoesNotExist(key));
     }
 
     /**

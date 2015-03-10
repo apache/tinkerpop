@@ -86,7 +86,7 @@ public class TinkerGraph implements Graph {
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
-    protected TraversalEngine engine = StandardTraversalEngine.standard;
+    protected TraversalEngine engine = StandardTraversalEngine.instance();
 
     /**
      * An empty private constructor that initializes {@link TinkerGraph} with no {@link org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy}.  Primarily

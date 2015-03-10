@@ -73,7 +73,7 @@ public class GraphTraversalContext implements TraversalContext {
 
     public static class Builder implements TraversalContext.Builder<GraphTraversalContext> {
 
-        private TraversalEngine engine = StandardTraversalEngine.standard;
+        private TraversalEngine engine = StandardTraversalEngine.instance();
         private List<TraversalStrategy> strategies = new ArrayList<>();
 
         public Builder engine(final TraversalEngine engine) {

@@ -105,7 +105,6 @@ public interface Vertex extends Element {
         }
     }
 
-
     /**
      * Gets an {@link Iterator} of incident edges.
      *

@@ -82,7 +82,7 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public TraversalEngine getEngine() {
-        return StandardTraversalEngine.standard;
+        return StandardTraversalEngine.instance();
     }
 
     @Override

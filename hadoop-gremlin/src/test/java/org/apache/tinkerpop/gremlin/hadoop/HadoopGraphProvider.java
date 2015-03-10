@@ -109,8 +109,8 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     }
 
     @Override
-    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith, final Class testClass, final String testName) {
-        if (loadGraphWith != null) this.loadGraphDataViaHadoopConfig(g, loadGraphWith.value());
+    public void loadGraphData(final Graph graph, final LoadGraphWith loadGraphWith, final Class testClass, final String testName) {
+        if (loadGraphWith != null) this.loadGraphDataViaHadoopConfig(graph, loadGraphWith.value());
     }
 
     @Override

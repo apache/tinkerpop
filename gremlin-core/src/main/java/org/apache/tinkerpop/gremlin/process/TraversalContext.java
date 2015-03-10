@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 public interface TraversalContext {
 
     public interface Builder<C extends TraversalContext> {
+
         public Builder engine(final TraversalEngine engine);
 
         public Builder strategy(final TraversalStrategy strategy);

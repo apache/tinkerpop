@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
  */
 public final class StandardTraversalEngine implements TraversalEngine {
 
-    public static final StandardTraversalEngine standard = new StandardTraversalEngine();
+    private static final StandardTraversalEngine standard = new StandardTraversalEngine();
 
     private StandardTraversalEngine() {
 

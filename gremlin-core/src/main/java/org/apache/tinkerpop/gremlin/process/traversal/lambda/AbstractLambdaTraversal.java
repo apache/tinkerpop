@@ -67,7 +67,7 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     @Override
     public TraversalEngine getEngine() {
-        return StandardTraversalEngine.standard;
+        return StandardTraversalEngine.instance();
     }
 
     @Override

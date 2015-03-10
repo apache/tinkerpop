@@ -106,7 +106,7 @@ public abstract class AbstractGremlinSuite extends Suite {
 
     public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce,
                                 final boolean gremlinFlavorSuite) throws InitializationError {
-        this(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, StandardTraversalEngine.standard);
+        this(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, StandardTraversalEngine.instance());
     }
 
     public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce,

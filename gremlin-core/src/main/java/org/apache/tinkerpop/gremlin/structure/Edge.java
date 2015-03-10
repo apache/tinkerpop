@@ -43,7 +43,6 @@ public interface Edge extends Element {
      */
     public static final String DEFAULT_LABEL = "edge";
 
-
     /**
      * Retrieve the vertex (or vertices) associated with this edge as defined by the direction.
      * If the direction is {@link Direction#BOTH} then the iterator order is: {@link Direction#OUT} then {@link Direction#IN}.
@@ -53,12 +52,33 @@ public interface Edge extends Element {
      */
     public Iterator<Vertex> vertices(final Direction direction);
 
+    /**
+     * Get the outgoing/tail vertex of this edge.
+     *
+     * @return the outgoing vertex of the edge
+     */
     public default Vertex outVertex() {
         return this.vertices(Direction.OUT).next();
     }
 
+    /**
+     * Get the incoming/head vertex of this edge.
+     *
+     * @return the incoming vertex of the edge
+     */
     public default Vertex inVertex() {
         return this.vertices(Direction.IN).next();
+    }
+
+    /**
+     * Get both the outgoing and incoming vertices of this edge.
+     * The first vertex in the iterator is the outgoing vertex.
+     * The second vertex in the iterator is the incoming vertex.
+     *
+     * @return an iterator of the two vertices of this edge
+     */
+    public default Iterator<Vertex> bothVertices() {
+        return this.vertices(Direction.BOTH);
     }
 
     /**
