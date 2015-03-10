@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutorTest;
-import org.apache.tinkerpop.gremlin.groovy.engine.GroovyTraversalScriptTest;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoaderTest;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
@@ -45,7 +44,6 @@ public class GroovyEnvironmentSuite extends AbstractGremlinSuite {
             GremlinGroovyScriptEngineTest.class,
             GremlinExecutorTest.class,
             GremlinLoaderTest.class,
-            GroovyTraversalScriptTest.class,
             SugarLoaderTest.class,
     };
 

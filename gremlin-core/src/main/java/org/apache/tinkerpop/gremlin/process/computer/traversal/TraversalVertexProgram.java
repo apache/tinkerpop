@@ -20,9 +20,11 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalContext;
 import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
@@ -42,6 +44,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -230,6 +233,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         };
     }
 
+    public <S, E> Traversal.Admin<S, E> computerResultTraversal(final ComputerResult result) {
+        final Traversal.Admin<S, E> traversal = (Traversal.Admin<S, E>) this.getTraversal();
+        ((ComputerResultStep) traversal.getEndStep()).populateTraversers(result);
+        return traversal;
+    }
+
     //////////////
 
     public static Builder build() {
@@ -242,24 +251,24 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             super(TraversalVertexProgram.class);
         }
 
-        public Builder traversal(final String scriptEngine, final String traversalScript) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, TRAVERSAL_SUPPLIER, new String[]{scriptEngine, traversalScript});
+        public Builder traversal(final Class<? extends Graph> graphClass, final TraversalContext.Builder builder, final String scriptEngine, final String traversalScript) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SERIALIZED_OBJECT, TRAVERSAL_SUPPLIER, new TraversalScriptSupplier<>(graphClass, builder, scriptEngine, traversalScript));
             return this;
         }
 
-        public Builder traversal(final String traversalScript) {
+        /*public Builder traversal(final String traversalScript) {
             return traversal(GREMLIN_GROOVY, traversalScript);
-        }
+        }*/
 
-        public Builder traversal(final Traversal.Admin traversal) {
+        public Builder traversal(final Traversal.Admin<?, ?> traversal) {
             return this.traversal(traversal, true);
         }
 
-        public Builder traversal(final Traversal.Admin traversal, boolean serialize) {
+        public Builder traversal(final Traversal.Admin<?, ?> traversal, boolean serialize) {
             if (serialize)
-                LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SERIALIZED_OBJECT, TRAVERSAL_SUPPLIER, new TraversalSupplier(traversal, false));
+                LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SERIALIZED_OBJECT, TRAVERSAL_SUPPLIER, new TraversalSupplier<>(traversal, false));
             else
-                LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, TRAVERSAL_SUPPLIER, new TraversalSupplier(traversal, true));
+                LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, TRAVERSAL_SUPPLIER, new TraversalSupplier<>(traversal, true));
             return this;
         }
 

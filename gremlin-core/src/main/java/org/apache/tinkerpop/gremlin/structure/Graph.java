@@ -67,6 +67,14 @@ public interface Graph extends AutoCloseable {
 
     public static final String GRAPH = "gremlin.graph";
 
+    public static <G extends Graph> G empty(final Class<G> graphClass) {
+        try {
+            return (G) graphClass.getMethod("empty").invoke(null);
+        } catch (final Exception e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+    }
+
     /**
      * This should only be used by vendors to create keys, labels, etc. in a namespace safe from users.
      * Users are not allowed to generate property keys, step labels, etc. that are key'd "hidden".

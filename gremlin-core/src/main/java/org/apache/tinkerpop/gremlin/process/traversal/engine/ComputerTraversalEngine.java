@@ -55,6 +55,10 @@ public final class ComputerTraversalEngine implements TraversalEngine {
         return StringFactory.traversalEngineString(this);
     }
 
+    public GraphComputer getGraphComputer() {
+        return this.graphComputer;
+    }
+
     public static Builder build() {
         return new Builder();
     }

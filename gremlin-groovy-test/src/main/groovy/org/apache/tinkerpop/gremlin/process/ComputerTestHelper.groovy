@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process
 
-import org.apache.tinkerpop.gremlin.groovy.engine.GroovyTraversalScript
-import org.apache.tinkerpop.gremlin.process.Traversal
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer
+import org.apache.tinkerpop.gremlin.process.computer.ComputerResult
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Graph
 
 /**
@@ -29,11 +29,18 @@ import org.apache.tinkerpop.gremlin.structure.Graph
  */
 public class ComputerTestHelper {
 
-    public static final Traversal compute(final String script, final Graph g, final GraphComputer computer) {
-        return GroovyTraversalScript.of(script).over(g).using(computer).withSugar().traversal().get();
+    public static final Traversal compute(
+            final Graph graph,
+            final TraversalContext.Builder builder,
+            final String scriptEngineName,
+            final String traversalScript) {
+
+        final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(graph.getClass(), builder, scriptEngineName, traversalScript).create();
+        final ComputerResult result = ((ComputerTraversalEngine) builder.getTraversalEngineBuilder().create(graph)).getGraphComputer().program(program).submit().get();
+        return program.computerResultTraversal(result);
     }
 
     public static final Traversal compute(final String script, final GraphTraversalContext g) {
-        return GroovyTraversalScript.of(script).over(g).using(g.compute()).withSugar().traversal().get();
+        return ComputerTestHelper.compute(g.getGraph(), g.asBuilder(), "gremlin-groovy", script);
     }
 }

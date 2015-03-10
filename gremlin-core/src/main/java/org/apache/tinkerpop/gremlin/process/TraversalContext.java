@@ -20,17 +20,25 @@ package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface TraversalContext {
 
-    public interface Builder<C extends TraversalContext> {
+    public TraversalContext.Builder asBuilder();
+
+    public interface Builder<C extends TraversalContext> extends Serializable {
 
         public Builder engine(final TraversalEngine.Builder engine);
 
         public Builder strategy(final TraversalStrategy strategy);
 
         public C create(final Graph graph);
+
+        ///
+
+        public TraversalEngine.Builder getTraversalEngineBuilder();
     }
 }

@@ -21,10 +21,12 @@ package org.apache.tinkerpop.gremlin.process.computer.util;
 
 import org.apache.commons.configuration.Configuration;
 
+import java.util.function.Supplier;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LambdaHolder<S> {
+public class LambdaHolder<S> implements Supplier<S> {
 
     public enum Type {
         OBJECT,

@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class GraphTraversalContext implements TraversalContext {
 
-    private final Graph graph;
+    private final transient Graph graph;
     private final TraversalEngine.Builder engine;
     private final TraversalStrategies strategies;
 
@@ -69,15 +69,24 @@ public class GraphTraversalContext implements TraversalContext {
         return new Builder();
     }
 
+    public Graph getGraph() {
+        return this.graph;
+    }
+
+    @Override
+    public GraphTraversalContext.Builder asBuilder() {
+        return GraphTraversalContext.of().engine(this.engine);   // TODO: add strategies
+    }
+
     //////
 
     public static class Builder implements TraversalContext.Builder<GraphTraversalContext> {
 
-        private TraversalEngine.Builder engine = StandardTraversalEngine.builder();
+        private TraversalEngine.Builder engineBuilder = StandardTraversalEngine.builder();
         private List<TraversalStrategy> strategies = new ArrayList<>();
 
-        public Builder engine(final TraversalEngine.Builder engine) {
-            this.engine = engine;
+        public Builder engine(final TraversalEngine.Builder engineBuilder) {
+            this.engineBuilder = engineBuilder;
             return this;
         }
 
@@ -87,7 +96,11 @@ public class GraphTraversalContext implements TraversalContext {
         }
 
         public GraphTraversalContext create(final Graph graph) {
-            return new GraphTraversalContext(graph, this.engine, this.strategies.toArray(new TraversalStrategy[this.strategies.size()]));
+            return new GraphTraversalContext(graph, this.engineBuilder, this.strategies.toArray(new TraversalStrategy[this.strategies.size()]));
+        }
+
+        public TraversalEngine.Builder getTraversalEngineBuilder() {
+            return this.engineBuilder;
         }
 
 

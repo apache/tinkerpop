@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -91,7 +90,6 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
 
     public void populateTraversers(final ComputerResult result) {
         this.graph = result.graph();
-        //this.graph.engine(StandardTraversalEngine.standard);
         result.memory().keys().forEach(key -> this.getTraversal().getSideEffects().set(key, result.memory().get(key)));
         final Step endStep = this.getPreviousStep();
         if (endStep instanceof SideEffectCapStep) {
@@ -111,6 +109,7 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
             this.traversers = result.memory().get(TraverserMapReduce.TRAVERSERS);
         }
         this.first = false;
+        this.byPass = false;
     }
 
     public void byPass() {
