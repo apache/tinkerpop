@@ -315,6 +315,67 @@ public class IteratorUtilsTest {
         assertIterator(IteratorUtils.map(iterable, s -> "test" + s).iterator(), 3);
     }
 
+    @Test
+    public void shouldFilterAllFromIterator() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        assertIterator(IteratorUtils.filter(iterable.iterator(), s -> s.startsWith("dfaa")), 0);
+    }
+
+    @Test
+    public void shouldFilterNoneFromIterator() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        assertIterator(IteratorUtils.filter(iterable.iterator(), s -> s.startsWith("test")), 3);
+    }
+
+    @Test
+    public void shouldFilterSomeFromIterator() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        assertIterator(IteratorUtils.filter(iterable.iterator(), s -> s.equals("test1")), 1);
+    }
+
+    @Test
+    public void shouldFilterAllFromIterable() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        assertIterator(IteratorUtils.filter(iterable, s -> s.startsWith("dfaa")).iterator(), 0);
+    }
+
+    @Test
+    public void shouldFilterNoneFromIterable() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        assertIterator(IteratorUtils.filter(iterable, s -> s.startsWith("test")).iterator(), 3);
+    }
+
+    @Test
+    public void shouldFilterSomeFromIterable() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        assertIterator(IteratorUtils.filter(iterable, s -> s.equals("test1")).iterator(), 1);
+    }
+
+
     public <S> void assertIterator(final Iterator<S> itty, final int size) {
         for (int ix = 0; ix < size; ix++) {
             assertEquals("test" + (ix + 1), itty.next());
