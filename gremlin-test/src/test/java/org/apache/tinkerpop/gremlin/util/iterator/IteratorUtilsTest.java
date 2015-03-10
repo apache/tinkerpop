@@ -153,6 +153,43 @@ public class IteratorUtilsTest {
         assertIterator(IteratorUtils.convertToList("test1").iterator(), 1);
     }
 
+    @Test
+    public void shouldFillFromIterator() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        final List<String> newList = new ArrayList<>();
+        IteratorUtils.fill(iterable.iterator(), newList);
+
+        assertIterator(newList.iterator(), iterable.size());
+    }
+
+    @Test
+    public void shouldCountEmpty() {
+        final List<String> iterable = new ArrayList<>();
+        assertEquals(0, IteratorUtils.count(iterable.iterator()));
+    }
+
+    @Test
+    public void shouldCountAll() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        assertEquals(3, IteratorUtils.count(iterable.iterator()));
+    }
+
+    @Test
+    public void shouldMakeArrayListFromIterator() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+        assertIterator(IteratorUtils.list(iterable.iterator()).iterator(), iterable.size());
+    }
 
     public <S> void assertIterator(final Iterator<S> itty, final int size) {
         for (int ix = 0; ix < size; ix++) {
