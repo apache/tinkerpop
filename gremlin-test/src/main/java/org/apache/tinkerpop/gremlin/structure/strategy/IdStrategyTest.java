@@ -273,7 +273,7 @@ public class IdStrategyTest {
                 assertEquals("this", e.property("try").value());
                 assertEquals("should be ok to set this as supportsEdgeId=false", e.property(strategy.getIdKey()).value());
 
-                final Edge found = g.E("edge-id").next();
+                final Edge found = graph.edges("edge-id").next();
                 assertEquals("edge-id", found.id());
                 assertEquals("this", found.property("try").value());
                 assertEquals("should be ok to set this as supportsEdgeId=false", found.property(strategy.getIdKey()).value());

@@ -98,7 +98,7 @@ public final class IdStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
-        return supportsVertexId ? (f) -> (ids) -> ctx.getStrategyGraph().getBaseGraph().traversal().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
+        return supportsEdgeId ? (f) -> (ids) -> ctx.getStrategyGraph().getBaseGraph().traversal().E().has(idKey, Contains.within, Arrays.asList(ids)) : UnaryOperator.identity();
     }
 
     @Override
