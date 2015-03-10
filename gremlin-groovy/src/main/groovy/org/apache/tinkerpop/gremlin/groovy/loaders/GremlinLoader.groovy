@@ -17,52 +17,14 @@
  * under the License.
  */
 package org.apache.tinkerpop.gremlin.groovy.loaders
-
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
-import org.apache.tinkerpop.gremlin.process.Step
-import org.apache.tinkerpop.gremlin.process.Traversal
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
-import org.apache.tinkerpop.gremlin.structure.Edge
-import org.apache.tinkerpop.gremlin.structure.Element
-import org.apache.tinkerpop.gremlin.structure.Graph
-import org.apache.tinkerpop.gremlin.structure.Vertex
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class GremlinLoader {
 
-    private static final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine()
-    private static final Set<String> steps = new HashSet<String>()
-    static {
-        [GraphTraversal, Graph, Vertex, Edge, Element].forEach {
-            it.getMethods().findAll {
-                Traversal.class.isAssignableFrom(it.getReturnType());
-            }.each {
-                addStep(it.getName())
-            }
-        }
-    }
-
     public static void load() {
         ObjectLoader.load()
         StepLoader.load()
-    }
-
-    public static Step compile(final String script) {
-        return (Step) engine.eval(script, engine.createBindings())
-    }
-
-    public static void addStep(final String stepName) {
-        steps.add(stepName)
-    }
-
-    public static boolean isStep(final String stepName) {
-        return steps.contains(stepName)
-    }
-
-    public static Set<String> getStepNames() {
-        return new HashSet(steps)
     }
 }

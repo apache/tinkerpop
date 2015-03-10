@@ -69,6 +69,7 @@ public interface GraphProvider {
     public static final Set<Class> CORE_IMPLEMENTATIONS = new HashSet<Class>() {{
         add(__.class);
         add(DefaultGraphTraversal.class);
+        add(GraphTraversalContext.class);
         add(B_O_PA_S_SE_SL_Traverser.class);
         add(B_O_P_PA_S_SE_SL_Traverser.class);
         add(B_O_Traverser.class);

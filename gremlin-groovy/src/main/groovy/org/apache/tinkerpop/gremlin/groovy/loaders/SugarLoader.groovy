@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.groovy.loaders
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.Traverser
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper
 import org.apache.tinkerpop.gremlin.structure.*
@@ -55,6 +56,7 @@ class SugarLoader {
             else
                 return ((GraphTraversal) delegate).values(name);
         }
+
         // __.age and __.out
         __.metaClass.static.propertyMissing = { final String name ->
             return null != __.metaClass.getMetaMethod(name) ? __."$name"() : __.values(name);
@@ -72,14 +74,14 @@ class SugarLoader {
         }*/
 
         // select x,y from ...
-        Object.metaClass.methodMissing = { final String name, final def args ->
+        /*Object.metaClass.methodMissing = { final String name, final def args ->
             if (name.toLowerCase().equals(SELECT)) return __.select(*args)
             throw new MissingMethodException(name, delegate.getClass(), args);
-        }
+        }*/
 
         Traverser.metaClass.mixin(TraverserCategory.class);
+        GraphTraversalContext.metaClass.mixin(GraphTraversalContextCategory.class);
         GraphTraversal.metaClass.mixin(GraphTraversalCategory.class);
-        Graph.metaClass.mixin(GraphCategory.class);
         Vertex.metaClass.mixin(VertexCategory.class);
         Edge.metaClass.mixin(ElementCategory.class);
         VertexProperty.metaClass.mixin(ElementCategory.class);
@@ -142,22 +144,23 @@ class SugarLoader {
         }
     }
 
-    public static class GraphCategory {
+    public static class GraphTraversalContextCategory {
+
         private static final String V = "V";
         private static final String E = "E";
 
-        public static final get(final Graph graph, final String key) {
+        public static final get(final GraphTraversalContext graphTraversalContext, final String key) {
             if (key.equals(V))
-                return graph.V();
+                return graphTraversalContext.V();
             else if (key.equals(E))
-                return graph.E();
+                return graphTraversalContext.E();
             else
-                return graph."$key";
+                throw new UnsupportedOperationException("The provided key does not reference a known method: " + key);
         }
 
-        public String toString() {
+        /*public String toString() {
             return StringFactory.graphString(this.metaClass.owner, "");
-        }
+        }*/
     }
 
     public static class GraphTraversalCategory {
