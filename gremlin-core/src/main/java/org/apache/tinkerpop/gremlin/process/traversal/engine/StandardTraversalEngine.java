@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.engine;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
@@ -27,7 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
  */
 public final class StandardTraversalEngine implements TraversalEngine {
 
-    private static final StandardTraversalEngine standard = new StandardTraversalEngine();
+    private static final StandardTraversalEngine INSTANCE = new StandardTraversalEngine();
 
     private StandardTraversalEngine() {
 
@@ -43,12 +44,26 @@ public final class StandardTraversalEngine implements TraversalEngine {
         return Type.STANDARD;
     }
 
+    public static Builder builder() {
+        return Builder.INSTANCE;
+    }
+
     public static StandardTraversalEngine instance() {
-        return standard;
+        return INSTANCE;
     }
 
     @Override
     public String toString() {
         return StringFactory.traversalEngineString(this);
+    }
+
+    public static class Builder implements TraversalEngine.Builder {
+
+        private static final Builder INSTANCE = new Builder();
+
+        @Override
+        public TraversalEngine create(final Graph graph) {
+            return StandardTraversalEngine.INSTANCE;
+        }
     }
 }

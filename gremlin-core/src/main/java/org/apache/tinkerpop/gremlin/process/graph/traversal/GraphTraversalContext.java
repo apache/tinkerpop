@@ -38,10 +38,10 @@ import java.util.List;
 public class GraphTraversalContext implements TraversalContext {
 
     private final Graph graph;
-    private final TraversalEngine engine;
+    private final TraversalEngine.Builder engine;
     private final TraversalStrategies strategies;
 
-    public GraphTraversalContext(final Graph graph, final TraversalEngine engine, final TraversalStrategy... strategies) {
+    public GraphTraversalContext(final Graph graph, final TraversalEngine.Builder engine, final TraversalStrategy... strategies) {
         this.graph = graph;
         this.engine = engine;
         this.strategies = TraversalStrategies.GlobalCache.getStrategies(this.graph.getClass()).addStrategies(strategies);
@@ -49,14 +49,14 @@ public class GraphTraversalContext implements TraversalContext {
 
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
-        traversal.setEngine(this.engine);
+        traversal.setEngine(this.engine.create(this.graph));
         traversal.setStrategies(this.strategies);
         return traversal.addStep(new GraphStep<>(traversal, this.graph, Vertex.class, vertexIds));
     }
 
     public GraphTraversal<Edge, Edge> E(final Object... edgesIds) {
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
-        traversal.setEngine(this.engine);
+        traversal.setEngine(this.engine.create(this.graph));
         traversal.setStrategies(this.strategies);
         return traversal.addStep(new GraphStep<>(traversal, this.graph, Edge.class, edgesIds));
     }
@@ -73,10 +73,10 @@ public class GraphTraversalContext implements TraversalContext {
 
     public static class Builder implements TraversalContext.Builder<GraphTraversalContext> {
 
-        private TraversalEngine engine = StandardTraversalEngine.instance();
+        private TraversalEngine.Builder engine = StandardTraversalEngine.builder();
         private List<TraversalStrategy> strategies = new ArrayList<>();
 
-        public Builder engine(final TraversalEngine engine) {
+        public Builder engine(final TraversalEngine.Builder engine) {
             this.engine = engine;
             return this;
         }

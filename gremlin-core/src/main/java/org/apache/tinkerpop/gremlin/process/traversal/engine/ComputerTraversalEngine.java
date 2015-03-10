@@ -26,23 +26,23 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class ComputerTraversalEngine implements TraversalEngine {
 
-    private final transient Graph graph;
-    private Class<? extends GraphComputer> graphComputerClass;
+    private final GraphComputer graphComputer;
 
-    private ComputerTraversalEngine(final Graph graph, final Class<? extends GraphComputer> graphComputerClass) {
-        this.graph = graph;
-        this.graphComputerClass = graphComputerClass;
+    private ComputerTraversalEngine(final GraphComputer graphComputer) {
+        this.graphComputer = graphComputer;
     }
 
     @Override
     public void processTraversal(final Traversal.Admin<?, ?> traversal) {
         if (traversal.getParent() instanceof EmptyStep)
-            traversal.addStep(new ComputerResultStep<>(traversal, this.graph.compute(this.graphComputerClass), true));
+            traversal.addStep(new ComputerResultStep<>(traversal, this.graphComputer, true));
     }
 
     @Override
@@ -55,23 +55,28 @@ public final class ComputerTraversalEngine implements TraversalEngine {
         return StringFactory.traversalEngineString(this);
     }
 
-    public static class Builder {
+    public static Builder build() {
+        return new Builder();
+    }
+
+
+    public static class Builder implements TraversalEngine.Builder, Serializable {
 
         private Class<? extends GraphComputer> graphComputerClass;
-        private Graph graph;
+        private GraphComputer.Isolation isolation = GraphComputer.Isolation.BSP;
 
         public Builder computer(final Class<? extends GraphComputer> graphComputerClass) {
             this.graphComputerClass = graphComputerClass;
             return this;
         }
 
-        public Builder graph(final Graph graph) {
-            this.graph = graph;
+        public Builder isolation(final GraphComputer.Isolation isolation) {
+            this.isolation = isolation;
             return this;
         }
 
-        public ComputerTraversalEngine create() {
-            return new ComputerTraversalEngine(this.graph, this.graphComputerClass);
+        public ComputerTraversalEngine create(final Graph graph) {
+            return new ComputerTraversalEngine(graph.compute(this.graphComputerClass).isolation(this.isolation));
         }
     }
 }

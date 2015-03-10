@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.TraversalContext;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.io.DefaultIo;
@@ -149,7 +148,7 @@ public interface Graph extends AutoCloseable {
     }
 
     public default GraphTraversalContext traversal() {
-        return this.traversal(GraphTraversalContext.of().engine(StandardTraversalEngine.instance()));
+        return this.traversal(GraphTraversalContext.of().engine(StandardTraversalEngine.builder()));
     }
 
     /**

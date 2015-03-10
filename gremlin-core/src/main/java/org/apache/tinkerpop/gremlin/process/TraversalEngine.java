@@ -40,4 +40,8 @@ public interface TraversalEngine extends Serializable {
     public default boolean isComputer() {
         return this.getType().equals(Type.COMPUTER);
     }
+
+    public interface Builder extends Serializable {
+        public TraversalEngine create(final Graph graph);
+    }
 }
