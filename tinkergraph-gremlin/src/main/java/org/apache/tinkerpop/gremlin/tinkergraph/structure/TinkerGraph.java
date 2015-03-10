@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strategy.TinkerElementStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strategy.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -66,8 +65,6 @@ public class TinkerGraph implements Graph {
     static {
         try {
             TraversalStrategies.GlobalCache.registerStrategies(TinkerGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(TinkerGraphStepStrategy.instance()));
-            TraversalStrategies.GlobalCache.registerStrategies(TinkerVertex.class, TraversalStrategies.GlobalCache.getStrategies(Vertex.class).clone().addStrategies(TinkerElementStepStrategy.instance()));
-            TraversalStrategies.GlobalCache.registerStrategies(TinkerEdge.class, TraversalStrategies.GlobalCache.getStrategies(Edge.class).clone().addStrategies(TinkerElementStepStrategy.instance()));
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -89,8 +86,7 @@ public class TinkerGraph implements Graph {
     protected TraversalEngine engine = StandardTraversalEngine.instance();
 
     /**
-     * An empty private constructor that initializes {@link TinkerGraph} with no {@link org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy}.  Primarily
-     * used for purposes of serialization issues.
+     * An empty private constructor that initializes {@link TinkerGraph} with no {@link org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
      */
     private TinkerGraph() {
     }

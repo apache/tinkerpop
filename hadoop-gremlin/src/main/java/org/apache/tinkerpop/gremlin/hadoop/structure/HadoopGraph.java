@@ -25,11 +25,9 @@ import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkGraphComputer;
-import org.apache.tinkerpop.gremlin.hadoop.process.graph.traversal.strategy.HadoopElementStepStrategy;
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopEdgeIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopVertexIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
-import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -122,15 +120,6 @@ import java.util.Optional;
         method = "g_V_out_out_grateful_profile",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 public class HadoopGraph implements Graph {
-
-    static {
-        try {
-            TraversalStrategies.GlobalCache.registerStrategies(HadoopVertex.class, TraversalStrategies.GlobalCache.getStrategies(Vertex.class).clone().addStrategies(HadoopElementStepStrategy.instance()));
-            TraversalStrategies.GlobalCache.registerStrategies(HadoopEdge.class, TraversalStrategies.GlobalCache.getStrategies(Edge.class).clone().addStrategies(HadoopElementStepStrategy.instance()));
-        } catch (final CloneNotSupportedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
 
     public static final Logger LOGGER = LoggerFactory.getLogger(HadoopGraph.class);
 
