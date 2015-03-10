@@ -90,6 +90,36 @@ public final class IteratorUtils {
         return fill(iterator, new ArrayList<>());
     }
 
+    public static <T> boolean allMatch(final Iterator<T> iterator, final Predicate<T> predicate) {
+        while (iterator.hasNext()) {
+            if (!predicate.test(iterator.next())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static <T> boolean anyMatch(final Iterator<T> iterator, final Predicate<T> predicate) {
+        while (iterator.hasNext()) {
+            if (predicate.test(iterator.next())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static <T> boolean noneMatch(final Iterator<T> iterator, final Predicate<T> predicate) {
+        while (iterator.hasNext()) {
+            if (predicate.test(iterator.next())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public static <K, S> Map<K, S> collectMap(final Iterator<S> iterator, final Function<S, K> key) {
         return collectMap(iterator, key, Function.identity());
     }
