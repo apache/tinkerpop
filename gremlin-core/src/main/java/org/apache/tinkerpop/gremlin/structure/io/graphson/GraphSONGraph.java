@@ -81,7 +81,7 @@ class GraphSONGraph {
             if (normalize)
                 g.traversal().E().order().by(Comparators.EDGE_COMPARATOR).forEachRemaining(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             else
-                g.vertices().forEachRemaining(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
+                g.edges().forEachRemaining(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             jsonGenerator.writeEndArray();
 
             jsonGenerator.writeEndObject();
