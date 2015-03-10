@@ -219,13 +219,10 @@ public interface GraphProvider {
      * method should return any implementations or extensions of the following interfaces or classes:
      * <ul>
      * <li>{@link Edge}</li>
-     * <li>{@link Edge.Iterators}</li>
      * <li>{@link Element}</li>
-     * <li>{@link Element.Iterators}</li>
      * <li>{@link DefaultGraphTraversal}</li>
      * <li>{@link Graph}</li>
      * <li>{@link Graph.Variables}</li>
-     * <li>{@link Graph.Iterators}</li>
      * <li>{@link GraphTraversal}</li>
      * <li>{@link org.apache.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser}</li>
      * <li>{@link Property}</li>
@@ -233,26 +230,19 @@ public interface GraphProvider {
      * <li>{@link Traversal}</li>
      * <li>{@link Traverser}</li>
      * <li>{@link Vertex}</li>
-     * <li>{@link Vertex.Iterators}</li>
      * <li>{@link VertexProperty}</li>
-     * <li>{@link VertexProperty.Iterators}</li>
      * </ul>
      * <br/>
      * The test suite only enforces registration of the following core structure interfaces (i.e. these classes must
      * be registered or the tests will fail to execute):
      * <ul>
      * <li>{@link Edge}</li>
-     * <li>{@link Edge.Iterators}</li>
      * <li>{@link Element}</li>
-     * <li>{@link Element.Iterators}</li>
      * <li>{@link Graph}</li>
      * <li>{@link Graph.Variables}</li>
-     * <li>{@link Graph.Iterators}</li>
      * <li>{@link Property}</li>
      * <li>{@link Vertex}</li>
-     * <li>{@link Vertex.Iterators}</li>
      * <li>{@link VertexProperty}</li>
-     * <li>{@link VertexProperty.Iterators}</li>
      * </ul>
      * <br/>
      * The remaining interfaces and classes should be registered however as failure to do so, might cause failures
