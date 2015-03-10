@@ -57,6 +57,10 @@ class SugarLoader {
                 return ((GraphTraversal) delegate).values(name);
         }
 
+        GraphTraversalContext.metaClass.getProperty = { final String key ->
+            GraphTraversalContextCategory.get((GraphTraversalContext)delegate, key);
+        }
+
         // __.age and __.out
         __.metaClass.static.propertyMissing = { final String name ->
             return null != __.metaClass.getMetaMethod(name) ? __."$name"() : __.values(name);
@@ -74,10 +78,10 @@ class SugarLoader {
         }*/
 
         // select x,y from ...
-        /*Object.metaClass.methodMissing = { final String name, final def args ->
+        Object.metaClass.methodMissing = { final String name, final def args ->
             if (name.toLowerCase().equals(SELECT)) return __.select(*args)
             throw new MissingMethodException(name, delegate.getClass(), args);
-        }*/
+        }
 
         Traverser.metaClass.mixin(TraverserCategory.class);
         GraphTraversalContext.metaClass.mixin(GraphTraversalContextCategory.class);
