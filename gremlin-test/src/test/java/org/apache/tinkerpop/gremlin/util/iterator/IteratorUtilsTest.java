@@ -169,8 +169,7 @@ public class IteratorUtilsTest {
 
     @Test
     public void shouldCountEmpty() {
-        final List<String> iterable = new ArrayList<>();
-        assertEquals(0, IteratorUtils.count(iterable.iterator()));
+        assertEquals(0, IteratorUtils.count(new ArrayList<>().iterator()));
     }
 
     @Test
@@ -244,6 +243,32 @@ public class IteratorUtilsTest {
         iterable.add("test2");
         iterable.add("test3");
         assertFalse(IteratorUtils.noneMatch(iterable.iterator(), s -> s.startsWith("test")));
+    }
+
+    @Test
+    public void shouldProduceMapFromIteratorUsingIdentityForValue() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        final Map<String,String> m = IteratorUtils.collectMap(iterable.iterator(), k -> k.substring(4));
+        assertEquals("test1", m.get("1"));
+        assertEquals("test2", m.get("2"));
+        assertEquals("test3", m.get("3"));
+    }
+
+    @Test
+    public void shouldProduceMapFromIterator() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        final Map<String,String> m = IteratorUtils.collectMap(iterable.iterator(), k -> k.substring(4), v -> v.substring(0, 4));
+        assertEquals("test", m.get("1"));
+        assertEquals("test", m.get("2"));
+        assertEquals("test", m.get("3"));
     }
 
     public <S> void assertIterator(final Iterator<S> itty, final int size) {
