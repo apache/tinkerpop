@@ -122,6 +122,19 @@ public final class PartitionStrategy implements GraphStrategy {
     }
 
     @Override
+    public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgeIteratorStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
+        return (f) -> ids -> IteratorUtils.filter(f.apply(ids), e -> {
+            final Set<String> partitions = getReadPartitions();
+            return partitions.contains(e.value(partitionKey)) && partitions.contains(e.inVertex().value(partitionKey))  && partitions.contains(e.outVertex().value(partitionKey));
+        });
+    }
+
+    @Override
+    public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVertexIteratorStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
+        return (f) -> ids -> IteratorUtils.filter(f.apply(ids), v -> getReadPartitions().contains((String) v.value(partitionKey)));
+    }
+
+    @Override
     public UnaryOperator<Function<Object[], GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final StrategyContext<StrategyGraph> ctx, final GraphStrategy composingStrategy) {
         return (f) -> ids -> {
             final GraphTraversal<Vertex, Vertex> traversal = this.generateTraversal(ctx.getStrategyGraph().getBaseGraph());

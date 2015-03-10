@@ -196,8 +196,8 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
         final Edge eAtovC = vA.addEdge("a->c", vC);
 
         strategy.clearReadPartitions();
-        assertEquals(new Long(0), g.V().count().next());
-        assertEquals(new Long(0), g.E().count().next());
+        assertEquals(0, IteratorUtils.count(graph.vertices()));
+        assertEquals(0, IteratorUtils.count(graph.edges()));
 
         strategy.addReadPartition("A");
         assertEquals(new Long(2), g.V().count().next());
@@ -224,9 +224,9 @@ public class PartitionStrategyTest extends AbstractGremlinTest {
         strategy.removeReadPartition("A");
         strategy.removeReadPartition("B");
 
-        assertEquals(new Long(1), g.V().count().next());
+        assertEquals(1, IteratorUtils.count(graph.vertices()));
         // two edges are in the "C" partition, but one each of their incident vertices are not
-        assertEquals(new Long(0), g.E().count().next());
+        assertEquals(0, IteratorUtils.count(graph.edges()));
 
         assertEquals(new Long(0), g.V(vC.id()).inE().count().next());
         assertEquals(new Long(0), g.V(vC.id()).in().count().next());
