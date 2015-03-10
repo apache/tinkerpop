@@ -192,7 +192,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertEquals(1, IteratorUtils.count(u.properties("name")));
                 assertEquals(1, IteratorUtils.count(u.properties()));
                 assertEquals(2, IteratorUtils.count(u.properties("name").next().properties()));
-                final Map<String,Object> valueMap = IteratorUtils.collectMap(v.property("name").properties(), Property::key, Property::value);
+                final Map<String,Object> valueMap = IteratorUtils.collectMap(u.property("name").properties(), Property::key, Property::value);
                 assertEquals("private", valueMap.get("acl"));
                 assertEquals(2014, valueMap.get("date"));
             });
