@@ -271,6 +271,30 @@ public class IteratorUtilsTest {
         assertEquals("test", m.get("3"));
     }
 
+    @Test
+    public void shouldProduceMapFromIteratorUsingGrouping() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        final Map<String,List<String>> m1 = IteratorUtils.groupBy(iterable.iterator(), i -> i.substring(4));
+        assertEquals("test1", m1.get("1").get(0));
+        assertEquals(1, m1.get("1").size());
+        assertEquals("test2", m1.get("2").get(0));
+        assertEquals(1, m1.get("2").size());
+        assertEquals("test3", m1.get("3").get(0));
+        assertEquals(1, m1.get("3").size());
+        assertEquals(3, m1.size());
+
+        final Map<String,List<String>> m2 = IteratorUtils.groupBy(iterable.iterator(), i -> i.substring(0,4));
+        assertEquals("test1", m2.get("test").get(0));
+        assertEquals("test2", m2.get("test").get(1));
+        assertEquals("test3", m2.get("test").get(2));
+        assertEquals(3, m2.get("test").size());
+        assertEquals(1, m2.size());
+    }
+
     public <S> void assertIterator(final Iterator<S> itty, final int size) {
         for (int ix = 0; ix < size; ix++) {
             assertEquals("test" + (ix + 1), itty.next());
