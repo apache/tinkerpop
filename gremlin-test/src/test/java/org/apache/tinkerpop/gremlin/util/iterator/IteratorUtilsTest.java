@@ -390,6 +390,45 @@ public class IteratorUtilsTest {
         assertIterator(IteratorUtils.concat(iterable1.iterator(), iterable2.iterator()), 6);
     }
 
+    @Test
+    public void shouldReduceFromIteratorWithBinaryOperator() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("1");
+        iterable.add("2");
+        iterable.add("3");
+
+        assertEquals("test123", IteratorUtils.reduce(iterable.iterator(), "test", (a, b) -> a + b));
+    }
+
+    @Test
+    public void shouldReduceFromIterableWithBinaryOperator() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("1");
+        iterable.add("2");
+        iterable.add("3");
+
+        assertEquals("test123", IteratorUtils.reduce(iterable, "test", (a,b) -> a + b));
+    }
+
+    @Test
+    public void shouldReduceFromIterator() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("1");
+        iterable.add("2");
+        iterable.add("3");
+
+        assertEquals(new Integer(16), IteratorUtils.reduce(iterable.iterator(), 10, (accumulator, val) -> accumulator + Integer.parseInt(val)));
+    }
+
+    @Test
+    public void shouldReduceFromIterable() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("1");
+        iterable.add("2");
+        iterable.add("3");
+
+        assertEquals(new Integer(16), IteratorUtils.reduce(iterable, 10, (accumulator, val) -> accumulator + Integer.parseInt(val)));
+    }
 
     public <S> void assertIterator(final Iterator<S> itty, final int size) {
         for (int ix = 0; ix < size; ix++) {

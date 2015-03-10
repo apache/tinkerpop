@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -140,6 +142,32 @@ public final class IteratorUtils {
             map.computeIfAbsent(groupBy.apply(obj), k -> new ArrayList<>()).add(obj);
         }
         return map;
+    }
+
+    public static <S> S reduce(final Iterator<S> iterator, final S identity, final BinaryOperator<S> accumulator) {
+        S result = identity;
+        while (iterator.hasNext()) {
+            result = accumulator.apply(result, iterator.next());
+        }
+
+        return result;
+    }
+
+    public static <S> S reduce(final Iterable<S> iterable, final S identity, final BinaryOperator<S> accumulator) {
+        return reduce(iterable.iterator(), identity, accumulator);
+    }
+
+    public static <S, E> E reduce(final Iterator<S> iterator, final E identity, final BiFunction<E, S, E> accumulator) {
+        E result = identity;
+        while (iterator.hasNext()) {
+            result = accumulator.apply(result, iterator.next());
+        }
+
+        return result;
+    }
+
+    public static <S, E> E reduce(final Iterable<S> iterable, final E identity, final BiFunction<E, S, E> accumulator) {
+        return reduce(iterable.iterator(), identity, accumulator);
     }
 
     ///////////////
