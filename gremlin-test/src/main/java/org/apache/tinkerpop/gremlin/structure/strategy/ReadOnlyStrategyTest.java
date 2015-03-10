@@ -52,7 +52,7 @@ public class ReadOnlyStrategyTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     public void shouldNotAllowRemoveVertex() {
         graph.addVertex();
-        assertException(g -> graph.vertices().forEachRemaining(Vertex::remove));
+        assertException(g -> g.vertices().forEachRemaining(Vertex::remove));
     }
 
     @Test
