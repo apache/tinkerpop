@@ -56,7 +56,7 @@ public class HadoopEdgeIterator extends HadoopElementIterator<Edge> {
                 if (this.readers.isEmpty())
                     throw FastNoSuchElementException.instance();
                 if (this.readers.peek().nextKeyValue()) {
-                    this.edgeIterator = this.readers.peek().getCurrentValue().get().iterators().edgeIterator(Direction.OUT);
+                    this.edgeIterator = this.readers.peek().getCurrentValue().get().edges(Direction.OUT);
                 } else {
                     this.readers.remove();
                 }
@@ -75,7 +75,7 @@ public class HadoopEdgeIterator extends HadoopElementIterator<Edge> {
                 if (this.readers.isEmpty())
                     return false;
                 if (this.readers.peek().nextKeyValue()) {
-                    this.edgeIterator = this.readers.peek().getCurrentValue().get().iterators().edgeIterator(Direction.OUT);
+                    this.edgeIterator = this.readers.peek().getCurrentValue().get().edges(Direction.OUT);
                 } else {
                     this.readers.remove();
                 }

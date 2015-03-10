@@ -88,7 +88,7 @@ public final class SparkVertexPayload<M> implements SparkPayload<M>, Messenger<M
             final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
             final Traversal.Admin<Vertex, Edge> incidentTraversal = SparkVertexPayload.setVertexStart(localMessageScope.getIncidentTraversal().get(), this.vertex);
             final Direction direction = SparkVertexPayload.getOppositeDirection(incidentTraversal);
-            incidentTraversal.forEachRemaining(edge -> this.outgoing.add(new Tuple2<>(edge.iterators().vertexIterator(direction).next().id(), message)));
+            incidentTraversal.forEachRemaining(edge -> this.outgoing.add(new Tuple2<>(edge.vertices(direction).next().id(), message)));
         } else {
             ((MessageScope.Global) messageScope).vertices().forEach(v -> this.outgoing.add(new Tuple2<>(v.id(), message)));
         }

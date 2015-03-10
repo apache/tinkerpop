@@ -41,7 +41,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SparkVertex implements Vertex, Vertex.Iterators, Serializable {
+public final class SparkVertex implements Vertex, Serializable {
 
     private static GryoWriter GRYO_WRITER = GryoWriter.build().create();
     private static GryoReader GRYO_READER = GryoReader.build().create();
@@ -87,24 +87,20 @@ public final class SparkVertex implements Vertex, Vertex.Iterators, Serializable
         this.vertex.remove();
     }
 
+
     @Override
-    public Iterators iterators() {
-        return this;
+    public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
+        return this.vertex.edges(direction, edgeLabels);
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
-        return this.vertex.iterators().edgeIterator(direction, edgeLabels);
+    public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
+        return this.vertex.vertices(direction, edgeLabels);
     }
 
     @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels) {
-        return this.vertex.iterators().vertexIterator(direction, edgeLabels);
-    }
-
-    @Override
-    public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
-        return this.vertex.iterators().propertyIterator(propertyKeys);
+    public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
+        return this.vertex.properties(propertyKeys);
     }
 
     @Override

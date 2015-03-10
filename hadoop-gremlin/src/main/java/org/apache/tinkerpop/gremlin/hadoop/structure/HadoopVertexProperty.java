@@ -31,7 +31,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopVertexProperty<V> implements VertexProperty<V>, VertexProperty.Iterators, WrappedVertexProperty<VertexProperty<V>> {
+public class HadoopVertexProperty<V> implements VertexProperty<V>, WrappedVertexProperty<VertexProperty<V>> {
 
     private final VertexProperty<V> baseVertexProperty;
     private final HadoopVertex hadoopVertex;
@@ -102,12 +102,7 @@ public class HadoopVertexProperty<V> implements VertexProperty<V>, VertexPropert
     }
 
     @Override
-    public VertexProperty.Iterators iterators() {
-        return this;
-    }
-
-    @Override
-    public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
-        return IteratorUtils.<Property<U>, Property<U>>map(this.getBaseVertexProperty().iterators().propertyIterator(propertyKeys), property -> new HadoopProperty<>(property, HadoopVertexProperty.this));
+    public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
+        return IteratorUtils.<Property<U>, Property<U>>map(this.getBaseVertexProperty().properties(propertyKeys), property -> new HadoopProperty<>(property, HadoopVertexProperty.this));
     }
 }

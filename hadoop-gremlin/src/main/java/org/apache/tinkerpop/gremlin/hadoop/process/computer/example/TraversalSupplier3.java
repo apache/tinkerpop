@@ -30,6 +30,6 @@ import java.util.function.Supplier;
 public class TraversalSupplier3 implements Supplier<Traversal> {
     @Override
     public Traversal get() {
-        return HadoopGraph.open().V().<String>values("name").group().<String>by(s -> s.substring(1, 2)).by(v -> v).<Collection>by(Collection::size);
+        return HadoopGraph.open().traversal().V().<String>values("name").group().<String>by(s -> s.substring(1, 2)).by(v -> v).<Collection>by(Collection::size);
     }
 }

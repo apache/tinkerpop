@@ -57,7 +57,7 @@ public class GiraphMessenger<M> implements Messenger<M> {
             final Direction direction = GiraphMessenger.getOppositeDirection(incidentTraversal);
             incidentTraversal.forEachRemaining(edge ->
                     this.giraphComputeVertex.sendMessage(
-                            new LongWritable(Long.valueOf(edge.iterators().vertexIterator(direction).next().id().toString())),
+                            new LongWritable(Long.valueOf(edge.vertices(direction).next().id().toString())),
                             new ObjectWritable<>(localMessageScope.getEdgeFunction().apply(message, edge))));
         } else {
             final MessageScope.Global globalMessageScope = (MessageScope.Global) messageScope;
