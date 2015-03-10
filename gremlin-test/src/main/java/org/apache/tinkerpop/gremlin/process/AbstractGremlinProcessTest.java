@@ -20,8 +20,6 @@ package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.GraphManager;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.util.MapHelper;
 import org.junit.Before;
 
@@ -50,9 +48,12 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         return !hasGraphComputerRequirement() || graph.features().graph().supportsComputer();
     }
 
+    /**
+     * Determines if this test suite has "computer" requirements.
+     */
     private boolean hasGraphComputerRequirement() {
-        // do the negation of STANDARD as we expect a type of REASONING that would infer computer support
-        return !GraphManager.getTraversalEngine().getType().equals(TraversalEngine.Type.STANDARD);
+        // do the negation of STANDARD as we expect a future type of REASONING that would infer COMPUTER support
+        return !GraphManager.getTraversalEngineType().equals(TraversalEngine.Type.STANDARD);
     }
 
     @Before
@@ -63,12 +64,10 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
             // ignore tests that aren't supported by a specific TraversalEngine
             final IgnoreEngine ignoreEngine = this.getClass().getMethod(name.getMethodName()).getAnnotation(IgnoreEngine.class);
             if (ignoreEngine != null)
-                assumeTrue(String.format("This test is ignored for %s", ignoreEngine.value()), !ignoreEngine.value().equals(GraphManager.getTraversalEngine().getType()));
+                assumeTrue(String.format("This test is ignored for %s", ignoreEngine.value()), !ignoreEngine.value().equals(GraphManager.getTraversalEngineType()));
         } catch (NoSuchMethodException nsme) {
             throw new RuntimeException(String.format("Could not find test method %s in test case %s", name.getMethodName(), this.getClass().getName()));
         }
-
-       // TODO: g.engine(GraphManager.getTraversalEngine());
     }
 
     public <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {
