@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -189,6 +190,60 @@ public class IteratorUtilsTest {
         iterable.add("test2");
         iterable.add("test3");
         assertIterator(IteratorUtils.list(iterable.iterator()).iterator(), iterable.size());
+    }
+
+    @Test
+    public void shouldMatchAllPositively() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+        assertTrue(IteratorUtils.allMatch(iterable.iterator(), s -> s.startsWith("test")));
+    }
+
+    @Test
+    public void shouldMatchAllNegatively() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+        assertFalse(IteratorUtils.allMatch(iterable.iterator(), s -> s.startsWith("test1")));
+    }
+
+    @Test
+    public void shouldMatchAnyPositively() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+        assertTrue(IteratorUtils.anyMatch(iterable.iterator(), s -> s.startsWith("test3")));
+    }
+
+    @Test
+    public void shouldMatchAnyNegatively() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+        assertFalse(IteratorUtils.anyMatch(iterable.iterator(), s -> s.startsWith("dfaa")));
+    }
+
+    @Test
+    public void shouldMatchNonePositively() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+        assertTrue(IteratorUtils.noneMatch(iterable.iterator(), s -> s.startsWith("test4")));
+    }
+
+    @Test
+    public void shouldMatchNoneNegatively() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+        assertFalse(IteratorUtils.noneMatch(iterable.iterator(), s -> s.startsWith("test")));
     }
 
     public <S> void assertIterator(final Iterator<S> itty, final int size) {
