@@ -375,6 +375,21 @@ public class IteratorUtilsTest {
         assertIterator(IteratorUtils.filter(iterable, s -> s.equals("test1")).iterator(), 1);
     }
 
+    @Test
+    public void shouldConcatIterators() {
+        final List<String> iterable1 = new ArrayList<>();
+        iterable1.add("test1");
+        iterable1.add("test2");
+        iterable1.add("test3");
+
+        final List<String> iterable2 = new ArrayList<>();
+        iterable2.add("test4");
+        iterable2.add("test5");
+        iterable2.add("test6");
+
+        assertIterator(IteratorUtils.concat(iterable1.iterator(), iterable2.iterator()), 6);
+    }
+
 
     public <S> void assertIterator(final Iterator<S> itty, final int size) {
         for (int ix = 0; ix < size; ix++) {
