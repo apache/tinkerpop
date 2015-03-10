@@ -81,7 +81,7 @@ public abstract class AbstractGremlinTest {
 
         // not sure how the strategy can ever be null, but it seems to happen in the performance tests
         graph = graphProvider.openTestGraph(config, strategiesToTest);
-        g = graph.traversal();
+        g = graphProvider.traversal(graph);
 
         final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
 
