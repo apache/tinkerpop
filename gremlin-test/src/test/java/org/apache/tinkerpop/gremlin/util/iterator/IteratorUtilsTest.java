@@ -32,7 +32,7 @@ public class IteratorUtilsTest {
         iterable.add("test1");
         iterable.add("test2");
         iterable.add("test3");
-        assertIterator(IteratorUtils.convertToIterator(iterable), iterable.size());
+        assertIterator(IteratorUtils.asIterator(iterable), iterable.size());
     }
 
     @Test
@@ -41,7 +41,7 @@ public class IteratorUtilsTest {
         iterable.add("test1");
         iterable.add("test2");
         iterable.add("test3");
-        assertIterator(IteratorUtils.convertToIterator(iterable.iterator()), iterable.size());
+        assertIterator(IteratorUtils.asIterator(iterable.iterator()), iterable.size());
     }
 
     @Test
@@ -50,13 +50,13 @@ public class IteratorUtilsTest {
         iterable[0] = "test1";
         iterable[1] = "test2";
         iterable[2] = "test3";
-        assertIterator(IteratorUtils.convertToIterator(iterable), iterable.length);
+        assertIterator(IteratorUtils.asIterator(iterable), iterable.length);
     }
 
     @Test
     public void shouldConvertThrowableToIterator() {
         final Exception ex = new Exception("test1");
-        assertIterator(IteratorUtils.convertToIterator(ex), 1);
+        assertIterator(IteratorUtils.asIterator(ex), 1);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class IteratorUtilsTest {
         iterable.add("test1");
         iterable.add("test2");
         iterable.add("test3");
-        assertIterator(IteratorUtils.convertToIterator(iterable.stream()), iterable.size());
+        assertIterator(IteratorUtils.asIterator(iterable.stream()), iterable.size());
     }
 
     @Test
@@ -75,7 +75,7 @@ public class IteratorUtilsTest {
         m.put("key2", "val2");
         m.put("key3", "val3");
 
-        final Iterator itty = IteratorUtils.convertToIterator(m);
+        final Iterator itty = IteratorUtils.asIterator(m);
         for (int ix = 0; ix < m.size(); ix++) {
             final Map.Entry entry = (Map.Entry) itty.next();
             assertEquals("key" + (ix + 1), entry.getKey());
@@ -87,7 +87,7 @@ public class IteratorUtilsTest {
 
     @Test
     public void shouldConvertAnythingElseToIteratorByWrapping() {
-        assertIterator(IteratorUtils.convertToIterator("test1"), 1);
+        assertIterator(IteratorUtils.asIterator("test1"), 1);
     }
 
     @Test
@@ -96,7 +96,7 @@ public class IteratorUtilsTest {
         iterable.add("test1");
         iterable.add("test2");
         iterable.add("test3");
-        assertIterator(IteratorUtils.convertToList(iterable).iterator(), iterable.size());
+        assertIterator(IteratorUtils.asList(iterable).iterator(), iterable.size());
     }
 
     @Test
@@ -105,7 +105,7 @@ public class IteratorUtilsTest {
         iterable.add("test1");
         iterable.add("test2");
         iterable.add("test3");
-        assertIterator(IteratorUtils.convertToList(iterable.iterator()).iterator(), iterable.size());
+        assertIterator(IteratorUtils.asList(iterable.iterator()).iterator(), iterable.size());
     }
 
     @Test
@@ -114,13 +114,13 @@ public class IteratorUtilsTest {
         iterable[0] = "test1";
         iterable[1] = "test2";
         iterable[2] = "test3";
-        assertIterator(IteratorUtils.convertToList(iterable).iterator(), iterable.length);
+        assertIterator(IteratorUtils.asList(iterable).iterator(), iterable.length);
     }
 
     @Test
     public void shouldConvertThrowableToList() {
         final Exception ex = new Exception("test1");
-        assertIterator(IteratorUtils.convertToList(ex).iterator(), 1);
+        assertIterator(IteratorUtils.asList(ex).iterator(), 1);
     }
 
     @Test
@@ -129,7 +129,7 @@ public class IteratorUtilsTest {
         iterable.add("test1");
         iterable.add("test2");
         iterable.add("test3");
-        assertIterator(IteratorUtils.convertToList(iterable.stream()).iterator(), iterable.size());
+        assertIterator(IteratorUtils.asList(iterable.stream()).iterator(), iterable.size());
     }
 
     @Test
@@ -139,7 +139,7 @@ public class IteratorUtilsTest {
         m.put("key2", "val2");
         m.put("key3", "val3");
 
-        final Iterator itty = IteratorUtils.convertToList(m).iterator();
+        final Iterator itty = IteratorUtils.asList(m).iterator();
         for (int ix = 0; ix < m.size(); ix++) {
             final Map.Entry entry = (Map.Entry) itty.next();
             assertEquals("key" + (ix + 1), entry.getKey());
@@ -151,7 +151,7 @@ public class IteratorUtilsTest {
 
     @Test
     public void shouldConvertAnythingElseToListByWrapping() {
-        assertIterator(IteratorUtils.convertToList("test1").iterator(), 1);
+        assertIterator(IteratorUtils.asList("test1").iterator(), 1);
     }
 
     @Test

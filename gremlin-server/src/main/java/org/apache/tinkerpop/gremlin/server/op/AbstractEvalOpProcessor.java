@@ -151,7 +151,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         });
 
         final CompletableFuture<Void> iterationFuture = evalFuture.thenAcceptAsync(o -> {
-            final Iterator itty = IteratorUtils.convertToIterator(o);
+            final Iterator itty = IteratorUtils.asIterator(o);
 
             logger.info("Preparing to iterate results from - {} - in thread [{}]", msg, Thread.currentThread().getName());
 

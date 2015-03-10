@@ -51,30 +51,6 @@ public final class IteratorUtils {
 
     ///////////////
 
-    public static Iterator convertToIterator(final Object o) {
-        final Iterator itty;
-        if (o instanceof Iterable)
-            itty = ((Iterable) o).iterator();
-        else if (o instanceof Iterator)
-            itty = (Iterator) o;
-        else if (o instanceof Object[])
-            itty = new ArrayIterator<>((Object[]) o);
-        else if (o instanceof Stream)
-            itty = ((Stream) o).iterator();
-        else if (o instanceof Map)
-            itty = ((Map) o).entrySet().iterator();
-        else if (o instanceof Throwable)
-            itty = IteratorUtils.of(((Throwable) o).getMessage());
-        else
-            itty = IteratorUtils.of(o);
-        return itty;
-    }
-
-    public static List convertToList(final Object o) {
-        final Iterator iterator = IteratorUtils.convertToIterator(o);
-        return list(iterator);
-    }
-
     public static final <S extends Collection<T>, T> S fill(final Iterator<T> iterator, final S collection) {
         while (iterator.hasNext()) {
             collection.add(iterator.next());
@@ -91,6 +67,8 @@ public final class IteratorUtils {
     public static <S> List<S> list(final Iterator<S> iterator) {
         return fill(iterator, new ArrayList<>());
     }
+
+    ///////////////////
 
     public static <T> boolean allMatch(final Iterator<T> iterator, final Predicate<T> predicate) {
         while (iterator.hasNext()) {
@@ -121,6 +99,8 @@ public final class IteratorUtils {
 
         return true;
     }
+
+    ///////////////////
 
     public static <K, S> Map<K, S> collectMap(final Iterator<S> iterator, final Function<S, K> key) {
         return collectMap(iterator, key, Function.identity());
@@ -260,5 +240,30 @@ public final class IteratorUtils {
             iterator.addIterator(itty);
         }
         return iterator;
+    }
+
+    ///////////////////
+
+    public static Iterator asIterator(final Object o) {
+        final Iterator itty;
+        if (o instanceof Iterable)
+            itty = ((Iterable) o).iterator();
+        else if (o instanceof Iterator)
+            itty = (Iterator) o;
+        else if (o instanceof Object[])
+            itty = new ArrayIterator<>((Object[]) o);
+        else if (o instanceof Stream)
+            itty = ((Stream) o).iterator();
+        else if (o instanceof Map)
+            itty = ((Map) o).entrySet().iterator();
+        else if (o instanceof Throwable)
+            itty = of(((Throwable) o).getMessage());
+        else
+            itty = of(o);
+        return itty;
+    }
+
+    public static List asList(final Object o) {
+        return list(asIterator(o));
     }
 }
