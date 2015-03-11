@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver.ser;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -32,6 +33,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -111,13 +113,13 @@ public class JsonMessageSerializerGremlinV1d0Test {
 
     @Test
     public void serializeEdge() throws Exception {
-        final Graph g = TinkerGraph.open();
-        final Vertex v1 = g.addVertex();
-        final Vertex v2 = g.addVertex();
+        final Graph graph = TinkerGraph.open();
+        final Vertex v1 = graph.addVertex();
+        final Vertex v2 = graph.addVertex();
         final Edge e = v1.addEdge("test", v2);
         e.property("abc", 123);
 
-        final Iterable<Edge> iterable = g.E().toList();
+        final Iterable<Edge> iterable = IteratorUtils.list(graph.edges());
 
         final ResponseMessage response = convert(iterable);
         assertCommon(response);
@@ -142,13 +144,13 @@ public class JsonMessageSerializerGremlinV1d0Test {
 
     @Test
     public void serializeEdgeProperty() throws Exception {
-        final Graph g = TinkerGraph.open();
-        final Vertex v1 = g.addVertex();
-        final Vertex v2 = g.addVertex();
+        final Graph graph = TinkerGraph.open();
+        final Vertex v1 = graph.addVertex();
+        final Vertex v2 = graph.addVertex();
         final Edge e = v1.addEdge("test", v2);
         e.property("abc", 123);
 
-        final Iterable<Property<Object>> iterable = e.properties("abc").toList();
+        final Iterable<Property<Object>> iterable = IteratorUtils.list(e.properties("abc"));
         final ResponseMessage response = convert(iterable);
         assertCommon(response);
 
@@ -159,8 +161,8 @@ public class JsonMessageSerializerGremlinV1d0Test {
 
     @Test
     public void serializeVertexWithEmbeddedMap() throws Exception {
-        final Graph g = TinkerGraph.open();
-        final Vertex v = g.addVertex();
+        final Graph graph = TinkerGraph.open();
+        final Vertex v = graph.addVertex();
         final Map<String, Object> map = new HashMap<>();
         map.put("x", 500);
         map.put("y", "some");
@@ -172,7 +174,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
 
         v.property("friends", friends);
 
-        final List list = g.V().toList();
+        final List list = IteratorUtils.list(graph.vertices());
 
         final ResponseMessage response = convert(list);
         assertCommon(response);
@@ -200,7 +202,8 @@ public class JsonMessageSerializerGremlinV1d0Test {
 
     @Test
     public void serializeToJsonMapWithElementForKey() throws Exception {
-        final TinkerGraph g = TinkerFactory.createClassic();
+        final TinkerGraph graph = TinkerFactory.createClassic();
+        final GraphTraversalContext g = graph.traversal();
         final Map<Vertex, Integer> map = new HashMap<>();
         map.put(g.V().has("name", Compare.eq, "marko").next(), 1000);
 

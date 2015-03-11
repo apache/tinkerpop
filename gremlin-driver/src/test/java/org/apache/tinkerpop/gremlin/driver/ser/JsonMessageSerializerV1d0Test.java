@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver.ser;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -29,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -157,7 +159,7 @@ public class JsonMessageSerializerV1d0Test {
         final Edge e = v1.addEdge("test", v2);
         e.property("abc", 123);
 
-        final Iterable<Edge> iterable = g.E().toList();
+        final Iterable<Edge> iterable = IteratorUtils.list(g.edges());
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
 
         final JSONObject json = new JSONObject(results);
@@ -191,7 +193,7 @@ public class JsonMessageSerializerV1d0Test {
         final Edge e = v1.addEdge("test", v2);
         e.property("abc", 123);
 
-        final Iterable<Property<Object>> iterable = e.properties("abc").toList();
+        final Iterable<Property<Object>> iterable = IteratorUtils.list(e.properties("abc"));
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
 
         final JSONObject json = new JSONObject(results);
@@ -224,7 +226,7 @@ public class JsonMessageSerializerV1d0Test {
 
         v.property("friends", friends);
 
-        final Iterable iterable = g.V().toList();
+        final Iterable iterable = IteratorUtils.list(g.vertices());
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
         final JSONObject json = new JSONObject(results);
 
@@ -258,7 +260,8 @@ public class JsonMessageSerializerV1d0Test {
 
     @Test
     public void serializeToJsonMapWithElementForKey() throws Exception {
-        final TinkerGraph g = TinkerFactory.createClassic();
+        final TinkerGraph graph = TinkerFactory.createClassic();
+        final GraphTraversalContext g = graph.traversal();
         final Map<Vertex, Integer> map = new HashMap<>();
         map.put(g.V().has("name", Compare.eq, "marko").next(), 1000);
 

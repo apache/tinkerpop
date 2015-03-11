@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.driver.ser;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
 import org.apache.tinkerpop.gremlin.structure.Compare;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -30,10 +30,10 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -162,7 +162,7 @@ public class GryoMessageSerializerV1D0Test {
         final Edge e = v1.addEdge("test", v2);
         e.property("abc", 123);
 
-        final Iterable<Edge> iterable = g.E().toList();
+        final Iterable<Edge> iterable = IteratorUtils.list(g.edges());
 
         final ResponseMessage response = convertBinary(iterable);
         assertCommon(response);
@@ -174,12 +174,12 @@ public class GryoMessageSerializerV1D0Test {
         assertEquals(2l, deserializedEdge.id());
         assertEquals("test", deserializedEdge.label());
 
-        assertEquals(new Integer(123), (Integer) deserializedEdge.value("abc"));
-        assertEquals(1, StreamFactory.stream(deserializedEdge.iterators().propertyIterator()).count());
-        assertEquals(0l, deserializedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-        assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.iterators().vertexIterator(Direction.OUT).next().label());
-        assertEquals(1l, deserializedEdge.iterators().vertexIterator(Direction.IN).next().id());
-        assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.iterators().vertexIterator(Direction.IN).next().label());
+        assertEquals(123, deserializedEdge.values("abc").next());
+        assertEquals(1, IteratorUtils.count(deserializedEdge.properties()));
+        assertEquals(0l, deserializedEdge.outVertex().id());
+        assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.outVertex().label());
+        assertEquals(1l, deserializedEdge.inVertex().id());
+        assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.inVertex().label());
     }
 
     @Test
@@ -197,7 +197,7 @@ public class GryoMessageSerializerV1D0Test {
 
         v.property("friends", friends);
 
-        final List list = g.V().toList();
+        final List list = IteratorUtils.list(g.vertices());
 
         final ResponseMessage response = convertBinary(list);
         assertCommon(response);
@@ -209,9 +209,9 @@ public class GryoMessageSerializerV1D0Test {
         assertEquals(0l, deserializedVertex.id());
         assertEquals(Vertex.DEFAULT_LABEL, deserializedVertex.label());
 
-        assertEquals(1, StreamFactory.stream(deserializedVertex.iterators().propertyIterator()).count());
+        assertEquals(1, IteratorUtils.count(deserializedVertex.properties()));
 
-        final List<Object> deserializedInnerList = (List<Object>) deserializedVertex.iterators().valueIterator("friends").next();
+        final List<Object> deserializedInnerList = (List<Object>) deserializedVertex.values("friends").next();
         assertEquals(3, deserializedInnerList.size());
         assertEquals("x", deserializedInnerList.get(0));
         assertEquals(5, deserializedInnerList.get(1));
@@ -224,7 +224,8 @@ public class GryoMessageSerializerV1D0Test {
 
     @Test
     public void serializeToMapWithElementForKey() throws Exception {
-        final TinkerGraph g = TinkerFactory.createClassic();
+        final TinkerGraph graph = TinkerFactory.createClassic();
+        final GraphTraversalContext g = graph.traversal();
         final Map<Vertex, Integer> map = new HashMap<>();
         map.put(g.V().has("name", Compare.eq, "marko").next(), 1000);
 
@@ -235,11 +236,11 @@ public class GryoMessageSerializerV1D0Test {
         assertEquals(1, deserializedMap.size());
 
         final Vertex deserializedMarko = deserializedMap.keySet().iterator().next();
-        assertEquals("marko", deserializedMarko.iterators().valueIterator("name").next().toString());
+        assertEquals("marko", deserializedMarko.values("name").next().toString());
         assertEquals(1, deserializedMarko.id());
         assertEquals(Vertex.DEFAULT_LABEL, deserializedMarko.label());
-        assertEquals(new Integer(29), (Integer) deserializedMarko.iterators().valueIterator("age").next());
-        assertEquals(2, StreamFactory.stream(deserializedMarko.iterators().propertyIterator()).count());
+        assertEquals(29, deserializedMarko.values("age").next());
+        assertEquals(2, IteratorUtils.count(deserializedMarko.properties()));
 
         assertEquals(new Integer(1000), deserializedMap.values().iterator().next());
     }
