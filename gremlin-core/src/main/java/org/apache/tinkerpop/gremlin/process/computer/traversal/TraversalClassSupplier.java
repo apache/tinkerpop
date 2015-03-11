@@ -16,38 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process;
+package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.process.Traversal;
 
-import java.io.Serializable;
-import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversalEngine extends Serializable {
+public final class TraversalClassSupplier<S, E> implements Supplier<Traversal.Admin<S, E>> {
 
-    public enum Type {STANDARD, COMPUTER}
+    private final Class<? extends Supplier<Traversal.Admin<S, E>>> traversalSupplierClass;
 
-    public void processTraversal(final Traversal.Admin<?, ?> traversal);
-
-    public Type getType();
-
-    public Optional<GraphComputer> getGraphComputer();
-
-    public default boolean isStandard() {
-        return this.getType().equals(Type.STANDARD);
+    public TraversalClassSupplier(final Class<? extends Supplier<Traversal.Admin<S, E>>> traversalSupplierClass) {
+        this.traversalSupplierClass = traversalSupplierClass;
     }
 
-    public default boolean isComputer() {
-        return this.getType().equals(Type.COMPUTER);
-    }
-
-    ///////////
-
-    public interface Builder extends Serializable {
-        public TraversalEngine create(final Graph graph);
+    @Override
+    public Traversal.Admin<S, E> get() {
+        try {
+            return this.traversalSupplierClass.getConstructor().newInstance().get();
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 }

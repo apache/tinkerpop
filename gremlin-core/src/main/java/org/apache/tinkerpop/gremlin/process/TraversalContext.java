@@ -18,9 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -29,6 +31,12 @@ public interface TraversalContext {
 
     public TraversalContext.Builder asBuilder();
 
+    public Optional<GraphComputer> getGraphComputer();
+
+    public Optional<Graph> getGraph();
+
+    /////////////
+
     public interface Builder<C extends TraversalContext> extends Serializable {
 
         public Builder engine(final TraversalEngine.Builder engine);
@@ -36,9 +44,5 @@ public interface TraversalContext {
         public Builder strategy(final TraversalStrategy strategy);
 
         public C create(final Graph graph);
-
-        ///
-
-        public TraversalEngine.Builder getTraversalEngineBuilder();
     }
 }

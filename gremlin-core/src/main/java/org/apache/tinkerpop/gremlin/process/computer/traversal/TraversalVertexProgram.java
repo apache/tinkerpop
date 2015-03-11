@@ -256,10 +256,6 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             return this;
         }
 
-        /*public Builder traversal(final String traversalScript) {
-            return traversal(GREMLIN_GROOVY, traversalScript);
-        }*/
-
         public Builder traversal(final Traversal.Admin<?, ?> traversal) {
             return this.traversal(traversal, true);
         }

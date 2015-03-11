@@ -21,14 +21,17 @@ package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.tinkerpop.gremlin.groovy.engine.GroovyTraversalScript;
+import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
 import java.io.File;
@@ -96,10 +99,11 @@ public class HadoopRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object submit(final List<String> args) throws RemoteException {
         try {
-            final GroovyTraversalScript<?, ?> traversal = GroovyTraversalScript.of(RemoteAcceptor.getScript(String.join(SPACE, args), this.shell)).over(this.hadoopGraph).using(this.hadoopGraph.compute());
+            String script = RemoteAcceptor.getScript(String.join(SPACE, args), this.shell);
             if (this.useSugarPlugin)
-                traversal.withSugar();
-            final ComputerResult computerResult = traversal.result().get();
+                script = SugarLoader.class.getPackage() + ".SugarLoader.load()\n" + script;
+            final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(this.hadoopGraph.getClass(), GraphTraversalContext.of().engine(ComputerTraversalEngine.build()), "gremlin-groovy", script).create();
+            final ComputerResult computerResult = this.hadoopGraph.compute().program(program).submit().get();
             this.shell.getInterp().getContext().setProperty(RESULT, computerResult);
 
             final GraphTraversal.Admin<?, ?> traversal2 = new DefaultGraphTraversal<>(computerResult.graph());

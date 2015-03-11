@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -55,14 +56,14 @@ public final class ComputerTraversalEngine implements TraversalEngine {
         return StringFactory.traversalEngineString(this);
     }
 
-    public GraphComputer getGraphComputer() {
-        return this.graphComputer;
+    @Override
+    public Optional<GraphComputer> getGraphComputer() {
+        return Optional.ofNullable(this.graphComputer);
     }
 
     public static Builder build() {
         return new Builder();
     }
-
 
     public static class Builder implements TraversalEngine.Builder, Serializable {
 

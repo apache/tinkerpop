@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.TraversalContext;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -31,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -69,8 +71,14 @@ public class GraphTraversalContext implements TraversalContext {
         return new Builder();
     }
 
-    public Graph getGraph() {
-        return this.graph;
+    @Override
+    public Optional<GraphComputer> getGraphComputer() {
+        return this.engine.create(this.graph).getGraphComputer();
+    }
+
+    @Override
+    public Optional<Graph> getGraph() {
+        return Optional.ofNullable(this.graph);
     }
 
     @Override

@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Graph
 
 /**
@@ -36,11 +35,11 @@ public class ComputerTestHelper {
             final String traversalScript) {
 
         final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(graph.getClass(), builder, scriptEngineName, traversalScript).create();
-        final ComputerResult result = ((ComputerTraversalEngine) builder.getTraversalEngineBuilder().create(graph)).getGraphComputer().program(program).submit().get();
+        final ComputerResult result = builder.create(graph).getGraphComputer().get().program(program).submit().get();
         return program.computerResultTraversal(result);
     }
 
     public static final Traversal compute(final String script, final GraphTraversalContext g) {
-        return ComputerTestHelper.compute(g.getGraph(), g.asBuilder(), "gremlin-groovy", script);
+        return ComputerTestHelper.compute(g.getGraph().get(), g.asBuilder(), "gremlin-groovy", script);
     }
 }
