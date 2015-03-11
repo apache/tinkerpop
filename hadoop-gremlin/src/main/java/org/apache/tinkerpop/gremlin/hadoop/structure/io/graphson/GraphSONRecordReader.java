@@ -18,6 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson;
 
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.hadoop.mapreduce.RecordReader;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -27,11 +32,6 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.RecordReader;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -43,9 +43,9 @@ import java.util.function.Function;
  */
 public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
-    private final LineRecordReader lineRecordReader;
     private static final GraphSONReader GRAPHSON_READER = GraphSONReader.build().create();
-    private VertexWritable vertex = null;
+    private final VertexWritable vertex = new VertexWritable(null);
+    private final LineRecordReader lineRecordReader;
 
     public GraphSONRecordReader() {
         this.lineRecordReader = new LineRecordReader();
@@ -69,7 +69,7 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWrita
             v = (TinkerVertex) GRAPHSON_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
         }
 
-        this.vertex = new VertexWritable(v);
+        this.vertex.set(v);
         return true;
     }
 
