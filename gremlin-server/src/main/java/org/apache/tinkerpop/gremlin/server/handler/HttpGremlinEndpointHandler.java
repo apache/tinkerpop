@@ -187,7 +187,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                                     requestArguments.getValue0(), requestArguments.getValue1(), o, Thread.currentThread().getName());
                             final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
                                     .code(ResponseStatusCode.SUCCESS)
-                                    .result(IteratorUtils.convertToList(o)).create();
+                                    .result(IteratorUtils.asList(o)).create();
                             return (Object) Unpooled.wrappedBuffer(serializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
                         }));
 

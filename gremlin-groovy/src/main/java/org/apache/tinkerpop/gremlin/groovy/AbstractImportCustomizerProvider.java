@@ -55,7 +55,7 @@ import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
-import org.apache.tinkerpop.gremlin.util.tools.TimeUtils;
+import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
@@ -128,7 +128,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         staticImports.add(Order.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Operator.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Scope.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(TimeUtils.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(TimeUtil.class.getCanonicalName() + DOT_STAR);
         staticImports.add(VertexProperty.Cardinality.class.getCanonicalName() + DOT_STAR);
     }
 

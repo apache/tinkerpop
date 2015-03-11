@@ -19,9 +19,11 @@
 package org.apache.tinkerpop.gremlin.util;
 
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public final class TimeUtil {
     public static long secondsSince(final long startNanos) {
@@ -38,5 +40,18 @@ public final class TimeUtil {
 
     public static long timeSince(final long startNanos, final TimeUnit destUnit) {
         return destUnit.convert(System.nanoTime() - startNanos, TimeUnit.NANOSECONDS);
+    }
+
+    public static double clock(final Runnable runnable) {
+        return clock(100, runnable);
+    }
+
+    public static double clock(final int loops, final Runnable runnable) {
+        runnable.run(); // warm-up
+        return IntStream.range(0, loops).mapToDouble(i -> {
+            long t = System.nanoTime();
+            runnable.run();
+            return (System.nanoTime() - t) * 0.000001;
+        }).sum() / loops;
     }
 }
