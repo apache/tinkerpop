@@ -59,6 +59,8 @@ public final class MultiIterator<T> implements Iterator<T>, Serializable {
 
     @Override
     public T next() {
+        if (this.iterators.isEmpty()) throw FastNoSuchElementException.instance();
+
         Iterator<T> currentIterator = iterators.get(this.current);
         while (true) {
             if (currentIterator.hasNext()) {
