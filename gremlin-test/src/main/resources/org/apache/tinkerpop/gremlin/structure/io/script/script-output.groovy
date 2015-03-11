@@ -1,3 +1,5 @@
+import org.apache.tinkerpop.gremlin.structure.Direction
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,11 +22,13 @@ def stringify(vertex) {
     def edgeMap = { vdir ->
         return {
             def e = it.get()
-            e.values("weight").inject(e.label(), e."${vdir}V"().next().id()).join(":")
+            def g = e.graph().traversal(standard)
+            g.E(e).values("weight").inject(e.label(), g.E(e).toV(Direction.valueOf(vdir.toUpperCase())).next().id()).join(":")
         }
     }
-    def v = vertex.values("name", "age", "lang").inject(vertex.id(), vertex.label()).join(":")
-    def outE = vertex.outE().map(edgeMap("in")).join(",")
-    def inE = vertex.inE().map(edgeMap("out")).join(",")
+    def g = vertex.graph().traversal(standard)
+    def v = g.V(vertex).values("name", "age", "lang").inject(vertex.id(), vertex.label()).join(":")
+    def outE = g.V(vertex).outE().map(edgeMap("in")).join(",")
+    def inE = g.V(vertex).inE().map(edgeMap("out")).join(",")
     return [v, outE, inE].join("\t")
 }

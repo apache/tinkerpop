@@ -31,10 +31,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.RangeByIsCo
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.tools.MultiMap;
 
 import java.io.Serializable;
@@ -176,9 +173,6 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     ConjunctionStrategy.instance());
             try {
                 CACHE.put(Graph.class, coreStrategies.clone());
-                CACHE.put(Vertex.class, coreStrategies.clone());
-                CACHE.put(Edge.class, coreStrategies.clone());
-                CACHE.put(VertexProperty.class, coreStrategies.clone());
                 CACHE.put(__.class, new DefaultTraversalStrategies());
             } catch (final CloneNotSupportedException e) {
                 throw new IllegalStateException(e.getMessage(), e);
@@ -196,12 +190,6 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     return CACHE.get(__.class);
                 else if (Graph.class.isAssignableFrom(emanatingClass))
                     return CACHE.get(Graph.class);
-                else if (Vertex.class.isAssignableFrom(emanatingClass))
-                    return CACHE.get(Vertex.class);
-                else if (Edge.class.isAssignableFrom(emanatingClass))
-                    return CACHE.get(Edge.class);
-                else if (VertexProperty.class.isAssignableFrom(emanatingClass))
-                    return CACHE.get(VertexProperty.class);
                 else
                     return new DefaultTraversalStrategies();
                 // throw new IllegalStateException("The provided class has no registered traversal strategies: " + emanatingClass);

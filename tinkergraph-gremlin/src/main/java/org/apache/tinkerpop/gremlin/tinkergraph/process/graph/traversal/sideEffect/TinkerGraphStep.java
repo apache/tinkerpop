@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.graph.traversal.sideEffect;
 
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.graph.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -38,7 +39,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphStep<S extends Element> extends GraphStep<S> {
+public class TinkerGraphStep<S extends Element> extends GraphStep<S> implements HasContainerHolder {
 
     public final List<HasContainer> hasContainers = new ArrayList<>();
 
@@ -102,4 +103,13 @@ public class TinkerGraphStep<S extends Element> extends GraphStep<S> {
         return list.iterator();
     }
 
+    @Override
+    public List<HasContainer> getHasContainers() {
+        return this.hasContainers;
+    }
+
+    @Override
+    public void addHasContainer(final HasContainer hasContainer) {
+        this.hasContainers.add(hasContainer);
+    }
 }
