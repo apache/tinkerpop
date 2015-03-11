@@ -28,4 +28,6 @@ import java.util.List;
 public interface HasContainerHolder {
 
     public List<HasContainer> getHasContainers();
+
+    public void addHasContainer(final HasContainer hasContainer);
 }

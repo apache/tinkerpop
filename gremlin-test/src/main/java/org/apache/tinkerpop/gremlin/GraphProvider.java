@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversa
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser;
@@ -77,7 +76,7 @@ public interface GraphProvider {
     }};
 
     public default GraphTraversalContext traversal(final Graph graph) {
-        return GraphTraversalContext.of().engine(StandardTraversalEngine.builder()).create(graph);
+        return GraphTraversalContext.build().engine(StandardTraversalEngine.build()).create(graph);
     }
 
     /**

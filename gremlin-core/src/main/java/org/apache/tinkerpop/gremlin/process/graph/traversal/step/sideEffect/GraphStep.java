@@ -40,7 +40,7 @@ import java.util.function.Supplier;
 public class GraphStep<S extends Element> extends StartStep<S> implements EngineDependent {
 
     protected final Class<S> returnClass;
-    protected final Object[] ids;
+    protected Object[] ids;
     protected transient Graph graph;
     protected transient Supplier<Iterator<S>> iteratorSupplier;
 
@@ -59,7 +59,7 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, Arrays.asList(this.ids), this.returnClass.getSimpleName().toLowerCase());
+        return TraversalHelper.makeStepString(this, Arrays.toString(this.ids), this.returnClass.getSimpleName().toLowerCase());
     }
 
     public boolean returnsVertices() {
@@ -84,6 +84,10 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
 
     public Object[] getIds() {
         return this.ids;
+    }
+
+    public void clearIds() {
+        this.ids = new Object[0];
     }
 
     @Override

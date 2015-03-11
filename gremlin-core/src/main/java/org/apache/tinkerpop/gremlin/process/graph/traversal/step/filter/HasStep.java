@@ -59,6 +59,11 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     }
 
     @Override
+    public void addHasContainer(final HasContainer hasContainer) {
+        throw new UnsupportedOperationException(this.getClass().getSimpleName() + " does not support adding new HasContainers");
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }

@@ -29,37 +29,37 @@ public abstract class GroovyGraphComputerTest {
 
     public static class ComputerTraversals extends GraphComputerTest {
         public GraphComputer get_g_compute() {
-            graph.compute();
+            g.getGraphComputer().get();
         }
 
         @Override
         public GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysXset_incr_and_orX() {
-            graph.compute().program(LambdaVertexProgram.build().memoryComputeKeys("set", "incr", "and", "or").create());
+            g.getGraphComputer().get().program(LambdaVertexProgram.build().memoryComputeKeys("set", "incr", "and", "or").create());
         }
 
         @Override
         public GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysXnullX() {
-            graph.compute().program(LambdaVertexProgram.build().memoryComputeKeys([null] as Set).create());
+            g.getGraphComputer().get().program(LambdaVertexProgram.build().memoryComputeKeys([null] as Set).create());
         }
 
         @Override
         public GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysX_X() {
-            graph.compute().program(LambdaVertexProgram.build().memoryComputeKeys('').create());
+            g.getGraphComputer().get().program(LambdaVertexProgram.build().memoryComputeKeys('').create());
         }
 
         @Override
         public GraphComputer get_g_compute_setupXsetXa_trueXX_executeXX_terminateXtrueX() {
-            graph.compute().program(LambdaVertexProgram.build().setup("gremlin-groovy", "a.set('a', true)").create());
+            g.getGraphComputer().get().program(LambdaVertexProgram.build().setup("gremlin-groovy", "a.set('a', true)").create());
         }
 
         @Override
         public GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX() {
-            graph.compute().program(LambdaVertexProgram.build().create());
+            g.getGraphComputer().get().program(LambdaVertexProgram.build().create());
         }
 
         @Override
         public GraphComputer get_g_compute_setupXX_executeXv_blah_m_incrX_terminateX1X_elementKeysXnameLengthCounterX_memoryKeysXa_bX() {
-            return graph.compute().program(LambdaVertexProgram.build().
+            return g.getGraphComputer().get().program(LambdaVertexProgram.build().
                     execute("gremlin-groovy", """
                         import static org.junit.Assert.*;
                         try {
@@ -85,7 +85,7 @@ public abstract class GroovyGraphComputerTest {
 
         @Override
         public GraphComputer get_g_compute_setupXabcdeX_executeXtestMemoryX_terminateXtestMemoryXmemoryKeysXabcdeX() {
-            graph.compute().program(LambdaVertexProgram.build().
+            g.getGraphComputer().get().program(LambdaVertexProgram.build().
                     setup("gremlin-groovy", """
                         a.set("a", 0l);
                         a.set("b", 0l);
@@ -142,7 +142,7 @@ public abstract class GroovyGraphComputerTest {
 
         @Override
         public GraphComputer get_g_compute_mapXageX_reduceXsumX_memoryXnextX_memoryKeyXageSumX() {
-            graph.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer> build()
+            g.getGraphComputer().get().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer> build()
                     .map("gremlin-groovy", "if(a.property('age').isPresent()) b.emit(a.value('age'))")
                     .reduce("gremlin-groovy", "c.emit(b.sum())")
                     .memory("gremlin-groovy", "a.next().getValue()")
@@ -151,7 +151,7 @@ public abstract class GroovyGraphComputerTest {
 
         @Override
         public GraphComputer get_g_compute_executeXcounterX_terminateX8X_mapreduceXcounter_aX_mapreduceXcounter_bX() {
-            graph.compute().program(LambdaVertexProgram.build()
+            g.getGraphComputer().get().program(LambdaVertexProgram.build()
                     .execute("gremlin-groovy", "a.property(VertexProperty.Cardinality.single,'counter', c.isInitialIteration() ? 1 : a.value('counter') + 1)")
                     .terminate("gremlin-groovy", "a.getIteration() > 8")
                     .elementComputeKeys(["counter"] as Set).create())
@@ -178,7 +178,7 @@ public abstract class GroovyGraphComputerTest {
 
         @Override
         public GraphComputer get_g_compute_mapXidX_reduceXidX_reduceKeySortXreverseX_memoryKeyXidsX() {
-            graph.compute().mapReduce(LambdaMapReduce.<Long, Long, Long, Long, List<Long>> build()
+            g.getGraphComputer().get().mapReduce(LambdaMapReduce.<Long, Long, Long, Long, List<Long>> build()
                     .map("b.emit(a.id() as Long, a.id() as Long)")
                     .reduce("b.forEachRemaining{c.emit(it, it)}")
                     .memoryKey("ids")
@@ -193,7 +193,7 @@ public abstract class GroovyGraphComputerTest {
 
         @Override
         public GraphComputer get_g_compute_programXTraversalVertexProgram_build_traversalXg_V_both_hasXlabel_personX_age_groupCountXaXX_create() {
-            graph.compute().program(TraversalVertexProgram.build().
+            g.getGraphComputer().get().program(TraversalVertexProgram.build().
                     traversal("GraphFactory.open(['gremlin.graph':'${graph.metaClass.theClass.getCanonicalName()}']).V().both().has(label,'person').values('age').groupCount('a')").
                     create());
         }

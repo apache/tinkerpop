@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.neo4j.BaseNeo4jGraphTest;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -282,7 +283,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     public void shouldEnsureTraverseRelationshipNeedsTx() throws ScriptException {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         final Bindings bindings = engine.createBindings();
-        bindings.put("g", graph);
+        bindings.put("g", graph.traversal(GraphTraversalContext.standard));
         bindings.put("#jsr223.groovy.engine.keep.globals", "phantom");
 
         Vertex marko = this.graph.addVertex(T.label, "Person", "name", "marko");
@@ -303,7 +304,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     public void shouldEnsureTraversalOfVerticesNeedsTx() throws ScriptException {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         final Bindings bindings = engine.createBindings();
-        bindings.put("g", graph);
+        bindings.put("g", graph.traversal(GraphTraversalContext.standard));
         bindings.put("#jsr223.groovy.engine.keep.globals", "phantom");
 
         Vertex marko = this.graph.addVertex(T.label, "Person", "name", "marko");
@@ -541,10 +542,10 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
 
             tryCommit(graph, graph -> {
                 assertEquals(2, graph.traversal().V().count().next().intValue());
-               // assertEquals(2, a.properties("name").count().next().intValue());
-               // assertEquals(1, b.properties("name").count().next().intValue());
-               // assertEquals(1, b.properties("location").count().next().intValue());
-               // assertEquals(0, g.E().count().next().intValue());
+                // assertEquals(2, a.properties("name").count().next().intValue());
+                // assertEquals(1, b.properties("name").count().next().intValue());
+                // assertEquals(1, b.properties("location").count().next().intValue());
+                // assertEquals(0, g.E().count().next().intValue());
 
                 assertEquals(4l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
                 assertEquals(2l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
@@ -579,10 +580,10 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             a.property(VertexProperty.Cardinality.single, "name", "the marko");
             tryCommit(graph, g -> {
                 assertEquals(2, g.traversal().V().count().next().intValue());
-               //assertEquals(1, a.properties().count().next().intValue());
-              //  assertEquals(1, b.properties("name").count().next().intValue());
-               // assertEquals(1, b.properties("location").count().next().intValue());
-              //  assertEquals(0, g.E().count().next().intValue());
+                //assertEquals(1, a.properties().count().next().intValue());
+                //  assertEquals(1, b.properties("name").count().next().intValue());
+                // assertEquals(1, b.properties("location").count().next().intValue());
+                //  assertEquals(0, g.E().count().next().intValue());
 
                 assertEquals(2l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
                 assertEquals(0l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
@@ -597,9 +598,9 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             a.property("name").remove();
             tryCommit(graph, g -> {
                 assertEquals(2, g.traversal().V().count().next().intValue());
-            //    assertEquals(0, a.properties().count().next().intValue());
-             //   assertEquals(2, b.properties().count().next().intValue());
-          //     assertEquals(0, g.E().count().next().intValue());
+                //    assertEquals(0, a.properties().count().next().intValue());
+                //   assertEquals(2, b.properties().count().next().intValue());
+                //     assertEquals(0, g.E().count().next().intValue());
                 assertEquals(2l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
                 assertEquals(0l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
                 assertEquals(0, StreamFactory.stream(a.getBaseVertex().getPropertyKeys()).count());
@@ -609,10 +610,10 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             a.property(VertexProperty.Cardinality.single, "name", "the marko", "acl", "private");
             tryCommit(graph, g -> {
                 assertEquals(2, g.traversal().V().count().next().intValue());
-               // assertEquals(1, a.properties("name").count().next().intValue());
-               // assertEquals(1, b.properties("name").count().next().intValue());
-               // assertEquals(1, b.properties("location").count().next().intValue());
-              //  assertEquals(0, g.E().count().next().intValue());
+                // assertEquals(1, a.properties("name").count().next().intValue());
+                // assertEquals(1, b.properties("name").count().next().intValue());
+                // assertEquals(1, b.properties("location").count().next().intValue());
+                //  assertEquals(0, g.E().count().next().intValue());
 
                 assertEquals(3l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
                 assertEquals(1l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
@@ -655,10 +656,10 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             a.property(VertexProperty.Cardinality.single, "name", "the marko", "acl", "private");
             tryCommit(graph, g -> {
                 assertEquals(2, g.traversal().V().count().next().intValue());
-               // assertEquals(1, a.properties("name").count().next().intValue());
-               // assertEquals(1, b.properties("name").count().next().intValue());
-               // assertEquals(1, b.properties("location").count().next().intValue());
-               // assertEquals(0, g.E().count().next().intValue());
+                // assertEquals(1, a.properties("name").count().next().intValue());
+                // assertEquals(1, b.properties("name").count().next().intValue());
+                // assertEquals(1, b.properties("location").count().next().intValue());
+                // assertEquals(0, g.E().count().next().intValue());
 
                 assertEquals(3l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
                 assertEquals(1l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));

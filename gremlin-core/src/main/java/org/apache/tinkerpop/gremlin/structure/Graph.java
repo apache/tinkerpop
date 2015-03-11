@@ -67,14 +67,6 @@ public interface Graph extends AutoCloseable {
 
     public static final String GRAPH = "gremlin.graph";
 
-    public static <G extends Graph> G empty(final Class<G> graphClass) {
-        try {
-            return (G) graphClass.getMethod("empty").invoke(null);
-        } catch (final Exception e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
-    }
-
     /**
      * This should only be used by vendors to create keys, labels, etc. in a namespace safe from users.
      * Users are not allowed to generate property keys, step labels, etc. that are key'd "hidden".
@@ -118,6 +110,14 @@ public interface Graph extends AutoCloseable {
         }
     }
 
+    public static <G extends Graph> G empty(final Class<G> graphClass) {
+        try {
+            return (G) graphClass.getMethod("empty").invoke(null);
+        } catch (final Exception e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+    }
+
     /**
      * Add a {@link Vertex} to the graph given an optional series of key/value pairs.  These key/values
      * must be provided in an even number where the odd numbered arguments are {@link String} property keys and the
@@ -156,7 +156,7 @@ public interface Graph extends AutoCloseable {
     }
 
     public default GraphTraversalContext traversal() {
-        return this.traversal(GraphTraversalContext.of().engine(StandardTraversalEngine.builder()));
+        return this.traversal(GraphTraversalContext.build().engine(StandardTraversalEngine.build()));
     }
 
     /**

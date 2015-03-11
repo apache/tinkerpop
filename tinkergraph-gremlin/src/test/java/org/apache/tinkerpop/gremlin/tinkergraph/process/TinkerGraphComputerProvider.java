@@ -16,12 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step;
+package org.apache.tinkerpop.gremlin.tinkergraph.process;
+
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface SideEffectRegistrar {
+public class TinkerGraphComputerProvider extends TinkerGraphProvider {
 
-    public void registerSideEffects();
+    public GraphTraversalContext traversal(final Graph graph) {
+        return GraphTraversalContext.build().engine(ComputerTraversalEngine.build().computer(TinkerGraphComputer.class)).create(graph);
+    }
 }

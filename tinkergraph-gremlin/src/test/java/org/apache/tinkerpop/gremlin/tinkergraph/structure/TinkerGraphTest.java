@@ -23,7 +23,8 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -146,8 +147,11 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph graph = TinkerFactory.createModern();
-        GraphTraversalContext g = graph.traversal(GraphTraversalContext.of().engine(StandardTraversalEngine.builder()));
-        g.V().out().out().values("name").forEachRemaining(System.out::println);
+        GraphTraversalContext g = graph.traversal(GraphTraversalContext.build().strategy(new ElementIdStrategy("name")));
+        Traversal t = g.V("marko").out("knows").in("knows").has(T.id,"marko");
+        System.out.println(t);
+        t.forEachRemaining(System.out::println);
+        System.out.println(t);
     }
 
     @Test

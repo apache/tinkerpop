@@ -16,19 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
+package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
-import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.process.Traversal;
+
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HadoopGiraphGraphProvider extends HadoopGraphProvider {
+public final class TraversalClassSupplier<S, E> implements Supplier<Traversal.Admin<S, E>> {
 
-    public GraphTraversalContext traversal(final Graph graph) {
-        return GraphTraversalContext.build().engine(ComputerTraversalEngine.build().computer(GiraphGraphComputer.class)).create(graph);
+    private final Class<? extends Supplier<Traversal.Admin<S, E>>> traversalSupplierClass;
+
+    public TraversalClassSupplier(final Class<? extends Supplier<Traversal.Admin<S, E>>> traversalSupplierClass) {
+        this.traversalSupplierClass = traversalSupplierClass;
+    }
+
+    @Override
+    public Traversal.Admin<S, E> get() {
+        try {
+            return this.traversalSupplierClass.getConstructor().newInstance().get();
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 }

@@ -18,9 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -33,6 +37,8 @@ public interface TraversalEngine extends Serializable {
 
     public Type getType();
 
+    public Optional<GraphComputer> getGraphComputer();
+
     public default boolean isStandard() {
         return this.getType().equals(Type.STANDARD);
     }
@@ -40,6 +46,8 @@ public interface TraversalEngine extends Serializable {
     public default boolean isComputer() {
         return this.getType().equals(Type.COMPUTER);
     }
+
+    ///////////
 
     public interface Builder extends Serializable {
         public TraversalEngine create(final Graph graph);
