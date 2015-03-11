@@ -52,7 +52,7 @@ public final class StandardTraversalEngine implements TraversalEngine {
         return Optional.empty();
     }
 
-    public static Builder builder() {
+    public static Builder build() {
         return Builder.INSTANCE;
     }
 

@@ -65,7 +65,7 @@ public final class ComputerTraversalEngine implements TraversalEngine {
         return new Builder();
     }
 
-    public static class Builder implements TraversalEngine.Builder, Serializable {
+    public static class Builder implements TraversalEngine.Builder {
 
         private Class<? extends GraphComputer> graphComputerClass;
         private GraphComputer.Isolation isolation = GraphComputer.Isolation.BSP;
@@ -81,7 +81,9 @@ public final class ComputerTraversalEngine implements TraversalEngine {
         }
 
         public ComputerTraversalEngine create(final Graph graph) {
-            return new ComputerTraversalEngine(graph.compute(this.graphComputerClass).isolation(this.isolation));
+            return null == this.graphComputerClass ?
+                    new ComputerTraversalEngine(graph.compute().isolation(this.isolation)) :
+                    new ComputerTraversalEngine(graph.compute(this.graphComputerClass).isolation(this.isolation));
         }
     }
 }

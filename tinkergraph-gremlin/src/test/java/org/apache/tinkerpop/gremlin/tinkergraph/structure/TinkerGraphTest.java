@@ -146,7 +146,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph graph = TinkerFactory.createModern();
-        GraphTraversalContext g = graph.traversal(GraphTraversalContext.of().engine(StandardTraversalEngine.builder()));
+        GraphTraversalContext g = graph.traversal(GraphTraversalContext.build().engine(StandardTraversalEngine.builder()));
         g.V().out().out().values("name").forEachRemaining(System.out::println);
     }
 

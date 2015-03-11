@@ -156,7 +156,7 @@ public interface Graph extends AutoCloseable {
     }
 
     public default GraphTraversalContext traversal() {
-        return this.traversal(GraphTraversalContext.of().engine(StandardTraversalEngine.builder()));
+        return this.traversal(GraphTraversalContext.build().engine(StandardTraversalEngine.build()));
     }
 
     /**

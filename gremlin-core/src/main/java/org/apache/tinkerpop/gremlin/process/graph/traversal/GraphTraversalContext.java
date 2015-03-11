@@ -24,11 +24,13 @@ import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +40,15 @@ import java.util.Optional;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GraphTraversalContext implements TraversalContext {
+
+    public static final Builder standard = GraphTraversalContext.build().engine(StandardTraversalEngine.build());
+    public static final Builder computer = GraphTraversalContext.build().engine(ComputerTraversalEngine.build());
+
+    public static Builder computer(final Class<? extends GraphComputer> graphComputerClass) {
+        return GraphTraversalContext.build().engine(ComputerTraversalEngine.build().computer(graphComputerClass));
+    }
+
+    ////
 
     private final transient Graph graph;
     private final TraversalEngine.Builder engine;
@@ -67,9 +78,10 @@ public class GraphTraversalContext implements TraversalContext {
         return this.graph.tx();
     }
 
-    public static Builder of() {
+    public static Builder build() {
         return new Builder();
     }
+
 
     @Override
     public Optional<GraphComputer> getGraphComputer() {
@@ -83,14 +95,19 @@ public class GraphTraversalContext implements TraversalContext {
 
     @Override
     public GraphTraversalContext.Builder asBuilder() {
-        return GraphTraversalContext.of().engine(this.engine);   // TODO: add strategies
+        return GraphTraversalContext.build().engine(this.engine);   // TODO: add strategies
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.traversalContextString(this);
     }
 
     //////
 
     public static class Builder implements TraversalContext.Builder<GraphTraversalContext> {
 
-        private TraversalEngine.Builder engineBuilder = StandardTraversalEngine.builder();
+        private TraversalEngine.Builder engineBuilder = StandardTraversalEngine.build();
         private List<TraversalStrategy> strategies = new ArrayList<>();
 
         public Builder engine(final TraversalEngine.Builder engineBuilder) {
@@ -106,11 +123,5 @@ public class GraphTraversalContext implements TraversalContext {
         public GraphTraversalContext create(final Graph graph) {
             return new GraphTraversalContext(graph, this.engineBuilder, this.strategies.toArray(new TraversalStrategy[this.strategies.size()]));
         }
-
-        public TraversalEngine.Builder getTraversalEngineBuilder() {
-            return this.engineBuilder;
-        }
-
-
     }
 }

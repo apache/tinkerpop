@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
+import org.apache.tinkerpop.gremlin.process.TraversalContext;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
@@ -36,6 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.strategy.StrategyElement;
 import org.apache.tinkerpop.gremlin.structure.strategy.StrategyProperty;
 import org.apache.tinkerpop.gremlin.structure.strategy.StrategyVariables;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.javatuples.Pair;
 
@@ -157,6 +159,12 @@ public final class StringFactory {
 
     public static String traversalEngineString(final TraversalEngine traversalEngine) {
         return traversalEngine.getClass().getSimpleName().toLowerCase();
+    }
+
+    public static String traversalContextString(final TraversalContext traversalContext) {
+        final String graphString = traversalContext.getGraph().orElse(EmptyGraph.instance()).toString();
+        final String graphComputerString = traversalContext.getGraphComputer().isPresent() ? traversalContext.getGraphComputer().get().toString() : "standard";
+        return traversalContext.getClass().getSimpleName().toLowerCase() + L_BRACKET + graphString + COMMA_SPACE + graphComputerString + R_BRACKET;
     }
 
     public static String featureString(final Graph.Features features) {

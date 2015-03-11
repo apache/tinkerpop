@@ -18,19 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -38,6 +29,6 @@ import java.util.Map;
 public final class HadoopSparkGraphProvider extends HadoopGraphProvider {
 
     public GraphTraversalContext traversal(final Graph graph) {
-        return GraphTraversalContext.of().engine(ComputerTraversalEngine.build().computer(SparkGraphComputer.class)).create(graph);
+        return GraphTraversalContext.build().engine(ComputerTraversalEngine.build().computer(SparkGraphComputer.class)).create(graph);
     }
 }

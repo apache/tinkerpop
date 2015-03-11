@@ -30,6 +30,6 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 public class TinkerGraphComputerProvider extends TinkerGraphProvider {
 
     public GraphTraversalContext traversal(final Graph graph) {
-        return GraphTraversalContext.of().engine(ComputerTraversalEngine.build().computer(TinkerGraphComputer.class)).create(graph);
+        return GraphTraversalContext.build().engine(ComputerTraversalEngine.build().computer(TinkerGraphComputer.class)).create(graph);
     }
 }
