@@ -32,9 +32,11 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphsTest {
+
     @Test
     @Ignore("Does not work on marko's local machine for some reason -- good for stephen and travis-ci")
     public void shouldReturnGraphs() {
+        // todo: why doesn't this test work?
         final Settings settings = Settings.read(GraphsTest.class.getResourceAsStream("gremlin-server-integration.yaml"));
         final Graphs graphs = new Graphs(settings);
         final Map<String, Graph> m = graphs.getGraphs();

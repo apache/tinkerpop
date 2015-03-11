@@ -173,7 +173,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
-        final ResultSet results = client.submit("g.V().remove()");
+        final ResultSet results = client.submit("h=g.traversal();h.V().remove()");
         assertNull(results.all().get().get(0).getObject());
 
         cluster.close();
@@ -338,17 +338,17 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect(name.getMethodName());
 
         final Vertex vertexBeforeTx = client.submit("v=g.addVertex(\"name\",\"stephen\")").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexBeforeTx.iterators().valueIterator("name").next());
+        assertEquals("stephen", vertexBeforeTx.values("name").next());
 
-        final Vertex vertexFromV = client.submit("g.V().next()").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexFromV.iterators().valueIterator("name").next());
+        final Vertex vertexFromV = client.submit("g.vertices().next()").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexFromV.values("name").next());
 
         final Vertex vertexFromBinding = client.submit("v").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexFromBinding.iterators().valueIterator("name").next());
+        assertEquals("stephen", vertexFromBinding.values("name").next());
 
         final Vertex vertexAfterTx = client.submit("v.property(\"color\",\"blue\"); g.tx().commit(); v").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexAfterTx.iterators().valueIterator("name").next());
-        assertEquals("blue", vertexAfterTx.iterators().valueIterator("color").next());
+        assertEquals("stephen", vertexAfterTx.values("name").next());
+        assertEquals("blue", vertexAfterTx.values("color").next());
 
         cluster.close();
     }

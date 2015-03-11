@@ -188,7 +188,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             // this should return "nothing" - there should be no exception
-            assertNull(client.submit("g.V().has('name','kadfjaldjfla')").one());
+            assertNull(client.submit("h=g.traversal();h.V().has('name','kadfjaldjfla')").one());
         } finally {
             cluster.close();
         }
