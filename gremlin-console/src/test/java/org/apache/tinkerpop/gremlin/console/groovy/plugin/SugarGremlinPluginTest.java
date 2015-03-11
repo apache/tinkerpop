@@ -57,7 +57,7 @@ public class SugarGremlinPluginTest {
         plugin.pluginTo(spy);
 
         groovysh.getInterp().getContext().setProperty("g", TinkerFactory.createClassic());
-        assertEquals(6l, ((GraphTraversal) groovysh.execute("g.V()")).count().next());
-        assertEquals(6l, ((GraphTraversal) groovysh.execute("g.V")).count().next());
+        assertEquals(6l, ((GraphTraversal) groovysh.execute("g.traversal().V()")).count().next());
+        assertEquals(6l, ((GraphTraversal) groovysh.execute("g.traversal().V")).count().next());
     }
 }
