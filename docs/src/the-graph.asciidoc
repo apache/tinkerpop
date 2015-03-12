@@ -78,55 +78,57 @@ A collection of use cases are itemized below:
 A running example using vertex properties is provided below to demonstrate and explain the API.
 
 [source,groovy]
-gremlin> g = TinkerGraph.open()
+gremlin> graph = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> v = g.addVertex('name','marko','name','marko a. rodriguez')
+gremlin> g = graph.traversal(standard)
+==>graphtraversalcontext[tinkergraph[vertices:0 edges:0], standard]
+gremlin> vertex = graph.addVertex('name','marko','name','marko a. rodriguez')
 ==>v[0]
-gremlin> v.properties().count()
+gremlin> g.V(vertex).properties().count()
 ==>2
-gremlin> v.properties('name').count() <1>
+gremlin> g.V(vertex).properties('name').count() <1>
 ==>2
-gremlin> v.property('name') <2>
+gremlin> vertex.property('name') <2>
 Multiple properties exist for the provided key, use Vertex.properties(name)
 Display stack trace? [yN]
-gremlin> v.properties()
+gremlin> vertex.properties()
 ==>vp[name->marko]
 ==>vp[name->marko a. rodriguez]
-gremlin> v.properties('name')
+gremlin> vertex.properties('name')
 ==>vp[name->marko]
 ==>vp[name->marko a. rodriguez]
-gremlin> vp = v.properties('name').hasValue('marko').next()
+gremlin> vertexProperty = g.V(vertex).properties('name').hasValue('marko').next()
 ==>vp[name->marko]
-gremlin> vp.property('acl','private') <3>
+gremlin> vertexProperty.property('acl','private') <3>
 ==>p[acl->private]
-gremlin> vp = v.properties('name').hasValue('marko a. rodriguez').next()
+gremlin> vertexProperty = g.V(vertex).properties('name').hasValue('marko a. rodriguez').next()
 ==>vp[name->marko a. rodriguez]
-gremlin> vp.property('acl','public')
+gremlin> vertexProperty.property('acl','public')
 ==>p[acl->public]
-gremlin> v.properties('name').has('acl','public').value()
+gremlin> g.V(vertex).properties('name').has('acl','public').value()
 ==>marko a. rodriguez
-gremlin> v.properties('name').has('acl','public').remove() <4>
+gremlin> g.V(vertex).properties('name').has('acl','public').remove() <4>
 ==>null
-gremlin> v.properties('name').has('acl','public').value()
-gremlin> v.properties('name').has('acl','private').value()
+gremlin> g.V(vertex).properties('name').has('acl','public').value()
+gremlin> g.V(vertex).properties('name').has('acl','private').value()
 ==>marko
-gremlin> vp = v.properties().next()
+gremlin> vertexProperty = vertex.properties().next()
 ==>vp[name->marko]
-gremlin> vp.properties()
+gremlin> vertexProperty.properties()
 ==>p[acl->private]
-gremlin> vp.property('date',2014) <5>
+gremlin> vertexProperty.property('date',2014) <5>
 ==>p[date->2014]
-gremlin> vp.property('creator','stephen')
+gremlin> vertexProperty.property('creator','stephen')
 ==>p[creator->stephen]
-gremlin> vp.properties()
+gremlin> vertexProperty.properties()
 ==>p[date->2014]
 ==>p[creator->stephen]
 ==>p[acl->private]
-gremlin> v.properties('name').valueMap()
+gremlin> g.V(vertex).properties('name').valueMap()
 ==>[date:2014, creator:stephen, acl:private]
-gremlin> v.property(single, 'name','okram') <6>
+gremlin> vertex.property(single, 'name','okram') <6>
 ==>vp[name->okram]
-gremlin> v.property('name')
+gremlin> vertex.property('name')
 ==>vp[name->okram]
 
 <1> A vertex can have zero or more properties with the same key associated with it.
@@ -146,8 +148,10 @@ image::the-crew-graph.png[width=685]
 
 [gremlin-groovy,theCrew]
 ----
-g.V().as('a').properties('location').hasNot('endTime').as('b').
-      select().by('name').by {it.value() + '(' + it.value('startTime') + ')'} // determine the current location of each person
+g.V().as('a').
+      properties('location').as('b').
+      hasNot('endTime').as('c').
+      select().by('name').by(value).by('startTime') // determine the current location of each person
 g.V().has('name','gremlin').inE('uses').
       order().by('skill',incr).as('a').
       outV().as('b').

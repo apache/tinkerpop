@@ -46,6 +46,7 @@ TinkerPop3 is the third incarnation of the TinkerPop graph computing framework. 
   ** `VertexProperty<V>`: a string key associated with a `V` value as well as a collection of `Property<U>` properties (*vertices only*)
 
 .Primary components of the TinkerPop3 *process* API
+ * `TraversalContext`: a generator of traversals for a particular graph, domain specific language, and execution engine.
  * `Traversal<S,E>`: a functional data flow process transforming objects of type `S` to type `E`.
   ** `GraphTraversal`: a traversal that is oriented towards the semantics of the raw graph (i.e. vertices, edges, etc.).
  * `GraphComputer`: a system that processes the graph in parallel and potentially, distributed over a multi-machine cluster.
@@ -64,13 +65,13 @@ The Graph Structure
 image:gremlin-standing.png[width=125,float=left] A graph's structure is the topology formed by the explicit references between its vertices, edges, and properties. A vertex has incident edges. A vertex is adjacent to another vertex if they share an incident edge. A property is attached to an element and an element has a set of properties. A property is a key/value pair, where the key is always a character `String`. The graph structure API of TinkerPop3 provides the methods necessary to create such a structure. The TinkerPop graph previously diagrammed can be created with the following Java8 code. Note that this graph is available as an in-memory TinkerGraph using `TinkerFactory.createClassic()`.
 
 [source,java]
-Graph g = TinkerGraph.open(); <1>
-Vertex marko = g.addVertex(T.label, "person", T.id, 1, "name", "marko", "age", 29); <2>
-Vertex vadas = g.addVertex(T.label, "person", T.id, 2, "name", "vadas", "age", 27);
-Vertex lop = g.addVertex(T.label, "software", T.id, 3, "name", "lop", "lang", "java");
-Vertex josh = g.addVertex(T.label, "person", T.id, 4, "name", "josh", "age", 32);
-Vertex ripple = g.addVertex(T.label, "software", T.id, 5, "name", "ripple", "lang", "java");
-Vertex peter = g.addVertex(T.label, "person", T.id, 6, "name", "peter", "age", 35);
+Graph graph = TinkerGraph.open(); <1>
+Vertex marko = graph.addVertex(T.label, "person", T.id, 1, "name", "marko", "age", 29); <2>
+Vertex vadas = graph.addVertex(T.label, "person", T.id, 2, "name", "vadas", "age", 27);
+Vertex lop = graph.addVertex(T.label, "software", T.id, 3, "name", "lop", "lang", "java");
+Vertex josh = graph.addVertex(T.label, "person", T.id, 4, "name", "josh", "age", 32);
+Vertex ripple = graph.addVertex(T.label, "software", T.id, 5, "name", "ripple", "lang", "java");
+Vertex peter = graph.addVertex(T.label, "person", T.id, 6, "name", "peter", "age", 35);
 marko.addEdge("knows", vadas, T.id, 7, "weight", 0.5f); <3>
 marko.addEdge("knows", josh, T.id, 8, "weight", 1.0f);
 marko.addEdge("created", lop, T.id, 9, "weight", 0.4f);
@@ -98,9 +99,10 @@ CAUTION: In the code examples presented throughout this documentation, either Gr
 image:basic-mutation.png[width=240,float=right] 
 [source,java]
 // create a new graph
-Graph g = TinkerGraph.open();
+Graph graph = TinkerGraph.open();
+GraphTraversalContext g = graph.traversal(standard);
 // add a software vertex with a name property
-Vertex gremlin = g.addVertex(T.label, "software", 
+Vertex gremlin = graph.addVertex(T.label, "software",
                              "name", "gremlin"); <1>
 // only one vertex should exist
 assert(g.V().count() == 1)
@@ -109,7 +111,7 @@ assert(g.E().count() == 0)
 // add a new property
 gremlin.property("created",2009) <2>
 // add a new software vertex to the graph
-Vertex blueprints = g.addVertex(T.label, "software", 
+Vertex blueprints = graph.addVertex(T.label, "software",
                                 "name", "blueprints"); <3>
 // connect gremlin to blueprints via a dependsOn-edge
 gremlin.addEdge("dependsOn",blueprints); <4>
@@ -145,13 +147,13 @@ $ bin/gremlin.sh
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----
-gremlin> g = TinkerGraph.open()
+gremlin> graph = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> gremlin = g.addVertex(label,'software','name','gremlin')
+gremlin> gremlin = graph.addVertex(label,'software','name','gremlin')
 ==>v[0]
 gremlin> gremlin.property('created',2009)
 ==>vp[created->2009]
-gremlin> blueprints = g.addVertex(label,'software','name','blueprints')
+gremlin> blueprints = graph.addVertex(label,'software','name','blueprints')
 ==>v[3]
 gremlin> gremlin.addEdge('dependsOn',blueprints)
 ==>e[5][0-dependsOn->3]
@@ -179,12 +181,12 @@ image:gremlin-running.png[width=125,float=left] The primary way in which graphs 
  . Move from those friend-vertices to software-vertices via created-edges.
  . Finally, select the name-property value of the current software-vertices.
 
-Traversals in Gremlin are spawned from either a `Graph`, `Vertex`, `Edge`, or `VertexProperty`. The Graph interface provides two traversal methods.
+Traversals in Gremlin are spawned from a `TraversalContext`. The `GraphTraversalContext` is the typical "graph-oriented" DSL used throughout the documentation. The GraphTraversalContext provides two traversal methods.
 
- . `Graph.V()`: generates a traversal starting at all vertices in the graph. 
- . `Graph.E()`: generates a traversal starting at all edges in the graph.
+ . `GraphTraversalContext.V(Object... ids)`: generates a traversal starting at vertices in the graph (if no ids are provided, all vertices).
+ . `GraphTraversalContext.E(Object... ids)`: generates a traversal starting at edges in the graph (if no ids are provided, all edges).
 
-The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintains numerous methods that return GraphTraversal. In this way, a GraphTraversal supports function composition. Each method of GraphTraversal is called a step and each step modulates the results of the previous step in one of five general ways.
+The return type of `V()` and `E()` is a `GraphTraversal`. A GraphTraversal maintains numerous methods that return GraphTraversal. In this way, a GraphTraversal supports function composition. Each method of GraphTraversal is called a step and each step modulates the results of the previous step in one of five general ways.
 
  . `map`: transform the incoming traverser's object to another object (S &rarr; E).
  . `flatMap`: transform the incoming traverser's object to an iterator of other objects (S &rarr; E^*^).
@@ -209,12 +211,14 @@ $ bin/gremlin.sh
 -----oOOo-(3)-oOOo-----
 gremlin> graph = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
+gremlin> g = graph.traversal(standard)
+==>graphtraversalcontext[tinkergraph[vertices:6 edges:6], standard]
 gremlin> g.V().has('name','marko').out('knows').values('name')
 ==>vadas
 ==>josh
 ----
 
-Or, if the marko-vertex is already realized with a direct reference pointer (i.e. a variable), then the traversal can be spawned off that vertex. This illustrates that vertex (as well as edge and vertex property) also supports `GraphTraversal`-return methods.
+Or, if the marko-vertex is already realized with a direct reference pointer (i.e. a variable), then the traversal can be spawned off that vertex.
 
 [gremlin-groovy,modern]
 ----
