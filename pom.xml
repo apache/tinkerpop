@@ -108,6 +108,7 @@ limitations under the License.
         <skipIntegrationTests>true</skipIntegrationTests>
         <skipPerformanceTests>true</skipPerformanceTests>
         <slf4j.version>1.7.7</slf4j.version>
+        <hadoop.version>1.2.1</hadoop.version>
         <javadoc-plugin.version>2.10.1</javadoc-plugin.version>
         <muteTestLogs>false</muteTestLogs>
     </properties>
@@ -171,6 +172,13 @@ limitations under the License.
                         <phase>site</phase>
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalDependencies>
+                                <additionalDependency>
+                                    <groupId>org.apache.hadoop</groupId>
+                                    <artifactId>hadoop-core</artifactId>
+                                    <version>1.2.1</version>
+                                </additionalDependency>
+                            </additionalDependencies>
                         </configuration>
                     </execution>
                     <execution>
@@ -393,6 +401,13 @@ limitations under the License.
                         <id>non-aggregate</id>
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalDependencies>
+                                <additionalDependency>
+                                    <groupId>org.apache.hadoop</groupId>
+                                    <artifactId>hadoop-core</artifactId>
+                                    <version>1.2.1</version>
+                                </additionalDependency>
+                            </additionalDependencies>
                         </configuration>
                         <reports>
                             <report>javadoc</report>
@@ -402,6 +417,13 @@ limitations under the License.
                         <id>aggregate</id>
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalDependencies>
+                                <additionalDependency>
+                                    <groupId>org.apache.hadoop</groupId>
+                                    <artifactId>hadoop-core</artifactId>
+                                    <version>1.2.1</version>
+                                </additionalDependency>
+                            </additionalDependencies>
                         </configuration>
                         <reports>
                             <report>aggregate</report>
@@ -720,6 +742,13 @@ limitations under the License.
                                         hadoop-gremlin/src/main/java:gremlin-algorithm/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:neo4j-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
                                     </sourcepath>
                                     <quiet>true</quiet>
+                                    <additionalDependencies>
+                                        <additionalDependency>
+                                            <groupId>org.apache.hadoop</groupId>
+                                            <artifactId>hadoop-core</artifactId>
+                                            <version>1.2.1</version>
+                                        </additionalDependency>
+                                    </additionalDependencies>
                                 </configuration>
                             </execution>
                             <execution>
@@ -755,6 +784,13 @@ limitations under the License.
                                         <sourceFileInclude>org/apache/tinkerpop/gremlin/process/util/*.java</sourceFileInclude>
                                         <sourceFileInclude>org/apache/tinkerpop/gremlin/driver/*.java</sourceFileInclude>
                                     </sourceFileIncludes>
+                                    <additionalDependencies>
+                                        <additionalDependency>
+                                            <groupId>org.apache.hadoop</groupId>
+                                            <artifactId>hadoop-core</artifactId>
+                                            <version>1.2.1</version>
+                                        </additionalDependency>
+                                    </additionalDependencies>
                                 </configuration>
                             </execution>
                         </executions>

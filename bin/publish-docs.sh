@@ -19,8 +19,21 @@
 # under the License.
 #
 
-git checkout publish-docs
-git fetch origin
-git merge origin/master
-git push origin publish-docs
-git checkout master
+rm -rf target/svn
+mkdir target/svn
+svn co https://svn.apache.org/repos/asf/incubator/tinkerpop/site/ target/svn
+
+# TODO: how do we get the version number from the pom into this guy?
+# TODO: maybe this should be smart about checking for if directories exist before removing
+VERSION = "3.0.0-SNAPSHOT"
+svn rm target/svn/site/docs/$VERSION
+svn rm target/svn/site/javadocs/$VERSION
+svn commit .
+
+docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc
+mvn process-resources -Djavadoc
+
+
+
+
+
