@@ -173,6 +173,7 @@ limitations under the License.
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
                             <additionalDependencies>
+                                <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
                                 <additionalDependency>
                                     <groupId>org.apache.hadoop</groupId>
                                     <artifactId>hadoop-core</artifactId>
@@ -402,6 +403,7 @@ limitations under the License.
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
                             <additionalDependencies>
+                                <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
                                 <additionalDependency>
                                     <groupId>org.apache.hadoop</groupId>
                                     <artifactId>hadoop-core</artifactId>
@@ -418,6 +420,7 @@ limitations under the License.
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
                             <additionalDependencies>
+                                <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
                                 <additionalDependency>
                                     <groupId>org.apache.hadoop</groupId>
                                     <artifactId>hadoop-core</artifactId>
@@ -743,6 +746,7 @@ limitations under the License.
                                     </sourcepath>
                                     <quiet>true</quiet>
                                     <additionalDependencies>
+                                        <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
                                         <additionalDependency>
                                             <groupId>org.apache.hadoop</groupId>
                                             <artifactId>hadoop-core</artifactId>
@@ -785,6 +789,7 @@ limitations under the License.
                                         <sourceFileInclude>org/apache/tinkerpop/gremlin/driver/*.java</sourceFileInclude>
                                     </sourceFileIncludes>
                                     <additionalDependencies>
+                                        <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
                                         <additionalDependency>
                                             <groupId>org.apache.hadoop</groupId>
                                             <artifactId>hadoop-core</artifactId>
