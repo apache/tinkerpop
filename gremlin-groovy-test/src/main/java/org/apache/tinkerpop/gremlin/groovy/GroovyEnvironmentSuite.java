@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutorOverGraphTest;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineOverGraphTest;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoaderTest;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoaderTest;
@@ -41,7 +41,7 @@ import java.util.stream.Stream;
 public class GroovyEnvironmentSuite extends AbstractGremlinSuite {
 
     private static final Class<?>[] allTests = new Class<?>[]{
-            GremlinGroovyScriptEngineTest.class,
+            GremlinGroovyScriptEngineOverGraphTest.class,
             GremlinExecutorOverGraphTest.class,
             GremlinLoaderTest.class,
             SugarLoaderTest.class,

@@ -59,7 +59,7 @@ import static org.junit.Assert.*;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
+public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
@@ -71,21 +71,6 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         assertEquals(list.size(), 0);
         engine.eval("g.V(" + convertToVertexId("marko") +").out().fill(temp)");
         assertEquals(list.size(), 3);
-    }
-
-    @Test
-    public void shouldCompileScriptWithoutRequiringVariableBindings() throws Exception {
-        // compile() should cache the script to avoid future compilation
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
-
-        final String script = "g.V(x).out()";
-        assertFalse(engine.isCached(script));
-        assertNotNull(engine.compile(script));
-        assertTrue(engine.isCached(script));
-
-        engine.reset();
-
-        assertFalse(engine.isCached(script));
     }
 
     @Test
@@ -135,82 +120,6 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         assertEquals(Direction.IN, engine.eval("Direction.IN"));
         assertEquals(Direction.OUT, engine.eval("Direction.OUT"));
         assertEquals(Direction.BOTH, engine.eval("Direction.BOTH"));
-    }
-
-    @Test
-    public void shouldLoadImportsViaDependencyManagerInterface() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
-        try {
-            engine.eval("Vertex.class.getName()");
-            fail("Should have thrown an exception because no imports were supplied");
-        } catch (Exception se) {
-            assertTrue(se instanceof ScriptException);
-        }
-
-        engine.addImports(new HashSet<>(Arrays.asList("import org.apache.tinkerpop.gremlin.structure.Vertex")));
-        assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
-    }
-
-    @Test
-    public void shouldLoadImportsViaDependencyManagerInterfaceAdditively() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
-        try {
-            engine.eval("Vertex.class.getName()");
-            fail("Should have thrown an exception because no imports were supplied");
-        } catch (Exception se) {
-            assertTrue(se instanceof ScriptException);
-        }
-
-        try {
-            engine.eval("StreamFactory.class.getName()");
-            fail("Should have thrown an exception because no imports were supplied");
-        } catch (Exception se) {
-            assertTrue(se instanceof ScriptException);
-        }
-
-        engine.addImports(new HashSet<>(Arrays.asList("import " + Vertex.class.getCanonicalName())));
-        assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
-
-        try {
-            engine.eval("StreamFactory.class.getName()");
-            fail("Should have thrown an exception because no imports were supplied");
-        } catch (Exception se) {
-            assertTrue(se instanceof ScriptException);
-        }
-
-        engine.addImports(new HashSet<>(Arrays.asList("import " + StreamFactory.class.getCanonicalName())));
-        assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
-        assertEquals(StreamFactory.class.getName(), engine.eval("StreamFactory.class.getName()"));
-    }
-
-    @Test
-    public void shouldLoadImportsViaDependencyManagerFromDependencyGatheredByUse() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
-        try {
-            engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)");
-            fail("Should have thrown an exception because no imports were supplied");
-        } catch (Exception se) {
-            assertTrue(se instanceof ScriptException);
-        }
-
-        engine.addImports(new HashSet<>(Arrays.asList("import org.apache.commons.math3.util.FastMath")));
-        engine.use("org.apache.commons", "commons-math3", "3.2");
-        assertEquals(1235, engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)"));
-    }
-
-    @Test
-    public void shouldAllowsUseToBeExecutedAfterImport() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
-        try {
-            engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)");
-            fail("Should have thrown an exception because no imports were supplied");
-        } catch (Exception se) {
-            assertTrue(se instanceof ScriptException);
-        }
-
-        engine.use("org.apache.commons", "commons-math3", "3.2");
-        engine.addImports(new HashSet<>(Arrays.asList("import org.apache.commons.math3.util.FastMath")));
-        assertEquals(1235, engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)"));
     }
 
     @Test
@@ -444,154 +353,6 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
     }
 
     @Test
-    public void shouldClearEngineScopeOnReset() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
-        engine.eval("x = { y -> y + 1}");
-        Bindings b = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
-        assertTrue(b.containsKey("x"));
-        assertEquals(2, ((Closure) b.get("x")).call(1));
-
-        // should clear the bindings
-        engine.reset();
-        try {
-            engine.eval("x(1)");
-            fail("Bindings should have been cleared.");
-        } catch (Exception ex) {
-
-        }
-
-        b = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
-        assertFalse(b.containsKey("x"));
-
-        // redefine x
-        engine.eval("x = { y -> y + 2}");
-        assertEquals(3, engine.eval("x(1)"));
-        b = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
-        assertTrue(b.containsKey("x"));
-        assertEquals(3, ((Closure) b.get("x")).call(1));
-    }
-
-    @Test
-    public void shouldReloadClassLoaderWhileDoingEvalInSeparateThread() throws Exception {
-        final AtomicBoolean fail = new AtomicBoolean(false);
-        final CountDownLatch latch = new CountDownLatch(1);
-        final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine();
-        final Thread t = new Thread(() -> {
-            try {
-                final Object o = scriptEngine.eval("Color.BLACK");
-                System.out.println("Should not print: " + o);
-                fail.set(true);
-            } catch (ScriptException se) {
-                // should get here as Color.BLACK is not imported yet.
-                System.out.println("Failed to execute Color.BLACK as expected.");
-            }
-
-            try {
-                int counter = 0;
-                while (latch.getCount() == 1) {
-                    scriptEngine.eval("1+1");
-                    counter++;
-                }
-
-                System.out.println(counter + " executions.");
-
-                scriptEngine.eval("Color.BLACK");
-                System.out.println("Color.BLACK now evaluates");
-            } catch (Exception se) {
-                se.printStackTrace();
-                fail.set(true);
-            }
-        }, "test-reload-classloader-1");
-
-        t.start();
-
-        // let the first thead execute a bit.
-        Thread.sleep(1000);
-
-        new Thread(() -> {
-            System.out.println("Importing java.awt.Color...");
-            final Set<String> imports = new HashSet<String>() {{
-                add("import java.awt.Color");
-            }};
-            scriptEngine.addImports(imports);
-            latch.countDown();
-        }, "test-reload-classloader-2").start();
-
-        t.join();
-
-        assertFalse(fail.get());
-    }
-
-    @Test
-    public void shouldResetClassLoader() throws Exception {
-        final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine();
-        try {
-            scriptEngine.eval("addOne(1)");
-            fail("Should have tossed ScriptException since addOne is not yet defined.");
-        } catch (ScriptException se) {
-        }
-
-        // validate that the addOne function works
-        scriptEngine.eval("addOne = { y-> y + 1}");
-        assertEquals(2, scriptEngine.eval("addOne(1)"));
-
-        // reset the script engine which should blow out the addOne function that's there.
-        scriptEngine.reset();
-
-        try {
-            scriptEngine.eval("addOne(1)");
-            fail("Should have tossed ScriptException since addOne is no longer defined after reset.");
-        } catch (ScriptException se) {
-        }
-    }
-
-    @Test
-    public void shouldSecureAll() throws Exception {
-        GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
-        final SecurityCustomizerProvider provider = new SecurityCustomizerProvider(new DenyAll());
-        final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(
-                new DefaultImportCustomizerProvider(), provider);
-        try {
-            scriptEngine.eval("g = new java.awt.Color(255, 255, 255)");
-            fail("Should have failed security");
-        } catch (ScriptException se) {
-            assertEquals(SecurityException.class, se.getCause().getCause().getClass());
-        } finally {
-            provider.unregisterInterceptors();
-        }
-    }
-
-    @Test
-    public void shouldSecureSome() throws Exception {
-        GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
-        final SecurityCustomizerProvider provider = new SecurityCustomizerProvider(new AllowSome());
-        final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(
-                new DefaultImportCustomizerProvider(), provider);
-        try {
-            scriptEngine.eval("g = 'new java.awt.Color(255, 255, 255)'");
-            fail("Should have failed security");
-        } catch (ScriptException se) {
-            assertEquals(SecurityException.class, se.getCause().getCause().getClass());
-        }
-
-        try {
-            assertNotNull(g);
-            final java.awt.Color c = (java.awt.Color) scriptEngine.eval("c = new java.awt.Color(255, 255, 255)");
-            assertEquals(java.awt.Color.class, c.getClass());
-        } catch (Exception ex) {
-            fail("Should not have tossed an exception");
-        } finally {
-            provider.unregisterInterceptors();
-        }
-    }
-
-    @Test
-    public void shouldProcessScriptWithUTF8Characters() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine();
-        assertEquals("轉注", engine.eval("'轉注'"));
-    }
-
-    @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldProcessUTF8Query() throws Exception {
         final Vertex nonUtf8 = graph.addVertex(T.id, "1", "name", "marko", "age", 29);
@@ -604,41 +365,5 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         assertEquals(nonUtf8, eval.next());
         eval = (Traversal) engine.eval("g.V().has('name','轉注')");
         assertEquals(utf8Name, eval.next());
-    }
-
-    @Test
-    public void shouldTimeoutScriptOnTimedWhile() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, 3000);
-        try {
-            engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
-            fail("This should have timed out");
-        } catch (ScriptException se) {
-            assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
-        }
-    }
-
-    public static class DenyAll extends GroovyValueFilter {
-        @Override
-        public Object filter(final Object o) {
-            throw new SecurityException("Denied!");
-        }
-    }
-
-    public static class AllowSome extends GroovyValueFilter {
-
-        public static final Set<Class> ALLOWED_TYPES = new HashSet<Class>() {{
-            add(java.awt.Color.class);
-            add(Integer.class);
-            add(Class.class);
-        }};
-
-        @Override
-        public Object filter(final Object o) {
-            if (null == o || ALLOWED_TYPES.contains(o.getClass()))
-                return o;
-            if (o instanceof Script || o instanceof Closure)
-                return o; // access to properties of compiled groovy script
-            throw new SecurityException("Unexpected type: " + o.getClass());
-        }
     }
 }
