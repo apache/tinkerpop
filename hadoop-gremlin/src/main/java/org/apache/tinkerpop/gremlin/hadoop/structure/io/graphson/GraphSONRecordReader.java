@@ -43,7 +43,7 @@ import java.util.function.Function;
  */
 public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
-    private static final GraphSONReader GRAPHSON_READER = GraphSONReader.build().create();
+    private final GraphSONReader GRAPHSON_READER = GraphSONReader.build().create();
     private final VertexWritable vertex = new VertexWritable(null);
     private final LineRecordReader lineRecordReader;
 

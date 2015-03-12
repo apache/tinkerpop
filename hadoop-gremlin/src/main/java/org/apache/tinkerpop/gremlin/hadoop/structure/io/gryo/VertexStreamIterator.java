@@ -43,18 +43,14 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
     // this is VertexTerminator's long terminal 4185403236219066774L as an array of positive int's
     private static final int[] TERMINATOR = new int[]{58, 21, 138, 17, 112, 155, 153, 150};
 
-    private static int BUFLEN = TERMINATOR.length;
-
     private final InputStream inputStream;
-    private static final GryoReader GRYO_READER = GryoReader.build().create();
+    private final GryoReader GRYO_READER = GryoReader.build().create();
     private final ByteArrayOutputStream output = new ByteArrayOutputStream();
-    private final int[] buffer = new int[BUFLEN];
 
-    private int len;
     private int currentByte;
+    private long currentTotalLength = 0;
     private Vertex currentVertex;
     private final long maxLength;
-    private long currentLength = 0;
 
     public VertexStreamIterator(final InputStream inputStream, final long maxLength) {
         this.inputStream = inputStream;
@@ -62,18 +58,18 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
     }
 
     public float getProgress() {
-        if (0 == this.currentLength || 0 == this.maxLength)
+        if (0 == this.currentTotalLength || 0 == this.maxLength)
             return 0.0f;
-        else if (this.currentLength >= this.maxLength || this.maxLength == Long.MAX_VALUE)
+        else if (this.currentTotalLength >= this.maxLength || this.maxLength == Long.MAX_VALUE)
             return 1.0f;
         else
-            return (float) this.currentLength / (float) this.maxLength;
+            return (float) this.currentTotalLength / (float) this.maxLength;
 
     }
 
     @Override
     public boolean hasNext() {
-        if (this.currentLength >= this.maxLength) // gone beyond the split boundary
+        if (this.currentTotalLength >= this.maxLength) // gone beyond the split boundary
             return false;
         if (null != this.currentVertex)
             return true;
@@ -101,45 +97,36 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
                 return new VertexWritable(this.currentVertex);
         } finally {
             this.currentVertex = null;
-            this.len = 0;
             this.output.reset();
         }
     }
 
     private final Vertex advanceToNextVertex() throws IOException {
+        long currentVertexLength = 0;
+        int terminatorLocation = 0;
         while (true) {
             this.currentByte = this.inputStream.read();
-            this.currentLength++;
             if (-1 == this.currentByte) {
-                if (this.len > 0) {
+                if (currentVertexLength > 0)
                     throw new IllegalStateException("Remainder of stream exhausted without matching a vertex");
-                } else {
+                else
                     return null;
-                }
             }
+            this.currentTotalLength++;
+            currentVertexLength++;
+            this.output.write(this.currentByte);
 
-            if (this.len >= BUFLEN)
-                this.output.write(this.buffer[this.len % BUFLEN]);
+            if (this.currentByte == TERMINATOR[terminatorLocation])
+                terminatorLocation++;
+            else
+                terminatorLocation = 0;
 
-            this.buffer[this.len % BUFLEN] = this.currentByte;
-            this.len++;
-
-            if (this.len > BUFLEN) {
-                boolean terminated = true;
-                for (int i = 0; i < BUFLEN; i++) {
-                    if (this.buffer[(this.len + i) % BUFLEN] != TERMINATOR[i]) {
-                        terminated = false;
-                        break;
-                    }
-                }
-
-                if (terminated) {
-                    final Graph gLocal = TinkerGraph.open();
-                    final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
-                    final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
-                    try (InputStream in = new ByteArrayInputStream(this.output.toByteArray())) {
-                        return GRYO_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
-                    }
+            if (terminatorLocation >= TERMINATOR.length) {
+                final Graph gLocal = TinkerGraph.open();
+                final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
+                final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
+                try (InputStream in = new ByteArrayInputStream(this.output.toByteArray())) {
+                    return GRYO_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
                 }
             }
         }
