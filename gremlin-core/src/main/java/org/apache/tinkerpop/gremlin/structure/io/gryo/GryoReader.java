@@ -44,7 +44,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 /**
@@ -66,8 +65,6 @@ public class GryoReader implements GraphReader {
     private final String edgeIdKey;
 
     private final File tempFile;
-
-    final AtomicLong counter = new AtomicLong(0);
 
     private GryoReader(final File tempFile, final long batchSize,
                        final String vertexIdKey, final String edgeIdKey,
@@ -128,7 +125,6 @@ public class GryoReader implements GraphReader {
 
     @Override
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
-        this.counter.set(0);
         final Input input = new Input(inputStream);
         this.headerReader.read(kryo, input);
 
