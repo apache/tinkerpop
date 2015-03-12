@@ -20,15 +20,14 @@
 #
 
 USERNAME=$1
-PASSWORD=$2
 
-if [ "${USERNAME}" == "" -o "${PASSWORD}" == "" ]; then
-  echo "Please provide a SVN username and password."
-  echo -e "\nUsage:\n\t$0 <username> <password>\n"
+if [ "${USERNAME}" == "" ]; then
+  echo "Please provide a SVN username."
+  echo -e "\nUsage:\n\t$0 <username>\n"
   exit 1
 fi
 
-SVN_CMD="svn --no-auth-cache --non-interactive --username=${USERNAME} --password=${password}"
+SVN_CMD="svn --no-auth-cache --username=${USERNAME}"
 VERSION=$(cat pom.xml | grep -a1 '<artifactId>tinkerpop</artifactId>' | grep '<version>' | grep -Po '(?<=>).*(?=<)')
 
 rm -rf target
