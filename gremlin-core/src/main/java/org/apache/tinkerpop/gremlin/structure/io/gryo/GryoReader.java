@@ -308,8 +308,8 @@ public class GryoReader implements GraphReader {
             Object next = kryo.readClassAndObject(input);
             while (!next.equals(EdgeTerminator.INSTANCE)) {
                 final DetachedEdge detachedEdge = (DetachedEdge) next;
-                final Vertex vOut = graphToWriteTo.vertices(detachedEdge.vertices(Direction.OUT).next().id()).next();
-                final Vertex inV = graphToWriteTo.vertices(detachedEdge.vertices(Direction.IN).next().id()).next();
+                final Vertex vOut = graphToWriteTo.vertices(detachedEdge.outVertex().id()).next();
+                final Vertex inV = graphToWriteTo.vertices(detachedEdge.inVertex().id()).next();
 
                 detachedEdge.properties().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(p.key(), p.value())));
 

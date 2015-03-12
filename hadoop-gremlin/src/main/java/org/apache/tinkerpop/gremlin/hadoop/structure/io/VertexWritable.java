@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableUtils;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -27,8 +29,6 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -42,8 +42,6 @@ import java.io.IOException;
 public final class VertexWritable<V extends Vertex> implements Writable {
 
     private Vertex vertex;
-    private final GryoWriter KRYO_WRITER = GryoWriter.build().create();
-    private final GryoReader KRYO_READER = GryoReader.build().create();
 
     public VertexWritable(final Vertex vertex) {
         this.vertex = vertex;
@@ -59,9 +57,10 @@ public final class VertexWritable<V extends Vertex> implements Writable {
 
     @Override
     public void readFields(final DataInput input) throws IOException {
+        this.vertex = null;
         final ByteArrayInputStream inputStream = new ByteArrayInputStream(new byte[WritableUtils.readVInt(input)]);
         final Graph gLocal = TinkerGraph.open();
-        this.vertex = KRYO_READER.readVertex(inputStream, Direction.BOTH,
+        this.vertex = GryoReader.build().create().readVertex(inputStream, Direction.BOTH,
                 detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex),
                 detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge));
 
@@ -70,7 +69,7 @@ public final class VertexWritable<V extends Vertex> implements Writable {
     @Override
     public void write(final DataOutput output) throws IOException {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        KRYO_WRITER.writeVertex(outputStream, this.vertex, Direction.BOTH);
+        GryoWriter.build().create().writeVertex(outputStream, this.vertex, Direction.BOTH);
         WritableUtils.writeVInt(output, outputStream.size());
         output.write(outputStream.toByteArray());
         outputStream.close();

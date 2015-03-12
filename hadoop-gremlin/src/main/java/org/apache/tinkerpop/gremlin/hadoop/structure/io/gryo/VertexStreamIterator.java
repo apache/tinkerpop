@@ -44,7 +44,6 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
     private static final int[] TERMINATOR = new int[]{58, 21, 138, 17, 112, 155, 153, 150};
 
     private final InputStream inputStream;
-    private final GryoReader GRYO_READER = GryoReader.build().create();
     private final ByteArrayOutputStream output = new ByteArrayOutputStream();
 
     private int currentByte;
@@ -126,7 +125,7 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
                 final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
                 final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
                 try (InputStream in = new ByteArrayInputStream(this.output.toByteArray())) {
-                    return GRYO_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
+                    return GryoReader.build().create().readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
                 }
             }
         }

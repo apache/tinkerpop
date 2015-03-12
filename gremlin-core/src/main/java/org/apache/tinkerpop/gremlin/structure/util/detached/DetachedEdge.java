@@ -60,8 +60,8 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
 
     protected DetachedEdge(final Edge edge, final boolean withProperties) {
         super(edge);
-        this.outVertex = DetachedFactory.detach(edge.vertices(Direction.OUT).next(), false);
-        this.inVertex = DetachedFactory.detach(edge.vertices(Direction.IN).next(), false);
+        this.outVertex = DetachedFactory.detach(edge.outVertex(), false);
+        this.inVertex = DetachedFactory.detach(edge.inVertex(), false);
 
         // only serialize properties if requested, the graph supports it and there are meta properties present.
         // this prevents unnecessary object creation of a new HashMap of a new HashMap which will just be empty.
@@ -140,6 +140,16 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         final Edge e = outV.addEdge(detachedEdge.label(), inV, T.id, detachedEdge.id());
         detachedEdge.properties.entrySet().forEach(kv -> kv.getValue().forEach(p -> e.<Object>property(kv.getKey(), p.value())));
         return e;
+    }
+
+    @Override
+    public Vertex inVertex() {
+        return this.inVertex;
+    }
+
+    @Override
+    public Vertex outVertex() {
+        return this.outVertex;
     }
 
     @Override

@@ -92,7 +92,15 @@ public class TinkerEdge extends TinkerElement implements Edge {
 
     }
 
-    //////////////////////////////////////////////
+    @Override
+    public Vertex outVertex() {
+        return this.outVertex;
+    }
+
+    @Override
+    public Vertex inVertex() {
+        return this.inVertex;
+    }
 
     @Override
     public Iterator<Vertex> vertices(final Direction direction) {
