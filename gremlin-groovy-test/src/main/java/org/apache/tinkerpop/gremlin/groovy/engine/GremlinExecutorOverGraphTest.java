@@ -22,8 +22,6 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
-import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TimeLimitedStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.junit.Test;
@@ -32,7 +30,6 @@ import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 import javax.script.Bindings;
 import javax.script.CompiledScript;
 import javax.script.SimpleBindings;
-import java.sql.Time;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,10 +37,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
@@ -60,7 +54,7 @@ import static org.junit.Assert.*;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinExecutorTest extends AbstractGremlinTest {
+public class GremlinExecutorOverGraphTest extends AbstractGremlinTest {
     public static Map<String, String> PATHS = new HashMap<>();
     private final BasicThreadFactory testingThreadFactory = new BasicThreadFactory.Builder().namingPattern("test-gremlin-executor-%d").build();
 
@@ -68,7 +62,7 @@ public class GremlinExecutorTest extends AbstractGremlinTest {
         try {
             final List<String> groovyScriptResources = Arrays.asList("GremlinExecutorInit.groovy");
             for (final String fileName : groovyScriptResources) {
-                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GremlinExecutorTest.class, fileName, "").getAbsolutePath());
+                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GremlinExecutorOverGraphTest.class, fileName, "").getAbsolutePath());
             }
         } catch (Exception e) {
             e.printStackTrace();
