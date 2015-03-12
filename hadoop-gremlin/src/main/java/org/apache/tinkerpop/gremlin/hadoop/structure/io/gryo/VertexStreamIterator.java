@@ -130,7 +130,7 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
                 final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
                 final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
                 try (InputStream in = new ByteArrayInputStream(this.output.toByteArray())) {
-                    return gryoReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
+                    return this.gryoReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
                 }
             }
         }
