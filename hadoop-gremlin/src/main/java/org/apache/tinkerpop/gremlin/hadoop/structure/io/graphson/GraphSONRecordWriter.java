@@ -36,7 +36,7 @@ public class GraphSONRecordWriter extends RecordWriter<NullWritable, VertexWrita
     private static final String UTF8 = "UTF-8";
     private static final byte[] NEWLINE;
     private final DataOutputStream out;
-    private static final GraphSONWriter GRAPHSON_WRITER = GraphSONWriter.build().create();
+    private final GraphSONWriter GRAPHSON_WRITER = GraphSONWriter.build().create();
 
     static {
         try {

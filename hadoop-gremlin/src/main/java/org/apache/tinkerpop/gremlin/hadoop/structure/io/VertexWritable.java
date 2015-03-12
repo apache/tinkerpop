@@ -42,8 +42,8 @@ import java.io.IOException;
 public final class VertexWritable<V extends Vertex> implements Writable {
 
     private Vertex vertex;
-    private static final GryoWriter KRYO_WRITER = GryoWriter.build().create();
-    private static final GryoReader KRYO_READER = GryoReader.build().create();
+    private final GryoWriter KRYO_WRITER = GryoWriter.build().create();
+    private final GryoReader KRYO_READER = GryoReader.build().create();
 
     public VertexWritable(final Vertex vertex) {
         this.vertex = vertex;

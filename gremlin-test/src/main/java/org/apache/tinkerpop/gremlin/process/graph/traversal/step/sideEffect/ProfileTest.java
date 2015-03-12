@@ -140,14 +140,14 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertTrue("Duration should be at least the length of the sleep: " + metrics.getDuration(TimeUnit.MILLISECONDS),
                 metrics.getDuration(TimeUnit.MILLISECONDS) >= 60);
         assertTrue("Check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MILLISECONDS),
-                metrics.getDuration(TimeUnit.MILLISECONDS) < 80);
+                metrics.getDuration(TimeUnit.MILLISECONDS) < 100);
 
         // 6 elements w/ a 5ms sleep each = 30ms plus 20ms for other computation
         metrics = traversalMetrics.getMetrics(2);
         assertTrue("Duration should be at least the length of the sleep: " + metrics.getDuration(TimeUnit.MILLISECONDS),
                 metrics.getDuration(TimeUnit.MILLISECONDS) >= 30);
         assertTrue("Check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MILLISECONDS),
-                metrics.getDuration(TimeUnit.MILLISECONDS) < 50);
+                metrics.getDuration(TimeUnit.MILLISECONDS) < 100);
 
         double totalPercentDuration = 0;
         for (Metrics m : traversalMetrics.getMetrics()) {
