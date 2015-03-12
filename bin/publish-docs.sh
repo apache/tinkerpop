@@ -19,32 +19,40 @@
 # under the License.
 #
 
-# TODO: i guess this script should take arguments for svn username/password.  svn commands should probably run with --non-interactive option
-USERNAME=XXX
+USERNAME=$1
+PASSWORD=$2
+
+if [ "${USERNAME}" == "" -o "${PASSWORD}" == "" ]; then
+  echo "Please provide a SVN username and password."
+  echo -e "\nUsage:\n\t$0 <username> <password>\n"
+  exit 1
+fi
+
+SVN_CMD="svn --no-auth-cache --non-interactive --username=${USERNAME} --password=${password}"
+VERSION=$(cat pom.xml | grep -a1 '<artifactId>tinkerpop</artifactId>' | grep '<version>' | grep -Po '(?<=>).*(?=<)')
+
 rm -rf target
 mkdir -p target/svn
-svn --no-auth-cache --username=$USERNAME co https://svn.apache.org/repos/asf/incubator/tinkerpop/site/ target/svn
+${SVN_CMD} co https://svn.apache.org/repos/asf/incubator/tinkerpop/site/ target/svn
 
-# TODO: how do we get the version number from the pom into this guy?
-# TODO: maybe this should be smart about checking for if directories exist before removing
-cd target/svn
-svn --no-auth-cache --username=$USERNAME rm site/docs/3.0.0-SNAPSHOT
-svn --no-auth-cache --username=$USERNAME rm site/javadocs/3.0.0-SNAPSHOT
-svn --no-auth-cache --username=$USERNAME commit . -m "Docs for TinkerPop 3.0.0-SNAPSHOT are being replaced."
-cd ../..
+pushd target/svn
+${SVN_CMD} rm "site/docs/${VERSION}"
+${SVN_CMD} rm "site/javadocs/${VERSION}"
+${SVN_CMD} commit . -m "Docs for TinkerPop ${VERSION} are being replaced."
+popd
 
 docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc
 mvn process-resources -Djavadoc
 
-mkdir -p target/svn/site/docs/3.0.0-SNAPSHOT
-mkdir -p target/svn/site/javadocs/3.0.0-SNAPSHOT/core
-mkdir -p target/svn/site/javadocs/3.0.0-SNAPSHOT/full
+mkdir -p "target/svn/site/docs/${VERSION}"
+mkdir -p "target/svn/site/javadocs/${VERSION}/core"
+mkdir -p "target/svn/site/javadocs/${VERSION}/full"
 
-cp -R target/docs/htmlsingle/. target/svn/site/docs/3.0.0-SNAPSHOT
-cp -R target/site/apidocs/core/. target/svn/site/javadocs/3.0.0-SNAPSHOT/core
-cp -R target/site/apidocs/full/. target/svn/site/javadocs/3.0.0-SNAPSHOT/full
+cp -R target/docs/htmlsingle/. "target/svn/site/docs/${VERSION}"
+cp -R target/site/apidocs/core/. "target/svn/site/javadocs/${VERSION}/core"
+cp -R target/site/apidocs/full/. "target/svn/site/javadocs/${VERSION}/full"
 
-cd target/svn
-svn --no-auth-cache --username=$USERNAME add * --force
-svn --no-auth-cache --username=$USERNAME commit -m "Deploy docs for TinkerPop 3.0.0-SNAPSHOT"
-cd ../..
+pushd target/svn
+${SVN_CMD} add * --force
+${SVN_CMD} commit -m "Deploy docs for TinkerPop ${VERSION}"
+popd
