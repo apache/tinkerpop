@@ -207,7 +207,7 @@ $ bin/gremlin.sh
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----
-gremlin> g = TinkerFactory.createModern()
+gremlin> graph = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> g.V().has('name','marko').out('knows').values('name')
 ==>vadas
@@ -219,8 +219,8 @@ Or, if the marko-vertex is already realized with a direct reference pointer (i.e
 [gremlin-groovy,modern]
 ----
 marko = g.V().has('name','marko').next()
-marko.out('knows') <1>
-marko.out('knows').values('name') <2>
+g.V(marko).out('knows') <1>
+g.V(marko).out('knows').values('name') <2>
 ----
 
 <1> Set the variable `marko` to the the vertex in the graph `g` named "marko".
@@ -229,24 +229,6 @@ marko.out('knows').values('name') <2>
 
 .The Name of The People That Marko Knows
 image::tinkerpop-classic-ex1.png[width=500]
-
-It is possible to represent any `map()`, `filter()`, or `sideEffect()` step using `flatMap()`. Map can return an iterator with a single object in it. Filter can return an iterator with a single object in it or no object at all. Side-effect can return an iterator containing the incoming object, but also update some other area of memory. Thus, ignoring `branch()`, `flatMap()` is the most general construct -- "turn the incoming object into an iterator of objects."
-
-[gremlin-groovy,modern]
-----
-g.V().filter {it.get().value('name') == 'marko'}.
-      flatMap {it.get().out('knows')}.
-      map {it.get().value('name')}
-----
-
-Finally, as a strictly academic exercise, the traversal can be written completely using flatMap.
-
-[gremlin-groovy,modern]
-----
-g.V().flatMap {it.get().value('name') == 'marko' ? [it.get()].iterator() : [].iterator()}.
-      flatMap {it.get().out('knows')}.
-      flatMap {[it.get().value('name')].iterator()}
-----
 
 NOTE: Gremlin-Java is much more aligned with Gremlin-Groovy in TinkerPop3 than it ever was before. In TinkerPop0 through TinkerPop2, Gremlin-Java was extremely verbose due to the simulation of lambdas via anonymous inner classes.  
 
@@ -261,7 +243,7 @@ In TinkerPop3, the objects propagating through the traversal are wrapped in a `T
 
 [gremlin-groovy,modern]
 ----
-marko.out('knows').values('name').path()
+g.V(marko).out('knows').values('name').path()
 ----
 
 CAUTION: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path of the respective traverser. Thus, traversal optimizers analyze the traversal to determine if path metadata is accessed. If not, then path calculations are turned off.
@@ -270,7 +252,7 @@ Another example is the `repeat()`-step which takes into account the number of ti
 
 [gremlin-groovy,modern]
 ----
-marko.repeat(out()).times(2).values('name')
+g.V(marko).repeat(out()).times(2).values('name')
 ----
 
 NOTE: In TinkerPop2, the `repeat()`-step was called `loop()`. Repeat has been generalized to support both do-while and while-do semantics which is explained in <<repeat-step,Repeat Step>>.

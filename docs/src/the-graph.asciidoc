@@ -32,9 +32,9 @@ The following example in the Gremlin Console shows how to print all the features
 
 [source,groovy]
 ----
-gremlin> g = TinkerGraph.open()
+gremlin> graph = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> g.features()
+gremlin> graph.features()
 ==>FEATURES
 > GraphFeatures
 >-- Persistence: false
@@ -52,8 +52,8 @@ A common pattern for using features is to check their support prior to performin
 
 [gremlin-groovy]
 ----
-g.features().graph().supportsTransactions()
-g.features().graph().supportsTransactions() ? g.tx().commit() : "no tx"
+graph.features().graph().supportsTransactions()
+graph.features().graph().supportsTransactions() ? g.tx().commit() : "no tx"
 ----
 
 TIP: To ensure vendor agnostic code, always check feature support prior to usage of a particular function.  In that way, the application can behave gracefully in case a particular implementation is provided at runtime that does not support a function being accessed.
@@ -152,12 +152,9 @@ g.V().has('name','gremlin').inE('uses').
       order().by('skill',incr).as('a').
       outV().as('b').
       select().by('skill').by('name') // rank the users of gremlin by their skill level
-g.variables() // access the global graph variables
-g.variables().get('creator')
-g.variables().get('creator').get()
-g.V().has('name',g.variables().get('creator').get()).
-      properties('location').as('a').valueMap().as('b').
-      select('a','b').by(value).by() // get the creator's vertex and for each location, get the associated properties
+graph.variables() // access the global graph variables
+graph.variables().get('creator')
+graph.variables().get('creator').get()
 ----
 
 Graph Variables
@@ -173,15 +170,15 @@ An example of graph variables in use is presented below in Gremlin-Groovy:
 
 [gremlin-groovy]
 ----
-g = TinkerGraph.open()
-g.variables()
-g.variables().set('systemAdmins',['stephen','peter','pavel'])
-g.variables().set('systemUsers',['matthias','marko','josh'])
-g.variables().keys()
-g.variables().get('systemUsers')
-g.variables().get('systemUsers').get()
-g.variables().remove('systemAdmins')
-g.variables().keys()
+graph = TinkerGraph.open()
+graph.variables()
+graph.variables().set('systemAdmins',['stephen','peter','pavel'])
+graph.variables().set('systemUsers',['matthias','marko','josh'])
+graph.variables().keys()
+graph.variables().get('systemUsers')
+graph.variables().get('systemUsers').get()
+graph.variables().remove('systemAdmins')
+graph.variables().keys()
 ----
 
 [[transactions]]
@@ -212,32 +209,32 @@ Once there is an understanding for how transactions are configured, most of the 
 
 [source,groovy]
 ----
-gremlin> g = Neo4jGraph.open('/tmp/neo4j')
+gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> g.features()
+gremlin> graph.features()
 ==>FEATURES
 > GraphFeatures
 >-- Transactions: true  <1>
 >-- Computer: false
 >-- Persistence: true
 ...
-gremlin> g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.AUTO) <2>
+gremlin> graph.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.AUTO) <2>
 ==>org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph$Neo4jTransaction@1c067c0d
-gremlin> g.addVertex("name","stephen")  <3>
+gremlin> graph.addVertex("name","stephen")  <3>
 ==>v[0]
-gremlin> g.tx().commit() <4>
+gremlin> graph.tx().commit() <4>
 ==>null
-gremlin> g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL) <5>
+gremlin> graph.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL) <5>
 ==>org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph$Neo4jTransaction@1c067c0d
-gremlin> g.tx().isOpen()
+gremlin> graph.tx().isOpen()
 ==>false
-gremlin> g.addVertex("name","marko") <6>
+gremlin> graph.addVertex("name","marko") <6>
 Open a transaction before attempting to read/write the transaction
-gremlin> g.tx().open() <7>
+gremlin> graph.tx().open() <7>
 ==>null
-gremlin> g.addVertex("name","marko") <8>
+gremlin> graph.addVertex("name","marko") <8>
 ==>v[1]
-gremlin> g.tx().commit()
+gremlin> graph.tx().commit()
 ==>null
 ----
 
@@ -254,9 +251,9 @@ The `Transaction` object also exposes a method for executing automatic transacti
 
 [source,groovy]
 ----
-gremlin> g.tx().submit {it.addVertex("name","josh")}.retry(10)
+gremlin> graph.tx().submit {it.addVertex("name","josh")}.retry(10)
 ==>v[2]
-gremlin> g.tx().submit {it.addVertex("name","daniel")}.exponentialBackoff(10)
+gremlin> graph.tx().submit {it.addVertex("name","daniel")}.exponentialBackoff(10)
 ==>v[3]
 ----
 
@@ -387,8 +384,8 @@ The following code shows how to write a `Graph` instance to file called `tinkerp
 
 [source,java]
 ----
-final Graph g = TinkerFactory.createModern();
-g.io().writeGraphML("tinkerpop-modern.xml");
+final Graph graph = TinkerFactory.createModern();
+graph.io().writeGraphML("tinkerpop-modern.xml");
 final Graph newGraph = TinkerGraph.open();
 newGraph.io().readGraphML("tinkerpop-modern.xml");
 ----
@@ -397,9 +394,9 @@ If a custom configuration is required, then have the `Graph` generate a `GraphRe
 
 [source,java]
 ----
-final Graph g = TinkerFactory.createModern();
+final Graph graph = TinkerFactory.createModern();
 try (final OutputStream os = new FileOutputStream("tinkerpop-modern.xml")) {
-    g.io().graphMLWriter().normalize(true).create().writeGraph(os);
+    graph.io().graphMLWriter().normalize(true).create().writeGraph(os);
 }
 
 final Graph newGraph = TinkerGraph.open();
@@ -420,8 +417,8 @@ GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods a
 
 [source,java]
 ----
-final Graph g = TinkerFactory.createModern();
-g.io().writeGraphSON("tinkerpop-modern.json");
+final Graph graph = TinkerFactory.createModern();
+graph.io().writeGraphSON("tinkerpop-modern.json");
 
 final Graph newGraph = TinkerGraph.open();
 newGraph.io().readGraphSON("tinkerpop-modern.json");
@@ -431,10 +428,10 @@ If a custom configuration is required, then have the `Graph` generate a `GraphRe
 
 [source,java]
 ----
-final Graph g = TinkerFactory.createModern();
+final Graph graph = TinkerFactory.createModern();
 try (final OutputStream os = new FileOutputStream("tinkerpop-modern.json")) {
-    final GraphSONMapper mapper = g.io().graphSONMapper().normalize(true).create()
-    g.io().graphSONWriter().mapper(mapper).create().writeGraph(os, g)
+    final GraphSONMapper mapper = graph.io().graphSONMapper().normalize(true).create()
+    graph.io().graphSONWriter().mapper(mapper).create().writeGraph(os, g)
 }
 
 final Graph newGraph = TinkerGraph.open();
@@ -447,11 +444,11 @@ One of the important configuration options of the `GraphSONReader` and `GraphSON
 
 [source,groovy]
 ----
-gremlin> g = TinkerFactory.createModern()
+gremlin> graph = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> f = new FileOutputStream("vertex-1.json")
 ==>java.io.FileOutputStream@3bbf9027
-gremlin> g.io().graphSONWriter().create().writeVertex(f, g.V(1).next(), BOTH)
+gremlin> graph.io().graphSONWriter().create().writeVertex(f, g.V(1).next(), BOTH)
 ==>null
 gremlin> f.close()
 ==>null
@@ -535,13 +532,13 @@ With a minor change to the construction of the `GraphSONWriter` the lossy nature
 
 [source,groovy]
 ----
-gremlin> g = TinkerFactory.createModern()
+gremlin> graph = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> f = new FileOutputStream("vertex-1.json")
 ==>java.io.FileOutputStream@3bbf9027
-gremlin> mapper = g.io().graphSONMapper().embedTypes(true).create()
+gremlin> mapper = graph.io().graphSONMapper().embedTypes(true).create()
 ==>org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper@2ce45a7b
-gremlin> g.io().graphSONWriter().mapper(mapper).create().writeVertex(f, g.V(1).next(), BOTH)
+gremlin> graph.io().graphSONWriter().mapper(mapper).create().writeVertex(f, g.V(1).next(), BOTH)
 ==>null
 gremlin> f.close()
 ==>null
@@ -668,8 +665,8 @@ Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and c
 
 [source,java]
 ----
-final Graph g = TinkerFactory.createModern();
-g.io().writeGryo("tinkerpop-modern.kryo");
+final Graph graph = TinkerFactory.createModern();
+graph.io().writeGryo("tinkerpop-modern.kryo");
 
 final Graph newGraph = TinkerGraph.open();
 newGraph.io().readGryo("tinkerpop-modern.kryo")'
@@ -679,9 +676,9 @@ If a custom configuration is required, then have the `Graph` generate a `GraphRe
 
 [source,java]
 ----
-final Graph g = TinkerFactory.createModern();
+final Graph graph = TinkerFactory.createModern();
 try (final OutputStream os = new FileOutputStream("tinkerpop-modern.kryo")) {
-    g.io().gryoWriter().create().writeGraph(os);
+    graph.io().gryoWriter().create().writeGraph(os);
 }
 
 final Graph newGraph = TinkerGraph.open();
@@ -705,9 +702,9 @@ The following represents an example migration of the "classic" toy graph.  In th
 ----
 gremlin> Gremlin.version()
 ==>2.5.z
-gremlin> g = TinkerGraphFactory.createTinkerGraph()
+gremlin> graph = TinkerGraphFactory.createTinkerGraph()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> GraphSONWriter.outputGraph(g,'/tmp/tp2.json',GraphSONMode.EXTENDED)
+gremlin> GraphSONWriter.outputGraph(graph,'/tmp/tp2.json',GraphSONMode.EXTENDED)
 ==>null
 ----
 
@@ -717,12 +714,13 @@ The above console session uses the `gremlin-groovy` distribution from TinkerPop2
 ----
 gremlin> Gremlin.version()
 ==>x.y.z
-gremlin> g = TinkerGraph.open()
+gremlin> graph = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
 gremlin> r = LegacyGraphSONReader.build().create()
 ==>org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader@64337702
-gremlin> r.readGraph(new FileInputStream('/tmp/tp2.json'),g)
+gremlin> r.readGraph(new FileInputStream('/tmp/tp2.json'),graph)
 ==>null
+gremlin> g = graph.traversal(standard)
 gremlin> g.E()
 ==>e[11][4-created->3]
 ==>e[12][6-created->3]
@@ -730,174 +728,6 @@ gremlin> g.E()
 ==>e[8][1-knows->4]
 ==>e[9][1-created->3]
 ==>e[10][4-created->5]
-----
-
-The above console session uses the TinkerPop3 Gremlin Console.  It creates a new `TinkerGraph` which the TinkerPop2 GraphSON will be loaded into and uses the `LegacyGraphSONReader` to import the `tp2.json` file.
-
-[[graphstrategy]]
-GraphStrategy
--------------
-
-A `GraphStrategy` provides a way to expand, inspect or otherwise alter the behavior of a `Graph` implementation.  A graph strategy injects arbitrary functions into the `Graph` API, so that when a method call is made, the strategy functions can manipulate the default behavior of the underlying `Graph`.  TinkerPop3 is packaged with the following strategies:
-
-* `IdentityStrategy` - a "do nothing" `GraphStrategy` that executes the function as it is passed into the strategy
-* `IdStrategy` - enables support for custom element identifiers for those graphs which don't otherwise support them
-* `PartitionStrategy` - enables support for logical graph partitioning where the `Graph` can be blinded to different parts of the total graph
-* `ReadOnlyStrategy` - prevents writing to the `Graph`
-* `SequenceStrategy` - apply multiple `GraphStrategy` implementations in sequenced ordered to a single `Graph` instance
-* `SubgraphStrategy` - create a logical subgraph which selectively includes vertices and edges of a `Graph` according to provided criteria
-
-NOTE: TinkerPop2 had the notion of "Graph Wrappers" which decorated standard `Graph` implementations with additional features.  A `GraphStrategy` is generally analogous to that capability.
-
-To use a `GraphStrategy` instance, use the `Graph.strategy()` method to instantiate the `StrategyGraph` as follows:
-
-[gremlin-groovy]
-----
-g = TinkerFactory.createModern()
-sg = g.strategy(IdentityStrategy.instance())
-sg.getBaseGraph()
-----
-
-The above code specifies the creation of a `TinkerGraph` with the use of `IdentityStrategy`.  Note that the `strategy` method returns a `StrategyGraph`, which implements the `Graph` interface. It can be used in the same manner as `TinkerGraph` or any other implementation.  At any point, the `GraphStrategy` can be bypassed by getting the underlying `TinkerGraph`.
-
-IdStrategy
-~~~~~~~~~~
-
-`IdStrategy` which affords complete control over element identifiers. Some `Graph` implementations, such as `TinkerGraph`, allow specification of custom identifiers when creating elements:
-
-[gremlin-groovy]
-----
-g = TinkerGraph.open()
-v = g.addVertex(id,"42a")
-g.V("42a")
-----
-
-Other `Graph` implementations, however, generate element identifiers automatically and cannot be assigned:
-
-[source,groovy]
-gremlin> g = Neo4jGraph.open('/tmp/neo4j')
-==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> v = g.addVertex(id, "42a")
-Vertex does not support user supplied identifiers
-Display stack trace? [yN]
-
-Given the nature of identifier assignment, this means that identifiers are generally not conserved when moving data between graph instances and implementations, to XML and back again, etc. So for applications which need it, there is `IdStrategy`. Using vertex and edge indices under the hood, `IdStrategy` enables custom identifiers irrespective of whether or not the underlying `Graph` implementation allows them.
-
-[source,groovy]
-gremlin> g = Neo4jGraph.open('/tmp/neo4j')
-==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> sg = g.strategy(IdStrategy.build("idKey").create())
-==>idstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
-gremlin> sg.addVertex(id, "42a").id()
-==>42a
-gremlin> sg.addVertex().id()
-==>527d44d2-9a3a-4c15-89b6-021e3d613884
-
-When a non-null identifier is passed to `IdGraph.addVertex` or `IdGraph.addEdge`, that value will be used to uniquely identify the element. When the `id` is not provided, `IdGraph` will generate an identifier on its own.
-
-IMPORTANT: The key that is used to store the assigned identifier should be indexed in the underlying graph database.  If it is not indexed, then lookups for the elements that use these identifiers will perform a linear scan.
-
-PartitionStrategy
-~~~~~~~~~~~~~~~~~
-
-`PartitionStrategy` is a `SubgraphStrategy` which creates logical subgraphs through the use of designated properties.  When each element is written to the `Graph`, it is marked with a property value indicating the current write-partition.  As elements are read from the graph, they are matched against the current set of read-partitions.  The read-partitions thereby define the union of a set of vertices and edges. For example:
-
-[gremlin-groovy]
-----
-g = TinkerGraph.open()
-strategy = PartitionStrategy.build().partitionKey("com.example.partition").startPartition("A").create()
-sg = g.strategy(strategy)
-
-// Add vertices and edges first in one partition, then another:
-
-v1 = sg.addVertex("name", "one")
-v2 = sg.addVertex("name", "two")
-v1.addEdge("knows", v2)
-strategy.setWritePartition("B")
-v3 = sg.addVertex("name", "three")
-v1.addEdge("knows", v3)
-
-// Define sets of partitions which provide access to different subgraphs, or slices of the data:
-
-"in A: " + sg.V().count().next() + ", " + sg.E().count().next()
-strategy.addReadPartition("B")
-"in A+B: " + sg.V().count().next() + ", " + sg.E().count().next()
-strategy.clearReadPartitions()
-strategy.addReadPartition("B")
-"in B: " + sg.V().count().next() + ", " + sg.E().count().next()
-----
-
-Note that there are no edges in the set B, as the only edge added to partition B is incident on a vertex of A.
-
-ReadOnlyStrategy
-~~~~~~~~~~~~~~~~
-
-`ReadOnlyStrategy` prevents write operations that would otherwise mutate the `Graph`.
-
-[source,groovy]
-gremlin> g = TinkerGraph.open()
-==>tinkergraph[vertices:0 edges:0]
-gremlin> sg = g.strategy(ReadOnlyStrategy.instance())
-==>readonlystrategy[tinkergraph[vertices:0 edges:0]]
-gremlin> sg.addVertex("name","stephen")
-Graph uses class org.apache.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategy and is therefore unmodifiable
-Display stack trace? [yN]
-
-SequenceStrategy
-~~~~~~~~~~~~~~~~
-
-`SequenceStrategy` provides a way to string together a set of `GraphStrategy` implementations, such that they are executed in order from first to last.  The `Graph.strategy()` method provides a straightforward way to invisibly use `SequenceStrategy`:
-
-[gremlin-groovy]
-----
-sg = g.strategy(ReadOnlyStrategy.instance(), PartitionStrategy.build().partitionKey('com.example.partition').startPartition('A').create())
-----
-
-The above code demonstrates a `Graph` that uses a `SequenceStrategy` composed of `ReadOnlyStrategy` and `PartitionStrategy`.  When the `SequenceStrategy` is invoked, it will first apply the `ReadOnlyStrategy` and then apply the `PartitionStrategy`.  It is important to consider the ordering of the `GraphStrategy` objects when choosing to use `SequenceStrategy` as it makes no attempts to determine if strategies will be in conflict with one another.  Be aware of the nature of the strategies and ensure that applying them in the order assigned will produce the desirable outcome.
-
-SubgraphStrategy
-~~~~~~~~~~~~~~~~
-
-A general-purpose `SubgraphStrategy` is created by defining a "vertex criterion" and an "edge criterion" as Java 8 `Predicates` and applying them to a `Graph`.  All vertices present in the base `Graph` which pass the vertex criterion will be present in the `StrategyGraph`.  All edges present in the base `Graph` which pass the edge criterion *and* whose in- and out-vertices both pass the vertex criterion will be present in the `StrategyGraph`.
-
-NOTE: edges are either entirely visible, or entirely invisible to a subgraph.  You will never find an edge which cannot be traversed due to a missing in- or out-vertex.
-
-For example, in Gremlin-Java:
-
-[source,java]
-----
-Graph g = TinkerFactory.createModern();
-
-Predicate<Vertex> vertexCriterion = vertex -> true;
-Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
-
-GraphStrategy strategy = SubgraphStrategy.build().vertexPredicate(vertexCriterion).edgePredicate(edgeCriterion).create();
-StrategyGraph sg = g.strategy(strategy);
-
-// all vertices are here
-System.out.println("" + sg.V().count().next() + " of " + g.V().count().next() + " vertices");
-
-// only the given edges are included
-System.out.println("" + sg.E().count().next() + " of " + g.E().count().next() + " edges");
-----
-
-The same example is presented below but using Gremlin-Groovy.
-
-[source,groovy]
-----
-g = TinkerFactory.createModern()
-
-vertexCriterion = { true }
-edgeCriterion = { it.id() >= 8 && it.id() <= 10 }
-
-strategy = SubgraphStrategy.build().vertexPredicate(vertexCriterion).edgePredicate(edgeCriterion).create()
-sg = g.strategy(strategy)
-
-// all vertices are here
-sg.V().count().next() + " of " + g.V().count().next() + " vertices"
-
-// only the given edges are included
-sg.E().count().next() + " of " + g.E().count().next() + " edges"
 ----
 
 Namespace Conventions

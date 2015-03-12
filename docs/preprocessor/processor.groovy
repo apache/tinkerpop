@@ -110,10 +110,12 @@ new File(this.args[0]).withReader { reader ->
         } else {
             if (line.startsWith("[gremlin-")) {
                 def parts = line.split(/,/, 2)
-                def graph = parts.size() == 2 ? parts[1].capitalize().replaceAll(/\s*\]\s*$/, "") : ""
+                def graphString = parts.size() == 2 ? parts[1].capitalize().replaceAll(/\s*\]\s*$/, "") : ""
                 def lang = parts[0].split(/-/, 2)[1].replaceAll(/\s*\]\s*$/, "")
-                def g = graph.isEmpty() ? TinkerGraph.open() : TinkerFactory."create${graph}"()
+                def graph = graphString.isEmpty() ? TinkerGraph.open() : TinkerFactory."create${graphString}"()
+                def g = graph.traversal(standard)
                 engine = ScriptEngineCache.get(lang)
+                engine.put("graph",graph)
                 engine.put("g", g)
                 engine.put("marko", g.V().has("name", "marko").tryNext().orElse(null))
                 reader.readLine()

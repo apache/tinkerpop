@@ -631,7 +631,8 @@ MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPAR
 
 [gremlin-groovy]
 ----
-g.io().readGraphML('data/grateful-dead.xml')
+graph.io().readGraphML('data/grateful-dead.xml')
+g = graph.traversal(standard)
 g.V().match('a',
         __.as('a').has('name', 'Garcia'),
         __.as('a').in('writtenBy').as('b'),
@@ -1177,7 +1178,8 @@ Extracting a portion of a graph from a larger one for analysis, visualization or
 
 [gremlin-groovy,modern]
 ----
-sg = g.E().hasLabel('knows').subgraph('sg').cap('sg').next() <1>
+subGraph = g.E().hasLabel('knows').subgraph('subGraph').cap('subGraph').next() <1>
+sg = subGraph.traversal(standard)
 sg.E() <2>
 ----
 
@@ -1188,7 +1190,8 @@ A more common subgraphing use case is to get all of the graph structure surround
 
 [gremlin-groovy,modern]
 ----
-sg = g.V(3).repeat(__.inE().subgraph('sg').outV()).times(3).cap('sg').next()  <1>
+subGraph = g.V(3).repeat(__.inE().subgraph('subGraph').outV()).times(3).cap('subGraph').next()  <1>
+sg = subGraph.traversal(standard)
 sg.E()
 ----
 
@@ -1200,8 +1203,8 @@ There can be multiple `subgraph()` calls within the same traversal. Each operati
 ----
 t = g.V().outE('knows').subgraph('knowsG').inV().outE('created').subgraph('createdG').
           inV().inE('created').subgraph('createdG').iterate()
-t.sideEffects.get('knowsG').E()
-t.sideEffects.get('createdG').E()
+t.sideEffects.get('knowsG').traversal(standard).E()
+t.sideEffects.get('createdG').traversal(standard).E()
 ----
 
 IMPORTANT: The `subgraph()`-step only writes to graphs that support user supplied ids for its elements. Moreover, if no graph is specified via `withSideEffect()`, then <<tinkergraph-gremlin,TinkerGraph>> is assumed.
@@ -1415,7 +1418,7 @@ In many situations where a lambda could be used, either a corresponding step exi
 ----
 g.V().out().out().path().by {it.value('name')}.
                          by {it.value('name')}.
-                         by {it.in('created').values('name').fold().next()} <1>
+                         by {g.V(it).in('created').values('name').fold().next()} <1>
 g.V().out().out().path().by('name').
                          by('name').
                          by(__.in('created').values('name').fold()) <2>
@@ -1580,13 +1583,13 @@ image:gremlin-quill.png[width=200,float=right] The super interface of GraphTrave
  }
 ----
 
-This traversal definition can now be used as follows.
-
-[gremlin-groovy,modern]
-----
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
-g.of(SocialTraversal).people("marko").knows().name()
-----
-
-By extending `Traversal`, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
+//This traversal definition can now be used as follows.
+//
+//[gremlin-groovy,modern]
+//----
+////import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
+////g.of(SocialTraversal).people("marko").knows().name()
+//----
+//
+//By extending `Traversal`, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
 
