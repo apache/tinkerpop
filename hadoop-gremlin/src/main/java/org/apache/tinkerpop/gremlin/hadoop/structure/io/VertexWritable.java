@@ -39,9 +39,15 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class VertexWritable<V extends Vertex> implements Writable {
+public final class VertexWritable implements Writable {
 
     private Vertex vertex;
+    private final GryoReader GRYO_READER = GryoReader.build().create();
+    private final GryoWriter GRYO_WRITER = GryoWriter.build().create();
+
+    public VertexWritable() {
+
+    }
 
     public VertexWritable(final Vertex vertex) {
         this.vertex = vertex;
@@ -60,7 +66,7 @@ public final class VertexWritable<V extends Vertex> implements Writable {
         this.vertex = null;
         final ByteArrayInputStream inputStream = new ByteArrayInputStream(new byte[WritableUtils.readVInt(input)]);
         final Graph gLocal = TinkerGraph.open();
-        this.vertex = GryoReader.build().create().readVertex(inputStream, Direction.BOTH,
+        this.vertex = GRYO_READER.readVertex(inputStream, Direction.BOTH,
                 detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex),
                 detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge));
 
@@ -69,7 +75,7 @@ public final class VertexWritable<V extends Vertex> implements Writable {
     @Override
     public void write(final DataOutput output) throws IOException {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        GryoWriter.build().create().writeVertex(outputStream, this.vertex, Direction.BOTH);
+        GRYO_WRITER.writeVertex(outputStream, this.vertex, Direction.BOTH);
         WritableUtils.writeVInt(output, outputStream.size());
         output.write(outputStream.toByteArray());
         outputStream.close();

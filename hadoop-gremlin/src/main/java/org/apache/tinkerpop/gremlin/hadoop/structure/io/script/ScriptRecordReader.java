@@ -49,7 +49,7 @@ public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritabl
     private final static String LINE = "line";
     private final static String FACTORY = "factory";
     private final static String READ_CALL = "parse(" + LINE + "," + FACTORY + ")";
-    private final VertexWritable vertex = new VertexWritable(null);
+    private final VertexWritable vertexWritable = new VertexWritable();
     private final LineRecordReader lineRecordReader;
     private ScriptEngine engine;
 
@@ -78,9 +78,9 @@ public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritabl
                 final javax.script.Bindings bindings = this.engine.createBindings();
                 bindings.put(LINE, this.lineRecordReader.getCurrentValue().toString());
                 bindings.put(FACTORY, new ScriptElementFactory());
-                final Vertex v = (Vertex) engine.eval(READ_CALL, bindings);
-                if (v != null) {
-                    this.vertex.set(v);
+                final Vertex vertex = (Vertex) engine.eval(READ_CALL, bindings);
+                if (vertex != null) {
+                    this.vertexWritable.set(vertex);
                     return true;
                 }
             } catch (Exception e) {
@@ -96,7 +96,7 @@ public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritabl
 
     @Override
     public VertexWritable getCurrentValue() {
-        return this.vertex;
+        return this.vertexWritable;
     }
 
     @Override

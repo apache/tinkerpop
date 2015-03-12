@@ -18,11 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
+import org.apache.giraph.worker.WorkerContext;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
-import org.apache.giraph.worker.WorkerContext;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -32,6 +34,8 @@ public final class GiraphWorkerContext extends WorkerContext {
     private VertexProgram<?> vertexProgram;
     private GiraphMemory memory;
     private GiraphMessenger messenger;
+    private GryoWriter gryoWriter;
+    private GryoReader gryoReader;
 
     public GiraphWorkerContext() {
         // Giraph ReflectionUtils requires this to be public at minimum
@@ -41,6 +45,8 @@ public final class GiraphWorkerContext extends WorkerContext {
         this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getContext().getConfiguration()));
         this.memory = new GiraphMemory(this, this.vertexProgram);
         this.messenger = new GiraphMessenger();
+        this.gryoWriter = GryoWriter.build().create();
+        this.gryoReader = GryoReader.build().create();
     }
 
     public void postApplication() {
@@ -66,5 +72,13 @@ public final class GiraphWorkerContext extends WorkerContext {
     public GiraphMessenger getMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterable<ObjectWritable> messages) {
         this.messenger.setCurrentVertex(giraphComputeVertex, messages);
         return this.messenger;
+    }
+
+    public GryoReader getReader() {
+        return gryoReader;
+    }
+
+    public GryoWriter getWriter() {
+        return gryoWriter;
     }
 }

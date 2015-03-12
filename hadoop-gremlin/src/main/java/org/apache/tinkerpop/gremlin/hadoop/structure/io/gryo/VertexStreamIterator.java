@@ -45,10 +45,12 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
 
     private final InputStream inputStream;
     private final ByteArrayOutputStream output = new ByteArrayOutputStream();
+    private final GryoReader gryoReader = GryoReader.build().create();
 
     private int currentByte;
     private long currentTotalLength = 0;
     private Vertex currentVertex;
+    private final VertexWritable vertexWritable = new VertexWritable();
     private final long maxLength;
 
     public VertexStreamIterator(final InputStream inputStream, final long maxLength) {
@@ -88,12 +90,15 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
     public VertexWritable next() {
         try {
             if (null == this.currentVertex) {
-                if (this.hasNext())
-                    return new VertexWritable(this.currentVertex);
-                else
+                if (this.hasNext()) {
+                    this.vertexWritable.set(this.currentVertex);
+                    return this.vertexWritable;
+                } else
                     throw new IllegalStateException("There are no more vertices in this split");
-            } else
-                return new VertexWritable(this.currentVertex);
+            } else {
+                this.vertexWritable.set(this.currentVertex);
+                return this.vertexWritable;
+            }
         } finally {
             this.currentVertex = null;
             this.output.reset();
@@ -125,7 +130,7 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
                 final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
                 final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
                 try (InputStream in = new ByteArrayInputStream(this.output.toByteArray())) {
-                    return GryoReader.build().create().readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
+                    return gryoReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
                 }
             }
         }

@@ -145,7 +145,7 @@ public final class SparkHelper {
         final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         if (null != outputLocation) {
             // map back to a <nullwritable,vertexwritable> stream for output
-            graphRDD.mapToPair(tuple -> new Tuple2<>(NullWritable.get(), new VertexWritable<>(tuple._2().asVertexPayload().getVertex())))
+            graphRDD.mapToPair(tuple -> new Tuple2<>(NullWritable.get(), new VertexWritable(tuple._2().asVertexPayload().getVertex())))
                     .saveAsNewAPIHadoopFile(outputLocation + "/" + Constants.SYSTEM_G,
                             NullWritable.class,
                             VertexWritable.class,

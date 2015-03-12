@@ -34,7 +34,7 @@ import java.io.IOException;
 public class GryoRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
 
     private final DataOutputStream out;
-    private static final GryoWriter GRYO_WRITER = GryoWriter.build().create();
+    private final GryoWriter GRYO_WRITER = GryoWriter.build().create();
 
     public GryoRecordWriter(final DataOutputStream out) {
         this.out = out;
@@ -48,7 +48,7 @@ public class GryoRecordWriter extends RecordWriter<NullWritable, VertexWritable>
     }
 
     @Override
-    public synchronized void close(TaskAttemptContext context) throws IOException {
+    public synchronized void close(final TaskAttemptContext context) throws IOException {
         this.out.close();
     }
 }
