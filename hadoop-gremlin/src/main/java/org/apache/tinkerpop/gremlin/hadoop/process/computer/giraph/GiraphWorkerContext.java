@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,7 +33,6 @@ public final class GiraphWorkerContext extends WorkerContext {
     private VertexProgram<?> vertexProgram;
     private GiraphMemory memory;
     private GiraphMessenger messenger;
-    private GryoWriter gryoWriter;
     private GryoReader gryoReader;
 
     public GiraphWorkerContext() {
@@ -45,7 +43,6 @@ public final class GiraphWorkerContext extends WorkerContext {
         this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getContext().getConfiguration()));
         this.memory = new GiraphMemory(this, this.vertexProgram);
         this.messenger = new GiraphMessenger();
-        this.gryoWriter = GryoWriter.build().create();
         this.gryoReader = GryoReader.build().create();
     }
 
@@ -76,9 +73,5 @@ public final class GiraphWorkerContext extends WorkerContext {
 
     public GryoReader getReader() {
         return gryoReader;
-    }
-
-    public GryoWriter getWriter() {
-        return gryoWriter;
     }
 }

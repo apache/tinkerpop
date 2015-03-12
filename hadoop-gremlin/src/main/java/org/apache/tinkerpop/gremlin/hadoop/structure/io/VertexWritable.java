@@ -49,6 +49,7 @@ public final class VertexWritable implements Writable {
 
     }
 
+    // TODO: REMOVE!!!
     public VertexWritable(final Vertex vertex) {
         this.vertex = vertex;
     }
