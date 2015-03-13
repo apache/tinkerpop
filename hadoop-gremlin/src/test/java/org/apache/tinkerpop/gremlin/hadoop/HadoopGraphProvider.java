@@ -140,15 +140,16 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     }
 
     public void loadGraphDataViaHadoopConfig(final Graph g, final LoadGraphWith.GraphData graphData) {
+        final String type = "ldjson";
 
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead-vertices.ldjson"));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead-vertices." + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-modern-vertices.ldjson"));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-modern-vertices." + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-classic-vertices.ldjson"));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-classic-vertices." + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.CREW)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew-vertices.ldjson"));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew-vertices." + type));
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }
