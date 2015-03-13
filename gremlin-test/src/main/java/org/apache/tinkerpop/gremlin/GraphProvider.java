@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
@@ -44,6 +45,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Those developing Gremlin implementations must provide a GraphProvider implementation so that the
@@ -77,6 +79,12 @@ public interface GraphProvider {
 
     public default GraphTraversalContext traversal(final Graph graph) {
         return GraphTraversalContext.build().engine(StandardTraversalEngine.build()).create(graph);
+    }
+
+    public default GraphTraversalContext traversal(final Graph graph, final TraversalStrategy... strategies) {
+        final GraphTraversalContext.Builder builder = GraphTraversalContext.build().engine(StandardTraversalEngine.build());
+        Stream.of(strategies).forEach(builder::strategy);
+        return builder.create(graph);
     }
 
     /**
