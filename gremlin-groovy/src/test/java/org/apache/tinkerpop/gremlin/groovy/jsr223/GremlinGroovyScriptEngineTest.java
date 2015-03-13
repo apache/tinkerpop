@@ -300,6 +300,18 @@ public class GremlinGroovyScriptEngineTest {
         }
     }
 
+    @Test
+    public void shouldTimeoutScriptOnTimedWhileOnceEngineHasBeenAliveForLongerThanTimeout() throws Exception {
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, 3000);
+        Thread.sleep(4000);
+        try {
+            engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
+            fail("This should have timed out");
+        } catch (ScriptException se) {
+            assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
+        }
+    }
+
     public static class DenyAll extends GroovyValueFilter {
         @Override
         public Object filter(final Object o) {
