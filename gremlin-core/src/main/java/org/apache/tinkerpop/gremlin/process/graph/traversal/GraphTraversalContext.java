@@ -57,7 +57,14 @@ public class GraphTraversalContext implements TraversalContext {
     public GraphTraversalContext(final Graph graph, final TraversalEngine.Builder engine, final TraversalStrategy... strategies) {
         this.graph = graph;
         this.engine = engine;
-        this.strategies = TraversalStrategies.GlobalCache.getStrategies(this.graph.getClass()).addStrategies(strategies);
+        final TraversalStrategies temp = TraversalStrategies.GlobalCache.getStrategies(this.graph.getClass());
+
+        try {
+            this.strategies = strategies.length == 0 ? temp : temp.clone().addStrategies(strategies);
+        } catch (CloneNotSupportedException cnse) {
+            // seems unlikely that this should happen so propogate as a runtime issue.
+            throw new RuntimeException(cnse);
+        }
     }
 
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
