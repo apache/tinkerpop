@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.TraversalS
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ReadOnlyStrategyTest;
 import org.apache.tinkerpop.gremlin.process.util.PathTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -134,10 +135,13 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             PathTest.class,
 
             // strategy
-            TraversalVerificationStrategyTest.StandardTraversals.class
+            TraversalVerificationStrategyTest.StandardTraversals.class,
 
             // algorithms
             // PageRankVertexProgramTest.class
+
+            // decorations
+            ReadOnlyStrategyTest.class
     };
 
     /**
