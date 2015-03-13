@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopCombine;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopMap;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopReduce;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.InputOutputHelper;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableComparator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
@@ -57,12 +58,13 @@ public final class MapReduceHelper {
     }
 
     public static void executeMapReduceJob(final MapReduce mapReduce, final Memory.Admin memory, final Configuration configuration) throws IOException, ClassNotFoundException, InterruptedException {
+        final boolean vertexProgramExists = configuration.get(VertexProgram.VERTEX_PROGRAM, null) != null;
         final Configuration newConfiguration = new Configuration(configuration);
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
         apacheConfiguration.setDelimiterParsingDisabled(true);
         mapReduce.storeState(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, newConfiguration);
-        if (!mapReduce.doStage(MapReduce.Stage.MAP)) {
+        if (!mapReduce.doStage(MapReduce.Stage.MAP)) { // TODO : how is this possible?
             final Path memoryPath = new Path(configuration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
             if (newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
                 mapReduce.addResultToMemory(memory, new ObjectWritableIterator(configuration, memoryPath));
@@ -94,10 +96,12 @@ public final class MapReduceHelper {
             job.setMapOutputValueClass(ObjectWritable.class);
             job.setOutputKeyClass(ObjectWritable.class);
             job.setOutputValueClass(ObjectWritable.class);
-            job.setInputFormatClass((Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class));
+            job.setInputFormatClass(vertexProgramExists ?
+                    InputOutputHelper.getInputFormat((Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class)) :
+                    (Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class));
             job.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class)); // TODO: Make this configurable
             // if there is no vertex program, then grab the graph from the input location
-            final Path graphPath = configuration.get(VertexProgram.VERTEX_PROGRAM, null) != null ?
+            final Path graphPath = vertexProgramExists ?
                     new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G) :
                     new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
             Path memoryPath = new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + (reduceSort.isPresent() ? mapReduce.getMemoryKey() + "-temp" : mapReduce.getMemoryKey()));

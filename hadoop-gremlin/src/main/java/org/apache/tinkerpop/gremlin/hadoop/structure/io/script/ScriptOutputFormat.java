@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.script;
 
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileOutputFormat;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileOutputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

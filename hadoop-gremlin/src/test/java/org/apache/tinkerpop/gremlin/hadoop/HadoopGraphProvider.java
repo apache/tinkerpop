@@ -33,6 +33,8 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraphVariables;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -77,7 +79,10 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             }
 
             final List<String> graphsonResources = Arrays.asList(
-                    "grateful-dead-vertices.ldjson");
+                    "tinkerpop-modern-vertices.ldjson",
+                    "grateful-dead-vertices.ldjson",
+                    "tinkerpop-classic-vertices.ldjson",
+                    "tinkerpop-crew-vertices.ldjson");
             for (final String fileName : graphsonResources) {
                 PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath());
             }
@@ -98,7 +103,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName) {
         return new HashMap<String, Object>() {{
             put(Graph.GRAPH, HadoopGraph.class.getName());
-            put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
+            put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GraphSONInputFormat.class.getCanonicalName());
             put(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, GryoOutputFormat.class.getCanonicalName());
             put(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class.getCanonicalName());
             put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "hadoop-gremlin/target/test-output");
@@ -137,13 +142,13 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     public void loadGraphDataViaHadoopConfig(final Graph g, final LoadGraphWith.GraphData graphData) {
 
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead-vertices.kryo"));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead-vertices.ldjson"));
         } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-modern-vertices.kryo"));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-modern-vertices.ldjson"));
         } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-classic-vertices.kryo"));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-classic-vertices.ldjson"));
         } else if (graphData.equals(LoadGraphWith.GraphData.CREW)) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew-vertices.kryo"));
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew-vertices.ldjson"));
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }

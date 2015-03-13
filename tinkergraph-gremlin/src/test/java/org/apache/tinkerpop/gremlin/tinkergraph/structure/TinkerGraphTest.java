@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -148,7 +147,7 @@ public class TinkerGraphTest {
     public void testPlay3() throws Exception {
         Graph graph = TinkerFactory.createModern();
         GraphTraversalContext g = graph.traversal(GraphTraversalContext.build().strategy(new ElementIdStrategy("name")));
-        Traversal t = g.V("marko").out("knows").in("knows").has(T.id,"marko");
+        Traversal t = g.V("marko").out("knows").in("knows").has(T.id, "marko");
         System.out.println(t);
         t.forEachRemaining(System.out::println);
         System.out.println(t);
@@ -270,6 +269,16 @@ public class TinkerGraphTest {
     public void shouldWriteModernVerticesAsGraphSON() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-vertices.ldjson");
         GraphSONWriter.build().create().writeVertices(os, TinkerFactory.createModern().traversal().V(), Direction.BOTH);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteCrewVerticesAsGraphSON() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-vertices.ldjson");
+        GraphSONWriter.build().create().writeVertices(os, TinkerFactory.createTheCrew().traversal().V(), Direction.BOTH);
         os.close();
     }
 
