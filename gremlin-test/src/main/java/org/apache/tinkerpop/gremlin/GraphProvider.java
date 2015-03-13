@@ -77,10 +77,26 @@ public interface GraphProvider {
         add(O_Traverser.class);
     }};
 
+    /**
+     * Create a {@link GraphTraversalContext} from a {@link Graph} instance.  The default implementation uses the
+     * {@link org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine} so vendors should
+     * override as necessary if their implementation is testing something that requires a different engine type,
+     * like those tests for {@link org.apache.tinkerpop.gremlin.process.TraversalEngine.Type}.
+     */
     public default GraphTraversalContext traversal(final Graph graph) {
         return GraphTraversalContext.build().engine(StandardTraversalEngine.build()).create(graph);
     }
 
+    /**
+     * Create a {@link GraphTraversalContext} from a {@link Graph} instance.  The default implementation uses the
+     * {@link org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine} so vendors should
+     * override as necessary if their implementation is testing something that requires a different engine type,
+     * like those tests for {@link org.apache.tinkerpop.gremlin.process.TraversalEngine.Type}.
+     * <br/>
+     * Implementations should apply strategies as necessary to the
+     * {@link org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext.Builder} before calling
+     * it's {@code create} method.
+     */
     public default GraphTraversalContext traversal(final Graph graph, final TraversalStrategy... strategies) {
         final GraphTraversalContext.Builder builder = GraphTraversalContext.build().engine(StandardTraversalEngine.build());
         Stream.of(strategies).forEach(builder::strategy);
