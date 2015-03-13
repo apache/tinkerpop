@@ -18,7 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -27,12 +28,12 @@ import java.util.function.Function;
  */
 public class GryoPool {
 
-    private final ConcurrentLinkedQueue<GryoReader> gryoReaders;
-    private final ConcurrentLinkedQueue<GryoWriter> gryoWriters;
+    private final Queue<GryoReader> gryoReaders;
+    private final Queue<GryoWriter> gryoWriters;
 
     public GryoPool() {
-        this.gryoReaders = new ConcurrentLinkedQueue<>();
-        this.gryoWriters = new ConcurrentLinkedQueue<>();
+        this.gryoReaders = new ArrayBlockingQueue<>(256);
+        this.gryoWriters = new ArrayBlockingQueue<>(256);
     }
 
     public synchronized GryoReader getReader() {
