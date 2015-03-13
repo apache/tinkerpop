@@ -18,12 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphComputeVertex;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
