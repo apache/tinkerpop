@@ -44,7 +44,7 @@ import java.util.function.Function;
 public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
     private final GraphSONReader GRAPHSON_READER = GraphSONReader.build().create();
-    private final VertexWritable vertex = new VertexWritable(null);
+    private final VertexWritable vertexWritable = new VertexWritable();
     private final LineRecordReader lineRecordReader;
 
     public GraphSONRecordReader() {
@@ -64,12 +64,12 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWrita
         final TinkerGraph g = TinkerGraph.open();
         final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(g, detachedVertex);
         final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(g, detachedEdge);
-        final TinkerVertex v;
+        final TinkerVertex vertex;
         try (InputStream in = new ByteArrayInputStream(this.lineRecordReader.getCurrentValue().getBytes())) {
-            v = (TinkerVertex) GRAPHSON_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
+            vertex = (TinkerVertex) GRAPHSON_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
         }
 
-        this.vertex.set(v);
+        this.vertexWritable.set(vertex);
         return true;
     }
 
@@ -80,7 +80,7 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWrita
 
     @Override
     public VertexWritable getCurrentValue() {
-        return this.vertex;
+        return this.vertexWritable;
     }
 
     @Override

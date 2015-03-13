@@ -57,16 +57,14 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
     private static final String VERTEX_ID = Graph.Hidden.hide("giraph.gremlin.vertexId");
     private TinkerVertex tinkerVertex;
     private StrategyVertex wrappedVertex;
-    private GryoWriter KRYO_WRITER;
-    private GryoReader KRYO_READER;
 
     public GiraphComputeVertex() {
     }
 
-    public GiraphComputeVertex(final org.apache.tinkerpop.gremlin.structure.Vertex vertex) {
-        this.tinkerVertex = this.generateTinkerVertexForm(vertex);
+    public GiraphComputeVertex(final org.apache.tinkerpop.gremlin.structure.Vertex vertex, final GryoReader gryoReader, final GryoWriter gryoWriter) {
+        this.tinkerVertex = this.generateTinkerVertexForm(vertex, gryoReader, gryoWriter);
         this.tinkerVertex.graph().variables().set(VERTEX_ID, this.tinkerVertex.id());
-        this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateTinkerVertex(), EmptyOutEdges.instance());
+        this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateTinkerVertex(gryoWriter), EmptyOutEdges.instance());
     }
 
     public TinkerVertex getBaseVertex() {
@@ -95,18 +93,10 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
 
     ///////////////////////////////////////////////
 
-    private void checkReaderWriters() {
-        if (null == KRYO_READER)
-            KRYO_READER = GryoReader.build().create();
-        if (null == KRYO_WRITER)
-            KRYO_WRITER = GryoWriter.build().create();
-    }
-
-    private Text deflateTinkerVertex() {
+    private Text deflateTinkerVertex(final GryoWriter writer) {
         try {
-            checkReaderWriters();
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            KRYO_WRITER.writeGraph(bos, this.tinkerVertex.graph());
+            writer.writeGraph(bos, this.tinkerVertex.graph());
             bos.flush();
             bos.close();
             return new Text(bos.toByteArray());
@@ -117,10 +107,9 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
 
     private void inflateTinkerVertex() {
         try {
-            checkReaderWriters();
             final ByteArrayInputStream bis = new ByteArrayInputStream(this.getValue().getBytes());
             final TinkerGraph tinkerGraph = TinkerGraph.open();
-            KRYO_READER.readGraph(bis, tinkerGraph);
+            ((GiraphWorkerContext) this.getWorkerContext()).getReader().readGraph(bis, tinkerGraph);
             bis.close();
             this.tinkerVertex = (TinkerVertex) tinkerGraph.vertices(tinkerGraph.variables().get(VERTEX_ID).get()).next();
         } catch (final Exception e) {
@@ -128,14 +117,13 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
         }
     }
 
-    private final TinkerVertex generateTinkerVertexForm(final org.apache.tinkerpop.gremlin.structure.Vertex otherVertex) {
+    private final TinkerVertex generateTinkerVertexForm(final org.apache.tinkerpop.gremlin.structure.Vertex otherVertex, final GryoReader gryoReader, final GryoWriter gryoWriter) {
         if (otherVertex instanceof TinkerVertex)
             return (TinkerVertex) otherVertex;
         else {
             try {
-                checkReaderWriters();
                 final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                KRYO_WRITER.writeVertex(bos, otherVertex, Direction.BOTH);
+                gryoWriter.writeVertex(bos, otherVertex, Direction.BOTH);
                 bos.flush();
                 bos.close();
                 final ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
@@ -144,7 +132,7 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
                 final Function<DetachedVertex, org.apache.tinkerpop.gremlin.structure.Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(tinkerGraph, detachedVertex);
                 final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(tinkerGraph, detachedEdge);
                 try (InputStream in = new ByteArrayInputStream(bos.toByteArray())) {
-                    tinkerVertex = (TinkerVertex) KRYO_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
+                    tinkerVertex = (TinkerVertex) gryoReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
                 }
                 bis.close();
                 return tinkerVertex;

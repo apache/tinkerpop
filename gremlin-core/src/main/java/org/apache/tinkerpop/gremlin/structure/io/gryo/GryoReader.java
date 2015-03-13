@@ -219,8 +219,7 @@ public class GryoReader implements GraphReader {
 
         this.headerReader.read(kryo, input);
 
-        final DetachedVertex detachedVertex = (DetachedVertex) kryo.readClassAndObject(input);
-        final Vertex v = vertexMaker.apply(detachedVertex);
+        final Vertex vertex = vertexMaker.apply((DetachedVertex) kryo.readClassAndObject(input));
 
         final boolean streamContainsEdgesInSomeDirection = input.readBoolean();
         if (!streamContainsEdgesInSomeDirection && directionRequested != null)
@@ -254,15 +253,14 @@ public class GryoReader implements GraphReader {
             }
         }
 
-        return v;
+        return vertex;
     }
 
     private void readEdges(final Input input, final Function<DetachedEdge, Edge> edgeMaker) {
         if (input.readBoolean()) {
             Object next = kryo.readClassAndObject(input);
             while (!next.equals(EdgeTerminator.INSTANCE)) {
-                final DetachedEdge detachedEdge = (DetachedEdge) next;
-                edgeMaker.apply(detachedEdge);
+                edgeMaker.apply((DetachedEdge) next);
                 next = kryo.readClassAndObject(input);
             }
         }
@@ -308,8 +306,8 @@ public class GryoReader implements GraphReader {
             Object next = kryo.readClassAndObject(input);
             while (!next.equals(EdgeTerminator.INSTANCE)) {
                 final DetachedEdge detachedEdge = (DetachedEdge) next;
-                final Vertex vOut = graphToWriteTo.vertices(detachedEdge.vertices(Direction.OUT).next().id()).next();
-                final Vertex inV = graphToWriteTo.vertices(detachedEdge.vertices(Direction.IN).next().id()).next();
+                final Vertex vOut = graphToWriteTo.vertices(detachedEdge.outVertex().id()).next();
+                final Vertex inV = graphToWriteTo.vertices(detachedEdge.inVertex().id()).next();
 
                 detachedEdge.properties().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(p.key(), p.value())));
 

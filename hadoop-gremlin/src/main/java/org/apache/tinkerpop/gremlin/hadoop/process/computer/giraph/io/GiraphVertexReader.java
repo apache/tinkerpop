@@ -18,14 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.io;
 
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphComputeVertex;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphComputeVertex;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 
 import java.io.IOException;
 
@@ -35,6 +37,8 @@ import java.io.IOException;
 public class GiraphVertexReader extends VertexReader {
 
     private RecordReader<NullWritable, VertexWritable> recordReader;
+    private GryoReader gryoReader = GryoReader.build().create();
+    private GryoWriter gryoWriter = GryoWriter.build().create();
 
     public GiraphVertexReader(final RecordReader<NullWritable, VertexWritable> recordReader) {
         this.recordReader = recordReader;
@@ -52,7 +56,7 @@ public class GiraphVertexReader extends VertexReader {
 
     @Override
     public Vertex getCurrentVertex() throws IOException, InterruptedException {
-        return new GiraphComputeVertex(this.recordReader.getCurrentValue().get());
+        return new GiraphComputeVertex(this.recordReader.getCurrentValue().get(), this.gryoReader, this.gryoWriter);
     }
 
     @Override

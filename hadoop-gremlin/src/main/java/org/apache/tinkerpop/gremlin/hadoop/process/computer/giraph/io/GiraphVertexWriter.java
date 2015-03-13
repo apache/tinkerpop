@@ -18,14 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.io;
 
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphComputeVertex;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexWriter;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphComputeVertex;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
 import java.io.IOException;
 
@@ -35,6 +35,7 @@ import java.io.IOException;
 public class GiraphVertexWriter extends VertexWriter {
     private final OutputFormat<NullWritable, VertexWritable> outputFormat;
     private RecordWriter<NullWritable, VertexWritable> recordWriter;
+    private final VertexWritable vertexWritable = new VertexWritable();
 
     public GiraphVertexWriter(final OutputFormat<NullWritable, VertexWritable> outputFormat) {
         this.outputFormat = outputFormat;
@@ -52,6 +53,7 @@ public class GiraphVertexWriter extends VertexWriter {
 
     @Override
     public void writeVertex(final Vertex vertex) throws IOException, InterruptedException {
-        this.recordWriter.write(NullWritable.get(), new VertexWritable(((GiraphComputeVertex) vertex).getBaseVertex()));
+        this.vertexWritable.set(((GiraphComputeVertex) vertex).getBaseVertex());
+        this.recordWriter.write(NullWritable.get(), this.vertexWritable);
     }
 }
