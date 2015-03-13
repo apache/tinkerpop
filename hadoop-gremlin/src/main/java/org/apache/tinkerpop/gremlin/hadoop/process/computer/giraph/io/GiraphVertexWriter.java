@@ -35,7 +35,6 @@ import java.io.IOException;
 public class GiraphVertexWriter extends VertexWriter {
     private final OutputFormat<NullWritable, VertexWritable> outputFormat;
     private RecordWriter<NullWritable, VertexWritable> recordWriter;
-    private final VertexWritable vertexWritable = new VertexWritable();
 
     public GiraphVertexWriter(final OutputFormat<NullWritable, VertexWritable> outputFormat) {
         this.outputFormat = outputFormat;
@@ -53,7 +52,6 @@ public class GiraphVertexWriter extends VertexWriter {
 
     @Override
     public void writeVertex(final Vertex vertex) throws IOException, InterruptedException {
-        this.vertexWritable.set(((GiraphComputeVertex) vertex).getBaseVertex());
-        this.recordWriter.write(NullWritable.get(), this.vertexWritable);
+        this.recordWriter.write(NullWritable.get(), ((GiraphComputeVertex) vertex).getValue());
     }
 }

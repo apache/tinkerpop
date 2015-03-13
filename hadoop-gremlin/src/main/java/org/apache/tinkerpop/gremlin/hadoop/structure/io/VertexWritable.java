@@ -23,8 +23,7 @@ import org.apache.hadoop.io.WritableUtils;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -42,8 +41,7 @@ import java.io.IOException;
 public final class VertexWritable implements Writable {
 
     private Vertex vertex;
-    private final GryoReader GRYO_READER = GryoReader.build().create();
-    private final GryoWriter GRYO_WRITER = GryoWriter.build().create();
+    private static final GryoPool GRYO_POOL = new GryoPool();
 
     public VertexWritable() {
 
@@ -64,22 +62,46 @@ public final class VertexWritable implements Writable {
 
     @Override
     public void readFields(final DataInput input) throws IOException {
-        this.vertex = null;
-        final ByteArrayInputStream inputStream = new ByteArrayInputStream(new byte[WritableUtils.readVInt(input)]);
-        final Graph gLocal = TinkerGraph.open();
-        this.vertex = GRYO_READER.readVertex(inputStream, Direction.BOTH,
-                detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex),
-                detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge));
-
+        try {
+            this.vertex = null;
+            this.vertex = GRYO_POOL.doWithReader(gryoReader -> {
+                try {
+                    final ByteArrayInputStream inputStream = new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input));
+                    final Graph gLocal = TinkerGraph.open();
+                    return gryoReader.readVertex(inputStream, Direction.BOTH,
+                            detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex),
+                            detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge));
+                } catch (final IOException e) {
+                    throw new IllegalStateException(e);
+                }
+            });
+        } catch (IllegalStateException e) {
+            if (e.getCause() instanceof IOException)
+                throw (IOException) e.getCause();
+            else
+                throw e;
+        }
     }
 
     @Override
     public void write(final DataOutput output) throws IOException {
-        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        GRYO_WRITER.writeVertex(outputStream, this.vertex, Direction.BOTH);
-        WritableUtils.writeVInt(output, outputStream.size());
-        output.write(outputStream.toByteArray());
-        outputStream.close();
+        try {
+            GRYO_POOL.doWithWriter(gryoWriter -> {
+                try {
+                    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    gryoWriter.writeVertex(outputStream, this.vertex, Direction.BOTH);
+                    WritableUtils.writeCompressedByteArray(output, outputStream.toByteArray());
+                    return null;
+                } catch (final IOException e) {
+                    throw new IllegalStateException(e);
+                }
+            });
+        } catch (IllegalStateException e) {
+            if (e.getCause() instanceof IOException)
+                throw (IOException) e.getCause();
+            else
+                throw e;
+        }
     }
 
     @Override

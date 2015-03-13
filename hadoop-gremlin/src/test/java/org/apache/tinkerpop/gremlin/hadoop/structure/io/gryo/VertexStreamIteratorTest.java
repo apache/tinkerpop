@@ -18,9 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphComputeVertex;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 
 /**
@@ -36,12 +46,22 @@ public class VertexStreamIteratorTest {
         int counter = 0;
         long time = System.currentTimeMillis();
         while (iterator.hasNext()) {
-            if (counter++ % 1000 == 0) {
+            if (++counter % 1000 == 0) {
                 System.out.println("Read vertices: " + counter + "[ms:" + (System.currentTimeMillis() - time) + "]");
                 System.out.println(iterator.getProgress() + " -- progress");
                 time = System.currentTimeMillis();
             }
-            iterator.next();
+            final ByteArrayOutputStream out = new ByteArrayOutputStream();
+            //System.out.println("HERE:" +IteratorUtils.count(vertex.get().edges(Direction.BOTH)));
+            final GiraphComputeVertex vertex = new GiraphComputeVertex(iterator.next());
+            //System.out.println(vertex + "!!!!");
+            final DataOutputStream output = new DataOutputStream(out);
+            vertex.getValue().write(output);
+            output.flush();
+            //System.out.println("!!!" + out.size());
+            final VertexWritable v = new VertexWritable();
+            final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray());
+            v.readFields(new DataInputStream(inputStream));
         }
     }
 }
