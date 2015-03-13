@@ -310,6 +310,8 @@ public class GremlinGroovyScriptEngineTest {
         } catch (ScriptException se) {
             assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
         }
+
+        assertEquals(2, engine.eval("1+1"));
     }
 
     public static class DenyAll extends GroovyValueFilter {
