@@ -20,6 +20,12 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphComputeVertex;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -28,6 +34,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -58,6 +68,31 @@ public class VertexStreamIteratorTest {
             final VertexWritable v = new VertexWritable();
             final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray());
             v.readFields(new DataInputStream(inputStream));
+        }
+    }
+
+    @Test
+    public void testAll() throws Exception {
+        Graph g = TinkerFactory.createClassic();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GryoWriter writer = GryoWriter.build().create();
+            writer.writeVertices(os, g.traversal().V(), Direction.BOTH);
+            final AtomicInteger called = new AtomicInteger(0);
+            VertexStreamIterator vsi = new VertexStreamIterator(new ByteArrayInputStream(os.toByteArray()), Long.MAX_VALUE);
+
+            boolean found = false;
+            while (vsi.hasNext()) {
+                Vertex v = vsi.next().get();
+                String name = v.<String>property("name").value();
+                if (name.equals("ripple")) {
+                    found = true;
+                    assertEquals(1, IteratorUtils.count(v.vertices(Direction.IN)));
+                    assertEquals(0, IteratorUtils.count(v.vertices(Direction.OUT)));
+                }
+                called.incrementAndGet();
+            }
+            assertTrue(found);
+            assertEquals(IteratorUtils.count(g.vertices()), called.get());
         }
     }
 }
