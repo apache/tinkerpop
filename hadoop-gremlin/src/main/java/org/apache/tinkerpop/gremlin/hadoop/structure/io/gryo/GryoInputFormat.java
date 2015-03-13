@@ -18,17 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
 import java.io.IOException;
 
@@ -44,11 +41,6 @@ public class GryoInputFormat extends FileInputFormat<NullWritable, VertexWritabl
         final RecordReader<NullWritable, VertexWritable> reader = new GryoRecordReader();
         reader.initialize(split, context);
         return reader;
-    }
-
-    @Override
-    protected boolean isSplitable(final JobContext context, final Path file) {
-        return null == new CompressionCodecFactory(context.getConfiguration()).getCodec(file);
     }
 
     @Override
