@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.neo4j.BaseNeo4jGraphTest;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -283,7 +283,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     public void shouldEnsureTraverseRelationshipNeedsTx() throws ScriptException {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         final Bindings bindings = engine.createBindings();
-        bindings.put("g", graph.traversal(GraphTraversalContext.standard));
+        bindings.put("g", graph.traversal(GraphTraversalSource.standard));
         bindings.put("#jsr223.groovy.engine.keep.globals", "phantom");
 
         Vertex marko = this.graph.addVertex(T.label, "Person", "name", "marko");
@@ -304,7 +304,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     public void shouldEnsureTraversalOfVerticesNeedsTx() throws ScriptException {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         final Bindings bindings = engine.createBindings();
-        bindings.put("g", graph.traversal(GraphTraversalContext.standard));
+        bindings.put("g", graph.traversal(GraphTraversalSource.standard));
         bindings.put("#jsr223.groovy.engine.keep.globals", "phantom");
 
         Vertex marko = this.graph.addVertex(T.label, "Person", "name", "marko");

@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `TraversalSource` which contextualizes a traversal to a graph, DSL, execution engine, and runtime strategies.
 * Added `AddVertexStep` (`addV`), `AddPropertyStep` (`property`), and changed `AddEdgeStep` to a map-step instead of a sideEffect-step.
 * Added `compile` method to `GremlinExecutor` and related classes.
 * Fixed bug in Gremlin Server that was generating extra response messages on script evaluation errors.

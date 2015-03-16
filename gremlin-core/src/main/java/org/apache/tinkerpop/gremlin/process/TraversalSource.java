@@ -27,9 +27,9 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversalContext {
+public interface TraversalSource {
 
-    public TraversalContext.Builder asBuilder();
+    public TraversalSource.Builder asBuilder();
 
     public Optional<GraphComputer> getGraphComputer();
 
@@ -37,7 +37,7 @@ public interface TraversalContext {
 
     ////////////////
 
-    public interface Builder<C extends TraversalContext> extends Serializable {
+    public interface Builder<C extends TraversalSource> extends Serializable {
 
         public Builder engine(final TraversalEngine.Builder engine);
 

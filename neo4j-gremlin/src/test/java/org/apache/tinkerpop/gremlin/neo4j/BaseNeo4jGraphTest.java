@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.neo4j;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -43,7 +43,7 @@ public class BaseNeo4jGraphTest {
     protected Configuration conf;
     protected final DefaultNeo4jGraphProvider graphProvider = new DefaultNeo4jGraphProvider();
     protected Neo4jGraph graph;
-    protected GraphTraversalContext g;
+    protected GraphTraversalSource g;
 
     @Rule
     public TestName name = new TestName();

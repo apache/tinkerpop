@@ -22,7 +22,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -120,7 +120,7 @@ public class TinkerGraphTest {
     @Ignore
     public void benchmarkStandardTraversals() throws Exception {
         Graph graph = TinkerGraph.open();
-        GraphTraversalContext g = graph.traversal();
+        GraphTraversalSource g = graph.traversal();
         graph.io().readGraphML("data/grateful-dead.xml");
         final List<Supplier<Traversal>> traversals = Arrays.asList(
                 () -> g.V().outE().inV().outE().inV().outE().inV(),
@@ -146,7 +146,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph graph = TinkerFactory.createModern();
-        GraphTraversalContext g = graph.traversal(GraphTraversalContext.build().strategy(new ElementIdStrategy("name")));
+        GraphTraversalSource g = graph.traversal(GraphTraversalSource.build().strategy(new ElementIdStrategy("name")));
         Traversal t = g.V("marko").out("knows").in("knows").has(T.id, "marko");
         System.out.println(t);
         t.forEachRemaining(System.out::println);
@@ -158,7 +158,7 @@ public class TinkerGraphTest {
     public void testPlay4() throws Exception {
         Graph graph = TinkerGraph.open();
         graph.io().readGraphML("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
-        GraphTraversalContext g = graph.traversal();
+        GraphTraversalSource g = graph.traversal();
         final List<Supplier<Traversal>> traversals = Arrays.asList(
                 () -> g.V().has(T.label, "song").out().groupCount().<Vertex>by(t ->
                         g.V(t).choose(r -> g.V(r).has(T.label, "artist").hasNext(),
@@ -188,7 +188,7 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlayDK() throws Exception {
-        GraphTraversalContext g = TinkerFactory.createModern().traversal();
+        GraphTraversalSource g = TinkerFactory.createModern().traversal();
         Traversal t = g.V().hasLabel("person").as("person").local(bothE().label().groupCount().cap()).as("relations").select().by("name").by();
         t.forEachRemaining(System.out::println);
         System.out.println("--");

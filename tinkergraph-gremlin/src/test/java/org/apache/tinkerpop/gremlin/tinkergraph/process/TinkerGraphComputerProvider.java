@@ -19,9 +19,8 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.process;
 
 import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
@@ -34,13 +33,13 @@ import java.util.stream.Stream;
 public class TinkerGraphComputerProvider extends TinkerGraphProvider {
 
     @Override
-    public GraphTraversalContext traversal(final Graph graph) {
-        return GraphTraversalContext.build().engine(ComputerTraversalEngine.build().computer(TinkerGraphComputer.class)).create(graph);
+    public GraphTraversalSource traversal(final Graph graph) {
+        return GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(TinkerGraphComputer.class)).create(graph);
     }
 
     @Override
-    public GraphTraversalContext traversal(final Graph graph, final TraversalStrategy... strategies) {
-        final GraphTraversalContext.Builder builder = GraphTraversalContext.build().engine(ComputerTraversalEngine.build().computer(TinkerGraphComputer.class));
+    public GraphTraversalSource traversal(final Graph graph, final TraversalStrategy... strategies) {
+        final GraphTraversalSource.Builder builder = GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(TinkerGraphComputer.class));
         Stream.of(strategies).forEach(builder::strategy);
         return builder.create(graph);
     }

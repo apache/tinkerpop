@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
@@ -98,7 +98,7 @@ public class ReadOnlyStrategyTest extends AbstractGremlinProcessTest {
         assertTraversal(create().V().as("a").in().addE(Direction.OUT, "test", "a"), true);
     }
 
-    private GraphTraversalContext create() {
+    private GraphTraversalSource create() {
         return graphProvider.traversal(graph, ReadOnlyStrategy.instance());
     }
 

@@ -20,10 +20,10 @@ package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.T;
-import org.apache.tinkerpop.gremlin.process.TraversalContext;
+import org.apache.tinkerpop.gremlin.process.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.io.DefaultIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
@@ -151,12 +151,12 @@ public interface Graph extends AutoCloseable {
 
     public GraphComputer compute() throws IllegalArgumentException;
 
-    public default <C extends TraversalContext> C traversal(final TraversalContext.Builder<C> contextBuilder) {
+    public default <C extends TraversalSource> C traversal(final TraversalSource.Builder<C> contextBuilder) {
         return contextBuilder.create(this);
     }
 
-    public default GraphTraversalContext traversal() {
-        return this.traversal(GraphTraversalContext.build().engine(StandardTraversalEngine.build()));
+    public default GraphTraversalSource traversal() {
+        return this.traversal(GraphTraversalSource.build().engine(StandardTraversalEngine.build()));
     }
 
     /**

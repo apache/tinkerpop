@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -54,7 +54,7 @@ import static org.junit.Assume.assumeThat;
  */
 public abstract class AbstractGremlinTest {
     protected Graph graph;
-    protected GraphTraversalContext g;
+    protected GraphTraversalSource g;
     protected Configuration config;
     protected GraphStrategy[] strategiesToTest;
     protected GraphProvider graphProvider;

@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalContext;
+import org.apache.tinkerpop.gremlin.process.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.TraverserGenerator;
@@ -251,7 +251,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             super(TraversalVertexProgram.class);
         }
 
-        public Builder traversal(final Class<? extends Graph> graphClass, final TraversalContext.Builder builder, final String scriptEngine, final String traversalScript) {
+        public Builder traversal(final Class<? extends Graph> graphClass, final TraversalSource.Builder builder, final String scriptEngine, final String traversalScript) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SERIALIZED_OBJECT, TRAVERSAL_SUPPLIER, new TraversalScriptSupplier<>(graphClass, builder, scriptEngine, traversalScript));
             return this;
         }

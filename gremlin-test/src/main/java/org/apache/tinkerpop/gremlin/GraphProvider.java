@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
@@ -70,7 +70,7 @@ public interface GraphProvider {
     public static final Set<Class> CORE_IMPLEMENTATIONS = new HashSet<Class>() {{
         add(__.class);
         add(DefaultGraphTraversal.class);
-        add(GraphTraversalContext.class);
+        add(GraphTraversalSource.class);
         add(B_O_PA_S_SE_SL_Traverser.class);
         add(B_O_P_PA_S_SE_SL_Traverser.class);
         add(B_O_Traverser.class);
@@ -78,27 +78,27 @@ public interface GraphProvider {
     }};
 
     /**
-     * Create a {@link GraphTraversalContext} from a {@link Graph} instance.  The default implementation uses the
+     * Create a {@link org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource} from a {@link Graph} instance.  The default implementation uses the
      * {@link org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine} so vendors should
      * override as necessary if their implementation is testing something that requires a different engine type,
      * like those tests for {@link org.apache.tinkerpop.gremlin.process.TraversalEngine.Type}.
      */
-    public default GraphTraversalContext traversal(final Graph graph) {
-        return GraphTraversalContext.build().engine(StandardTraversalEngine.build()).create(graph);
+    public default GraphTraversalSource traversal(final Graph graph) {
+        return GraphTraversalSource.build().engine(StandardTraversalEngine.build()).create(graph);
     }
 
     /**
-     * Create a {@link GraphTraversalContext} from a {@link Graph} instance.  The default implementation uses the
+     * Create a {@link org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource} from a {@link Graph} instance.  The default implementation uses the
      * {@link org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine} so vendors should
      * override as necessary if their implementation is testing something that requires a different engine type,
      * like those tests for {@link org.apache.tinkerpop.gremlin.process.TraversalEngine.Type}.
      * <br/>
      * Implementations should apply strategies as necessary to the
-     * {@link org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext.Builder} before calling
+     * {@link org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource.Builder} before calling
      * it's {@code create} method.
      */
-    public default GraphTraversalContext traversal(final Graph graph, final TraversalStrategy... strategies) {
-        final GraphTraversalContext.Builder builder = GraphTraversalContext.build().engine(StandardTraversalEngine.build());
+    public default GraphTraversalSource traversal(final Graph graph, final TraversalStrategy... strategies) {
+        final GraphTraversalSource.Builder builder = GraphTraversalSource.build().engine(StandardTraversalEngine.build());
         Stream.of(strategies).forEach(builder::strategy);
         return builder.create(graph);
     }
