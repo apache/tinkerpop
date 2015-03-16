@@ -25,12 +25,12 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `AddVertexStep` (`addV`), `AddPropertyStep` (`property`), and changed `AddEdgeStep` to a map-step instead of a sideEffect-step.
 * Added `compile` method to `GremlinExecutor` and related classes.
 * Fixed bug in Gremlin Server that was generating extra response messages on script evaluation errors.
 * Changed the `Memory` API to not return the mutated value on `or`, `and`, `incr` as it is too difficult to implement faithfully in a distributed system.
 * Added `SparkGraphComputer` to Hadoop-Gremlin which uses Apache Spark as the underlying computing engine.
 * Renamed "Gremlin Kryo" to "Gryo".
-* Implement profiling for nested traversals.
 * Refactored `TinkerWorkerPool` to use `ExecutorService` so as to reuse threads when executing graph computer functions.
 * Removed `Reducing.Reducer` and `ReducingStrategy`. Previous `Reducing` classes are now `MapReducer` classes.
 * Refactored the "process" test suite to allow for better test configuration with respect to different `TraversalEngine` implementations.
