@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -58,7 +59,7 @@ public class TinkerMessenger<M> implements Messenger<M> {
             final Traversal.Admin<Vertex, Edge> incidentTraversal = TinkerMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get().asAdmin(), this.vertex);
             final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
             final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
-            return StreamFactory.iterable(StreamFactory.stream(incidentTraversal.asAdmin().reverse())
+            return StreamFactory.iterable(StreamFactory.stream(VertexProgramHelper.reverse(incidentTraversal.asAdmin()))
                     .map(e -> this.messageBoard.receiveMessages.get((edge[0] = e).vertices(direction).next()))
                     .filter(q -> null != q)
                     .flatMap(q -> q.stream())

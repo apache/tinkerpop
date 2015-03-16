@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.computer;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -120,7 +121,7 @@ public abstract class MessageScope {
             }
 
             public Traversal<Vertex, Edge> get() {
-                return this.localMessageScope.getIncidentTraversal().get().asAdmin().reverse();
+                return VertexProgramHelper.reverse(this.localMessageScope.getIncidentTraversal().get().asAdmin());
             }
         }
     }

@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesS
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.StepPosition;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -46,10 +45,6 @@ import java.util.stream.Stream;
 public final class TraversalHelper {
 
     private TraversalHelper() {
-    }
-
-    public static boolean isReversible(final Traversal.Admin<?, ?> traversal) {
-        return !traversal.getSteps().stream().filter(step -> !(step instanceof Reversible)).findAny().isPresent();
     }
 
     public static <S, E> Step<S, E> getStepByLabel(final String label, final Traversal.Admin<?, ?> traversal) {

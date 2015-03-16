@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
@@ -362,17 +361,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
          */
         public default void reset() {
             this.getSteps().forEach(Step::reset);
-        }
-
-        /**
-         * Assume the every {@link Step} implements {@link Reversible} and call {@link Reversible#reverse()} for each.
-         *
-         * @return the traversal with its steps reversed
-         */
-        public default Traversal.Admin<S, E> reverse() throws IllegalStateException {
-            if (!TraversalHelper.isReversible(this)) throw Exceptions.traversalIsNotReversible();
-            this.getSteps().stream().forEach(step -> ((Reversible) step).reverse());
-            return this;
         }
 
         /**

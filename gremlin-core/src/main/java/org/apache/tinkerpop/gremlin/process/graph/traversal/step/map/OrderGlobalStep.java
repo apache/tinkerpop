@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.ComparatorHolder;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
@@ -38,7 +37,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implements Reversible, ComparatorHolder<S> {
+public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implements ComparatorHolder<S> {
 
     private final List<Comparator<S>> comparators = new ArrayList<>();
     private Comparator<Traverser<S>> chainedComparator = (Comparator) Order.incr;

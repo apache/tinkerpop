@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.graph.util.HasContainer;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -34,7 +33,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder, Reversible {   // TODO: make final when graph strategies are fixed up
+public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder {   // TODO: make final when graph strategies are fixed up
 
     private final HasContainer hasContainer;
 

@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -37,7 +36,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implements Reversible, TraversalParent {
+public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implements TraversalParent {
 
     private Traversal.Admin<S, Number> probabilityTraversal = new ConstantTraversal<>(1.0d);
     private final int amountToSample;

@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 
@@ -33,7 +32,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RetainStep<S> extends FilterStep<S> implements Reversible {
+public final class RetainStep<S> extends FilterStep<S> {
 
     private final String sideEffectKeyOrPathLabel;
     private final Collection<S> retainCollection;

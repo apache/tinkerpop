@@ -21,12 +21,11 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class SideEffectStep<S> extends AbstractStep<S, S> implements Reversible {
+public abstract class SideEffectStep<S> extends AbstractStep<S, S> {
 
     public SideEffectStep(final Traversal.Admin traversal) {
         super(traversal);
