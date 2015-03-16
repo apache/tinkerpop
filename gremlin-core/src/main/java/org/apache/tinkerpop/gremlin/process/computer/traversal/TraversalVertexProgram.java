@@ -115,7 +115,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         if (!this.traversal.isLocked()) this.traversal.applyStrategies();
         ((ComputerResultStep) this.traversal.getEndStep()).byPass();
         this.traversalMatrix = new TraversalMatrix<>(this.traversal);
-        for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecurssively(MapReducer.class, this.traversal)) {
+        for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal)) {
             this.mapReducers.add(mapReducer.getMapReduce());
         }
         if (!(this.traversal.getEndStep().getPreviousStep() instanceof SideEffectCapStep) && !(this.traversal.getEndStep().getPreviousStep() instanceof ReducingBarrierStep))

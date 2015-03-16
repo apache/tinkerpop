@@ -192,14 +192,14 @@ public final class TraversalHelper {
         return steps.size() == 0 ? Optional.empty() : Optional.of(steps.get(steps.size() - 1));
     }
 
-    public static <S> List<S> getStepsOfAssignableClassRecurssively(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
+    public static <S> List<S> getStepsOfAssignableClassRecursively(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
         final List<S> list = new ArrayList<>();
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (stepClass.isAssignableFrom(step.getClass()))
                 list.add((S) step);
             if (step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
-                    list.addAll(TraversalHelper.getStepsOfAssignableClassRecurssively(stepClass, globalChild));
+                    list.addAll(TraversalHelper.getStepsOfAssignableClassRecursively(stepClass, globalChild));
                 }
             }
         }
