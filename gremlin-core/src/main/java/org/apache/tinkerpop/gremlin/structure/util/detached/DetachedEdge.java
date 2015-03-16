@@ -106,7 +106,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         return hostGraph.edges(this.id).next();
     }
 
-    public synchronized static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
+    public static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
         Iterator<Vertex> outVertices = graph.vertices(detachedEdge.outVertex.id());
         final Vertex outV = outVertices.hasNext() ? outVertices.next() : graph.addVertex(T.id, detachedEdge.outVertex.id());
         Iterator<Vertex> inVertices = graph.vertices(detachedEdge.inVertex.id());
