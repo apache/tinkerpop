@@ -16,13 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.EnumSet;
@@ -31,7 +32,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AddEdgeStep extends SideEffectStep<Vertex> {
+public final class AddEdgeStep extends MapStep<Vertex, Edge> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.PATH,
@@ -48,26 +49,26 @@ public final class AddEdgeStep extends SideEffectStep<Vertex> {
     public AddEdgeStep(final Traversal.Admin traversal, final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
         super(traversal);
         this.direction = direction;
+        if (this.direction.equals(Direction.BOTH))
+            throw new IllegalArgumentException("Only in- and out- directions are supported by " + AddEdgeStep.class.getSimpleName());
         this.edgeLabel = edgeLabel;
         this.stepLabel = stepLabel;
         this.propertyKeyValues = propertyKeyValues;
     }
 
     @Override
-    protected void sideEffect(final Traverser.Admin<Vertex> traverser) {
-        final Vertex currentVertex = traverser.get();
-        final Vertex otherVertex = traverser.path().get(stepLabel);
-        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
-            otherVertex.addEdge(edgeLabel, currentVertex, this.propertyKeyValues);
-        }
-        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) {
-            currentVertex.addEdge(edgeLabel, otherVertex, this.propertyKeyValues);
-        }
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.direction.name(), this.edgeLabel, this.stepLabel);
     }
 
     @Override
-    public String toString() {
-        return TraversalHelper.makeStepString(this, this.direction.name(), this.edgeLabel, this.stepLabel);
+    protected Edge map(Traverser.Admin<Vertex> traverser) {
+        final Vertex currentVertex = traverser.get();
+        final Vertex otherVertex = traverser.path().get(this.stepLabel);
+        if (this.direction.equals(Direction.IN))
+            return otherVertex.addEdge(edgeLabel, currentVertex, this.propertyKeyValues);
+        else
+            return currentVertex.addEdge(edgeLabel, otherVertex, this.propertyKeyValues);
     }
 
     @Override

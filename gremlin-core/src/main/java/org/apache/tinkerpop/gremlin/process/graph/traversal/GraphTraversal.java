@@ -48,6 +48,8 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.SampleGl
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.SimplePathStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.TimeLimitStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddEdgeStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.BackStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CoalesceStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.CountGlobalStep;
@@ -86,7 +88,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.match.MatchStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AddEdgeStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AggregateStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupCountSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroupSideEffectStep;
@@ -370,6 +372,26 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new TreeStep<>(this.asAdmin()));
     }
 
+    public default GraphTraversal<S, Vertex> addV(final Object... keyValues) {
+        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), keyValues));
+    }
+
+    public default GraphTraversal<S, Edge> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
+        return this.asAdmin().addStep(new AddEdgeStep(this.asAdmin(), direction, edgeLabel, stepLabel, propertyKeyValues));
+    }
+
+    public default GraphTraversal<S, Edge> addInE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
+        return this.addE(Direction.IN, edgeLabel, stepLabel, propertyKeyValues);
+    }
+
+    public default GraphTraversal<S, Edge> addOutE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
+        return this.addE(Direction.OUT, edgeLabel, stepLabel, propertyKeyValues);
+    }
+
+    public default GraphTraversal<S, E> property(final String key, final Object value) {
+        return this.asAdmin().addStep(new AddPropertyStep(this.asAdmin(), key, value));
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     public default GraphTraversal<S, E> filter(final Predicate<Traverser<E>> predicate) {
@@ -564,22 +586,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey) {
         return this.asAdmin().addStep(new GroupCountSideEffectStep<>(this.asAdmin(), sideEffectKey));
-    }
-
-    public default GraphTraversal<S, Vertex> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
-        return this.asAdmin().addStep(new AddEdgeStep(this.asAdmin(), direction, edgeLabel, stepLabel, propertyKeyValues));
-    }
-
-    public default GraphTraversal<S, Vertex> addInE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
-        return this.addE(Direction.IN, edgeLabel, stepLabel, propertyKeyValues);
-    }
-
-    public default GraphTraversal<S, Vertex> addOutE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
-        return this.addE(Direction.OUT, edgeLabel, stepLabel, propertyKeyValues);
-    }
-
-    public default GraphTraversal<S, Vertex> addBothE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
-        return this.addE(Direction.BOTH, edgeLabel, stepLabel, propertyKeyValues);
     }
 
     public default GraphTraversal<S, E> timeLimit(final long timeLimit) {

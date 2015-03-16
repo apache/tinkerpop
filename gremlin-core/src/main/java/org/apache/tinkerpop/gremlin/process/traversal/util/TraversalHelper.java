@@ -23,10 +23,12 @@ import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.StepPosition;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.util.BulkSet;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
@@ -85,6 +87,10 @@ public final class TraversalHelper {
             steps.add(temp);
         }
         return steps;
+    }
+
+    public static Graph getGraph(final Traversal.Admin<?, ?> traversal) {
+        return ((GraphStep) traversal.getStartStep()).getGraph(Graph.class);
     }
 
     public static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal) {
