@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 /**
  * Represents an {@link Edge} that is disconnected from a {@link Graph}.  "Disconnection" can mean detachment from
@@ -107,12 +106,11 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         return hostGraph.edges(this.id).next();
     }
 
-    public static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
-        Iterator<Vertex> vertices = graph.vertices(detachedEdge.outVertex.id());
-        final Vertex outV = vertices.hasNext() ? vertices.next() : graph.addVertex(T.id, detachedEdge.outVertex.id());
-        vertices = graph.vertices(graph.vertices(detachedEdge.inVertex.id()));
-        final Vertex inV = vertices.hasNext() ? vertices.next() : graph.addVertex(T.id, detachedEdge.inVertex.id());
-
+    public synchronized static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
+        Iterator<Vertex> outVertices = graph.vertices(detachedEdge.outVertex.id());
+        final Vertex outV = outVertices.hasNext() ? outVertices.next() : graph.addVertex(T.id, detachedEdge.outVertex.id());
+        Iterator<Vertex> inVertices = graph.vertices(detachedEdge.inVertex.id());
+        final Vertex inV = inVertices.hasNext() ? inVertices.next() : graph.addVertex(T.id, detachedEdge.inVertex.id());
         if (ElementHelper.areEqual(outV, inV)) {
             final Iterator<Edge> itty = outV.edges(Direction.OUT, detachedEdge.label());
             while (itty.hasNext()) {
@@ -121,7 +119,6 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
                     return e;
             }
         }
-
         final Edge e = outV.addEdge(detachedEdge.label(), inV, T.id, detachedEdge.id());
         detachedEdge.properties.entrySet().forEach(kv -> kv.getValue().forEach(p -> e.<Object>property(kv.getKey(), p.value())));
         return e;
