@@ -108,25 +108,10 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     }
 
     public static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
-        Vertex outV;
-        try {
-            outV = graph.vertices(detachedEdge.outVertex.id()).next();
-        } catch (final NoSuchElementException e) {
-            outV = null;
-        }
-        if (null == outV) {
-            outV = graph.addVertex(T.id, detachedEdge.outVertex.id());
-        }
-
-        Vertex inV;
-        try {
-            inV = graph.vertices(detachedEdge.inVertex.id()).next();
-        } catch (final NoSuchElementException e) {
-            inV = null;
-        }
-        if (null == inV) {
-            inV = graph.addVertex(T.id, detachedEdge.inVertex.id());
-        }
+        Iterator<Vertex> vertices = graph.vertices(detachedEdge.outVertex.id());
+        final Vertex outV = vertices.hasNext() ? vertices.next() : graph.addVertex(T.id, detachedEdge.outVertex.id());
+        vertices = graph.vertices(graph.vertices(detachedEdge.inVertex.id()));
+        final Vertex inV = vertices.hasNext() ? vertices.next() : graph.addVertex(T.id, detachedEdge.inVertex.id());
 
         if (ElementHelper.areEqual(outV, inV)) {
             final Iterator<Edge> itty = outV.edges(Direction.OUT, detachedEdge.label());

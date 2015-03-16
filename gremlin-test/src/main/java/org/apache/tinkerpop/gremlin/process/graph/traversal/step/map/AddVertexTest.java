@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -42,6 +43,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @Ignore
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void g_V_addVXlabel_animal_age_0X() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_addVXlabel_animal_age_0X();
