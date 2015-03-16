@@ -23,6 +23,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
+import org.apache.giraph.conf.GiraphConstants;
 import org.apache.giraph.job.GiraphJob;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -85,9 +86,9 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
         this.giraphConfiguration.setVertexClass(GiraphComputeVertex.class);
         this.giraphConfiguration.setWorkerContextClass(GiraphWorkerContext.class);
         this.giraphConfiguration.setOutEdgesClass(EmptyOutEdges.class);
-        this.giraphConfiguration.setClass("giraph.vertexIdClass", LongWritable.class, LongWritable.class);
-        this.giraphConfiguration.setClass("giraph.vertexValueClass", VertexWritable.class, VertexWritable.class);
-        this.giraphConfiguration.setBoolean("giraph.isStaticGraph", true);
+        this.giraphConfiguration.setClass(GiraphConstants.VERTEX_ID_CLASS.getKey(), LongWritable.class, LongWritable.class);
+        this.giraphConfiguration.setClass(GiraphConstants.VERTEX_VALUE_CLASS.getKey(), VertexWritable.class, VertexWritable.class);
+        //this.giraphConfiguration.setBoolean("giraph.isStaticGraph", true);
         this.giraphConfiguration.setVertexInputFormatClass(GiraphVertexInputFormat.class);
         this.giraphConfiguration.setVertexOutputFormatClass(GiraphVertexOutputFormat.class);
     }
