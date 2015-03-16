@@ -445,7 +445,7 @@ public class GremlinExecutor implements AutoCloseable {
          * to the {@link GremlinExecutor#eval}).
          *
          * @param scriptEvaluationTimeout Time in milliseconds that a script is allowed to run and its
-         *                                results potentially transformed.
+         *                                results potentially transformed. Set to zero to have no timeout set.
          */
         public Builder scriptEvaluationTimeout(final long scriptEvaluationTimeout) {
             this.scriptEvaluationTimeout = scriptEvaluationTimeout;

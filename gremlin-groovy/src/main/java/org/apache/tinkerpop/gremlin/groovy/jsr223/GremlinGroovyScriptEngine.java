@@ -127,6 +127,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private ImportCustomizerProvider importCustomizerProvider;
     private Optional<SecurityCustomizerProvider> securityProvider;
 
+    /**
+     * If this value is zero then no timeout is applied.
+     */
     private final long scriptEvaluationTimeout;
 
     private final Set<Artifact> artifactsToUse = new HashSet<>();
@@ -477,10 +480,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         if (this.securityProvider.isPresent())
             conf.addCompilationCustomizers(this.securityProvider.get().getCompilationCustomizer());
 
-        final Map<String,Object> annotationParams = new HashMap<>();
-        annotationParams.put("value", scriptEvaluationTimeout);
-        annotationParams.put("unit", GeneralUtils.propX(GeneralUtils.classX(TimeUnit.class), TimeUnit.MILLISECONDS.toString()));
-        conf.addCompilationCustomizers(new ASTTransformationCustomizer(annotationParams, TimedInterrupt.class));
+        if (scriptEvaluationTimeout > 0) {
+            final Map<String, Object> timedInterruptAnnotationParams = new HashMap<>();
+            timedInterruptAnnotationParams.put("value", scriptEvaluationTimeout);
+            timedInterruptAnnotationParams.put("unit", GeneralUtils.propX(GeneralUtils.classX(TimeUnit.class), TimeUnit.MILLISECONDS.toString()));
+            conf.addCompilationCustomizers(new ASTTransformationCustomizer(timedInterruptAnnotationParams, TimedInterrupt.class));
+        }
+
         conf.addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class));
 
         this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
