@@ -120,7 +120,8 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
             }
         }
         final Edge e = outV.addEdge(detachedEdge.label(), inV, T.id, detachedEdge.id());
-        detachedEdge.properties.entrySet().forEach(kv -> kv.getValue().forEach(p -> e.<Object>property(kv.getKey(), p.value())));
+        if (!detachedEdge.properties.isEmpty())
+            detachedEdge.properties.entrySet().forEach(kv -> kv.getValue().forEach(p -> e.<Object>property(kv.getKey(), p.value())));
         return e;
     }
 
