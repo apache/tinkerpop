@@ -20,8 +20,10 @@ package org.apache.tinkerpop.gremlin.process.computer.util;
 
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.util.Serializer;
 
 import java.io.IOException;
@@ -59,9 +61,14 @@ public final class VertexProgramHelper {
         }
     }
 
-    public static void verifyReversibility(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.isReversible(traversal))
-            throw new IllegalArgumentException("The provided traversal is not reversible");
+    public static <S, E> Traversal.Admin<S, E> reverse(final Traversal.Admin<S, E> traversal) {
+        for (final Step step : traversal.getSteps()) {
+            if (step instanceof VertexStep)
+                ((VertexStep) step).reverseDirection();
+            if (step instanceof EdgeVertexStep)
+                ((EdgeVertexStep) step).reverseDirection();
+        }
+        return traversal;
     }
 
     public static void legalConfigurationKeyValueArray(final Object... configurationKeyValues) throws IllegalArgumentException {

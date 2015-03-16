@@ -16,37 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect
 
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map
+
+import org.apache.tinkerpop.gremlin.process.T
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.AddEdgeTest
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class GroovyAddEdgeTest {
+public abstract class GroovyAddVertexTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends AddEdgeTest {
+    public static class StandardTraversals extends AddVertexTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(
-                final Object v1Id) {
-            g.V(v1Id).as('a').out('created').in('created').addBothE('cocreator', 'a')
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_aX(final Object v1Id) {
-            g.V(v1Id).as('a').out('created').addOutE('createdBy', 'a')
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(
-                final Object v1Id) {
-            g.V(v1Id).as('a').out('created').addOutE('createdBy', 'a', 'weight', 2)
+        public Traversal<Vertex, Vertex> get_g_V_addVXlabel_animal_age_0X() {
+            g.V.addV(T.label, 'animal', 'age', 0);
         }
     }
 }

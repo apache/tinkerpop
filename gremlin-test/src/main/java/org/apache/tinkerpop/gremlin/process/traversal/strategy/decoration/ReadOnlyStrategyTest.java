@@ -64,12 +64,6 @@ public class ReadOnlyStrategyTest extends AbstractGremlinProcessTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    public void shouldNotTraverseV_out_addBothE() {
-        assertTraversal(create().V().as("a").out().addBothE("test", "a"), true);
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void shouldNotTraverseV_out_addInE() {
         assertTraversal(create().V().as("a").out().addInE("test", "a"), true);
     }
@@ -82,12 +76,6 @@ public class ReadOnlyStrategyTest extends AbstractGremlinProcessTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    public void shouldNotTraverseV_In_addBothE() {
-        assertTraversal(create().V().as("a").in().addBothE("test", "a"), true);
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void shouldNotTraverseV_In_addInE() {
         assertTraversal(create().V().as("a").in().addInE("test", "a"), true);
     }
@@ -96,12 +84,6 @@ public class ReadOnlyStrategyTest extends AbstractGremlinProcessTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void shouldNotTraverseV_In_addOutE() {
         assertTraversal(create().V().as("a").in().addOutE("test", "a"), true);
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    public void shouldNotTraverseV_In_addEXBOTHX() {
-        assertTraversal(create().V().as("a").in().addE(Direction.BOTH, "test", "a"), true);
     }
 
     @Test

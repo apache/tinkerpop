@@ -16,13 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step;
+package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
+
+import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Reversible {
+public final class AddVertexStep<S> extends MapStep<S, Vertex> {
 
-    public default void reverse() {
+    private final Object[] keyValues;
+    private final transient Graph graph;
+
+    public AddVertexStep(final Traversal.Admin traversal, final Object... keyValues) {
+        super(traversal);
+        this.keyValues = keyValues;
+        this.graph = TraversalHelper.getGraph(traversal);
+    }
+
+    @Override
+    protected Vertex map(final Traverser.Admin<S> traverser) {
+        return this.graph.addVertex(this.keyValues);
     }
 }

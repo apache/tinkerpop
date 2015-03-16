@@ -42,6 +42,8 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovyRe
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovySampleTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovySimplePathTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.GroovyWhereTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyAddEdgeTest;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyAddVertexTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyBackTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyCoalesceTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyCountTest;
@@ -59,7 +61,6 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovySumTe
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyUnfoldTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyValueMapTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyVertexTest;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyAddEdgeTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyAggregateTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyGroupCountTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GroovyGroupTest;
@@ -110,6 +111,8 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovySimplePathTest.StandardTraversals.class,
             GroovyWhereTest.StandardTraversals.class,
             // map
+            GroovyAddEdgeTest.StandardTraversals.class,
+            GroovyAddVertexTest.StandardTraversals.class,
             GroovyBackTest.StandardTraversals.class,
             GroovyCoalesceTest.StandardTraversals.class,
             GroovyCountTest.StandardTraversals.class,
@@ -128,7 +131,6 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyValueMapTest.StandardTraversals.class,
             GroovyVertexTest.StandardTraversals.class,
             // sideEffect
-            GroovyAddEdgeTest.StandardTraversals.class,
             GroovyAggregateTest.StandardTraversals.class,
             GroovyGroupTest.StandardTraversals.class,
             GroovyGroupCountTest.StandardTraversals.class,

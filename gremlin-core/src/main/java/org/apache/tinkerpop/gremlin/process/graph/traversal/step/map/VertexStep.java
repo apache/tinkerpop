@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reversible;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -35,7 +34,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements Reversible {
+public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> {
 
     private final String[] edgeLabels;
     private Direction direction;
@@ -55,11 +54,6 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
                 (Iterator<E>) traverser.get().edges(this.direction, this.edgeLabels);
     }
 
-    @Override
-    public void reverse() {
-        this.direction = this.direction.opposite();
-    }
-
     public Direction getDirection() {
         return this.direction;
     }
@@ -70,6 +64,10 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
 
     public Class<E> getReturnClass() {
         return this.returnClass;
+    }
+
+    public void reverseDirection() {
+        this.direction = this.direction.opposite();
     }
 
     @Override

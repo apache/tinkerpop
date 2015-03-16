@@ -43,17 +43,6 @@ import static org.junit.Assert.*;
 public class TraversalHelperTest {
 
     @Test
-    public void shouldCorrectlyTestIfReversible() {
-        assertTrue(TraversalHelper.isReversible(out().asAdmin()));
-        assertTrue(TraversalHelper.isReversible(outE().inV().asAdmin()));
-        assertTrue(TraversalHelper.isReversible(in().in().asAdmin()));
-        assertTrue(TraversalHelper.isReversible(inE().outV().outE().inV().asAdmin()));
-        assertTrue(TraversalHelper.isReversible(outE().has("since").inV().asAdmin()));
-        assertTrue(TraversalHelper.isReversible(outE().as("x").asAdmin()));
-        assertFalse(TraversalHelper.isReversible(__.as("a").outE().back("a").asAdmin()));
-    }
-
-    @Test
     public void shouldChainTogetherStepsWithNextPreviousInALinkedListStructure() {
         Traversal.Admin traversal = new DefaultTraversal<>(new Object());
         traversal.asAdmin().addStep(new IdentityStep(traversal));

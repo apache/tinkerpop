@@ -20,23 +20,24 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.AbstractStep;
+import org.apache.tinkerpop.gremlin.structure.Element;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class SideEffectStep<S> extends AbstractStep<S, S> {
+public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> {
 
-    public SideEffectStep(final Traversal.Admin traversal) {
+    private final String key;
+    private final Object value;
+
+    public AddPropertyStep(final Traversal.Admin traversal, final String key, final Object value) {
         super(traversal);
+        this.key = key;
+        this.value = value;
     }
 
-    protected abstract void sideEffect(final Traverser.Admin<S> traverser);
-
     @Override
-    protected Traverser<S> processNextStart() {
-        final Traverser.Admin<S> traverser = this.starts.next();
-        this.sideEffect(traverser);
-        return traverser;
+    protected void sideEffect(final Traverser.Admin<S> traverser) {
+        traverser.get().property(this.key, this.value);
     }
 }

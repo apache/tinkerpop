@@ -38,8 +38,6 @@ public class ReadOnlyStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"addBothE()", __.addBothE("test", "x")},
-                {"addBothE(args)", __.addBothE("test", "x", "this", "that")},
                 {"addInE()", __.addInE("test", "x")},
                 {"addInE(args)", __.addInE("test", "x", "this", "that")},
                 {"addOutE()", __.addOutE("test", "x")},
@@ -47,9 +45,7 @@ public class ReadOnlyStrategyTest {
                 {"addE(IN)", __.addE(Direction.IN, "test", "test")},
                 {"addE(IN,args)", __.addE(Direction.IN, "test", "test", "this", "that")},
                 {"addE(OUT)", __.addE(Direction.OUT, "test", "test")},
-                {"addE(OUT,args)", __.addE(Direction.OUT, "test", "test", "this", "that")},
-                {"addE(BOTH)", __.addE(Direction.BOTH, "test", "test")},
-                {"addE(BOTH,args)", __.addE(Direction.BOTH, "test", "test", "this", "that")}});
+                {"addE(OUT,args)", __.addE(Direction.OUT, "test", "test", "this", "that")}});
     }
 
     @Parameterized.Parameter(value = 0)

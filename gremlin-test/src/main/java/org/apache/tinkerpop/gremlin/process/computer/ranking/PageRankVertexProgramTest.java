@@ -63,34 +63,14 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
         assertEquals(result.memory().getIteration(), 30);
         assertEquals(result.memory().asMap().size(), 0);
     }
-    /*
-    @Test
+
+    /*@Test
     @LoadGraphWith(MODERN)
-    public void shouldExecutePageRankSpecifiedTraversal() throws Exception {
-        final ComputerResult result = g.compute().program(PageRankVertexProgram.build().incident(() -> __.outE()).create()).submit().get();
-        result.graph().V().forEachRemaining(v -> {
-            assertTrue(v.keys().contains("name"));
-            assertTrue(v.hiddenKeys().contains(PageRankVertexProgram.PAGE_RANK));
-            final String name = v.value("name");
-            final Double pageRank = v.value(PageRankVertexProgram.PAGE_RANK);
-            //System.out.println(name + "-----" + pageRank);
-            if (name.equals("marko"))
-                assertTrue(pageRank > 0.14 && pageRank < 0.16);
-            else if (name.equals("vadas"))
-                assertTrue(pageRank > 0.19 && pageRank < 0.20);
-            else if (name.equals("lop"))
-                assertTrue(pageRank > 0.40 && pageRank < 0.41);
-            else if (name.equals("josh"))
-                assertTrue(pageRank > 0.19 && pageRank < 0.20);
-            else if (name.equals("ripple"))
-                assertTrue(pageRank > 0.23 && pageRank < 0.24);
-            else if (name.equals("peter"))
-                assertTrue(pageRank > 0.14 && pageRank < 0.16);
-            else
-                throw new IllegalStateException("The following vertex should not exist in the graph: " + name);
-        });
-        assertEquals(result.memory().getIteration(), 30);
-        assertEquals(result.memory().asMap().size(), 0);
+    public void shouldExecutePageRankWithNormalizedValues() throws Exception {
+        final ComputerResult result = graph.compute().program(PageRankVertexProgram.build().vertexCount(6).create()).submit().get();
+        final double sum = result.graph().traversal().V().values(PageRankVertexProgram.PAGE_RANK).sum().next();
+        System.out.println(sum);
+        assertEquals(1.0d,sum,0.01);
     }*/
 
 
