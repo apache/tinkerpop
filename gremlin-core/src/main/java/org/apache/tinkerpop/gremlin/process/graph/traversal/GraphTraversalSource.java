@@ -108,7 +108,9 @@ public class GraphTraversalSource implements TraversalSource {
 
     @Override
     public GraphTraversalSource.Builder asBuilder() {
-        return GraphTraversalSource.build().engine(this.engine);   // TODO: add strategies
+        final GraphTraversalSource.Builder builder = GraphTraversalSource.build().engine(this.engine);
+        this.strategies.toList().forEach(builder::strategy);
+        return builder;
     }
 
     @Override
