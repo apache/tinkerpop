@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -30,28 +30,31 @@ public class GryoPool {
 
     private final Queue<GryoReader> gryoReaders;
     private final Queue<GryoWriter> gryoWriters;
+    private static final Integer MAX_QUEUE_SIZE = 256;
 
     public GryoPool() {
-        this.gryoReaders = new ArrayBlockingQueue<>(256);
-        this.gryoWriters = new ArrayBlockingQueue<>(256);
+        this.gryoReaders = new ConcurrentLinkedQueue<>();
+        this.gryoWriters = new ConcurrentLinkedQueue<>();
     }
 
-    public synchronized GryoReader getReader() {
+    public GryoReader getReader() {
         final GryoReader reader = this.gryoReaders.poll();
         return (null == reader) ? GryoReader.build().create() : reader;
     }
 
-    public synchronized GryoWriter getWriter() {
+    public GryoWriter getWriter() {
         final GryoWriter writer = this.gryoWriters.poll();
         return (null == writer) ? GryoWriter.build().create() : writer;
     }
 
     public void addReader(final GryoReader gryoReader) {
-        this.gryoReaders.offer(gryoReader);
+        if (this.gryoReaders.size() < MAX_QUEUE_SIZE)
+            this.gryoReaders.offer(gryoReader);
     }
 
     public void addWriter(final GryoWriter gryoWriter) {
-        this.gryoWriters.offer(gryoWriter);
+        if (this.gryoWriters.size() < MAX_QUEUE_SIZE)
+            this.gryoWriters.offer(gryoWriter);
     }
 
     public <A> A doWithReaderWriter(final BiFunction<GryoReader, GryoWriter, A> readerWriterBiFunction) {
