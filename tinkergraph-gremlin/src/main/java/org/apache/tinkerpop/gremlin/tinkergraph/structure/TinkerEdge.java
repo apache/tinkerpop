@@ -67,13 +67,12 @@ public class TinkerEdge extends TinkerElement implements Edge {
     @Override
     public <V> Property<V> property(final String key) {
         if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id);
-        return null != this.properties && this.properties.containsKey(key) ? this.properties.get(key) : Property.<V>empty();
+        return null == this.properties ? Property.<V>empty() : this.properties.getOrDefault(key, Property.<V>empty());
     }
 
     @Override
     public Set<String> keys() {
-        if (null == this.properties) return Collections.emptySet();
-        return this.properties.keySet();
+        return null == this.properties ? Collections.emptySet() : this.properties.keySet();
     }
 
     @Override

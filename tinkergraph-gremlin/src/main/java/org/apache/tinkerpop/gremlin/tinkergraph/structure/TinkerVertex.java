@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -45,8 +44,8 @@ import java.util.stream.Collectors;
 public class TinkerVertex extends TinkerElement implements Vertex {
 
     protected Map<String, List<VertexProperty>> properties;
-    protected Map<String, Set<Edge>> outEdges = new HashMap<>();
-    protected Map<String, Set<Edge>> inEdges = new HashMap<>();
+    protected Map<String, Set<Edge>> outEdges;
+    protected Map<String, Set<Edge>> inEdges;
     private static final Object[] EMPTY_ARGS = new Object[0];
     private final TinkerGraph graph;
 

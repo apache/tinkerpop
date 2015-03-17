@@ -87,6 +87,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
         return this.id;
     }
 
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);
@@ -94,19 +95,18 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
 
     @Override
     public Set<String> keys() {
-        if (null == this.properties) return Collections.emptySet();
-        return this.properties.keySet();
+        return null == this.properties ? Collections.emptySet() : this.properties.keySet();
     }
 
     @Override
     public <U> Property<U> property(final String key) {
         if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id);
-        return null != this.properties && this.properties.containsKey(key) ? this.properties.get(key) : Property.<U>empty();
+        return null == this.properties ? Property.<U>empty() : this.properties.getOrDefault(key, Property.<U>empty());
     }
 
     @Override
     public <U> Property<U> property(final String key, final U value) {
-        final Property<U> property = new TinkerProperty<U>(this, key, value);
+        final Property<U> property = new TinkerProperty<>(this, key, value);
         if (this.properties == null) this.properties = new HashMap<>();
         this.properties.put(key, property);
         return property;
