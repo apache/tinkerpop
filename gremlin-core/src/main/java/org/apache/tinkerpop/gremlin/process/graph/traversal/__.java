@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -53,7 +54,7 @@ public class __ {
     //////////////////////////////////////////////////////////////////////
 
     public static <A> GraphTraversal<A, A> start() {
-        return new DefaultGraphTraversal<>(new __());
+        return new DefaultGraphTraversal<>(EmptyGraph.instance());
     }
 
     public static <A> GraphTraversal<A, A> __(final Object... starts) {

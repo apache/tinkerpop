@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEn
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -44,7 +45,7 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldChainTogetherStepsWithNextPreviousInALinkedListStructure() {
-        Traversal.Admin traversal = new DefaultTraversal<>(new Object());
+        Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
         traversal.asAdmin().addStep(new IdentityStep(traversal));
         traversal.asAdmin().addStep(new HasStep(traversal, null));
         traversal.asAdmin().addStep(new LambdaFilterStep(traversal, traverser -> true));
@@ -53,13 +54,13 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldAddStepsCorrectly() {
-        Traversal.Admin traversal = new DefaultTraversal<>(new Object());
+        Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
         traversal.asAdmin().addStep(0, new LambdaFilterStep(traversal, traverser -> true));
         traversal.asAdmin().addStep(0, new HasStep(traversal, null));
         traversal.asAdmin().addStep(0, new IdentityStep(traversal));
         validateToyTraversal(traversal);
 
-        traversal = new DefaultTraversal<>(new Object());
+        traversal = new DefaultTraversal<>(EmptyGraph.instance());
         traversal.asAdmin().addStep(0, new IdentityStep(traversal));
         traversal.asAdmin().addStep(1, new HasStep(traversal, null));
         traversal.asAdmin().addStep(2, new LambdaFilterStep(traversal, traverser -> true));
@@ -68,7 +69,7 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldRemoveStepsCorrectly() {
-        Traversal.Admin traversal = new DefaultTraversal<>(new Object());
+        Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
         traversal.asAdmin().addStep(new IdentityStep(traversal));
         traversal.asAdmin().addStep(new HasStep(traversal, null));
         traversal.asAdmin().addStep(new LambdaFilterStep(traversal, traverser -> true));

@@ -19,14 +19,15 @@
 package org.apache.tinkerpop.gremlin.process.graph.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implements GraphTraversal.Admin<S, E> {
 
-    public DefaultGraphTraversal(final Object emanatingObject) {
-        super(emanatingObject);
+    public DefaultGraphTraversal(final Graph graph) {
+        super(graph);
     }
 
     @Override

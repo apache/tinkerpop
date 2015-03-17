@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 /**
  * Represents an {@link Edge} that is disconnected from a {@link Graph}.  "Disconnection" can mean detachment from
@@ -108,26 +107,10 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     }
 
     public static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
-        Vertex outV;
-        try {
-            outV = graph.vertices(detachedEdge.outVertex.id()).next();
-        } catch (final NoSuchElementException e) {
-            outV = null;
-        }
-        if (null == outV) {
-            outV = graph.addVertex(T.id, detachedEdge.outVertex.id());
-        }
-
-        Vertex inV;
-        try {
-            inV = graph.vertices(detachedEdge.inVertex.id()).next();
-        } catch (final NoSuchElementException e) {
-            inV = null;
-        }
-        if (null == inV) {
-            inV = graph.addVertex(T.id, detachedEdge.inVertex.id());
-        }
-
+        Iterator<Vertex> outVertices = graph.vertices(detachedEdge.outVertex.id());
+        final Vertex outV = outVertices.hasNext() ? outVertices.next() : graph.addVertex(T.id, detachedEdge.outVertex.id());
+        Iterator<Vertex> inVertices = graph.vertices(detachedEdge.inVertex.id());
+        final Vertex inV = inVertices.hasNext() ? inVertices.next() : graph.addVertex(T.id, detachedEdge.inVertex.id());
         if (ElementHelper.areEqual(outV, inV)) {
             final Iterator<Edge> itty = outV.edges(Direction.OUT, detachedEdge.label());
             while (itty.hasNext()) {
@@ -136,9 +119,9 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
                     return e;
             }
         }
-
         final Edge e = outV.addEdge(detachedEdge.label(), inV, T.id, detachedEdge.id());
-        detachedEdge.properties.entrySet().forEach(kv -> kv.getValue().forEach(p -> e.<Object>property(kv.getKey(), p.value())));
+        if (!detachedEdge.properties.isEmpty())
+            detachedEdge.properties.entrySet().forEach(kv -> kv.getValue().forEach(p -> e.<Object>property(kv.getKey(), p.value())));
         return e;
     }
 

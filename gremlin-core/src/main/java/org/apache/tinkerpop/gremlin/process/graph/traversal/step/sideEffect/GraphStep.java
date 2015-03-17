@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
@@ -41,12 +40,10 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
 
     protected final Class<S> returnClass;
     protected Object[] ids;
-    protected transient Graph graph;
     protected transient Supplier<Iterator<S>> iteratorSupplier;
 
-    public GraphStep(final Traversal.Admin traversal, final Graph graph, final Class<S> returnClass, final Object... ids) {
+    public GraphStep(final Traversal.Admin traversal, final Class<S> returnClass, final Object... ids) {
         super(traversal);
-        this.graph = graph;
         this.returnClass = returnClass;
         this.ids = ids;
         for (int i = 0; i < this.ids.length; i++) {
@@ -54,8 +51,8 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
                 this.ids[i] = ((Element) this.ids[i]).id();
         }
         this.iteratorSupplier = () -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ?
-                this.graph.vertices(this.ids) :
-                this.graph.edges(this.ids));
+                this.getTraversal().getGraph().get().vertices(this.ids) :
+                this.getTraversal().getGraph().get().edges(this.ids));
     }
 
     public String toString() {
@@ -76,10 +73,6 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
 
     public void setIteratorSupplier(final Supplier<Iterator<S>> iteratorSupplier) {
         this.iteratorSupplier = iteratorSupplier;
-    }
-
-    public <G extends Graph> G getGraph(final Class<G> graphClass) {
-        return (G) this.graph;
     }
 
     public Object[] getIds() {

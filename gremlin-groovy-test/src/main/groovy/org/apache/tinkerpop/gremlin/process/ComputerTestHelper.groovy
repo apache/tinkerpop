@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process
 
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.structure.Graph
 
 /**
@@ -30,7 +30,7 @@ public class ComputerTestHelper {
 
     public static final Traversal compute(
             final Graph graph,
-            final TraversalContext.Builder builder,
+            final TraversalSource.Builder builder,
             final String scriptEngineName,
             final String traversalScript) {
 
@@ -39,7 +39,7 @@ public class ComputerTestHelper {
         return program.computerResultTraversal(result);
     }
 
-    public static final Traversal compute(final String script, final GraphTraversalContext g) {
+    public static final Traversal compute(final String script, final GraphTraversalSource g) {
         return ComputerTestHelper.compute(g.getGraph().get(), g.asBuilder(), "gremlin-groovy", script);
     }
 }

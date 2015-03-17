@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.groovy.loaders
 import org.apache.tinkerpop.gremlin.process.Traversal
 import org.apache.tinkerpop.gremlin.process.Traverser
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper
 import org.apache.tinkerpop.gremlin.structure.*
@@ -57,8 +57,8 @@ class SugarLoader {
                 return ((GraphTraversal) delegate).values(name);
         }
 
-        GraphTraversalContext.metaClass.getProperty = { final String key ->
-            GraphTraversalContextCategory.get((GraphTraversalContext)delegate, key);
+        GraphTraversalSource.metaClass.getProperty = { final String key ->
+            GraphTraversalContextCategory.get((GraphTraversalSource)delegate, key);
         }
 
         // __.age and __.out
@@ -84,7 +84,7 @@ class SugarLoader {
         }
 
         Traverser.metaClass.mixin(TraverserCategory.class);
-        GraphTraversalContext.metaClass.mixin(GraphTraversalContextCategory.class);
+        GraphTraversalSource.metaClass.mixin(GraphTraversalContextCategory.class);
         GraphTraversal.metaClass.mixin(GraphTraversalCategory.class);
         Vertex.metaClass.mixin(VertexCategory.class);
         Edge.metaClass.mixin(ElementCategory.class);
@@ -153,7 +153,7 @@ class SugarLoader {
         private static final String V = "V";
         private static final String E = "E";
 
-        public static final get(final GraphTraversalContext graphTraversalContext, final String key) {
+        public static final get(final GraphTraversalSource graphTraversalContext, final String key) {
             if (key.equals(V))
                 return graphTraversalContext.V();
             else if (key.equals(E))

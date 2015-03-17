@@ -75,7 +75,7 @@ public final class VertexWritable implements Writable {
                     throw new IllegalStateException(e);
                 }
             });
-        } catch (IllegalStateException e) {
+        } catch (final IllegalStateException e) {
             if (e.getCause() instanceof IOException)
                 throw (IOException) e.getCause();
             else
@@ -96,7 +96,7 @@ public final class VertexWritable implements Writable {
                     throw new IllegalStateException(e);
                 }
             });
-        } catch (IllegalStateException e) {
+        } catch (final IllegalStateException e) {
             if (e.getCause() instanceof IOException)
                 throw (IOException) e.getCause();
             else

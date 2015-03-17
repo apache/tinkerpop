@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -185,8 +186,8 @@ public final class PartitionStrategy implements GraphStrategy {
         }
     }
 
-    private final <S, E> GraphTraversal<S, E> generateTraversal(final Object emanatingObject) {
-        return new DefaultGraphTraversal<S, E>(emanatingObject) {
+    private final <S, E> GraphTraversal<S, E> generateTraversal(final Graph graph) {
+        return new DefaultGraphTraversal<S, E>(graph) {
             @Override
             public GraphTraversal<S, Vertex> to(final Direction direction, final String... edgeLabels) {
                 return direction.equals(Direction.BOTH) ?

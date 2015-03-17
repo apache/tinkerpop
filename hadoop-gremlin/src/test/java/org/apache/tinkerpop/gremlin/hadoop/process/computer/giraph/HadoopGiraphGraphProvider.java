@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
  */
 public final class HadoopGiraphGraphProvider extends HadoopGraphProvider {
 
-    public GraphTraversalContext traversal(final Graph graph) {
-        return GraphTraversalContext.build().engine(ComputerTraversalEngine.build().computer(GiraphGraphComputer.class)).create(graph);
+    public GraphTraversalSource traversal(final Graph graph) {
+        return GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(GiraphGraphComputer.class)).create(graph);
     }
 }

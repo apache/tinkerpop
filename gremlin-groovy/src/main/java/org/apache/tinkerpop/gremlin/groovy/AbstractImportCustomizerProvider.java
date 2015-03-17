@@ -33,7 +33,7 @@ import org.apache.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
@@ -91,7 +91,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(ComputerTraversalEngine.class.getPackage().getName() + DOT_STAR);
         staticImports.add(__.class.getCanonicalName() + DOT_STAR);
         staticImports.add(TraversalOptionParent.Pick.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(GraphTraversalContext.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(GraphTraversalSource.class.getCanonicalName() + DOT_STAR);
 
         // utils
         imports.add(Gremlin.class.getPackage().getName() + DOT_STAR);

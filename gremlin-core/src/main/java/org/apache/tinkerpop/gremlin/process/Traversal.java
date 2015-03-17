@@ -421,6 +421,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
          */
         public boolean isLocked();
 
+        public Optional<Graph> getGraph();
+
     }
 
 }

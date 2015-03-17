@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
@@ -102,7 +102,7 @@ public class HadoopRemoteAcceptor implements RemoteAcceptor {
             String script = RemoteAcceptor.getScript(String.join(SPACE, args), this.shell);
             if (this.useSugarPlugin)
                 script = SugarLoader.class.getPackage() + ".SugarLoader.load()\n" + script;
-            final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(this.hadoopGraph.getClass(), GraphTraversalContext.build().engine(ComputerTraversalEngine.build()), "gremlin-groovy", script).create();
+            final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(this.hadoopGraph.getClass(), GraphTraversalSource.build().engine(ComputerTraversalEngine.build()), "gremlin-groovy", script).create();
             final ComputerResult computerResult = this.hadoopGraph.compute().program(program).submit().get();
             this.shell.getInterp().getContext().setProperty(RESULT, computerResult);
 

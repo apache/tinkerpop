@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalContext;
+import org.apache.tinkerpop.gremlin.process.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineCache;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -34,12 +34,12 @@ import java.util.function.Supplier;
  */
 public final class TraversalScriptSupplier<S, E> implements Supplier<Traversal.Admin<S, E>>, Serializable {
 
-    private final TraversalContext.Builder traversalContextBuilder;
+    private final TraversalSource.Builder traversalContextBuilder;
     private final Class<? extends Graph> graphClass;
     private final String scriptEngineName;
     private final String traversalScript;
 
-    public TraversalScriptSupplier(final Class<? extends Graph> graphClass, final TraversalContext.Builder traversalContextBuilder, final String scriptEngineName, final String traversalScript) {
+    public TraversalScriptSupplier(final Class<? extends Graph> graphClass, final TraversalSource.Builder traversalContextBuilder, final String scriptEngineName, final String traversalScript) {
         this.traversalContextBuilder = traversalContextBuilder;
         this.graphClass = graphClass;
         this.scriptEngineName = scriptEngineName;

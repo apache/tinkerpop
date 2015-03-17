@@ -57,17 +57,18 @@ public class VertexStreamIteratorTest {
                 System.out.println(iterator.getProgress() + " -- progress");
                 time = System.currentTimeMillis();
             }
-            final ByteArrayOutputStream out = new ByteArrayOutputStream();
+            iterator.next();
+          //  final ByteArrayOutputStream out = new ByteArrayOutputStream();
             //System.out.println("HERE:" +IteratorUtils.count(vertex.get().edges(Direction.BOTH)));
-            final GiraphComputeVertex vertex = new GiraphComputeVertex(iterator.next());
-            //System.out.println(vertex + "!!!!");
-            final DataOutputStream output = new DataOutputStream(out);
-            vertex.getValue().write(output);
-            output.flush();
+          // final GiraphComputeVertex vertex = new GiraphComputeVertex(iterator.next());
+           //System.out.println(vertex + "!!!!");
+           // final DataOutputStream output = new DataOutputStream(out);
+           // vertex.getValue().write(output);
+            //output.flush();
             //System.out.println("!!!" + out.size());
-            final VertexWritable v = new VertexWritable();
-            final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray());
-            v.readFields(new DataInputStream(inputStream));
+           // final VertexWritable v = new VertexWritable();
+           // final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray());
+            //v.readFields(new DataInputStream(inputStream));
         }
     }
 

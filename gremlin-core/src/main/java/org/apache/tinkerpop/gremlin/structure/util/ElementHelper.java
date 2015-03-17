@@ -322,6 +322,18 @@ public final class ElementHelper {
         return haveEqualIds(a, (Element) b);
     }
 
+    public static boolean areEqual(final Vertex a, final Vertex b) {
+        return null != b && null != a && (a == b || haveEqualIds(a, b));
+    }
+
+    public static boolean areEqual(final Edge a, final Edge b) {
+        return null != b && null != a && (a == b || haveEqualIds(a, b));
+    }
+
+    public static boolean areEqual(final VertexProperty a, final VertexProperty b) {
+        return null != b && null != a && (a == b || haveEqualIds(a, b));
+    }
+
     /**
      * A standard method for determining if two {@link org.apache.tinkerpop.gremlin.structure.VertexProperty} objects are equal. This method should be used by any
      * {@link Object#equals(Object)} implementation to ensure consistent behavior.

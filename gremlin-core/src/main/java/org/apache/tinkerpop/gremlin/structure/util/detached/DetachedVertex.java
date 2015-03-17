@@ -128,19 +128,23 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     public static Vertex addTo(final Graph graph, final DetachedVertex detachedVertex) {
         final Vertex vertex = graph.addVertex(T.id, detachedVertex.id(), T.label, detachedVertex.label());
-        detachedVertex.properties.entrySet().forEach(kv ->
-                        kv.getValue().forEach(property -> {
-                            final VertexProperty<?> vertexProperty = (VertexProperty) property;
-                            final List<Object> propsOnProps = new ArrayList<>();
-                            vertexProperty.properties().forEachRemaining(h -> {
-                                propsOnProps.add(h.key());
-                                propsOnProps.add(h.value());
-                            });
-                            propsOnProps.add(T.id);
-                            propsOnProps.add(vertexProperty.id());
-                            vertex.property(kv.getKey(), property.value(), propsOnProps.toArray());
-                        })
-        );
+        detachedVertex.properties.values().forEach(list -> {
+            list.forEach(dVertexProperty -> {
+                final DetachedVertexProperty<?> detachedVertexProperty = (DetachedVertexProperty) dVertexProperty;
+                if (!detachedVertexProperty.properties.isEmpty()) {
+                    final List<Object> metaProperties = new ArrayList<>();
+                    detachedVertexProperty.properties().forEachRemaining(detachedMetaProperty -> {
+                        metaProperties.add(detachedMetaProperty.key());
+                        metaProperties.add(detachedMetaProperty.value());
+                    });
+                    metaProperties.add(T.id);
+                    metaProperties.add(detachedVertexProperty.id());
+                    vertex.property(detachedVertexProperty.key(), detachedVertexProperty.value(), metaProperties.toArray());
+                } else {
+                    vertex.property(detachedVertexProperty.key(), detachedVertexProperty.value(), T.id, detachedVertexProperty.id());
+                }
+            });
+        });
         return vertex;
     }
 

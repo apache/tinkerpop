@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process;
 
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.ComparatorHolderRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.ConjunctionStrategy;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.DedupOptimizerStrategy;
@@ -32,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVe
 import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.tools.MultiMap;
 
 import java.io.Serializable;
@@ -156,7 +156,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
 
     public static final class GlobalCache {
 
-        private static final Map<Class, TraversalStrategies> CACHE = new HashMap<>();
+        private static final Map<Class<? extends Graph>, TraversalStrategies> CACHE = new HashMap<>();
 
         static {
             final TraversalStrategies coreStrategies = new DefaultTraversalStrategies();
@@ -173,26 +173,22 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     ConjunctionStrategy.instance());
             try {
                 CACHE.put(Graph.class, coreStrategies.clone());
-                CACHE.put(__.class, new DefaultTraversalStrategies());
+                CACHE.put(EmptyGraph.class, new DefaultTraversalStrategies());
             } catch (final CloneNotSupportedException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }
 
-        public static void registerStrategies(final Class emanatingClass, final TraversalStrategies traversalStrategies) {
-            CACHE.put(emanatingClass, traversalStrategies);
+        public static void registerStrategies(final Class<? extends Graph> graphClass, final TraversalStrategies traversalStrategies) {
+            CACHE.put(graphClass, traversalStrategies);
         }
 
-        public static TraversalStrategies getStrategies(final Class emanatingClass) {
-            final TraversalStrategies traversalStrategies = CACHE.get(emanatingClass);
+        public static TraversalStrategies getStrategies(final Class<? extends Graph> graphClass) {
+            final TraversalStrategies traversalStrategies = CACHE.get(graphClass);
             if (null == traversalStrategies) {
-                if (__.class.isAssignableFrom(emanatingClass))
-                    return CACHE.get(__.class);
-                else if (Graph.class.isAssignableFrom(emanatingClass))
-                    return CACHE.get(Graph.class);
-                else
-                    return new DefaultTraversalStrategies();
-                // throw new IllegalStateException("The provided class has no registered traversal strategies: " + emanatingClass);
+                if (EmptyGraph.class.isAssignableFrom(graphClass))
+                    return CACHE.get(EmptyGraph.class);
+                else return CACHE.get(Graph.class);
             }
             return traversalStrategies;
         }

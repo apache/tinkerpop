@@ -18,11 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal;
 
-import org.apache.tinkerpop.gremlin.process.TraversalContext;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
@@ -39,13 +40,13 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphTraversalContext implements TraversalContext {
+public class GraphTraversalSource implements TraversalSource {
 
-    public static final Builder standard = GraphTraversalContext.build().engine(StandardTraversalEngine.build());
-    public static final Builder computer = GraphTraversalContext.build().engine(ComputerTraversalEngine.build());
+    public static final Builder standard = GraphTraversalSource.build().engine(StandardTraversalEngine.build());
+    public static final Builder computer = GraphTraversalSource.build().engine(ComputerTraversalEngine.build());
 
     public static Builder computer(final Class<? extends GraphComputer> graphComputerClass) {
-        return GraphTraversalContext.build().engine(ComputerTraversalEngine.build().computer(graphComputerClass));
+        return GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(graphComputerClass));
     }
 
     ////
@@ -54,31 +55,36 @@ public class GraphTraversalContext implements TraversalContext {
     private final TraversalEngine.Builder engine;
     private final TraversalStrategies strategies;
 
-    public GraphTraversalContext(final Graph graph, final TraversalEngine.Builder engine, final TraversalStrategy... strategies) {
+    public GraphTraversalSource(final Graph graph, final TraversalEngine.Builder engine, final TraversalStrategy... strategies) {
         this.graph = graph;
         this.engine = engine;
-        final TraversalStrategies temp = TraversalStrategies.GlobalCache.getStrategies(this.graph.getClass());
-
+        final TraversalStrategies tempStrategies = TraversalStrategies.GlobalCache.getStrategies(this.graph.getClass());
         try {
-            this.strategies = strategies.length == 0 ? temp : temp.clone().addStrategies(strategies);
-        } catch (CloneNotSupportedException cnse) {
-            // seems unlikely that this should happen so propogate as a runtime issue.
-            throw new RuntimeException(cnse);
+            this.strategies = strategies.length == 0 ? tempStrategies : tempStrategies.clone().addStrategies(strategies);
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
-    public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
+    public GraphTraversal<Vertex, Vertex> addV(final Object... keyValues) {
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this.graph);
         traversal.setEngine(this.engine.create(this.graph));
         traversal.setStrategies(this.strategies);
-        return traversal.addStep(new GraphStep<>(traversal, this.graph, Vertex.class, vertexIds));
+        return traversal.addStep(new AddVertexStartStep(traversal, keyValues));
+    }
+
+    public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this.graph);
+        traversal.setEngine(this.engine.create(this.graph));
+        traversal.setStrategies(this.strategies);
+        return traversal.addStep(new GraphStep<>(traversal, Vertex.class, vertexIds));
     }
 
     public GraphTraversal<Edge, Edge> E(final Object... edgesIds) {
-        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(this.graph);
         traversal.setEngine(this.engine.create(this.graph));
         traversal.setStrategies(this.strategies);
-        return traversal.addStep(new GraphStep<>(traversal, this.graph, Edge.class, edgesIds));
+        return traversal.addStep(new GraphStep<>(traversal, Edge.class, edgesIds));
     }
 
     public Transaction tx() {
@@ -101,18 +107,18 @@ public class GraphTraversalContext implements TraversalContext {
     }
 
     @Override
-    public GraphTraversalContext.Builder asBuilder() {
-        return GraphTraversalContext.build().engine(this.engine);   // TODO: add strategies
+    public GraphTraversalSource.Builder asBuilder() {
+        return GraphTraversalSource.build().engine(this.engine);   // TODO: add strategies
     }
 
     @Override
     public String toString() {
-        return StringFactory.traversalContextString(this);
+        return StringFactory.traversalSourceString(this);
     }
 
     //////
 
-    public static class Builder implements TraversalContext.Builder<GraphTraversalContext> {
+    public static class Builder implements TraversalSource.Builder<GraphTraversalSource> {
 
         private TraversalEngine.Builder engineBuilder = StandardTraversalEngine.build();
         private List<TraversalStrategy> strategies = new ArrayList<>();
@@ -127,8 +133,8 @@ public class GraphTraversalContext implements TraversalContext {
             return this;
         }
 
-        public GraphTraversalContext create(final Graph graph) {
-            return new GraphTraversalContext(graph, this.engineBuilder, this.strategies.toArray(new TraversalStrategy[this.strategies.size()]));
+        public GraphTraversalSource create(final Graph graph) {
+            return new GraphTraversalSource(graph, this.engineBuilder, this.strategies.toArray(new TraversalStrategy[this.strategies.size()]));
         }
     }
 }

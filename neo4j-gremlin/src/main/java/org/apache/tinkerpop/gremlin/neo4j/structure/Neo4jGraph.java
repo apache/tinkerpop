@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.neo4j.structure;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
-import org.apache.tinkerpop.gremlin.neo4j.process.graph.traversal.step.sideEffect.Neo4jGraphStep;
 import org.apache.tinkerpop.gremlin.neo4j.process.graph.traversal.step.util.Neo4jCypherIterator;
 import org.apache.tinkerpop.gremlin.neo4j.process.graph.traversal.strategy.Neo4jGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
@@ -70,6 +69,16 @@ import java.util.stream.Stream;
         method = "shouldThrowExceptionIfVertexWasRemovedWhenCallingProperty",
         specific = "property(single,k,v)",
         reason = "Neo4j throws a NodeNotFoundException instead of the desired IllegalStateException")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddVertexTest$Traversals",
+        method = "g_V_addVXlabel_animal_age_0X",
+        reason = "Neo4j global graph operators stream created vertices created after the access to the global iterator"
+)
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyAddVertexTest$StandardTraversals",
+        method = "g_V_addVXlabel_animal_age_0X",
+        reason = "Neo4j global graph operators stream created vertices created after the access to the global iterator"
+)
 public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
     static {

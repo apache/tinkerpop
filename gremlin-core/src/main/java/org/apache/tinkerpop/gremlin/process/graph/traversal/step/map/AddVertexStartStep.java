@@ -18,27 +18,32 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AddVertexStep<S> extends MapStep<S, Vertex> {
+public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> {
 
     private final Object[] keyValues;
-    private final transient Graph graph;
+    private boolean first = true;
 
-    public AddVertexStep(final Traversal.Admin traversal, final Object... keyValues) {
+    public AddVertexStartStep(final Traversal.Admin traversal, final Object... keyValues) {
         super(traversal);
         this.keyValues = keyValues;
-        this.graph = this.getTraversal().getGraph().get();
     }
 
+
     @Override
-    protected Vertex map(final Traverser.Admin<S> traverser) {
-        return this.graph.addVertex(this.keyValues);
+    protected Traverser<Vertex> processNextStart() {
+        if (this.first) {
+            this.first = false;
+            return this.getTraversal().getTraverserGenerator().generate(this.getTraversal().getGraph().get().addVertex(this.keyValues), this, 1l);
+        } else
+            throw FastNoSuchElementException.instance();
     }
 }

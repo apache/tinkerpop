@@ -89,10 +89,6 @@ public final class TraversalHelper {
         return steps;
     }
 
-    public static Graph getGraph(final Traversal.Admin<?, ?> traversal) {
-        return ((GraphStep) traversal.getStartStep()).getGraph(Graph.class);
-    }
-
     public static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal) {
         char state = 'v';
         for (final Step step : traversal.getSteps()) {

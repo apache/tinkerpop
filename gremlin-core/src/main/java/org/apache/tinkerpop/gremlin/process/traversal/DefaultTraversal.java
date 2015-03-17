@@ -28,11 +28,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEn
 import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -44,6 +46,8 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     private Step<?, E> finalEndStep = EmptyStep.instance();
     private final StepPosition stepPosition = new StepPosition();
 
+    protected final transient Graph graph;
+
     protected List<Step> steps = new ArrayList<>();
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
     protected TraversalStrategies strategies;
@@ -53,8 +57,9 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     protected TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
 
-    public DefaultTraversal(final Object emanatingObject) {
-        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(emanatingObject.getClass()));
+    public DefaultTraversal(final Graph graph) {
+        this.graph = graph;
+        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(this.graph.getClass()));
         this.traversalEngine = StandardTraversalEngine.instance(); // TODO: remove and then clean up v.outE
     }
 
@@ -242,6 +247,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public TraversalParent getParent() {
         return this.traversalParent;
+    }
+
+    @Override
+    public Optional<Graph> getGraph() {
+        return Optional.ofNullable(this.graph);
     }
 
 }

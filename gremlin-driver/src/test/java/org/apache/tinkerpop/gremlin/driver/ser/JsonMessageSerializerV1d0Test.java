@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.driver.ser;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalContext;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -261,7 +261,7 @@ public class JsonMessageSerializerV1d0Test {
     @Test
     public void serializeToJsonMapWithElementForKey() throws Exception {
         final TinkerGraph graph = TinkerFactory.createClassic();
-        final GraphTraversalContext g = graph.traversal();
+        final GraphTraversalSource g = graph.traversal();
         final Map<Vertex, Integer> map = new HashMap<>();
         map.put(g.V().has("name", Compare.eq, "marko").next(), 1000);
 
