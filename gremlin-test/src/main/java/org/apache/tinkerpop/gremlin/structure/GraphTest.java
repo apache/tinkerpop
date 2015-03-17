@@ -337,10 +337,7 @@ public class GraphTest extends AbstractGremlinTest {
             edgeIterator.next().remove();
         }
         assertFalse(edgeIterator.hasNext());
-
-        // TODO: Neo4j fails on this: tryCommit(g, g -> assertFalse(g.iterators().edgeIterator().hasNext()));
-        tryCommit(graph);
-        assertFalse(graph.edges().hasNext());
+        tryCommit(graph, g -> assertFalse(g.edges().hasNext()));
     }
 
     /**

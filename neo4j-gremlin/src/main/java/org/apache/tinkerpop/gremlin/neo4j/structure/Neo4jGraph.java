@@ -68,16 +68,21 @@ import java.util.stream.Stream;
         test = "org.apache.tinkerpop.gremlin.structure.VertexTest$ExceptionConsistencyWhenVertexRemovedTest",
         method = "shouldThrowExceptionIfVertexWasRemovedWhenCallingProperty",
         specific = "property(single,k,v)",
-        reason = "Neo4j throws a NodeNotFoundException instead of the desired IllegalStateException")
+        reason = "Neo4j throws a NodeNotFoundException instead of the desired IllegalStateException.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddVertexTest$Traversals",
         method = "g_V_addVXlabel_animal_age_0X",
-        reason = "Neo4j global graph operators stream created vertices created after the access to the global iterator"
+        reason = "Neo4j global graph operators stream created vertices created after the access to the global iterator."
 )
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyAddVertexTest$StandardTraversals",
         method = "g_V_addVXlabel_animal_age_0X",
-        reason = "Neo4j global graph operators stream created vertices created after the access to the global iterator"
+        reason = "Neo4j global graph operators stream created vertices created after the access to the global iterator."
+)
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.structure.GraphTest",
+        method = "shouldRemoveEdgesWithoutConcurrentModificationException",
+        reason = "Neo4j global graph operators stream removes edges after access to the global iterator."
 )
 public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
