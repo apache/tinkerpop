@@ -4,7 +4,9 @@ import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddEdgeByPathStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddEdgeStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.graph.util.HasContainer;
@@ -98,10 +100,35 @@ public class PartitionStrategyTest {
                     assertEquals(d, s.getDirection());
                     assertTrue(pairs.stream().anyMatch(p -> p.getValue0().equals("p") && p.getValue1().equals("a")));
                 });
+            } else if (TraversalHelper.hasStepOfAssignableClass(AddEdgeByPathStep.class, traversal.asAdmin())) {
+                final Direction d = TraversalHelper.getStepsOfClass(AddEdgeByPathStep.class, traversal.asAdmin()).get(0).getDirection();
+                strategy.apply(traversal.asAdmin());
+
+                final List<AddEdgeByPathStep> addEdgeSteps = TraversalHelper.getStepsOfAssignableClass(AddEdgeByPathStep.class, traversal.asAdmin());
+                assertEquals(1, addEdgeSteps.size());
+
+                addEdgeSteps.forEach(s -> {
+                    final Object[] keyValues = s.getPropertyKeyValues();
+                    final List<Pair<String, Object>> pairs = ElementHelper.asPairs(keyValues);
+                    assertEquals("test", s.getEdgeLabel());
+                    assertEquals(d, s.getDirection());
+                    assertTrue(pairs.stream().anyMatch(p -> p.getValue0().equals("p") && p.getValue1().equals("a")));
+                });
             } else if (TraversalHelper.hasStepOfAssignableClass(AddVertexStep.class, traversal.asAdmin())) {
                 strategy.apply(traversal.asAdmin());
 
                 final List<AddVertexStep> addVertexSteps = TraversalHelper.getStepsOfAssignableClass(AddVertexStep.class, traversal.asAdmin());
+                assertEquals(1, addVertexSteps.size());
+
+                addVertexSteps.forEach(s -> {
+                    final Object[] keyValues = s.getKeyValues();
+                    final List<Pair<String, Object>> pairs = ElementHelper.asPairs(keyValues);
+                    assertTrue(pairs.stream().anyMatch(p -> p.getValue0().equals("p") && p.getValue1().equals("a")));
+                });
+            } else if (TraversalHelper.hasStepOfAssignableClass(AddVertexStartStep.class, traversal.asAdmin())) {
+                strategy.apply(traversal.asAdmin());
+
+                final List<AddVertexStartStep> addVertexSteps = TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal.asAdmin());
                 assertEquals(1, addVertexSteps.size());
 
                 addVertexSteps.forEach(s -> {

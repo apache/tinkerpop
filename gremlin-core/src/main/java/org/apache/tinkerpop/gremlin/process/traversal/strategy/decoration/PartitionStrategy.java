@@ -3,6 +3,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddEdgeByPathStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeOtherVertexStep;
@@ -72,9 +73,11 @@ public class PartitionStrategy extends AbstractTraversalStrategy {
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(VertexStep.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeOtherVertexStep.class, traversal));
-        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeVertexStep.class, traversal));
+        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal));
+        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeByPathStep.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStep.class, traversal));
+        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal));
 
         // all steps that return a vertex need to have has(paritionKey,within,partitionValues) injected after it
         stepsToInsertHasAfter.forEach(s -> TraversalHelper.insertAfterStep(
@@ -84,6 +87,11 @@ public class PartitionStrategy extends AbstractTraversalStrategy {
         TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal).forEach(s -> {
             final Object[] keyValues = Stream.concat(Stream.of(s.getKeyValues()), Stream.of(partitionKey, writePartition)).toArray();
             TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getVertices().iterator(), keyValues), traversal);
+        });
+
+        TraversalHelper.getStepsOfAssignableClass(AddEdgeByPathStep.class, traversal).forEach(s -> {
+            final Object[] keyValues = Stream.concat(Stream.of(s.getPropertyKeyValues()), Stream.of(partitionKey, writePartition)).toArray();
+            TraversalHelper.replaceStep(s, new AddEdgeByPathStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getStepLabel(), keyValues), traversal);
         });
 
         // all write vertex steps need to have partition keys tossed into the property key/value list after mutating steps

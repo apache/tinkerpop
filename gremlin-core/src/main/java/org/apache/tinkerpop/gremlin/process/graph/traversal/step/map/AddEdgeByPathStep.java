@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -32,7 +33,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AddEdgeByPathStep extends MapStep<Vertex, Edge> {
+public final class AddEdgeByPathStep extends MapStep<Vertex, Edge> implements Mutating {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.PATH,
@@ -54,6 +55,22 @@ public final class AddEdgeByPathStep extends MapStep<Vertex, Edge> {
         this.edgeLabel = edgeLabel;
         this.stepLabel = stepLabel;
         this.propertyKeyValues = propertyKeyValues;
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public String getEdgeLabel() {
+        return edgeLabel;
+    }
+
+    public String getStepLabel() {
+        return stepLabel;
+    }
+
+    public Object[] getPropertyKeyValues() {
+        return propertyKeyValues;
     }
 
     @Override

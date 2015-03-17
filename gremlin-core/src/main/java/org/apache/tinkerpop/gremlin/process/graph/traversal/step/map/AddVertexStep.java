@@ -20,13 +20,14 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AddVertexStep<S> extends MapStep<S, Vertex> {
+public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutating {
 
     private final Object[] keyValues;
     private final transient Graph graph;

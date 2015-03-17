@@ -21,13 +21,14 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.AbstractStep;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> {
+public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements Mutating {
 
     private final Object[] keyValues;
     private boolean first = true;
