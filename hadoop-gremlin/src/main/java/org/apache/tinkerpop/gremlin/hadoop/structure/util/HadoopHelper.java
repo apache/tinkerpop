@@ -18,9 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.util;
 
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.InputOutputHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,11 +31,15 @@ public final class HadoopHelper {
     private HadoopHelper() {
     }
 
-    public static HadoopGraph getOutputGraph(final HadoopGraph hadoopGraph) {
+    public static HadoopGraph getOutputGraph(final HadoopGraph hadoopGraph, boolean hasVertexProgram) {
         final BaseConfiguration newConfiguration = new BaseConfiguration();
         newConfiguration.copy(hadoopGraph.configuration());
-        if (hadoopGraph.configuration().containsKey(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)) {
-            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, hadoopGraph.configuration().getOutputLocation() + "/" + Constants.SYSTEM_G);
+        if (hasVertexProgram) {
+            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, hadoopGraph.configuration().getOutputLocation() + "/" + Constants.HIDDEN_G);
+            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputOutputHelper.getInputFormat(hadoopGraph.configuration().getGraphOutputFormat()).getCanonicalName());
+            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, hadoopGraph.configuration().getOutputLocation() + "_");
+
+        } else {
             newConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, hadoopGraph.configuration().getOutputLocation() + "_");
         }
         return HadoopGraph.open(newConfiguration);

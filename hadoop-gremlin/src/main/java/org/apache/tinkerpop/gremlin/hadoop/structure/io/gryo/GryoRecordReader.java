@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
@@ -29,18 +27,39 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
-    private VertexStreamIterator vertexStreamIterator;
     private FSDataInputStream inputStream;
 
     private static final byte[] PATTERN = GryoMapper.build().create().getVersionedHeader();
+    // this is VertexTerminator's long terminal 4185403236219066774L as an array of positive int's
+    private static final int[] TERMINATOR = new int[]{58, 21, 138, 17, 112, 155, 153, 150};
+
+    private final GryoReader gryoReader = GryoReader.build().create();
+    private final VertexWritable vertexWritable = new VertexWritable();
+
+    private long currentLength = 0;
+    private long splitLength;
 
     public GryoRecordReader() {
     }
@@ -57,8 +76,7 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
         // open the file and seek to the start of the split
         this.inputStream = file.getFileSystem(job).open(split.getPath());
         this.inputStream.seek(start);
-        final long newStart = seekToHeader(this.inputStream, start);
-        this.vertexStreamIterator = new VertexStreamIterator(this.inputStream, split.getLength() - (newStart - start));
+        this.splitLength = split.getLength() - (seekToHeader(this.inputStream, start) - start);
     }
 
     private static long seekToHeader(final FSDataInputStream inputStream, final long start) throws IOException {
@@ -88,7 +106,36 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
 
     @Override
     public boolean nextKeyValue() throws IOException {
-        return this.vertexStreamIterator.hasNext();
+        final ByteArrayOutputStream output = new ByteArrayOutputStream();
+        long currentVertexLength = 0;
+        int terminatorLocation = 0;
+        while (true) {
+            final int currentByte = this.inputStream.read();
+            if (-1 == currentByte) {
+                if (currentVertexLength > 0)
+                    throw new IllegalStateException("Remainder of stream exhausted without matching a vertex");
+                else
+                    return false;
+            }
+            this.currentLength++;
+            currentVertexLength++;
+            output.write(currentByte);
+
+            if (currentByte == TERMINATOR[terminatorLocation])
+                terminatorLocation++;
+            else
+                terminatorLocation = 0;
+
+            if (terminatorLocation >= TERMINATOR.length) {
+                final Graph gLocal = TinkerGraph.open();
+                final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
+                final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
+                try (InputStream in = new ByteArrayInputStream(output.toByteArray())) {
+                    this.vertexWritable.set(this.gryoReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker));
+                    return true;
+                }
+            }
+        }
     }
 
     @Override
@@ -98,12 +145,15 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
 
     @Override
     public VertexWritable getCurrentValue() {
-        return this.vertexStreamIterator.next();
+        return this.vertexWritable;
     }
 
     @Override
     public float getProgress() throws IOException {
-        return this.vertexStreamIterator.getProgress();
+        if (0 == this.currentLength || 0 == this.splitLength)
+            return 0.0f;
+        else
+            return (float) this.currentLength / (float) this.splitLength;
     }
 
     @Override
