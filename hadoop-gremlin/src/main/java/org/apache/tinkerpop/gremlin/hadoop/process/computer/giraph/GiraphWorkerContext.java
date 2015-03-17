@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
 import org.apache.giraph.worker.WorkerContext;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
@@ -32,6 +33,7 @@ public final class GiraphWorkerContext extends WorkerContext {
     private VertexProgram<?> vertexProgram;
     private GiraphMemory memory;
     private GiraphMessenger messenger;
+    private boolean deriveMemory;
 
     public GiraphWorkerContext() {
         // Giraph ReflectionUtils requires this to be public at minimum
@@ -41,6 +43,7 @@ public final class GiraphWorkerContext extends WorkerContext {
         this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getContext().getConfiguration()));
         this.memory = new GiraphMemory(this, this.vertexProgram);
         this.messenger = new GiraphMessenger();
+        this.deriveMemory = this.getContext().getConfiguration().getBoolean(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, false);
     }
 
     public void postApplication() {
@@ -66,5 +69,9 @@ public final class GiraphWorkerContext extends WorkerContext {
     public GiraphMessenger getMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterable<ObjectWritable> messages) {
         this.messenger.setCurrentVertex(giraphComputeVertex, messages);
         return this.messenger;
+    }
+
+    public boolean deriveMemory() {
+        return this.deriveMemory;
     }
 }
