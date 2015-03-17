@@ -37,5 +37,10 @@ public abstract class GroovyAddVertexTest {
         public Traversal<Vertex, Vertex> get_g_V_addVXlabel_animal_age_0X() {
             g.V.addV(T.label, 'animal', 'age', 0);
         }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_addVXlabel_person_name_stephenX() {
+            g.addV(T.label, 'person', 'name', 'stephen');
+        }
     }
 }

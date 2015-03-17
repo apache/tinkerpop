@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
@@ -25,12 +26,11 @@ import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.TraverserGenerator;
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.FastNoSuchElementException;
-import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -172,5 +172,10 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public Set<TraverserRequirement> getTraverserRequirements() {
         return Collections.emptySet();
+    }
+
+    @Override
+    public Optional<Graph> getGraph() {
+        return Optional.empty();
     }
 }

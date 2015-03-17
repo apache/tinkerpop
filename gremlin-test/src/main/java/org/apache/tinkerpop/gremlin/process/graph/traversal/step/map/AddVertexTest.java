@@ -28,11 +28,11 @@ import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,9 +41,10 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_addVXlabel_animal_age_0X();
 
+    public abstract Traversal<Vertex, Vertex> get_g_addVXlabel_person_name_stephenX();
+
     @Test
     @LoadGraphWith(MODERN)
-    @Ignore
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void g_V_addVXlabel_animal_age_0X() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_addVXlabel_animal_age_0X();
@@ -59,6 +60,20 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertEquals(6, count);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void g_addVXlabel_person_name_stephenX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_addVXlabel_person_name_stephenX();
+        printTraversalForm(traversal);
+        final Vertex stephen = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals("person", stephen.label());
+        assertEquals("stephen", stephen.value("name"));
+        assertEquals(1, IteratorUtils.count(stephen.properties()));
+        assertEquals(7, IteratorUtils.count(graph.vertices()));
+    }
+
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     public static class Traversals extends AddVertexTest {
@@ -66,6 +81,11 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_addVXlabel_animal_age_0X() {
             return g.V().addV(T.label, "animal", "age", 0);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_addVXlabel_person_name_stephenX() {
+            return g.addV(T.label, "person", "name", "stephen");
         }
     }
 }

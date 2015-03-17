@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.List;
 import java.util.Optional;
@@ -142,5 +143,10 @@ public final class HasNextTraversal<S> implements Traversal.Admin<S, Boolean> {
     @Override
     public void reset() {
         this.hasNextTraversal.reset();
+    }
+
+    @Override
+    public Optional<Graph> getGraph() {
+        return Optional.empty();
     }
 }
