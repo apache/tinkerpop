@@ -148,7 +148,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
             }
             this.memory.setRuntime(System.currentTimeMillis() - startTime);
 
-            final Graph outputGraph = HadoopHelper.getOutputGraph(this.hadoopGraph);
+            final Graph outputGraph = HadoopHelper.getOutputGraph(this.hadoopGraph, null != this.vertexProgram);
             return new DefaultComputerResult(null == this.vertexProgram ? outputGraph : ComputerDataStrategy.wrapGraph(outputGraph, this.vertexProgram), this.memory.asImmutable());
         });
     }
@@ -163,7 +163,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                 if (!FileSystem.get(this.giraphConfiguration).exists(inputPath))
                     throw new IllegalArgumentException("The provided input path does not exist: " + inputPath);
                 FileInputFormat.setInputPaths(job.getInternalJob(), inputPath);
-                FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G));
+                FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G));
                 // job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
                 LOGGER.info(Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
                 if (!job.run(true)) {

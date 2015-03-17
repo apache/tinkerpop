@@ -24,9 +24,11 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -42,6 +44,8 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(final Object v1Id);
 
+    public abstract Traversal<Vertex, Edge> get_g_V_addOutEXexistsWith__g_V__time_nowX();
+
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
@@ -52,14 +56,13 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("createdBy", edge.label());
-            //assertEquals(convertToVertexId("lop"), vertex.id());
-            //assertEquals(1, IteratorUtils.count(vertex.vertices(Direction.OUT, "createdBy")));
-            //assertEquals(convertToVertexId("marko"), vertex.vertices(Direction.OUT, "createdBy").next().id());
-            //assertFalse(vertex.edges(Direction.OUT, "createdBy").next().properties().hasNext());
+            assertEquals(0, IteratorUtils.count(edge.properties()));
             count++;
 
         }
         assertEquals(1, count);
+        assertEquals(7, IteratorUtils.count(graph.edges()));
+        assertEquals(6, IteratorUtils.count(graph.vertices()));
     }
 
     @Test
@@ -72,16 +75,38 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("createdBy", edge.label());
-            //assertEquals(convertToVertexId("lop"), edge.id());
-            //assertEquals(1, IteratorUtils.count(vertex.vertices(Direction.OUT, "createdBy")));
-            //assertEquals(convertToVertexId("marko"), vertex.vertices(Direction.OUT, "createdBy").next().id());
-            //assertEquals(2, vertex.edges(Direction.OUT, "createdBy").next().values("weight").next());
-            //assertEquals(1, IteratorUtils.count(vertex.edges(Direction.OUT, "createdBy").next().properties()));
+            assertEquals(2, edge.<Integer>value("weight").intValue());
+            assertEquals(1, IteratorUtils.count(edge.properties()));
             count++;
 
 
         }
         assertEquals(1, count);
+        assertEquals(7, IteratorUtils.count(graph.edges()));
+        assertEquals(6, IteratorUtils.count(graph.vertices()));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    public void g_V_addOutEXexistsWith__g_V__time_nowX() {
+        final Traversal<Vertex, Edge> traversal = get_g_V_addOutEXexistsWith__g_V__time_nowX();
+        printTraversalForm(traversal);
+        int count = 0;
+        while (traversal.hasNext()) {
+            final Edge edge = traversal.next();
+            assertEquals("existsWith", edge.label());
+            assertEquals("now", edge.value("time"));
+            assertEquals(1, IteratorUtils.count(edge.properties()));
+            count++;
+        }
+        assertEquals(36, count);
+        assertEquals(42, IteratorUtils.count(graph.edges()));
+        for (final Vertex vertex : IteratorUtils.list(graph.vertices())) {
+            assertEquals(6, IteratorUtils.count(vertex.edges(Direction.OUT, "existsWith")));
+            assertEquals(6, IteratorUtils.count(vertex.edges(Direction.IN, "existsWith")));
+        }
+        assertEquals(6, IteratorUtils.count(graph.vertices()));
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
@@ -95,6 +120,11 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(final Object v1Id) {
             return g.V(v1Id).as("a").out("created").addOutE("createdBy", "a", "weight", 2);
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_V_addOutEXexistsWith__g_V__time_nowX() {
+            return g.V().addOutE("existsWith", g.V(), "time", "now");
         }
     }
 }

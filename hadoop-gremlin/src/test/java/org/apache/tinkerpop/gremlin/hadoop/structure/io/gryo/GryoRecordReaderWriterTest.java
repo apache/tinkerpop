@@ -84,7 +84,7 @@ public class GryoRecordReaderWriterTest {
                 assertEquals(Integer.class, vertex.id().getClass());
 
                 Object value = vertex.property("name");
-                if (null != value && ((Property) value).value().equals("SUGAR MAGNOLIA")) {
+                if (((Property) value).value().equals("SUGAR MAGNOLIA")) {
                     foundKeyValue = true;
                     assertEquals(92, IteratorUtils.count(vertex.edges(Direction.OUT)));
                     assertEquals(77, IteratorUtils.count(vertex.edges(Direction.IN)));

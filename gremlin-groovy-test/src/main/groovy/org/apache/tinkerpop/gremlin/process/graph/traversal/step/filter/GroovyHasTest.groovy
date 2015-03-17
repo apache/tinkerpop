@@ -35,7 +35,7 @@ public abstract class GroovyHasTest {
     public static class StandardTraversals extends HasTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
+        public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_name() {
             g.V.out('knows').has(__.out('created')).name
         }
 
@@ -114,7 +114,7 @@ public abstract class GroovyHasTest {
     public static class ComputerTraversals extends HasTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
+        public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_name() {
             ComputerTestHelper.compute("g.V.out('knows').has(__.out('created')).name", g);
         }
 

@@ -43,7 +43,7 @@ public class GryoRecordWriter extends RecordWriter<NullWritable, VertexWritable>
     @Override
     public void write(final NullWritable key, final VertexWritable vertex) throws IOException {
         if (null != vertex) {
-            GRYO_WRITER.writeVertex(out, vertex.get(), Direction.BOTH);
+            GRYO_WRITER.writeVertex(this.out, vertex.get(), Direction.BOTH);
         }
     }
 

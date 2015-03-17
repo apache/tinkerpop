@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -61,16 +60,13 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWrita
         if (!this.lineRecordReader.nextKeyValue())
             return false;
 
-        final TinkerGraph g = TinkerGraph.open();
-        final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(g, detachedVertex);
-        final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(g, detachedEdge);
-        final TinkerVertex vertex;
+        final TinkerGraph gLocal = TinkerGraph.open();
+        final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
+        final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
         try (InputStream in = new ByteArrayInputStream(this.lineRecordReader.getCurrentValue().getBytes())) {
-            vertex = (TinkerVertex) GRAPHSON_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
+            this.vertexWritable.set(GRAPHSON_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker));
+            return true;
         }
-
-        this.vertexWritable.set(vertex);
-        return true;
     }
 
     @Override

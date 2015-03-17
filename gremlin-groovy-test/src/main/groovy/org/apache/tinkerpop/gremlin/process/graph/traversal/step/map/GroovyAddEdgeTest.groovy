@@ -42,5 +42,10 @@ public abstract class GroovyAddEdgeTest {
                 final Object v1Id) {
             g.V(v1Id).as('a').out('created').addOutE('createdBy', 'a', 'weight', 2)
         }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_V_addOutEXexistsWith__g_V__time_nowX() {
+            g.V.addOutE('existsWith', g.V, 'time', 'now');
+        }
     }
 }

@@ -29,8 +29,8 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.util.SApacheConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.util.SparkHelper;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
@@ -113,7 +113,7 @@ public final class SparkGraphComputer implements GraphComputer {
             this.mapReducers.addAll(this.vertexProgram.getMapReducers());
         }
         // apache and hadoop configurations that are used throughout
-        final org.apache.commons.configuration.Configuration apacheConfiguration = new SApacheConfiguration(this.hadoopGraph.configuration());
+        final org.apache.commons.configuration.Configuration apacheConfiguration = new HadoopConfiguration(this.hadoopGraph.configuration());
         final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(apacheConfiguration);
 
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
@@ -147,7 +147,7 @@ public final class SparkGraphComputer implements GraphComputer {
                             memory = new SparkMemory(this.vertexProgram, this.mapReducers, sparkContext);
                             this.vertexProgram.setup(memory);
                             memory.broadcastMemory(sparkContext);
-                            final SApacheConfiguration vertexProgramConfiguration = new SApacheConfiguration();
+                            final HadoopConfiguration vertexProgramConfiguration = new HadoopConfiguration();
                             this.vertexProgram.storeState(vertexProgramConfiguration);
                             ConfigurationUtils.copy(vertexProgramConfiguration, apacheConfiguration);
                             ConfUtil.mergeApacheIntoHadoopConfiguration(vertexProgramConfiguration, hadoopConfiguration);
@@ -177,7 +177,7 @@ public final class SparkGraphComputer implements GraphComputer {
                         final Memory.Admin finalMemory = null == memory ? new MapMemory() : new MapMemory(memory);
                         for (final MapReduce mapReduce : this.mapReducers) {
                             // execute the map reduce job
-                            final SApacheConfiguration newApacheConfiguration = new SApacheConfiguration(apacheConfiguration);
+                            final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
                             mapReduce.storeState(newApacheConfiguration);
                             // map
                             final JavaPairRDD mapRDD = SparkHelper.executeMap(graphRDD, mapReduce, newApacheConfiguration);
@@ -191,7 +191,7 @@ public final class SparkGraphComputer implements GraphComputer {
                         sparkContext.close();
                         // update runtime and return the newly computed graph
                         finalMemory.setRuntime(System.currentTimeMillis() - startTime);
-                        return new DefaultComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph), finalMemory.asImmutable());
+                        return new DefaultComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph, null != this.vertexProgram), finalMemory.asImmutable());
                     }
                 }
         );

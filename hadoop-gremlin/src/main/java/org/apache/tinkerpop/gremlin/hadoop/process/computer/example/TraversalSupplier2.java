@@ -29,6 +29,6 @@ import java.util.function.Supplier;
 public class TraversalSupplier2 implements Supplier<Traversal> {
     @Override
     public Traversal get() {
-        return HadoopGraph.open().traversal().V().<String>values("name").map(s -> s.get().length()).groupCount().<Integer>by(i -> i + 100);
+        return HadoopGraph.empty().traversal().V().<String>values("name").map(s -> s.get().length()).groupCount().<Integer>by(i -> i + 100);
     }
 }

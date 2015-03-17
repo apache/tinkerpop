@@ -18,56 +18,62 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure;
 
-import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
-import org.javatuples.Pair;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopConfiguration extends BaseConfiguration implements Serializable, Iterable {
+public class HadoopConfiguration extends AbstractConfiguration implements Serializable {
+
+    private final Map<String, Object> properties = new HashMap<>();
 
     public HadoopConfiguration() {
+        super();
+        super.setDelimiterParsingDisabled(true);
+    }
 
+    @Override
+    protected void addPropertyDirect(final String key, final Object value) {
+        this.properties.put(key, value);
     }
 
     public HadoopConfiguration(final Configuration configuration) {
+        this();
         this.copy(configuration);
     }
 
-    public Class<InputFormat<NullWritable, VertexWritable>> getGraphInputFormat() {
-        try {
-            return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT));
-        } catch (final ClassNotFoundException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
+    @Override
+    public boolean isEmpty() {
+        return this.properties.isEmpty();
     }
 
-    public void setGraphInputFormat(final Class<InputFormat<NullWritable, VertexWritable>> inputFormatClass) {
-        this.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, inputFormatClass);
+    @Override
+    public boolean containsKey(final String key) {
+        return this.properties.containsKey(key);
     }
 
-    public Class<OutputFormat<NullWritable, VertexWritable>> getGraphOutputFormat() {
-        try {
-            return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT));
-        } catch (final ClassNotFoundException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
+    @Override
+    public Object getProperty(final String key) {
+        return this.properties.get(key);
     }
 
-    public void setGraphOutputFormat(final Class<OutputFormat<NullWritable, VertexWritable>> outputFormatClass) {
-        this.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, outputFormatClass);
+    @Override
+    public Iterator<String> getKeys() {
+        return this.properties.keySet().iterator();
     }
+
+    ///////
 
     public String getInputLocation() {
         return this.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
@@ -85,20 +91,19 @@ public class HadoopConfiguration extends BaseConfiguration implements Serializab
         this.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
     }
 
-    public Class<? extends GraphComputer> getGraphComputer(final Class<? extends GraphComputer> defaultGraphComputer) {
-        if (!this.containsKey(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER))
-            return defaultGraphComputer;
-        else {
-            try {
-                return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER));
-            } catch (final ClassNotFoundException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            }
+    public Class<InputFormat<NullWritable, VertexWritable>> getGraphInputFormat() {
+        try {
+            return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT));
+        } catch (final ClassNotFoundException e) {
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
-    @Override
-    public Iterator iterator() {
-        return StreamFactory.stream(this.getKeys()).map(k -> new Pair(k, this.getProperty(k))).iterator();
+    public Class<OutputFormat<NullWritable, VertexWritable>> getGraphOutputFormat() {
+        try {
+            return (Class) Class.forName(this.getString(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT));
+        } catch (final ClassNotFoundException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 }

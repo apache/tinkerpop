@@ -33,7 +33,7 @@ public class Constants {
     public static final String GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER = "gremlin.hadoop.defaultGraphComputer";
 
     public static final String GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE = "gremlin.hadoop.jarsInDistributedCache";
-    public static final String SYSTEM_G = Graph.Hidden.hide("g");
+    public static final String HIDDEN_G = Graph.Hidden.hide("g");
     public static final String GREMLIN_HADOOP_JOB_PREFIX = "HadoopGremlin: ";
     public static final String GREMLIN_HADOOP_GIRAPH_JOB_PREFIX = "HadoopGremlin(Giraph): ";
     public static final String GREMLIN_HADOOP_MAP_REDUCE_JOB_PREFIX = "HadoopGremlin(MapReduce): ";

@@ -20,12 +20,10 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Compare;
-import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -48,7 +46,7 @@ import static org.junit.Assume.assumeTrue;
  */
 public abstract class HasTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX();
+    public abstract Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_name();
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_hasXkeyX(final Object v1Id, final String key);
 
@@ -81,7 +79,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
-        Traversal<Vertex, String> traversal = get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX();
+        Traversal<Vertex, String> traversal = get_g_V_outXknowsX_hasXoutXcreatedXX_name();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("josh"), traversal);
     }
@@ -250,7 +248,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class Traversals extends HasTest {
         @Override
-        public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
+        public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_name() {
             return g.V().out("knows").has(out("created")).values("name");
         }
 

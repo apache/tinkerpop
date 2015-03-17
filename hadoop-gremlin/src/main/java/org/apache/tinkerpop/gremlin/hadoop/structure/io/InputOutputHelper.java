@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
@@ -27,34 +28,41 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptOutputFormat;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class InputOutputHelper {
 
+    private static Map<Class<? extends InputFormat<NullWritable, VertexWritable>>, Class<? extends OutputFormat<NullWritable, VertexWritable>>> INPUT_TO_OUTPUT_CACHE = new ConcurrentHashMap<>();
+    private static Map<Class<? extends OutputFormat<NullWritable, VertexWritable>>, Class<? extends InputFormat<NullWritable, VertexWritable>>> OUTPUT_TO_INPUT_CACHE = new ConcurrentHashMap<>();
+
+    static {
+        INPUT_TO_OUTPUT_CACHE.put(GryoInputFormat.class, GryoOutputFormat.class);
+        INPUT_TO_OUTPUT_CACHE.put(GraphSONInputFormat.class, GraphSONOutputFormat.class);
+        INPUT_TO_OUTPUT_CACHE.put(ScriptInputFormat.class, ScriptOutputFormat.class);
+        //
+        OUTPUT_TO_INPUT_CACHE.put(GryoOutputFormat.class, GryoInputFormat.class);
+        OUTPUT_TO_INPUT_CACHE.put(GraphSONOutputFormat.class, GraphSONInputFormat.class);
+        OUTPUT_TO_INPUT_CACHE.put(ScriptOutputFormat.class, ScriptInputFormat.class);
+    }
+
     private InputOutputHelper() {
 
     }
 
-    public static Class<? extends InputFormat> getInputFormat(final Class<? extends OutputFormat> outputFormat) {
-        if (outputFormat.equals(GryoOutputFormat.class))
-            return GryoInputFormat.class;
-        else if (outputFormat.equals(GraphSONOutputFormat.class))
-            return GraphSONInputFormat.class;
-        else if (outputFormat.equals(ScriptOutputFormat.class))
-            return ScriptInputFormat.class;
-        else
-            throw new IllegalArgumentException("The provided output format does not have a known input format: " + outputFormat.getCanonicalName());
+    public static Class<? extends InputFormat> getInputFormat(final Class<? extends OutputFormat<NullWritable, VertexWritable>> outputFormat) {
+        return OUTPUT_TO_INPUT_CACHE.get(outputFormat);
     }
 
-    public static Class<? extends OutputFormat> getOutputFormat(final Class<? extends InputFormat> inputFormat) {
-        if (inputFormat.equals(GryoInputFormat.class))
-            return GryoOutputFormat.class;
-        else if (inputFormat.equals(GraphSONInputFormat.class))
-            return GraphSONOutputFormat.class;
-        else if (inputFormat.equals(ScriptInputFormat.class))
-            return ScriptOutputFormat.class;
-        else
-            throw new IllegalArgumentException("The provided input format does not have a known output format: " + inputFormat.getCanonicalName());
+    public static Class<? extends OutputFormat> getOutputFormat(final Class<? extends InputFormat<NullWritable, VertexWritable>> inputFormat) {
+        return INPUT_TO_OUTPUT_CACHE.get(inputFormat);
+    }
+
+    public static void registerInputOutputPair(final Class<? extends InputFormat<NullWritable, VertexWritable>> inputFormat, final Class<? extends OutputFormat<NullWritable, VertexWritable>> outputFormat) {
+        INPUT_TO_OUTPUT_CACHE.put(inputFormat, outputFormat);
+        OUTPUT_TO_INPUT_CACHE.put(outputFormat, inputFormat);
     }
 }
