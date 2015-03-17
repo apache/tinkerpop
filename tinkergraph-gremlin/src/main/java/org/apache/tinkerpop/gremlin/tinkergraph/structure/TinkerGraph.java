@@ -75,11 +75,11 @@ public class TinkerGraph implements Graph {
     protected Long currentId = -1l;
     protected Map<Object, Vertex> vertices = new ConcurrentHashMap<>();
     protected Map<Object, Edge> edges = new ConcurrentHashMap<>();
-    protected TinkerGraphVariables variables = new TinkerGraphVariables();
-    protected TinkerGraphView graphView = null;
 
-    protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
-    protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
+    protected TinkerGraphVariables variables = null;
+    protected TinkerGraphView graphView = null;
+    protected TinkerIndex<TinkerVertex> vertexIndex = null;
+    protected TinkerIndex<TinkerEdge> edgeIndex = null;
 
     private final static TinkerGraph EMPTY_GRAPH = new TinkerGraph();
 
@@ -159,6 +159,8 @@ public class TinkerGraph implements Graph {
 
     @Override
     public Variables variables() {
+        if (null == this.variables)
+            this.variables = new TinkerGraphVariables();
         return this.variables;
     }
 
@@ -170,10 +172,10 @@ public class TinkerGraph implements Graph {
     public void clear() {
         this.vertices.clear();
         this.edges.clear();
-        this.variables = new TinkerGraphVariables();
+        this.variables = null;
         this.currentId = 0l;
-        this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
-        this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
+        this.vertexIndex = null;
+        this.edgeIndex = null;
     }
 
     @Override
@@ -311,8 +313,10 @@ public class TinkerGraph implements Graph {
      */
     public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
+            if (null == this.vertexIndex) this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
             this.vertexIndex.createKeyIndex(key);
         } else if (Edge.class.isAssignableFrom(elementClass)) {
+            if (null == this.edgeIndex) this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
             this.edgeIndex.createKeyIndex(key);
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
@@ -328,9 +332,9 @@ public class TinkerGraph implements Graph {
      */
     public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
-            this.vertexIndex.dropKeyIndex(key);
+            if (null != this.vertexIndex) this.vertexIndex.dropKeyIndex(key);
         } else if (Edge.class.isAssignableFrom(elementClass)) {
-            this.edgeIndex.dropKeyIndex(key);
+            if (null != this.edgeIndex) this.edgeIndex.dropKeyIndex(key);
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
@@ -345,9 +349,9 @@ public class TinkerGraph implements Graph {
      */
     public <E extends Element> Set<String> getIndexedKeys(final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
-            return this.vertexIndex.getIndexedKeys();
+            return null == this.vertexIndex ? Collections.emptySet() : this.vertexIndex.getIndexedKeys();
         } else if (Edge.class.isAssignableFrom(elementClass)) {
-            return this.edgeIndex.getIndexedKeys();
+            return null == this.edgeIndex ? Collections.emptySet() : this.edgeIndex.getIndexedKeys();
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }

@@ -19,14 +19,12 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,14 +36,12 @@ import java.util.stream.Collectors;
  */
 public abstract class TinkerElement implements Element {
 
-    protected Map<String, List<Property>> properties = new HashMap<>();
+    protected Map<String, List<Property>> properties;
     protected final Object id;
     protected final String label;
-    protected final TinkerGraph graph;
     protected boolean removed = false;
 
-    protected TinkerElement(final Object id, final String label, final TinkerGraph graph) {
-        this.graph = graph;
+    protected TinkerElement(final Object id, final String label) {
         this.id = id;
         this.label = label;
     }
@@ -66,13 +62,9 @@ public abstract class TinkerElement implements Element {
     }
 
     @Override
-    public Graph graph() {
-        return this.graph;
-    }
-
-    @Override
     public Set<String> keys() {
-        return TinkerHelper.inComputerMode(this.graph) ?
+        if (null == this.properties) return Collections.emptySet();
+        return TinkerHelper.inComputerMode((TinkerGraph) graph()) ?
                 Element.super.keys() :
                 this.properties.keySet();
     }
@@ -80,11 +72,11 @@ public abstract class TinkerElement implements Element {
     @Override
     public <V> Property<V> property(final String key) {
         if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id);
-        if (TinkerHelper.inComputerMode(this.graph)) {
-            final List<Property> list = this.graph.graphView.getProperty(this, key);
+        if (TinkerHelper.inComputerMode((TinkerGraph) graph())) {
+            final List<Property> list = ((TinkerGraph) graph()).graphView.getProperty(this, key);
             return list.size() == 0 ? Property.<V>empty() : list.get(0);
         } else {
-            return this.properties.containsKey(key) ? this.properties.get(key).get(0) : Property.<V>empty();
+            return null != this.properties && this.properties.containsKey(key) ? this.properties.get(key).get(0) : Property.<V>empty();
         }
     }
 
@@ -98,9 +90,10 @@ public abstract class TinkerElement implements Element {
 
     @Override
     public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
-        if (TinkerHelper.inComputerMode(this.graph))
-            return (Iterator) this.graph.graphView.getProperties(TinkerElement.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
+        if (TinkerHelper.inComputerMode((TinkerGraph) graph()))
+            return (Iterator) ((TinkerGraph) graph()).graphView.getProperties(TinkerElement.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
         else {
+            if (null == this.properties) return Collections.emptyIterator();
             if (propertyKeys.length == 1) {
                 final List<Property> properties = this.properties.getOrDefault(propertyKeys[0], Collections.emptyList());
                 if (properties.size() == 1) {
