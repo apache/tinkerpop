@@ -37,7 +37,6 @@ import static org.junit.Assert.assertNotNull;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @UseEngine(TraversalEngine.Type.STANDARD)
-@UseEngine(TraversalEngine.Type.COMPUTER)
 public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     private static final String partition = "gremlin.partitionGraphStrategy.partition";
     private final PartitionStrategy partitionStrategy = new PartitionStrategy(partition, "A");

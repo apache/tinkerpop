@@ -177,8 +177,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             TraversalVerificationStrategyTest.ComputerTraversals.class,
 
             // decorations
-            ReadOnlyStrategyProcessTest.class,
-            PartitionStrategyProcessTest.class
+            ReadOnlyStrategyProcessTest.class
     };
 
     /**
