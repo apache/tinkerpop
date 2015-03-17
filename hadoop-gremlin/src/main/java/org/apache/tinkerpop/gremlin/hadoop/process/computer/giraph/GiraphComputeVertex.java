@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
+import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -47,19 +48,26 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, VertexWritab
         final VertexWritable newWritable = new VertexWritable();
         newWritable.set(vertexWritable.get());
         this.initialize(new LongWritable(Long.valueOf(newWritable.get().id().toString())), newWritable, EmptyOutEdges.instance());
+
+    }
+
+    @Override
+    public void setConf(final ImmutableClassesGiraphConfiguration<LongWritable, VertexWritable, NullWritable, ObjectWritable> configuration) {
+        // do nothing -- no need to store the configuration with the giraph vertex
     }
 
     @Override
     public void compute(final Iterable<ObjectWritable> messages) {
-        final VertexProgram vertexProgram = ((GiraphWorkerContext) this.getWorkerContext()).getVertexProgram();
-        final GiraphMemory memory = ((GiraphWorkerContext) this.getWorkerContext()).getMemory();
-        final GiraphMessenger messenger = ((GiraphWorkerContext) this.getWorkerContext()).getMessenger(this, messages);
+        final GiraphWorkerContext workerContext = (GiraphWorkerContext) this.getWorkerContext();
+        final VertexProgram vertexProgram = workerContext.getVertexProgram();
+        final GiraphMemory memory = workerContext.getMemory();
+        final GiraphMessenger messenger = workerContext.getMessenger(this, messages);
         if (null == this.wrappedVertex)
             this.wrappedVertex = ComputerDataStrategy.wrapVertex(this.getValue().get(), vertexProgram);
         ///////////
         if (!(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HADOOP_HALT)).getObject())
             vertexProgram.execute(this.wrappedVertex, messenger, memory);  // TODO provide a wrapper around TinkerVertex for Edge and non-ComputeKeys manipulation
-        else if (this.getConf().getBoolean(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, false)) {
+        else if (workerContext.deriveMemory()) {
             final MapMemory mapMemory = new MapMemory();
             memory.asMap().forEach(mapMemory::set);
             mapMemory.setIteration(memory.getIteration() - 1);
