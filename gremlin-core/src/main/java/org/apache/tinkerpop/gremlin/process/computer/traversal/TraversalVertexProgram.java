@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
@@ -43,12 +43,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -151,23 +151,35 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.getStartStep();
             final TraverserGenerator traverserGenerator = this.traversal.getTraverserGenerator();
             final String future = startStep.getNextStep().getId();
-            boolean voteToHalt = true;
-            final Iterator<? extends Element> starts = startStep.returnsVertices() ? IteratorUtils.of(vertex) : vertex.edges(Direction.OUT);
-            while (starts.hasNext()) {
-                final Element start = starts.next();
-                if (ElementHelper.idExists(start.id(), startStep.getIds())) {
-                    final Traverser.Admin<Element> traverser = traverserGenerator.generate(start, startStep, 1l);
+            if (startStep.returnsVertices()) {  // VERTICES (process the first step locally)
+                if (ElementHelper.idExists(vertex.id(), startStep.getIds())) {
+                    final Traverser.Admin<Element> traverser = traverserGenerator.generate(vertex, startStep, 1l);
                     traverser.setStepId(future);
                     traverser.detach();
                     if (traverser.isHalted())
                         haltedTraversers.add((Traverser.Admin) traverser);
-                    else {
-                        voteToHalt = false;
-                        messenger.sendMessage(MessageScope.Global.of(vertex), new TraverserSet<>(traverser));
+                    else
+                        memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, new SingleMessenger<>(messenger, new TraverserSet<>(traverser)), this.traversalMatrix));
+                }
+            } else {  // EDGES (process the first step via a message pass)
+                boolean voteToHalt = true;
+                final Iterator<Edge> starts = vertex.edges(Direction.OUT);
+                while (starts.hasNext()) {
+                    final Edge start = starts.next();
+                    if (ElementHelper.idExists(start.id(), startStep.getIds())) {
+                        final Traverser.Admin<Element> traverser = traverserGenerator.generate(start, startStep, 1l);
+                        traverser.setStepId(future);
+                        traverser.detach();
+                        if (traverser.isHalted())
+                            haltedTraversers.add((Traverser.Admin) traverser);
+                        else {
+                            voteToHalt = false;
+                            messenger.sendMessage(MessageScope.Global.of(vertex), new TraverserSet<>(traverser));
+                        }
                     }
                 }
+                memory.and(VOTE_TO_HALT, voteToHalt);
             }
-            memory.and(VOTE_TO_HALT, voteToHalt);
         } else {
             memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversalMatrix));
         }
