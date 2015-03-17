@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.T;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -29,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -40,23 +42,24 @@ public class TinkerEdge extends TinkerElement implements Edge {
     protected final Vertex inVertex;
     protected final Vertex outVertex;
 
-    protected TinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex, final TinkerGraph graph) {
-        super(id, label, graph);
+    protected TinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex) {
+        super(id, label);
         this.outVertex = outVertex;
         this.inVertex = inVertex;
-        this.graph.edgeIndex.autoUpdate(T.label.getAccessor(), this.label, null, this);
+        TinkerHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
     }
 
     @Override
     public <V> Property<V> property(final String key, final V value) {
-        if (TinkerHelper.inComputerMode(this.graph)) {
-            return this.graph.graphView.setProperty(this, key, value);
+        if (TinkerHelper.inComputerMode((TinkerGraph) this.graph())) {
+            return ((TinkerGraph) this.graph()).graphView.setProperty(this, key, value);
         } else {
             ElementHelper.validateProperty(key, value);
             final Property oldProperty = super.property(key);
             final Property<V> newProperty = new TinkerProperty<>(this, key, value);
+            if (null == this.properties) this.properties = new HashMap<>();
             this.properties.put(key, Collections.singletonList(newProperty));
-            this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.value() : null, this);
+            TinkerHelper.autoUpdateIndex(this, key, value, oldProperty.isPresent() ? oldProperty.value() : null);
             return newProperty;
         }
     }
@@ -80,9 +83,9 @@ public class TinkerEdge extends TinkerElement implements Edge {
                 edges.remove(this);
         }
 
-        this.graph.edgeIndex.removeElement(this);
-        this.graph.edges.remove(this.id());
-        this.properties.clear();
+        TinkerHelper.removeElementIndex(this);
+        ((TinkerGraph) this.graph()).edges.remove(this.id());
+        this.properties = null;
         this.removed = true;
     }
 
@@ -112,6 +115,11 @@ public class TinkerEdge extends TinkerElement implements Edge {
             default:
                 return IteratorUtils.of(this.outVertex, this.inVertex);
         }
+    }
+
+    @Override
+    public Graph graph() {
+        return this.inVertex.graph();
     }
 
     @Override

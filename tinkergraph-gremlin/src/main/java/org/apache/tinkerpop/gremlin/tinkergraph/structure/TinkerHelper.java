@@ -63,7 +63,7 @@ public final class TinkerHelper {
             idValue = TinkerHelper.getNextId(graph);
         }
 
-        edge = new TinkerEdge(idValue, outVertex, label, inVertex, graph);
+        edge = new TinkerEdge(idValue, outVertex, label, inVertex);
         ElementHelper.attachProperties(edge, keyValues);
         graph.edges.put(edge.id(), edge);
         TinkerHelper.addOutEdge(outVertex, label, edge);
@@ -91,11 +91,11 @@ public final class TinkerHelper {
     }
 
     public static List<TinkerVertex> queryVertexIndex(final TinkerGraph graph, final String key, final Object value) {
-        return graph.vertexIndex.get(key, value);
+        return null == graph.vertexIndex ? Collections.emptyList() : graph.vertexIndex.get(key, value);
     }
 
     public static List<TinkerEdge> queryEdgeIndex(final TinkerGraph graph, final String key, final Object value) {
-        return graph.edgeIndex.get(key, value);
+        return null == graph.edgeIndex ? Collections.emptyList() : graph.edgeIndex.get(key, value);
     }
 
     public static boolean inComputerMode(final TinkerGraph graph) {
@@ -107,7 +107,43 @@ public final class TinkerHelper {
     }
 
     public static Map<String, List<Property>> getProperties(final TinkerElement element) {
-        return element.properties;
+        return null == element.properties ? Collections.emptyMap() : element.properties;
+    }
+
+    public static void autoUpdateIndex(final TinkerEdge edge, final String key, final Object oldValue, final Object value) {
+        final TinkerGraph graph = (TinkerGraph) edge.graph();
+        if (graph.edgeIndex != null)
+            graph.edgeIndex.autoUpdate(key, value, oldValue, edge);
+    }
+
+    public static void autoUpdateIndex(final TinkerVertex vertex, final String key, final Object oldValue, final Object value) {
+        final TinkerGraph graph = (TinkerGraph) vertex.graph();
+        if (graph.vertexIndex != null)
+            graph.vertexIndex.autoUpdate(key, value, oldValue, vertex);
+    }
+
+    public static void removeElementIndex(final TinkerVertex vertex) {
+        final TinkerGraph graph = (TinkerGraph) vertex.graph();
+        if (graph.vertexIndex != null)
+            graph.vertexIndex.removeElement(vertex);
+    }
+
+    public static void removeElementIndex(final TinkerEdge edge) {
+        final TinkerGraph graph = (TinkerGraph) edge.graph();
+        if (graph.edgeIndex != null)
+            graph.edgeIndex.removeElement(edge);
+    }
+
+    public static void removeIndex(final TinkerVertex vertex, final String key, final Object value) {
+        final TinkerGraph graph = (TinkerGraph) vertex.graph();
+        if (graph.vertexIndex != null)
+            graph.vertexIndex.remove(key, value, vertex);
+    }
+
+    public static void removeIndex(final TinkerEdge edge, final String key, final Object value) {
+        final TinkerGraph graph = (TinkerGraph) edge.graph();
+        if (graph.edgeIndex != null)
+            graph.edgeIndex.remove(key, value, edge);
     }
 
     public static final Iterator<TinkerEdge> getEdges(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {

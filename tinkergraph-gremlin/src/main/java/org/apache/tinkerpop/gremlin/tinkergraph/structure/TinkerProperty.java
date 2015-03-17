@@ -32,13 +32,11 @@ public class TinkerProperty<V> implements Property<V> {
     protected final Element element;
     protected final String key;
     protected V value;
-    protected final TinkerGraph graph;
 
     public TinkerProperty(final Element element, final String key, final V value) {
         this.element = element;
         this.key = key;
         this.value = value;
-        this.graph = ((TinkerElement) this.element).graph;
     }
 
     @Override
@@ -77,6 +75,6 @@ public class TinkerProperty<V> implements Property<V> {
     public void remove() {
         ((TinkerElement) this.element).properties.remove(this.key);
         if (this.element instanceof Edge)
-            this.graph.edgeIndex.remove(key, value, (TinkerEdge) this.element);
+            TinkerHelper.removeIndex((TinkerEdge) this.element, this.key, this.value);
     }
 }

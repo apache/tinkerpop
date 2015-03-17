@@ -44,14 +44,21 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     protected Map<String, Set<Edge>> outEdges = new HashMap<>();
     protected Map<String, Set<Edge>> inEdges = new HashMap<>();
     private static final Object[] EMPTY_ARGS = new Object[0];
+    private final TinkerGraph graph;
 
     protected TinkerVertex(final Object id, final String label, final TinkerGraph graph) {
-        super(id, label, graph);
+        super(id, label);
+        this.graph = graph;
+    }
+
+    @Override
+    public Graph graph() {
+        return this.graph;
     }
 
     @Override
     public <V> VertexProperty<V> property(final String key) {
-        if (removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
 
         if (TinkerHelper.inComputerMode(this.graph)) {
             final List<VertexProperty> list = (List) this.graph.graphView.getProperty(this, key);
@@ -62,7 +69,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
             else
                 throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
         } else {
-            if (this.properties.containsKey(key)) {
+            if (this.properties != null && this.properties.containsKey(key)) {
                 final List<VertexProperty> list = (List) this.properties.get(key);
                 if (list.size() > 1)
                     throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
@@ -92,10 +99,11 @@ public class TinkerVertex extends TinkerElement implements Vertex {
             final VertexProperty<V> vertexProperty = optionalId.isPresent() ?
                     new TinkerVertexProperty<V>(optionalId.get(), this, key, value) :
                     new TinkerVertexProperty<V>(this, key, value);
+            if (null == this.properties) this.properties = new HashMap<>();
             final List<Property> list = this.properties.getOrDefault(key, new ArrayList<>());
             list.add(vertexProperty);
             this.properties.put(key, list);
-            this.graph.vertexIndex.autoUpdate(key, value, null, this);
+            TinkerHelper.autoUpdateIndex(this, key, value, null);
             ElementHelper.attachProperties(vertexProperty, keyValues);
             return vertexProperty;
         }
@@ -114,8 +122,8 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         final List<Edge> edges = new ArrayList<>();
         this.edges(Direction.BOTH).forEachRemaining(edges::add);
         edges.stream().filter(edge -> !((TinkerEdge) edge).removed).forEach(Edge::remove);
-        this.properties.clear();
-        this.graph.vertexIndex.removeElement(this);
+        this.properties = null;
+        TinkerHelper.removeElementIndex(this);
         this.graph.vertices.remove(this.id);
         this.removed = true;
     }
