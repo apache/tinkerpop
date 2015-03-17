@@ -107,10 +107,10 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     }
 
     public static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
-        Iterator<Vertex> outVertices = graph.vertices(detachedEdge.outVertex.id());
-        final Vertex outV = outVertices.hasNext() ? outVertices.next() : graph.addVertex(T.id, detachedEdge.outVertex.id());
-        Iterator<Vertex> inVertices = graph.vertices(detachedEdge.inVertex.id());
-        final Vertex inV = inVertices.hasNext() ? inVertices.next() : graph.addVertex(T.id, detachedEdge.inVertex.id());
+        Iterator<Vertex> vertices = graph.vertices(detachedEdge.outVertex.id());
+        final Vertex outV = vertices.hasNext() ? vertices.next() : graph.addVertex(T.id, detachedEdge.outVertex.id());
+        vertices = graph.vertices(detachedEdge.inVertex.id());
+        final Vertex inV = vertices.hasNext() ? vertices.next() : graph.addVertex(T.id, detachedEdge.inVertex.id());
         if (ElementHelper.areEqual(outV, inV)) {
             final Iterator<Edge> itty = outV.edges(Direction.OUT, detachedEdge.label());
             while (itty.hasNext()) {
