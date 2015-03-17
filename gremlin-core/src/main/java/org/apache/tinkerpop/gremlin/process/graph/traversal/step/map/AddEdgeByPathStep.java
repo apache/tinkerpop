@@ -45,16 +45,16 @@ public final class AddEdgeByPathStep extends MapStep<Vertex, Edge> implements Mu
     private final Direction direction;
     private final String edgeLabel;
     private final String stepLabel;
-    private final Object[] propertyKeyValues;
+    private final Object[] keyValues;
 
-    public AddEdgeByPathStep(final Traversal.Admin traversal, final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
+    public AddEdgeByPathStep(final Traversal.Admin traversal, final Direction direction, final String edgeLabel, final String stepLabel, final Object... keyValues) {
         super(traversal);
         this.direction = direction;
         if (this.direction.equals(Direction.BOTH))
             throw new IllegalArgumentException("Only in- and out- directions are supported by " + AddEdgeByPathStep.class.getSimpleName());
         this.edgeLabel = edgeLabel;
         this.stepLabel = stepLabel;
-        this.propertyKeyValues = propertyKeyValues;
+        this.keyValues = keyValues;
     }
 
     public Direction getDirection() {
@@ -69,8 +69,8 @@ public final class AddEdgeByPathStep extends MapStep<Vertex, Edge> implements Mu
         return stepLabel;
     }
 
-    public Object[] getPropertyKeyValues() {
-        return propertyKeyValues;
+    public Object[] getKeyValues() {
+        return keyValues;
     }
 
     @Override
@@ -83,9 +83,9 @@ public final class AddEdgeByPathStep extends MapStep<Vertex, Edge> implements Mu
         final Vertex currentVertex = traverser.get();
         final Vertex otherVertex = traverser.path().get(this.stepLabel);
         if (this.direction.equals(Direction.IN))
-            return otherVertex.addEdge(this.edgeLabel, currentVertex, this.propertyKeyValues);
+            return otherVertex.addEdge(this.edgeLabel, currentVertex, this.keyValues);
         else
-            return currentVertex.addEdge(this.edgeLabel, otherVertex, this.propertyKeyValues);
+            return currentVertex.addEdge(this.edgeLabel, otherVertex, this.keyValues);
     }
 
     @Override

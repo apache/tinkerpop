@@ -108,7 +108,7 @@ public class PartitionStrategyTest {
                 assertEquals(1, addEdgeSteps.size());
 
                 addEdgeSteps.forEach(s -> {
-                    final Object[] keyValues = s.getPropertyKeyValues();
+                    final Object[] keyValues = s.getKeyValues();
                     final List<Pair<String, Object>> pairs = ElementHelper.asPairs(keyValues);
                     assertEquals("test", s.getEdgeLabel());
                     assertEquals(d, s.getDirection());

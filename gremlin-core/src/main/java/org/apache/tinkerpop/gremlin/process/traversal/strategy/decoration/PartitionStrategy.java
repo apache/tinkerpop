@@ -90,7 +90,7 @@ public class PartitionStrategy extends AbstractTraversalStrategy {
         });
 
         TraversalHelper.getStepsOfAssignableClass(AddEdgeByPathStep.class, traversal).forEach(s -> {
-            final Object[] keyValues = Stream.concat(Stream.of(s.getPropertyKeyValues()), Stream.of(partitionKey, writePartition)).toArray();
+            final Object[] keyValues = Stream.concat(Stream.of(s.getKeyValues()), Stream.of(partitionKey, writePartition)).toArray();
             TraversalHelper.replaceStep(s, new AddEdgeByPathStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getStepLabel(), keyValues), traversal);
         });
 
