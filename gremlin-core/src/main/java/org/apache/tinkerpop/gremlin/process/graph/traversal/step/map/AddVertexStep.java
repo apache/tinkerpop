@@ -37,6 +37,10 @@ public final class AddVertexStep<S> extends MapStep<S, Vertex> {
         this.graph = this.getTraversal().getGraph().get();
     }
 
+    public Object[] getKeyValues() {
+        return keyValues;
+    }
+
     @Override
     protected Vertex map(final Traverser.Admin<S> traverser) {
         return this.graph.addVertex(this.keyValues);

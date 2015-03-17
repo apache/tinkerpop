@@ -36,7 +36,7 @@ import static org.junit.Assert.fail;
  */
 @UseEngine(TraversalEngine.Type.STANDARD)
 @UseEngine(TraversalEngine.Type.COMPUTER)
-public class ReadOnlyStrategyTest extends AbstractGremlinProcessTest {
+public class ReadOnlyStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     public void shouldTraverseV() {
         assertTraversal(create().V(), false);

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -34,32 +35,48 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AddEdgeStep extends FlatMapStep<Vertex, Edge> {
+public final class AddEdgeStep extends FlatMapStep<Vertex, Edge> implements Mutating {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
 
-    private final String label;
+    private final String edgeLabel;
     private final Object[] keyValues;
     private final List<Vertex> vertices;
     private final Direction direction;
 
-    public AddEdgeStep(final Traversal.Admin traversal, final Direction direction, final String label, final Vertex vertex, final Object... keyValues) {
-        this(traversal, direction, label, IteratorUtils.of(vertex), keyValues);
+    public AddEdgeStep(final Traversal.Admin traversal, final Direction direction, final String edgeLabel, final Vertex vertex, final Object... keyValues) {
+        this(traversal, direction, edgeLabel, IteratorUtils.of(vertex), keyValues);
     }
 
-    public AddEdgeStep(final Traversal.Admin traversal, final Direction direction, final String label, final Iterator<Vertex> vertices, final Object... keyValues) {
+    public AddEdgeStep(final Traversal.Admin traversal, final Direction direction, final String edgeLabel, final Iterator<Vertex> vertices, final Object... keyValues) {
         super(traversal);
         this.direction = direction;
-        this.label = label;
+        this.edgeLabel = edgeLabel;
         this.vertices = IteratorUtils.list(vertices);
         this.keyValues = keyValues;
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public String getEdgeLabel() {
+        return edgeLabel;
+    }
+
+    public Object[] getKeyValues() {
+        return keyValues;
+    }
+
+    public List<Vertex> getVertices() {
+        return vertices;
     }
 
     @Override
     protected Iterator<Edge> flatMap(final Traverser.Admin<Vertex> traverser) {
         return IteratorUtils.map(this.vertices.iterator(), this.direction.equals(Direction.OUT) ?
-                vertex -> traverser.get().addEdge(this.label, vertex, this.keyValues) :
-                vertex -> vertex.addEdge(this.label, traverser.get(), this.keyValues));
+                vertex -> traverser.get().addEdge(this.edgeLabel, vertex, this.keyValues) :
+                vertex -> vertex.addEdge(this.edgeLabel, traverser.get(), this.keyValues));
     }
 
     @Override

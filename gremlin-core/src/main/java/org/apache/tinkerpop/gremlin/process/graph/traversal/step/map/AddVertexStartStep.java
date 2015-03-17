@@ -37,6 +37,9 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> {
         this.keyValues = keyValues;
     }
 
+    public Object[] getKeyValues() {
+        return keyValues;
+    }
 
     @Override
     protected Traverser<Vertex> processNextStart() {
