@@ -20,12 +20,18 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Element;
+
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> {
+
+    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
 
     private final String key;
     private final Object value;
@@ -39,5 +45,10 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         traverser.get().property(this.key, this.value);
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return REQUIREMENTS;
     }
 }

@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddEdgeStep;
+import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddEdgeByPathStep;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -35,7 +35,7 @@ public final class ReadOnlyStrategy extends AbstractTraversalStrategy {
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getSteps().stream().filter(step -> step instanceof AddEdgeStep).findAny().isPresent())
+        if (traversal.getSteps().stream().filter(step -> step instanceof AddEdgeByPathStep).findAny().isPresent())
             throw new IllegalStateException("The provided traversal has a mutating step and thus is not read only");
     }
 

@@ -20,55 +20,46 @@ package org.apache.tinkerpop.gremlin.process.graph.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AddEdgeStep extends MapStep<Vertex, Edge> {
+public final class AddEdgeStep extends FlatMapStep<Vertex, Edge> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
-            TraverserRequirement.PATH,
-            TraverserRequirement.OBJECT
-    );
+    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
 
-    // TODO: Weight key based on Traverser.getCount() ?
-
+    private final String label;
+    private final Object[] keyValues;
+    private final List<Vertex> vertices;
     private final Direction direction;
-    private final String edgeLabel;
-    private final String stepLabel;
-    private final Object[] propertyKeyValues;
 
-    public AddEdgeStep(final Traversal.Admin traversal, final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
+    public AddEdgeStep(final Traversal.Admin traversal, final Direction direction, final String label, final Vertex vertex, final Object... keyValues) {
+        this(traversal, direction, label, IteratorUtils.of(vertex), keyValues);
+    }
+
+    public AddEdgeStep(final Traversal.Admin traversal, final Direction direction, final String label, final Iterator<Vertex> vertices, final Object... keyValues) {
         super(traversal);
         this.direction = direction;
-        if (this.direction.equals(Direction.BOTH))
-            throw new IllegalArgumentException("Only in- and out- directions are supported by " + AddEdgeStep.class.getSimpleName());
-        this.edgeLabel = edgeLabel;
-        this.stepLabel = stepLabel;
-        this.propertyKeyValues = propertyKeyValues;
+        this.label = label;
+        this.vertices = IteratorUtils.list(vertices);
+        this.keyValues = keyValues;
     }
 
     @Override
-    public String toString() {
-        return TraversalHelper.makeStepString(this, this.direction.name(), this.edgeLabel, this.stepLabel);
-    }
-
-    @Override
-    protected Edge map(Traverser.Admin<Vertex> traverser) {
-        final Vertex currentVertex = traverser.get();
-        final Vertex otherVertex = traverser.path().get(this.stepLabel);
-        if (this.direction.equals(Direction.IN))
-            return otherVertex.addEdge(edgeLabel, currentVertex, this.propertyKeyValues);
-        else
-            return currentVertex.addEdge(edgeLabel, otherVertex, this.propertyKeyValues);
+    protected Iterator<Edge> flatMap(final Traverser.Admin<Vertex> traverser) {
+        return IteratorUtils.map(this.vertices.iterator(), this.direction.equals(Direction.OUT) ?
+                vertex -> traverser.get().addEdge(this.label, vertex, this.keyValues) :
+                vertex -> vertex.addEdge(this.label, traverser.get(), this.keyValues));
     }
 
     @Override
