@@ -117,6 +117,12 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             put("giraph.zkServerPort", "2181");  // you must have a local zookeeper running on this port
             put("giraph.nettyServerUseExecutionHandler", false); // this prevents so many integration tests running out of threads
             put("giraph.nettyClientUseExecutionHandler", false); // this prevents so many integration tests running out of threads
+            put("giraph.numInputThreads",4);
+            put("giraph.numComputeThreads",4);
+            put("giraph.vertexOutputFormatThreadSafe",true);
+            put("giraph.numOutputThreads",4);
+
+
             /// spark configuration
             put("spark.master", "local[4]");
             put("spark.serializer", "org.apache.spark.serializer.JavaSerializer");
