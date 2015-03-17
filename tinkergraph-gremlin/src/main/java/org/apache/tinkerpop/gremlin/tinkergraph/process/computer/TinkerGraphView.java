@@ -22,15 +22,13 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +44,7 @@ public class TinkerGraphView {
 
     protected final Set<String> computeKeys;
     protected final GraphComputer.Isolation isolation;
-    private Map<Element, Map<String, List<Property>>> computeProperties;
+    private Map<Element, Map<String, List<VertexProperty>>> computeProperties;
 
     public TinkerGraphView(final GraphComputer.Isolation isolation, final Set<String> computeKeys) {
         this.isolation = isolation;
@@ -54,51 +52,37 @@ public class TinkerGraphView {
         this.computeProperties = new ConcurrentHashMap<>();
     }
 
-    public <V> Property<V> setProperty(final TinkerElement element, final String key, final V value) {
+    public <V> Property<V> setProperty(final TinkerVertex vertex, final String key, final V value) {
         ElementHelper.validateProperty(key, value);
         if (isComputeKey(key)) {
-            if (element instanceof Vertex) {
-                final TinkerVertexProperty<V> property = new TinkerVertexProperty<V>((TinkerVertex) element, key, value) {
-                    @Override
-                    public void remove() {
-                        removeProperty(element, key, this);
-                    }
-                };
-                this.setValue(element, key, property);
-                return property;
-            } else {
-                final TinkerProperty<V> property = new TinkerProperty<V>(element, key, value) {
-                    @Override
-                    public void remove() {
-                        removeProperty((TinkerElement) element, key, this);
-                    }
-                };
-                this.setValue(element, key, property);
-                return property;
-            }
+            final TinkerVertexProperty<V> property = new TinkerVertexProperty<V>((TinkerVertex) vertex, key, value) {
+                @Override
+                public void remove() {
+                    removeProperty(vertex, key, this);
+                }
+            };
+            this.setValue(vertex, key, property);
+            return property;
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
         }
     }
 
-    public List<Property> getProperty(final TinkerElement element, final String key) {
-        return isComputeKey(key) ? this.getValue(element, key) : TinkerHelper.getProperties(element).getOrDefault(key, Collections.emptyList());
+    public List<VertexProperty> getProperty(final TinkerVertex vertex, final String key) {
+        return isComputeKey(key) ? this.getValue(vertex, key) : TinkerHelper.getProperties(vertex).getOrDefault(key, Collections.emptyList());
     }
 
-    public List<Property> getProperties(final TinkerElement element) {
-        final Stream<Property> a = TinkerHelper.getProperties(element).values().stream().flatMap(list -> list.stream());
-        final Stream<Property> b = this.computeProperties.containsKey(element) ?
-                this.computeProperties.get(element).values().stream().flatMap(list -> list.stream()) :
+    public List<Property> getProperties(final TinkerVertex vertex) {
+        final Stream<Property> a = TinkerHelper.getProperties(vertex).values().stream().flatMap(list -> list.stream());
+        final Stream<Property> b = this.computeProperties.containsKey(vertex) ?
+                this.computeProperties.get(vertex).values().stream().flatMap(list -> list.stream()) :
                 Stream.empty();
         return Stream.concat(a, b).collect(Collectors.toList());
     }
 
-    public void removeProperty(final TinkerElement element, final String key, final Property property) {
+    public void removeProperty(final TinkerVertex vertex, final String key, final VertexProperty property) {
         if (isComputeKey(key)) {
-            if (element instanceof Vertex)
-                this.removeValue(element, key, property);
-            else
-                this.removeValue(element, key);
+            this.removeValue(vertex, key, property);
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
         }
@@ -106,27 +90,24 @@ public class TinkerGraphView {
 
     //////////////////////
 
-    private void setValue(final Element element, final String key, final Property property) {
-        final Map<String, List<Property>> elementProperties = this.computeProperties.computeIfAbsent(element, k -> new ConcurrentHashMap<>());
+    private void setValue(final Vertex vertex, final String key, final VertexProperty property) {
+        final Map<String, List<VertexProperty>> elementProperties = this.computeProperties.computeIfAbsent(vertex, k -> new ConcurrentHashMap<>());
         elementProperties.compute(key, (k, v) -> {
-            if (element instanceof Vertex) {
-                if (null == v) v = Collections.synchronizedList(new ArrayList<>());
-                v.add(property);
-            } else
-                v = Arrays.asList(property);
+            if (null == v) v = Collections.synchronizedList(new ArrayList<>());
+            v.add(property);
             return v;
         });
     }
 
-    private void removeValue(final Element element, final String key) {
-        this.computeProperties.computeIfPresent(element, (k, v) -> {
+    private void removeValue(final Vertex vertex, final String key) {
+        this.computeProperties.computeIfPresent(vertex, (k, v) -> {
             v.remove(key);
             return v;
         });
     }
 
-    private void removeValue(final Element element, final String key, final Property property) {
-        this.computeProperties.computeIfPresent(element, (k, v) -> {
+    private void removeValue(final Vertex vertex, final String key, final VertexProperty property) {
+        this.computeProperties.computeIfPresent(vertex, (k, v) -> {
             v.computeIfPresent(key, (k1, v1) -> {
                 v1.remove(property);
                 return v1;
@@ -135,8 +116,8 @@ public class TinkerGraphView {
         });
     }
 
-    private List<Property> getValue(final Element element, final String key) {
-        return this.computeProperties.getOrDefault(element, Collections.emptyMap()).getOrDefault(key, Collections.emptyList());
+    private List<VertexProperty> getValue(final Vertex vertex, final String key) {
+        return this.computeProperties.getOrDefault(vertex, Collections.emptyMap()).getOrDefault(key, Collections.emptyList());
     }
 
     public boolean isComputeKey(final String key) {

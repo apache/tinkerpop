@@ -39,8 +39,6 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, VertexWritab
     //TODO: Dangerous that the underlying TinkerGraph Vertex can have edges written to it.
     //TODO: LongWritable as the key is not general enough -- ObjectWritable causes problems though :|
 
-    private StrategyVertex wrappedVertex;
-
     public GiraphComputeVertex() {
     }
 
@@ -62,16 +60,15 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, VertexWritab
         final VertexProgram vertexProgram = workerContext.getVertexProgram();
         final GiraphMemory memory = workerContext.getMemory();
         final GiraphMessenger messenger = workerContext.getMessenger(this, messages);
-        if (null == this.wrappedVertex)
-            this.wrappedVertex = ComputerDataStrategy.wrapVertex(this.getValue().get(), vertexProgram);
+        final StrategyVertex wrappedVertex = ComputerDataStrategy.wrapVertex(this.getValue().get(), vertexProgram);
         ///////////
         if (!(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HADOOP_HALT)).getObject())
-            vertexProgram.execute(this.wrappedVertex, messenger, memory);  // TODO provide a wrapper around TinkerVertex for Edge and non-ComputeKeys manipulation
+            vertexProgram.execute(wrappedVertex, messenger, memory);  // TODO provide a wrapper around TinkerVertex for Edge and non-ComputeKeys manipulation
         else if (workerContext.deriveMemory()) {
             final MapMemory mapMemory = new MapMemory();
             memory.asMap().forEach(mapMemory::set);
             mapMemory.setIteration(memory.getIteration() - 1);
-            this.wrappedVertex.property(VertexProperty.Cardinality.single, Constants.MAP_MEMORY, mapMemory);  // TODO: this is a "computer key"
+            wrappedVertex.property(VertexProperty.Cardinality.single, Constants.MAP_MEMORY, mapMemory);  // TODO: this is a "computer key"
         }
     }
 }

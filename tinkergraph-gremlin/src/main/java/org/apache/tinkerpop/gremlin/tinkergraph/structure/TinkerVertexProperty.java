@@ -18,22 +18,28 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TinkerVertexProperty<V> extends TinkerElement implements VertexProperty<V> {
 
+    protected Map<String, Property> properties;
     private final TinkerVertex vertex;
     private final String key;
     private final V value;
@@ -81,16 +87,28 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
         return this.id;
     }
 
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);
     }
 
     @Override
+    public Set<String> keys() {
+        return null == this.properties ? Collections.emptySet() : this.properties.keySet();
+    }
+
+    @Override
+    public <U> Property<U> property(final String key) {
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id);
+        return null == this.properties ? Property.<U>empty() : this.properties.getOrDefault(key, Property.<U>empty());
+    }
+
+    @Override
     public <U> Property<U> property(final String key, final U value) {
-        final Property<U> property = new TinkerProperty<U>(this, key, value);
+        final Property<U> property = new TinkerProperty<>(this, key, value);
         if (this.properties == null) this.properties = new HashMap<>();
-        this.properties.put(key, Collections.singletonList(property));
+        this.properties.put(key, property);
         return property;
     }
 
@@ -120,6 +138,11 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
 
     @Override
     public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
-        return (Iterator) super.properties(propertyKeys);
+        if (null == this.properties) return Collections.emptyIterator();
+        if (propertyKeys.length == 1) {
+            final Property<U> property = this.properties.get(propertyKeys[0]);
+            return null == property ? Collections.emptyIterator() : IteratorUtils.of(property);
+        } else
+            return (Iterator) this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).map(entry -> entry.getValue()).collect(Collectors.toList()).iterator();
     }
 }

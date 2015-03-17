@@ -22,27 +22,30 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TinkerVertex extends TinkerElement implements Vertex {
 
-    protected Map<String, Set<Edge>> outEdges = new HashMap<>();
-    protected Map<String, Set<Edge>> inEdges = new HashMap<>();
+    protected Map<String, List<VertexProperty>> properties;
+    protected Map<String, Set<Edge>> outEdges;
+    protected Map<String, Set<Edge>> inEdges;
     private static final Object[] EMPTY_ARGS = new Object[0];
     private final TinkerGraph graph;
 
@@ -100,13 +103,21 @@ public class TinkerVertex extends TinkerElement implements Vertex {
                     new TinkerVertexProperty<V>(optionalId.get(), this, key, value) :
                     new TinkerVertexProperty<V>(this, key, value);
             if (null == this.properties) this.properties = new HashMap<>();
-            final List<Property> list = this.properties.getOrDefault(key, new ArrayList<>());
+            final List<VertexProperty> list = this.properties.getOrDefault(key, new ArrayList<>());
             list.add(vertexProperty);
             this.properties.put(key, list);
             TinkerHelper.autoUpdateIndex(this, key, value, null);
             ElementHelper.attachProperties(vertexProperty, keyValues);
             return vertexProperty;
         }
+    }
+
+    @Override
+    public Set<String> keys() {
+        if (null == this.properties) return Collections.emptySet();
+        return TinkerHelper.inComputerMode((TinkerGraph) graph()) ?
+                Vertex.super.keys() :
+                this.properties.keySet();
     }
 
     @Override
@@ -134,11 +145,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     @Override
-    public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-        return (Iterator) super.properties(propertyKeys);
-    }
-
-    @Override
     public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
         return (Iterator) TinkerHelper.getEdges(this, direction, edgeLabels);
     }
@@ -146,5 +152,25 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     @Override
     public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
         return (Iterator) TinkerHelper.getVertices(this, direction, edgeLabels);
+    }
+
+    @Override
+    public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
+        if (TinkerHelper.inComputerMode((TinkerGraph) graph()))
+            return (Iterator) ((TinkerGraph) graph()).graphView.getProperties(TinkerVertex.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
+        else {
+            if (null == this.properties) return Collections.emptyIterator();
+            if (propertyKeys.length == 1) {
+                final List<VertexProperty> properties = this.properties.getOrDefault(propertyKeys[0], Collections.emptyList());
+                if (properties.size() == 1) {
+                    return IteratorUtils.of(properties.get(0));
+                } else if (properties.isEmpty()) {
+                    return Collections.emptyIterator();
+                } else {
+                    return (Iterator) new ArrayList<>(properties).iterator();
+                }
+            } else
+                return (Iterator) this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).flatMap(entry -> entry.getValue().stream()).collect(Collectors.toList()).iterator();
+        }
     }
 }
