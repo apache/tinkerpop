@@ -22,8 +22,8 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
 
@@ -106,8 +106,8 @@ public final class TinkerHelper {
         return graph.graphView = new TinkerGraphView(isolation, computeKeys);
     }
 
-    public static Map<String, List<Property>> getProperties(final TinkerElement element) {
-        return null == element.properties ? Collections.emptyMap() : element.properties;
+    public static Map<String, List<VertexProperty>> getProperties(final TinkerVertex vertex) {
+        return null == vertex.properties ? Collections.emptyMap() : vertex.properties;
     }
 
     public static void autoUpdateIndex(final TinkerEdge edge, final String key, final Object oldValue, final Object value) {

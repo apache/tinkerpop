@@ -19,24 +19,14 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class TinkerElement implements Element {
 
-    protected Map<String, List<Property>> properties;
+
     protected final Object id;
     protected final String label;
     protected boolean removed = false;
@@ -61,50 +51,10 @@ public abstract class TinkerElement implements Element {
         return this.label;
     }
 
-    @Override
-    public Set<String> keys() {
-        if (null == this.properties) return Collections.emptySet();
-        return TinkerHelper.inComputerMode((TinkerGraph) graph()) ?
-                Element.super.keys() :
-                this.properties.keySet();
-    }
-
-    @Override
-    public <V> Property<V> property(final String key) {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id);
-        if (TinkerHelper.inComputerMode((TinkerGraph) graph())) {
-            final List<Property> list = ((TinkerGraph) graph()).graphView.getProperty(this, key);
-            return list.size() == 0 ? Property.<V>empty() : list.get(0);
-        } else {
-            return null != this.properties && this.properties.containsKey(key) ? this.properties.get(key).get(0) : Property.<V>empty();
-        }
-    }
-
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);
     }
 
-    //////////////////////////////////////////////
-
-    @Override
-    public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
-        if (TinkerHelper.inComputerMode((TinkerGraph) graph()))
-            return (Iterator) ((TinkerGraph) graph()).graphView.getProperties(TinkerElement.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
-        else {
-            if (null == this.properties) return Collections.emptyIterator();
-            if (propertyKeys.length == 1) {
-                final List<Property> properties = this.properties.getOrDefault(propertyKeys[0], Collections.emptyList());
-                if (properties.size() == 1) {
-                    return IteratorUtils.of(properties.get(0));
-                } else if (properties.isEmpty()) {
-                    return Collections.emptyIterator();
-                } else {
-                    return (Iterator) new ArrayList<>(properties).iterator();
-                }
-            } else
-                return (Iterator) this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).flatMap(entry -> entry.getValue().stream()).collect(Collectors.toList()).iterator();
-        }
-    }
 }

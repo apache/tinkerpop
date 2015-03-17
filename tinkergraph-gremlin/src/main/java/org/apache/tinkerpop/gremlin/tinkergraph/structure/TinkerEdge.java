@@ -32,13 +32,16 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TinkerEdge extends TinkerElement implements Edge {
 
+    protected Map<String, Property> properties;
     protected final Vertex inVertex;
     protected final Vertex outVertex;
 
@@ -51,19 +54,27 @@ public class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public <V> Property<V> property(final String key, final V value) {
-        if (TinkerHelper.inComputerMode((TinkerGraph) this.graph())) {
-            return ((TinkerGraph) this.graph()).graphView.setProperty(this, key, value);
-        } else {
-            ElementHelper.validateProperty(key, value);
-            final Property oldProperty = super.property(key);
-            final Property<V> newProperty = new TinkerProperty<>(this, key, value);
-            if (null == this.properties) this.properties = new HashMap<>();
-            this.properties.put(key, Collections.singletonList(newProperty));
-            TinkerHelper.autoUpdateIndex(this, key, value, oldProperty.isPresent() ? oldProperty.value() : null);
-            return newProperty;
-        }
+        ElementHelper.validateProperty(key, value);
+        final Property oldProperty = super.property(key);
+        final Property<V> newProperty = new TinkerProperty<>(this, key, value);
+        if (null == this.properties) this.properties = new HashMap<>();
+        this.properties.put(key, newProperty);
+        TinkerHelper.autoUpdateIndex(this, key, value, oldProperty.isPresent() ? oldProperty.value() : null);
+        return newProperty;
+
     }
 
+    @Override
+    public <V> Property<V> property(final String key) {
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id);
+        return null != this.properties && this.properties.containsKey(key) ? this.properties.get(key) : Property.<V>empty();
+    }
+
+    @Override
+    public Set<String> keys() {
+        if (null == this.properties) return Collections.emptySet();
+        return this.properties.keySet();
+    }
 
     @Override
     public void remove() {
@@ -124,6 +135,11 @@ public class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-        return (Iterator) super.properties(propertyKeys);
+        if (null == this.properties) return Collections.emptyIterator();
+        if (propertyKeys.length == 1) {
+            final Property<V> property = this.properties.get(propertyKeys[0]);
+            return null == property ? Collections.emptyIterator() : IteratorUtils.of(property);
+        } else
+            return (Iterator) this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).map(entry -> entry.getValue()).collect(Collectors.toList()).iterator();
     }
 }

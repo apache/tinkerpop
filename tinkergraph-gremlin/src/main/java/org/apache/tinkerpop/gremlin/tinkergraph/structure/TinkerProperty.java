@@ -73,8 +73,11 @@ public class TinkerProperty<V> implements Property<V> {
 
     @Override
     public void remove() {
-        ((TinkerElement) this.element).properties.remove(this.key);
-        if (this.element instanceof Edge)
+        if (this.element instanceof Edge) {
+            ((TinkerEdge) this.element).properties.remove(this.key);
             TinkerHelper.removeIndex((TinkerEdge) this.element, this.key, this.value);
+        } else {
+            ((TinkerVertexProperty) this.element).properties.remove(this.key);
+        }
     }
 }
