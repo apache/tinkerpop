@@ -33,27 +33,38 @@ public class PartitionStrategy extends AbstractTraversalStrategy {
 
     public PartitionStrategy(final String partitionKey, final String partition) {
         this.writePartition = partition;
-        this.addReadPartition(partition);
         this.partitionKey = partitionKey;
+        readPartitions.add(writePartition);
     }
 
     public String getWritePartition() {
         return this.writePartition;
     }
 
+    /**
+     * Set the partition to be used for future writes.  The write partition is always included in the list of
+     * current read partitions.
+     */
     public void setWritePartition(final String writePartition) {
         this.writePartition = writePartition;
-        this.readPartitions.add(writePartition);
     }
 
     public String getPartitionKey() {
         return this.partitionKey;
     }
 
+    /**
+     * Gets the set of read partitions which will include the current write partition even if not explicitly added
+     * as a read partition otherwise.
+     */
     public Set<String> getReadPartitions() {
-        return Collections.unmodifiableSet(this.readPartitions);
+        return Collections.unmodifiableSet(readPartitions);
     }
 
+    /**
+     * Removes the specified read partition.  Note that the current write partition cannot be removed as a read
+     * partition.
+     */
     public void removeReadPartition(final String readPartition) {
         this.readPartitions.remove(readPartition);
     }
@@ -62,22 +73,27 @@ public class PartitionStrategy extends AbstractTraversalStrategy {
         this.readPartitions.add(readPartition);
     }
 
+    /**
+     * Clears all of the read partitions.  Note that the current write partition cannot be cleared as a read
+     * partition.
+     */
     public void clearReadPartitions() {
         this.readPartitions.clear();
     }
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        // todo: what about "add vertex"
+        final Set<String> readPartitionsWithWritePartition = new HashSet<>(readPartitions);
+        readPartitionsWithWritePartition.add(writePartition);
+
+        // no need to add has after mutating steps because we want to make it so that the write partition can
+        // be independent of the read partition.  in other words, i don't need to be able to read from a partition
+        // in order to write to it.
         final List<Step> stepsToInsertHasAfter = new ArrayList<>();
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(VertexStep.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeOtherVertexStep.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeVertexStep.class, traversal));
-        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal));
-        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeByPathStep.class, traversal));
-        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStep.class, traversal));
-        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal));
 
         // all steps that return a vertex need to have has(paritionKey,within,partitionValues) injected after it
         stepsToInsertHasAfter.forEach(s -> TraversalHelper.insertAfterStep(

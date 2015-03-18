@@ -148,9 +148,9 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
 
         partitionStrategy.setWritePartition("B");
         final Vertex vB = source.addV("any", "b").next();
-        boolean x = source.V(vA.id()).hasNext();
         source.V(vA.id()).addOutE("a->b", vB).next();
 
+        partitionStrategy.addReadPartition("B");
         partitionStrategy.setWritePartition("C");
         final Vertex vC = source.addV("any", "c").next();
         final Edge eBtovC = source.V(vB.id()).addOutE("b->c", vC).next();
