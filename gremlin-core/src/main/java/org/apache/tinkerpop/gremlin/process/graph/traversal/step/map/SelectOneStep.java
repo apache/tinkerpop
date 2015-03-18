@@ -76,7 +76,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
-    public SelectOneStep<S, E> clone() throws CloneNotSupportedException {
+    public SelectOneStep<S, E> clone() {
         final SelectOneStep<S, E> clone = (SelectOneStep<S, E>) super.clone();
         clone.selectTraversal = this.selectTraversal.clone();
         return clone;

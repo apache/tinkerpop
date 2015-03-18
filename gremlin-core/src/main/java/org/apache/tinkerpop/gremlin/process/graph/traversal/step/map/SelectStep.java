@@ -102,7 +102,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     }
 
     @Override
-    public SelectStep<S, E> clone() throws CloneNotSupportedException {
+    public SelectStep<S, E> clone() {
         final SelectStep<S, E> clone = (SelectStep<S, E>) super.clone();
         clone.traversalRing = new TraversalRing<>();
         for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {

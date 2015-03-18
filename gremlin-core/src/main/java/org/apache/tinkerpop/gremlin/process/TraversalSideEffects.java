@@ -190,7 +190,8 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
      *
      * @return The cloned sideEffects
      */
-    public TraversalSideEffects clone() throws CloneNotSupportedException;
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    public TraversalSideEffects clone();
 
     /**
      * Add the current {@link TraversalSideEffects} data and suppliers to the provided {@link TraversalSideEffects}.

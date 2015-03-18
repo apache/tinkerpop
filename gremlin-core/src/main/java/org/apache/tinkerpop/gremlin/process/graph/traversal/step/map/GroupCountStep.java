@@ -79,7 +79,7 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
     }
 
     @Override
-    public GroupCountStep<S, E> clone() throws CloneNotSupportedException {
+    public GroupCountStep<S, E> clone() {
         final GroupCountStep<S, E> clone = (GroupCountStep<S, E>) super.clone();
         if (null != this.groupTraversal)
             clone.groupTraversal = clone.integrateChild(this.groupTraversal.clone());

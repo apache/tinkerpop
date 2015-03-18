@@ -191,9 +191,9 @@ public interface VertexProgram<M> extends Cloneable {
      * The default implementation simply returns the object as it assumes that the VertexProgram instance is a stateless singleton.
      *
      * @return A clone of the VertexProgram object
-     * @throws CloneNotSupportedException
      */
-    public VertexProgram<M> clone() throws CloneNotSupportedException;
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    public VertexProgram<M> clone();
 
     /**
      * A helper method to construct a {@link VertexProgram} given the content of the supplied configuration.

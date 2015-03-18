@@ -166,7 +166,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         }
 
         @Override
-        public GraphTraversal.Admin<S, E> clone() throws CloneNotSupportedException;
+        public GraphTraversal.Admin<S, E> clone();
     }
 
     @Override

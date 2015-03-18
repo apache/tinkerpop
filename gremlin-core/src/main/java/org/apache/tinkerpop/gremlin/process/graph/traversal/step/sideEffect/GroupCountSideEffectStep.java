@@ -95,7 +95,7 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
     }
 
     @Override
-    public GroupCountSideEffectStep<S, E> clone() throws CloneNotSupportedException {
+    public GroupCountSideEffectStep<S, E> clone() {
         final GroupCountSideEffectStep<S, E> clone = (GroupCountSideEffectStep<S, E>) super.clone();
         if (null != this.groupTraversal)
             clone.groupTraversal = clone.integrateChild(this.groupTraversal.clone());

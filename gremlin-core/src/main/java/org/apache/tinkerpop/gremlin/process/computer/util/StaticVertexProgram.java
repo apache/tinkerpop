@@ -27,7 +27,8 @@ import org.apache.commons.configuration.Configuration;
 public abstract class StaticVertexProgram<M> implements VertexProgram<M> {
 
     @Override
-    public StaticVertexProgram<M> clone() throws CloneNotSupportedException {
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    public StaticVertexProgram<M> clone() {
         return this;
     }
 

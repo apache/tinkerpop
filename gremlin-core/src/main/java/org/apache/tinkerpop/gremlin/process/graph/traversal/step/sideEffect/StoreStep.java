@@ -96,7 +96,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     }
 
     @Override
-    public StoreStep<S> clone() throws CloneNotSupportedException {
+    public StoreStep<S> clone() {
         final StoreStep<S> clone = (StoreStep<S>) super.clone();
         if (null != this.storeTraversal)
             clone.storeTraversal = clone.integrateChild(this.storeTraversal.clone());

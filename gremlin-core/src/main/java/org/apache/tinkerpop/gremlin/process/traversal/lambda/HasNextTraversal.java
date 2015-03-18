@@ -114,10 +114,14 @@ public final class HasNextTraversal<S> implements Traversal.Admin<S, Boolean> {
     }
 
     @Override
-    public HasNextTraversal<S> clone() throws CloneNotSupportedException {
-        final HasNextTraversal<S> clone = (HasNextTraversal<S>) super.clone();
-        clone.hasNextTraversal = this.hasNextTraversal.clone();
-        return clone;
+    public HasNextTraversal<S> clone() {
+        try {
+            final HasNextTraversal<S> clone = (HasNextTraversal<S>) super.clone();
+            clone.hasNextTraversal = this.hasNextTraversal.clone();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override

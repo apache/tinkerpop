@@ -98,7 +98,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     }
 
     @Override
-    public AggregateStep<S> clone() throws CloneNotSupportedException {
+    public AggregateStep<S> clone() {
         final AggregateStep<S> clone = (AggregateStep<S>) super.clone();
         if (null != this.aggregateTraversal)
             clone.aggregateTraversal = clone.integrateChild(this.aggregateTraversal.clone());

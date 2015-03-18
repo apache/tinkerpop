@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traverser.TraverserGeneratorFactory;
@@ -88,11 +87,15 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public DefaultTraversalStrategies clone() throws CloneNotSupportedException {
-        final DefaultTraversalStrategies clone = (DefaultTraversalStrategies) super.clone();
-        clone.traversalStrategies = new ArrayList<>();
-        clone.traversalStrategies.addAll(this.traversalStrategies);
-        return clone;
+    public DefaultTraversalStrategies clone() {
+        try {
+            final DefaultTraversalStrategies clone = (DefaultTraversalStrategies) super.clone();
+            clone.traversalStrategies = new ArrayList<>();
+            clone.traversalStrategies.addAll(this.traversalStrategies);
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override

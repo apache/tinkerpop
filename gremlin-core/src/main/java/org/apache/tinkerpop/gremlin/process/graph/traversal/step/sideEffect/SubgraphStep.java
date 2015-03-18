@@ -91,7 +91,7 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
     }
 
     @Override
-    public SubgraphStep clone() throws CloneNotSupportedException {
+    public SubgraphStep clone() {
         final SubgraphStep clone = (SubgraphStep) super.clone();
         this.subgraph = null;
         return clone;

@@ -54,7 +54,7 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> {
     }
 
     @Override
-    public CollectingBarrierStep<S> clone() throws CloneNotSupportedException {
+    public CollectingBarrierStep<S> clone() {
         final CollectingBarrierStep<S> clone = (CollectingBarrierStep<S>) super.clone();
         clone.traverserSet = new TraverserSet<>();
         return clone;

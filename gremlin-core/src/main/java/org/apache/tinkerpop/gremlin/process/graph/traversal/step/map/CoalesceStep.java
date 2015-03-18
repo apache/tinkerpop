@@ -70,7 +70,7 @@ public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements Trave
     }
 
     @Override
-    public CoalesceStep<S, E> clone() throws CloneNotSupportedException {
+    public CoalesceStep<S, E> clone() {
         final CoalesceStep<S, E> clone = (CoalesceStep<S, E>) super.clone();
         clone.coalesceTraversals = new ArrayList<>();
         for (final Traversal.Admin<S, ?> conjunctionTraversal : this.coalesceTraversals) {

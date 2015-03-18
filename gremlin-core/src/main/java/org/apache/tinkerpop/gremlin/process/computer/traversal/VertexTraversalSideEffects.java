@@ -122,8 +122,12 @@ public final class VertexTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public VertexTraversalSideEffects clone() throws CloneNotSupportedException {
-        return (VertexTraversalSideEffects) super.clone();
+    public VertexTraversalSideEffects clone() {
+        try {
+            return (VertexTraversalSideEffects) super.clone();
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     /////

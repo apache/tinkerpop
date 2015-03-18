@@ -41,7 +41,7 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
     }
 
     @Override
-    public DefaultGraphTraversal<S, E> clone() throws CloneNotSupportedException {
+    public DefaultGraphTraversal<S, E> clone() {
         return (DefaultGraphTraversal<S, E>) super.clone();
     }
 }

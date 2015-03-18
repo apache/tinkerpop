@@ -45,7 +45,7 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
     }
 
     @Override
-    public LocalStep<S, E> clone() throws CloneNotSupportedException {
+    public LocalStep<S, E> clone() {
         final LocalStep<S, E> clone = (LocalStep<S, E>) super.clone();
         clone.localTraversal = clone.integrateChild(this.localTraversal.clone());
         clone.first = true;

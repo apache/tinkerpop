@@ -137,7 +137,8 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
     /**
      * Traverser cloning is important when splitting a traverser at a bifurcation point in a traversal.
      */
-    public Traverser<T> clone() throws CloneNotSupportedException;
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    public Traverser<T> clone();
 
     /**
      * The methods in System.Traverser are useful to underlying Step and Traversal implementations.

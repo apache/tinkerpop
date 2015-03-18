@@ -79,7 +79,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
     }
 
     @Override
-    public TreeStep<S> clone() throws CloneNotSupportedException {
+    public TreeStep<S> clone() {
         final TreeStep<S> clone = (TreeStep<S>) super.clone();
         clone.traversalRing = new TraversalRing<>();
         for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {

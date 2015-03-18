@@ -100,7 +100,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging {
     }
 
     @Override
-    public RangeGlobalStep<S> clone() throws CloneNotSupportedException {
+    public RangeGlobalStep<S> clone() {
         final RangeGlobalStep<S> clone = (RangeGlobalStep<S>) super.clone();
         clone.counter = new AtomicLong(0l);
         return clone;

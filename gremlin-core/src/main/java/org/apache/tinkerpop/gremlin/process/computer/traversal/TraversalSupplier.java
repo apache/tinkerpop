@@ -38,10 +38,6 @@ public final class TraversalSupplier<S, E> implements Supplier<Traversal.Admin<S
 
     @Override
     public Traversal.Admin<S, E> get() {
-        try {
-            return this.cloneOnGet ? this.traversal.clone() : this.traversal;
-        } catch (final CloneNotSupportedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        return this.cloneOnGet ? this.traversal.clone() : this.traversal;
     }
 }

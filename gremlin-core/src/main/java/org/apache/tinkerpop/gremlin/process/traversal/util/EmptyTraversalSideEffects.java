@@ -88,8 +88,9 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
 
     }
 
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     @Override
-    public TraversalSideEffects clone() throws CloneNotSupportedException {
+    public TraversalSideEffects clone()  {
         return this;
     }
 

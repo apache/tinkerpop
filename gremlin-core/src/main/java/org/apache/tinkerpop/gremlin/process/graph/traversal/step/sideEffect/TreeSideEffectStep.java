@@ -91,7 +91,7 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
     }
 
     @Override
-    public TreeSideEffectStep<S> clone() throws CloneNotSupportedException {
+    public TreeSideEffectStep<S> clone()  {
         final TreeSideEffectStep<S> clone = (TreeSideEffectStep<S>) super.clone();
         clone.traversalRing = new TraversalRing<>();
         for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {

@@ -45,7 +45,9 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         return HeadPath.instance();
     }
 
-    public ImmutablePath clone() throws CloneNotSupportedException {
+    @SuppressWarnings("CloneDoesntCallSuperClone,CloneDoesntDeclareCloneNotSupportedException")
+    @Override
+    public ImmutablePath clone() {
         return this;
     }
 

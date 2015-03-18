@@ -92,7 +92,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     }
 
     @Override
-    public ReducingBarrierStep<S, E> clone() throws CloneNotSupportedException {
+    public ReducingBarrierStep<S, E> clone() {
         final ReducingBarrierStep<S, E> clone = (ReducingBarrierStep<S, E>) super.clone();
         clone.done = false;
         return clone;

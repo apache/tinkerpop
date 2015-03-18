@@ -59,11 +59,7 @@ public class GraphTraversalSource implements TraversalSource {
         this.graph = graph;
         this.engine = engine;
         final TraversalStrategies tempStrategies = TraversalStrategies.GlobalCache.getStrategies(this.graph.getClass());
-        try {
-            this.strategies = strategies.length == 0 ? tempStrategies : tempStrategies.clone().addStrategies(strategies);
-        } catch (final CloneNotSupportedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        this.strategies = strategies.length == 0 ? tempStrategies : tempStrategies.clone().addStrategies(strategies);
     }
 
     public GraphTraversal<Vertex, Vertex> addV(final Object... keyValues) {

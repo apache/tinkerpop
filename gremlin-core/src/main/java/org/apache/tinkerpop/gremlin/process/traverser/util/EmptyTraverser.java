@@ -146,7 +146,8 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public EmptyTraverser<T> clone() throws CloneNotSupportedException {
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    public EmptyTraverser<T> clone() {
         return this;
     }
 }

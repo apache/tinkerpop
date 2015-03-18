@@ -22,8 +22,8 @@ import org.apache.tinkerpop.gremlin.process.Path;
 import org.apache.tinkerpop.gremlin.process.Step;
 import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.util.path.EmptyPath;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.util.path.EmptyPath;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
@@ -159,8 +159,13 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
     }
 
     @Override
-    public AbstractTraverser<T> clone() throws CloneNotSupportedException {
-        return (AbstractTraverser<T>) super.clone();
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    public AbstractTraverser<T> clone() {
+        try {
+            return (AbstractTraverser<T>) super.clone();
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     ///////////

@@ -166,23 +166,27 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public DefaultTraversal<S, E> clone() throws CloneNotSupportedException {
-        final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
-        clone.steps = new ArrayList<>();
-        clone.sideEffects = this.sideEffects.clone();
-        clone.strategies = this.strategies.clone(); // TODO: does this need to be cloned?
-        clone.lastEnd = null;
-        clone.lastEndCount = 0l;
-        for (final Step<?, ?> step : this.steps) {
-            final Step<?, ?> clonedStep = step.clone();
-            clonedStep.setTraversal(clone);
-            final Step previousStep = clone.steps.isEmpty() ? EmptyStep.instance() : clone.steps.get(clone.steps.size() - 1);
-            clonedStep.setPreviousStep(previousStep);
-            previousStep.setNextStep(clonedStep);
-            clone.steps.add(clonedStep);
+    public DefaultTraversal<S, E> clone() {
+        try {
+            final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
+            clone.steps = new ArrayList<>();
+            clone.sideEffects = this.sideEffects.clone();
+            clone.strategies = this.strategies.clone(); // TODO: does this need to be cloned?
+            clone.lastEnd = null;
+            clone.lastEndCount = 0l;
+            for (final Step<?, ?> step : this.steps) {
+                final Step<?, ?> clonedStep = step.clone();
+                clonedStep.setTraversal(clone);
+                final Step previousStep = clone.steps.isEmpty() ? EmptyStep.instance() : clone.steps.get(clone.steps.size() - 1);
+                clonedStep.setPreviousStep(previousStep);
+                previousStep.setNextStep(clonedStep);
+                clone.steps.add(clonedStep);
+            }
+            clone.finalEndStep = clone.getEndStep();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
-        clone.finalEndStep = clone.getEndStep();
-        return clone;
     }
 
     @Override
@@ -202,11 +206,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public void setStrategies(final TraversalStrategies strategies) {
-        try {
-            this.strategies = strategies.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        this.strategies = strategies.clone();
     }
 
     @Override

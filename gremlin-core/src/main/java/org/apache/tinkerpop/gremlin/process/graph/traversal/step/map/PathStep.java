@@ -58,7 +58,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
     }
 
     @Override
-    public PathStep<S> clone() throws CloneNotSupportedException {
+    public PathStep<S> clone() {
         final PathStep<S> clone = (PathStep<S>) super.clone();
         clone.traversalRing = new TraversalRing<>();
         for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {

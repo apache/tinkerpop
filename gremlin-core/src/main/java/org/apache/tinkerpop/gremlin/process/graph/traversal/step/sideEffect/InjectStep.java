@@ -36,7 +36,7 @@ public final class InjectStep<S> extends StartStep<S> {
     }
 
     @Override
-    public InjectStep<S> clone() throws CloneNotSupportedException {
+    public InjectStep<S> clone() {
         final InjectStep<S> clone = (InjectStep<S>) super.clone();
         clone.start = new ArrayIterator<>(clone.injections);
         return clone;

@@ -71,7 +71,7 @@ public final class TimeLimitStep<S> extends FilterStep<S> {
     }
 
     @Override
-    public TimeLimitStep<S> clone() throws CloneNotSupportedException {
+    public TimeLimitStep<S> clone() {
         final TimeLimitStep<S> clone = (TimeLimitStep<S>) super.clone();
         clone.timedOut = new AtomicBoolean(this.timedOut.get());
         clone.startTime = new AtomicLong(this.startTime.get());

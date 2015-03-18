@@ -72,7 +72,7 @@ public final class HasTraversalStep<S> extends AbstractStep<S, S> implements Tra
     }
 
     @Override
-    public HasTraversalStep<S> clone() throws CloneNotSupportedException {
+    public HasTraversalStep<S> clone() {
         final HasTraversalStep<S> clone = (HasTraversalStep<S>) super.clone();
         clone.hasTraversal = clone.integrateChild(this.hasTraversal.clone());
         return clone;

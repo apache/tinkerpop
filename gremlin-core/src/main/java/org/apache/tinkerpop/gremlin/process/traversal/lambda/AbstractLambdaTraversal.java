@@ -108,8 +108,12 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     }
 
     @Override
-    public Traversal.Admin<S, E> clone() throws CloneNotSupportedException {
-        return (AbstractLambdaTraversal<S, E>) super.clone();
+    public Traversal.Admin<S, E> clone() {
+        try {
+            return (AbstractLambdaTraversal<S, E>) super.clone();
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override

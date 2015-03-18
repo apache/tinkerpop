@@ -59,7 +59,8 @@ public final class EmptyTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public TraversalStrategies clone() throws CloneNotSupportedException {
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    public TraversalStrategies clone() {
         return this;
     }
 

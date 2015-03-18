@@ -31,40 +31,62 @@ import java.util.concurrent.TimeUnit;
 public final class VertexProgramPool {
 
     private final LinkedBlockingQueue<VertexProgram<?>> pool;
+    private final StaticVertexProgram vertexProgram;
     private static final int TIMEOUT_MS = 2500;
 
     public VertexProgramPool(final int poolSize, final Configuration configuration) {
-        this.pool = new LinkedBlockingQueue<>(poolSize);
-        while (this.pool.remainingCapacity() > 0) {
-            this.pool.add(VertexProgram.createVertexProgram(configuration));
+        final VertexProgram vertexProgram = VertexProgram.createVertexProgram(configuration);
+        if (vertexProgram instanceof StaticVertexProgram) {
+            this.pool = null;
+            this.vertexProgram = (StaticVertexProgram) vertexProgram;
+        } else {
+            this.vertexProgram = null;
+            this.pool = new LinkedBlockingQueue<>(poolSize);
+            while (this.pool.remainingCapacity() > 0) {
+                this.pool.add(vertexProgram.clone());
+            }
         }
     }
 
     public VertexProgram take() {
-        try {
-            return this.pool.poll(TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        } catch (final InterruptedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
+        if (null == this.vertexProgram) {
+            try {
+                return this.pool.poll(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            } catch (final InterruptedException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        } else {
+            return this.vertexProgram;
         }
     }
 
     public void offer(final VertexProgram<?> vertexProgram) {
-        try {
-            this.pool.offer(vertexProgram, TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        } catch (final InterruptedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
+        if (null == this.vertexProgram) {
+            try {
+                this.pool.offer(vertexProgram, TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            } catch (final InterruptedException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         }
     }
 
     public synchronized void workerIterationStart(final Memory memory) {
-        for (final VertexProgram<?> vertexProgram : this.pool) {
-            vertexProgram.workerIterationStart(memory);
+        if (null == this.vertexProgram) {
+            for (final VertexProgram<?> vertexProgram : this.pool) {
+                vertexProgram.workerIterationStart(memory);
+            }
+        } else {
+            this.vertexProgram.workerIterationStart(memory);
         }
     }
 
     public synchronized void workerIterationEnd(final Memory memory) {
-        for (final VertexProgram<?> vertexProgram : this.pool) {
-            vertexProgram.workerIterationEnd(memory);
+        if (null == this.vertexProgram) {
+            for (final VertexProgram<?> vertexProgram : this.pool) {
+                vertexProgram.workerIterationEnd(memory);
+            }
+        } else {
+            this.vertexProgram.workerIterationEnd(memory);
         }
     }
 

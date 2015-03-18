@@ -82,7 +82,7 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
     }
 
     @Override
-    public ConjunctionStep<S> clone() throws CloneNotSupportedException {
+    public ConjunctionStep<S> clone() {
         final ConjunctionStep<S> clone = (ConjunctionStep<S>) super.clone();
         clone.conjunctionTraversals = new ArrayList<>();
         for (final Traversal.Admin<S, ?> conjunctionTraversal : this.conjunctionTraversals) {

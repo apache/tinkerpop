@@ -192,8 +192,13 @@ public abstract class AbstractPathTraverser<T> implements Traverser<T>, Traverse
     /////////////////
 
     @Override
-    public AbstractPathTraverser<T> clone() throws CloneNotSupportedException {
-        return (AbstractPathTraverser<T>) super.clone();
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    public AbstractPathTraverser<T> clone() {
+        try {
+            return (AbstractPathTraverser<T>) super.clone();
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override

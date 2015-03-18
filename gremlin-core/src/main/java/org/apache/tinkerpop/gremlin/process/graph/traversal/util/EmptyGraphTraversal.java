@@ -59,7 +59,8 @@ public final class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implem
     }
 
     @Override
-    public EmptyGraphTraversal<S, E> clone() throws CloneNotSupportedException {
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    public EmptyGraphTraversal<S, E> clone() {
         return instance();
     }
 }

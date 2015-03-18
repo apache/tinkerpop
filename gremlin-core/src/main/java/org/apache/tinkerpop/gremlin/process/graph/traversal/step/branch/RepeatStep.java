@@ -120,7 +120,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     /////////////////////////
 
     @Override
-    public RepeatStep<S> clone() throws CloneNotSupportedException {
+    public RepeatStep<S> clone() {
         final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
         clone.repeatTraversal = clone.integrateChild(this.repeatTraversal.clone());
         if (null != this.untilTraversal)

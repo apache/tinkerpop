@@ -86,7 +86,8 @@ public interface TraversalStrategies extends Serializable, Cloneable {
     /**
      * {@inheritDoc}
      */
-    public TraversalStrategies clone() throws CloneNotSupportedException;
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    public TraversalStrategies clone();
 
     /**
      * Get the {@link TraverserGeneratorFactory} to use to generate traversers.
@@ -171,12 +172,8 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     ProfileStrategy.instance(),
                     TraversalVerificationStrategy.instance(),
                     ConjunctionStrategy.instance());
-            try {
-                CACHE.put(Graph.class, coreStrategies.clone());
-                CACHE.put(EmptyGraph.class, new DefaultTraversalStrategies());
-            } catch (final CloneNotSupportedException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
+            CACHE.put(Graph.class, coreStrategies.clone());
+            CACHE.put(EmptyGraph.class, new DefaultTraversalStrategies());
         }
 
         public static void registerStrategies(final Class<? extends Graph> graphClass, final TraversalStrategies traversalStrategies) {

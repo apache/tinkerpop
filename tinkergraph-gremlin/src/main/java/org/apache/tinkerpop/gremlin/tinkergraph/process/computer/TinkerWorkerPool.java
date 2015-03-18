@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -71,26 +70,18 @@ public class TinkerWorkerPool implements AutoCloseable {
 
     private List<VertexProgram> cloneVertexProgram(final VertexProgram vertexProgram) {
         final List<VertexProgram> vertexPrograms;
-        try {
-            vertexPrograms = new ArrayList<>(numberOfWorkers);
-            for (int i = 0; i < numberOfWorkers; i++) {
-                vertexPrograms.add(vertexProgram.clone());
-            }
-        } catch (final CloneNotSupportedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
+        vertexPrograms = new ArrayList<>(numberOfWorkers);
+        for (int i = 0; i < numberOfWorkers; i++) {
+            vertexPrograms.add(vertexProgram.clone());
         }
         return vertexPrograms;
     }
 
     private List<MapReduce> cloneMapReducer(final MapReduce mapReduce) {
         final List<MapReduce> mapReducers;
-        try {
-            mapReducers = new ArrayList<>(numberOfWorkers);
-            for (int i = 0; i < numberOfWorkers; i++) {
-                mapReducers.add(mapReduce.clone());
-            }
-        } catch (final CloneNotSupportedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
+        mapReducers = new ArrayList<>(numberOfWorkers);
+        for (int i = 0; i < numberOfWorkers; i++) {
+            mapReducers.add(mapReduce.clone());
         }
         return mapReducers;
     }

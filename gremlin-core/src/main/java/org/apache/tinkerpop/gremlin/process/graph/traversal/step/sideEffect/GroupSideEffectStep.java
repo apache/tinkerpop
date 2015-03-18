@@ -146,7 +146,7 @@ public final class GroupSideEffectStep<S, K, V, R> extends SideEffectStep<S> imp
     }
 
     @Override
-    public GroupSideEffectStep<S, K, V, R> clone() throws CloneNotSupportedException {
+    public GroupSideEffectStep<S, K, V, R> clone() {
         final GroupSideEffectStep<S, K, V, R> clone = (GroupSideEffectStep<S, K, V, R>) super.clone();
         if (null != this.keyTraversal)
             clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone());
@@ -229,11 +229,15 @@ public final class GroupSideEffectStep<S, K, V, R> extends SideEffectStep<S> imp
         }
 
         @Override
-        public GroupSideEffectMapReduce<K, V, R> clone() throws CloneNotSupportedException {
-            final GroupSideEffectMapReduce<K, V, R> clone = (GroupSideEffectMapReduce<K, V, R>) super.clone();
-            if (null != clone.reduceTraversal)
-                clone.reduceTraversal = this.reduceTraversal.clone();
-            return clone;
+        public GroupSideEffectMapReduce<K, V, R> clone() {
+            try {
+                final GroupSideEffectMapReduce<K, V, R> clone = (GroupSideEffectMapReduce<K, V, R>) super.clone();
+                if (null != clone.reduceTraversal)
+                    clone.reduceTraversal = this.reduceTraversal.clone();
+                return clone;
+            } catch (final CloneNotSupportedException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         }
 
         @Override

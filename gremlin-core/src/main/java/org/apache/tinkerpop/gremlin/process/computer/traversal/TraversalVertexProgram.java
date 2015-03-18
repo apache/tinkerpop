@@ -217,11 +217,15 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     }
 
     @Override
-    public TraversalVertexProgram clone() throws CloneNotSupportedException {
-        final TraversalVertexProgram clone = (TraversalVertexProgram) super.clone();
-        clone.traversal = this.traversal.clone();
-        clone.traversalMatrix = new TraversalMatrix<>(clone.traversal);
-        return clone;
+    public TraversalVertexProgram clone() {
+        try {
+            final TraversalVertexProgram clone = (TraversalVertexProgram) super.clone();
+            clone.traversal = this.traversal.clone();
+            clone.traversalMatrix = new TraversalMatrix<>(clone.traversal);
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override

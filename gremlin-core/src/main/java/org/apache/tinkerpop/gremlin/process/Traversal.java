@@ -412,7 +412,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
          *
          * @return The cloned traversal
          */
-        public Traversal.Admin<S, E> clone() throws CloneNotSupportedException;
+        @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+        public Traversal.Admin<S, E> clone();
 
         /**
          * When the traversal has had its {@link TraversalStrategies} applied to it, it is locked.

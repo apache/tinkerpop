@@ -133,7 +133,8 @@ public interface Path extends Cloneable {
     /**
      * {@inheritDoc}
      */
-    public Path clone() throws CloneNotSupportedException;
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    public Path clone();
 
     /**
      * Determines whether the path is a simple or not.

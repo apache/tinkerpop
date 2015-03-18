@@ -175,9 +175,9 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
      * The default implementation simply returns the object as it assumes that the MapReduce instance is a stateless singleton.
      *
      * @return A clone of the MapReduce object
-     * @throws CloneNotSupportedException
      */
-    public MapReduce<MK, MV, RK, RV, R> clone() throws CloneNotSupportedException;
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    public MapReduce<MK, MV, RK, RV, R> clone();
 
     /**
      * A helper method to construct a {@link MapReduce} given the content of the supplied configuration.

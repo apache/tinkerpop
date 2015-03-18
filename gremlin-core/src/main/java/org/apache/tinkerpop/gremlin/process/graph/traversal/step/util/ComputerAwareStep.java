@@ -56,7 +56,7 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
     }
 
     @Override
-    public ComputerAwareStep<S, E> clone() throws CloneNotSupportedException {
+    public ComputerAwareStep<S, E> clone() {
         final ComputerAwareStep<S, E> clone = (ComputerAwareStep<S, E>) super.clone();
         clone.previousIterator = Collections.emptyIterator();
         return clone;

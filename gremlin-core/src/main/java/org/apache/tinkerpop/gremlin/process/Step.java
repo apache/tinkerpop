@@ -111,9 +111,9 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
      * Moreover, the previous and next steps should be set to {@link org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep}.
      *
      * @return The cloned step
-     * @throws CloneNotSupportedException
      */
-    public Step<S, E> clone() throws CloneNotSupportedException;
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    public Step<S, E> clone();
 
     /**
      * Get the label of this step.

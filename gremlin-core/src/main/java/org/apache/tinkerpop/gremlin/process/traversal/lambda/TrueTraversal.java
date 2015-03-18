@@ -36,7 +36,8 @@ public final class TrueTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
     }
 
     @Override
-    public TrueTraversal<S, E> clone() throws CloneNotSupportedException {
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    public TrueTraversal<S, E> clone() {
         return INSTANCE;
     }
 

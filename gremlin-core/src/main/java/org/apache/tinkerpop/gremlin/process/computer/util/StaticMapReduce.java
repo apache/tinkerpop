@@ -28,7 +28,8 @@ import org.apache.commons.configuration.Configuration;
 public abstract class StaticMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK, RV, R> {
 
     @Override
-    public MapReduce<MK, MV, RK, RV, R> clone() throws CloneNotSupportedException {
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    public MapReduce<MK, MV, RK, RV, R> clone() {
         return this;
     }
 

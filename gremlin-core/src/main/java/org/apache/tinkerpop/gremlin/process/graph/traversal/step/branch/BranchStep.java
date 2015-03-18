@@ -133,7 +133,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     }
 
     @Override
-    public BranchStep<S, E, M> clone() throws CloneNotSupportedException {
+    public BranchStep<S, E, M> clone() {
         final BranchStep<S, E, M> clone = (BranchStep<S, E, M>) super.clone();
         clone.traversalOptions = new HashMap<>(this.traversalOptions.size());
         for (final Map.Entry<M, List<Traversal.Admin<S, E>>> entry : this.traversalOptions.entrySet()) {

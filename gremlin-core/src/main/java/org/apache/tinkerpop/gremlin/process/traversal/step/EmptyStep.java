@@ -90,7 +90,8 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     }
 
     @Override
-    public EmptyStep<S, E> clone() throws CloneNotSupportedException {
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    public EmptyStep<S, E> clone() {
         return INSTANCE;
     }
 

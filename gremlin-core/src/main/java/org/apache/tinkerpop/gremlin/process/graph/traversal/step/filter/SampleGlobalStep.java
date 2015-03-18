@@ -109,7 +109,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     }
 
     @Override
-    public SampleGlobalStep<S> clone() throws CloneNotSupportedException {
+    public SampleGlobalStep<S> clone() {
         final SampleGlobalStep<S> clone = (SampleGlobalStep<S>) super.clone();
         clone.probabilityTraversal = clone.integrateChild(this.probabilityTraversal.clone());
         return clone;
