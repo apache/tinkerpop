@@ -39,6 +39,12 @@ import static org.mockito.Mockito.mock;
 public class PartitionStrategyTest {
 
     public static class PartitionKeyBehavior {
+
+        @Test(expected = IllegalStateException.class)
+        public void shouldNotConstructWithoutPartitionKey() {
+            PartitionStrategy.build().create();
+        }
+
         @Test
         public void shouldConstructPartitionStrategy() {
             final PartitionStrategy strategy = PartitionStrategy.build()
