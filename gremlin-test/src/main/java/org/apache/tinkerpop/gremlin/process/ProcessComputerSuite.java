@@ -68,6 +68,7 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.Stor
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.TreeTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ReadOnlyStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -176,7 +177,8 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             TraversalVerificationStrategyTest.ComputerTraversals.class,
 
             // decorations
-            ReadOnlyStrategyProcessTest.class
+            ReadOnlyStrategyProcessTest.class,
+            SubgraphStrategyProcessTest.class
     };
 
     /**

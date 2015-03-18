@@ -36,6 +36,10 @@ public final class LambdaFilterStep<S> extends FilterStep<S> {
         this.predicate = predicate;
     }
 
+    public Predicate<Traverser<S>> getPredicate() {
+        return predicate;
+    }
+
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
         return this.predicate.test(traverser);
