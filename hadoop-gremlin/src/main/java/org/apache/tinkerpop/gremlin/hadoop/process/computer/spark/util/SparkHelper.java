@@ -130,14 +130,22 @@ public final class SparkHelper {
         return reduceRDD;
     }
 
-    public static void deleteOutputDirectory(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
-        final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
+    public static void deleteOutputLocation(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
+        final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
         if (null != outputLocation) {
             try {
-                FileSystem.get(hadoopConfiguration).delete(new Path(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)), true);
+                FileSystem.get(hadoopConfiguration).delete(new Path(outputLocation), true);
             } catch (final IOException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
+        }
+    }
+
+    public static String getInputLocation(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
+        try {
+            return FileSystem.get(hadoopConfiguration).getFileStatus(new Path(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION))).getPath().toString();
+        } catch (final IOException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
