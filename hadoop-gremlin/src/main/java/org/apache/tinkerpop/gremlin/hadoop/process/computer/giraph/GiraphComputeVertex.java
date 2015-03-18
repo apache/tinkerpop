@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -26,10 +25,9 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.util.ComputerDataStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.strategy.StrategyVertex;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -50,17 +48,12 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, VertexWritab
     }
 
     @Override
-    public void setConf(final ImmutableClassesGiraphConfiguration<LongWritable, VertexWritable, NullWritable, ObjectWritable> configuration) {
-        // do nothing -- no need to store the configuration with the giraph vertex
-    }
-
-    @Override
     public void compute(final Iterable<ObjectWritable> messages) {
         final GiraphWorkerContext workerContext = (GiraphWorkerContext) this.getWorkerContext();
-        final VertexProgram vertexProgram = workerContext.getVertexProgramPool().take();
+        final VertexProgram<?> vertexProgram = workerContext.getVertexProgramPool().take();
         final GiraphMemory memory = workerContext.getMemory();
         final GiraphMessenger messenger = workerContext.getMessenger(this, messages);
-        final StrategyVertex wrappedVertex = ComputerDataStrategy.wrapVertex(this.getValue().get(), vertexProgram);
+        final org.apache.tinkerpop.gremlin.structure.Vertex wrappedVertex = ComputerGraph.of(this.getValue().get(), vertexProgram.getElementComputeKeys());
         ///////////
         if (!(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HADOOP_HALT)).getObject()) {
             vertexProgram.execute(wrappedVertex, messenger, memory);  // TODO provide a wrapper around TinkerVertex for Edge and non-ComputeKeys manipulation

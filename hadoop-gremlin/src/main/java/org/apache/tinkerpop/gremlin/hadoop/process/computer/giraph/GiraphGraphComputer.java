@@ -48,6 +48,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerDataStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
@@ -75,7 +76,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
     private boolean executed = false;
 
     private final Set<MapReduce> mapReduces = new HashSet<>();
-    private VertexProgram vertexProgram;
+    private VertexProgram<?> vertexProgram;
     private MapMemory memory = new MapMemory();
 
     public GiraphGraphComputer(final HadoopGraph hadoopGraph) {
@@ -149,7 +150,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
             this.memory.setRuntime(System.currentTimeMillis() - startTime);
 
             final Graph outputGraph = HadoopHelper.getOutputGraph(this.hadoopGraph, null != this.vertexProgram);
-            return new DefaultComputerResult(null == this.vertexProgram ? outputGraph : ComputerDataStrategy.wrapGraph(outputGraph, this.vertexProgram), this.memory.asImmutable());
+            return new DefaultComputerResult(null == this.vertexProgram ? outputGraph : new ComputerGraph(outputGraph, this.vertexProgram.getElementComputeKeys()), this.memory.asImmutable());
         });
     }
 

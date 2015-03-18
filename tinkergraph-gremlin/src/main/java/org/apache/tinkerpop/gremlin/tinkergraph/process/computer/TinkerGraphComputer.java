@@ -23,9 +23,8 @@ import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.util.ComputerDataStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -95,9 +94,9 @@ public class TinkerGraphComputer implements GraphComputer {
             GraphComputerHelper.validateProgramOnComputer(this, this.vertexProgram);
             this.mapReducers.addAll(this.vertexProgram.getMapReducers());
         }
-
-        final Graph sg = null == this.vertexProgram ? this.graph :
-                this.graph.strategy(new ComputerDataStrategy(this.vertexProgram.getElementComputeKeys()));
+          //final Graph computeGraph = this.graph;
+        final Graph computeGraph = null == this.vertexProgram ? this.graph :
+                new ComputerGraph(this.graph, this.vertexProgram.getElementComputeKeys());
 
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
@@ -111,7 +110,7 @@ public class TinkerGraphComputer implements GraphComputer {
                     this.memory.completeSubRound();
                     while (true) {
                         workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationStart(this.memory.asImmutable()), vertexProgram);
-                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.vertices());
+                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(computeGraph.vertices());
                         workers.executeVertexProgram(vertexProgram -> {
                             while (true) {
                                 final Vertex vertex = vertices.next();
@@ -137,7 +136,7 @@ public class TinkerGraphComputer implements GraphComputer {
                 for (final MapReduce mapReduce : mapReducers) {
                     if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                         final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
-                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(sg.vertices());
+                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(computeGraph.vertices());
                         workers.executeMapReduce(workerMapReduce -> {
                             while (true) {
                                 final Vertex vertex = vertices.next();
@@ -170,7 +169,7 @@ public class TinkerGraphComputer implements GraphComputer {
                 // update runtime and return the newly computed graph
                 this.memory.setRuntime(System.currentTimeMillis() - time);
                 this.memory.complete();
-                return new TinkerComputerResult(sg, this.memory.asImmutable());
+                return new TinkerComputerResult(computeGraph, this.memory.asImmutable());
 
             } catch (Exception ex) {
                 throw new RuntimeException(ex);

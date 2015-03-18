@@ -130,7 +130,7 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
 
     @Override
     public String toString() {
-        return this.map.values().toString();
+        return this.map.keySet().toString();
     }
 
     public void sort(final Comparator<Traverser<S>> comparator) {

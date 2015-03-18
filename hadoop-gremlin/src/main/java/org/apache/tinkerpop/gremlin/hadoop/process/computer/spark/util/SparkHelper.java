@@ -40,11 +40,13 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import scala.Tuple2;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -59,9 +61,10 @@ public final class SparkHelper {
         // execute vertex program
         current = current.mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
             final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration);
+            final Set<String> elementComputeKeys = workerVertexProgram.getElementComputeKeys();
             workerVertexProgram.workerIterationStart(memory);
             return () -> IteratorUtils.<Tuple2<Object, SparkPayload<M>>, Tuple2<Object, SparkPayload<M>>>map(partitionIterator, keyValue -> {
-                workerVertexProgram.execute(keyValue._2().asVertexPayload().getVertex(), keyValue._2().asVertexPayload(), memory);
+                workerVertexProgram.execute(ComputerGraph.of(keyValue._2().asVertexPayload().getVertex(), elementComputeKeys), keyValue._2().asVertexPayload(), memory);
                 if (!partitionIterator.hasNext()) workerVertexProgram.workerIterationEnd(memory);  // is this safe?
                 return keyValue;
             });

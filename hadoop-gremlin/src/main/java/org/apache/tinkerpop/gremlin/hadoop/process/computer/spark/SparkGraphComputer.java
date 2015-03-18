@@ -40,9 +40,11 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.slf4j.Logger;
@@ -191,7 +193,8 @@ public final class SparkGraphComputer implements GraphComputer {
                         sparkContext.close();
                         // update runtime and return the newly computed graph
                         finalMemory.setRuntime(System.currentTimeMillis() - startTime);
-                        return new DefaultComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph, null != this.vertexProgram), finalMemory.asImmutable());
+                        final Graph outputGraph = HadoopHelper.getOutputGraph(this.hadoopGraph, null != this.vertexProgram);
+                        return new DefaultComputerResult(null == this.vertexProgram ? outputGraph : new ComputerGraph(outputGraph, this.vertexProgram.getElementComputeKeys()), finalMemory.asImmutable());
                     }
                 }
         );

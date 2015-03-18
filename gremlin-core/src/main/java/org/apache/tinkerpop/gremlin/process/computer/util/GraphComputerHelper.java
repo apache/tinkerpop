@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
-import org.apache.tinkerpop.gremlin.process.Traverser;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.List;
@@ -71,18 +71,4 @@ public final class GraphComputerHelper {
         if (!(b instanceof MapReduce)) return false;
         return a.getClass().equals(b.getClass()) && a.getMemoryKey().equals(((MapReduce) b).getMemoryKey());
     }
-
-    public static <T> Comparator<Traverser<T>> chainComparators(final List<Comparator<T>> comparators) {
-        if (comparators.size() == 0) {
-            return (a, b) -> a.compareTo(b);
-        } else {
-            return comparators.stream().map(c -> (Comparator<Traverser<T>>) new Comparator<Traverser<T>>() {
-                @Override
-                public int compare(final Traverser<T> o1, final Traverser<T> o2) {
-                    return c.compare(o1.get(), o2.get());
-                }
-            }).reduce((a, b) -> a.thenComparing(b)).get();
-        }
-    }
-
 }

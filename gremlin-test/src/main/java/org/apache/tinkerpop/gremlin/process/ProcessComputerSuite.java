@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process;
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
-import org.apache.tinkerpop.gremlin.process.computer.util.ComputerDataStrategyTest;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraphTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.BranchTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.ChooseTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.branch.LocalTest;
@@ -67,7 +67,6 @@ import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.Side
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StoreTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.TreeTest;
 import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.TraversalVerificationStrategyTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ReadOnlyStrategyProcessTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -171,7 +170,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             PageRankVertexProgramTest.class,
 
             // strategy
-            ComputerDataStrategyTest.class,
+            ComputerGraphTest.class,
 
             // strategy
             TraversalVerificationStrategyTest.ComputerTraversals.class,

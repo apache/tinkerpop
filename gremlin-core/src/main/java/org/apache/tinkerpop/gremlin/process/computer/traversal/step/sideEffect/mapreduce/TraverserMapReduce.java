@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -50,14 +51,14 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
 
     public TraverserMapReduce(final Step traversalEndStep) {
         this.traversal = traversalEndStep.getTraversal();
-        this.comparator = Optional.ofNullable(traversalEndStep instanceof ComparatorHolder ? GraphComputerHelper.chainComparators(((ComparatorHolder) traversalEndStep).getComparators()) : null);
+        this.comparator = Optional.ofNullable(traversalEndStep instanceof ComparatorHolder ? new ChainedComparator<Comparable>(((ComparatorHolder) traversalEndStep).getComparators()) : null);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
         this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
         final Step endStep = this.traversal.getEndStep().getPreviousStep(); // don't get the ComputerResultStep
-        this.comparator = Optional.ofNullable(endStep instanceof ComparatorHolder ? GraphComputerHelper.chainComparators(((ComparatorHolder) endStep).getComparators()) : null);
+        this.comparator = Optional.ofNullable(endStep instanceof ComparatorHolder ? new ChainedComparator<Comparable>(((ComparatorHolder) endStep).getComparators()) : null);
     }
 
     @Override
