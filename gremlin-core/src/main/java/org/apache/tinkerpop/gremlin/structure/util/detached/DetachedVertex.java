@@ -93,7 +93,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     @Override
     public <V> VertexProperty<V> property(final String key) {
-        if (this.properties.containsKey(key)) {
+        if (null != this.properties && this.properties.containsKey(key)) {
             final List<VertexProperty> list = (List) this.properties.get(key);
             if (list.size() > 1)
                 throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
@@ -128,23 +128,25 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     public static Vertex addTo(final Graph graph, final DetachedVertex detachedVertex) {
         final Vertex vertex = graph.addVertex(T.id, detachedVertex.id(), T.label, detachedVertex.label());
-        detachedVertex.properties.values().forEach(list -> {
-            list.forEach(dVertexProperty -> {
-                final DetachedVertexProperty<?> detachedVertexProperty = (DetachedVertexProperty) dVertexProperty;
-                if (!detachedVertexProperty.properties.isEmpty()) {
-                    final List<Object> metaProperties = new ArrayList<>();
-                    detachedVertexProperty.properties().forEachRemaining(detachedMetaProperty -> {
-                        metaProperties.add(detachedMetaProperty.key());
-                        metaProperties.add(detachedMetaProperty.value());
-                    });
-                    metaProperties.add(T.id);
-                    metaProperties.add(detachedVertexProperty.id());
-                    vertex.property(detachedVertexProperty.key(), detachedVertexProperty.value(), metaProperties.toArray());
-                } else {
-                    vertex.property(detachedVertexProperty.key(), detachedVertexProperty.value(), T.id, detachedVertexProperty.id());
-                }
+        if (null != detachedVertex.properties) {
+            detachedVertex.properties.values().forEach(list -> {
+                list.forEach(dVertexProperty -> {
+                    final DetachedVertexProperty<?> detachedVertexProperty = (DetachedVertexProperty) dVertexProperty;
+                    if (null != detachedVertexProperty.properties) {
+                        final List<Object> metaProperties = new ArrayList<>();
+                        detachedVertexProperty.properties().forEachRemaining(detachedMetaProperty -> {
+                            metaProperties.add(detachedMetaProperty.key());
+                            metaProperties.add(detachedMetaProperty.value());
+                        });
+                        metaProperties.add(T.id);
+                        metaProperties.add(detachedVertexProperty.id());
+                        vertex.property(detachedVertexProperty.key(), detachedVertexProperty.value(), metaProperties.toArray());
+                    } else {
+                        vertex.property(detachedVertexProperty.key(), detachedVertexProperty.value(), T.id, detachedVertexProperty.id());
+                    }
+                });
             });
-        });
+        }
         return vertex;
     }
 
