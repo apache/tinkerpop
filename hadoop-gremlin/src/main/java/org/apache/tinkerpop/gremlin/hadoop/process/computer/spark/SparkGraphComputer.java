@@ -119,14 +119,14 @@ public final class SparkGraphComputer implements GraphComputer {
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
                     final long startTime = System.currentTimeMillis();
                     SparkMemory memory = null;
-                    SparkHelper.deleteOutputDirectory(hadoopConfiguration);
+                    SparkHelper.deleteOutputLocation(hadoopConfiguration);
 
                     // wire up a spark context
                     final SparkConf sparkConfiguration = new SparkConf();
                     sparkConfiguration.setAppName(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + (null == this.vertexProgram ? "No VertexProgram" : this.vertexProgram) + "[" + this.mapReducers + "]");
                     hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
                     if (FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class)))
-                        hadoopConfiguration.set(Constants.MAPRED_INPUT_DIR, hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION)); // necessary for Spark and newAPIHadoopRDD
+                        hadoopConfiguration.set(Constants.MAPRED_INPUT_DIR, SparkHelper.getInputLocation(hadoopConfiguration)); // necessary for Spark and newAPIHadoopRDD
                     // execute the vertex program and map reducers and if there is a failure, auto-close the spark context
                     try (final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration)) {
                         // add the project jars to the cluster
