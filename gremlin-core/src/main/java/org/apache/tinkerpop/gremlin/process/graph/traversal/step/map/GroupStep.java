@@ -39,7 +39,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -228,7 +227,13 @@ public final class GroupStep<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R
         public void map(final Vertex vertex, final MapEmitter<K, Collection<V>> emitter) {
             vertex.<TraverserSet<Object[]>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> {
                 final Object[] objects = traverser.get();
-                emitter.emit((K) objects[0], objects[1] instanceof Collection ? (Collection<V>) objects[1] : Arrays.asList((V) objects[1]));
+                if (objects[1] instanceof Collection)
+                    emitter.emit((K) objects[0], (Collection<V>) objects[1]);
+                else {
+                    final List<V> collection = new ArrayList<>();
+                    collection.add((V) objects[1]);
+                    emitter.emit((K) objects[0], collection);
+                }
             }));
         }
 

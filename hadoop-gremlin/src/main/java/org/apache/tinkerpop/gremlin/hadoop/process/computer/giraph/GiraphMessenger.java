@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.hadoop.io.LongWritable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -57,12 +56,12 @@ public class GiraphMessenger<M> implements Messenger<M> {
             final Direction direction = GiraphMessenger.getOppositeDirection(incidentTraversal);
             incidentTraversal.forEachRemaining(edge ->
                     this.giraphComputeVertex.sendMessage(
-                            new LongWritable(Long.valueOf(edge.vertices(direction).next().id().toString())),
+                            new ObjectWritable<>(edge.vertices(direction).next().id()),
                             new ObjectWritable<>(localMessageScope.getEdgeFunction().apply(message, edge))));
         } else {
             final MessageScope.Global globalMessageScope = (MessageScope.Global) messageScope;
             globalMessageScope.vertices().forEach(vertex ->
-                    this.giraphComputeVertex.sendMessage(new LongWritable(Long.valueOf(vertex.id().toString())), new ObjectWritable<>(message)));
+                    this.giraphComputeVertex.sendMessage(new ObjectWritable<>(vertex.id()), new ObjectWritable<>(message)));
         }
     }
 

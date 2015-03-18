@@ -20,10 +20,10 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphWorkerContext;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -41,7 +41,6 @@ import java.io.IOException;
 public final class VertexWritable implements Writable {
 
     private Vertex vertex;
-    private static final GryoPool GRYO_POOL = new GryoPool();
 
     public VertexWritable() {
 
@@ -64,7 +63,7 @@ public final class VertexWritable implements Writable {
     public void readFields(final DataInput input) throws IOException {
         try {
             this.vertex = null;
-            this.vertex = GRYO_POOL.doWithReader(gryoReader -> {
+            this.vertex = GiraphWorkerContext.GRYO_POOL.doWithReader(gryoReader -> {
                 try {
                     final ByteArrayInputStream inputStream = new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input));
                     final Graph gLocal = TinkerGraph.open();
@@ -72,7 +71,7 @@ public final class VertexWritable implements Writable {
                             detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex),
                             detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge));
                 } catch (final IOException e) {
-                    throw new IllegalStateException(e);
+                    throw new IllegalStateException(e.getMessage(), e);
                 }
             });
         } catch (final IllegalStateException e) {
@@ -86,14 +85,13 @@ public final class VertexWritable implements Writable {
     @Override
     public void write(final DataOutput output) throws IOException {
         try {
-            GRYO_POOL.doWithWriter(gryoWriter -> {
+            GiraphWorkerContext.GRYO_POOL.doWithWriter(gryoWriter -> {
                 try {
                     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     gryoWriter.writeVertex(outputStream, this.vertex, Direction.BOTH);
                     WritableUtils.writeCompressedByteArray(output, outputStream.toByteArray());
-                    return null;
                 } catch (final IOException e) {
-                    throw new IllegalStateException(e);
+                    throw new IllegalStateException(e.getMessage(), e);
                 }
             });
         } catch (final IllegalStateException e) {

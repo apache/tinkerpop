@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.BiFunction;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -30,40 +30,32 @@ public class GryoPool {
 
     private final Queue<GryoReader> gryoReaders;
     private final Queue<GryoWriter> gryoWriters;
-    private static final Integer MAX_QUEUE_SIZE = 256;
 
-    public GryoPool() {
-        this.gryoReaders = new ConcurrentLinkedQueue<>();
-        this.gryoWriters = new ConcurrentLinkedQueue<>();
+    public GryoPool(final int poolSize) {
+        this.gryoReaders = new LinkedBlockingQueue<>(poolSize);
+        this.gryoWriters = new LinkedBlockingQueue<>(poolSize);
+        for (int i = 0; i < poolSize; i++) {
+            this.gryoReaders.add(GryoReader.build().create());
+            this.gryoWriters.add(GryoWriter.build().create());
+        }
     }
 
     public GryoReader takeReader() {
         final GryoReader reader = this.gryoReaders.poll();
-        return (null == reader) ? GryoReader.build().create() : reader;
+        return null == reader ? GryoReader.build().create() : reader;
     }
 
     public GryoWriter takeWriter() {
         final GryoWriter writer = this.gryoWriters.poll();
-        return (null == writer) ? GryoWriter.build().create() : writer;
+        return null == writer ? GryoWriter.build().create() : writer;
     }
 
     public void offerReader(final GryoReader gryoReader) {
-        if (this.gryoReaders.size() < MAX_QUEUE_SIZE)
-            this.gryoReaders.offer(gryoReader);
+        this.gryoReaders.offer(gryoReader);
     }
 
     public void offerWriter(final GryoWriter gryoWriter) {
-        if (this.gryoWriters.size() < MAX_QUEUE_SIZE)
-            this.gryoWriters.offer(gryoWriter);
-    }
-
-    public <A> A doWithReaderWriter(final BiFunction<GryoReader, GryoWriter, A> readerWriterBiFunction) {
-        final GryoReader gryoReader = this.takeReader();
-        final GryoWriter gryoWriter = this.takeWriter();
-        final A a = readerWriterBiFunction.apply(gryoReader, gryoWriter);
-        this.offerReader(gryoReader);
-        this.offerWriter(gryoWriter);
-        return a;
+        this.gryoWriters.offer(gryoWriter);
     }
 
     public <A> A doWithReader(final Function<GryoReader, A> readerFunction) {
@@ -73,10 +65,9 @@ public class GryoPool {
         return a;
     }
 
-    public <A> A doWithWriter(final Function<GryoWriter, A> writerFunction) {
+    public void doWithWriter(final Consumer<GryoWriter> writerFunction) {
         final GryoWriter gryoWriter = this.takeWriter();
-        final A a = writerFunction.apply(gryoWriter);
+        writerFunction.accept(gryoWriter);
         this.offerWriter(gryoWriter);
-        return a;
     }
 }

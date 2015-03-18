@@ -25,6 +25,10 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Hadoop-Gremlin `ObjectWritable` now leverages Kryo for data serialization.
+* `GiraphGraphComputer` supports arbitrary objects as the vertex id -- previously, only long ids were supported.
+* Added `VertexProgramPool` to support thread safe pooling of vertex programs for graph computers that provide threaded workers.
+* Added `GryoPool` to support thread safe pooling of Gryo readers and writers.
 * Added `TraversalSource` which contextualizes a traversal to a graph, DSL, execution engine, and runtime strategies.
 * Added `AddVertexStep` (`addV`), `AddPropertyStep` (`property`), and changed `AddEdgeStep` to a map-step instead of a sideEffect-step.
 * Added `compile` method to `GremlinExecutor` and related classes.

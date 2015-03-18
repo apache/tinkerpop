@@ -18,10 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
-import org.apache.tinkerpop.gremlin.util.Serializer;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphWorkerContext;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -55,23 +59,29 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
 
     @Override
     public void readFields(final DataInput input) throws IOException {
-        try {
-            this.t = (T) Serializer.deserializeObject(WritableUtils.readCompressedByteArray(input));
-        } catch (final ClassNotFoundException e) {
-            throw new IOException(e.getMessage(), e);
-        }
-        //this.t = (T) Constants.GRYO.readClassAndObject(new Input(new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input))));
+        this.t = GiraphWorkerContext.GRYO_POOL.doWithReader(gryoReader -> {
+            try {
+                return gryoReader.readObject(new Input(new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input))));
+            } catch (IOException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        });
     }
 
     @Override
     public void write(final DataOutput output) throws IOException {
-        WritableUtils.writeCompressedByteArray(output, Serializer.serializeObject(this.t));
-        /*final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        final Output out = new Output(outputStream);
-        Constants.GRYO.writeClassAndObject(out, this.t);
-        out.flush();
-        WritableUtils.writeCompressedByteArray(output, outputStream.toByteArray());
-        out.close();*/
+        GiraphWorkerContext.GRYO_POOL.doWithWriter(gryoWriter -> {
+            try {
+                final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                final Output out = new Output(outputStream);
+                gryoWriter.writeObject(out, this.t);
+                out.flush();
+                WritableUtils.writeCompressedByteArray(output, outputStream.toByteArray());
+                out.close();
+            } catch (IOException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        });
     }
 
     @Override

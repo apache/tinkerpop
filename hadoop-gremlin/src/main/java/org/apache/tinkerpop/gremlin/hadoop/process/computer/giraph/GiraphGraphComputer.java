@@ -29,7 +29,6 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
@@ -40,6 +39,7 @@ import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.io.GiraphVert
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.MapReduceHelper;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.MemoryMapReduce;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.HadoopHelper;
@@ -86,7 +86,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
         this.giraphConfiguration.setVertexClass(GiraphComputeVertex.class);
         this.giraphConfiguration.setWorkerContextClass(GiraphWorkerContext.class);
         this.giraphConfiguration.setOutEdgesClass(EmptyOutEdges.class);
-        this.giraphConfiguration.setClass(GiraphConstants.VERTEX_ID_CLASS.getKey(), LongWritable.class, LongWritable.class);
+        this.giraphConfiguration.setClass(GiraphConstants.VERTEX_ID_CLASS.getKey(), ObjectWritable.class, ObjectWritable.class);
         this.giraphConfiguration.setClass(GiraphConstants.VERTEX_VALUE_CLASS.getKey(), VertexWritable.class, VertexWritable.class);
         this.giraphConfiguration.setBoolean(GiraphConstants.STATIC_GRAPH.getKey(), true);
         this.giraphConfiguration.setVertexInputFormatClass(GiraphVertexInputFormat.class);

@@ -26,11 +26,14 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramPool;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class GiraphWorkerContext extends WorkerContext {
+
+    public static final GryoPool GRYO_POOL = new GryoPool(256);
 
     private VertexProgramPool vertexProgramPool;
     private GiraphMemory memory;

@@ -22,6 +22,7 @@ import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.OutEdges;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -32,7 +33,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyOutEdges implements OutEdges<LongWritable, NullWritable> {
+public class EmptyOutEdges implements OutEdges<ObjectWritable, NullWritable> {
 
     private static final EmptyOutEdges INSTANCE = new EmptyOutEdges();
 
@@ -41,7 +42,7 @@ public class EmptyOutEdges implements OutEdges<LongWritable, NullWritable> {
     }
 
     @Override
-    public void initialize(final Iterable<Edge<LongWritable, NullWritable>> edges) {
+    public void initialize(final Iterable<Edge<ObjectWritable, NullWritable>> edges) {
     }
 
     @Override
@@ -53,11 +54,11 @@ public class EmptyOutEdges implements OutEdges<LongWritable, NullWritable> {
     }
 
     @Override
-    public void add(final Edge<LongWritable, NullWritable> edge) {
+    public void add(final Edge<ObjectWritable, NullWritable> edge) {
     }
 
     @Override
-    public void remove(final LongWritable targetVertexId) {
+    public void remove(final ObjectWritable targetVertexId) {
     }
 
     @Override
@@ -66,7 +67,7 @@ public class EmptyOutEdges implements OutEdges<LongWritable, NullWritable> {
     }
 
     @Override
-    public Iterator<Edge<LongWritable, NullWritable>> iterator() {
+    public Iterator<Edge<ObjectWritable, NullWritable>> iterator() {
         return Collections.emptyIterator();
     }
 

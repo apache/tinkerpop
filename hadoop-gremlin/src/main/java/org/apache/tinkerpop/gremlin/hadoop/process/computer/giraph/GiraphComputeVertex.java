@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
 import org.apache.giraph.graph.Vertex;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
@@ -32,7 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GiraphComputeVertex extends Vertex<LongWritable, VertexWritable, NullWritable, ObjectWritable> {
+public final class GiraphComputeVertex extends Vertex<ObjectWritable, VertexWritable, NullWritable, ObjectWritable> {
 
     //TODO: Dangerous that the underlying TinkerGraph Vertex can have edges written to it.
     //TODO: LongWritable as the key is not general enough -- ObjectWritable causes problems though :|
@@ -43,7 +42,7 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, VertexWritab
     public GiraphComputeVertex(final VertexWritable vertexWritable) {
         final VertexWritable newWritable = new VertexWritable();
         newWritable.set(vertexWritable.get());
-        this.initialize(new LongWritable(Long.valueOf(newWritable.get().id().toString())), newWritable, EmptyOutEdges.instance());
+        this.initialize(new ObjectWritable<>(newWritable.get().id()), newWritable, EmptyOutEdges.instance());
 
     }
 
