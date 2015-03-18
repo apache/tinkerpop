@@ -57,18 +57,19 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, VertexWritab
     @Override
     public void compute(final Iterable<ObjectWritable> messages) {
         final GiraphWorkerContext workerContext = (GiraphWorkerContext) this.getWorkerContext();
-        final VertexProgram vertexProgram = workerContext.getVertexProgram();
+        final VertexProgram vertexProgram = workerContext.getVertexProgramPool().take();
         final GiraphMemory memory = workerContext.getMemory();
         final GiraphMessenger messenger = workerContext.getMessenger(this, messages);
         final StrategyVertex wrappedVertex = ComputerDataStrategy.wrapVertex(this.getValue().get(), vertexProgram);
         ///////////
-        if (!(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HADOOP_HALT)).getObject())
+        if (!(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HADOOP_HALT)).getObject()) {
             vertexProgram.execute(wrappedVertex, messenger, memory);  // TODO provide a wrapper around TinkerVertex for Edge and non-ComputeKeys manipulation
-        else if (workerContext.deriveMemory()) {
+        } else if (workerContext.deriveMemory()) {
             final MapMemory mapMemory = new MapMemory();
             memory.asMap().forEach(mapMemory::set);
             mapMemory.setIteration(memory.getIteration() - 1);
             wrappedVertex.property(VertexProperty.Cardinality.single, Constants.MAP_MEMORY, mapMemory);  // TODO: this is a "computer key"
         }
+        workerContext.getVertexProgramPool().offer(vertexProgram);
     }
 }

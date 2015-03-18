@@ -18,21 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
+import org.apache.giraph.conf.GiraphConstants;
 import org.apache.giraph.worker.WorkerContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramPool;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class GiraphWorkerContext extends WorkerContext {
 
-    private VertexProgram<?> vertexProgram;
+    private VertexProgramPool vertexProgramPool;
     private GiraphMemory memory;
-    private GiraphMessenger messenger;
     private boolean deriveMemory;
 
     public GiraphWorkerContext() {
@@ -40,9 +41,10 @@ public final class GiraphWorkerContext extends WorkerContext {
     }
 
     public void preApplication() throws InstantiationException, IllegalAccessException {
-        this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getContext().getConfiguration()));
-        this.memory = new GiraphMemory(this, this.vertexProgram);
-        this.messenger = new GiraphMessenger();
+        this.vertexProgramPool = new VertexProgramPool(
+                this.getContext().getConfiguration().getInt(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), 1),
+                ConfUtil.makeApacheConfiguration(this.getContext().getConfiguration()));
+        this.memory = new GiraphMemory(this, VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getContext().getConfiguration())));
         this.deriveMemory = this.getContext().getConfiguration().getBoolean(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, false);
     }
 
@@ -51,15 +53,15 @@ public final class GiraphWorkerContext extends WorkerContext {
     }
 
     public void preSuperstep() {
-        this.vertexProgram.workerIterationStart(new ImmutableMemory(this.memory));
+        this.vertexProgramPool.workerIterationStart(new ImmutableMemory(this.memory));
     }
 
     public void postSuperstep() {
-        this.vertexProgram.workerIterationEnd(new ImmutableMemory(this.memory));
+        this.vertexProgramPool.workerIterationEnd(new ImmutableMemory(this.memory));
     }
 
-    public VertexProgram<?> getVertexProgram() {
-        return this.vertexProgram;
+    public VertexProgramPool getVertexProgramPool() {
+        return this.vertexProgramPool;
     }
 
     public GiraphMemory getMemory() {
@@ -67,8 +69,7 @@ public final class GiraphWorkerContext extends WorkerContext {
     }
 
     public GiraphMessenger getMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterable<ObjectWritable> messages) {
-        this.messenger.setCurrentVertex(giraphComputeVertex, messages);
-        return this.messenger;
+        return new GiraphMessenger(giraphComputeVertex, messages);
     }
 
     public boolean deriveMemory() {

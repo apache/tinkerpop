@@ -141,19 +141,19 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     @Override
     public void execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final Memory memory) {
         this.traversal.getSideEffects().setLocalVertex(vertex);
-        if (memory.isInitialIteration()) {
+        if (memory.isInitialIteration()) {    // ITERATION 1
             final TraverserSet<Object> haltedTraversers = new TraverserSet<>();
             vertex.property(HALTED_TRAVERSERS, haltedTraversers);
 
-            if (!(this.traversal.getStartStep() instanceof GraphStep))                              // TODO: make this generic to Traversal
+            if (!(this.traversal.getStartStep() instanceof GraphStep))
                 throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
 
-            final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.getStartStep();
+            final GraphStep<Element> graphStep = (GraphStep<Element>) this.traversal.getStartStep();
+            final String future = graphStep.getNextStep().getId();
             final TraverserGenerator traverserGenerator = this.traversal.getTraverserGenerator();
-            final String future = startStep.getNextStep().getId();
-            if (startStep.returnsVertices()) {  // VERTICES (process the first step locally)
-                if (ElementHelper.idExists(vertex.id(), startStep.getIds())) {
-                    final Traverser.Admin<Element> traverser = traverserGenerator.generate(vertex, startStep, 1l);
+            if (graphStep.returnsVertices()) {  // VERTICES (process the first step locally)
+                if (ElementHelper.idExists(vertex.id(), graphStep.getIds())) {
+                    final Traverser.Admin<Element> traverser = traverserGenerator.generate(vertex, graphStep, 1l);
                     traverser.setStepId(future);
                     traverser.detach();
                     if (traverser.isHalted())
@@ -166,8 +166,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 final Iterator<Edge> starts = vertex.edges(Direction.OUT);
                 while (starts.hasNext()) {
                     final Edge start = starts.next();
-                    if (ElementHelper.idExists(start.id(), startStep.getIds())) {
-                        final Traverser.Admin<Element> traverser = traverserGenerator.generate(start, startStep, 1l);
+                    if (ElementHelper.idExists(start.id(), graphStep.getIds())) {
+                        final Traverser.Admin<Element> traverser = traverserGenerator.generate(start, graphStep, 1l);
                         traverser.setStepId(future);
                         traverser.detach();
                         if (traverser.isHalted())
@@ -180,7 +180,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 }
                 memory.and(VOTE_TO_HALT, voteToHalt);
             }
-        } else {
+        } else {  // ITERATION 1+
             memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversalMatrix));
         }
     }

@@ -88,7 +88,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
         this.giraphConfiguration.setOutEdgesClass(EmptyOutEdges.class);
         this.giraphConfiguration.setClass(GiraphConstants.VERTEX_ID_CLASS.getKey(), LongWritable.class, LongWritable.class);
         this.giraphConfiguration.setClass(GiraphConstants.VERTEX_VALUE_CLASS.getKey(), VertexWritable.class, VertexWritable.class);
-        //this.giraphConfiguration.setBoolean("giraph.isStaticGraph", true);
+        this.giraphConfiguration.setBoolean(GiraphConstants.STATIC_GRAPH.getKey(), true);
         this.giraphConfiguration.setVertexInputFormatClass(GiraphVertexInputFormat.class);
         this.giraphConfiguration.setVertexOutputFormatClass(GiraphVertexOutputFormat.class);
     }

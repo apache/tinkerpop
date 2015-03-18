@@ -37,46 +37,46 @@ public class GryoPool {
         this.gryoWriters = new ConcurrentLinkedQueue<>();
     }
 
-    public GryoReader getReader() {
+    public GryoReader takeReader() {
         final GryoReader reader = this.gryoReaders.poll();
         return (null == reader) ? GryoReader.build().create() : reader;
     }
 
-    public GryoWriter getWriter() {
+    public GryoWriter takeWriter() {
         final GryoWriter writer = this.gryoWriters.poll();
         return (null == writer) ? GryoWriter.build().create() : writer;
     }
 
-    public void addReader(final GryoReader gryoReader) {
+    public void offerReader(final GryoReader gryoReader) {
         if (this.gryoReaders.size() < MAX_QUEUE_SIZE)
             this.gryoReaders.offer(gryoReader);
     }
 
-    public void addWriter(final GryoWriter gryoWriter) {
+    public void offerWriter(final GryoWriter gryoWriter) {
         if (this.gryoWriters.size() < MAX_QUEUE_SIZE)
             this.gryoWriters.offer(gryoWriter);
     }
 
     public <A> A doWithReaderWriter(final BiFunction<GryoReader, GryoWriter, A> readerWriterBiFunction) {
-        final GryoReader gryoReader = this.getReader();
-        final GryoWriter gryoWriter = this.getWriter();
+        final GryoReader gryoReader = this.takeReader();
+        final GryoWriter gryoWriter = this.takeWriter();
         final A a = readerWriterBiFunction.apply(gryoReader, gryoWriter);
-        this.addReader(gryoReader);
-        this.addWriter(gryoWriter);
+        this.offerReader(gryoReader);
+        this.offerWriter(gryoWriter);
         return a;
     }
 
     public <A> A doWithReader(final Function<GryoReader, A> readerFunction) {
-        final GryoReader gryoReader = this.getReader();
+        final GryoReader gryoReader = this.takeReader();
         final A a = readerFunction.apply(gryoReader);
-        this.addReader(gryoReader);
+        this.offerReader(gryoReader);
         return a;
     }
 
     public <A> A doWithWriter(final Function<GryoWriter, A> writerFunction) {
-        final GryoWriter gryoWriter = this.getWriter();
+        final GryoWriter gryoWriter = this.takeWriter();
         final A a = writerFunction.apply(gryoWriter);
-        this.addWriter(gryoWriter);
+        this.offerWriter(gryoWriter);
         return a;
     }
 }

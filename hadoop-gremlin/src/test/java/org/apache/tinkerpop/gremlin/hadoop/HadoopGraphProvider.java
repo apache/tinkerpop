@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopElement;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -34,8 +33,6 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
@@ -117,10 +114,10 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             put("giraph.zkServerPort", "2181");  // you must have a local zookeeper running on this port
             put("giraph.nettyServerUseExecutionHandler", false); // this prevents so many integration tests running out of threads
             put("giraph.nettyClientUseExecutionHandler", false); // this prevents so many integration tests running out of threads
-            put("giraph.numInputThreads",4);
-            put("giraph.numComputeThreads",4);
-            put("giraph.vertexOutputFormatThreadSafe",true);
-            put("giraph.numOutputThreads",4);
+            put("giraph.numInputThreads", 3);
+            put("giraph.numComputeThreads", 3);
+            put("giraph.vertexOutputFormatThreadSafe", true);
+            put("giraph.numOutputThreads", 3);
 
 
             /// spark configuration
