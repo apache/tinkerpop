@@ -59,7 +59,7 @@ public class ComputerGraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    @Ignore
+    @Ignore("We need to decide the semantics")
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldAccessHiddenProperties() {
         final ComputerGraph sg = new ComputerGraph(graph, new HashSet<>(new HashSet<>(Arrays.asList("***hidden-guy"))));
