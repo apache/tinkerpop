@@ -16,6 +16,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -39,15 +40,26 @@ public class PartitionStrategyTest {
 
     public static class PartitionKeyBehavior {
         @Test
-        public void shouldMakeTheInitialWritePartitionPartOfTheReadPartition() {
-            final PartitionStrategy strategy = new PartitionStrategy("p", "a");
+        public void shouldConstructPartitionStrategy() {
+            final PartitionStrategy strategy = PartitionStrategy.build()
+                    .partitionKey("p").writePartition("a").addReadPartition("a").create();
             assertEquals("a", strategy.getReadPartitions().iterator().next());
             assertEquals(1, strategy.getReadPartitions().size());
+            assertEquals("p", strategy.getPartitionKey());
         }
 
         @Test
-        public void shouldSetTheWritePartitionOnConstruction() {
-            final PartitionStrategy strategy = new PartitionStrategy("p", "a");
+        public void shouldConstructPartitionStrategyWithMultipleReadPartitions() {
+            final PartitionStrategy strategy = PartitionStrategy.build()
+                    .partitionKey("p").writePartition("a")
+                    .addReadPartition("a")
+                    .addReadPartition("b")
+                    .addReadPartition("c").create();
+
+            assertTrue(IteratorUtils.asList(strategy.getReadPartitions().iterator()).contains("a"));
+            assertTrue(IteratorUtils.asList(strategy.getReadPartitions().iterator()).contains("b"));
+            assertTrue(IteratorUtils.asList(strategy.getReadPartitions().iterator()).contains("c"));
+            assertEquals(3, strategy.getReadPartitions().size());
             assertEquals("p", strategy.getPartitionKey());
         }
     }
@@ -103,7 +115,8 @@ public class PartitionStrategyTest {
 
         @Test
         public void shouldIncludeAdditionalHasStepsAndAppendPartitionOnMutatingSteps() {
-            final PartitionStrategy strategy = new PartitionStrategy("p", "a");
+            final PartitionStrategy strategy = PartitionStrategy.build()
+                    .partitionKey("p").writePartition("a").addReadPartition("a").create();
 
             if (hasMutatingStep) {
                 if (TraversalHelper.hasStepOfAssignableClass(AddEdgeStep.class, traversal.asAdmin())) {

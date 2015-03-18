@@ -29,56 +29,28 @@ import java.util.stream.Stream;
 public class PartitionStrategy extends AbstractTraversalStrategy {
     private String writePartition;
     private final String partitionKey;
-    private final Set<String> readPartitions = new HashSet<>();
+    private final Set<String> readPartitions;
 
-    public PartitionStrategy(final String partitionKey, final String partition) {
+    private PartitionStrategy(final String partitionKey, final String partition, final Set<String> readPartitions) {
         this.writePartition = partition;
         this.partitionKey = partitionKey;
-        readPartitions.add(writePartition);
+        this.readPartitions = Collections.unmodifiableSet(readPartitions);
     }
 
     public String getWritePartition() {
         return this.writePartition;
     }
 
-    /**
-     * Set the partition to be used for future writes.  The write partition is always included in the list of
-     * current read partitions.
-     */
-    public void setWritePartition(final String writePartition) {
-        this.writePartition = writePartition;
-    }
-
     public String getPartitionKey() {
         return this.partitionKey;
     }
 
-    /**
-     * Gets the set of read partitions which will include the current write partition even if not explicitly added
-     * as a read partition otherwise.
-     */
     public Set<String> getReadPartitions() {
-        return Collections.unmodifiableSet(readPartitions);
+        return readPartitions;
     }
 
-    /**
-     * Removes the specified read partition.  Note that the current write partition cannot be removed as a read
-     * partition.
-     */
-    public void removeReadPartition(final String readPartition) {
-        this.readPartitions.remove(readPartition);
-    }
-
-    public void addReadPartition(final String readPartition) {
-        this.readPartitions.add(readPartition);
-    }
-
-    /**
-     * Clears all of the read partitions.  Note that the current write partition cannot be cleared as a read
-     * partition.
-     */
-    public void clearReadPartitions() {
-        this.readPartitions.clear();
+    public static Builder build() {
+        return new Builder();
     }
 
     @Override
@@ -120,5 +92,34 @@ public class PartitionStrategy extends AbstractTraversalStrategy {
             final Object[] keyValues = Stream.concat(Stream.of(s.getKeyValues()), Stream.of(partitionKey, writePartition)).toArray();
             TraversalHelper.replaceStep(s, new AddVertexStartStep(traversal, keyValues), traversal);
         });
+    }
+
+    public static class Builder {
+        private String writePartition;
+        private String partitionKey;
+        private Set<String> readPartitions = new HashSet<>();
+
+        Builder() {}
+
+        public Builder writePartition(final String writePartition) {
+            this.writePartition = writePartition;
+            return this;
+        }
+
+        public Builder partitionKey(final String partitionKey) {
+            this.partitionKey = partitionKey;
+            return this;
+        }
+
+        public Builder addReadPartition(final String readPartition) {
+            this.readPartitions.add(readPartition);
+            return this;
+        }
+
+        public PartitionStrategy create() {
+            if (partitionKey == null || partitionKey.isEmpty()) throw new IllegalStateException("The partitionKey cannot be null or empty");
+
+            return new PartitionStrategy(this.partitionKey, this.writePartition, this.readPartitions);
+        }
     }
 }
