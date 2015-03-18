@@ -39,7 +39,7 @@ public class GiraphMessenger<M> implements Messenger<M> {
     private GiraphComputeVertex giraphComputeVertex;
     private Iterable<ObjectWritable<M>> messages;
 
-    public void setCurrentVertex(final GiraphComputeVertex giraphComputeVertex, final Iterable<ObjectWritable<M>> messages) {
+    public GiraphMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterable<ObjectWritable<M>> messages) {
         this.giraphComputeVertex = giraphComputeVertex;
         this.messages = messages;
     }

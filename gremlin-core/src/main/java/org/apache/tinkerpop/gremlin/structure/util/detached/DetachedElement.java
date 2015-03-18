@@ -37,7 +37,7 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
 
     protected Object id;
     protected String label;
-    protected Map<String, List<? extends Property>> properties = Collections.emptyMap();
+    protected Map<String, List<? extends Property>> properties = null;
 
     protected DetachedElement() {
 
@@ -74,7 +74,7 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
 
     @Override
     public <V> Property<V> property(final String key) {
-        return this.properties.containsKey(key) ? this.properties.get(key).get(0) : Property.empty();
+        return null != this.properties && this.properties.containsKey(key) ? this.properties.get(key).get(0) : Property.empty();
     }
 
     @Override
@@ -95,6 +95,8 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
 
     @Override
     public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
-        return (Iterator) this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).flatMap(entry -> entry.getValue().stream()).iterator();
+        return null == this.properties ?
+                Collections.emptyIterator() :
+                (Iterator) this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).flatMap(entry -> entry.getValue().stream()).iterator();
     }
 }
