@@ -20,16 +20,14 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.process.computer.util.MapReducePool;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramPool;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -42,47 +40,56 @@ public class TinkerWorkerPool implements AutoCloseable {
     private final int numberOfWorkers;
     private final ExecutorService workerPool;
 
+    private VertexProgramPool vertexProgramPool;
+    private MapReducePool mapReducePool;
+
     public TinkerWorkerPool(final int numberOfWorkers) {
         this.numberOfWorkers = numberOfWorkers;
         workerPool = Executors.newFixedThreadPool(numberOfWorkers, threadFactoryWorker);
     }
 
-    public void executeVertexProgram(final Consumer<VertexProgram> worker, final VertexProgram vertexProgram) {
-        final List<VertexProgram> vertexPrograms = cloneVertexProgram(vertexProgram);
-        vertexPrograms.stream()
-                .map(vp -> (Future<Void>) workerPool.submit(() -> worker.accept(vp)))
-                .collect(Collectors.toList())
-                .forEach(FunctionUtils.wrapConsumer(Future::get));
+    public void setVertexProgram(final VertexProgram vertexProgram) {
+        this.vertexProgramPool = new VertexProgramPool(vertexProgram, this.numberOfWorkers);
     }
 
-    public void executeMapReduce(final Consumer<MapReduce> worker, final MapReduce mapReduce) {
-        final List<MapReduce> mapReducers = cloneMapReducer(mapReduce);
-        mapReducers.stream()
-                .map(mr -> (Future<Void>) workerPool.submit(() -> worker.accept(mr)))
-                .collect(Collectors.toList())
-                .forEach(FunctionUtils.wrapConsumer(Future::get));
+    public void setMapReduce(final MapReduce mapReduce) {
+        this.mapReducePool = new MapReducePool(mapReduce, this.numberOfWorkers);
+    }
+
+    public void vertexProgramWorkerIterationStart(final Memory memory) {
+        this.vertexProgramPool.workerIterationStart(memory);
+    }
+
+    public void vertexProgramWorkerIterationEnd(final Memory memory) {
+        this.vertexProgramPool.workerIterationEnd(memory);
+    }
+
+    public void executeVertexProgram(final Consumer<VertexProgram> worker) {
+        try {
+            this.workerPool.submit(() -> {
+                final VertexProgram vp = this.vertexProgramPool.take();
+                worker.accept(vp);
+                this.vertexProgramPool.offer(vp);
+            }).get();
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    public void executeMapReduce(final Consumer<MapReduce> worker) {
+        try {
+            this.workerPool.submit(() -> {
+                final MapReduce mr = this.mapReducePool.take();
+                worker.accept(mr);
+                this.mapReducePool.offer(mr);
+            }).get();
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override
     public void close() throws Exception {
         workerPool.shutdown();
-    }
-
-    private List<VertexProgram> cloneVertexProgram(final VertexProgram vertexProgram) {
-        final List<VertexProgram> vertexPrograms;
-        vertexPrograms = new ArrayList<>(numberOfWorkers);
-        for (int i = 0; i < numberOfWorkers; i++) {
-            vertexPrograms.add(vertexProgram.clone());
-        }
-        return vertexPrograms;
-    }
-
-    private List<MapReduce> cloneMapReducer(final MapReduce mapReduce) {
-        final List<MapReduce> mapReducers;
-        mapReducers = new ArrayList<>(numberOfWorkers);
-        for (int i = 0; i < numberOfWorkers; i++) {
-            mapReducers.add(mapReduce.clone());
-        }
-        return mapReducers;
     }
 }

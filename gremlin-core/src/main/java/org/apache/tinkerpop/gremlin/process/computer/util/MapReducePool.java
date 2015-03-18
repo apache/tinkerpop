@@ -18,8 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
-import org.apache.tinkerpop.gremlin.process.computer.Memory;
-import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -27,64 +26,63 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class VertexProgramPool {
-
-    private final LinkedBlockingQueue<VertexProgram<?>> pool;
-    private final StaticVertexProgram vertexProgram;
+public final class MapReducePool {
+    private final LinkedBlockingQueue<MapReduce<?, ?, ?, ?, ?>> pool;
+    private final StaticMapReduce mapReduce;
     private static final int TIMEOUT_MS = 2500;
 
-    public VertexProgramPool(final VertexProgram vertexProgram, final int poolSize) {
-        if (vertexProgram instanceof StaticVertexProgram) {
+    public MapReducePool(final MapReduce mapReduce, final int poolSize) {
+        if (mapReduce instanceof StaticMapReduce) {
             this.pool = null;
-            this.vertexProgram = (StaticVertexProgram) vertexProgram;
+            this.mapReduce = (StaticMapReduce) mapReduce;
         } else {
-            this.vertexProgram = null;
+            this.mapReduce = null;
             this.pool = new LinkedBlockingQueue<>(poolSize);
             while (this.pool.remainingCapacity() > 0) {
-                this.pool.add(vertexProgram.clone());
+                this.pool.add(mapReduce.clone());
             }
         }
     }
 
-    public VertexProgram take() {
-        if (null == this.vertexProgram) {
+    public MapReduce take() {
+        if (null == this.mapReduce) {
             try {
                 return this.pool.poll(TIMEOUT_MS, TimeUnit.MILLISECONDS);
             } catch (final InterruptedException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         } else {
-            return this.vertexProgram;
+            return this.mapReduce;
         }
     }
 
-    public void offer(final VertexProgram<?> vertexProgram) {
-        if (null == this.vertexProgram) {
+    public void offer(final MapReduce<?, ?, ?, ?, ?> mapReduce) {
+        if (null == this.mapReduce) {
             try {
-                this.pool.offer(vertexProgram, TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                this.pool.offer(mapReduce, TIMEOUT_MS, TimeUnit.MILLISECONDS);
             } catch (final InterruptedException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }
     }
 
-    public synchronized void workerIterationStart(final Memory memory) {
-        if (null == this.vertexProgram) {
-            for (final VertexProgram<?> vertexProgram : this.pool) {
-                vertexProgram.workerIterationStart(memory);
+    /*public synchronized void workerIterationStart(final Memory memory) {
+        if (null == this.mapReduce) {
+            for (final MapReduce<?,?,?,?,?> mapReduce : this.pool) {
+                mapReduce.workerIterationStart(memory);
             }
         } else {
-            this.vertexProgram.workerIterationStart(memory);
+            this.mapReduce.workerIterationStart(memory);
         }
-    }
+    }*/
 
-    public synchronized void workerIterationEnd(final Memory memory) {
-        if (null == this.vertexProgram) {
-            for (final VertexProgram<?> vertexProgram : this.pool) {
-                vertexProgram.workerIterationEnd(memory);
+    /*public synchronized void workerIterationEnd(final Memory memory) {
+        if (null == this.mapReduce) {
+            for (final MapReduce<?,?,?,?,?> mapReduce : this.pool) {
+                mapReduce.workerIterationEnd(memory);
             }
         } else {
-            this.vertexProgram.workerIterationEnd(memory);
+            this.mapReduce.workerIterationEnd(memory);
         }
-    }
+    }*/
 }

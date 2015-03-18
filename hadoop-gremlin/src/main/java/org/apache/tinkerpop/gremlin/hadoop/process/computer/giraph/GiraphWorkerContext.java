@@ -44,10 +44,9 @@ public final class GiraphWorkerContext extends WorkerContext {
     }
 
     public void preApplication() throws InstantiationException, IllegalAccessException {
-        this.vertexProgramPool = new VertexProgramPool(
-                this.getContext().getConfiguration().getInt(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), 1),
-                ConfUtil.makeApacheConfiguration(this.getContext().getConfiguration()));
-        this.memory = new GiraphMemory(this, VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getContext().getConfiguration())));
+        final VertexProgram vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getContext().getConfiguration()));
+        this.vertexProgramPool = new VertexProgramPool(vertexProgram, this.getContext().getConfiguration().getInt(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), 1));
+        this.memory = new GiraphMemory(this, vertexProgram);
         this.deriveMemory = this.getContext().getConfiguration().getBoolean(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, false);
     }
 
