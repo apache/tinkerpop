@@ -55,9 +55,6 @@ public class PartitionStrategy extends AbstractTraversalStrategy {
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        final Set<String> readPartitionsWithWritePartition = new HashSet<>(readPartitions);
-        readPartitionsWithWritePartition.add(writePartition);
-
         // no need to add has after mutating steps because we want to make it so that the write partition can
         // be independent of the read partition.  in other words, i don't need to be able to read from a partition
         // in order to write to it.
