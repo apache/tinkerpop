@@ -73,25 +73,29 @@ public class PartitionStrategy extends AbstractTraversalStrategy {
 
         // all write edge steps need to have partition keys tossed into the property key/value list after mutating steps
         TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal).forEach(s -> {
-            final Object[] keyValues = Stream.concat(Stream.of(s.getKeyValues()), Stream.of(partitionKey, writePartition)).toArray();
+            final Object[] keyValues = injectPartitionInfo(s.getKeyValues());
             TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getVertices().iterator(), keyValues), traversal);
         });
 
         TraversalHelper.getStepsOfAssignableClass(AddEdgeByPathStep.class, traversal).forEach(s -> {
-            final Object[] keyValues = Stream.concat(Stream.of(s.getKeyValues()), Stream.of(partitionKey, writePartition)).toArray();
+            final Object[] keyValues = injectPartitionInfo(s.getKeyValues());
             TraversalHelper.replaceStep(s, new AddEdgeByPathStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getStepLabel(), keyValues), traversal);
         });
 
         // all write vertex steps need to have partition keys tossed into the property key/value list after mutating steps
         TraversalHelper.getStepsOfAssignableClass(AddVertexStep.class, traversal).forEach(s -> {
-            final Object[] keyValues = Stream.concat(Stream.of(s.getKeyValues()), Stream.of(partitionKey, writePartition)).toArray();
+            final Object[] keyValues = injectPartitionInfo(s.getKeyValues());
             TraversalHelper.replaceStep(s, new AddVertexStep(traversal, keyValues), traversal);
         });
 
         TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal).forEach(s -> {
-            final Object[] keyValues = Stream.concat(Stream.of(s.getKeyValues()), Stream.of(partitionKey, writePartition)).toArray();
+            final Object[] keyValues = injectPartitionInfo(s.getKeyValues());
             TraversalHelper.replaceStep(s, new AddVertexStartStep(traversal, keyValues), traversal);
         });
+    }
+
+    private Object[] injectPartitionInfo(final Object[] propertyKeyValues) {
+        return Stream.concat(Stream.of(propertyKeyValues), Stream.of(partitionKey, writePartition)).toArray();
     }
 
     public static class Builder {
