@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.commons.configuration.Configuration;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -28,7 +28,7 @@ import org.apache.commons.configuration.Configuration;
 public abstract class StaticMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK, RV, R> {
 
     @Override
-    @SuppressWarnings("CloneDoesntCallSuperClone")
+    @SuppressWarnings("CloneDoesntCallSuperClone,CloneDoesntDeclareCloneNotSupportedException")
     public MapReduce<MK, MV, RK, RV, R> clone() {
         return this;
     }
