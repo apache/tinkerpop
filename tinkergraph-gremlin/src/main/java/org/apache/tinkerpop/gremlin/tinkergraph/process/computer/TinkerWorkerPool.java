@@ -56,6 +56,8 @@ public class TinkerWorkerPool implements AutoCloseable {
         this.mapReducePool = new MapReducePool(mapReduce, this.numberOfWorkers);
     }
 
+    ////
+
     public void vertexProgramWorkerIterationStart(final Memory memory) {
         this.vertexProgramPool.workerIterationStart(memory);
     }
@@ -75,6 +77,17 @@ public class TinkerWorkerPool implements AutoCloseable {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
+
+    ///
+
+    public void mapReduceWorkerStart(final MapReduce.Stage stage) {
+        this.mapReducePool.workerStart(stage);
+    }
+
+    public void mapReduceWorkerEnd(final MapReduce.Stage stage) {
+        this.mapReducePool.workerEnd(stage);
+    }
+
 
     public void executeMapReduce(final Consumer<MapReduce> worker) {
         try {

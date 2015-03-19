@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer;
 
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,12 +45,18 @@ public class HadoopMap extends Mapper<NullWritable, VertexWritable, ObjectWritab
     @Override
     public void setup(final Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable>.Context context) {
         this.mapReduce = MapReduce.createMapReduce(ConfUtil.makeApacheConfiguration(context.getConfiguration()));
+        this.mapReduce.workerStart(MapReduce.Stage.MAP);
     }
 
     @Override
     public void map(final NullWritable key, final VertexWritable value, final Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable>.Context context) throws IOException, InterruptedException {
         this.mapEmitter.setContext(context);
         this.mapReduce.map(value.get(), this.mapEmitter);
+    }
+
+    @Override
+    public void cleanup(final Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable>.Context context) {
+        this.mapReduce.workerEnd(MapReduce.Stage.MAP);
     }
 
     public class HadoopMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {

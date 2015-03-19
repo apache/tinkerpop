@@ -18,10 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer;
 
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
-import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,23 +45,18 @@ public class HadoopReduce extends Reducer<ObjectWritable, ObjectWritable, Object
     @Override
     public void setup(final Reducer<ObjectWritable, ObjectWritable, ObjectWritable, ObjectWritable>.Context context) {
         this.mapReduce = MapReduce.createMapReduce(ConfUtil.makeApacheConfiguration(context.getConfiguration()));
+        this.mapReduce.workerStart(MapReduce.Stage.REDUCE);
     }
 
     @Override
     public void reduce(final ObjectWritable key, final Iterable<ObjectWritable> values, final Reducer<ObjectWritable, ObjectWritable, ObjectWritable, ObjectWritable>.Context context) throws IOException, InterruptedException {
-        final Iterator<ObjectWritable> itty = values.iterator();
         this.reduceEmitter.setContext(context);
-        this.mapReduce.reduce(key.get(), new Iterator() {
-            @Override
-            public boolean hasNext() {
-                return itty.hasNext();
-            }
+        this.mapReduce.reduce(key.get(), IteratorUtils.map(values.iterator(), ObjectWritable::get), this.reduceEmitter);
+    }
 
-            @Override
-            public Object next() {
-                return itty.next().get();
-            }
-        }, this.reduceEmitter);
+    @Override
+    public void cleanup(final Reducer<ObjectWritable, ObjectWritable, ObjectWritable, ObjectWritable>.Context context) {
+        this.mapReduce.workerEnd(MapReduce.Stage.REDUCE);
     }
 
 

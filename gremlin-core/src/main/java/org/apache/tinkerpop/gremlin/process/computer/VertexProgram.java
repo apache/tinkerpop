@@ -19,8 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.process.computer;
 
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.lang.reflect.Constructor;
 import java.util.Collections;
@@ -44,6 +44,8 @@ import java.util.Set;
 public interface VertexProgram<M> extends Cloneable {
 
     public static final String VERTEX_PROGRAM = "gremlin.vertexProgram";
+
+    public enum Status {SUCCESS, FAILURE}
 
     /**
      * When it is necessary to store the state of the VertexProgram, this method is called.
@@ -106,7 +108,6 @@ public interface VertexProgram<M> extends Cloneable {
      * This method is called at the start of each iteration of each "computational chunk."
      * The set of vertices in the graph are typically not processed with full parallelism.
      * The vertex set is split into subsets and a worker is assigned to call the {@link VertexProgram#execute} method.
-     * The typical use is to create static VertexProgram state that exists for the iteration of the vertex subset.
      * The default implementation is a no-op.
      *
      * @param memory The memory at the start of the iteration.
@@ -119,10 +120,9 @@ public interface VertexProgram<M> extends Cloneable {
      * This method is called at the end of each iteration of each "computational chunk."
      * The set of vertices in the graph are typically not processed with full parallelism.
      * The vertex set is split into subsets and a worker is assigned to call the {@link VertexProgram#execute} method.
-     * The typical use is to destroy static VertexProgram state that existed during the iteration of the vertex subset.
      * The default implementation is a no-op.
      *
-     * @param memory The memory at the start of the iteration.
+     * @param memory The memory at the end of the iteration.
      */
     public default void workerIterationEnd(final Memory memory) {
 

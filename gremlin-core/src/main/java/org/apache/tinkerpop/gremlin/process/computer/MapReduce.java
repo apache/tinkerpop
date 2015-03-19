@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer;
 
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -121,6 +121,30 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
     }
 
     /**
+     * This method is called at the start of the respective {@link MapReduce.Stage} for a particular "chunk of vertices."
+     * The set of vertices in the graph are typically not processed with full parallelism.
+     * The vertex set is split into subsets and a worker is assigned to call the MapReduce methods on it method.
+     * The default implementation is a no-op.
+     *
+     * @param stage the stage of the MapReduce computation
+     */
+    public default void workerStart(final Stage stage) {
+
+    }
+
+    /**
+     * This method is called at the end of the respective {@link MapReduce.Stage} for a particular "chunk of vertices."
+     * The set of vertices in the graph are typically not processed with full parallelism.
+     * The vertex set is split into subsets and a worker is assigned to call the MapReduce methods on it method.
+     * The default implementation is a no-op.
+     *
+     * @param stage the stage of the MapReduce computation
+     */
+    public default void workerEnd(final Stage stage) {
+
+    }
+
+    /**
      * If a {@link Comparator} is provided, then all pairs leaving the {@link MapEmitter} are sorted.
      * The sorted results are either fed sorted to the combine/reduce-stage or as the final output.
      * If sorting is not required, then {@link Optional#empty} should be returned as sorting is computationally expensive.
@@ -187,7 +211,7 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
      * @param configuration A configuration with requisite information to build a MapReduce
      * @return the newly constructed MapReduce
      */
-    public static <M extends MapReduce<MK, MV, RK, RV, R>, MK, MV, RK, RV, R> M createMapReduce(final Configuration configuration) {
+    public static <M extends MapReduce> M createMapReduce(final Configuration configuration) {
         try {
             final Class<M> mapReduceClass = (Class) Class.forName(configuration.getString(MAP_REDUCE));
             final Constructor<M> constructor = mapReduceClass.getDeclaredConstructor();

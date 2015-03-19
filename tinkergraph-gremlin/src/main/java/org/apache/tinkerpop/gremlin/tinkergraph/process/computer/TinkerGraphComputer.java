@@ -139,6 +139,7 @@ public class TinkerGraphComputer implements GraphComputer {
                         final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
                         final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(computeGraph.vertices());
                         workers.setMapReduce(mapReduce);
+                        workers.mapReduceWorkerStart(MapReduce.Stage.MAP);
                         workers.executeMapReduce(workerMapReduce -> {
                             while (true) {
                                 final Vertex vertex = vertices.next();
@@ -146,6 +147,7 @@ public class TinkerGraphComputer implements GraphComputer {
                                 workerMapReduce.map(vertex, mapEmitter);
                             }
                         });
+                        workers.mapReduceWorkerEnd(MapReduce.Stage.MAP);
 
                         // sort results if a map output sort is defined
                         mapEmitter.complete(mapReduce);
@@ -154,6 +156,7 @@ public class TinkerGraphComputer implements GraphComputer {
                         if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                             final TinkerReduceEmitter<?, ?> reduceEmitter = new TinkerReduceEmitter<>();
                             final SynchronizedIterator<Map.Entry<?, Queue<?>>> keyValues = new SynchronizedIterator((Iterator) mapEmitter.reduceMap.entrySet().iterator());
+                            workers.mapReduceWorkerStart(MapReduce.Stage.REDUCE);
                             workers.executeMapReduce(workerMapReduce -> {
                                 while (true) {
                                     final Map.Entry<?, Queue<?>> entry = keyValues.next();
@@ -161,6 +164,7 @@ public class TinkerGraphComputer implements GraphComputer {
                                     workerMapReduce.reduce(entry.getKey(), entry.getValue().iterator(), reduceEmitter);
                                 }
                             });
+                            workers.mapReduceWorkerEnd(MapReduce.Stage.REDUCE);
                             reduceEmitter.complete(mapReduce); // sort results if a reduce output sort is defined
                             mapReduce.addResultToMemory(this.memory, reduceEmitter.reduceQueue.iterator());
                         } else {

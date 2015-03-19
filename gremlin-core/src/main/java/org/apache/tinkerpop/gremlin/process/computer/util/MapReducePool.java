@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.Memory;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -28,61 +29,40 @@ import java.util.concurrent.TimeUnit;
  */
 public final class MapReducePool {
     private final LinkedBlockingQueue<MapReduce<?, ?, ?, ?, ?>> pool;
-    private final StaticMapReduce mapReduce;
     private static final int TIMEOUT_MS = 2500;
 
     public MapReducePool(final MapReduce mapReduce, final int poolSize) {
-        if (mapReduce instanceof StaticMapReduce) {
-            this.pool = null;
-            this.mapReduce = (StaticMapReduce) mapReduce;
-        } else {
-            this.mapReduce = null;
-            this.pool = new LinkedBlockingQueue<>(poolSize);
-            while (this.pool.remainingCapacity() > 0) {
-                this.pool.add(mapReduce.clone());
-            }
+        this.pool = new LinkedBlockingQueue<>(poolSize);
+        while (this.pool.remainingCapacity() > 0) {
+            this.pool.add(mapReduce.clone());
         }
     }
 
     public MapReduce take() {
-        if (null == this.mapReduce) {
-            try {
-                return this.pool.poll(TIMEOUT_MS, TimeUnit.MILLISECONDS);
-            } catch (final InterruptedException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        } else {
-            return this.mapReduce;
+        try {
+            return this.pool.poll(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        } catch (final InterruptedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
     public void offer(final MapReduce<?, ?, ?, ?, ?> mapReduce) {
-        if (null == this.mapReduce) {
-            try {
-                this.pool.offer(mapReduce, TIMEOUT_MS, TimeUnit.MILLISECONDS);
-            } catch (final InterruptedException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
+        try {
+            this.pool.offer(mapReduce, TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        } catch (final InterruptedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
-    /*public synchronized void workerIterationStart(final Memory memory) {
-        if (null == this.mapReduce) {
-            for (final MapReduce<?,?,?,?,?> mapReduce : this.pool) {
-                mapReduce.workerIterationStart(memory);
-            }
-        } else {
-            this.mapReduce.workerIterationStart(memory);
+    public synchronized void workerStart(final MapReduce.Stage stage) {
+        for (final MapReduce<?, ?, ?, ?, ?> mapReduce : this.pool) {
+            mapReduce.workerStart(stage);
         }
-    }*/
+    }
 
-    /*public synchronized void workerIterationEnd(final Memory memory) {
-        if (null == this.mapReduce) {
-            for (final MapReduce<?,?,?,?,?> mapReduce : this.pool) {
-                mapReduce.workerIterationEnd(memory);
-            }
-        } else {
-            this.mapReduce.workerIterationEnd(memory);
+    public synchronized void workerEnd(final MapReduce.Stage stage) {
+        for (final MapReduce<?, ?, ?, ?, ?> mapReduce : this.pool) {
+            mapReduce.workerEnd(stage);
         }
-    }*/
+    }
 }
