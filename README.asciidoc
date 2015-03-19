@@ -17,14 +17,14 @@ limitations under the License.
 TinkerPop3
 ----------
 
-image:https://raw.githubusercontent.com/tinkerpop/tinkerpop3/master/docs/static/images/tinkerpop3-splash.png[TinkerPop3]
+image:https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/tinkerpop3-splash.png[TinkerPop3]
 
 Documentation
 ~~~~~~~~~~~~~
 
-* link:http://tinkerpop.com/docs/3.0.0-SNAPSHOT/[user documentation]
-* link:http://tinkerpop.com/javadocs/3.0.0-SNAPSHOT/core/[core javadoc]
-* link:http://tinkerpop.com/javadocs/3.0.0-SNAPSHOT/full/[full javadoc]
+* link:http://tinkerpop.incubator.apache.org/site/docs/3.0.0-SNAPSHOT/[user documentation]
+* link:http://tinkerpop.incubator.apache.org/site/javadocs/3.0.0-SNAPSHOT/core/[core javadoc]
+* link:http://tinkerpop.incubator.apache.org/site/javadocs/3.0.0-SNAPSHOT/full/[full javadoc]
 
 Building and Testing
 ~~~~~~~~~~~~~~~~~~~~
