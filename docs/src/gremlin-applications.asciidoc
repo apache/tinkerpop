@@ -506,7 +506,7 @@ One of the roles for Gremlin Server is to provide a bridge from TinkerPop to non
 
 image::gremlin-server-flow.png[width=300,float=right] 
 
-Gremlin Server is distributed with a configuration that utilizes link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] with a custom sub-protocol.  Under this configuration, Gremlin Server accepts requests containing a Gremlin script, evaluates that script and then strems back the results.  The notion of "streaming" is depicted in the diagram to the right.  
+Gremlin Server is distributed with a configuration that utilizes link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] with a custom sub-protocol.  Under this configuration, Gremlin Server accepts requests containing a Gremlin script, evaluates that script and then streams back the results.  The notion of "streaming" is depicted in the diagram to the right.
 
 The diagram shows an incoming request to process the Gremlin script of `g.V`.  Gremlin Server evaluates that script getting an `Iterator` of vertices as a result.  Gremlin Server recognizes that the `Iterator` and steps through each `Vertex` within it.  The vertices are batched together given the `resultIterationBatchSize` configuration.  In this case, that value must be `2` given that each "response" contains two vertices.  Each response is serialized given the requested serializer type (JSON is likely best for non-JVM languages) and written back to the requesting client immediately.  Gremlin Server does not wait for the entire result to be iterated, before sending back a response.  It will send the responses as they are realized.
 
