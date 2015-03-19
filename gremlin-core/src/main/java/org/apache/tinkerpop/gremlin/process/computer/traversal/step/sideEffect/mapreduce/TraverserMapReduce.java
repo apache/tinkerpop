@@ -19,18 +19,19 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -81,17 +82,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
 
     @Override
     public Iterator<Object> generateFinalResult(final Iterator<KeyValue<Comparable, Object>> keyValues) {
-        return new Iterator<Object>() {
-            @Override
-            public boolean hasNext() {
-                return keyValues.hasNext();
-            }
-
-            @Override
-            public Object next() {
-                return keyValues.next().getValue();
-            }
-        };
+        return IteratorUtils.map(keyValues, KeyValue::getValue);
     }
 
 
