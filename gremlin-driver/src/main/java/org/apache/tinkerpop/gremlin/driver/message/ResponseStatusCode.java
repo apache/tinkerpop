@@ -59,7 +59,7 @@ public enum ResponseStatusCode {
     SERVER_ERROR(500),
 
     /**
-     * The remote {@link org.apache.tinkerpop.gremlin.process.Traversal} submitted for processing evaluated in on the
+     * The remote {@link org.apache.tinkerpop.gremlin.process.traversal.Traversal} submitted for processing evaluated in on the
      * server with errors and could not be processed.
      */
     SERVER_ERROR_TRAVERSAL_EVALUATION(596),

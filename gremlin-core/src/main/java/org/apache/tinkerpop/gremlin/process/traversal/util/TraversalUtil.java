@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
 import java.util.NoSuchElementException;
 

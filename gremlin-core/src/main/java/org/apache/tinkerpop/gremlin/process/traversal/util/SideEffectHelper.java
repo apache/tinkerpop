@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

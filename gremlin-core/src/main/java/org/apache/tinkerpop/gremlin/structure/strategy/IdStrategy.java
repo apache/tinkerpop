@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.strategy;
 
-import org.apache.tinkerpop.gremlin.process.T;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.T;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;

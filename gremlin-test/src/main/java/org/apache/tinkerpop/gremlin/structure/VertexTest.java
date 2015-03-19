@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;

@@ -28,7 +28,7 @@ import java.util.List;
 
 /**
  * An {@link InputStream} implementation that can independently process a Gryo file written with
- * {@link GryoWriter#writeVertices(java.io.OutputStream, org.apache.tinkerpop.gremlin.process.Traversal)}.
+ * {@link GryoWriter#writeVertices(java.io.OutputStream, org.apache.tinkerpop.gremlin.process.traversal.Traversal)}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

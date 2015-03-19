@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.engine;
 
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;

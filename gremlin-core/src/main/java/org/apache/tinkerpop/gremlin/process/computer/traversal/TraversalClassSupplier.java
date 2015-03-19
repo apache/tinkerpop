@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
-import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import java.util.function.Supplier;
 

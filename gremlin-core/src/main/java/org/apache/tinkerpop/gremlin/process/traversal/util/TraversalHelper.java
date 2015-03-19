@@ -18,17 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.Step;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.StepPosition;
-import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.util.BulkSet;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;

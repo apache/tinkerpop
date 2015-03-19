@@ -20,9 +20,9 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
-import org.apache.tinkerpop.gremlin.process.T;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.T;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

@@ -20,7 +20,9 @@ package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.GraphManager;
-import org.apache.tinkerpop.gremlin.process.util.MapHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.junit.Before;
 
 import java.util.ArrayList;

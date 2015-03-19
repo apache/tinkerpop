@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.graph.traversal.strategy.TinkerGraphStepStrategy;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.function;
 
-import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

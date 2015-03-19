@@ -71,7 +71,7 @@ public interface GraphReader {
 
     /**
      * Reads a set of vertices from an {@link InputStream} which were written by
-     * {@link GraphWriter#writeVertices(java.io.OutputStream, org.apache.tinkerpop.gremlin.process.Traversal)}.  This method
+     * {@link GraphWriter#writeVertices(java.io.OutputStream, org.apache.tinkerpop.gremlin.process.traversal.Traversal)}.  This method
      * will read vertex properties as well as edges given the direction supplied as an argument.
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}

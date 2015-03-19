@@ -22,11 +22,9 @@ import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -41,7 +39,7 @@ import java.util.Random;
 import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static org.junit.Assert.*;
 

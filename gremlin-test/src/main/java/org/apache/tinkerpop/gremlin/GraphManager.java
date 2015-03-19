@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin;
 
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 
 /**
  * Holds objects specified by the test suites supplying them in a static manner to the test cases.

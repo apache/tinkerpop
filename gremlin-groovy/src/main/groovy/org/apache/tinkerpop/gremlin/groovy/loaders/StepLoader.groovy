@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.groovy.function.GComparator
 import org.apache.tinkerpop.gremlin.groovy.function.GFunction
 import org.apache.tinkerpop.gremlin.groovy.function.GSupplier
 import org.apache.tinkerpop.gremlin.groovy.function.GUnaryOperator
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

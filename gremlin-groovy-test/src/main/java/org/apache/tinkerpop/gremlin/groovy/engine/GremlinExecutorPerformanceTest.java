@@ -27,7 +27,7 @@ import com.carrotsearch.junitbenchmarks.annotation.LabelType;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;

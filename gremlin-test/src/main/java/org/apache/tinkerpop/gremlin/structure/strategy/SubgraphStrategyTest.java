@@ -28,8 +28,8 @@ import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.bothE;
-import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.junit.Assert.*;
 
 /**

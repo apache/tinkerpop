@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;

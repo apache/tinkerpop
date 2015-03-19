@@ -18,16 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure;
 
-import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
-import org.apache.tinkerpop.gremlin.process.util.MapHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;

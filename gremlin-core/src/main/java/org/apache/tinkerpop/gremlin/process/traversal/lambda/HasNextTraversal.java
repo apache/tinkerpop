@@ -18,14 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
-import org.apache.tinkerpop.gremlin.process.Step;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
-import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.List;

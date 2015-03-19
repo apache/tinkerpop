@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.iterator;
 
-import org.apache.tinkerpop.gremlin.process.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.FastNoSuchElementException;
 
 import java.util.ArrayList;
 import java.util.Collection;

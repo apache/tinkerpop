@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
-import org.apache.tinkerpop.gremlin.process.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;

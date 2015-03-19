@@ -18,15 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.engine;
 
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.io.Serializable;
 import java.util.Optional;
 
 /**

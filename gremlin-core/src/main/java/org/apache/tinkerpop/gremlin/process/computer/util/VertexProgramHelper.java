@@ -20,10 +20,10 @@ package org.apache.tinkerpop.gremlin.process.computer.util;
 
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.Step;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.util.Serializer;
 
 import java.io.IOException;

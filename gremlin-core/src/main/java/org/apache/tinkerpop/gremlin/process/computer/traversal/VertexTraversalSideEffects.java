@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
-import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 

@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
-import org.apache.tinkerpop.gremlin.process.T;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.HasContainerHolder;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.graph.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.T;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;

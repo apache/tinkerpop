@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
-import org.apache.tinkerpop.gremlin.process.Step;
-import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
-import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalMatrix;
-import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 

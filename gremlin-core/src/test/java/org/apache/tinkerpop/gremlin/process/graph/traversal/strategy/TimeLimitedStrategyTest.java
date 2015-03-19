@@ -18,11 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.strategy;
 
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.TimeLimitStep;
-import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.TimeLimitedStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.junit.Test;
 

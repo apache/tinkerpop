@@ -19,18 +19,18 @@
 package org.apache.tinkerpop.gremlin;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser;
-import org.apache.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser;
-import org.apache.tinkerpop.gremlin.process.traverser.B_O_Traverser;
-import org.apache.tinkerpop.gremlin.process.traverser.O_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_PA_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_P_PA_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_Traverser;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -78,23 +78,23 @@ public interface GraphProvider {
     }};
 
     /**
-     * Create a {@link org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource} from a {@link Graph} instance.  The default implementation uses the
+     * Create a {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource} from a {@link Graph} instance.  The default implementation uses the
      * {@link org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine} so vendors should
      * override as necessary if their implementation is testing something that requires a different engine type,
-     * like those tests for {@link org.apache.tinkerpop.gremlin.process.TraversalEngine.Type}.
+     * like those tests for {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine.Type}.
      */
     public default GraphTraversalSource traversal(final Graph graph) {
         return GraphTraversalSource.build().engine(StandardTraversalEngine.build()).create(graph);
     }
 
     /**
-     * Create a {@link org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource} from a {@link Graph} instance.  The default implementation uses the
+     * Create a {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource} from a {@link Graph} instance.  The default implementation uses the
      * {@link org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine} so vendors should
      * override as necessary if their implementation is testing something that requires a different engine type,
-     * like those tests for {@link org.apache.tinkerpop.gremlin.process.TraversalEngine.Type}.
+     * like those tests for {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine.Type}.
      * <br/>
      * Implementations should apply strategies as necessary to the
-     * {@link org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource.Builder} before calling
+     * {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource.Builder} before calling
      * it's {@code create} method.
      */
     public default GraphTraversalSource traversal(final Graph graph, final TraversalStrategy... strategies) {
@@ -254,9 +254,9 @@ public interface GraphProvider {
      * <li>{@link Graph}</li>
      * <li>{@link Graph.Variables}</li>
      * <li>{@link GraphTraversal}</li>
-     * <li>{@link org.apache.tinkerpop.gremlin.process.traverser.B_O_P_PA_S_SE_SL_Traverser}</li>
+     * <li>{@link org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_P_PA_S_SE_SL_Traverser}</li>
      * <li>{@link Property}</li>
-     * <li>{@link org.apache.tinkerpop.gremlin.process.traverser.B_O_PA_S_SE_SL_Traverser}</li>
+     * <li>{@link org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_PA_S_SE_SL_Traverser}</li>
      * <li>{@link Traversal}</li>
      * <li>{@link Traverser}</li>
      * <li>{@link Vertex}</li>

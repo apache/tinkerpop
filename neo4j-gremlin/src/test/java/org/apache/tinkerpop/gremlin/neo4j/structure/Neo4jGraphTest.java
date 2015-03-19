@@ -20,9 +20,9 @@ package org.apache.tinkerpop.gremlin.neo4j.structure;
 
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.neo4j.BaseNeo4jGraphTest;
-import org.apache.tinkerpop.gremlin.process.T;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.T;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;

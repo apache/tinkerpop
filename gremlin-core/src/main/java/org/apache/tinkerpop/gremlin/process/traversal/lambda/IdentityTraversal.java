@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
-import org.apache.tinkerpop.gremlin.process.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.loaders
 
-import org.apache.tinkerpop.gremlin.process.Traversal
-import org.apache.tinkerpop.gremlin.process.Traverser
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper
 import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory

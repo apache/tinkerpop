@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process;
 
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;

@@ -20,10 +20,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -32,8 +32,8 @@ import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.bothE;
-import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;

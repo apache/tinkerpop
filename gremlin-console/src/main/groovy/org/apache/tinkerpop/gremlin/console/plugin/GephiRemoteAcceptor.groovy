@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.console.plugin
 
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
-import org.apache.tinkerpop.gremlin.process.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.structure.Vertex

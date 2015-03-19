@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.function;
 
-import org.apache.tinkerpop.gremlin.process.graph.util.Tree;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 
 import java.io.Serializable;
 import java.util.function.Supplier;

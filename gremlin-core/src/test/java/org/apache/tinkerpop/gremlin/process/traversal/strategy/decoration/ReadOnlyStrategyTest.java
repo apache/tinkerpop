@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.junit.Test;
 import org.junit.runner.RunWith;

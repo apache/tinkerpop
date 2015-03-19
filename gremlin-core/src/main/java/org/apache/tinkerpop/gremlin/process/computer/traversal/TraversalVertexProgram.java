@@ -19,11 +19,11 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
-import org.apache.tinkerpop.gremlin.process.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
@@ -35,13 +35,13 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Computer
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.process.computer.util.LambdaHolder;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.SideEffectCapStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.util.ReducingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalMatrix;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;

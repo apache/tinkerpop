@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
-import org.apache.tinkerpop.gremlin.process.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.TraversalSideEffects;
-import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;

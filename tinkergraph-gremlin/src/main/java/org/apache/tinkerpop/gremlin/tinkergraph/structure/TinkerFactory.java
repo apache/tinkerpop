@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import org.apache.tinkerpop.gremlin.process.T;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.LambdaFlatMapStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.LambdaMapStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.T;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;

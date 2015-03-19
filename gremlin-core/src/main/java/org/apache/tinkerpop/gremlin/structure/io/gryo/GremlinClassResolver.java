@@ -27,7 +27,7 @@ import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.util.IdentityObjectIntMap;
 import com.esotericsoftware.kryo.util.IntMap;
 import com.esotericsoftware.kryo.util.ObjectMap;
-import org.apache.tinkerpop.gremlin.process.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;

@@ -18,23 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.process.util;
 
-import org.apache.tinkerpop.gremlin.process.Step;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.LambdaFilterStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.IdentityStep;
-import org.apache.tinkerpop.gremlin.process.traversal.DefaultTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.step.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*;
 import static org.junit.Assert.*;
 
 /**

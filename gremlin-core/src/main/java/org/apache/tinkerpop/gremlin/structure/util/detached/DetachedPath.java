@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
-import org.apache.tinkerpop.gremlin.process.Path;
-import org.apache.tinkerpop.gremlin.process.util.path.MutablePath;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;

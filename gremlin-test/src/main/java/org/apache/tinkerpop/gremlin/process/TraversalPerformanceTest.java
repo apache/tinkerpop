@@ -26,12 +26,12 @@ import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 import com.carrotsearch.junitbenchmarks.annotation.LabelType;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
-import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

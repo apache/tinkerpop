@@ -22,7 +22,7 @@ package org.apache.tinkerpop.gremlin.util.function;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.MeanGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
 
 import java.io.Serializable;
 import java.util.function.Supplier;

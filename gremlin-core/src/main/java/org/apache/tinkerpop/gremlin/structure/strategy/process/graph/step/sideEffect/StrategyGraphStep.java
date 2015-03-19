@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.structure.strategy.process.graph.step.sideEffect;
 
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.strategy.StrategyEdge;

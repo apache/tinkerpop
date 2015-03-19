@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
-import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 
 import java.util.Optional;
 

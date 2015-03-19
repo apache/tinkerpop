@@ -19,14 +19,14 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.Step;
-import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.ComparatorHolder;
-import org.apache.tinkerpop.gremlin.process.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;

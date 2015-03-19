@@ -21,13 +21,13 @@ package org.apache.tinkerpop.gremlin.neo4j.structure;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
-import org.apache.tinkerpop.gremlin.neo4j.process.graph.traversal.step.util.Neo4jCypherIterator;
-import org.apache.tinkerpop.gremlin.neo4j.process.graph.traversal.strategy.Neo4jGraphStepStrategy;
-import org.apache.tinkerpop.gremlin.process.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.step.util.Neo4jCypherIterator;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.strategy.optimization.Neo4jGraphStepStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.StartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -70,12 +70,12 @@ import java.util.stream.Stream;
         specific = "property(single,k,v)",
         reason = "Neo4j throws a NodeNotFoundException instead of the desired IllegalStateException.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddVertexTest$Traversals",
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexTest$Traversals",
         method = "g_V_addVXlabel_animal_age_0X",
         reason = "Neo4j global graph operators stream created vertices created after the access to the global iterator."
 )
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.GroovyAddVertexTest$StandardTraversals",
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyAddVertexTest$StandardTraversals",
         method = "g_V_addVXlabel_animal_age_0X",
         reason = "Neo4j global graph operators stream created vertices created after the access to the global iterator."
 )

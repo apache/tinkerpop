@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.junit.Test;
 
 import java.util.Iterator;

@@ -18,19 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
-import org.apache.tinkerpop.gremlin.process.Step;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.Traverser;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.LambdaFilterStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddEdgeByPathStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddEdgeStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddVertexStartStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddVertexStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeOtherVertexStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeByPathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;

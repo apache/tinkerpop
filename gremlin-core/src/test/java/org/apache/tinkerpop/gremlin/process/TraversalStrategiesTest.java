@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process;
 
-import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -35,7 +38,7 @@ import static org.junit.Assert.*;
 public class TraversalStrategiesTest {
 
     /**
-     * Tests that {@link org.apache.tinkerpop.gremlin.process.TraversalStrategies#sortStrategies(java.util.List)}
+     * Tests that {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies#sortStrategies(java.util.List)}
      * works as advertised. This class defines a bunch of dummy strategies which define an order. It is verified
      * that the right order is being returned.
      */

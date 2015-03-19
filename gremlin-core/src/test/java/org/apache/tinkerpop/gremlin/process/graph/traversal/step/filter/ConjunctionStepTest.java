@@ -18,14 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter;
 
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.junit.Test;
 
 import java.util.Iterator;
 
-import static org.apache.tinkerpop.gremlin.process.graph.traversal.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.*;
 
 /**

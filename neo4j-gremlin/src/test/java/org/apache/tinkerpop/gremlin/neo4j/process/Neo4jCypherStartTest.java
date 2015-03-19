@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.neo4j.process;
 
 import org.apache.tinkerpop.gremlin.neo4j.BaseNeo4jGraphTest;
-import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 

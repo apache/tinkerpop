@@ -18,33 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.DefaultGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.__;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.filter.LambdaFilterStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddEdgeByPathStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddEdgeStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddVertexStartStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.AddVertexStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.EdgeVertexStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.map.VertexStep;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.step.sideEffect.GraphStep;
-import org.apache.tinkerpop.gremlin.process.graph.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.javatuples.Pair;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

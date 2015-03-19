@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import org.apache.tinkerpop.gremlin.process.Step;
-import org.apache.tinkerpop.gremlin.process.Traversal;
-import org.apache.tinkerpop.gremlin.process.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.util.Collections;
 import java.util.EnumSet;

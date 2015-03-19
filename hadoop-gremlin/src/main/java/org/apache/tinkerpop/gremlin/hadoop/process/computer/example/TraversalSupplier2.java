@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.example;
 
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.process.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import java.util.function.Supplier;
 

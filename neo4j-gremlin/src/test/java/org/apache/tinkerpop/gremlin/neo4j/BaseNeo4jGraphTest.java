@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.neo4j;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import org.apache.tinkerpop.gremlin.process.graph.traversal.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.After;
 import org.junit.Before;

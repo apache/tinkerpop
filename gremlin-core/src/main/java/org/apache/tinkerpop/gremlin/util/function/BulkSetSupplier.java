@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.function;
 
-import org.apache.tinkerpop.gremlin.process.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 
 import java.io.Serializable;
 import java.util.function.Supplier;

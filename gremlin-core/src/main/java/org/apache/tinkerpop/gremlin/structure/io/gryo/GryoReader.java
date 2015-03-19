@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import org.apache.tinkerpop.gremlin.process.T;
+import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
