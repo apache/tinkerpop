@@ -219,6 +219,15 @@ limitations under the License.
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
                 <version>0.11</version>
+                <executions>
+                    <execution>
+                        <id>rat-checks</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
                     <excludeSubProjects>false</excludeSubProjects>
                     <excludes>
