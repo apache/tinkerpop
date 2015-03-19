@@ -35,21 +35,21 @@ mkdir -p target/svn
 ${SVN_CMD} co https://svn.apache.org/repos/asf/incubator/tinkerpop/site/ target/svn
 
 pushd target/svn
-${SVN_CMD} rm "site/docs/${VERSION}"
-${SVN_CMD} rm "site/javadocs/${VERSION}"
+${SVN_CMD} rm "docs/${VERSION}"
+${SVN_CMD} rm "javadocs/${VERSION}"
 ${SVN_CMD} commit . -m "Docs for TinkerPop ${VERSION} are being replaced."
 popd
 
 docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc
 mvn process-resources -Djavadoc
 
-mkdir -p "target/svn/site/docs/${VERSION}"
-mkdir -p "target/svn/site/javadocs/${VERSION}/core"
-mkdir -p "target/svn/site/javadocs/${VERSION}/full"
+mkdir -p "target/svn/docs/${VERSION}"
+mkdir -p "target/svn/javadocs/${VERSION}/core"
+mkdir -p "target/svn/javadocs/${VERSION}/full"
 
-cp -R target/docs/htmlsingle/. "target/svn/site/docs/${VERSION}"
-cp -R target/site/apidocs/core/. "target/svn/site/javadocs/${VERSION}/core"
-cp -R target/site/apidocs/full/. "target/svn/site/javadocs/${VERSION}/full"
+cp -R target/docs/htmlsingle/.   "target/svn/docs/${VERSION}"
+cp -R target/site/apidocs/core/. "target/svn/javadocs/${VERSION}/core"
+cp -R target/site/apidocs/full/. "target/svn/javadocs/${VERSION}/full"
 
 pushd target/svn
 ${SVN_CMD} add * --force
