@@ -28,15 +28,27 @@ import java.util.function.Function;
  */
 public class GryoPool {
 
-    private final Queue<GryoReader> gryoReaders;
-    private final Queue<GryoWriter> gryoWriters;
+    public enum Type {READER, WRITER, READER_WRITER}
+
+    private Queue<GryoReader> gryoReaders;
+    private Queue<GryoWriter> gryoWriters;
 
     public GryoPool(final int poolSize) {
-        this.gryoReaders = new LinkedBlockingQueue<>(poolSize);
-        this.gryoWriters = new LinkedBlockingQueue<>(poolSize);
-        for (int i = 0; i < poolSize; i++) {
-            this.gryoReaders.add(GryoReader.build().create());
-            this.gryoWriters.add(GryoWriter.build().create());
+        this(poolSize, Type.READER_WRITER);
+    }
+
+    public GryoPool(final int poolSize, final Type type) {
+        if (type.equals(Type.READER) || type.equals(Type.READER_WRITER)) {
+            this.gryoReaders = new LinkedBlockingQueue<>(poolSize);
+            for (int i = 0; i < poolSize; i++) {
+                this.gryoReaders.add(GryoReader.build().create());
+            }
+        }
+        if (type.equals(Type.WRITER) || type.equals(Type.READER_WRITER)) {
+            this.gryoWriters = new LinkedBlockingQueue<>(poolSize);
+            for (int i = 0; i < poolSize; i++) {
+                this.gryoWriters.add(GryoWriter.build().create());
+            }
         }
     }
 

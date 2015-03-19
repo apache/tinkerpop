@@ -30,12 +30,13 @@ import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.T;
-import org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineCache;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
+import javax.script.Bindings;
 import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Iterator;
@@ -68,8 +69,8 @@ public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritabl
         final FileSystem fs = FileSystem.get(configuration);
         try {
             this.engine.eval(new InputStreamReader(fs.open(new Path(configuration.get(SCRIPT_FILE)))));
-        } catch (Exception e) {
-            throw new IOException(e.getMessage());
+        } catch (final ScriptException e) {
+            throw new IOException(e.getMessage(), e);
         }
     }
 
@@ -78,7 +79,7 @@ public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritabl
         while (true) {
             if (!this.lineRecordReader.nextKeyValue()) return false;
             try {
-                final javax.script.Bindings bindings = this.engine.createBindings();
+                final Bindings bindings = this.engine.createBindings();
                 bindings.put(LINE, this.lineRecordReader.getCurrentValue().toString());
                 bindings.put(FACTORY, new ScriptElementFactory());
                 final Vertex vertex = (Vertex) engine.eval(READ_CALL, bindings);
@@ -86,8 +87,8 @@ public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritabl
                     this.vertexWritable.set(vertex);
                     return true;
                 }
-            } catch (Exception e) {
-                throw new IOException(e.getMessage());
+            } catch (final ScriptException e) {
+                throw new IOException(e.getMessage(), e);
             }
         }
     }

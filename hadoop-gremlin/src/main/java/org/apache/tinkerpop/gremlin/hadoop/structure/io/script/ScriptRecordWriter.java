@@ -18,16 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.script;
 
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineCache;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
+import javax.script.Bindings;
 import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -58,12 +61,13 @@ public class ScriptRecordWriter extends RecordWriter<NullWritable, VertexWritabl
     public ScriptRecordWriter(final DataOutputStream out, final TaskAttemptContext context) throws IOException {
         this.out = out;
         final Configuration configuration = context.getConfiguration();
-        this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
+        this.engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, Integer.MAX_VALUE);
+        //this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
         final FileSystem fs = FileSystem.get(configuration);
         try {
             this.engine.eval(new InputStreamReader(fs.open(new Path(configuration.get(SCRIPT_FILE)))));
-        } catch (Exception e) {
-            throw new IOException(e.getMessage());
+        } catch (final ScriptException e) {
+            throw new IOException(e.getMessage(),e);
         }
     }
 
@@ -71,14 +75,15 @@ public class ScriptRecordWriter extends RecordWriter<NullWritable, VertexWritabl
     public void write(final NullWritable key, final VertexWritable vertex) throws IOException {
         if (null != vertex) {
             try {
-                this.engine.put(VERTEX, vertex.get());
-                final String line = (String) engine.eval(WRITE_CALL);
+                final Bindings bindings = this.engine.createBindings();
+                bindings.put(VERTEX, vertex.get());
+                final String line = (String) engine.eval(WRITE_CALL, bindings);
                 if (line != null) {
-                    out.write(line.getBytes(UTF8));
+                    this.out.write(line.getBytes(UTF8));
                     this.out.write(NEWLINE);
                 }
-            } catch (Exception e) {
-                throw new IOException(e.getMessage());
+            } catch (final ScriptException e) {
+                throw new IOException(e.getMessage(), e);
             }
         }
     }
