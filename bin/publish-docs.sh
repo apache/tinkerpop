@@ -28,7 +28,7 @@ if [ "${USERNAME}" == "" ]; then
 fi
 
 SVN_CMD="svn --no-auth-cache --username=${USERNAME}"
-VERSION=$(cat pom.xml | grep -a1 '<artifactId>tinkerpop</artifactId>' | grep '<version>' | grep -Po '(?<=>).*(?=<)')
+VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep '<version>' | awk -F '>' '{print $2}' | awk -F '<' '{print $1}')
 
 rm -rf target
 mkdir -p target/svn

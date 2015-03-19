@@ -113,16 +113,16 @@ public final class TinkerHelper {
         return null == vertex.properties ? Collections.emptyMap() : vertex.properties;
     }
 
-    public static void autoUpdateIndex(final TinkerEdge edge, final String key, final Object oldValue, final Object value) {
+    public static void autoUpdateIndex(final TinkerEdge edge, final String key, final Object newValue, final Object oldValue) {
         final TinkerGraph graph = (TinkerGraph) edge.graph();
         if (graph.edgeIndex != null)
-            graph.edgeIndex.autoUpdate(key, value, oldValue, edge);
+            graph.edgeIndex.autoUpdate(key, newValue, oldValue, edge);
     }
 
-    public static void autoUpdateIndex(final TinkerVertex vertex, final String key, final Object oldValue, final Object value) {
+    public static void autoUpdateIndex(final TinkerVertex vertex, final String key, final Object newValue, final Object oldValue) {
         final TinkerGraph graph = (TinkerGraph) vertex.graph();
         if (graph.vertexIndex != null)
-            graph.vertexIndex.autoUpdate(key, value, oldValue, vertex);
+            graph.vertexIndex.autoUpdate(key, newValue, oldValue, vertex);
     }
 
     public static void removeElementIndex(final TinkerVertex vertex) {
