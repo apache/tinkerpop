@@ -124,7 +124,7 @@ link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process 
 g.V(1).as('a').out('created')
 g.V(1).as('a').out('created').in('created')
 g.V(1).as('a').out('created').in('created').except('a') <1>
-g.V(1).as('a').out('created').in('created').except('a').addBothE('co-developer','a')
+g.V(1).as('a').out('created').in('created').except('a').addInE('co-developer','a')
 g.V(1).out('co-developer').values('name')
 g.V(1).out('co-developer').in('co-developer')
 ----
