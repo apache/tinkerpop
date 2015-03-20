@@ -126,7 +126,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, WrappedVertex<
 
         this.vertex.graph.tx().readWrite();
         try {
-            if (this.node.hasProperty(key))
+            if (isNode() && this.node.hasProperty(key))
                 return new Neo4jProperty<>(this, key, (U) this.node.getProperty(key));
             else
                 return Property.empty();

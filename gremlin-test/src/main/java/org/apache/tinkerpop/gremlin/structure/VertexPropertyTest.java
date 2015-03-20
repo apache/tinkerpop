@@ -488,6 +488,15 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+        public void shouldReturnEmptyIfNoMetaProperties() {
+            final Vertex v = graph.addVertex();
+            final VertexProperty<String> vp = v.property("name", "marko");
+            assertEquals(Property.empty(), vp.property("name"));
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldSupportPropertiesOnMultiProperties() {

@@ -25,6 +25,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added test to enforce return of an empty `Property` on `VertexProperty.property(k)` if no meta properties exist.
+* Fixed bug in Neo4j where return of an empty meta property was returning a `NullPointerException`.
 * Refactored step API -- the TinkerPop3 steps are the foundation for any domain specific language (including graph).
 * `MapReduce` now has `workerStart(Stage)` and `workerEnd(Stage)` methods with analagous semantics to `VertexProgram`.
 * Hadoop-Gremlin `ObjectWritable` now leverages Kryo for data serialization.
