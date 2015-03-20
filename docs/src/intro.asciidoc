@@ -50,8 +50,8 @@ TinkerPop3 is the third incarnation of the TinkerPop graph computing framework. 
  ** `Traversal<S,E>`: a functional data flow process transforming objects of type `S` into object of type `E`.
  *** `GraphTraversal`: a traversal DSL that is oriented towards the semantics of the raw graph (i.e. vertices, edges, etc.).
  * `GraphComputer`: a system that processes the graph in parallel and potentially, distributed over a multi-machine cluster.
- ** `VertexProgram`: a piece of code executed at all vertices in a logically parallel fashion with intercommunication between code via message passing.
- ** `MapReduce`: a process that analyzes all vertices in the graph in parallel and reduces the isolated analyses into a single reduced result.
+ ** `VertexProgram`: code executed at all vertices in a logically parallel manner with intercommunication via message passing.
+ ** `MapReduce`: a computations that analyzes all vertices in the graph in parallel and yields a single reduced result.
 
 IMPORTANT: TinkerPop3 is licensed under the popular link:http://www.apache.org/licenses/LICENSE-2.0.html[Apache2] free software license. However, note that the underlying graph engine used with TinkerPop3 may have a difference license. Thus, be sure to respect the license caveats of the vendor product.
 

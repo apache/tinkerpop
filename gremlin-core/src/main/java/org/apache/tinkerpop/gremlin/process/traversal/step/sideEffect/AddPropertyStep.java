@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -33,18 +35,31 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
 
+    private final VertexProperty.Cardinality cardinality;
     private final String key;
     private final Object value;
+    private final Object[] vertexPropertyKeyValues;
+    private final boolean asVertex;
 
-    public AddPropertyStep(final Traversal.Admin traversal, final String key, final Object value) {
+    public AddPropertyStep(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final String key, final Object value, final Object... vertexPropertyKeyValues) {
         super(traversal);
         this.key = key;
         this.value = value;
+        this.vertexPropertyKeyValues = vertexPropertyKeyValues;
+        this.asVertex = null != cardinality || this.vertexPropertyKeyValues.length > 0;
+        this.cardinality = null == cardinality ? VertexProperty.Cardinality.list : cardinality;
+    }
+
+    public AddPropertyStep(final Traversal.Admin traversal, final String key, final Object value, final Object... vertexPropertyKeyValues) {
+        this(traversal, null, key, value, vertexPropertyKeyValues);
     }
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        traverser.get().property(this.key, this.value);
+        if (this.asVertex)
+            ((Vertex) traverser.get()).property(this.cardinality, this.key, this.value, this.vertexPropertyKeyValues);
+        else
+            traverser.get().property(this.key, this.value);
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.Collection;
@@ -276,8 +277,12 @@ public class __ {
         return __.<A>start().addOutE(edgeLabel, stepLabel, propertyKeyValues);
     }
 
-    public static <A> GraphTraversal<A, A> property(final String key, final Object value) {
-        return __.<A>start().property(key, value);
+    public static <A> GraphTraversal<A, A> property(final String key, final Object value, final Object... keyValues) {
+        return __.<A>start().property(key, value, keyValues);
+    }
+
+    public static <A> GraphTraversal<A, A> property(final VertexProperty.Cardinality cardinality, final String key, final Object value, final Object... keyValues) {
+        return __.<A>start().property(cardinality, key, value, keyValues);
     }
 
     ///////////////////// FILTER STEPS /////////////////////
