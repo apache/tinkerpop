@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.AbstractTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
@@ -379,32 +380,21 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         return traversal;
     }
 
-    class Neo4jTransaction implements Transaction {
-        private Consumer<Transaction> readWriteConsumer;
-        private Consumer<Transaction> closeConsumer;
+    class Neo4jTransaction extends AbstractTransaction {
 
         protected final ThreadLocal<org.neo4j.graphdb.Transaction> threadLocalTx = ThreadLocal.withInitial(() -> null);
 
         public Neo4jTransaction() {
-            // auto transaction behavior
-            readWriteConsumer = READ_WRITE_BEHAVIOR.AUTO;
-
-            // commit on close
-            closeConsumer = CLOSE_BEHAVIOR.COMMIT;
+            super(Neo4jGraph.this);
         }
 
         @Override
-        public void open() {
-            if (isOpen())
-                throw Transaction.Exceptions.transactionAlreadyOpen();
-            else
-                threadLocalTx.set(getBaseGraph().beginTx());
+        public void doOpen() {
+            threadLocalTx.set(getBaseGraph().beginTx());
         }
 
         @Override
-        public void commit() {
-            readWriteConsumer.accept(this);
-
+        public void doCommit() {
             try {
                 threadLocalTx.get().success();
             } finally {
@@ -414,9 +404,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         }
 
         @Override
-        public void rollback() {
-            readWriteConsumer.accept(this);
-
+        public void doRollback() {
             try {
                 javax.transaction.Transaction t = transactionManager.getTransaction();
                 if (null == t || t.getStatus() == Status.STATUS_ROLLEDBACK)
@@ -432,40 +420,8 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         }
 
         @Override
-        public <R> Workload<R> submit(final Function<Graph, R> work) {
-            return new Workload<>(Neo4jGraph.this, work);
-        }
-
-        @Override
-        public <G extends Graph> G create() {
-            throw Transaction.Exceptions.threadedTransactionsNotSupported();
-        }
-
-        @Override
         public boolean isOpen() {
             return (threadLocalTx.get() != null);
-        }
-
-        @Override
-        public void readWrite() {
-            readWriteConsumer.accept(this);
-        }
-
-        @Override
-        public void close() {
-            closeConsumer.accept(this);
-        }
-
-        @Override
-        public Transaction onReadWrite(final Consumer<Transaction> consumer) {
-            readWriteConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull);
-            return this;
-        }
-
-        @Override
-        public Transaction onClose(final Consumer<Transaction> consumer) {
-            closeConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onCloseBehaviorCannotBeNull);
-            return this;
         }
     }
 
