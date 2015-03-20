@@ -131,9 +131,6 @@ g.V().has('name','gremlin').inE('uses').
       order().by('skill',incr).as('a').
       outV().as('b').
       select().by('skill').by('name') // rank the users of gremlin by their skill level
-graph.variables() // access the global graph variables
-graph.variables().get('creator')
-graph.variables().get('creator').get()
 ----
 
 Graph Variables
@@ -145,7 +142,7 @@ TinkerPop3 introduces the concept of `Graph.Variables`. Variables are key/value 
  * *Global permissions*: What are the access rights for particular groups?
  * *System user information*: Who are the admins of the system?
 
-An example of graph variables in use is presented below in Gremlin-Groovy:
+An example of graph variables in use is presented below:
 
 [gremlin-groovy]
 ----
@@ -159,6 +156,8 @@ graph.variables().get('systemUsers').get()
 graph.variables().remove('systemAdmins')
 graph.variables().keys()
 ----
+
+:IMPORTANT Graph variables are not intended to be subject to heavy, concurrent mutation nor to be used in complex computations. The intention is to have a location to store data about the graph for administrative purposes.
 
 [[transactions]]
 Graph Transactions
@@ -700,6 +699,7 @@ gremlin> r = LegacyGraphSONReader.build().create()
 gremlin> r.readGraph(new FileInputStream('/tmp/tp2.json'),graph)
 ==>null
 gremlin> g = graph.traversal(standard)
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
 gremlin> g.E()
 ==>e[11][4-created->3]
 ==>e[12][6-created->3]
@@ -712,7 +712,7 @@ gremlin> g.E()
 Namespace Conventions
 ---------------------
 
-End users, <<implementations,vendors>>, <<graphstrategy,strategy>> developers, <<graphcomputer,`GraphComputer`>> algorithm designers, <<gremlin-plugins,GremlinPlugin>> creators, etc. all leverages properties on elements to store information. There are a few conventions that should be respected when naming property keys to ensure that conflicts between these stakeholders do not conflict.
+End users, <<implementations,vendors>>, <<graphstrategy,strategy>> developers, <<graphcomputer,`GraphComputer`>> algorithm designers, <<gremlin-plugins,GremlinPlugin>> creators, etc. all leverage properties on elements to store information. There are a few conventions that should be respected when naming property keys to ensure that conflicts between these stakeholders do not conflict.
 
 * End users are granted the _flat namespace_ (e.g. `name`, `age`, `location`) to key their properties and label their elements.
 * Vendors are granted the _hidden namespace_ (e.g. `~metadata`) to to key their properties and labels. Data key'd as such is only accessible via the vendor implementation code and no other stakeholders are granted read nor write access to data prefixed with "~" (see `Graph.Hidden`). Test coverage and exceptions exist to ensure that vendors respect this hard boundary.

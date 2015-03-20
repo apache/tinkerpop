@@ -23,11 +23,13 @@ image::gremlin-running.png[width=125]
 At the most general level there is `Traversal<S,E>` which implements `Iterator<E>`, where the `S` stands for start and the `E` stands for end. A traversal is composed of four primary components:
   
  . `Step<S,E>`: an individual function applied to `S` to yield `E`. Steps are chained within a traversal.
- . `TraversalStrategy`: interceptor methods to alter the execution of the traversal (i.e. query re-writing typically used only by vendors).
+ . `TraversalStrategy`: interceptor methods to alter the execution of the traversal (e.g. query re-writing).
  . `TraversalSideEffects`: key/value pairs that can be used to store global information about the traversal.
  . `Traverser<T>`: the object propagating through the `Traversal` currently representing an object of type `T`. 
 
 The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal<S,E>`. GraphTraversal provides an interpretation of the graph data in terms of vertices, edges, etc. and thus, a graph traversal link:http://en.wikipedia.org/wiki/Domain-specific_language[DSL].
+
+:IMPORTANT The underlying `Step` implementations provided by TinkerPop should encompass most of the functionality required by a DSL author. It is important that DSL authors leverage the provided steps as then the common optimization and decoration strategies can reason on the underlying traversal sequence. If new steps are introduced, then common traversal strategies may not function properly.
 
 [[graph-traversal-steps]]
 Graph Traversal Steps
@@ -40,6 +42,8 @@ A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, Edge, or VertexPr
 [[lambda-steps]]
 Lambda Steps
 ~~~~~~~~~~~~
+
+CAUTION: Lambda steps are presented for educational purposes as they represent the foundational constructs of the Gremlin language. In practice, lambda steps should be avoided and traversal verification strategies exist to disallow their use unless explicitly "turned off." For more information on the problems with lambdas, please read <<a-note-on-lambdas,A Note on Lambdas>>.
 
 There are four generic steps by which all other specific steps described later extend.
 
@@ -63,8 +67,6 @@ The `Traverser<S>` object provides access to:
  . The local data structure associated with this traverser -- `Traverser.sack()`.
  . The side-effects associated with the traversal -- `Traverser.sideEffects()`.
   .. A helper shorthand to get a particular side-effect -- `Traverser.sideEffect(String) == Traverser.sideEffects().get(String)`.
-
-IMPORTANT: If a specific traversal step can do the necessary step-computation, use it. Lambda steps can not be optimized by the Gremlin <<traversalstrategy,traversal strategies>> and should only be used when the requisite computation does not have a corresponding standard Gremlin step. For example, instead of `filter{it.get().property('name').isPresent()}` use `has('name')`.
 
 image:map-lambda.png[width=150,float=right]
 [gremlin-groovy,modern]
@@ -115,24 +117,66 @@ g.V().choose(has('name','marko'),
 AddEdge Step
 ~~~~~~~~~~~~
 
+It is possible to mutate the graph within a traversal. The typical mutations are adding/removing vertices, edges, and properties. To add edges, there are a collection of `addE()`-steps (*map*/*sideEffect*).
+
+[gremlin-groovy,modern]
+----
+g.V(1).addOutE('co-worker',g.V(2),'year',2009) <1>
+g.V(4).addInE('createdBy',g.V(3,5)) <2>
+g.V(1).addOutE('livesNear',g.V(2),'year',2009).inV().inE('livesNear').values('year') <3>
+g.V(1).out('livesNear')
+----
+
+<1> Add an outgoing co-worker edge from the marko-vertex to the vadas-vertex with a year property of value 2009.
+<2> Add incoming createdBy edges from the josh-vertex to the lop- and ripple-vertices.
+<3> The newly created edge is a traversable object.
+
 image::addedge-step.png[width=450]
 
-link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit in the data was is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is defined by the traversal description. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived. This is made possible with `addE()`-step (*sideEffect*).
+link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit in the data was is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is defined by the traversal description. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived.
 
 [gremlin-groovy,modern]
 ----
 g.V(1).as('a').out('created')
 g.V(1).as('a').out('created').in('created')
 g.V(1).as('a').out('created').in('created').except('a') <1>
-g.V(1).as('a').out('created').in('created').except('a').addInE('co-developer','a')
+g.V(1).as('a').out('created').in('created').except('a').
+   addOutE('co-developer','a').outV().
+   addInE('co-developer','a')
 g.V(1).out('co-developer').values('name')
-g.V(1).out('co-developer').in('co-developer')
+g.V(1).in('co-developer').values('name')
 ----
 
 <1> Marko can't be a co-developer with himself.
 
-Note that it is possible to add an arbitrary number of key/value pairs (i.e. Object var args) to the `addE` steps to have those attached as properties to the created edges. 
+[[addvertex-step]]
+AddVertex Step
+~~~~~~~~~~~~~~
 
+The `addV()`-step is used to add vertices to the graph (*map*/*sideEffect*). For every incoming object, a vertex is created. Moreover, `GraphTraversalSource` maintains an `addV()` method.
+
+[gremlin-groovy,modern]
+----
+g.addV(label,'person','name','stephen')
+g.V().values('name')
+g.V().outE('knows').addV('name','nothing')
+g.V().has('name','nothing')
+g.V().has('name','nothing').bothE()
+----
+
+[[addproperty-step]]
+AddProperty Step
+~~~~~~~~~~~~~~~~
+
+The `property()`-step is used to add properties to the elements of the graph (*sideEffect*). Unlike `addV()` and `addE()`, `property()` is a full sideEffect step in that it does not return the property it created, but the element that streamed into it.
+
+[gremlin-groovy,modern]
+----
+g.V(1).property('country','usa')
+g.V(1).property('city','santa fe').property('state','new mexico').valueMap()
+g.V(1).property(list,'age',35)
+g.V(1).valueMap()
+----
 
 [[aggregate-step]]
 Aggregate Step
@@ -1401,9 +1445,9 @@ image:lambda.png[width=150,float=right] A link:http://en.wikipedia.org/wiki/Anon
 
 [gremlin-groovy,modern]
 ----
-g.V().filter {it.get().value('name') == 'marko'}.out('created').map {
-    it.get().value('name')
-} <1>
+g.V().filter{it.get().value('name') == 'marko'}.
+      flatMap{it.get().vertices('created')}.
+      map {it.get().value('name')} <1>
 g.V().has('name','marko').out('created').values('name') <2>
 ----
 
