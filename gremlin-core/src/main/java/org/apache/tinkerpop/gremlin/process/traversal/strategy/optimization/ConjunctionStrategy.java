@@ -33,7 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ConjunctionStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
+public final class ConjunctionStrategy extends AbstractTraversalStrategy {
 
     private static final ConjunctionStrategy INSTANCE = new ConjunctionStrategy();
 

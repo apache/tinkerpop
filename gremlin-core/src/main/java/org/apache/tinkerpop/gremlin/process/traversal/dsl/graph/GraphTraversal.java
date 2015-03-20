@@ -753,7 +753,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             public void barrierConsumer(TraverserSet traverserSet) {
 
             }
-        });
+        }); // TODO: THIS IS NOT SERIALIZABLE
     }
 
     ////

@@ -18,15 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -45,9 +45,26 @@ public class GraphTraversalSource implements TraversalSource {
     public static final Builder standard = GraphTraversalSource.build().engine(StandardTraversalEngine.build());
     public static final Builder computer = GraphTraversalSource.build().engine(ComputerTraversalEngine.build());
 
+    public static Builder standard(final TraversalStrategy... strategies) {
+        final Builder builder = GraphTraversalSource.build().engine(StandardTraversalEngine.build());
+        for (final TraversalStrategy strategy : strategies) {
+            builder.strategy(strategy);
+        }
+        return builder;
+    }
+
     public static Builder computer(final Class<? extends GraphComputer> graphComputerClass) {
         return GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(graphComputerClass));
     }
+
+    public static Builder standard(final Class<? extends GraphComputer> graphComputerClass, final TraversalStrategy... strategies) {
+        final Builder builder = GraphTraversalSource.computer(graphComputerClass);
+        for (final TraversalStrategy strategy : strategies) {
+            builder.strategy(strategy);
+        }
+        return builder;
+    }
+
 
     ////
 

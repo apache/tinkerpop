@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.function.Predicate;
@@ -27,7 +28,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LambdaFilterStep<S> extends FilterStep<S> {
+public final class LambdaFilterStep<S> extends FilterStep<S> implements LambdaHolder {
 
     private final Predicate<Traverser<S>> predicate;
 

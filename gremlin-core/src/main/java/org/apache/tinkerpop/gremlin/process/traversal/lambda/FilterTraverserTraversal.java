@@ -19,13 +19,14 @@
 package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 
 import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class FilterTraverserTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
+public final class FilterTraverserTraversal<S, E> extends AbstractLambdaTraversal<S, E> implements LambdaHolder {
 
     private boolean filter = true;
     private final Predicate<Traverser<S>> predicate;

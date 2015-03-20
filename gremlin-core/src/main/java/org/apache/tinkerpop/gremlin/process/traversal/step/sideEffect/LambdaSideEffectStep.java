@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.function.Consumer;
@@ -27,7 +28,7 @@ import java.util.function.Consumer;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LambdaSideEffectStep<S> extends SideEffectStep<S> {
+public final class LambdaSideEffectStep<S> extends SideEffectStep<S> implements LambdaHolder {
 
     private final Consumer<Traverser<S>> consumer;
 

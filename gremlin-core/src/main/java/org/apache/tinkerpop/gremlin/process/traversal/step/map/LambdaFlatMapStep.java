@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Iterator;
@@ -28,7 +29,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LambdaFlatMapStep<S, E> extends FlatMapStep<S, E> {
+public final class LambdaFlatMapStep<S, E> extends FlatMapStep<S, E> implements LambdaHolder {
 
     private final Function<Traverser<S>, Iterator<E>> function;
 
