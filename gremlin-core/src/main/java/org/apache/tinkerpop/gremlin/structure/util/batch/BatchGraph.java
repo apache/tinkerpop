@@ -340,6 +340,21 @@ public class BatchGraph<G extends Graph> implements Graph {
         public void open() {
             if (supportsTx) baseGraph.tx().open();
         }
+
+        @Override
+        public void addTransactionListener(final Consumer<Status> listener) {
+            throw new UnsupportedOperationException("Listeners not supported during batch loading");
+        }
+
+        @Override
+        public void removeTransactionListener(final Consumer<Status> listener) {
+            throw new UnsupportedOperationException("Listeners not supported during batch loading");
+        }
+
+        @Override
+        public void clearTransactionListeners() {
+            throw new UnsupportedOperationException("Listeners not supported during batch loading");
+        }
     }
 
     private class BatchVertex implements Vertex {

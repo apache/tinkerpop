@@ -26,7 +26,13 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * A set of methods that allow for control of transactional behavior of a {@link Graph} instance.
+ * A set of methods that allow for control of transactional behavior of a {@link Graph} instance. Vendors may
+ * consider using {@link org.apache.tinkerpop.gremlin.structure.util.AbstractTransaction} as a base implementation
+ * that provides default features for most of these methods.
+ * <br/>
+ * It is expected that this interface be implemented by vendors in a {@link ThreadLocal} fashion. In other words
+ * transactions are bound to the current thread, which means that any graph operation executed by the thread occurs
+ * in the context of that transaction and that there may only be one thread executing in a single transaction.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -88,6 +94,31 @@ public interface Transaction extends Closeable {
      * function.
      */
     public Transaction onClose(final Consumer<Transaction> consumer);
+
+    /**
+     * Adds a listener that is called back with a status when a commit or rollback is successful.  It is expected
+     * that listeners be bound to the current thread as is standard for transactions.  Therefore a listener registered
+     * in the current thread will not get callback events from a commit or rollback call in a different thread.
+     */
+    public void addTransactionListener(final Consumer<Status> listener);
+
+    /**
+     * Removes a transaction listener.
+     */
+    public void removeTransactionListener(final Consumer<Status> listener);
+
+    /**
+     * Removes all transaction listeners.
+     */
+    public void clearTransactionListeners();
+
+    /**
+     * A status provided to transaction listeners to inform whether a transaction was successfully committed
+     * or rolled back.
+     */
+    public enum Status {
+        COMMIT, ROLLBACK
+    }
 
     public static class Exceptions {
         public static IllegalStateException transactionAlreadyOpen() {

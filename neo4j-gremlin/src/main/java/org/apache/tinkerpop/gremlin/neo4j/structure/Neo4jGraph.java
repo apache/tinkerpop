@@ -47,15 +47,12 @@ import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.tooling.GlobalGraphOperations;
 
-import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -394,9 +391,11 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         }
 
         @Override
-        public void doCommit() {
+        public void doCommit() throws TransactionException {
             try {
                 threadLocalTx.get().success();
+            } catch (Exception ex) {
+                throw new TransactionException(ex);
             } finally {
                 threadLocalTx.get().close();
                 threadLocalTx.remove();
@@ -404,15 +403,15 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         }
 
         @Override
-        public void doRollback() {
+        public void doRollback() throws TransactionException {
             try {
                 javax.transaction.Transaction t = transactionManager.getTransaction();
-                if (null == t || t.getStatus() == Status.STATUS_ROLLEDBACK)
+                if (null == t || t.getStatus() == javax.transaction.Status.STATUS_ROLLEDBACK)
                     return;
 
                 threadLocalTx.get().failure();
             } catch (SystemException e) {
-                throw new RuntimeException(e);
+                throw new TransactionException(e);
             } finally {
                 threadLocalTx.get().close();
                 threadLocalTx.remove();

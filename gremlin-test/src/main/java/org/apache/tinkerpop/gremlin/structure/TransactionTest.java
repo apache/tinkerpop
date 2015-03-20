@@ -176,6 +176,60 @@ public class TransactionTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldNotifyTransactionListenersOnCommitSuccess() {
+        final AtomicInteger count = new AtomicInteger(0);
+        g.tx().addTransactionListener(s -> {
+            if (s == Transaction.Status.COMMIT) count.incrementAndGet();
+        });
+        g.tx().commit();
+
+        assertEquals(1, count.get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldNotifyTransactionListenersInSameThreadOnlyOnCommitSuccess() throws Exception {
+        final AtomicInteger count = new AtomicInteger(0);
+        g.tx().addTransactionListener(s -> {
+            if (s == Transaction.Status.COMMIT) count.incrementAndGet();
+        });
+
+        final Thread t = new Thread(() -> g.tx().commit());
+        t.start();
+        t.join();
+
+        assertEquals(0, count.get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldNotifyTransactionListenersOnRollbackSuccess() {
+        final AtomicInteger count = new AtomicInteger(0);
+        g.tx().addTransactionListener(s -> {
+            if (s == Transaction.Status.ROLLBACK) count.incrementAndGet();
+        });
+        g.tx().rollback();
+
+        assertEquals(1, count.get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldNotifyTransactionListenersInSameThreadOnlyOnRollbackSuccess() throws Exception {
+        final AtomicInteger count = new AtomicInteger(0);
+        g.tx().addTransactionListener(s -> {
+            if (s == Transaction.Status.ROLLBACK) count.incrementAndGet();
+        });
+
+        final Thread t = new Thread(() -> g.tx().rollback());
+        t.start();
+        t.join();
+
+        assertEquals(0, count.get());
+    }
+
+    @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)

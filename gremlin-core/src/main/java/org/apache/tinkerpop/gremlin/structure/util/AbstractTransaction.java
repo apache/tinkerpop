@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.structure.util;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -30,6 +32,9 @@ import java.util.function.Function;
  * can use this class as a starting point for their own implementations. Implementers should note that this
  * class assumes that threaded transactions are not enabled.  Vendors should explicitly override
  * {@link #create} to implement that functionality if required.
+ * <br/>
+ * Note that transaction listeners are registered in a {@link ThreadLocal} fashion which matches the pattern
+ * expected of vendor implementations of a {@link Transaction}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -38,6 +43,13 @@ public abstract class AbstractTransaction implements Transaction {
     protected Consumer<Transaction> closeConsumer;
 
     private Graph g;
+
+    private ThreadLocal<List<Consumer<Status>>> transactionListeners = new ThreadLocal<List<Consumer<Status>>>() {
+        @Override
+        protected List<Consumer<Status>> initialValue() {
+            return new ArrayList<>();
+        }
+    };
 
     public AbstractTransaction(final Graph g) {
         // auto transaction behavior
@@ -59,13 +71,13 @@ public abstract class AbstractTransaction implements Transaction {
      * Called with {@link #commit} after the {@link #readWriteConsumer} has been notified.  Implementers should
      * include their commit logic here.
      */
-    protected abstract void doCommit();
+    protected abstract void doCommit() throws TransactionException;
 
     /**
      * Called with {@link #rollback} after the {@link #readWriteConsumer} has been notified.  Implementers should
      * include their rollback logic here.
      */
-    protected abstract void doRollback();
+    protected abstract void doRollback() throws TransactionException;
 
     @Override
     public void open() {
@@ -78,13 +90,25 @@ public abstract class AbstractTransaction implements Transaction {
     @Override
     public void commit() {
         readWriteConsumer.accept(this);
-        doCommit();
+        try {
+            doCommit();
+        } catch (TransactionException te) {
+            throw new RuntimeException(te);
+        }
+
+        transactionListeners.get().forEach(c -> c.accept(Status.COMMIT));
     }
 
     @Override
     public void rollback() {
         readWriteConsumer.accept(this);
-        doRollback();
+        try {
+            doRollback();
+        } catch (TransactionException te) {
+            throw new RuntimeException(te);
+        }
+
+        transactionListeners.get().forEach(c -> c.accept(Status.ROLLBACK));
     }
 
     @Override
@@ -117,5 +141,38 @@ public abstract class AbstractTransaction implements Transaction {
     public Transaction onClose(final Consumer<Transaction> consumer) {
         closeConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onCloseBehaviorCannotBeNull);
         return this;
+    }
+
+    @Override
+    public void addTransactionListener(final Consumer<Status> listener) {
+        transactionListeners.get().add(listener);
+    }
+
+    @Override
+    public void removeTransactionListener(final Consumer<Status> listener) {
+        transactionListeners.get().remove(listener);
+    }
+
+    @Override
+    public void clearTransactionListeners() {
+        transactionListeners.get().clear();
+    }
+
+    /**
+     * An "internal" exception thrown by vendors when calls to {@link AbstractTransaction#doCommit} or
+     * {@link AbstractTransaction#doRollback} fail.
+     */
+    public static class TransactionException extends Exception {
+        public TransactionException(final String message) {
+            super(message);
+        }
+
+        public TransactionException(final Throwable cause) {
+            super(cause);
+        }
+
+        public TransactionException(final String message, final Throwable cause) {
+            super(message, cause);
+        }
     }
 }
