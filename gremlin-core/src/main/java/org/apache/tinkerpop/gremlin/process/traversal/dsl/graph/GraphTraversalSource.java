@@ -53,18 +53,13 @@ public class GraphTraversalSource implements TraversalSource {
         return builder;
     }
 
-    public static Builder computer(final Class<? extends GraphComputer> graphComputerClass) {
-        return GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(graphComputerClass));
-    }
-
-    public static Builder standard(final Class<? extends GraphComputer> graphComputerClass, final TraversalStrategy... strategies) {
-        final Builder builder = GraphTraversalSource.computer(graphComputerClass);
+    public static Builder computer(final Class<? extends GraphComputer> graphComputerClass, final TraversalStrategy... strategies) {
+        final Builder builder = GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(graphComputerClass));
         for (final TraversalStrategy strategy : strategies) {
             builder.strategy(strategy);
         }
         return builder;
     }
-
 
     ////
 

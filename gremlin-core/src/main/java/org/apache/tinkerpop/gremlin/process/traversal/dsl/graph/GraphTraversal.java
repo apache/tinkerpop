@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.MapTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.MapTraverserTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TrueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
@@ -769,7 +770,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> by(final T tokenProjection) {
-        ((TraversalParent) this.asAdmin().getEndStep()).addLocalChild(new MapTraversal<>(tokenProjection));
+        ((TraversalParent) this.asAdmin().getEndStep()).addLocalChild(new TokenTraversal<>(tokenProjection));
         return this;
     }
 

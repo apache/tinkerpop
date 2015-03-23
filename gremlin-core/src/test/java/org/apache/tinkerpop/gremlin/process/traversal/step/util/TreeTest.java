@@ -16,9 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.graph.util;
+package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.junit.Test;
 
 import java.util.AbstractMap;
