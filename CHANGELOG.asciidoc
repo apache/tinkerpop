@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Vertex.property()` default behavior is now `Cardinality.single`.
 * Introduce `AbstractTransaction` to simplify implementation of standard transactional features for vendors.
 * Added `EventStrategy` to generate `Graph` modification events to listeners.
 * Added test to enforce return of an empty `Property` on `VertexProperty.property(k)` if no meta properties exist.
