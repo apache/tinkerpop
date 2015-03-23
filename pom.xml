@@ -231,6 +231,7 @@ limitations under the License.
                 <configuration>
                     <excludeSubProjects>false</excludeSubProjects>
                     <excludes>
+                        <exclude>.repository/**</exclude>
                         <exclude>docs/static/**</exclude>
                         <exclude>docs/stylesheets/**</exclude>
                         <exclude>**/target/**</exclude>
