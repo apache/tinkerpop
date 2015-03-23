@@ -146,7 +146,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay3() throws Exception {
         Graph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.build().strategy(new ElementIdStrategy("name")));
+        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard().with(new ElementIdStrategy("name")));
         Traversal t = g.V("marko").out("knows").in("knows").has(T.id, "marko");
         System.out.println(t);
         t.forEachRemaining(System.out::println);

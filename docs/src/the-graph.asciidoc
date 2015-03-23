@@ -80,7 +80,7 @@ A running example using vertex properties is provided below to demonstrate and e
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = graph.traversal(standard)
+g = graph.traversal(standard())
 v = g.addV('name','marko','name','marko a. rodriguez').next()
 g.V(v).properties().count()
 g.V(v).properties('name').count() <1>
@@ -698,7 +698,7 @@ gremlin> r = LegacyGraphSONReader.build().create()
 ==>org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader@64337702
 gremlin> r.readGraph(new FileInputStream('/tmp/tp2.json'),graph)
 ==>null
-gremlin> g = graph.traversal(standard)
+gremlin> g = graph.traversal(standard())
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
 gremlin> g.E()
 ==>e[11][4-created->3]

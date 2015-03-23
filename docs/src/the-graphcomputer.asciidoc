@@ -43,7 +43,7 @@ The example below demonstrates how to submit a VertexProgram to a graph's GraphC
 ----
 result = graph.compute().program(PageRankVertexProgram.build().create()).submit().get()
 result.memory().runtime
-g = result.graph().traversal(standard)
+g = result.graph().traversal(standard())
 g.V().valueMap('name',PageRankVertexProgram.PAGE_RANK)
 ----
 
@@ -80,7 +80,7 @@ The `MapReduce` extension to GraphComputer is made explicit when examining the <
 graph = TinkerFactory.createModern()
 result = graph.compute().program(PeerPressureVertexProgram.build().create()).mapReduce(ClusterPopulationMapReduce.build().create()).submit().get()
 result.memory().get('clusterPopulation')
-g = result.graph().traversal(standard)
+g = result.graph().traversal(standard())
 g.V().values(PeerPressureVertexProgram.CLUSTER).groupCount().next()
 g.V().valueMap()
 g.V().valueMap(true,PeerPressureVertexProgram.CLUSTER)
@@ -122,7 +122,7 @@ result = graph.compute().program(LambdaVertexProgram.build().
            execute("a.property(single, 'counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
            terminate('a.iteration > 9').
            elementComputeKeys('counter').create()).submit().get()
-g = result.graph().traversal(standard)
+g = result.graph().traversal(standard())
 g.V().values('counter')
 ----
 
@@ -135,7 +135,7 @@ ComputerResult result = graph.compute().program(LambdaVertexProgram.build().
                         execute((vertex, messenger, memory) -> vertex.<Integer>property(single, "counter", memory.isInitialIteration() ? 0 : vertex.<Integer>value("counter") + 1)).
                         terminate(memory -> memory.getIteration() > 9).
                         elementComputeKeys("counter").create()).submit().get();
-GraphTraversalContext g = result.graph().traversal(standard);
+GraphTraversalContext g = result.graph().traversal(standard());
 g.V().values("counter").forEach(System.out::println);
 // 10
 // 10
@@ -306,9 +306,9 @@ NOTE: This model of graph traversal in a BSP system was first implemented by the
 
 [gremlin-groovy,modern]
 ----
-g = graph.traversal(standard)
+g = graph.traversal(standard())
 g.V().both().hasLabel('person').values('age').groupCount().next() // OLTP
-g = graph.traversal(computer)
+g = graph.traversal(computer())
 g.V().both().hasLabel('person').values('age').groupCount().next() // OLAP
 ----
 
@@ -331,7 +331,7 @@ The same OLAP traversal can be executed using the standard `g.compute()` model, 
 
 [gremlin-groovy,modern]
 ----
-//g.engine(computer)
+//g.engine(computer())
 //result = g.compute().program(TraversalVertexProgram.build().traversal(g.V().both().hasLabel('person').values('age').groupCount('a')).create()).submit().get()
 //result.memory().a
 //result.memory().iteration

@@ -407,11 +407,11 @@ The runtimes for a vertex lookup by property is provided below for both no-index
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = graph.traversal(standard)
+g = graph.traversal(standard())
 graph.io().readGraphML('data/grateful-dead.xml')
 clock(1000) {g.V().has('name','Garcia').next()} <1>
 graph = TinkerGraph.open()
-g = graph.traversal(standard)
+g = graph.traversal(standard())
 graph.createIndex('name',Vertex.class)
 graph.io().readGraphML('data/grateful-dead.xml')
 clock(1000){g.V().has('name','Garcia').next()} <2>
