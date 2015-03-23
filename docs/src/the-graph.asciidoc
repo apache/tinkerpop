@@ -91,7 +91,7 @@ g.V(v).properties('name').hasValue('marko').property('acl','private') <2>
 g.V(v).properties('name').hasValue('marko a. rodriguez')
 g.V(v).properties('name').hasValue('marko a. rodriguez').property('acl','public')
 g.V(v).properties('name').has('acl','public').value()
-g.V(v).properties('name').has('acl','public').remove() <3>
+g.V(v).properties('name').has('acl','public').drop() <3>
 g.V(v).properties('name').has('acl','public').value()
 g.V(v).properties('name').has('acl','private').value()
 g.V(v).properties()

@@ -404,7 +404,7 @@ g.V().values('lang')
 g.V().values('lang').dedup()
 ----
 
-If a lambda is provided to `dedup()`, then the object is processed by the lambda prior to determining if it has been seen or not.
+If a by-step modulation is provided to `dedup()`, then the object is processed accordingly prior to determining if it has been seen or not.
 
 [gremlin-groovy,modern]
 ----
@@ -413,6 +413,22 @@ g.V().dedup().by(label).values('name')
 ----
 
 WARNING: The `dedup()`-step does not have a correlate in <<traversalvertexprogram,Gremlin OLAP>> when used mid-traversal. When in mid-traversal de-duplication only occurs at the the current processing vertex and thus, is not a global operation as it in Gremlin OLTP. When `dedup()` is an end step, the resultant traversers are de-duplicated by `TraverserMapReduce`.
+
+[[drop-step]]
+Drop Step
+~~~~~~~~~
+
+The `drop()`-step (*filter*/*sideEffect*) is used to remove element and properties from the graph (i.e. remove). It is a filter step because the traversal yields no outgoing objects.
+
+[gremlin-groovy,modern]
+----
+g.V().outE().drop()
+g.E()
+g.V().properties('name').drop()
+g.V().valueMap()
+g.V().drop()
+g.V()
+----
 
 [[except-step]]
 Except Step
