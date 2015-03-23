@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.neo4j.process.traversal.step.sideEffect.Neo4
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -39,8 +40,15 @@ public class Neo4jGraphStepStrategy extends AbstractTraversalStrategy {
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getStartStep() instanceof Neo4jGraphStep) {
-            final Neo4jGraphStep neo4jGraphStep = (Neo4jGraphStep) traversal.getStartStep();
+        if (traversal.getEngine().isComputer())
+            return;
+
+        final Step<?, ?> startStep = traversal.getStartStep();
+        if (startStep instanceof GraphStep) {
+            final GraphStep<?> originalGraphStep = (GraphStep) startStep;
+            final Neo4jGraphStep<?> neo4jGraphStep = new Neo4jGraphStep<>(originalGraphStep);
+            TraversalHelper.replaceStep(startStep, (Step) neo4jGraphStep, traversal);
+
             Step<?, ?> currentStep = neo4jGraphStep.getNextStep();
             while (true) {
                 if (currentStep instanceof HasContainerHolder) {
