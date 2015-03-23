@@ -347,7 +347,17 @@ public class HadoopGraph implements Graph {
                 }
 
                 @Override
+                public boolean supportsRemoveEdges() {
+                    return false;
+                }
+
+                @Override
                 public boolean supportsAddProperty() {
+                    return false;
+                }
+
+                @Override
+                public boolean supportsRemoveProperty() {
                     return false;
                 }
 
@@ -367,7 +377,17 @@ public class HadoopGraph implements Graph {
                 }
 
                 @Override
+                public boolean supportsRemoveVertices() {
+                    return false;
+                }
+
+                @Override
                 public boolean supportsAddProperty() {
+                    return false;
+                }
+
+                @Override
+                public boolean supportsRemoveProperty() {
                     return false;
                 }
 
@@ -381,6 +401,11 @@ public class HadoopGraph implements Graph {
                     return new Features.VertexPropertyFeatures() {
                         @Override
                         public boolean supportsAddProperty() {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean supportsRemoveProperty() {
                             return false;
                         }
                     };

@@ -493,6 +493,10 @@ public class __ {
         return __.<A>start().store(sideEffectKey);
     }
 
+    public static <A> GraphTraversal<A, A> drop() {
+        return __.<A>start().drop();
+    }
+
     ///////////////////// BRANCH STEPS /////////////////////
 
     public static <A, M, E2> GraphTraversal<A, E2> branch(final Function<Traverser<A>, M> function) {

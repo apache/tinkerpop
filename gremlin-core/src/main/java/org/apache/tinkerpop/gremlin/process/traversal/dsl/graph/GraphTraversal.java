@@ -106,6 +106,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentitySt
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackElementValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackObjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
@@ -139,7 +140,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -643,6 +643,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new ProfileStep<>(this.asAdmin()));
     }
 
+    public default GraphTraversal<S, E> drop() {
+        return this.asAdmin().addStep(new DropStep<>(this.asAdmin()));
+    }
+
     ///////////////////// BRANCH STEPS /////////////////////
 
     public default <M, E2> GraphTraversal<S, E2> branch(final Traversal<?, M> branchTraversal) {
@@ -824,26 +828,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     ////
-
-    @Override
-    public default void remove() {
-        try {
-            this.asAdmin().applyStrategies();
-            final Step<?, E> endStep = this.asAdmin().getEndStep();
-            while (true) {
-                final Object object = endStep.next().get();
-                if (object instanceof Element)
-                    ((Element) object).remove();
-                else if (object instanceof Property)
-                    ((Property) object).remove();
-                else {
-                    throw new IllegalStateException("The following object does not have a remove() method: " + object);
-                }
-            }
-        } catch (final NoSuchElementException ignored) {
-
-        }
-    }
 
     @Override
     public default GraphTraversal<S, E> iterate() {

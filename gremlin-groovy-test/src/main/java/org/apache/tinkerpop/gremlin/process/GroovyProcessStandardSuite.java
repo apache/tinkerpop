@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyBranchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyChooseTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyLocalTest;
@@ -47,6 +48,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyAddVertexTe
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyBackTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyCoalesceTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyCountTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyDropTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyFoldTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMapTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest;
@@ -72,7 +74,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySide
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyStoreTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySubgraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyTreeTest;
-import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -116,6 +117,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyBackTest.StandardTraversals.class,
             GroovyCoalesceTest.StandardTraversals.class,
             GroovyCountTest.StandardTraversals.class,
+            GroovyDropTest.StandardTraversals.class,
             GroovyFoldTest.StandardTraversals.class,
             GroovyMapTest.StandardTraversals.class,
             GroovyMatchTest.StandardTraversals.class,

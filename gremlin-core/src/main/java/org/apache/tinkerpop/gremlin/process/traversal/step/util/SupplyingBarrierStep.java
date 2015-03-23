@@ -58,6 +58,4 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> {
         clone.done = false;
         return clone;
     }
-
-
 }
