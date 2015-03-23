@@ -40,6 +40,7 @@ import org.neo4j.graphdb.Relationship;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Stream;
@@ -78,14 +79,24 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
 
     @Override
     public <V> VertexProperty<V> property(final String key, final V value) {
+        return this.property(VertexProperty.Cardinality.single, key, value);
+    }
+
+    @Override
+    public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
         if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.getBaseVertex().getId());
         ElementHelper.validateProperty(key, value);
+        if (ElementHelper.getIdValue(keyValues).isPresent())
+            throw VertexProperty.Exceptions.userSuppliedIdsNotSupported();
         this.graph.tx().readWrite();
         try {
             if (!this.graph.supportsMultiProperties) {
                 this.getBaseVertex().setProperty(key, value);
                 return new Neo4jVertexProperty<>(this, key, value);
             } else {
+                final Optional<VertexProperty<V>> optionalVertexProperty = ElementHelper.stageVertexProperty(this, cardinality, key, value, keyValues);
+                if (optionalVertexProperty.isPresent()) return optionalVertexProperty.get();
+
                 final String prefixedKey = Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key);
                 if (this.getBaseVertex().hasProperty(key)) {
                     if (this.getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN)) {
@@ -93,7 +104,9 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
                         node.setProperty(T.key.getAccessor(), key);
                         node.setProperty(T.value.getAccessor(), value);
                         this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
-                        return new Neo4jVertexProperty<>(this, node);
+                        final Neo4jVertexProperty<V> property = new Neo4jVertexProperty<>(this, node);
+                        ElementHelper.attachProperties(property, keyValues); // TODO: make this inlined
+                        return property;
                     } else {
                         Node node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(key));
                         node.setProperty(T.key.getAccessor(), key);
@@ -104,11 +117,15 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
                         node.setProperty(T.key.getAccessor(), key);
                         node.setProperty(T.value.getAccessor(), value);
                         this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
-                        return new Neo4jVertexProperty<>(this, node);
+                        final Neo4jVertexProperty<V> property = new Neo4jVertexProperty<>(this, node);
+                        ElementHelper.attachProperties(property, keyValues); // TODO: make this inlined
+                        return property;
                     }
                 } else {
                     this.getBaseVertex().setProperty(key, value);
-                    return new Neo4jVertexProperty<>(this, key, value);
+                    final Neo4jVertexProperty<V> property = new Neo4jVertexProperty<>(this, key, value);
+                    ElementHelper.attachProperties(property, keyValues); // TODO: make this inlined
+                    return property;
                 }
             }
         } catch (IllegalArgumentException iae) {

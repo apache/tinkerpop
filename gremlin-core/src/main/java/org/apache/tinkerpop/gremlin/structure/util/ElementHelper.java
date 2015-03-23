@@ -253,22 +253,53 @@ public final class ElementHelper {
     }
 
     /**
-     * Assign key/value pairs as properties to an {@link org.apache.tinkerpop.gremlin.structure.Vertex}.  If the value of {@link org.apache.tinkerpop.gremlin.process.traversal.T#id} or
+     * Assign key/value pairs as properties to a {@link org.apache.tinkerpop.gremlin.structure.Vertex}.  If the value of {@link org.apache.tinkerpop.gremlin.process.traversal.T#id} or
      * {@link org.apache.tinkerpop.gremlin.process.traversal.T#label} is in the set of pairs, then they are ignored.
      *
-     * @param vertex            the vertex to assign the {@code propertyKeyValues}
-     * @param propertyKeyValues the key/value pairs to assign to the {@code vertex}
+     * @param vertex            the vertex to attach the properties to
+     * @param cardinality       the cardinality of the key value pair settings
+     * @param propertyKeyValues the key/value pairs to assign to the {@code element}
      * @throws ClassCastException       if the value of the key is not a {@link String}
-     * @throws IllegalArgumentException if the value of {@code vertex} is null
+     * @throws IllegalArgumentException if the value of {@code element} is null
      */
-    public static void attachSingleProperties(final Vertex vertex, final Object... propertyKeyValues) {
+    public static void attachProperties(final Vertex vertex, final VertexProperty.Cardinality cardinality, final Object... propertyKeyValues) {
         if (null == vertex)
             throw Graph.Exceptions.argumentCanNotBeNull("vertex");
 
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
             if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
-                vertex.property(VertexProperty.Cardinality.single, (String) propertyKeyValues[i], propertyKeyValues[i + 1]);
+                vertex.property(cardinality, (String) propertyKeyValues[i], propertyKeyValues[i + 1]);
         }
+    }
+
+    /**
+     * This is a helper method for dealing with vertex property cardinality and typically used in {@link Vertex#property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality, String, Object, Object...)}.
+     * If the cardinality is list, simply return {@link Optional#empty}.
+     * If the cardinality is single, delete all existing properties of the provided key and return {@link Optional#empty}.
+     * If the cardinality is set, find one that has the same key/value and attached the properties to it and return it. Else, if no equal value is found, return {@link Optional#empty}.
+     *
+     * @param vertex      the vertex to stage a vertex property for
+     * @param cardinality the cardinality of the vertex property
+     * @param key         the key of the vertex property
+     * @param value       the value of the vertex property
+     * @param keyValues   the properties of vertex property
+     * @param <V>         the type of the vertex property value
+     * @return a vertex property if it has been found in set with equal value
+     */
+    public static <V> Optional<VertexProperty<V>> stageVertexProperty(final Vertex vertex, final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
+        if (cardinality.equals(VertexProperty.Cardinality.single))
+            vertex.properties(key).forEachRemaining(VertexProperty::remove);
+        else if (cardinality.equals(VertexProperty.Cardinality.set)) {
+            final Iterator<VertexProperty<V>> itty = vertex.properties(key);
+            while (itty.hasNext()) {
+                final VertexProperty<V> property = itty.next();
+                if (property.value().equals(value)) {
+                    ElementHelper.attachProperties(property, keyValues);
+                    return Optional.of(property);
+                }
+            }
+        } // do nothing on Cardinality.list
+        return Optional.empty();
     }
 
     /**

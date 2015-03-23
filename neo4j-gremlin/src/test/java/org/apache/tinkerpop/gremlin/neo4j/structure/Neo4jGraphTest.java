@@ -383,8 +383,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             this.graph.tx().commit();
 
             final Vertex a = graph.addVertex(T.label, "person", "name", "marko", "age", 34);
-            a.property("name", "okram");
-            a.property("name", "marko a. rodriguez");
+            a.property(VertexProperty.Cardinality.list,"name", "okram");
+            a.property(VertexProperty.Cardinality.list,"name", "marko a. rodriguez");
             final Vertex b = graph.addVertex(T.label, "person", "name", "stephen");
             final Vertex c = graph.addVertex("name", "matthias", "name", "mbroecheler");
 
@@ -411,14 +411,14 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 assertEquals(d.id(), graph.traversal().V().has("person", "name", "kuppitz").id().next());
                 assertEquals("kuppitz", ((Neo4jVertex) graph.traversal().V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
             });
-            d.property("name", "daniel", "acl", "private");
+            d.property(VertexProperty.Cardinality.list,"name", "daniel", "acl", "private");
             tryCommit(graph, graph -> {
                 assertEquals(d.id(), graph.traversal().V().has("person", "name", Contains.within, Arrays.asList("daniel", "kuppitz")).id().next());
                 assertEquals(d.id(), graph.traversal().V().has("person", "name", "kuppitz").id().next());
                 assertEquals(d.id(), graph.traversal().V().has("person", "name", "daniel").id().next());
                 assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) graph.traversal().V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
             });
-            d.property("name", "marko", "acl", "private");
+            d.property(VertexProperty.Cardinality.list,"name", "marko", "acl", "private");
             tryCommit(graph, g -> {
                 assertEquals(2, g.traversal().V().has("person", "name", "marko").count().next().intValue());
                 assertEquals(1, g.traversal().V().has("person", "name", "marko").properties("name").has(T.value, "marko").has("acl", "private").count().next().intValue());
@@ -477,10 +477,10 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         tryCommit(graph, g -> validateCounts(g, 0, 0, 0, 0));
         Vertex vertex = graph.addVertex(T.label, "person");
         tryCommit(graph, g -> validateCounts(g, 1, 0, 1, 0));
-        vertex.property("name", "marko");
+        vertex.property(VertexProperty.Cardinality.list,"name", "marko");
         assertEquals("marko", vertex.value("name"));
         tryCommit(graph, g -> validateCounts(g, 1, 0, 1, 0));
-        vertex.property("name", "okram");
+        vertex.property(VertexProperty.Cardinality.list,"name", "okram");
         tryCommit(graph, g -> {
             validateCounts(g, 1, 0, 1, 0);
             assertEquals("okram", vertex.value("name"));
@@ -505,7 +505,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         tryCommit(graph, g -> validateCounts(g, 0, 0, 0, 0));
         Vertex vertex = graph.addVertex(T.label, "person");
         tryCommit(graph, g -> validateCounts(g, 1, 0, 1, 0));
-        vertex.property("name", "marko");
+        vertex.property(VertexProperty.Cardinality.list,"name", "marko");
         assertEquals("marko", vertex.value("name"));
         tryCommit(graph, g -> validateCounts(g, 1, 0, 1, 0));
         vertex.property(VertexProperty.Cardinality.single, "name", "okram");
@@ -577,7 +577,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 assertEquals("virginia", b.getBaseVertex().getProperty("location"));
             });
 
-            a.property(VertexProperty.Cardinality.single, "name", "the marko");
+            a.property("name", "the marko");
             tryCommit(graph, g -> {
                 assertEquals(2, g.traversal().V().count().next().intValue());
                 //assertEquals(1, a.properties().count().next().intValue());
@@ -607,7 +607,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
             });
 
-            a.property(VertexProperty.Cardinality.single, "name", "the marko", "acl", "private");
+            graph.tx().commit();
+            a.property("name", "the marko", "acl", "private");
             tryCommit(graph, g -> {
                 assertEquals(2, g.traversal().V().count().next().intValue());
                 // assertEquals(1, a.properties("name").count().next().intValue());
@@ -649,10 +650,9 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 assertEquals("virginia", b.getBaseVertex().getProperty("location"));
             });
 
-            a.property("name", "marko", "acl", "private");
-            a.property("name", "okram", "acl", "public");
-            // TODO tx.commit() THIS IS REQUIRED: ?! Why does Neo4j not delete vertices correctly?
-            graph.tx().commit();
+            a.property(VertexProperty.Cardinality.list,"name", "marko", "acl", "private");
+            a.property(VertexProperty.Cardinality.list,"name", "okram", "acl", "public");
+            graph.tx().commit();  // TODO tx.commit() THIS IS REQUIRED: ?! Why does Neo4j not delete vertices correctly?
             a.property(VertexProperty.Cardinality.single, "name", "the marko", "acl", "private");
             tryCommit(graph, g -> {
                 assertEquals(2, g.traversal().V().count().next().intValue());

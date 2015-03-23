@@ -120,15 +120,15 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
                 messenger.sendMessage(this.countScope, Pair.with('c', 1.0d));
             } else {
                 double voteStrength = 1.0d;
-                vertex.property(VertexProperty.Cardinality.single, CLUSTER, vertex.id());
-                vertex.property(VertexProperty.Cardinality.single, VOTE_STRENGTH, voteStrength);
+                vertex.property(CLUSTER, vertex.id());
+                vertex.property(VOTE_STRENGTH, voteStrength);
                 messenger.sendMessage(this.voteScope, new Pair<>((Serializable) vertex.id(), voteStrength));
                 memory.and(VOTE_TO_HALT, false);
             }
         } else if (1 == memory.getIteration() && this.distributeVote) {
             double voteStrength = 1.0d / StreamFactory.stream(messenger.receiveMessages(this.countScope)).map(Pair::getValue1).reduce(0.0d, (a, b) -> a + b);
-            vertex.property(VertexProperty.Cardinality.single, CLUSTER, vertex.id());
-            vertex.property(VertexProperty.Cardinality.single, VOTE_STRENGTH, voteStrength);
+            vertex.property(CLUSTER, vertex.id());
+            vertex.property(VOTE_STRENGTH, voteStrength);
             messenger.sendMessage(this.voteScope, new Pair<>((Serializable) vertex.id(), voteStrength));
             memory.and(VOTE_TO_HALT, false);
         } else {
@@ -138,7 +138,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
             Serializable cluster = PeerPressureVertexProgram.largestCount(votes);
             if (null == cluster) cluster = (Serializable) vertex.id();
             memory.and(VOTE_TO_HALT, vertex.value(CLUSTER).equals(cluster));
-            vertex.property(VertexProperty.Cardinality.single, CLUSTER, cluster);
+            vertex.property(CLUSTER, cluster);
             messenger.sendMessage(this.voteScope, new Pair<>(cluster, vertex.<Double>value(VOTE_STRENGTH)));
         }
     }

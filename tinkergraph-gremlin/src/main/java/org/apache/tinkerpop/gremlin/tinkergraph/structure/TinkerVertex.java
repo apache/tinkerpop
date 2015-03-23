@@ -46,7 +46,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     protected Map<String, List<VertexProperty>> properties;
     protected Map<String, Set<Edge>> outEdges;
     protected Map<String, Set<Edge>> inEdges;
-    private static final Object[] EMPTY_ARGS = new Object[0];
     private final TinkerGraph graph;
 
     protected TinkerVertex(final Object id, final String label, final TinkerGraph graph) {
@@ -84,21 +83,19 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     @Override
-    public <V> VertexProperty<V> property(final String key, final V value) {
-        return this.property(key, value, EMPTY_ARGS);
-    }
-
-    @Override
-    public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
+    public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
         if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
         ElementHelper.legalPropertyKeyValueArray(keyValues);
+        ElementHelper.validateProperty(key, value);
         final Optional<Object> optionalId = ElementHelper.getIdValue(keyValues);
+        final Optional<VertexProperty<V>> optionalVertexProperty = ElementHelper.stageVertexProperty(this, cardinality, key, value, keyValues);
+        if (optionalVertexProperty.isPresent()) return optionalVertexProperty.get();
+
         if (TinkerHelper.inComputerMode(this.graph)) {
-            VertexProperty<V> vertexProperty = (VertexProperty<V>) this.graph.graphView.setProperty(this, key, value);
+            VertexProperty<V> vertexProperty = (VertexProperty<V>) this.graph.graphView.addProperty(this, key, value);
             ElementHelper.attachProperties(vertexProperty, keyValues);
             return vertexProperty;
         } else {
-            ElementHelper.validateProperty(key, value);
             final VertexProperty<V> vertexProperty = optionalId.isPresent() ?
                     new TinkerVertexProperty<V>(optionalId.get(), this, key, value) :
                     new TinkerVertexProperty<V>(this, key, value);

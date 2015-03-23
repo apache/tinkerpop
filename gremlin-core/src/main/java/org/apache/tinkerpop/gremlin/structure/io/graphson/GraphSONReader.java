@@ -108,7 +108,7 @@ public class GraphSONReader implements GraphReader {
                         readVertexData(vertexData, detachedVertex -> {
                             final Iterator<Vertex> iterator = graph.vertices(detachedVertex.id());
                             final Vertex v = iterator.hasNext() ? iterator.next() : graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id());
-                            detachedVertex.properties().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
+                            detachedVertex.properties().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p));
                             return v;
                         });
                     }
@@ -170,12 +170,12 @@ public class GraphSONReader implements GraphReader {
         return v;
     }
 
-    private static void createVertexProperty(final Graph graphToWriteTo, final Vertex v, final VertexProperty<Object> p, final boolean hidden) {
+    private static void createVertexProperty(final Graph graphToWriteTo, final Vertex v, final VertexProperty<Object> p) {
         final List<Object> propertyArgs = new ArrayList<>();
         if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
             propertyArgs.addAll(Arrays.asList(T.id, p.id()));
         p.properties().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
-        v.property(p.key(), p.value(), propertyArgs.toArray());
+        v.property(VertexProperty.Cardinality.list, p.key(), p.value(), propertyArgs.toArray());
     }
 
     private static void readVertexEdges(final Function<DetachedEdge, Edge> edgeMaker, final Map<String, Object> vertexData, final String direction) throws IOException {

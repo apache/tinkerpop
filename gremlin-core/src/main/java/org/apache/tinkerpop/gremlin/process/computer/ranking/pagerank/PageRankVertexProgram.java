@@ -119,13 +119,13 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         } else if (1 == memory.getIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = StreamFactory.stream(messenger.receiveMessages(this.countMessageScope)).reduce(0.0d, (a, b) -> a + b);
-            vertex.property(VertexProperty.Cardinality.single, PAGE_RANK, initialPageRank);
-            vertex.property(VertexProperty.Cardinality.single, EDGE_COUNT, edgeCount);
+            vertex.property(PAGE_RANK, initialPageRank);
+            vertex.property(EDGE_COUNT, edgeCount);
             messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
         } else {
             double newPageRank = StreamFactory.stream(messenger.receiveMessages(this.incidentMessageScope)).reduce(0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
-            vertex.property(VertexProperty.Cardinality.single, PAGE_RANK, newPageRank);
+            vertex.property(PAGE_RANK, newPageRank);
             messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
         }
     }

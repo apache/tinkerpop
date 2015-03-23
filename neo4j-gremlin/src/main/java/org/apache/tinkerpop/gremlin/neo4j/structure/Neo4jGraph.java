@@ -23,8 +23,8 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.step.util.Neo4jCypherIterator;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.strategy.optimization.Neo4jGraphStepStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.AbstractTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -233,7 +234,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
         this.tx().readWrite();
         final Neo4jVertex vertex = new Neo4jVertex(this.baseGraph.createNode(Neo4jHelper.makeLabels(label)), this);
-        ElementHelper.attachProperties(vertex, keyValues);
+        ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
         return vertex;
     }
 

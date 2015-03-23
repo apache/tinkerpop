@@ -18,10 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
-import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
-
 import java.util.Iterator;
-import java.util.Optional;
 
 /**
  * A {@link Vertex} maintains pointers to both a set of incoming and outgoing {@link Edge} objects. The outgoing edges
@@ -55,6 +52,14 @@ public interface Vertex extends Element {
      */
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
+    /**
+     * Get the {@link VertexProperty} for the provided key. If the property does not exist, return {@link VertexProperty#empty}.
+     * If there are more than one verte properties for the provided key, then throw {@link Vertex.Exceptions#multiplePropertiesExistForProvidedKey}.
+     *
+     * @param key the key of the vertex property to get
+     * @param <V> the expected type of the vertex property value
+     * @return the retrieved vertex property
+     */
     @Override
     public default <V> VertexProperty<V> property(final String key) {
         final Iterator<VertexProperty<V>> iterator = this.properties(key);
@@ -69,40 +74,49 @@ public interface Vertex extends Element {
         }
     }
 
+    /**
+     * Set the provided key to the provided value using {@link VertexProperty.Cardinality#single}.
+     *
+     * @param key   the key of the vertex property
+     * @param value The value of the vertex property
+     * @param <V>   the type of the value of the vertex property
+     * @return the newly created vertex property
+     */
     @Override
-    public <V> VertexProperty<V> property(final String key, final V value);
+    public default <V> VertexProperty<V> property(final String key, final V value) {
+        return this.property(VertexProperty.Cardinality.single, key, value);
+    }
 
+    /**
+     * Set the provided key to the provided value using {@link VertexProperty.Cardinality#single}.
+     * The provided key/values are the properties of the newly created {@link VertexProperty}.
+     * These key/values must be provided in an even number where the odd numbered arguments are {@link String}.
+     *
+     * @param key       the key of the vertex property
+     * @param value     The value of the vertex property
+     * @param keyValues the key/value pairs to turn into vertex property properties
+     * @param <V>       the type of the value of the vertex property
+     * @return the newly created vertex property
+     */
     public default <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
-        ElementHelper.legalPropertyKeyValueArray(keyValues);
-        final Optional<Object> optionalId = ElementHelper.getIdValue(keyValues);
-        if (optionalId.isPresent() && !graph().features().vertex().properties().supportsUserSuppliedIds())
-            throw VertexProperty.Exceptions.userSuppliedIdsNotSupported();
-
-        final VertexProperty<V> vertexProperty = this.property(key, value);
-        ElementHelper.attachProperties(vertexProperty, keyValues);
-        return vertexProperty;
+        return this.property(VertexProperty.Cardinality.single, key, value, keyValues);
     }
 
-    public default <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
-        if (cardinality.equals(VertexProperty.Cardinality.list))
-            return this.property(key, value, keyValues);
-        else if (cardinality.equals(VertexProperty.Cardinality.single)) {
-            this.properties(key).forEachRemaining(VertexProperty::remove);
-            return this.property(key, value, keyValues);
-        } else if (cardinality.equals(VertexProperty.Cardinality.set)) {
-            final Iterator<VertexProperty<V>> iterator = this.properties(key);
-            while (iterator.hasNext()) {
-                final VertexProperty<V> property = iterator.next();
-                if (property.value().equals(value)) {
-                    ElementHelper.attachProperties(property, keyValues);
-                    return property;
-                }
-            }
-            return this.property(key, value, keyValues);
-        } else {
-            throw new IllegalArgumentException("The provided cardinality is unknown: " + cardinality);
-        }
-    }
+    /**
+     * Create a new vertex property.
+     * If the cardinality is {@link VertexProperty.Cardinality#single}, then set the key to the value.
+     * If the cardinality is {@link VertexProperty.Cardinality#list}, then add a new value to the key.
+     * If the cardinality is {@link VertexProperty.Cardinality#set}, then only add a new value if that value doesn't already exist for the key.
+     * If the value already exists for the key, add the provided key value vertex property properties to it.
+     *
+     * @param cardinality the desired cardinality of the property key
+     * @param key         the key of the vertex property
+     * @param value       The value of the vertex property
+     * @param keyValues   the key/value pairs to turn into vertex property properties
+     * @param <V>         the type of the value of the vertex property
+     * @return the newly created vertex property
+     */
+    public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues);
 
     /**
      * Gets an {@link Iterator} of incident edges.

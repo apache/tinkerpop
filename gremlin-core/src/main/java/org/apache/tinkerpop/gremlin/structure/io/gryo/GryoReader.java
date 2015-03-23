@@ -162,7 +162,7 @@ public class GryoReader implements GraphReader {
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
                     vertexArgs.clear();
-                    current.properties().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
+                    current.properties().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p));
 
                     // the gio file should have been written with a direction specified
                     final boolean hasDirectionSpecified = input.readBoolean();
@@ -199,12 +199,12 @@ public class GryoReader implements GraphReader {
         }
     }
 
-    private static void createVertexProperty(final Graph graphToWriteTo, final Vertex v, final VertexProperty<Object> p, final boolean hidden) {
+    private static void createVertexProperty(final Graph graphToWriteTo, final Vertex v, final VertexProperty<Object> p) {
         final List<Object> propertyArgs = new ArrayList<>();
         if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
             appendToArgList(propertyArgs, T.id, p.id());
         p.properties().forEachRemaining(it -> appendToArgList(propertyArgs, it.key(), it.value()));
-        v.property(p.key(), p.value(), propertyArgs.toArray());
+        v.property(VertexProperty.Cardinality.list, p.key(), p.value(), propertyArgs.toArray());
     }
 
     private static void appendToArgList(final List<Object> propertyArgs, final Object key, final Object val) {

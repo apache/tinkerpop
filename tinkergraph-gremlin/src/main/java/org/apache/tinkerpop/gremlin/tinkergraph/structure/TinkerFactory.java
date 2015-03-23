@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -89,23 +90,23 @@ public class TinkerFactory {
         final Vertex gremlin = g.addVertex(T.id, 10, T.label, "software", "name", "gremlin");
         final Vertex tinkergraph = g.addVertex(T.id, 11, T.label, "software", "name", "tinkergraph");
 
-        marko.property("location", "san diego", "startTime", 1997, "endTime", 2001);
-        marko.property("location", "santa cruz", "startTime", 2001, "endTime", 2004);
-        marko.property("location", "brussels", "startTime", 2004, "endTime", 2005);
-        marko.property("location", "santa fe", "startTime", 2005);
+        marko.property(VertexProperty.Cardinality.list, "location", "san diego", "startTime", 1997, "endTime", 2001);
+        marko.property(VertexProperty.Cardinality.list, "location", "santa cruz", "startTime", 2001, "endTime", 2004);
+        marko.property(VertexProperty.Cardinality.list, "location", "brussels", "startTime", 2004, "endTime", 2005);
+        marko.property(VertexProperty.Cardinality.list, "location", "santa fe", "startTime", 2005);
 
-        stephen.property("location", "centreville", "startTime", 1990, "endTime", 2000);
-        stephen.property("location", "dulles", "startTime", 2000, "endTime", 2006);
-        stephen.property("location", "purcellville", "startTime", 2006);
+        stephen.property(VertexProperty.Cardinality.list, "location", "centreville", "startTime", 1990, "endTime", 2000);
+        stephen.property(VertexProperty.Cardinality.list, "location", "dulles", "startTime", 2000, "endTime", 2006);
+        stephen.property(VertexProperty.Cardinality.list, "location", "purcellville", "startTime", 2006);
 
-        matthias.property("location", "bremen", "startTime", 2004, "endTime", 2007);
-        matthias.property("location", "baltimore", "startTime", 2007, "endTime", 2011);
-        matthias.property("location", "oakland", "startTime", 2011, "endTime", 2014);
-        matthias.property("location", "seattle", "startTime", 2014);
+        matthias.property(VertexProperty.Cardinality.list, "location", "bremen", "startTime", 2004, "endTime", 2007);
+        matthias.property(VertexProperty.Cardinality.list, "location", "baltimore", "startTime", 2007, "endTime", 2011);
+        matthias.property(VertexProperty.Cardinality.list, "location", "oakland", "startTime", 2011, "endTime", 2014);
+        matthias.property(VertexProperty.Cardinality.list, "location", "seattle", "startTime", 2014);
 
-        daniel.property("location", "spremberg", "startTime", 1982, "endTime", 2005);
-        daniel.property("location", "kaiserslautern", "startTime", 2005, "endTime", 2009);
-        daniel.property("location", "aachen", "startTime", 2009);
+        daniel.property(VertexProperty.Cardinality.list, "location", "spremberg", "startTime", 1982, "endTime", 2005);
+        daniel.property(VertexProperty.Cardinality.list, "location", "kaiserslautern", "startTime", 2005, "endTime", 2009);
+        daniel.property(VertexProperty.Cardinality.list, "location", "aachen", "startTime", 2009);
 
         marko.addEdge("develops", gremlin, T.id, 13, "since", 2009);
         marko.addEdge("develops", tinkergraph, T.id, 14, "since", 2010);
@@ -140,7 +141,7 @@ public class TinkerFactory {
         }
 
         public default SocialTraversal<S, Vertex> created() {
-            return (SocialTraversal) this.addStep(new LambdaFlatMapStep<Vertex, Vertex>(this, v -> v.get().vertices(Direction.OUT,"created")));
+            return (SocialTraversal) this.addStep(new LambdaFlatMapStep<Vertex, Vertex>(this, v -> v.get().vertices(Direction.OUT, "created")));
         }
 
         public default SocialTraversal<S, String> name() {

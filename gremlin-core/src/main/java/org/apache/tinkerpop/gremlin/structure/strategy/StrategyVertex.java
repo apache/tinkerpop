@@ -104,7 +104,7 @@ public class StrategyVertex extends StrategyElement implements Vertex, StrategyW
     }
 
     @Override
-    public <V> VertexProperty<V> property(final String key, final V value) {
+    public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, String key, final V value, final Object... keyValues) {
         return new StrategyVertexProperty<>(this.strategyGraph.compose(
                 s -> s.<V>getVertexPropertyStrategy(this.strategyContext, strategy),
                 this.getBaseVertex()::property).apply(key, value), this.strategyGraph);

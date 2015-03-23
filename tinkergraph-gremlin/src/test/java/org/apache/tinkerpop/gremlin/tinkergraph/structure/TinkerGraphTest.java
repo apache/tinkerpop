@@ -23,12 +23,12 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Operator;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
@@ -145,12 +145,14 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay3() throws Exception {
-        Graph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard().with(new ElementIdStrategy("name")));
-        Traversal t = g.V("marko").out("knows").in("knows").has(T.id, "marko");
-        System.out.println(t);
-        t.forEachRemaining(System.out::println);
-        System.out.println(t);
+        Graph graph = TinkerGraph.open();
+        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+        final Vertex marko = graph.addVertex("name", "marko", "name", "marko a. rodriguez");
+        marko.property(VertexProperty.Cardinality.list, "location", "san diego", "startTime", 1997, "endTime", 2001);
+        marko.property(VertexProperty.Cardinality.list, "location", "santa cruz", "startTime", 2001, "endTime", 2004);
+        marko.property(VertexProperty.Cardinality.list, "location", "brussels", "startTime", 2004, "endTime", 2005);
+        marko.property(VertexProperty.Cardinality.list, "location", "santa fe", "startTime", 2005);
+        g.V().valueMap().forEachRemaining(System.out::println);
     }
 
     @Test

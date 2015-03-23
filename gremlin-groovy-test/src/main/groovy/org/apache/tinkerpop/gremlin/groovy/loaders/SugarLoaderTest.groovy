@@ -81,7 +81,7 @@ class SugarLoaderTest extends AbstractGremlinTest {
         g.V(1).next().name = 'okram'
         assertEquals('okram', g.V(1).next().name);
         g.V(1).next()['name'] = 'marko a. rodriguez'
-        assertEquals(g.V(1).values('name').toSet(), ["okram", "marko a. rodriguez"] as Set);
+        assertEquals(["okram", "marko a. rodriguez"] as Set, g.V(1).values('name').toSet());
     }
 
     @Test

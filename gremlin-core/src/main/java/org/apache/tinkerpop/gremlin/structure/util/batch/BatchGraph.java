@@ -20,9 +20,9 @@ package org.apache.tinkerpop.gremlin.structure.util.batch;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -439,18 +439,13 @@ public class BatchGraph<G extends Graph> implements Graph {
         }
 
         @Override
-        public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
-            return getCachedVertex(externalID).property(key, value, keyValues);
+        public <V> VertexProperty<V> property(VertexProperty.Cardinality cardinality, String key, V value, Object... keyValues) {
+            return getCachedVertex(externalID).property(cardinality, key, value, keyValues);
         }
 
         @Override
         public <V> VertexProperty<V> property(final String key) {
             return getCachedVertex(externalID).property(key);
-        }
-
-        @Override
-        public <V> VertexProperty<V> property(final String key, final V value) {
-            return getCachedVertex(externalID).property(key, value);
         }
 
         @Override

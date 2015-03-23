@@ -57,61 +57,6 @@ public class SequenceStrategyTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
-    public void shouldAppendMultiPropertyValuesToVertex() {
-        final StrategyGraph swg = graph.strategy(SequenceStrategy.build().sequence(
-                new GraphStrategy() {
-                    @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
-                        return (f) -> (args) -> {
-                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
-                            o.addAll(Arrays.asList("anonymous", "working1"));
-                            return f.apply(o.toArray());
-                        };
-                    }
-                },
-                new GraphStrategy() {
-                    @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
-                        return (f) -> (args) -> {
-                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
-                            o.addAll(Arrays.asList("anonymous", "working2"));
-                            o.addAll(Arrays.asList("try", "anything"));
-                            return f.apply(o.toArray());
-                        };
-                    }
-                },
-                new GraphStrategy() {
-                    @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
-                        return UnaryOperator.identity();
-                    }
-                },
-                new GraphStrategy() {
-                    @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final StrategyContext ctx, final GraphStrategy composingStrategy) {
-                        return (f) -> (args) -> {
-                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
-                            o.addAll(Arrays.asList("anonymous", "working3"));
-                            return f.apply(o.toArray());
-                        };
-                    }
-                }
-        ).create());
-
-        final Vertex v = swg.addVertex("any", "thing");
-
-        assertNotNull(v);
-        assertEquals("thing", v.property("any").value());
-        assertEquals(3, IteratorUtils.list(v.values("anonymous")).size());
-        assertTrue(IteratorUtils.list(v.values("anonymous")).contains("working1"));
-        assertTrue(IteratorUtils.list(v.values("anonymous")).contains("working2"));
-        assertTrue(IteratorUtils.list(v.values("anonymous")).contains("working3"));
-        assertEquals("anything", v.property("try").value());
-    }
-
-    @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldOverwritePropertyValuesToVertex() {
         final StrategyGraph swg = graph.strategy(SequenceStrategy.build().sequence(
                 new GraphStrategy() {

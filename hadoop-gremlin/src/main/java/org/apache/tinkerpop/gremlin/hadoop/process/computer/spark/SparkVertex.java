@@ -78,8 +78,8 @@ public final class SparkVertex implements Vertex, Serializable {
     }
 
     @Override
-    public <V> VertexProperty<V> property(final String key, final V value) {
-        return this.vertex.property(key, value);
+    public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
+        return this.vertex.property(cardinality, key, value, keyValues);
     }
 
     @Override

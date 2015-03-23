@@ -52,7 +52,7 @@ public class TinkerGraphView {
         this.computeProperties = new ConcurrentHashMap<>();
     }
 
-    public <V> Property<V> setProperty(final TinkerVertex vertex, final String key, final V value) {
+    public <V> Property<V> addProperty(final TinkerVertex vertex, final String key, final V value) {
         ElementHelper.validateProperty(key, value);
         if (isComputeKey(key)) {
             final TinkerVertexProperty<V> property = new TinkerVertexProperty<V>((TinkerVertex) vertex, key, value) {
@@ -61,7 +61,7 @@ public class TinkerGraphView {
                     removeProperty(vertex, key, this);
                 }
             };
-            this.setValue(vertex, key, property);
+            this.addValue(vertex, key, property);
             return property;
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
@@ -90,7 +90,7 @@ public class TinkerGraphView {
 
     //////////////////////
 
-    private void setValue(final Vertex vertex, final String key, final VertexProperty property) {
+    private void addValue(final Vertex vertex, final String key, final VertexProperty property) {
         final Map<String, List<VertexProperty>> elementProperties = this.computeProperties.computeIfAbsent(vertex, k -> new ConcurrentHashMap<>());
         elementProperties.compute(key, (k, v) -> {
             if (null == v) v = Collections.synchronizedList(new ArrayList<>());

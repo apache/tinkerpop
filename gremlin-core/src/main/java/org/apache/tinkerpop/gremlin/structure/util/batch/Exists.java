@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.util.batch;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.util.function.BiConsumer;
@@ -45,16 +46,17 @@ public enum Exists implements BiConsumer<Element, Object[]> {
     OVERWRITE {
         @Override
         public void accept(final Element element, final Object[] keyValues) {
-            ElementHelper.attachProperties(element, keyValues);
+            if (element instanceof Vertex)
+                ElementHelper.attachProperties((Vertex) element, VertexProperty.Cardinality.list, keyValues);
+            else
+                ElementHelper.attachProperties(element, keyValues);
+
         }
     },
     OVERWRITE_SINGLE {
         @Override
         public void accept(final Element element, final Object[] keyValues) {
-            if (element instanceof Vertex)
-                ElementHelper.attachSingleProperties((Vertex) element, keyValues);
-            else
-                ElementHelper.attachProperties(element, keyValues);
+            ElementHelper.attachProperties(element, keyValues);
         }
     }
 }

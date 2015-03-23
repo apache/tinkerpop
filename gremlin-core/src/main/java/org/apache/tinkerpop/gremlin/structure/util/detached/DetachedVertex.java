@@ -92,6 +92,11 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     }
 
     @Override
+    public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
+        throw new UnsupportedOperationException("Detached vertices are readonly: " + this);
+    }
+
+    @Override
     public <V> VertexProperty<V> property(final String key) {
         if (null != this.properties && this.properties.containsKey(key)) {
             final List<VertexProperty> list = (List) this.properties.get(key);
@@ -140,9 +145,9 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
                         });
                         metaProperties.add(T.id);
                         metaProperties.add(detachedVertexProperty.id());
-                        vertex.property(detachedVertexProperty.key(), detachedVertexProperty.value(), metaProperties.toArray());
+                        vertex.property(VertexProperty.Cardinality.list, detachedVertexProperty.key(), detachedVertexProperty.value(), metaProperties.toArray());
                     } else {
-                        vertex.property(detachedVertexProperty.key(), detachedVertexProperty.value(), T.id, detachedVertexProperty.id());
+                        vertex.property(VertexProperty.Cardinality.list, detachedVertexProperty.key(), detachedVertexProperty.value(), T.id, detachedVertexProperty.id());
                     }
                 });
             });

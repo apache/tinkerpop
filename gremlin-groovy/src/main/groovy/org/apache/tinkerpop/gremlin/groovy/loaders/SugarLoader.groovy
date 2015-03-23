@@ -58,7 +58,7 @@ class SugarLoader {
         }
 
         GraphTraversalSource.metaClass.getProperty = { final String key ->
-            GraphTraversalContextCategory.get((GraphTraversalSource)delegate, key);
+            GraphTraversalContextCategory.get((GraphTraversalSource) delegate, key);
         }
 
         // __.age and __.out
@@ -140,7 +140,7 @@ class SugarLoader {
         }
 
         public static final putAt(final Vertex vertex, final String key, final Object value) {
-            vertex.property(key, value);
+            vertex.property(VertexProperty.Cardinality.list, key, value);
         }
 
         public String toString() {
