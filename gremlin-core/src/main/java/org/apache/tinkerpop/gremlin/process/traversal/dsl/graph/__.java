@@ -277,14 +277,6 @@ public class __ {
         return __.<A>start().addOutE(edgeLabel, stepLabel, propertyKeyValues);
     }
 
-    public static <A> GraphTraversal<A, A> property(final String key, final Object value, final Object... keyValues) {
-        return __.<A>start().property(key, value, keyValues);
-    }
-
-    public static <A> GraphTraversal<A, A> property(final VertexProperty.Cardinality cardinality, final String key, final Object value, final Object... keyValues) {
-        return __.<A>start().property(cardinality, key, value, keyValues);
-    }
-
     ///////////////////// FILTER STEPS /////////////////////
 
     public static <A> GraphTraversal<A, A> filter(final Predicate<Traverser<A>> predicate) {
@@ -447,6 +439,10 @@ public class __ {
         return __.<A>start().sample(scope, amountToSample);
     }
 
+    public static <A> GraphTraversal<A, A> drop() {
+        return __.<A>start().drop();
+    }
+
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
     public static <A> GraphTraversal<A, A> sideEffect(final Consumer<Traverser<A>> consumer) {
@@ -493,8 +489,12 @@ public class __ {
         return __.<A>start().store(sideEffectKey);
     }
 
-    public static <A> GraphTraversal<A, A> drop() {
-        return __.<A>start().drop();
+    public static <A> GraphTraversal<A, A> property(final String key, final Object value, final Object... keyValues) {
+        return __.<A>start().property(key, value, keyValues);
+    }
+
+    public static <A> GraphTraversal<A, A> property(final VertexProperty.Cardinality cardinality, final String key, final Object value, final Object... keyValues) {
+        return __.<A>start().property(cardinality, key, value, keyValues);
     }
 
     ///////////////////// BRANCH STEPS /////////////////////

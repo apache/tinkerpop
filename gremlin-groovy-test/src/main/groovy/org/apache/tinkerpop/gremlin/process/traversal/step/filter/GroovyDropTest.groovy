@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal.step.map
+package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
 import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal

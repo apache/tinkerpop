@@ -106,7 +106,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentitySt
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.DropStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackElementValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackObjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
@@ -415,14 +415,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addE(Direction.OUT, edgeLabel, otherVertices, propertyKeyValues);
     }
 
-    public default GraphTraversal<S, E> property(final String key, final Object value, final Object... keyValues) {
-        return this.asAdmin().addStep(new AddPropertyStep(this.asAdmin(), key, value, keyValues));
-    }
-
-    public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final String key, final Object value, final Object... keyValues) {
-        return this.asAdmin().addStep(new AddPropertyStep(this.asAdmin(), cardinality, key, value, keyValues));
-    }
-
     ///////////////////// FILTER STEPS /////////////////////
 
     public default GraphTraversal<S, E> filter(final Predicate<Traverser<E>> predicate) {
@@ -593,6 +585,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 : new SampleLocalStep<>(this.asAdmin(), amountToSample));
     }
 
+    public default GraphTraversal<S, E> drop() {
+        return this.asAdmin().addStep(new DropStep<>(this.asAdmin()));
+    }
+
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
     public default GraphTraversal<S, E> sideEffect(final Consumer<Traverser<E>> consumer) {
@@ -643,8 +639,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new ProfileStep<>(this.asAdmin()));
     }
 
-    public default GraphTraversal<S, E> drop() {
-        return this.asAdmin().addStep(new DropStep<>(this.asAdmin()));
+    public default GraphTraversal<S, E> property(final String key, final Object value, final Object... keyValues) {
+        return this.asAdmin().addStep(new AddPropertyStep(this.asAdmin(), key, value, keyValues));
+    }
+
+    public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final String key, final Object value, final Object... keyValues) {
+        return this.asAdmin().addStep(new AddPropertyStep(this.asAdmin(), cardinality, key, value, keyValues));
     }
 
     ///////////////////// BRANCH STEPS /////////////////////

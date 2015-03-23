@@ -16,34 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.map;
+package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DropStep<S> extends AbstractStep<S, S> implements Mutating {
+public final class DropStep<S> extends FilterStep<S> implements Mutating {
 
     public DropStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    public Traverser<S> processNextStart() {
-        final S s = this.starts.next().get();
+    protected boolean filter(Traverser.Admin<S> traverser) {
+        final S s = traverser.get();
         if (s instanceof Element)
             ((Element) s).remove();
         else if (s instanceof Property)
             ((Property) s).remove();
         else
             throw new IllegalStateException("The incoming object is not removable: " + s);
-        return EmptyTraverser.instance();
+        return false;
+
     }
 }
