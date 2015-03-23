@@ -100,7 +100,7 @@ g.V(v).properties().property('date',2014) <5>
 g.V(v).properties().property('creator','stephen')
 g.V(v).properties().properties()
 g.V(v).properties('name').valueMap()
-g.V(v).property(single, 'name','okram') <6>
+g.V(v).property('name','okram') <6>
 g.V(v).properties('name')
 g.V(v).values('name') <7>
 ----
@@ -110,7 +110,7 @@ g.V(v).values('name') <7>
 <3> Vertex property removal is identical to property removal.
 <4> It is property to get the properties of a vertex property.
 <5> A vertex property can have any number of key/value properties attached to it.
-<6> `property(single, ...)` will remove all existing key'd properties before adding the new single property (see `VertexProperty.Cardinality`).
+<6> `property(...)` will remove all existing key'd properties before adding the new single property (see `VertexProperty.Cardinality`).
 <7> If only the value of a property is needed, then `values()` can be used.
 
 If the concept of vertex properties is difficult to grasp, then it may be best to think of vertex properties in terms of "literal vertices." A vertex can have an edge to a "literal vertex" that has a single value key/value -- e.g. "value=okram." The edge that points to that literal vertex has an edge-label of "name." The properties on the edge represent the literal vertex's properties. The "literal vertex" can not have any other edges to it (only one from the associated vertex).
@@ -132,6 +132,8 @@ g.V().has('name','gremlin').inE('uses').
       outV().as('b').
       select().by('skill').by('name') // rank the users of gremlin by their skill level
 ----
+
+IMPORTANT: The default behavior for `Vertex.property(key,value)` is `Cardinality.single`.
 
 Graph Variables
 ---------------
