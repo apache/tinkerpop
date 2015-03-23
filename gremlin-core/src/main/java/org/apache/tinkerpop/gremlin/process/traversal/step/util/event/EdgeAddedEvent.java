@@ -16,22 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.tinkerpop.gremlin.process.traversal.step.util.event;
 
-package org.apache.tinkerpop.gremlin.process.traversal.step;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
-
-import java.util.List;
+import java.util.Iterator;
 
 /**
- * A marker interface for steps that modify the graph.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Mutating<C extends EventCallback<? extends Event>> {
-    public void addCallback(final C c);
-    public void removeCallback(final C c);
-    public void clearCallbacks();
-    public List<C> getCallbacks();
+public class EdgeAddedEvent implements Event {
+
+    private final Edge edge;
+
+    public EdgeAddedEvent(final Edge edge) {
+        this.edge = edge;
+    }
+
+    @Override
+    public void fireEvent(final Iterator<GraphChangedListener> eventListeners) {
+        while (eventListeners.hasNext()) {
+            eventListeners.next().edgeAdded(edge);
+        }
+    }
 }

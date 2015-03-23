@@ -20,18 +20,30 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EdgePropertyChangedEvent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ElementPropertyChangedEvent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.VertexPropertyChangedEvent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.VertexPropertyPropertyChangedEvent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> {
+public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> implements Mutating<EventCallback<ElementPropertyChangedEvent>> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
 
@@ -40,6 +52,7 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
     private final Object value;
     private final Object[] vertexPropertyKeyValues;
     private final boolean asVertex;
+    private List<EventCallback<ElementPropertyChangedEvent>> callbacks = null;
 
     public AddPropertyStep(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final String key, final Object value, final Object... vertexPropertyKeyValues) {
         super(traversal);
@@ -56,14 +69,54 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        if (this.asVertex)
-            ((Vertex) traverser.get()).property(this.cardinality, this.key, this.value, this.vertexPropertyKeyValues);
+        if (callbacks != null) {
+            final Element currentElement = traverser.get();
+            final Property currentProperty = traverser.get().property(key);
+            final boolean newProperty = asVertex ? currentProperty == VertexProperty.empty() : currentProperty == Property.empty();
+
+            ElementPropertyChangedEvent evt;
+            if (currentElement instanceof Vertex)
+                evt = new VertexPropertyChangedEvent(DetachedFactory.detach((Vertex) currentElement, true), newProperty ? null : DetachedFactory.detach((VertexProperty) currentProperty, true), value, vertexPropertyKeyValues);
+            else if (currentElement instanceof Edge)
+                evt = new EdgePropertyChangedEvent(DetachedFactory.detach((Edge) currentElement, true), newProperty ? null : DetachedFactory.detach(currentProperty), value);
+            else if (currentElement instanceof VertexProperty)
+                evt = new VertexPropertyPropertyChangedEvent(DetachedFactory.detach((VertexProperty) currentElement, true), newProperty ? null : DetachedFactory.detach(currentProperty), value);
+            else
+                throw new IllegalStateException(String.format("The incoming object cannot be processed by change eventing in %s:  %s", AddPropertyStep.class.getName(), currentElement));
+
+            callbacks.forEach(c -> c.accept(evt));
+        }
+
+        if (asVertex)
+            ((Vertex) traverser.get()).property(cardinality, key, value, vertexPropertyKeyValues);
         else
-            traverser.get().property(this.key, this.value);
+            traverser.get().property(key, value);
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
+    }
+
+
+    @Override
+    public void addCallback(final EventCallback<ElementPropertyChangedEvent> elementPropertyChangedEventCallback) {
+        if (callbacks == null) callbacks = new ArrayList<>();
+        callbacks.add(elementPropertyChangedEventCallback);
+    }
+
+    @Override
+    public void removeCallback(final EventCallback<ElementPropertyChangedEvent> elementPropertyChangedEventCallback) {
+        if (callbacks != null) callbacks.remove(elementPropertyChangedEventCallback);
+    }
+
+    @Override
+    public void clearCallbacks() {
+        if (callbacks != null) callbacks.clear();
+    }
+
+    @Override
+    public List<EventCallback<ElementPropertyChangedEvent>> getCallbacks() {
+        return (callbacks != null) ? Collections.unmodifiableList(callbacks) : Collections.emptyList();
     }
 }

@@ -45,6 +45,21 @@ public final class EmptyGraph implements Graph {
     }
 
     @Override
+    public Features features() {
+        return new Features() {
+            @Override
+            public GraphFeatures graph() {
+                return new GraphFeatures() {
+                    @Override
+                    public boolean supportsTransactions() {
+                        return false;
+                    }
+                };
+            }
+        };
+    }
+
+    @Override
     public Vertex addVertex(final Object... keyValues) {
         throw Exceptions.vertexAdditionsNotSupported();
     }

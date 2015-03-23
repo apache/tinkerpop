@@ -16,22 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.tinkerpop.gremlin.process.traversal.step.util.event;
 
-package org.apache.tinkerpop.gremlin.process.traversal.step;
-
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
-
-import java.util.List;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
 
 /**
- * A marker interface for steps that modify the graph.
+ * Event fired when an edge property is removed.
  *
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Stephen Mallette
  */
-public interface Mutating<C extends EventCallback<? extends Event>> {
-    public void addCallback(final C c);
-    public void removeCallback(final C c);
-    public void clearCallbacks();
-    public List<C> getCallbacks();
+public class EdgePropertyRemovedEvent extends ElementPropertyEvent {
+
+    public EdgePropertyRemovedEvent(final Edge element, final Property removed) {
+        super(element, removed, null);
+    }
+
+    @Override
+    void fire(final GraphChangedListener listener, final Element element, final Property oldValue, final Object newValue, final Object... vertexPropertyKeyValues) {
+        listener.edgePropertyRemoved((Edge) element, oldValue);
+    }
 }

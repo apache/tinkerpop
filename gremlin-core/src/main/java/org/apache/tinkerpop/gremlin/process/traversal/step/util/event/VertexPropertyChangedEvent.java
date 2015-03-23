@@ -16,22 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.tinkerpop.gremlin.process.traversal.step.util.event;
 
-package org.apache.tinkerpop.gremlin.process.traversal.step;
-
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
-
-import java.util.List;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
- * A marker interface for steps that modify the graph.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Mutating<C extends EventCallback<? extends Event>> {
-    public void addCallback(final C c);
-    public void removeCallback(final C c);
-    public void clearCallbacks();
-    public List<C> getCallbacks();
+public class VertexPropertyChangedEvent extends ElementPropertyChangedEvent {
+
+    public VertexPropertyChangedEvent(final Vertex element, final Property oldValue, final Object newValue, final Object... vertexPropertyKeyValues) {
+        super(element, oldValue, newValue, vertexPropertyKeyValues);
+    }
+
+    @Override
+    void fire(final GraphChangedListener listener, final Element element, final Property oldValue, final Object newValue, final Object... vertexPropertyKeyValues) {
+        listener.vertexPropertyChanged((Vertex) element, oldValue, newValue, vertexPropertyKeyValues);
+    }
 }

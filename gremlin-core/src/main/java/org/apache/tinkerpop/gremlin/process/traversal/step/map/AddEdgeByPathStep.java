@@ -21,24 +21,33 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EdgeAddedEvent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddEdgeByPathStep extends MapStep<Vertex, Edge> implements Mutating {
+public final class AddEdgeByPathStep extends MapStep<Vertex, Edge> implements Mutating<EventCallback<EdgeAddedEvent>> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.PATH,
             TraverserRequirement.OBJECT
     );
+
+    private List<EventCallback<EdgeAddedEvent>> callbacks = null;
 
     // TODO: Weight key based on Traverser.getCount() ?
 
@@ -79,17 +88,47 @@ public final class AddEdgeByPathStep extends MapStep<Vertex, Edge> implements Mu
     }
 
     @Override
-    protected Edge map(Traverser.Admin<Vertex> traverser) {
+    protected Edge map(final Traverser.Admin<Vertex> traverser) {
         final Vertex currentVertex = traverser.get();
         final Vertex otherVertex = traverser.path().get(this.stepLabel);
+
+        Edge e;
         if (this.direction.equals(Direction.IN))
-            return otherVertex.addEdge(this.edgeLabel, currentVertex, this.keyValues);
+            e = otherVertex.addEdge(this.edgeLabel, currentVertex, this.keyValues);
         else
-            return currentVertex.addEdge(this.edgeLabel, otherVertex, this.keyValues);
+            e = currentVertex.addEdge(this.edgeLabel, otherVertex, this.keyValues);
+
+        if (callbacks != null) {
+            final EdgeAddedEvent vae = new EdgeAddedEvent(DetachedFactory.detach(e, true));
+            callbacks.forEach(c -> c.accept(vae));
+        }
+
+        return e;
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
+    }
+
+    @Override
+    public void addCallback(final EventCallback<EdgeAddedEvent> edgeAddedEventEventCallback) {
+        if (callbacks == null) callbacks = new ArrayList<>();
+        callbacks.add(edgeAddedEventEventCallback);
+    }
+
+    @Override
+    public void removeCallback(final EventCallback<EdgeAddedEvent> edgeAddedEventEventCallback) {
+        if (callbacks != null) callbacks.remove(edgeAddedEventEventCallback);
+    }
+
+    @Override
+    public void clearCallbacks() {
+        if (callbacks != null) callbacks.clear();
+    }
+
+    @Override
+    public List<EventCallback<EdgeAddedEvent>> getCallbacks() {
+        return (callbacks != null) ? Collections.unmodifiableList(callbacks) : Collections.emptyList();
     }
 }

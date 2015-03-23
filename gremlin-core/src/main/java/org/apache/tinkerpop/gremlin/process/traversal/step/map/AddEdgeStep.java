@@ -21,12 +21,18 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EdgeAddedEvent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.VertexAddedEvent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -34,8 +40,9 @@ import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddEdgeStep extends FlatMapStep<Vertex, Edge> implements Mutating {
+public final class AddEdgeStep extends FlatMapStep<Vertex, Edge> implements Mutating<EventCallback<EdgeAddedEvent>> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
 
@@ -43,6 +50,8 @@ public final class AddEdgeStep extends FlatMapStep<Vertex, Edge> implements Muta
     private final Object[] keyValues;
     private final List<Vertex> vertices;
     private final Direction direction;
+
+    private List<EventCallback<EdgeAddedEvent>> callbacks = null;
 
     public AddEdgeStep(final Traversal.Admin traversal, final Direction direction, final String edgeLabel, final Vertex vertex, final Object... keyValues) {
         this(traversal, direction, edgeLabel, IteratorUtils.of(vertex), keyValues);
@@ -74,13 +83,43 @@ public final class AddEdgeStep extends FlatMapStep<Vertex, Edge> implements Muta
 
     @Override
     protected Iterator<Edge> flatMap(final Traverser.Admin<Vertex> traverser) {
-        return IteratorUtils.map(this.vertices.iterator(), this.direction.equals(Direction.OUT) ?
-                vertex -> traverser.get().addEdge(this.edgeLabel, vertex, this.keyValues) :
-                vertex -> vertex.addEdge(this.edgeLabel, traverser.get(), this.keyValues));
+        return IteratorUtils.map(this.vertices.iterator(), vertex -> {
+            final Edge e = this.direction.equals(Direction.OUT) ?
+                    traverser.get().addEdge(this.edgeLabel, vertex, this.keyValues) :
+                    vertex.addEdge(this.edgeLabel, traverser.get(), this.keyValues);
+
+            if (callbacks != null) {
+                final EdgeAddedEvent vae = new EdgeAddedEvent(DetachedFactory.detach(e, true));
+                callbacks.forEach(c -> c.accept(vae));
+            }
+
+            return e;
+        });
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
+    }
+
+    @Override
+    public void addCallback(final EventCallback<EdgeAddedEvent> edgeAddedEventEventCallback) {
+        if (callbacks == null) callbacks = new ArrayList<>();
+        callbacks.add(edgeAddedEventEventCallback);
+    }
+
+    @Override
+    public void removeCallback(final EventCallback<EdgeAddedEvent> edgeAddedEventEventCallback) {
+        if (callbacks != null) callbacks.remove(edgeAddedEventEventCallback);
+    }
+
+    @Override
+    public void clearCallbacks() {
+        if (callbacks != null) callbacks.clear();
+    }
+
+    @Override
+    public List<EventCallback<EdgeAddedEvent>> getCallbacks() {
+        return (callbacks != null) ? Collections.unmodifiableList(callbacks) : Collections.emptyList();
     }
 }

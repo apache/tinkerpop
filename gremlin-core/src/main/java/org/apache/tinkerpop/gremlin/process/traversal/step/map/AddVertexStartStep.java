@@ -23,15 +23,24 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.VertexAddedEvent;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements Mutating {
+public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements Mutating<EventCallback<VertexAddedEvent>> {
 
     private final Object[] keyValues;
     private boolean first = true;
+    private List<EventCallback<VertexAddedEvent>> callbacks = null;
 
     public AddVertexStartStep(final Traversal.Admin traversal, final Object... keyValues) {
         super(traversal);
@@ -46,8 +55,35 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
     protected Traverser<Vertex> processNextStart() {
         if (this.first) {
             this.first = false;
-            return this.getTraversal().getTraverserGenerator().generate(this.getTraversal().getGraph().get().addVertex(this.keyValues), this, 1l);
+            final Vertex v = this.getTraversal().getGraph().get().addVertex(this.keyValues);
+            if (callbacks != null) {
+                final VertexAddedEvent vae = new VertexAddedEvent(DetachedFactory.detach(v, true));
+                callbacks.forEach(c -> c.accept(vae));
+            }
+
+            return this.getTraversal().getTraverserGenerator().generate(v, this, 1l);
         } else
             throw FastNoSuchElementException.instance();
+    }
+
+    @Override
+    public void addCallback(final EventCallback<VertexAddedEvent> vertexAddedEventEventCallback) {
+        if (callbacks == null) callbacks = new ArrayList<>();
+        callbacks.add(vertexAddedEventEventCallback);
+    }
+
+    @Override
+    public void removeCallback(final EventCallback<VertexAddedEvent> vertexAddedEventEventCallback) {
+        if (callbacks != null) callbacks.remove(vertexAddedEventEventCallback);
+    }
+
+    @Override
+    public void clearCallbacks() {
+        if (callbacks != null) callbacks.clear();
+    }
+
+    @Override
+    public List<EventCallback<VertexAddedEvent>> getCallbacks() {
+        return (callbacks != null) ? Collections.unmodifiableList(callbacks) : Collections.emptyList();
     }
 }
