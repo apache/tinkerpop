@@ -1462,7 +1462,7 @@ image:lambda.png[width=150,float=right] A link:http://en.wikipedia.org/wiki/Anon
 [gremlin-groovy,modern]
 ----
 g.V().filter{it.get().value('name') == 'marko'}.
-      flatMap{it.get().vertices('created')}.
+      flatMap{it.get().vertices(OUT,'created')}.
       map {it.get().value('name')} <1>
 g.V().has('name','marko').out('created').values('name') <2>
 ----
@@ -1647,8 +1647,8 @@ image:gremlin-quill.png[width=200,float=right] The super interface of GraphTrave
 //
 //[gremlin-groovy,modern]
 //----
-////import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
-////g.of(SocialTraversal).people("marko").knows().name()
+//import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
+//g.of(SocialTraversal).people("marko").knows().name()
 //----
 //
 //By extending `Traversal`, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
