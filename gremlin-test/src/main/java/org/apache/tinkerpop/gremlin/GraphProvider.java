@@ -84,7 +84,7 @@ public interface GraphProvider {
      * like those tests for {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine.Type}.
      */
     public default GraphTraversalSource traversal(final Graph graph) {
-        return GraphTraversalSource.build().engine(StandardTraversalEngine.build()).create(graph);
+        return GraphTraversalSource.standard().create(graph);
     }
 
     /**
@@ -99,7 +99,7 @@ public interface GraphProvider {
      */
     public default GraphTraversalSource traversal(final Graph graph, final TraversalStrategy... strategies) {
         final GraphTraversalSource.Builder builder = GraphTraversalSource.build().engine(StandardTraversalEngine.build());
-        Stream.of(strategies).forEach(builder::strategy);
+        Stream.of(strategies).forEach(builder::with);
         return builder.create(graph);
     }
 
@@ -217,7 +217,7 @@ public interface GraphProvider {
      * be configured according the the {@link Graph} implementation's API. Implementers can use the {@code testClass}
      * and {@code testName} arguments to implement test specific configurations to their graphs.
      *
-     * @param graph             the {@link Graph} instance to load data into constructed by this {@code GraphProvider}
+     * @param graph         the {@link Graph} instance to load data into constructed by this {@code GraphProvider}
      * @param loadGraphWith the annotation for the currently running test - this value may be null if no graph
      *                      data is to be loaded in front of the test.
      * @param testClass     the test class being executed

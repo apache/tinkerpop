@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Dedu
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EngineDependentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LabeledEndStepStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchWhereStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
@@ -168,6 +169,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     MatchWhereStrategy.instance(),
                     ComparatorHolderRemovalStrategy.instance(),
                     LabeledEndStepStrategy.instance(),
+                    //LambdaRestrictionStrategy.instance(),
                     EngineDependentStrategy.instance(),
                     ProfileStrategy.instance(),
                     TraversalVerificationStrategy.instance(),

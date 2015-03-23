@@ -113,7 +113,7 @@ new File(this.args[0]).withReader { reader ->
                 def graphString = parts.size() == 2 ? parts[1].capitalize().replaceAll(/\s*\]\s*$/, "") : ""
                 def lang = parts[0].split(/-/, 2)[1].replaceAll(/\s*\]\s*$/, "")
                 def graph = graphString.isEmpty() ? TinkerGraph.open() : TinkerFactory."create${graphString}"()
-                def g = graph.traversal(standard)
+                def g = graph.traversal(standard())
                 engine = ScriptEngineCache.get(lang)
                 engine.put("graph",graph)
                 engine.put("g", g)

@@ -40,7 +40,7 @@ public class TinkerGraphComputerProvider extends TinkerGraphProvider {
     @Override
     public GraphTraversalSource traversal(final Graph graph, final TraversalStrategy... strategies) {
         final GraphTraversalSource.Builder builder = GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(TinkerGraphComputer.class));
-        Stream.of(strategies).forEach(builder::strategy);
+        Stream.of(strategies).forEach(builder::with);
         return builder.create(graph);
     }
 }

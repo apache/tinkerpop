@@ -692,7 +692,7 @@ MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPAR
 [gremlin-groovy]
 ----
 graph.io().readGraphML('data/grateful-dead.xml')
-g = graph.traversal(standard)
+g = graph.traversal(standard())
 g.V().match('a',
         __.as('a').has('name', 'Garcia'),
         __.as('a').in('writtenBy').as('b'),
@@ -1239,7 +1239,7 @@ Extracting a portion of a graph from a larger one for analysis, visualization or
 [gremlin-groovy,modern]
 ----
 subGraph = g.E().hasLabel('knows').subgraph('subGraph').cap('subGraph').next() <1>
-sg = subGraph.traversal(standard)
+sg = subGraph.traversal(standard())
 sg.E() <2>
 ----
 
@@ -1251,7 +1251,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 [gremlin-groovy,modern]
 ----
 subGraph = g.V(3).repeat(__.inE().subgraph('subGraph').outV()).times(3).cap('subGraph').next()  <1>
-sg = subGraph.traversal(standard)
+sg = subGraph.traversal(standard())
 sg.E()
 ----
 
@@ -1263,8 +1263,8 @@ There can be multiple `subgraph()` calls within the same traversal. Each operati
 ----
 t = g.V().outE('knows').subgraph('knowsG').inV().outE('created').subgraph('createdG').
           inV().inE('created').subgraph('createdG').iterate()
-t.sideEffects.get('knowsG').traversal(standard).E()
-t.sideEffects.get('createdG').traversal(standard).E()
+t.sideEffects.get('knowsG').traversal(standard()).E()
+t.sideEffects.get('createdG').traversal(standard()).E()
 ----
 
 IMPORTANT: The `subgraph()`-step only writes to graphs that support user supplied ids for its elements. Moreover, if no graph is specified via `withSideEffect()`, then <<tinkergraph-gremlin,TinkerGraph>> is assumed.

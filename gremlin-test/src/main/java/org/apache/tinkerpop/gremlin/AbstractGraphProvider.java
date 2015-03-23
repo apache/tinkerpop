@@ -68,7 +68,7 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         // assign overrides but don't allow gremlin.graph setting to be overridden.  the test suite should
         // not be able to override that.
         configurationOverrides.entrySet().stream()
-                .filter(c -> !c.getKey().equals("gremlin.graph"))
+                .filter(c -> !c.getKey().equals(Graph.GRAPH))
                 .forEach(e -> conf.setProperty(e.getKey(), e.getValue()));
         return conf;
     }

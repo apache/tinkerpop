@@ -42,23 +42,16 @@ import java.util.Optional;
  */
 public class GraphTraversalSource implements TraversalSource {
 
-    public static final Builder standard = GraphTraversalSource.build().engine(StandardTraversalEngine.build());
-    public static final Builder computer = GraphTraversalSource.build().engine(ComputerTraversalEngine.build());
-
-    public static Builder standard(final TraversalStrategy... strategies) {
-        final Builder builder = GraphTraversalSource.build().engine(StandardTraversalEngine.build());
-        for (final TraversalStrategy strategy : strategies) {
-            builder.strategy(strategy);
-        }
-        return builder;
+    public static Builder standard() {
+        return GraphTraversalSource.build().engine(StandardTraversalEngine.build());
     }
 
-    public static Builder computer(final Class<? extends GraphComputer> graphComputerClass, final TraversalStrategy... strategies) {
-        final Builder builder = GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(graphComputerClass));
-        for (final TraversalStrategy strategy : strategies) {
-            builder.strategy(strategy);
-        }
-        return builder;
+    public static Builder computer() {
+        return GraphTraversalSource.build().engine(ComputerTraversalEngine.build());
+    }
+
+    public static Builder computer(final Class<? extends GraphComputer> graphComputerClass) {
+        return GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(graphComputerClass));
     }
 
     ////
@@ -66,12 +59,18 @@ public class GraphTraversalSource implements TraversalSource {
     private final transient Graph graph;
     private final TraversalEngine.Builder engine;
     private final TraversalStrategies strategies;
+    private final List<TraversalStrategy> withStrategies;
+    private final List<Class<? extends TraversalStrategy>> withoutStrategies;
 
-    public GraphTraversalSource(final Graph graph, final TraversalEngine.Builder engine, final TraversalStrategy... strategies) {
+    private GraphTraversalSource(final Graph graph, final TraversalEngine.Builder engine, final List<TraversalStrategy> withStrategies, final List<Class<? extends TraversalStrategy>> withoutStrategies) {
         this.graph = graph;
         this.engine = engine;
+        this.withStrategies = withStrategies;
+        this.withoutStrategies = withoutStrategies;
         final TraversalStrategies tempStrategies = TraversalStrategies.GlobalCache.getStrategies(this.graph.getClass());
-        this.strategies = strategies.length == 0 ? tempStrategies : tempStrategies.clone().addStrategies(strategies);
+        this.strategies = withStrategies.isEmpty() && withoutStrategies.isEmpty() ?
+                tempStrategies :
+                tempStrategies.clone().addStrategies(withStrategies.toArray(new TraversalStrategy[withStrategies.size()])).removeStrategies(withoutStrategies.toArray(new Class[withoutStrategies.size()]));
     }
 
     public GraphTraversal<Vertex, Vertex> addV(final Object... keyValues) {
@@ -117,7 +116,8 @@ public class GraphTraversalSource implements TraversalSource {
     @Override
     public GraphTraversalSource.Builder asBuilder() {
         final GraphTraversalSource.Builder builder = GraphTraversalSource.build().engine(this.engine);
-        this.strategies.toList().forEach(builder::strategy);
+        this.withStrategies.forEach(builder::with);
+        this.withoutStrategies.forEach(builder::without);
         return builder;
     }
 
@@ -131,20 +131,30 @@ public class GraphTraversalSource implements TraversalSource {
     public static class Builder implements TraversalSource.Builder<GraphTraversalSource> {
 
         private TraversalEngine.Builder engineBuilder = StandardTraversalEngine.build();
-        private List<TraversalStrategy> strategies = new ArrayList<>();
+        private List<TraversalStrategy> withStrategies = new ArrayList<>();
+        private List<Class<? extends TraversalStrategy>> withoutStrategies = new ArrayList<>();
 
+        @Override
         public Builder engine(final TraversalEngine.Builder engineBuilder) {
             this.engineBuilder = engineBuilder;
             return this;
         }
 
-        public Builder strategy(final TraversalStrategy strategy) {
-            this.strategies.add(strategy);
+        @Override
+        public Builder with(final TraversalStrategy strategy) {
+            this.withStrategies.add(strategy);
             return this;
         }
 
+        @Override
+        public TraversalSource.Builder without(Class<? extends TraversalStrategy> strategyClass) {
+            this.withoutStrategies.add(strategyClass);
+            return this;
+        }
+
+        @Override
         public GraphTraversalSource create(final Graph graph) {
-            return new GraphTraversalSource(graph, this.engineBuilder, this.strategies.toArray(new TraversalStrategy[this.strategies.size()]));
+            return new GraphTraversalSource(graph, this.engineBuilder, this.withStrategies, this.withoutStrategies);
         }
     }
 }

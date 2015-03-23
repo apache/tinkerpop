@@ -41,7 +41,9 @@ public interface TraversalSource {
 
         public Builder engine(final TraversalEngine.Builder engine);
 
-        public Builder strategy(final TraversalStrategy strategy);
+        public Builder with(final TraversalStrategy strategy);
+
+        public Builder without(final Class<? extends TraversalStrategy> strategyClass);
 
         public C create(final Graph graph);
     }
