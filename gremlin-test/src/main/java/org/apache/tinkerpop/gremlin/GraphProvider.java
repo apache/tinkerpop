@@ -37,7 +37,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 
 import java.util.Collections;
@@ -119,18 +118,7 @@ public interface GraphProvider {
      * already been modified by the implementation as necessary for {@link Graph} creation.
      */
     default public Graph openTestGraph(final Configuration config) {
-        return openTestGraph(config, null);
-    }
-
-    /**
-     * Creates a new {@link org.apache.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using
-     * {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}. The assumption here is that the {@code Configuration}
-     * has been created by one of the {@link #newGraphConfiguration(String, Class, String)} methods and has therefore
-     * already been modified by the implementation as necessary for {@link Graph} creation.
-     */
-    default public Graph openTestGraph(final Configuration config, final GraphStrategy... strategies) {
-        final Graph graph = GraphFactory.open(config);
-        return null == strategies ? graph : graph.strategy(strategies);
+        return GraphFactory.open(config);
     }
 
     /**

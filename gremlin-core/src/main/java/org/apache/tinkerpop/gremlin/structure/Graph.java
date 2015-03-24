@@ -34,9 +34,6 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
-import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import org.apache.tinkerpop.gremlin.structure.strategy.SequenceStrategy;
-import org.apache.tinkerpop.gremlin.structure.strategy.StrategyGraph;
 import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.javatuples.Pair;
 
@@ -185,18 +182,6 @@ public interface Graph extends AutoCloseable {
      */
     public default Io io() {
         return new DefaultIo(this);
-    }
-
-    /**
-     * Constructs a {@link StrategyGraph} from one or more {@link GraphStrategy} objects.  If more than one
-     * {@link GraphStrategy} is supplied they are folded into a single {@link SequenceStrategy}.
-     */
-    @Graph.Helper
-    public default StrategyGraph strategy(final GraphStrategy... strategies) {
-        if (strategies.length == 0)
-            throw new IllegalArgumentException("Provide at least one GraphStrategy implementation.");
-        final GraphStrategy graphStrategy = strategies.length == 1 ? strategies[0] : SequenceStrategy.build().sequence(strategies).create();
-        return new StrategyGraph(this, graphStrategy);
     }
 
     /**

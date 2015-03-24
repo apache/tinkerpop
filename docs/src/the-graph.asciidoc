@@ -718,7 +718,6 @@ End users, <<implementations,vendors>>, <<graphstrategy,strategy>> developers, <
 
 * End users are granted the _flat namespace_ (e.g. `name`, `age`, `location`) to key their properties and label their elements.
 * Vendors are granted the _hidden namespace_ (e.g. `~metadata`) to to key their properties and labels. Data key'd as such is only accessible via the vendor implementation code and no other stakeholders are granted read nor write access to data prefixed with "~" (see `Graph.Hidden`). Test coverage and exceptions exist to ensure that vendors respect this hard boundary.
-* `GraphStrategy` developers should leverage _qualified namespaces_ particular to their domain (e.g. `mydomain.mystrategy.metadata`). Furthermore, if hiding these properties from users is important, then the strategy methods for property iterators should be smart about specified namespaces.
 * <<vertexprogram,`VertexProgram`>> and <<mapreduce,`MapReduce`>> developers should, like `GraphStrategy` developers, leverage _qualified namespaces_ particular to their domain (e.g. `mydomain.myvertexprogram.computedata`).
 * `GremlinPlugin` creators should prefix their plugin name with their domain (e.g. `mydomain.myplugin`).
 

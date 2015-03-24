@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -56,19 +55,10 @@ public abstract class AbstractGremlinTest {
     protected Graph graph;
     protected GraphTraversalSource g;
     protected Configuration config;
-    protected GraphStrategy[] strategiesToTest;
     protected GraphProvider graphProvider;
 
     @Rule
     public TestName name = new TestName();
-
-    public AbstractGremlinTest() {
-        this(null);
-    }
-
-    public AbstractGremlinTest(final GraphStrategy... strategiesToTest) {
-        this.strategiesToTest = strategiesToTest;
-    }
 
     @Before
     public void setup() throws Exception {
@@ -80,7 +70,7 @@ public abstract class AbstractGremlinTest {
         graphProvider.clear(config);
 
         // not sure how the strategy can ever be null, but it seems to happen in the performance tests
-        graph = graphProvider.openTestGraph(config, strategiesToTest);
+        graph = graphProvider.openTestGraph(config);
         g = graphProvider.traversal(graph);
 
         final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
@@ -136,7 +126,6 @@ public abstract class AbstractGremlinTest {
             graphProvider.clear(graph, config);
             g = null;
             config = null;
-            strategiesToTest = null;
             graphProvider = null;
         }
     }

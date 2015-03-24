@@ -33,10 +33,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import org.apache.tinkerpop.gremlin.structure.strategy.StrategyElement;
-import org.apache.tinkerpop.gremlin.structure.strategy.StrategyProperty;
-import org.apache.tinkerpop.gremlin.structure.strategy.StrategyVariables;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.javatuples.Pair;
@@ -115,30 +111,6 @@ public final class StringFactory {
      */
     public static String graphString(final Graph graph, final String internalString) {
         return graph.getClass().getSimpleName().toLowerCase() + L_BRACKET + internalString + R_BRACKET;
-    }
-
-    /**
-     * Construct the representation for a {@link org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
-     */
-
-    public static String graphStrategyString(final GraphStrategy graphStrategy) {
-        return graphStrategy.getClass().getSimpleName().toLowerCase();
-    }
-
-    public static String graphStrategyString(final GraphStrategy graphStrategy, final Graph graph) {
-        return graphStrategy.getClass().getSimpleName().toLowerCase() + L_BRACKET + graph.toString() + R_BRACKET;
-    }
-
-    public static String graphStrategyElementString(final StrategyElement element) {
-        return element.getBaseElement() + STAR;
-    }
-
-    public static String graphStrategyPropertyString(final StrategyProperty property) {
-        return property.getBaseProperty() + STAR;
-    }
-
-    public static String graphStrategyVariables(final StrategyVariables variables) {
-        return variables.getBaseVariables() + STAR;
     }
 
     public static String graphVariablesString(final Graph.Variables variables) {

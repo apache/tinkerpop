@@ -21,12 +21,6 @@ package org.apache.tinkerpop.gremlin.structure;
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
 import org.apache.tinkerpop.gremlin.algorithm.generator.CommunityGeneratorTest;
 import org.apache.tinkerpop.gremlin.algorithm.generator.DistributionGeneratorTest;
-import org.apache.tinkerpop.gremlin.structure.strategy.IdStrategyTest;
-import org.apache.tinkerpop.gremlin.structure.strategy.PartitionStrategyTest;
-import org.apache.tinkerpop.gremlin.structure.strategy.ReadOnlyStrategyTest;
-import org.apache.tinkerpop.gremlin.structure.strategy.SequenceStrategyTest;
-import org.apache.tinkerpop.gremlin.structure.strategy.StrategyGraphTest;
-import org.apache.tinkerpop.gremlin.structure.strategy.SubgraphStrategyTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdgeTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPropertyTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexPropertyTest;
@@ -50,8 +44,6 @@ import java.util.stream.Stream;
  * "Suite" implements {@link org.apache.tinkerpop.gremlin.GraphProvider} as a convenience only. It could be implemented in a
  * separate class file):
  * <code>
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(StructureStandardSuite.class)
  * @StructureStandardSuite.GraphProviderClass(TinkerGraphStructureStandardTest.class) public class TinkerGraphStructureStandardTest implements GraphProvider {
  * }
@@ -64,6 +56,8 @@ import java.util.stream.Stream;
  * Set the {@code gremlin.structure.tests} environment variable to a comma separated list of test classes to execute.
  * This setting can be helpful to restrict execution of tests to specific ones being focused on during development.
  * <br/>
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StructureStandardSuite extends AbstractGremlinSuite {
 
@@ -79,17 +73,11 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             FeatureSupportTest.class,
             GraphTest.class,
             GraphConstructionTest.class,
-            IdStrategyTest.class,
             IoTest.class,
             VertexPropertyTest.class,
             VariablesTest.class,
-            PartitionStrategyTest.class,
             PropertyTest.class,
-            ReadOnlyStrategyTest.class,
-            SequenceStrategyTest.class,
             SerializationTest.class,
-            SubgraphStrategyTest.class,
-            StrategyGraphTest.class,
             TransactionTest.class,
             VertexTest.class
     };

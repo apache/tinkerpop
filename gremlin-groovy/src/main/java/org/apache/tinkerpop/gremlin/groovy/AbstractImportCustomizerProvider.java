@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Contains;
@@ -49,7 +50,6 @@ import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
-import org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
@@ -79,7 +79,6 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
     static {
         // graph structure
         imports.add(Graph.class.getPackage().getName() + DOT_STAR);
-        imports.add(GraphStrategy.class.getPackage().getName() + DOT_STAR);
         imports.add(GraphFactory.class.getPackage().getName() + DOT_STAR);
         imports.add(BatchGraph.class.getPackage().getName() + DOT_STAR);
         imports.add(DetachedElement.class.getPackage().getName() + DOT_STAR);
@@ -89,6 +88,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(GraphComputer.class.getPackage().getName() + DOT_STAR);
         imports.add(GraphTraversal.class.getPackage().getName() + DOT_STAR);
         imports.add(ComputerTraversalEngine.class.getPackage().getName() + DOT_STAR);
+        imports.add(PartitionStrategy.class.getPackage().getName() + DOT_STAR);
         staticImports.add(__.class.getCanonicalName() + DOT_STAR);
         staticImports.add(TraversalOptionParent.Pick.class.getCanonicalName() + DOT_STAR);
         staticImports.add(GraphTraversalSource.class.getCanonicalName() + DOT_STAR);
