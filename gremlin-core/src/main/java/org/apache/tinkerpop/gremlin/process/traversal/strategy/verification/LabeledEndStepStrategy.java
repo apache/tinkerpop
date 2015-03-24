@@ -16,30 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
+package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeByPathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MarkerIdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ReadOnlyStrategy extends AbstractTraversalStrategy {
+public final class LabeledEndStepStrategy extends AbstractTraversalStrategy {
 
-    private static final ReadOnlyStrategy INSTANCE = new ReadOnlyStrategy();
+    private static final LabeledEndStepStrategy INSTANCE = new LabeledEndStepStrategy();
 
-    private ReadOnlyStrategy() {
+    private LabeledEndStepStrategy() {
     }
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getSteps().stream().filter(step -> step instanceof AddEdgeByPathStep).findAny().isPresent())
-            throw new IllegalStateException("The provided traversal has a mutating step and thus is not read only");
+        if (traversal.getEndStep().getLabel().isPresent())
+            traversal.addStep(new MarkerIdentityStep<>(traversal));
     }
 
-    public static ReadOnlyStrategy instance() {
+    public static LabeledEndStepStrategy instance() {
         return INSTANCE;
     }
 

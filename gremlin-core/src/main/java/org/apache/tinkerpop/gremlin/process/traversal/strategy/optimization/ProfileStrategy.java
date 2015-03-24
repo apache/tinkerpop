@@ -25,6 +25,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComparatorHolderRemovalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EngineDependentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LabeledEndStepStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.HashSet;

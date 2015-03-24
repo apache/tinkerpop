@@ -16,37 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
+package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Parameterized.class)
-public class LambdaRestrictionStrategyTest {
-
+public class ReadOnlyStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"filter(x->true)", __.filter(x -> true)},
-                {"map(Traverser::get)", __.map(Traverser::get)},
-                {"sideEffect(x -> {int i= 1+1;})", __.sideEffect(x -> {
-                    int i = 1 + 1;
-                })},
-                {"select().by(Object::toString)", __.select().by(Object::toString)},
-                //{"order().by((a,b)->a.compareTo(b))", __.order().by((a, b) -> ((Integer) a).compareTo((Integer) b))},
-        });
+                {"addInE()", __.addInE("test", "x")},
+                {"addInE(args)", __.addInE("test", "x", "this", "that")},
+                {"addOutE()", __.addOutE("test", "x")},
+                {"addOutE(args)", __.addOutE("test", "x", "this", "that")},
+                {"addE(IN)", __.addE(Direction.IN, "test", "test")},
+                {"addE(IN,args)", __.addE(Direction.IN, "test", "test", "this", "that")},
+                {"addE(OUT)", __.addE(Direction.OUT, "test", "test")},
+                {"addE(OUT,args)", __.addE(Direction.OUT, "test", "test", "this", "that")}});
     }
 
     @Parameterized.Parameter(value = 0)
@@ -56,12 +56,12 @@ public class LambdaRestrictionStrategyTest {
     public Traversal traversal;
 
     @Test
-    public void shouldNotAllowLambdaSteps() {
+    public void shouldPreventMutatingStepsFromBeingInTheTraversal() {
         try {
-            LambdaRestrictionStrategy.instance().apply(traversal.asAdmin());
-            fail("The strategy should not allow lambdas.");
+            ReadOnlyStrategy.instance().apply(traversal.asAdmin());
+            fail("The strategy should have found a mutating step.");
         } catch (IllegalStateException ise) {
-            assertTrue(ise.getMessage().contains("lambda"));
+            assertEquals("The provided traversal has a mutating step and thus is not read only", ise.getMessage());
         }
     }
 }
