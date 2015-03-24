@@ -18,9 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
-import org.apache.tinkerpop.shaded.kryo_2_24_0.Kryo;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Input;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Output;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
@@ -28,7 +25,10 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoInput;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoKryo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoOutput;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -54,14 +54,14 @@ public class SerializationTest {
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeVertexAsDetached() throws Exception {
             final GryoMapper gryoMapper = graph.io().gryoMapper().create();
-            final Kryo kryo = gryoMapper.createMapper();
+            final GryoKryo kryo = gryoMapper.createMapper();
             final Vertex v = graph.vertices(convertToVertexId("marko")).next();
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            final Output output = new Output(stream);
+            final GryoOutput output = new GryoOutput(stream);
             kryo.writeObject(output, v);
             output.close();
 
-            final Input input = new Input(stream.toByteArray());
+            final GryoInput input = new GryoInput(stream.toByteArray());
             final Vertex detached = kryo.readObject(input, Vertex.class);
             input.close();
             assertNotNull(detached);
@@ -75,14 +75,14 @@ public class SerializationTest {
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeEdgeAsDetached() throws Exception {
             final GryoMapper gryoMapper = graph.io().gryoMapper().create();
-            final Kryo kryo = gryoMapper.createMapper();
+            final GryoKryo kryo = gryoMapper.createMapper();
             final Edge e = g.E(convertToEdgeId("marko", "knows", "vadas")).next();
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            final Output output = new Output(stream);
+            final GryoOutput output = new GryoOutput(stream);
             kryo.writeObject(output, e);
             output.close();
 
-            final Input input = new Input(stream.toByteArray());
+            final GryoInput input = new GryoInput(stream.toByteArray());
             final Edge detached = kryo.readObject(input, Edge.class);
             assertNotNull(detached);
             assertEquals(e.label(), detached.label());
@@ -94,14 +94,14 @@ public class SerializationTest {
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializePropertyAsDetached() throws Exception {
             final GryoMapper gryoMapper = graph.io().gryoMapper().create();
-            final Kryo kryo = gryoMapper.createMapper();
+            final GryoKryo kryo = gryoMapper.createMapper();
             final Property p = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            final Output output = new Output(stream);
+            final GryoOutput output = new GryoOutput(stream);
             kryo.writeObject(output, p);
             output.close();
 
-            final Input input = new Input(stream.toByteArray());
+            final GryoInput input = new GryoInput(stream.toByteArray());
             final Property detached = kryo.readObject(input, Property.class);
             assertNotNull(detached);
             assertEquals(p.key(), detached.key());
@@ -112,14 +112,14 @@ public class SerializationTest {
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeVertexPropertyAsDetached() throws Exception {
             final GryoMapper gryoMapper = graph.io().gryoMapper().create();
-            final Kryo kryo = gryoMapper.createMapper();
+            final GryoKryo kryo = gryoMapper.createMapper();
             final VertexProperty vp = graph.vertices(convertToVertexId("marko")).next().property("name");
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            final Output output = new Output(stream);
+            final GryoOutput output = new GryoOutput(stream);
             kryo.writeObject(output, vp);
             output.close();
 
-            final Input input = new Input(stream.toByteArray());
+            final GryoInput input = new GryoInput(stream.toByteArray());
             final VertexProperty detached = kryo.readObject(input, VertexProperty.class);
             input.close();
             assertNotNull(detached);
@@ -132,14 +132,14 @@ public class SerializationTest {
         @LoadGraphWith(LoadGraphWith.GraphData.CREW)
         public void shouldSerializeVertexPropertyWithPropertiesAsDetached() throws Exception {
             final GryoMapper gryoMapper = graph.io().gryoMapper().create();
-            final Kryo kryo = gryoMapper.createMapper();
+            final GryoKryo kryo = gryoMapper.createMapper();
             final VertexProperty<?> vp = graph.vertices(convertToVertexId("marko")).next().properties("location").next();
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            final Output output = new Output(stream);
+            final GryoOutput output = new GryoOutput(stream);
             kryo.writeObject(output, vp);
             output.close();
 
-            final Input input = new Input(stream.toByteArray());
+            final GryoInput input = new GryoInput(stream.toByteArray());
             final VertexProperty<?> detached = kryo.readObject(input, VertexProperty.class);
             input.close();
             assertNotNull(detached);
@@ -156,15 +156,15 @@ public class SerializationTest {
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializePathAsDetached() throws Exception {
             final GryoMapper gryoMapper = graph.io().gryoMapper().create();
-            final Kryo kryo = gryoMapper.createMapper();
+            final GryoKryo kryo = gryoMapper.createMapper();
             final Path p = g.V(convertToVertexId("marko")).as("a").outE().as("b").inV().as("c").path()
                     .filter(t -> ((Vertex) t.get().objects().get(2)).value("name").equals("lop")).next();
             final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            final Output output = new Output(stream);
+            final GryoOutput output = new GryoOutput(stream);
             kryo.writeObject(output, p);
             output.close();
 
-            final Input input = new Input(stream.toByteArray());
+            final GryoInput input = new GryoInput(stream.toByteArray());
             final Path detached = kryo.readObject(input, Path.class);
             input.close();
             assertNotNull(detached);
