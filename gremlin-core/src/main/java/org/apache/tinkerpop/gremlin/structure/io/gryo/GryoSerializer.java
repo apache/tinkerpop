@@ -18,36 +18,43 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
-
-import java.io.InputStream;
+import com.esotericsoftware.kryo.io.Output;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GryoInput extends Input {
+public abstract class GryoSerializer<T> extends Serializer<T> {
 
-    public GryoInput() {
+    public GryoSerializer() {
         super();
     }
 
-    public GryoInput(final int bufferSize) {
-        super(bufferSize);
+    public GryoSerializer(boolean acceptsNull) {
+        super(acceptsNull);
     }
 
-    public GryoInput(final byte[] buffer) {
-        super(buffer);
+
+    public GryoSerializer(boolean acceptsNull, boolean immutable) {
+        super(acceptsNull, immutable);
     }
 
-    public GryoInput(final byte[] buffer, final int offset, final int count) {
-        super(buffer, offset, count);
+
+    public abstract void write(final GryoKryo kryo, final GryoOutput output, final T object);
+
+
+    public abstract T read(final GryoKryo kryo, final GryoInput input, final Class<T> type);
+
+
+    @Override
+    public final void write(final Kryo kryo, final Output output, final T object) {
+        this.write((GryoKryo) kryo, (GryoOutput) output, object);
     }
 
-    public GryoInput(final InputStream inputStream) {
-        super(inputStream);
-    }
-
-    public GryoInput(final InputStream inputStream, final int bufferSize) {
-        super(inputStream, bufferSize);
+    @Override
+    public final T read(final Kryo kryo, final Input input, final Class<T> type) {
+        return this.read((GryoKryo) kryo, (GryoInput) input, type);
     }
 }

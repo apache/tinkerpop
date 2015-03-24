@@ -18,27 +18,27 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser;
 
-import org.apache.tinkerpop.shaded.kryo_2_24_0.Kryo;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.Serializer;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Input;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Output;
 import groovy.json.JsonBuilder;
 import groovy.json.JsonSlurper;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoInput;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoKryo;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoOutput;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoSerializer;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class JsonBuilderGryoSerializer extends Serializer<JsonBuilder> {
+public class JsonBuilderGryoSerializer extends GryoSerializer<JsonBuilder> {
 
     final JsonSlurper slurper = new JsonSlurper();
 
     @Override
-    public void write(final Kryo kryo, final Output output, final JsonBuilder jsonBuilder) {
+    public void write(final GryoKryo kryo, final GryoOutput output, final JsonBuilder jsonBuilder) {
         output.writeString(jsonBuilder.toString());
     }
 
     @Override
-    public JsonBuilder read(final Kryo kryo, final Input input, final Class<JsonBuilder> jsonBuilderClass) {
+    public JsonBuilder read(final GryoKryo kryo, final GryoInput input, final Class<JsonBuilder> jsonBuilderClass) {
         final String jsonString = input.readString();
         return new JsonBuilder(slurper.parseText(jsonString));
     }

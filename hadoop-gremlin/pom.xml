@@ -141,10 +141,6 @@ limitations under the License.
                     <artifactId>commons-codec</artifactId>
                 </exclusion>
                 <!-- gremlin-core conflicts -->
-                <!--<exclusion>
-                    <groupId>com.esotericsoftware.kryo</groupId>
-                    <artifactId>kryo</artifactId>
-                </exclusion>-->
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>

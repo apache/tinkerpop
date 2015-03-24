@@ -18,19 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser;
 
-import org.apache.tinkerpop.shaded.kryo_2_24_0.Kryo;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.Serializer;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Input;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Output;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoInput;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoKryo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.util.ReferenceCountUtil;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoOutput;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoSerializer;
 import org.javatuples.Pair;
 
 import java.io.ByteArrayOutputStream;
@@ -51,9 +51,9 @@ import java.util.stream.Collectors;
  */
 public class GryoMessageSerializerV1d0 implements MessageSerializer {
     private GryoMapper gryoMapper;
-    private ThreadLocal<Kryo> kryoThreadLocal = new ThreadLocal<Kryo>() {
+    private ThreadLocal<GryoKryo> kryoThreadLocal = new ThreadLocal<GryoKryo>() {
         @Override
-        protected Kryo initialValue() {
+        protected GryoKryo initialValue() {
             return gryoMapper.createMapper();
         }
     };
@@ -128,7 +128,7 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
         }
 
         if (!classNameList.isEmpty()) {
-            final List<Pair<Class, Function<Kryo, Serializer>>> classList = classNameList.stream().map(serializerDefinition -> {
+            final List<Pair<Class, Function<GryoKryo, GryoSerializer>>> classList = classNameList.stream().map(serializerDefinition -> {
                 String className;
                 Optional<String> serializerName;
                 if (serializerDefinition.contains(";")) {
@@ -145,20 +145,20 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
 
                 try {
                     final Class clazz = Class.forName(className);
-                    final Serializer serializer;
+                    final GryoSerializer serializer;
                     if (serializerName.isPresent()) {
                         final Class serializerClazz = Class.forName(serializerName.get());
-                        serializer = (Serializer) serializerClazz.newInstance();
+                        serializer = (GryoSerializer) serializerClazz.newInstance();
                     } else
                         serializer = null;
 
-                    return Pair.<Class, Function<Kryo, Serializer>>with(clazz, kryo -> serializer);
+                    return Pair.<Class, Function<GryoKryo, GryoSerializer>>with(clazz, kryo -> serializer);
                 } catch (Exception ex) {
                     throw new IllegalStateException("Class could not be found", ex);
                 }
             }).collect(Collectors.toList());
 
-            classList.forEach(c -> builder.addCustom(c.getValue0(), c.getValue1()));
+            classList.forEach(c -> builder.addCustom(c.getValue0(), (Function) c.getValue1()));
         }
 
         this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());
@@ -174,10 +174,10 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
     @Override
     public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException {
         try {
-            final Kryo kryo = kryoThreadLocal.get();
+            final GryoKryo kryo = kryoThreadLocal.get();
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
-            try (final Input input = new Input(payload)) {
+            try (final GryoInput input = new GryoInput(payload)) {
                 final Map<String, Object> responseData = (Map<String, Object>) kryo.readClassAndObject(input);
                 final Map<String, Object> status = (Map<String, Object>) responseData.get(SerTokens.TOKEN_STATUS);
                 final Map<String, Object> result = (Map<String, Object>) responseData.get(SerTokens.TOKEN_RESULT);
@@ -213,9 +213,9 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
             message.put(SerTokens.TOKEN_RESULT, result);
             message.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
 
-            final Kryo kryo = kryoThreadLocal.get();
+            final GryoKryo kryo = kryoThreadLocal.get();
             try (final OutputStream baos = new ByteArrayOutputStream()) {
-                final Output output = new Output(baos);
+                final GryoOutput output = new GryoOutput(baos);
                 kryo.writeClassAndObject(output, message);
 
                 final long size = output.total();
@@ -238,10 +238,10 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
     @Override
     public RequestMessage deserializeRequest(final ByteBuf msg) throws SerializationException {
         try {
-            final Kryo kryo = kryoThreadLocal.get();
+            final GryoKryo kryo = kryoThreadLocal.get();
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
-            try (final Input input = new Input(payload)) {
+            try (final GryoInput input = new GryoInput(payload)) {
                 final Map<String, Object> requestData = (Map<String, Object>) kryo.readClassAndObject(input);
                 final RequestMessage.Builder builder = RequestMessage.build((String) requestData.get(SerTokens.TOKEN_OP))
                         .overrideRequestId((UUID) requestData.get(SerTokens.TOKEN_REQUEST))
@@ -260,9 +260,9 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
     public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
-            final Kryo kryo = kryoThreadLocal.get();
+            final GryoKryo kryo = kryoThreadLocal.get();
             try (final OutputStream baos = new ByteArrayOutputStream()) {
-                final Output output = new Output(baos);
+                final GryoOutput output = new GryoOutput(baos);
                 final String mimeType = serializeToString ? MIME_TYPE_STRINGD : MIME_TYPE;
                 output.writeByte(mimeType.length());
                 output.write(mimeType.getBytes(UTF8));
