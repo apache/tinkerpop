@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphWorkerContext;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -66,7 +65,7 @@ public final class VertexWritable implements Writable, Serializable {
     public void readFields(final DataInput input) throws IOException {
         try {
             this.vertex = null;
-            this.vertex = GiraphWorkerContext.GRYO_POOL.doWithReader(gryoReader -> {
+            this.vertex = HadoopPools.GRYO_POOL.doWithReader(gryoReader -> {
                 try {
                     final ByteArrayInputStream inputStream = new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input));
                     final Graph gLocal = TinkerGraph.open();
@@ -88,7 +87,7 @@ public final class VertexWritable implements Writable, Serializable {
     @Override
     public void write(final DataOutput output) throws IOException {
         try {
-            GiraphWorkerContext.GRYO_POOL.doWithWriter(gryoWriter -> {
+            HadoopPools.GRYO_POOL.doWithWriter(gryoWriter -> {
                 try {
                     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     gryoWriter.writeVertex(outputStream, this.vertex, Direction.BOTH);

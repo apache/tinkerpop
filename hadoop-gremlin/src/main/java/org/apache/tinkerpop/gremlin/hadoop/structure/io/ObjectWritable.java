@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphWorkerContext;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoInput;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoOutput;
 
@@ -29,11 +28,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ObjectWritable<T> implements WritableComparable<ObjectWritable> {
+public final class ObjectWritable<T> implements WritableComparable<ObjectWritable>, Serializable {
 
     T t;
 
@@ -59,7 +61,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
 
     @Override
     public void readFields(final DataInput input) throws IOException {
-        this.t = GiraphWorkerContext.GRYO_POOL.doWithReader(gryoReader -> {
+        this.t = HadoopPools.GRYO_POOL.doWithReader(gryoReader -> {
             try {
                 return gryoReader.readObject(new GryoInput(new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input))));
             } catch (IOException e) {
@@ -70,7 +72,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
 
     @Override
     public void write(final DataOutput output) throws IOException {
-        GiraphWorkerContext.GRYO_POOL.doWithWriter(gryoWriter -> {
+        HadoopPools.GRYO_POOL.doWithWriter(gryoWriter -> {
             try {
                 final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 final GryoOutput out = new GryoOutput(outputStream);
@@ -82,6 +84,14 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
                 throw new IllegalStateException(e.getMessage(), e);
             }
         });
+    }
+
+    private void writeObject(final ObjectOutputStream outputStream) throws IOException {
+        this.write(outputStream);
+    }
+
+    private void readObject(final ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+        this.readFields(inputStream);
     }
 
     @Override

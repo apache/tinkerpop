@@ -33,8 +33,6 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
  */
 public final class GiraphWorkerContext extends WorkerContext {
 
-    public static final GryoPool GRYO_POOL = new GryoPool(256);
-
     private VertexProgramPool vertexProgramPool;
     private GiraphMemory memory;
     private boolean deriveMemory;
