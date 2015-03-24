@@ -18,17 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ComparatorHolderRemovalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComparatorHolderRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ConjunctionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.DedupOptimizerStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EngineDependentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EngineDependentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LabeledEndStepStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LambdaRestrictionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LabeledEndStepStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchWhereStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.TraversalVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.TraversalVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.structure.Graph;
