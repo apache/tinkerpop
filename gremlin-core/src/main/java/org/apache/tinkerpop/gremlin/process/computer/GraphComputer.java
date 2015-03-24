@@ -168,6 +168,10 @@ public interface GraphComputer {
         public static IllegalStateException computerHasNoVertexProgramNorMapReducers() {
             return new IllegalStateException("The computer has no vertex program or map reducers to execute");
         }
+
+        public static IllegalStateException incidentAndAdjacentElementsCanNotBeAccessedInMapReduce() {
+            return new IllegalStateException("The computer is in MapReduce mode and a vertex's incident and adjacent elements can not be accessed");
+        }
     }
 
 }

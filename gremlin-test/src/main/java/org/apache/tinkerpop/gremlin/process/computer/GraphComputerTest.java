@@ -21,10 +21,10 @@ package org.apache.tinkerpop.gremlin.process.computer;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -51,7 +51,8 @@ import static org.junit.Assert.*;
         "computerHasNoVertexProgramNorMapReducers",
         "computerHasAlreadyBeenSubmittedAVertexProgram",
         "providedKeyIsNotAnElementComputeKey",
-        "isolationNotSupported"
+        "isolationNotSupported",
+        "incidentAndAdjacentElementsCanNotBeAccessedInMapReduce"
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer",
@@ -83,6 +84,8 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
     public abstract GraphComputer get_g_compute_mapXidX_reduceXidX_reduceKeySortXreverseX_memoryKeyXidsX();
 
     public abstract GraphComputer get_g_compute_programXTraversalVertexProgram_build_traversalXg_V_both_hasXlabel_personX_age_groupCountXaXX_create();
+
+    public abstract GraphComputer get_g_compute_mapXoutE_countX_reduceXsumX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -313,6 +316,17 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(3, map.get(29).intValue());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldNotAllowEdgeAccessInMapReduce() throws Exception {
+        try {
+            get_g_compute_mapXoutE_countX_reduceXsumX().submit().get();
+            fail("Should not allow incident edges to be accessed in MapReduce");
+        } catch (Exception ex) {
+            // ex.printStackTrace();
+        }
+    }
+
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTest extends GraphComputerTest {
@@ -491,6 +505,11 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
                     // TODO: need to set the engine to be computer
                             traversal("GraphFactory.open(['gremlin.graph':'" + g.getClass().getCanonicalName() + "']).V().both().has(label,'person').values('age').groupCount('a')").
                     create()); */
+            return null;
+        }
+
+        @Override
+        public GraphComputer get_g_compute_mapXoutE_countX_reduceXsumX() {
             return null;
         }
 

@@ -41,8 +41,11 @@ import java.util.stream.Collectors;
  */
 public class ComputerGraph implements Graph {
 
+    public enum State {VERTEX_PROGRAM, MAP_REDUCE, NO_OP}
+
     private final Graph graph;
     private final Set<String> computeKeys;
+    private State state = State.VERTEX_PROGRAM;
 
     public ComputerGraph(final Graph graph, final Set<String> elementComputeKeys) {
         this.graph = graph;
@@ -55,6 +58,10 @@ public class ComputerGraph implements Graph {
 
     private final Vertex wrapVertex(final Vertex vertex) {
         return new ComputerVertex(vertex);
+    }
+
+    public void setState(final State state) {
+        this.state = state;
     }
 
     @Override
@@ -218,16 +225,22 @@ public class ComputerGraph implements Graph {
 
         @Override
         public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
+            if (state.equals(State.MAP_REDUCE))
+                throw GraphComputer.Exceptions.incidentAndAdjacentElementsCanNotBeAccessedInMapReduce();
             return new ComputerEdge(this.asVertex().addEdge(label, inVertex, keyValues));
         }
 
         @Override
         public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
+            if (state.equals(State.MAP_REDUCE))
+                throw GraphComputer.Exceptions.incidentAndAdjacentElementsCanNotBeAccessedInMapReduce();
             return IteratorUtils.map(this.asVertex().edges(direction, edgeLabels), edge -> new ComputerEdge(edge));
         }
 
         @Override
         public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
+            if (state.equals(State.MAP_REDUCE))
+                throw GraphComputer.Exceptions.incidentAndAdjacentElementsCanNotBeAccessedInMapReduce();
             return IteratorUtils.map(this.asVertex().vertices(direction, edgeLabels), vertex -> new ComputerVertex(vertex));
         }
 

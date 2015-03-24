@@ -197,5 +197,32 @@ public abstract class GroovyGraphComputerTest {
                     traversal("GraphFactory.open(['gremlin.graph':'${graph.metaClass.theClass.getCanonicalName()}']).V().both().has(label,'person').values('age').groupCount('a')").
                     create());
         }
+
+        @Override
+        public GraphComputer get_g_compute_mapXoutE_countX_reduceXsumX() {
+            g.getGraphComputer().get().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Long, Long, Long, List<Long>> build()
+                    .map("""
+                        import static org.junit.Assert.*;
+                        try {
+                          b.emit(org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.count(a.edges(OUT)))
+                        } catch (IllegalStateException e) {
+                            assertEquals(GraphComputer.Exceptions.incidentAndAdjacentElementsCanNotBeAccessedInMapReduce().getMessage(), e.getMessage());
+                            throw e;
+                        } catch (Exception e) {
+                            fail("Should throw an IllegalArgumentException (incidentAndAdjacentElementsCanNotBeAccessedInMapReduce): " + e);
+                        }
+                    """)
+                    .reduce(
+                    """
+                        int counter = 0;
+                        while (b.hasNext()) {
+                            counter = counter + b.next();
+                        }
+                        c.emit(MapReduce.NullObject.instance(), counter);
+                        """)
+                    .memoryKey("count")
+                    .memory("gremlin-groovy", "a.next().getValue()")
+                    .create());
+        }
     }
 }
