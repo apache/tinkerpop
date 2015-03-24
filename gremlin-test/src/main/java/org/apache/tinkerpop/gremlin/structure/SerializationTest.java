@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.Kryo;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Input;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Output;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
