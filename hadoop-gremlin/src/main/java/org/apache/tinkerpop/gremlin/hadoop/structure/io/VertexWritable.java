@@ -34,11 +34,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class VertexWritable implements Writable {
+public final class VertexWritable implements Writable, Serializable {
 
     private Vertex vertex;
 
@@ -100,6 +103,14 @@ public final class VertexWritable implements Writable {
             else
                 throw e;
         }
+    }
+
+    private void writeObject(final ObjectOutputStream outputStream) throws IOException {
+        this.write(outputStream);
+    }
+
+    private void readObject(final ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+        this.readFields(inputStream);
     }
 
     @Override

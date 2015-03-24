@@ -18,23 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
 
@@ -43,122 +36,72 @@ import java.util.Iterator;
  */
 public final class SparkVertex implements Vertex, Serializable {
 
-    private static GryoWriter GRYO_WRITER = GryoWriter.build().create();
-    private static GryoReader GRYO_READER = GryoReader.build().create();
-
     // TODO: Wrapped vertex -- need VertexProgram in partition (broadcast variable?)
 
-    private final Object vertexId;
-    private transient TinkerVertex vertex;
-    private byte[] vertexBytes;
+    private final VertexWritable vertexWritable;
 
     public SparkVertex(final TinkerVertex vertex) {
-        this.vertex = vertex;
-        this.vertexId = vertex.id();
+        this.vertexWritable = new VertexWritable(vertex);
     }
 
     @Override
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
-        return this.vertex.addEdge(label, inVertex, keyValues);
+        return this.vertexWritable.get().addEdge(label, inVertex, keyValues);
     }
 
     @Override
     public Object id() {
-        return this.vertexId;
+        return this.vertexWritable.get().id();
     }
 
     @Override
     public String label() {
-        return this.vertex.label();
+        return this.vertexWritable.get().label();
     }
 
     @Override
     public Graph graph() {
-        return this.vertex.graph();
+        return this.vertexWritable.get().graph();
     }
 
     @Override
     public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
-        return this.vertex.property(cardinality, key, value, keyValues);
+        return this.vertexWritable.get().property(cardinality, key, value, keyValues);
     }
 
     @Override
     public void remove() {
-        this.vertex.remove();
+        this.vertexWritable.get().remove();
     }
 
 
     @Override
     public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
-        return this.vertex.edges(direction, edgeLabels);
+        return this.vertexWritable.get().edges(direction, edgeLabels);
     }
 
     @Override
     public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
-        return this.vertex.vertices(direction, edgeLabels);
+        return this.vertexWritable.get().vertices(direction, edgeLabels);
     }
 
     @Override
     public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-        return this.vertex.properties(propertyKeys);
+        return this.vertexWritable.get().properties(propertyKeys);
     }
 
     @Override
     public String toString() {
-        return StringFactory.vertexString(this);
+        return StringFactory.vertexString(this.vertexWritable.get());
     }
 
     @Override
     public int hashCode() {
-        return this.vertexId.hashCode();
+        return this.vertexWritable.get().hashCode();
     }
 
     @Override
     public boolean equals(final Object other) {
-        return ElementHelper.areEqual(this, other);
-    }
-
-    ///////////////////////////////
-
-    private void writeObject(final ObjectOutputStream outputStream) throws IOException {
-        this.deflateVertex();
-        outputStream.defaultWriteObject();
-    }
-
-    private void readObject(final ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-        inputStream.defaultReadObject();
-        this.inflateVertex();
-    }
-
-    public final void inflateVertex() {
-        if (null != this.vertex)
-            return;
-
-        try {
-            final ByteArrayInputStream bis = new ByteArrayInputStream(this.vertexBytes);
-            final TinkerGraph tinkerGraph = TinkerGraph.open();
-            GRYO_READER.readGraph(bis, tinkerGraph);
-            bis.close();
-            this.vertexBytes = null;
-            this.vertex = (TinkerVertex) tinkerGraph.vertices(this.vertexId).next();
-        } catch (final IOException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
-    private final void deflateVertex() {
-        if (null != this.vertexBytes)
-            return;
-
-        try {
-            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            GRYO_WRITER.writeGraph(bos, this.vertex.graph());
-            bos.flush();
-            bos.close();
-            this.vertex = null;
-            this.vertexBytes = bos.toByteArray();
-        } catch (final IOException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        return ElementHelper.areEqual(this.vertexWritable.get(), other);
     }
 }
