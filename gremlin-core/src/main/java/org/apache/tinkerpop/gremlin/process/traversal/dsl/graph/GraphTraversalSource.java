@@ -137,6 +137,8 @@ public class GraphTraversalSource implements TraversalSource {
         private List<TraversalStrategy> withStrategies = null;
         private List<Class<? extends TraversalStrategy>> withoutStrategies = null;
 
+        private Builder() {}
+
         @Override
         public Builder engine(final TraversalEngine.Builder engineBuilder) {
             this.engineBuilder = engineBuilder;
