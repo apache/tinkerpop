@@ -88,4 +88,7 @@ TinkerPop3 uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TI
 ** A `closed` issue is completed for purposes of release (i.e. code, testing, and documentation complete).
 * An issue's "type" should be one of two options: `bug` or `improvement`.  A `bug` has a very specific meaning, referring to an error that prevents usage of TinkerPop AND does not have a reasonable workaround.  Given that definition, a `bug` should generally have very high priority for a fix.  Everything else is an `improvement` in the sense that any other work is an enhancement to the current codebase.
 * The "component" should be representative of the primary area of code that it applies to and all issues should have this property set.
+* The "priority" of an issue is represented by two states `critical` and `major`.  It should be assigned as follows:
+** If the issue is a `bug` then the "priority" should be `critical`.
+** If the issue is an `improvement` then the "priority should be `major`.
 * Issues are not assigned "labels".
