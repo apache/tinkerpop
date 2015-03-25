@@ -25,7 +25,6 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.function.Function2;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkMapEmitter;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkMemory;
@@ -48,7 +47,6 @@ import scala.Tuple2;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -85,21 +83,14 @@ public final class SparkHelper {
         });
 
         // "message pass" by merging the message payloads with the vertex payloads
-        current = current.reduceByKey(new Function2<SparkPayload<M>, SparkPayload<M>, SparkPayload<M>>() {
-            private Optional<MessageCombiner<M>> messageCombinerOptional = null; // a hack to simulate partition(Spark)/worker(TP3) local variables
-
-            @Override
-            public SparkPayload<M> call(final SparkPayload<M> payloadA, final SparkPayload<M> payloadB) throws Exception {
-                if (null == this.messageCombinerOptional)
-                    this.messageCombinerOptional = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner();
-
-                if (payloadA.isVertex()) {
-                    payloadA.addMessages(payloadB.getMessages(), this.messageCombinerOptional);
-                    return payloadA;
-                } else {
-                    payloadB.addMessages(payloadA.getMessages(), this.messageCombinerOptional);
-                    return payloadB;
-                }
+        final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner().orElse(null);
+        current = current.reduceByKey((payloadA, payloadB) -> {
+            if (payloadA.isVertex()) {
+                payloadA.addMessages(payloadB.getMessages(), messageCombiner);
+                return payloadA;
+            } else {
+                payloadB.addMessages(payloadA.getMessages(), messageCombiner);
+                return payloadB;
             }
         });
 
