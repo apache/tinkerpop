@@ -18,13 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.KryoSerializable;
-import com.esotericsoftware.kryo.Serializer;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.util.DefaultStreamFactory;
-import com.esotericsoftware.kryo.util.MapReferenceResolver;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -51,6 +44,13 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.Kryo;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.KryoSerializable;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.Serializer;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Input;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Output;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.util.DefaultStreamFactory;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.util.MapReferenceResolver;
 import org.javatuples.Triplet;
 
 import java.io.IOException;
@@ -88,7 +88,7 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class GryoMapper implements Mapper<GryoKryo> {
+public final class GryoMapper implements Mapper<Kryo> {
     static final byte[] GIO = "gio".getBytes();
     private final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList;
     private final HeaderWriter headerWriter;
@@ -114,8 +114,8 @@ public final class GryoMapper implements Mapper<GryoKryo> {
     }
 
     @Override
-    public GryoKryo createMapper() {
-        final GryoKryo kryo = new GryoKryo(new GremlinClassResolver(), new MapReferenceResolver(), new DefaultStreamFactory());
+    public Kryo createMapper() {
+        final Kryo kryo = new Kryo(new GremlinClassResolver(), new MapReferenceResolver(), new DefaultStreamFactory());
         kryo.addDefaultSerializer(Map.Entry.class, new EntrySerializer());
         kryo.setRegistrationRequired(true);
         serializationList.forEach(p -> {

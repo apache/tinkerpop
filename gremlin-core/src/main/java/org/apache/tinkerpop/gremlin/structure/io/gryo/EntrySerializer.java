@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.Serializer;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.Kryo;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.Serializer;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Input;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Output;
 
 import java.util.AbstractMap;
 import java.util.Map;

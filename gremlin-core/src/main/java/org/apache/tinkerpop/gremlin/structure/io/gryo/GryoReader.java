@@ -18,9 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.Kryo;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -31,6 +29,8 @@ import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Input;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Output;
 
 import java.io.File;
 import java.io.FileInputStream;

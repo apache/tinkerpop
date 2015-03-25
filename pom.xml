@@ -74,6 +74,7 @@ limitations under the License.
         </contributor>
     </contributors>
     <modules>
+        <module>gremlin-shaded</module>
         <module>gremlin-core</module>
         <module>gremlin-algorithm</module>
         <module>gremlin-test</module>

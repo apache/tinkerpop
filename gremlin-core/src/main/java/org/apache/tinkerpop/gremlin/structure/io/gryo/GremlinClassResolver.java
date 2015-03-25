@@ -18,15 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import com.esotericsoftware.kryo.ClassResolver;
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.KryoException;
-import com.esotericsoftware.kryo.Registration;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.util.IdentityObjectIntMap;
-import com.esotericsoftware.kryo.util.IntMap;
-import com.esotericsoftware.kryo.util.ObjectMap;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -37,8 +28,17 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.ClassResolver;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.Kryo;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.KryoException;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.Registration;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Input;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Output;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.util.IdentityObjectIntMap;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.util.IntMap;
+import org.apache.tinkerpop.shaded.kryo_2_24_0.util.ObjectMap;
 
-import static com.esotericsoftware.kryo.util.Util.getWrapperClass;
+import static org.apache.tinkerpop.shaded.kryo_2_24_0.util.Util.getWrapperClass;
 
 /**
  * This mapper implementation of the {@code ClassResolver} helps ensure that all Vertex and Edge concrete classes
