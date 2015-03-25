@@ -41,7 +41,6 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import scala.Tuple2;
 
 import java.io.IOException;
@@ -74,12 +73,11 @@ public final class SparkHelper {
         });
 
         // emit messages by appending them to the graph as message payloads
-        current = current.<Object, SparkPayload<M>>flatMapToPair(keyValue -> () -> {
-            keyValue._2().asVertexPayload().getMessages().clear(); // the graph vertex should not have any incoming messages (should be cleared from the previous stage)
-            return IteratorUtils.concat(
-                    IteratorUtils.of(keyValue),                                                                    // this is a vertex
-                    IteratorUtils.map(keyValue._2().asVertexPayload().getOutgoingMessages().iterator(),
-                            entry -> new Tuple2<>(entry._1(), new SparkMessagePayload<M>(entry._2()))));           // this is a message;
+        current = current.<Object, SparkPayload<M>>flatMapToPair(keyValue -> {
+            final List<Tuple2<Object, SparkPayload<M>>> list = new ArrayList<>();
+            list.add(keyValue);    // this is a vertex
+            keyValue._2().asVertexPayload().getOutgoingMessages().forEach(message -> list.add(new Tuple2<>(message._1(), new SparkMessagePayload<>((M) message._2())))); // this is a message
+            return list;
         });
 
         // "message pass" by merging the message payloads with the vertex payloads
@@ -105,6 +103,7 @@ public final class SparkHelper {
 
         // clear all previous outgoing messages (why can't we do this prior to the shuffle? -- this is probably cause of concurrent modification issues prior to reduceByKey)
         current = current.mapValues(vertexPayload -> {
+            // vertexPayload.asVertexPayload().getMessages().clear();
             vertexPayload.asVertexPayload().getOutgoingMessages().clear();
             return vertexPayload;
         });
