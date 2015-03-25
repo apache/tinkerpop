@@ -74,9 +74,10 @@ public final class SparkHelper {
 
         // emit messages by appending them to the graph as message payloads
         current = current.<Object, SparkPayload<M>>flatMapToPair(keyValue -> {
+            keyValue._2().asVertexPayload().getMessages().clear(); // there should be no incoming messages at this point
             final List<Tuple2<Object, SparkPayload<M>>> list = new ArrayList<>();
             list.add(keyValue);    // this is a vertex
-            keyValue._2().asVertexPayload().getOutgoingMessages().forEach(message -> list.add(new Tuple2<>(message._1(), new SparkMessagePayload<>((M) message._2())))); // this is a message
+            keyValue._2().asVertexPayload().getOutgoingMessages().forEach(message -> list.add(new Tuple2<>(message._1(), new SparkMessagePayload<>(message._2())))); // this is a message
             return list;
         });
 
