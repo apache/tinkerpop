@@ -14,4 +14,3 @@ _bsp/
 doc/out
 docs/*.asciidoc
 ext/
-dependency-reduced-pom.xml
