@@ -49,9 +49,9 @@ import static org.junit.Assert.assertTrue;
 public class GryoRecordReaderWriterTest {
     @Test
     public void testAll() throws Exception {
-        Configuration conf = new Configuration(false);
-        conf.set("fs.file.impl", LocalFileSystem.class.getName());
-        conf.set("fs.default.name", "file:///");
+        Configuration configuration = new Configuration(false);
+        configuration.set("fs.file.impl", LocalFileSystem.class.getName());
+        configuration.set("fs.default.name", "file:///");
 
         File testFile = new File(HadoopGraphProvider.PATHS.get("grateful-dead-vertices.kryo"));
         FileSplit split = new FileSplit(
@@ -59,8 +59,8 @@ public class GryoRecordReaderWriterTest {
                 testFile.length(), null);
         System.out.println("reading Gryo file " + testFile.getAbsolutePath() + " (" + testFile.length() + " bytes)");
 
-        GryoInputFormat inputFormat = ReflectionUtils.newInstance(GryoInputFormat.class, conf);
-        TaskAttemptContext job = new TaskAttemptContext(conf, new TaskAttemptID());
+        GryoInputFormat inputFormat = ReflectionUtils.newInstance(GryoInputFormat.class, configuration);
+        TaskAttemptContext job = new TaskAttemptContext(configuration, new TaskAttemptID());
         RecordReader reader = inputFormat.createRecordReader(split, job);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

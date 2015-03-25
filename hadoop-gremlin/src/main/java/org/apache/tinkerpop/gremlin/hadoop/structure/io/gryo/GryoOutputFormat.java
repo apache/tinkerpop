@@ -34,10 +34,10 @@ public class GryoOutputFormat extends CommonFileOutputFormat {
 
     @Override
     public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
-        return new GryoRecordWriter(getDataOuputStream(job));
+        return new GryoRecordWriter(getDataOuputStream(job), job.getConfiguration());
     }
 
     public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job, final DataOutputStream outputStream) throws IOException, InterruptedException {
-        return new GryoRecordWriter(outputStream);
+        return new GryoRecordWriter(outputStream, job.getConfiguration());
     }
 }

@@ -75,7 +75,7 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
         if (this.byPass) return this.starts.next();
         if (this.first && null == this.computerResult) {
             try {
-                populateTraversers(this.graphComputer.program(TraversalVertexProgram.build().traversal(this.getTraversal(), !this.graphComputer.features().supportsNonSerializableObjects()).create()).submit().get());
+                populateTraversers(this.graphComputer.program(TraversalVertexProgram.build().traversal(this.getTraversal(), !this.graphComputer.features().supportsDirectObjects()).create()).submit().get());
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

@@ -133,7 +133,7 @@ limitations under the License.
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
                             <artifactSet>
                                 <includes>
                                     <include>com.esotericsoftware.kryo:*</include>

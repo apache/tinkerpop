@@ -195,6 +195,11 @@ public interface VertexProgram<M> extends Cloneable {
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     public VertexProgram<M> clone();
 
+    public GraphComputer.ResultGraph getPreferredResultGraph();
+
+    public GraphComputer.Persist getPreferredPersist();
+
+
     /**
      * A helper method to construct a {@link VertexProgram} given the content of the supplied configuration.
      * The class of the VertexProgram is read from the {@link VertexProgram#VERTEX_PROGRAM} static configuration key.

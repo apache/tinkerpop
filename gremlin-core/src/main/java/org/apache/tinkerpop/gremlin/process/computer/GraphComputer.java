@@ -44,6 +44,32 @@ public interface GraphComputer {
         DIRTY_BSP
     }
 
+    public enum ResultGraph {
+        /**
+         * When the computation is complete, the {@link org.apache.tinkerpop.gremlin.structure.Graph} in {@link ComputerResult} is the original graph that spawned the graph computer.
+         */
+        ORIGINAL_GRAPH,
+        /**
+         * When the computation is complete, the {@link org.apache.tinkerpop.gremlin.structure.Graph} in {@link ComputerResult} is a new graph cloned from the original graph.
+         */
+        NEW_GRAPH
+    }
+
+    public enum Persist {
+        /**
+         * Write nothing to the declared {@link ResultGraph}.
+         */
+        NOTHING,
+        /**
+         * Write vertex and vertex properties back to the {@link ResultGraph}.
+         */
+        VERTEX_PROPERTIES,
+        /**
+         * Write vertex, vertex properties, and edges back to the {@link ResultGraph}.
+         */
+        EDGES
+    }
+
     /**
      * Set the {@link Isolation} of the computation.
      *
@@ -51,6 +77,17 @@ public interface GraphComputer {
      * @return the updated GraphComputer with newly set isolation
      */
     public GraphComputer isolation(final Isolation isolation);
+
+    /**
+     * Set the {@link ResultGraph} of the computation.
+     * If this is not set explicitly by the user, then the {@link VertexProgram} can choose the most efficient result for its intended use.
+     *
+     * @param resultGraph the type of graph to be returned by {@link ComputerResult#graph}
+     * @return the updated GraphComputer with newly set result graph.
+     */
+    public GraphComputer result(final ResultGraph resultGraph);
+
+    public GraphComputer persist(final Persist persist);
 
     /**
      * Set the {@link VertexProgram} to be executed by the {@link GraphComputer}.
@@ -131,7 +168,7 @@ public interface GraphComputer {
             return true;
         }
 
-        public default boolean supportsNonSerializableObjects() {
+        public default boolean supportsDirectObjects() {
             return true;
         }
     }
@@ -159,6 +196,10 @@ public interface GraphComputer {
 
         public static IllegalArgumentException isolationNotSupported(final Isolation isolation) {
             return new IllegalArgumentException("The provided isolation is not supported by this graph computer: " + isolation);
+        }
+
+        public static IllegalArgumentException resultGraphPersistCombinationNotSupported(final ResultGraph resultGraph, final Persist persist) {
+            return new IllegalArgumentException("The computer does not support the following result graph and persist combination: " + resultGraph + ":" + persist);
         }
 
         public static IllegalStateException computerHasAlreadyBeenSubmittedAVertexProgram() {

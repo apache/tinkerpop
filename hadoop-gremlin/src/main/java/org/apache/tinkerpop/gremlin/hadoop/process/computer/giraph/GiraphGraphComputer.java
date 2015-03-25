@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
@@ -47,17 +48,16 @@ import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -73,6 +73,9 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
     protected final HadoopGraph hadoopGraph;
     protected GiraphConfiguration giraphConfiguration = new GiraphConfiguration();
     private boolean executed = false;
+
+    private Optional<ResultGraph> resultGraph = Optional.empty();
+    private Optional<Persist> persist = Optional.empty();
 
     private final Set<MapReduce> mapReduces = new HashSet<>();
     private VertexProgram<?> vertexProgram;
@@ -97,6 +100,18 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
     public GraphComputer isolation(final Isolation isolation) {
         if (!isolation.equals(Isolation.BSP))
             throw GraphComputer.Exceptions.isolationNotSupported(isolation);
+        return this;
+    }
+
+    @Override
+    public GraphComputer result(final ResultGraph resultGraph) {
+        this.resultGraph = Optional.of(resultGraph);
+        return this;
+    }
+
+    @Override
+    public GraphComputer persist(final Persist persist) {
+        this.persist = Optional.of(persist);
         return this;
     }
 
@@ -147,42 +162,66 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                 throw new IllegalStateException(e.getMessage(), e);
             }
             this.memory.setRuntime(System.currentTimeMillis() - startTime);
-
-            final Graph outputGraph = HadoopHelper.getOutputGraph(this.hadoopGraph, null != this.vertexProgram);
-            return new DefaultComputerResult(null == this.vertexProgram ? outputGraph : new ComputerGraph(outputGraph, this.vertexProgram.getElementComputeKeys()), this.memory.asImmutable());
+            return new DefaultComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph, this.resultGraph.get(), this.persist.get()), this.memory.asImmutable());
         });
     }
 
     @Override
     public int run(final String[] args) {
+
+        if (!this.persist.isPresent())
+            this.persist = Optional.of(null == this.vertexProgram ? Persist.NOTHING : this.vertexProgram.getPreferredPersist());
+        if (!this.resultGraph.isPresent())
+            this.resultGraph = Optional.of(null == this.vertexProgram ? ResultGraph.ORIGINAL_GRAPH : this.vertexProgram.getPreferredResultGraph());
+        if (this.resultGraph.get().equals(ResultGraph.ORIGINAL_GRAPH))
+            if (!this.persist.get().equals(Persist.NOTHING))
+                throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph.get(), this.persist.get());
+        this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.get().equals(Persist.EDGES));
+
         try {
             // it is possible to run graph computer without a vertex program (and thus, only map reduce jobs if they exist)
             if (null != this.vertexProgram) {
-                final GiraphJob job = new GiraphJob(this.giraphConfiguration, Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
-                final Path inputPath = new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
-                if (!FileSystem.get(this.giraphConfiguration).exists(inputPath))
-                    throw new IllegalArgumentException("The provided input path does not exist: " + inputPath);
-                FileInputFormat.setInputPaths(job.getInternalJob(), inputPath);
-                FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G));
-                // job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
-                LOGGER.info(Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
-                if (!job.run(true)) {
-                    throw new IllegalStateException("The GiraphGraphComputer job failed -- aborting all subsequent MapReduce jobs");
-                }
+                // determine all the requisite map reduce jobs
                 this.mapReduces.addAll(this.vertexProgram.getMapReducers());
                 // calculate main vertex program memory if desired (costs one mapreduce job)
                 if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, false)) {
-                    final Set<String> memoryKeys = new HashSet<String>(this.vertexProgram.getMemoryComputeKeys());
-                    memoryKeys.add(Constants.SYSTEM_ITERATION);
+                    final Set<String> memoryKeys = new HashSet<>(this.vertexProgram.getMemoryComputeKeys());
+                    memoryKeys.add(Constants.HIDDEN_ITERATION);
                     this.giraphConfiguration.setStrings(Constants.GREMLIN_HADOOP_MEMORY_KEYS, (String[]) memoryKeys.toArray(new String[memoryKeys.size()]));
                     this.mapReduces.add(new MemoryMapReduce(memoryKeys));
                 }
+
+                // prepare the giraph vertex-centric computing job
+                final GiraphJob job = new GiraphJob(this.giraphConfiguration, Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
+                final Path inputPath = new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
+                final Path outputPath = new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G);
+                if (!FileSystem.get(this.giraphConfiguration).exists(inputPath))  // TODO: what about when the input is not a file input?
+                    throw new IllegalArgumentException("The provided input path does not exist: " + inputPath);
+                FileInputFormat.setInputPaths(job.getInternalJob(), inputPath);
+                if (this.persist.get().equals(Persist.NOTHING) && this.mapReduces.isEmpty()) // do not write the graph back if it is not needed in MapReduce
+                    job.getInternalJob().setOutputFormatClass(NullOutputFormat.class);
+                else
+                    FileOutputFormat.setOutputPath(job.getInternalJob(), outputPath);
+                job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
+                LOGGER.info(Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
+                // execute the job and wait until it completes (if it fails, throw an exception)
+                if (!job.run(true))
+                    throw new IllegalStateException("The GiraphGraphComputer job failed -- aborting all subsequent MapReduce jobs");
+
             }
             // do map reduce jobs
+            this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES, this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, true));
             for (final MapReduce mapReduce : this.mapReduces) {
                 this.memory.addMapReduceMemoryKey(mapReduce);
                 MapReduceHelper.executeMapReduceJob(mapReduce, this.memory, this.giraphConfiguration);
             }
+            // if no persistence, delete the map reduce output
+            if (this.persist.get().equals(Persist.NOTHING)) {
+                final Path outputPath = new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G);
+                if (FileSystem.get(this.giraphConfiguration).exists(outputPath))      // TODO: what about when the output is not a file output?
+                    FileSystem.get(this.giraphConfiguration).delete(outputPath, true);
+            }
+
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -230,7 +269,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
     public Features features() {
         return new Features() {
             @Override
-            public boolean supportsNonSerializableObjects() {
+            public boolean supportsDirectObjects() {
                 return false;
             }
         };

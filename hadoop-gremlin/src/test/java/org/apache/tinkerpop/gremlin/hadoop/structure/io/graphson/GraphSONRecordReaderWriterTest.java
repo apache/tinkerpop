@@ -28,8 +28,10 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -50,9 +52,9 @@ public class GraphSONRecordReaderWriterTest {
 
     @Test
     public void testAll() throws Exception {
-        Configuration conf = new Configuration(false);
-        conf.set("fs.file.impl", LocalFileSystem.class.getName());
-        conf.set("fs.default.name", "file:///");
+        Configuration configuration = new Configuration(false);
+        configuration.set("fs.file.impl", LocalFileSystem.class.getName());
+        configuration.set("fs.default.name", "file:///");
 
         File testFile = new File(HadoopGraphProvider.PATHS.get("grateful-dead-vertices.ldjson"));
         FileSplit split = new FileSplit(
@@ -60,8 +62,8 @@ public class GraphSONRecordReaderWriterTest {
                 testFile.length(), null);
         System.out.println("reading GraphSON adjacency file " + testFile.getAbsolutePath() + " (" + testFile.length() + " bytes)");
 
-        GraphSONInputFormat inputFormat = ReflectionUtils.newInstance(GraphSONInputFormat.class, conf);
-        TaskAttemptContext job = new TaskAttemptContext(conf, new TaskAttemptID());
+        GraphSONInputFormat inputFormat = ReflectionUtils.newInstance(GraphSONInputFormat.class, configuration);
+        TaskAttemptContext job = new TaskAttemptContext(configuration, new TaskAttemptID());
         RecordReader reader = inputFormat.createRecordReader(split, job);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

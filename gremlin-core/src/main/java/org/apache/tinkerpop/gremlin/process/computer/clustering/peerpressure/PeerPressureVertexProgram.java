@@ -18,21 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
-import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
@@ -106,6 +106,16 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     @Override
     public Set<MessageScope> getMessageScopes(final Memory memory) {
         return this.distributeVote && memory.isInitialIteration() ? COUNT_SCOPE : VOTE_SCOPE;
+    }
+
+    @Override
+    public GraphComputer.ResultGraph getPreferredResultGraph() {
+        return GraphComputer.ResultGraph.NEW_GRAPH;
+    }
+
+    @Override
+    public GraphComputer.Persist getPreferredPersist() {
+        return GraphComputer.Persist.VERTEX_PROPERTIES;
     }
 
     @Override

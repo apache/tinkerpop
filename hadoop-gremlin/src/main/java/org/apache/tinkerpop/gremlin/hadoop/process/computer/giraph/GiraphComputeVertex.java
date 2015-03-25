@@ -60,7 +60,7 @@ public final class GiraphComputeVertex extends Vertex<ObjectWritable, VertexWrit
             final MapMemory mapMemory = new MapMemory();
             memory.asMap().forEach(mapMemory::set);
             mapMemory.setIteration(memory.getIteration() - 1);
-            wrappedVertex.property(VertexProperty.Cardinality.single, Constants.MAP_MEMORY, mapMemory);  // TODO: this is a "computer key"
+            wrappedVertex.property(VertexProperty.Cardinality.single, Constants.GREMLIN_HADOOP_MAP_MEMORY, mapMemory);  // TODO: this is a "computer key"
         }
         workerContext.getVertexProgramPool().offer(vertexProgram);
     }

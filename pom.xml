@@ -243,6 +243,7 @@ limitations under the License.
                         <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/tinkerpop-classic.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
                         <exclude>**/src/main/ext/**</exclude>
+                        <exclude>**/_bsp/**</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>

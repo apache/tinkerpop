@@ -72,9 +72,9 @@ public class GiraphMemory extends MasterCompute implements Memory {
                     this.registerPersistentAggregator(key, MemoryAggregator.class);
                 }
                 this.registerPersistentAggregator(Constants.GREMLIN_HADOOP_HALT, MemoryAggregator.class);
-                this.registerPersistentAggregator(Constants.SYSTEM_RUNTIME, MemoryAggregator.class);
+                this.registerPersistentAggregator(Constants.HIDDEN_RUNTIME, MemoryAggregator.class);
                 this.setAggregatedValue(Constants.GREMLIN_HADOOP_HALT, new RuleWritable(RuleWritable.Rule.SET, false));
-                this.set(Constants.SYSTEM_RUNTIME, System.currentTimeMillis());
+                this.set(Constants.HIDDEN_RUNTIME, System.currentTimeMillis());
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -103,7 +103,7 @@ public class GiraphMemory extends MasterCompute implements Memory {
 
     @Override
     public long getRuntime() {
-        return System.currentTimeMillis() - this.<Long>get(Constants.SYSTEM_RUNTIME);
+        return System.currentTimeMillis() - this.<Long>get(Constants.HIDDEN_RUNTIME);
     }
 
     @Override
@@ -190,7 +190,7 @@ public class GiraphMemory extends MasterCompute implements Memory {
     }
 
     private void checkKeyValue(final String key, final Object value) {
-        if (!key.equals(Constants.SYSTEM_RUNTIME) && !this.memoryKeys.contains(key))
+        if (!key.equals(Constants.HIDDEN_RUNTIME) && !this.memoryKeys.contains(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);
     }

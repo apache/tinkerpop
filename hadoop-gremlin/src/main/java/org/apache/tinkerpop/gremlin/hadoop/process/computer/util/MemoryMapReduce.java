@@ -44,7 +44,7 @@ public final class MemoryMapReduce extends StaticMapReduce<MapReduce.NullObject,
 
     @Override
     public String getMemoryKey() {
-        return Constants.SYSTEM_MEMORY;
+        return Constants.HIDDEN_MEMORY;
     }
 
     private MemoryMapReduce() {
@@ -73,7 +73,7 @@ public final class MemoryMapReduce extends StaticMapReduce<MapReduce.NullObject,
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, MapMemory> emitter) {
-        final MapMemory mapMemory = vertex.<MapMemory>property(Constants.MAP_MEMORY).orElse(new MapMemory());
+        final MapMemory mapMemory = vertex.<MapMemory>property(Constants.GREMLIN_HADOOP_MAP_MEMORY).orElse(new MapMemory());
         emitter.emit(mapMemory);
     }
 
@@ -102,7 +102,7 @@ public final class MemoryMapReduce extends StaticMapReduce<MapReduce.NullObject,
 
     @Override
     public int hashCode() {
-        return (this.getClass().getCanonicalName() + Constants.SYSTEM_MEMORY).hashCode();
+        return (this.getClass().getCanonicalName() + Constants.HIDDEN_MEMORY).hashCode();
     }
 
     @Override

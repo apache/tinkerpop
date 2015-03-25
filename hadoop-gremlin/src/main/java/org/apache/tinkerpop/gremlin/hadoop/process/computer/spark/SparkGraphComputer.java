@@ -40,11 +40,9 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.slf4j.Logger;
@@ -53,6 +51,7 @@ import scala.Tuple2;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -71,6 +70,9 @@ public final class SparkGraphComputer implements GraphComputer {
     private final Set<MapReduce> mapReducers = new HashSet<>();
     private VertexProgram vertexProgram;
 
+    private Optional<ResultGraph> resultGraph = Optional.empty();
+    private Optional<Persist> persist = Optional.empty();
+
     public SparkGraphComputer(final HadoopGraph hadoopGraph) {
         this.hadoopGraph = hadoopGraph;
     }
@@ -78,7 +80,19 @@ public final class SparkGraphComputer implements GraphComputer {
     @Override
     public GraphComputer isolation(final Isolation isolation) {
         if (!isolation.equals(Isolation.BSP))
-            throw GraphComputer.Exceptions.isolationNotSupported(isolation);
+            throw GraphComputer.Exceptions.isolationNotSupported(isolation);  // todo: dirty_bsp is when there is no doNothing() call at the end of the round?
+        return this;
+    }
+
+    @Override
+    public GraphComputer result(final ResultGraph resultGraph) {
+        this.resultGraph = Optional.of(resultGraph);
+        return this;
+    }
+
+    @Override
+    public GraphComputer persist(final Persist persist) {
+        this.persist = Optional.of(persist);
         return this;
     }
 
@@ -114,8 +128,19 @@ public final class SparkGraphComputer implements GraphComputer {
             GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
             this.mapReducers.addAll(this.vertexProgram.getMapReducers());
         }
+
+        // determine persistence and result graph options
+        if (!this.persist.isPresent())
+            this.persist = Optional.of(null == this.vertexProgram ? Persist.NOTHING : this.vertexProgram.getPreferredPersist());
+        if (!this.resultGraph.isPresent())
+            this.resultGraph = Optional.of(null == this.vertexProgram ? ResultGraph.ORIGINAL_GRAPH : this.vertexProgram.getPreferredResultGraph());
+        if (this.resultGraph.get().equals(ResultGraph.ORIGINAL_GRAPH))
+            if (!this.persist.get().equals(Persist.NOTHING))
+                throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph.get(), this.persist.get());
+
         // apache and hadoop configurations that are used throughout
         final org.apache.commons.configuration.Configuration apacheConfiguration = new HadoopConfiguration(this.hadoopGraph.configuration());
+        apacheConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.get().equals(Persist.EDGES));
         final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(apacheConfiguration);
 
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
@@ -189,12 +214,11 @@ public final class SparkGraphComputer implements GraphComputer {
                             // write the map reduce output back to disk (memory)
                             SparkHelper.saveMapReduceRDD(null == reduceRDD ? mapRDD : reduceRDD, mapReduce, finalMemory, hadoopConfiguration);
                         }
-                        // close the context or else bad things happen
+                        // close the context or else bad things happen // todo: does this happen automatically cause of the try(resource) {} block?
                         sparkContext.close();
                         // update runtime and return the newly computed graph
                         finalMemory.setRuntime(System.currentTimeMillis() - startTime);
-                        final Graph outputGraph = HadoopHelper.getOutputGraph(this.hadoopGraph, null != this.vertexProgram);
-                        return new DefaultComputerResult(null == this.vertexProgram ? outputGraph : new ComputerGraph(outputGraph, this.vertexProgram.getElementComputeKeys()), finalMemory.asImmutable());
+                        return new DefaultComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph, this.resultGraph.get(), this.persist.get()), finalMemory.asImmutable());
                     }
                 }
         );
@@ -233,7 +257,7 @@ public final class SparkGraphComputer implements GraphComputer {
     public Features features() {
         return new Features() {
             @Override
-            public boolean supportsNonSerializableObjects() {
+            public boolean supportsDirectObjects() {
                 return false;
             }
         };

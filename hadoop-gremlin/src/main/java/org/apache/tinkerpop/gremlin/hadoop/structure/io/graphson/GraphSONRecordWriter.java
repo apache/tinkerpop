@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson;
 
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -35,8 +37,10 @@ import java.io.UnsupportedEncodingException;
 public class GraphSONRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
     private static final String UTF8 = "UTF-8";
     private static final byte[] NEWLINE;
-    private final DataOutputStream out;
-    private final GraphSONWriter GRAPHSON_WRITER = GraphSONWriter.build().create();
+    private final DataOutputStream outputStream;
+    private final boolean hasEdges;
+    private final GraphSONWriter graphsonWriter = GraphSONWriter.build().create();
+
 
     static {
         try {
@@ -46,20 +50,26 @@ public class GraphSONRecordWriter extends RecordWriter<NullWritable, VertexWrita
         }
     }
 
-    public GraphSONRecordWriter(final DataOutputStream out) {
-        this.out = out;
+    public GraphSONRecordWriter(final DataOutputStream outputStream, final Configuration configuration) {
+        this.outputStream = outputStream;
+        this.hasEdges = configuration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, true);
     }
 
     @Override
     public void write(final NullWritable key, final VertexWritable vertex) throws IOException {
         if (null != vertex) {
-            GRAPHSON_WRITER.writeVertex(out, vertex.get(), Direction.BOTH);
-            this.out.write(NEWLINE);
+            if (this.hasEdges) {
+                graphsonWriter.writeVertex(this.outputStream, vertex.get(), Direction.BOTH);
+                this.outputStream.write(NEWLINE);
+            } else {
+                graphsonWriter.writeVertex(this.outputStream, vertex.get());
+                this.outputStream.write(NEWLINE);
+            }
         }
     }
 
     @Override
     public synchronized void close(TaskAttemptContext context) throws IOException {
-        this.out.close();
+        this.outputStream.close();
     }
 }

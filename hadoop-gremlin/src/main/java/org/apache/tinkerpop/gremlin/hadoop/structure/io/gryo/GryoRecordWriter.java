@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -33,22 +35,27 @@ import java.io.IOException;
  */
 public class GryoRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
 
-    private final DataOutputStream out;
-    private final GryoWriter GRYO_WRITER = GryoWriter.build().create();
+    private final DataOutputStream outputStream;
+    private final boolean hasEdges;
+    private final GryoWriter gryoWriter = GryoWriter.build().create(); // TODO: configurable build
 
-    public GryoRecordWriter(final DataOutputStream out) {
-        this.out = out;
+    public GryoRecordWriter(final DataOutputStream outputStream, final Configuration configuration) {
+        this.outputStream = outputStream;
+        this.hasEdges = configuration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, true);
     }
 
     @Override
     public void write(final NullWritable key, final VertexWritable vertex) throws IOException {
         if (null != vertex) {
-            GRYO_WRITER.writeVertex(this.out, vertex.get(), Direction.BOTH);
+            if (this.hasEdges)
+                gryoWriter.writeVertex(this.outputStream, vertex.get(), Direction.BOTH);
+            else
+                gryoWriter.writeVertex(this.outputStream, vertex.get());
         }
     }
 
     @Override
     public synchronized void close(final TaskAttemptContext context) throws IOException {
-        this.out.close();
+        this.outputStream.close();
     }
 }

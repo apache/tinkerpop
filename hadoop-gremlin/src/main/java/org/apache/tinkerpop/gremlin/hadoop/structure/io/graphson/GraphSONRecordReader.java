@@ -23,6 +23,7 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -42,9 +43,10 @@ import java.util.function.Function;
  */
 public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
-    private final GraphSONReader GRAPHSON_READER = GraphSONReader.build().create();
+    private final GraphSONReader graphsonReader = GraphSONReader.build().create();
     private final VertexWritable vertexWritable = new VertexWritable();
     private final LineRecordReader lineRecordReader;
+    private boolean hasEdges;
 
     public GraphSONRecordReader() {
         this.lineRecordReader = new LineRecordReader();
@@ -53,6 +55,7 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWrita
     @Override
     public void initialize(final InputSplit genericSplit, final TaskAttemptContext context) throws IOException {
         this.lineRecordReader.initialize(genericSplit, context);
+        this.hasEdges = context.getConfiguration().getBoolean(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES, true);
     }
 
     @Override
@@ -64,7 +67,9 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWrita
         final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
         final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
         try (InputStream in = new ByteArrayInputStream(this.lineRecordReader.getCurrentValue().getBytes())) {
-            this.vertexWritable.set(GRAPHSON_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker));
+            this.vertexWritable.set(this.hasEdges ?
+                    this.graphsonReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker) :
+                    this.graphsonReader.readVertex(in, vertexMaker));
             return true;
         }
     }

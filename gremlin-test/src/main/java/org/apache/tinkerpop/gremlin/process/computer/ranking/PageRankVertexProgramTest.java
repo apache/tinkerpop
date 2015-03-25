@@ -41,7 +41,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
         final ComputerResult result = graph.compute().program(PageRankVertexProgram.build().create()).submit().get();
         result.graph().traversal().V().forEachRemaining(v -> {
             assertTrue(v.keys().contains("name"));
-            assertFalse(v.keys().contains(PageRankVertexProgram.PAGE_RANK));
+            assertTrue(v.keys().contains(PageRankVertexProgram.PAGE_RANK));
             final String name = v.value("name");
             final Double pageRank = v.value(PageRankVertexProgram.PAGE_RANK);
             //System.out.println(name + "-----" + pageRank);

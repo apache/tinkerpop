@@ -52,7 +52,8 @@ import static org.junit.Assert.*;
         "computerHasAlreadyBeenSubmittedAVertexProgram",
         "providedKeyIsNotAnElementComputeKey",
         "isolationNotSupported",
-        "incidentAndAdjacentElementsCanNotBeAccessedInMapReduce"
+        "incidentAndAdjacentElementsCanNotBeAccessedInMapReduce",
+        "resultGraphPersistCombinationNotSupported" // TODO: NOT TRUE!
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer",
@@ -615,6 +616,16 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
+        public GraphComputer result(final ResultGraph resultGraph) {
+            return null;
+        }
+
+        @Override
+        public GraphComputer persist(final Persist persist) {
+            return null;
+        }
+
+        @Override
         public GraphComputer program(final VertexProgram vertexProgram) {
             return null;
         }
@@ -628,5 +639,6 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         public Future<ComputerResult> submit() {
             return null;
         }
+
     }
 }

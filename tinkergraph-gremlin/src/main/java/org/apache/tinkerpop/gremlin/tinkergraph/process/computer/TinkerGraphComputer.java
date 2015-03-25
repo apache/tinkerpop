@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -46,12 +47,16 @@ import java.util.concurrent.Future;
 public class TinkerGraphComputer implements GraphComputer {
 
     private Isolation isolation = Isolation.BSP;
+    private Optional<ResultGraph> resultGraph = Optional.empty();
+    private Optional<Persist> persist = Optional.empty();
+
     private VertexProgram<?> vertexProgram;
     private final TinkerGraph graph;
     private TinkerMemory memory;
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
     private final Set<MapReduce> mapReducers = new HashSet<>();
+
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -64,6 +69,18 @@ public class TinkerGraphComputer implements GraphComputer {
     @Override
     public GraphComputer isolation(final Isolation isolation) {
         this.isolation = isolation;
+        return this;
+    }
+
+    @Override
+    public GraphComputer result(final ResultGraph resultGraph) {
+        this.resultGraph = Optional.of(resultGraph);
+        return this;
+    }
+
+    @Override
+    public GraphComputer persist(final Persist persist) {
+        this.persist = Optional.of(persist);
         return this;
     }
 
@@ -94,6 +111,15 @@ public class TinkerGraphComputer implements GraphComputer {
             GraphComputerHelper.validateProgramOnComputer(this, this.vertexProgram);
             this.mapReducers.addAll(this.vertexProgram.getMapReducers());
         }
+
+        if (!this.persist.isPresent())
+            this.persist = Optional.of(null == this.vertexProgram ? Persist.NOTHING : this.vertexProgram.getPreferredPersist());
+        if (!this.resultGraph.isPresent())
+            this.resultGraph = Optional.of(null == this.vertexProgram ? ResultGraph.ORIGINAL_GRAPH : this.vertexProgram.getPreferredResultGraph());
+        if (this.resultGraph.get().equals(ResultGraph.ORIGINAL_GRAPH))
+            if (!this.persist.get().equals(Persist.NOTHING))
+                throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph.get(), this.persist.get());
+
         //final Graph computeGraph = this.graph;
         final ComputerGraph computeGraph = new ComputerGraph(this.graph, null == this.vertexProgram ? Collections.emptySet() : this.vertexProgram.getElementComputeKeys());
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);
@@ -174,8 +200,7 @@ public class TinkerGraphComputer implements GraphComputer {
                 // update runtime and return the newly computed graph
                 this.memory.setRuntime(System.currentTimeMillis() - time);
                 this.memory.complete();
-                computeGraph.setState(ComputerGraph.State.NO_OP);
-                return new TinkerComputerResult(computeGraph, this.memory.asImmutable());
+                return new TinkerComputerResult(this.graph, this.memory.asImmutable());
 
             } catch (Exception ex) {
                 throw new RuntimeException(ex);

@@ -27,6 +27,7 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -57,6 +58,7 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
 
     private final GryoReader gryoReader = GryoReader.build().create();
     private final VertexWritable vertexWritable = new VertexWritable();
+    private boolean hasEdges;
 
     private long currentLength = 0;
     private long splitLength;
@@ -77,6 +79,7 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
         this.inputStream = file.getFileSystem(job).open(split.getPath());
         this.inputStream.seek(start);
         this.splitLength = split.getLength() - (seekToHeader(this.inputStream, start) - start);
+        this.hasEdges = context.getConfiguration().getBoolean(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES, true);
     }
 
     private static long seekToHeader(final FSDataInputStream inputStream, final long start) throws IOException {
@@ -131,7 +134,9 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
                 final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
                 final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
                 try (InputStream in = new ByteArrayInputStream(output.toByteArray())) {
-                    this.vertexWritable.set(this.gryoReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker));
+                    this.vertexWritable.set(this.hasEdges ?
+                            this.gryoReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker) :
+                            this.gryoReader.readVertex(in, vertexMaker));
                     return true;
                 }
             }

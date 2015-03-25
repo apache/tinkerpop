@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.lambda;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
@@ -28,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.TriConsumer;
-import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -131,6 +132,16 @@ public class LambdaVertexProgram<M extends Serializable> extends StaticVertexPro
     @Override
     public Set<MessageScope> getMessageScopes(final Memory memory) {
         return MESSAGE_SCOPES;
+    }
+
+    @Override
+    public GraphComputer.ResultGraph getPreferredResultGraph() {
+        return GraphComputer.ResultGraph.ORIGINAL_GRAPH;
+    }
+
+    @Override
+    public GraphComputer.Persist getPreferredPersist() {
+        return GraphComputer.Persist.NOTHING;
     }
 
     @Override

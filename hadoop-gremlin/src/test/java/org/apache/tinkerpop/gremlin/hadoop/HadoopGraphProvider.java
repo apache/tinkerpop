@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
@@ -121,7 +122,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
 
             /// spark configuration
             put("spark.master", "local[4]");
-            put("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
+            put("spark.serializer", "org.apache.spark.serializer.JavaSerializer");
         }};
     }
 
