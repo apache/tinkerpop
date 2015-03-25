@@ -65,6 +65,7 @@ public final class SparkHelper {
             workerVertexProgram.workerIterationStart(memory);
             final List<Tuple2<Object, SparkPayload<M>>> emission = new ArrayList<>();
             partitionIterator.forEachRemaining(keyValue -> {
+                keyValue._2().asVertexPayload().getOutgoingMessages().clear();
                 workerVertexProgram.execute(ComputerGraph.of(keyValue._2().asVertexPayload().getVertex(), elementComputeKeys), keyValue._2().asVertexPayload(), memory);
                 emission.add(keyValue);
             });
@@ -104,7 +105,6 @@ public final class SparkHelper {
 
         // clear all previous outgoing messages (why can't we do this prior to the shuffle? -- this is probably cause of concurrent modification issues prior to reduceByKey)
         current = current.mapValues(vertexPayload -> {
-            // vertexPayload.asVertexPayload().getMessages().clear();
             vertexPayload.asVertexPayload().getOutgoingMessages().clear();
             return vertexPayload;
         });
