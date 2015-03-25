@@ -18,9 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -38,16 +39,12 @@ import java.util.List;
  */
 public final class SparkVertexPayload<M> implements SparkPayload<M>, Messenger<M>, Serializable {
 
-    private Vertex vertex;
-    private List<M> incoming;
-    private List<Tuple2<Object, M>> outgoing;
-
-    private SparkVertexPayload() {
-
-    }
+    private final VertexWritable vertexWritable;
+    private final List<M> incoming;
+    private final List<Tuple2<Object, M>> outgoing;
 
     public SparkVertexPayload(final Vertex vertex) {
-        this.vertex = vertex;
+        this.vertexWritable = new VertexWritable(vertex);
         this.incoming = new ArrayList<>();
         this.outgoing = new ArrayList<>();
     }
@@ -68,7 +65,7 @@ public final class SparkVertexPayload<M> implements SparkPayload<M>, Messenger<M
     }
 
     public Vertex getVertex() {
-        return this.vertex;
+        return this.vertexWritable.get();
     }
 
     public List<Tuple2<Object, M>> getOutgoingMessages() {
@@ -86,7 +83,7 @@ public final class SparkVertexPayload<M> implements SparkPayload<M>, Messenger<M
     public void sendMessage(final MessageScope messageScope, final M message) {
         if (messageScope instanceof MessageScope.Local) {
             final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
-            final Traversal.Admin<Vertex, Edge> incidentTraversal = SparkVertexPayload.setVertexStart(localMessageScope.getIncidentTraversal().get(), this.vertex);
+            final Traversal.Admin<Vertex, Edge> incidentTraversal = SparkVertexPayload.setVertexStart(localMessageScope.getIncidentTraversal().get(), this.vertexWritable.get());
             final Direction direction = SparkVertexPayload.getOppositeDirection(incidentTraversal);
             incidentTraversal.forEachRemaining(edge -> this.outgoing.add(new Tuple2<>(edge.vertices(direction).next().id(), message)));
         } else {

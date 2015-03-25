@@ -43,8 +43,9 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Tuple2;
@@ -164,7 +165,7 @@ public final class SparkGraphComputer implements GraphComputer {
                                 (Class<InputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class),
                                 NullWritable.class,
                                 VertexWritable.class)
-                                .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new SparkVertexPayload<>(new SparkVertex((TinkerVertex) tuple._2().get()))));
+                                .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new SparkVertexPayload<>(tuple._2().get())));
 
                         ////////////////////////////////
                         // process the vertex program //
@@ -193,28 +194,36 @@ public final class SparkGraphComputer implements GraphComputer {
                                 }
                             }
                             // write the output graph back to disk
-                            SparkHelper.saveGraphRDD(graphRDD, hadoopConfiguration);
+                            if (!this.persist.get().equals(Persist.NOTHING))
+                                SparkHelper.saveGraphRDD(graphRDD, hadoopConfiguration);
                         }
 
-                        // reuse the graphRDD for all map reduce jobs
-                        graphRDD = graphRDD.cache();
+                        final Memory.Admin finalMemory = null == memory ? new MapMemory() : new MapMemory(memory);
+
                         //////////////////////////////
                         // process the map reducers //
                         //////////////////////////////
-                        final Memory.Admin finalMemory = null == memory ? new MapMemory() : new MapMemory(memory);
-                        for (final MapReduce mapReduce : this.mapReducers) {
-                            // execute the map reduce job
-                            final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
-                            mapReduce.storeState(newApacheConfiguration);
-                            // map
-                            final JavaPairRDD mapRDD = SparkHelper.executeMap(graphRDD, mapReduce, newApacheConfiguration);
-                            // combine TODO? is this really needed
-                            // reduce
-                            final JavaPairRDD reduceRDD = (mapReduce.doStage(MapReduce.Stage.REDUCE)) ? SparkHelper.executeReduce(mapRDD, mapReduce, newApacheConfiguration) : null;
-                            // write the map reduce output back to disk (memory)
-                            SparkHelper.saveMapReduceRDD(null == reduceRDD ? mapRDD : reduceRDD, mapReduce, finalMemory, hadoopConfiguration);
+                        if (!this.mapReducers.isEmpty()) {
+                            // drop all edges in the graphRDD as edges are not needed in the map reduce jobs
+                            graphRDD = graphRDD.mapToPair(tuple -> {
+                                tuple._2().asVertexPayload().getVertex().edges(Direction.BOTH).forEachRemaining(Edge::remove);
+                                return tuple;
+                            });
+                            graphRDD = graphRDD.cache();
+                            for (final MapReduce mapReduce : this.mapReducers) {
+                                // execute the map reduce job
+                                final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
+                                mapReduce.storeState(newApacheConfiguration);
+                                // map
+                                final JavaPairRDD mapRDD = SparkHelper.executeMap(graphRDD, mapReduce, newApacheConfiguration);
+                                // combine TODO? is this really needed
+                                // reduce
+                                final JavaPairRDD reduceRDD = (mapReduce.doStage(MapReduce.Stage.REDUCE)) ? SparkHelper.executeReduce(mapRDD, mapReduce, newApacheConfiguration) : null;
+                                // write the map reduce output back to disk (memory)
+                                SparkHelper.saveMapReduceRDD(null == reduceRDD ? mapRDD : reduceRDD, mapReduce, finalMemory, hadoopConfiguration);
+                            }
                         }
-                        // close the context or else bad things happen // todo: does this happen automatically cause of the try(resource) {} block?
+                        // close the context or else bad things happen // TODO: does this happen automatically cause of the try(resource) {} block?
                         sparkContext.close();
                         // update runtime and return the newly computed graph
                         finalMemory.setRuntime(System.currentTimeMillis() - startTime);
