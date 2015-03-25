@@ -110,7 +110,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
 
     @Override
     public GraphComputer.ResultGraph getPreferredResultGraph() {
-        return GraphComputer.ResultGraph.NEW_GRAPH;
+        return GraphComputer.ResultGraph.NEW;
     }
 
     @Override

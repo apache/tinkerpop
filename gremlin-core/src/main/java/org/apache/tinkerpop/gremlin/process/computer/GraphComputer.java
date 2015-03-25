@@ -48,11 +48,11 @@ public interface GraphComputer {
         /**
          * When the computation is complete, the {@link org.apache.tinkerpop.gremlin.structure.Graph} in {@link ComputerResult} is the original graph that spawned the graph computer.
          */
-        ORIGINAL_GRAPH,
+        ORIGINAL,
         /**
          * When the computation is complete, the {@link org.apache.tinkerpop.gremlin.structure.Graph} in {@link ComputerResult} is a new graph cloned from the original graph.
          */
-        NEW_GRAPH
+        NEW
     }
 
     public enum Persist {
@@ -61,11 +61,11 @@ public interface GraphComputer {
          */
         NOTHING,
         /**
-         * Write vertex and vertex properties back to the {@link ResultGraph}.
+         * Write vertex and vertex properties to the {@link ResultGraph}.
          */
         VERTEX_PROPERTIES,
         /**
-         * Write vertex, vertex properties, and edges back to the {@link ResultGraph}.
+         * Write vertex, vertex properties, and edges to the {@link ResultGraph}.
          */
         EDGES
     }
@@ -81,12 +81,21 @@ public interface GraphComputer {
     /**
      * Set the {@link ResultGraph} of the computation.
      * If this is not set explicitly by the user, then the {@link VertexProgram} can choose the most efficient result for its intended use.
+     * If there is no declared vertex program, then the {@link GraphComputer} defaults to {@link ResultGraph#ORIGINAL}.
      *
      * @param resultGraph the type of graph to be returned by {@link ComputerResult#graph}
-     * @return the updated GraphComputer with newly set result graph.
+     * @return the updated GraphComputer with newly set result graph
      */
     public GraphComputer result(final ResultGraph resultGraph);
 
+    /**
+     * Set the {@link Persist} level of the computation.
+     * If this is not set explicitly by the user, then the {@link VertexProgram} can choose the most efficient persist for the its intended use.
+     * If there is no declared vertex program, then the {@link GraphComputer} defaults to {@link Persist#NOTHING}.
+     *
+     * @param persist the persistence level of the resultant computation
+     * @return the updated GraphComputer with newly set persist
+     */
     public GraphComputer persist(final Persist persist);
 
     /**
@@ -168,6 +177,10 @@ public interface GraphComputer {
             return true;
         }
 
+        /**
+         * Supports {@link VertexProgram} and {@link MapReduce} parameters to be direct referenced Java objects (no serialization required).
+         * This is typically true for single machine graph computer engines. For cluster oriented graph computers, this is typically false.
+         */
         public default boolean supportsDirectObjects() {
             return true;
         }

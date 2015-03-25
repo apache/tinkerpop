@@ -133,8 +133,8 @@ public final class SparkGraphComputer implements GraphComputer {
         if (!this.persist.isPresent())
             this.persist = Optional.of(null == this.vertexProgram ? Persist.NOTHING : this.vertexProgram.getPreferredPersist());
         if (!this.resultGraph.isPresent())
-            this.resultGraph = Optional.of(null == this.vertexProgram ? ResultGraph.ORIGINAL_GRAPH : this.vertexProgram.getPreferredResultGraph());
-        if (this.resultGraph.get().equals(ResultGraph.ORIGINAL_GRAPH))
+            this.resultGraph = Optional.of(null == this.vertexProgram ? ResultGraph.ORIGINAL : this.vertexProgram.getPreferredResultGraph());
+        if (this.resultGraph.get().equals(ResultGraph.ORIGINAL))
             if (!this.persist.get().equals(Persist.NOTHING))
                 throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph.get(), this.persist.get());
 

@@ -136,7 +136,7 @@ public class LambdaVertexProgram<M extends Serializable> extends StaticVertexPro
 
     @Override
     public GraphComputer.ResultGraph getPreferredResultGraph() {
-        return GraphComputer.ResultGraph.ORIGINAL_GRAPH;
+        return GraphComputer.ResultGraph.ORIGINAL;
     }
 
     @Override

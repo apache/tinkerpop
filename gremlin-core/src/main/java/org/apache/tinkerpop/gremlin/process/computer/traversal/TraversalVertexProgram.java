@@ -231,7 +231,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public GraphComputer.ResultGraph getPreferredResultGraph() {
-        return GraphComputer.ResultGraph.ORIGINAL_GRAPH;
+        return GraphComputer.ResultGraph.ORIGINAL;
     }
 
     @Override

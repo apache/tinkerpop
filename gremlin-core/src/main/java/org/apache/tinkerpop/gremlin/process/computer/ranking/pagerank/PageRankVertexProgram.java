@@ -92,7 +92,7 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
 
     @Override
     public GraphComputer.ResultGraph getPreferredResultGraph() {
-        return GraphComputer.ResultGraph.NEW_GRAPH;
+        return GraphComputer.ResultGraph.NEW;
     }
 
     @Override
