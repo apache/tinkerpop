@@ -215,7 +215,7 @@ public final class SparkGraphComputer implements GraphComputer {
                                 final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
                                 mapReduce.storeState(newApacheConfiguration);
                                 // map
-                                final JavaPairRDD mapRDD = SparkHelper.executeMap(graphRDD, mapReduce, newApacheConfiguration);
+                                final JavaPairRDD mapRDD = SparkHelper.executeMap((JavaPairRDD) graphRDD, mapReduce, newApacheConfiguration);
                                 // combine TODO? is this really needed
                                 // reduce
                                 final JavaPairRDD reduceRDD = (mapReduce.doStage(MapReduce.Stage.REDUCE)) ? SparkHelper.executeReduce(mapRDD, mapReduce, newApacheConfiguration) : null;

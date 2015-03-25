@@ -74,4 +74,8 @@ public final class Rule implements Serializable {
         this.operation = operation;
         this.object = object;
     }
+
+    public String toString() {
+        return "rule[" + this.operation + ":" + this.object + "]";
+    }
 }

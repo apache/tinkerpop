@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkMemory;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkMessagePayload;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkPayload;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkReduceEmitter;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkVertexPayload;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
@@ -111,12 +112,12 @@ public final class SparkHelper {
         return current;
     }
 
-    public static <K, V, M> JavaPairRDD<K, V> executeMap(final JavaPairRDD<Object, SparkPayload<M>> graphRDD, final MapReduce<K, V, ?, ?, ?> mapReduce, final Configuration apacheConfiguration) {
+    public static <K, V, M> JavaPairRDD<K, V> executeMap(final JavaPairRDD<Object, SparkVertexPayload<M>> graphRDD, final MapReduce<K, V, ?, ?, ?> mapReduce, final Configuration apacheConfiguration) {
         JavaPairRDD<K, V> mapRDD = graphRDD.mapPartitionsToPair(partitionIterator -> {
             final MapReduce<K, V, ?, ?, ?> workerMapReduce = MapReduce.<MapReduce<K, V, ?, ?, ?>>createMapReduce(apacheConfiguration);
             workerMapReduce.workerStart(MapReduce.Stage.MAP);
             final SparkMapEmitter<K, V> mapEmitter = new SparkMapEmitter<>();
-            partitionIterator.forEachRemaining(keyValue -> workerMapReduce.map(keyValue._2().asVertexPayload().getVertex(), mapEmitter));
+            partitionIterator.forEachRemaining(keyValue -> workerMapReduce.map(keyValue._2().getVertex(), mapEmitter));
             workerMapReduce.workerEnd(MapReduce.Stage.MAP);
             return mapEmitter.getEmissions();
         });
