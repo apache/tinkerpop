@@ -332,8 +332,8 @@ public class GryoReader implements GraphReader {
         }
     }
 
-    public <T> T readObject(final Input input) {
-        return (T) this.kryo.readClassAndObject(input);
+    public <T> T readObject(final InputStream inputStream) {
+        return (T) this.kryo.readClassAndObject(new Input(inputStream));
     }
 
     public static Builder build() {

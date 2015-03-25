@@ -48,7 +48,6 @@ public final class VertexWritable implements Writable, Serializable {
 
     }
 
-    // TODO: REMOVE!!!
     public VertexWritable(final Vertex vertex) {
         this.vertex = vertex;
     }

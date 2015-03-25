@@ -149,8 +149,10 @@ public class GryoWriter implements GraphWriter {
             kryo.writeClassAndObject(output, EdgeTerminator.INSTANCE);
     }
 
-    public void writeObject(final Output output, final Object object) {
+    public void writeObject(final OutputStream outputStream, final Object object) {
+        final Output output = new Output(outputStream);
         this.kryo.writeClassAndObject(output, object);
+        output.flush();
     }
 
     public static Builder build() {
