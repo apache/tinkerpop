@@ -86,11 +86,20 @@ public final class SparkHelper {
         final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner().orElse(null);
         current = current.reduceByKey((payloadA, payloadB) -> {
             if (payloadA.isVertex()) {
-                payloadA.addMessages(payloadB.getMessages(), messageCombiner);
-                return payloadA;
+                final SparkVertexPayload<M> vertexPayload = new SparkVertexPayload<>(payloadA.asVertexPayload().getVertex());
+                vertexPayload.addMessages(payloadA.getMessages(), messageCombiner);
+                vertexPayload.addMessages(payloadB.getMessages(), messageCombiner);
+                return vertexPayload;
+            } else if (payloadB.isVertex()) {
+                final SparkVertexPayload<M> vertexPayload = new SparkVertexPayload<>(payloadB.asVertexPayload().getVertex());
+                vertexPayload.addMessages(payloadA.getMessages(), messageCombiner);
+                vertexPayload.addMessages(payloadB.getMessages(), messageCombiner);
+                return vertexPayload;
             } else {
-                payloadB.addMessages(payloadA.getMessages(), messageCombiner);
-                return payloadB;
+                final SparkMessagePayload<M> messagePayload = new SparkMessagePayload<>();
+                messagePayload.addMessages(payloadA.getMessages(), messageCombiner);
+                messagePayload.addMessages(payloadB.getMessages(), messageCombiner);
+                return messagePayload;
             }
         });
 

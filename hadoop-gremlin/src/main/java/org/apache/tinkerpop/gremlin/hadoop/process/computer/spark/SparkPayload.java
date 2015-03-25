@@ -48,5 +48,4 @@ public interface SparkPayload<M> {
     public default SparkVertexPayload<M> asVertexPayload() {
         return (SparkVertexPayload<M>) this;
     }
-
 }
