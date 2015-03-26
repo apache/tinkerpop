@@ -28,17 +28,17 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.ClassResolver;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.Kryo;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.KryoException;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.Registration;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Input;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Output;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.util.IdentityObjectIntMap;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.util.IntMap;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.util.ObjectMap;
+import org.apache.tinkerpop.shaded.kryo.ClassResolver;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.shaded.kryo.KryoException;
+import org.apache.tinkerpop.shaded.kryo.Registration;
+import org.apache.tinkerpop.shaded.kryo.io.Input;
+import org.apache.tinkerpop.shaded.kryo.io.Output;
+import org.apache.tinkerpop.shaded.kryo.util.IdentityObjectIntMap;
+import org.apache.tinkerpop.shaded.kryo.util.IntMap;
+import org.apache.tinkerpop.shaded.kryo.util.ObjectMap;
 
-import static org.apache.tinkerpop.shaded.kryo_2_24_0.util.Util.getWrapperClass;
+import static org.apache.tinkerpop.shaded.kryo.util.Util.getWrapperClass;
 
 /**
  * This mapper implementation of the {@code ClassResolver} helps ensure that all Vertex and Edge concrete classes

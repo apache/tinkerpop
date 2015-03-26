@@ -25,8 +25,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.Kryo;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Output;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 import java.io.IOException;
 import java.io.OutputStream;

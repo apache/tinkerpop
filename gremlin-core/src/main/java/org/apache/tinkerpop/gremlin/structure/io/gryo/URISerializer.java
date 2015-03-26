@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import org.apache.tinkerpop.shaded.kryo_2_24_0.Kryo;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.Serializer;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Input;
-import org.apache.tinkerpop.shaded.kryo_2_24_0.io.Output;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.shaded.kryo.Serializer;
+import org.apache.tinkerpop.shaded.kryo.io.Input;
+import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 import java.net.URI;
 

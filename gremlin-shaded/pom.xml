@@ -82,11 +82,11 @@ limitations under the License.
                                 </relocation>
                                 <relocation>
                                     <pattern>org.objenesis</pattern>
-                                    <shadedPattern>org.apache.tinkerpop.shaded.objenesis_2_1</shadedPattern>
+                                    <shadedPattern>org.apache.tinkerpop.shaded.objenesis</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.esotericsoftware.minlog</pattern>
-                                    <shadedPattern>org.apache.tinkerpop.shaded.minlog_1_2</shadedPattern>
+                                    <shadedPattern>org.apache.tinkerpop.shaded.minlog</shadedPattern>
                                 </relocation>
                             </relocations>
                             <!-- false below means the shade plugin overwrites the main project artifact (the one with no classifier).
