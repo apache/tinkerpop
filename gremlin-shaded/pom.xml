@@ -62,7 +62,7 @@ limitations under the License.
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                             <artifactSet>
                                 <includes>
                                     <include>com.esotericsoftware.kryo:*</include>
@@ -74,11 +74,11 @@ limitations under the License.
                             <relocations>
                                 <relocation>
                                     <pattern>com.esotericsoftware.reflectasm</pattern>
-                                    <shadedPattern>org.apache.tinkerpop.shaded.kryo_2_24_0_reflectasm</shadedPattern>
+                                    <shadedPattern>org.apache.tinkerpop.shaded.kryo</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.esotericsoftware.kryo</pattern>
-                                    <shadedPattern>org.apache.tinkerpop.shaded.kryo_2_24_0</shadedPattern>
+                                    <shadedPattern>org.apache.tinkerpop.shaded.kryo</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.objenesis</pattern>
