@@ -29,7 +29,6 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.util.SparkHelper;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -147,14 +146,14 @@ public final class SparkGraphComputer implements GraphComputer {
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
                     final long startTime = System.currentTimeMillis();
                     SparkMemory memory = null;
-                    SparkHelper.deleteOutputLocation(hadoopConfiguration);
+                    SparkExecutor.deleteOutputLocation(hadoopConfiguration);
 
                     // wire up a spark context
                     final SparkConf sparkConfiguration = new SparkConf();
                     sparkConfiguration.setAppName(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + (null == this.vertexProgram ? "No VertexProgram" : this.vertexProgram) + "[" + this.mapReducers + "]");
                     hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
                     if (FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class)))
-                        hadoopConfiguration.set(Constants.MAPRED_INPUT_DIR, SparkHelper.getInputLocation(hadoopConfiguration)); // necessary for Spark and newAPIHadoopRDD
+                        hadoopConfiguration.set(Constants.MAPRED_INPUT_DIR, SparkExecutor.getInputLocation(hadoopConfiguration)); // necessary for Spark and newAPIHadoopRDD
                     // execute the vertex program and map reducers and if there is a failure, auto-close the spark context
                     try (final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration)) {
                         // add the project jars to the cluster
@@ -183,7 +182,7 @@ public final class SparkGraphComputer implements GraphComputer {
                             // execute the vertex program
                             while (true) {
                                 memory.setInTask(true);
-                                graphRDD = SparkHelper.executeStep(graphRDD, memory, vertexProgramConfiguration);
+                                graphRDD = SparkExecutor.executeStep(graphRDD, memory, vertexProgramConfiguration);
                                 graphRDD.foreachPartition(iterator -> doNothing()); // TODO: i think this is a fast way to execute the rdd (wish there was a "execute()" method).
                                 memory.setInTask(false);
                                 if (this.vertexProgram.terminate(memory))
@@ -195,7 +194,7 @@ public final class SparkGraphComputer implements GraphComputer {
                             }
                             // write the output graph back to disk
                             if (!this.persist.get().equals(Persist.NOTHING))
-                                SparkHelper.saveGraphRDD(graphRDD, hadoopConfiguration);
+                                SparkExecutor.saveGraphRDD(graphRDD, hadoopConfiguration);
                         }
 
                         final Memory.Admin finalMemory = null == memory ? new MapMemory() : new MapMemory(memory);
@@ -215,12 +214,12 @@ public final class SparkGraphComputer implements GraphComputer {
                                 final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
                                 mapReduce.storeState(newApacheConfiguration);
                                 // map
-                                final JavaPairRDD mapRDD = SparkHelper.executeMap((JavaPairRDD) graphRDD, mapReduce, newApacheConfiguration);
+                                final JavaPairRDD mapRDD = SparkExecutor.executeMap((JavaPairRDD) graphRDD, mapReduce, newApacheConfiguration);
                                 // combine TODO? is this really needed
                                 // reduce
-                                final JavaPairRDD reduceRDD = (mapReduce.doStage(MapReduce.Stage.REDUCE)) ? SparkHelper.executeReduce(mapRDD, mapReduce, newApacheConfiguration) : null;
+                                final JavaPairRDD reduceRDD = (mapReduce.doStage(MapReduce.Stage.REDUCE)) ? SparkExecutor.executeReduce(mapRDD, mapReduce, newApacheConfiguration) : null;
                                 // write the map reduce output back to disk (memory)
-                                SparkHelper.saveMapReduceRDD(null == reduceRDD ? mapRDD : reduceRDD, mapReduce, finalMemory, hadoopConfiguration);
+                                SparkExecutor.saveMapReduceRDD(null == reduceRDD ? mapRDD : reduceRDD, mapReduce, finalMemory, hadoopConfiguration);
                             }
                         }
                         // close the context or else bad things happen // TODO: does this happen automatically cause of the try(resource) {} block?

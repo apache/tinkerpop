@@ -32,6 +32,7 @@ import scala.Tuple2;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -41,7 +42,7 @@ public final class SparkVertexPayload<M> implements SparkPayload<M>, Messenger<M
 
     private final VertexWritable vertexWritable;
     private final List<M> incoming;
-    private final List<Tuple2<Object, M>> outgoing;
+    private List<Tuple2<Object, M>> outgoing;
 
     public SparkVertexPayload(final Vertex vertex) {
         this.vertexWritable = new VertexWritable(vertex);
@@ -68,9 +69,25 @@ public final class SparkVertexPayload<M> implements SparkPayload<M>, Messenger<M
         return this.vertexWritable.get();
     }
 
+    public VertexWritable getVertexWritable() {
+        return this.vertexWritable;
+    }
+
     public List<Tuple2<Object, M>> getOutgoingMessages() {
         return this.outgoing;
     }
+
+    public Iterator<Tuple2<Object, M>> detachOutgoingMessages() {
+        final Iterator<Tuple2<Object, M>> messages = this.outgoing.iterator();
+        this.outgoing = new ArrayList<>();
+        return messages;
+    }
+
+    /*public Iterator<M> detachIncomingMessages() {
+        final Iterator<M> messages = this.incoming.iterator();
+        this.incoming = new ArrayList<>();
+        return messages;
+    }*/
 
     ///////////
 
