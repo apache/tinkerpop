@@ -45,88 +45,23 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(Enclosed.class)
 public class SubgraphStrategyTest {
 
-    public static class BasicBehavior {
-        final SubgraphStrategy strategy = SubgraphStrategy.build().create();
+    final SubgraphStrategy strategy = SubgraphStrategy.build().create();
 
-        @Test
-        public void shouldAddFilterAfterVertex() {
-            final Traversal t = __.inV();
-            strategy.apply(t.asAdmin());
-            final EdgeVertexStep edgeVertexStep = (EdgeVertexStep) t.asAdmin().getStartStep();
-            assertEquals(LambdaFilterStep.class, edgeVertexStep.getNextStep().getClass());
-        }
-
-        @Test
-        public void shouldAddFilterAfterEdge() {
-            final Traversal t = __.inE();
-            strategy.apply(t.asAdmin());
-            final VertexStep vertexStep = (VertexStep) t.asAdmin().getStartStep();
-            assertEquals(LambdaFilterStep.class, vertexStep.getNextStep().getClass());
-        }
+    @Test
+    public void shouldAddFilterAfterVertex() {
+        final Traversal t = __.inV();
+        strategy.apply(t.asAdmin());
+        final EdgeVertexStep edgeVertexStep = (EdgeVertexStep) t.asAdmin().getStartStep();
+        assertEquals(LambdaFilterStep.class, edgeVertexStep.getNextStep().getClass());
     }
 
-    @RunWith(Parameterized.class)
-    public static class TraverseBehavior {
-        private static Traversal traversalWithAddV;
-
-        static {
-            final Graph mockedGraph = mock(Graph.class);
-            final DefaultGraphTraversal t = new DefaultGraphTraversal<>(mockedGraph);
-            t.asAdmin().addStep(new GraphStep<>(t.asAdmin(), Vertex.class));
-            traversalWithAddV = t.addV();
-        }
-
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return Arrays.asList(new Object[][]{
-                    {"bothV()", __.bothV(), 1},
-                    {"inV()", __.inV(), 1},
-                    {"outV()", __.outV(), 1},
-                    {"in()", __.in(), 2},
-                    {"in(args)", __.in("test"), 2},
-                    {"both()", __.both(), 2},
-                    {"both(args)", __.both("test"), 2},
-                    {"out()", __.out(), 2},
-                    {"out(args)", __.out("test"), 2},
-                    {"out().inE().otherV", __.out().inE().otherV(), 4},
-                    {"addV()", traversalWithAddV, 2},
-                    {"addInE()", __.addInE("test", "x"), 1},
-                    {"addOutE()", __.addOutE("test", "x"), 1},
-                    {"addInE()", __.addInE("test", "x", "other", "args"), 1},
-                    {"addOutE()", __.addOutE("test", "x", "other", "args"), 1},
-                    {"addE(OUT)", __.addE(Direction.OUT, "test", "x"), 1},
-                    {"addE(IN)", __.addE(Direction.IN, "test", "x"), 1},
-                    {"in().out()", __.in().out(), 4},
-                    {"in().out().addInE()", __.in().out().addInE("test", "x"), 5},
-                    {"in().out().addOutE()", __.in().out().addOutE("test", "x"), 5},
-                    {"in().out().addE(OUT)", __.in().out().addE(Direction.OUT, "test", "x"), 5},
-                    {"in().out().addE(IN)", __.in().out().addE(Direction.IN, "test", "x"), 5},
-                    {"out().out().out()", __.out().out().out(), 6},
-                    {"in().out().in()", __.in().out().in(), 6},
-                    {"inE().outV().inE().outV()", __.inE().outV().inE().outV(), 4}});
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public String name;
-
-        @Parameterized.Parameter(value = 1)
-        public Traversal traversal;
-
-        @Parameterized.Parameter(value = 2)
-        public int expectedInsertedSteps;
-
-        @Test
-        public void shouldSubgraph() {
-            final SubgraphStrategy strategy = SubgraphStrategy.build().create();
-            strategy.apply(traversal.asAdmin());
-
-            final List<LambdaFilterStep> steps = TraversalHelper.getStepsOfClass(LambdaFilterStep.class, traversal.asAdmin());
-            assertEquals(expectedInsertedSteps, steps.size());
-
-            // todo: better assert expectations when exploding g.V().out() to g.V().outE().inV() and the like
-        }
+    @Test
+    public void shouldAddFilterAfterEdge() {
+        final Traversal t = __.inE();
+        strategy.apply(t.asAdmin());
+        final VertexStep vertexStep = (VertexStep) t.asAdmin().getStartStep();
+        assertEquals(LambdaFilterStep.class, vertexStep.getNextStep().getClass());
     }
 }
