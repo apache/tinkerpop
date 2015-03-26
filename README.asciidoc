@@ -105,3 +105,4 @@ TinkerPop3 uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TI
 ** If the issue is a `bug` then the "priority" should be `critical`.
 ** If the issue is an `improvement` then the "priority should be `major`.
 * Issues are not assigned "labels".
+* Until there is an official release "affected version" should be left empty.
