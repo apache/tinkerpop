@@ -49,6 +49,7 @@ public final class SparkExecutor {
     private SparkExecutor() {
     }
 
+    // TODO: use SparkVertexPayload typing to be super clean
     public static <M> JavaPairRDD<Object, SparkPayload<M>> executeStep(final JavaPairRDD<Object, SparkPayload<M>> graphRDD, final SparkMemory memory, final Configuration apacheConfiguration) {
         JavaPairRDD<Object, SparkPayload<M>> current = graphRDD.reduceByKey((payloadA, payloadB) -> payloadA); // TODO: total hack cause of something weird with recursive RDDs
         // execute vertex program
@@ -88,7 +89,8 @@ public final class SparkExecutor {
                 return payloadB;
             }
         });
-        current.foreach(vertex -> {}); // TODO: i think this is a fast way to execute the rdd (wish there was a "execute()" method).
+        current.foreachPartition(partitionIterator -> {
+        }); // need to complete a task so its BSP.
         return current;
     }
 
@@ -109,7 +111,7 @@ public final class SparkExecutor {
         return mapRDD;
     }
 
-    // TODO: public static executeCombine()  is this necessary?
+    // TODO: public static executeCombine()  is this necessary?  YES --- we groupByKey in reduce() where we want to combine first.
 
     public static <K, V, OK, OV> JavaPairRDD<OK, OV> executeReduce(final JavaPairRDD<K, V> mapRDD, final MapReduce<K, V, OK, OV, ?> mapReduce, final Configuration apacheConfiguration) {
         JavaPairRDD<OK, OV> reduceRDD = mapRDD.groupByKey().mapPartitionsToPair(partitionIterator -> {
@@ -151,7 +153,7 @@ public final class SparkExecutor {
         final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         if (null != outputLocation) {
             // map back to a <nullwritable,vertexwritable> stream for output
-            graphRDD.mapToPair(tuple -> new Tuple2<>(NullWritable.get(), new VertexWritable(tuple._2().asVertexPayload().getVertex())))
+            graphRDD.mapToPair(tuple -> new Tuple2<>(NullWritable.get(), tuple._2().asVertexPayload().getVertexWritable()))
                     .saveAsNewAPIHadoopFile(outputLocation + "/" + Constants.HIDDEN_G,
                             NullWritable.class,
                             VertexWritable.class,
