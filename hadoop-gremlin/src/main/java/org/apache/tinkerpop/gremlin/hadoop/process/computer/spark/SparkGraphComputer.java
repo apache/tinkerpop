@@ -183,7 +183,6 @@ public final class SparkGraphComputer implements GraphComputer {
                             while (true) {
                                 memory.setInTask(true);
                                 graphRDD = SparkExecutor.executeStep(graphRDD, memory, vertexProgramConfiguration);
-                                graphRDD.foreachPartition(iterator -> doNothing()); // TODO: i think this is a fast way to execute the rdd (wish there was a "execute()" method).
                                 memory.setInTask(false);
                                 if (this.vertexProgram.terminate(memory))
                                     break;
@@ -203,12 +202,13 @@ public final class SparkGraphComputer implements GraphComputer {
                         // process the map reducers //
                         //////////////////////////////
                         if (!this.mapReducers.isEmpty()) {
-                            // drop all edges in the graphRDD as edges are not needed in the map reduce jobs
-                            graphRDD = graphRDD.mapToPair(tuple -> {
-                                tuple._2().asVertexPayload().getVertex().edges(Direction.BOTH).forEachRemaining(Edge::remove);
-                                return tuple;
+                            // drop all edges and messages in the graphRDD as they are no longer needed for the map reduce jobs
+                            graphRDD = graphRDD.mapValues(vertex -> {
+                                vertex.getMessages().clear();
+                                vertex.asVertexPayload().getOutgoingMessages().clear();
+                                vertex.asVertexPayload().getVertex().edges(Direction.BOTH).forEachRemaining(Edge::remove);
+                                return vertex;
                             });
-                            graphRDD = graphRDD.cache();
                             for (final MapReduce mapReduce : this.mapReducers) {
                                 // execute the map reduce job
                                 final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
@@ -233,10 +233,6 @@ public final class SparkGraphComputer implements GraphComputer {
     }
 
     /////////////////
-
-    private static final void doNothing() {
-        // a cheap action
-    }
 
     private static void loadJars(final JavaSparkContext sparkContext, final Configuration hadoopConfiguration) {
         if (hadoopConfiguration.getBoolean(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true)) {
