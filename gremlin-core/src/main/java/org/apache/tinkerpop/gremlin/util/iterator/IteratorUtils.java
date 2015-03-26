@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.FastNoSuchElementException
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -231,6 +232,38 @@ public final class IteratorUtils {
             }
         };
     }
+
+    ///////////////////
+
+    public static final <S, E> Iterator<E> flatMap(final Iterator<S> iterator, final Function<S, Iterator<E>> function) {
+        return new Iterator<E>() {
+
+            private Iterator<E> currentIterator = Collections.emptyIterator();
+
+            @Override
+            public boolean hasNext() {
+                if (this.currentIterator.hasNext())
+                    return true;
+                else {
+                    while (iterator.hasNext()) {
+                        this.currentIterator = function.apply(iterator.next());
+                        if (this.currentIterator.hasNext())
+                            return true;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public E next() {
+                if (this.hasNext())
+                    return this.currentIterator.next();
+                else
+                    throw FastNoSuchElementException.instance();
+            }
+        };
+    }
+
 
     ///////////////////
 

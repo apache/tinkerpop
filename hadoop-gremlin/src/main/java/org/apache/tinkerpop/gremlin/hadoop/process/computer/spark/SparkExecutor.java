@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.util;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -51,9 +51,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SparkHelper {
+public final class SparkExecutor {
 
-    private SparkHelper() {
+    private SparkExecutor() {
     }
 
     public static <M> JavaPairRDD<Object, SparkPayload<M>> executeStep(final JavaPairRDD<Object, SparkPayload<M>> graphRDD, final SparkMemory memory, final Configuration apacheConfiguration) {
