@@ -65,14 +65,7 @@ public class EventStrategy extends AbstractTraversalStrategy {
             throw new IllegalStateException(String.format("%s requires a graph instance is present on the traversal", EventStrategy.class.getName()));
 
         final EventStrategyCallback callback = new EventStrategyCallback(new EventTrigger(traversal.getGraph().get()));
-        final List<Mutating> mutators = new ArrayList<>();
-        mutators.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStep.class, traversal));
-        mutators.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal));
-        mutators.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal));
-        mutators.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeByPathStep.class, traversal));
-        mutators.addAll(TraversalHelper.getStepsOfAssignableClass(AddPropertyStep.class, traversal));
-        mutators.addAll(TraversalHelper.getStepsOfAssignableClass(DropStep.class, traversal));
-        mutators.forEach(s -> s.addCallback(callback));
+        TraversalHelper.getStepsOfAssignableClass(Mutating.class, traversal).forEach(s -> s.addCallback(callback));
     }
 
     public static Builder build() {
