@@ -29,7 +29,7 @@ public final class SparkMessagePayload<M> implements Serializable, SparkPayload<
 
     public final List<M> messages = new ArrayList<>();
 
-    private SparkMessagePayload() {
+    public SparkMessagePayload() {
 
     }
 

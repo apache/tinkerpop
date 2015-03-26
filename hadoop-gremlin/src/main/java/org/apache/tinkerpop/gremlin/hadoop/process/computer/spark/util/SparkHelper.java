@@ -25,7 +25,6 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.function.Function2;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkMapEmitter;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkMemory;
@@ -42,13 +41,11 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import scala.Tuple2;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -68,6 +65,7 @@ public final class SparkHelper {
             workerVertexProgram.workerIterationStart(memory);
             final List<Tuple2<Object, SparkPayload<M>>> emission = new ArrayList<>();
             partitionIterator.forEachRemaining(keyValue -> {
+                keyValue._2().asVertexPayload().getOutgoingMessages().clear();
                 workerVertexProgram.execute(ComputerGraph.of(keyValue._2().asVertexPayload().getVertex(), elementComputeKeys), keyValue._2().asVertexPayload(), memory);
                 emission.add(keyValue);
             });
@@ -76,30 +74,32 @@ public final class SparkHelper {
         });
 
         // emit messages by appending them to the graph as message payloads
-        current = current.<Object, SparkPayload<M>>flatMapToPair(keyValue -> () -> {
-            keyValue._2().asVertexPayload().getMessages().clear(); // the graph vertex should not have any incoming messages (should be cleared from the previous stage)
-            return IteratorUtils.concat(
-                    IteratorUtils.of(keyValue),                                                                    // this is a vertex
-                    IteratorUtils.map(keyValue._2().asVertexPayload().getOutgoingMessages().iterator(),
-                            entry -> new Tuple2<>(entry._1(), new SparkMessagePayload<M>(entry._2()))));           // this is a message;
+        current = current.<Object, SparkPayload<M>>flatMapToPair(keyValue -> {
+            keyValue._2().asVertexPayload().getMessages().clear(); // there should be no incoming messages at this point
+            final List<Tuple2<Object, SparkPayload<M>>> list = new ArrayList<>();
+            list.add(keyValue);    // this is a vertex
+            keyValue._2().asVertexPayload().getOutgoingMessages().forEach(message -> list.add(new Tuple2<>(message._1(), new SparkMessagePayload<>(message._2())))); // this is a message
+            return list;
         });
 
         // "message pass" by merging the message payloads with the vertex payloads
-        current = current.reduceByKey(new Function2<SparkPayload<M>, SparkPayload<M>, SparkPayload<M>>() {
-            private Optional<MessageCombiner<M>> messageCombinerOptional = null; // a hack to simulate partition(Spark)/worker(TP3) local variables
-
-            @Override
-            public SparkPayload<M> call(final SparkPayload<M> payloadA, final SparkPayload<M> payloadB) throws Exception {
-                if (null == this.messageCombinerOptional)
-                    this.messageCombinerOptional = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner();
-
-                if (payloadA.isVertex()) {
-                    payloadA.addMessages(payloadB.getMessages(), this.messageCombinerOptional);
-                    return payloadA;
-                } else {
-                    payloadB.addMessages(payloadA.getMessages(), this.messageCombinerOptional);
-                    return payloadB;
-                }
+        final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner().orElse(null);
+        current = current.reduceByKey((payloadA, payloadB) -> {
+            if (payloadA.isVertex()) {
+                final SparkVertexPayload<M> vertexPayload = new SparkVertexPayload<>(payloadA.asVertexPayload().getVertex());
+                vertexPayload.addMessages(payloadA.getMessages(), messageCombiner);
+                vertexPayload.addMessages(payloadB.getMessages(), messageCombiner);
+                return vertexPayload;
+            } else if (payloadB.isVertex()) {
+                final SparkVertexPayload<M> vertexPayload = new SparkVertexPayload<>(payloadB.asVertexPayload().getVertex());
+                vertexPayload.addMessages(payloadA.getMessages(), messageCombiner);
+                vertexPayload.addMessages(payloadB.getMessages(), messageCombiner);
+                return vertexPayload;
+            } else {
+                final SparkMessagePayload<M> messagePayload = new SparkMessagePayload<>();
+                messagePayload.addMessages(payloadA.getMessages(), messageCombiner);
+                messagePayload.addMessages(payloadB.getMessages(), messageCombiner);
+                return messagePayload;
             }
         });
 

@@ -29,12 +29,13 @@ import java.util.stream.Stream;
  */
 public interface SparkPayload<M> {
 
-    public default void addMessages(final List<M> otherMessages, final Optional<MessageCombiner<M>> messageCombinerOptional) {
-        if (messageCombinerOptional.isPresent()) {
-            final MessageCombiner<M> messageCombiner = messageCombinerOptional.get();
-            final M combinedMessage = Stream.concat(this.getMessages().stream(), otherMessages.stream()).reduce(messageCombiner::combine).get();
-            this.getMessages().clear();
-            this.getMessages().add(combinedMessage);
+    public default void addMessages(final List<M> otherMessages, final MessageCombiner<M> messageCombiner) {
+        if (null != messageCombiner) {
+            final Optional<M> combinedMessage = Stream.concat(this.getMessages().stream(), otherMessages.stream()).reduce(messageCombiner::combine);
+            if (combinedMessage.isPresent()) {
+                this.getMessages().clear();
+                this.getMessages().add(combinedMessage.get());
+            }
         } else {
             this.getMessages().addAll(otherMessages);
         }
@@ -47,5 +48,4 @@ public interface SparkPayload<M> {
     public default SparkVertexPayload<M> asVertexPayload() {
         return (SparkVertexPayload<M>) this;
     }
-
 }

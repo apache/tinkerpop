@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer;
 
+import java.io.Serializable;
+
 /**
  * A MessageCombiner allows two messages in route to the same vertex to be aggregated into a single message.
  * Message combining can reduce the number of messages sent between vertices and thus, reduce network traffic.
@@ -25,7 +27,7 @@ package org.apache.tinkerpop.gremlin.process.computer;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface MessageCombiner<M> {
+public interface MessageCombiner<M> extends Serializable {
 
     /**
      * Combine two messages and return a message containing the combination.
