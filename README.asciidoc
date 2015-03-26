@@ -44,6 +44,18 @@ Building and Testing
 * Performance Tests: `mvn verify -DskipPerformanceTests=false`
 * Gatling Load Tests: `mvn test -Pgatling -Dhost={hostname}`
 
+IDE Setup
+^^^^^^^^^
+
+This section refers specifically to setup within Intellij.  TinkerPop has a module called `gremlin-shaded` which contains shaded dependencies for some libraries that are widely used and tend to introduce conflicts.  To ensure that Intellij properly interprets this module after importing the Maven `pom.xml` perform the following steps:
+
+. Build `gremlin-shaded` from the command line with `mvn clean install`.
+. Right-click on the `gremlin-shaded` module in the project viewer of Intellij and select "Remove module".
+. In the "Maven Projects" Tool window and click the tool button for "Reimport All Maven projects" (go to `View | Tool Windows | Maven Projects` on the main menu if this panel is not activated).
+. At this point it should be possible to compile and run the tests within Intellij, but in the worst case, use `File | Invalidate Caches/Restart` to ensure that indices properly rebuild.
+
+Note that it maybe be necessary to re-execute these steps if the `gremlin-shaded` `pom.xml` is ever updated.
+
 Get Started
 ~~~~~~~~~~~
 
