@@ -75,7 +75,7 @@ public final class SparkExecutor {
             vertex._2().asVertexPayload().getMessages().clear(); // there should be no incoming messages at this point
             return () -> IteratorUtils.concat(
                     IteratorUtils.of(vertex),
-                    IteratorUtils.map(vertex._2().asVertexPayload().getOutgoingMessages().iterator(),
+                    IteratorUtils.map(vertex._2().asVertexPayload().detachOutgoingMessages(),
                             message -> new Tuple2<>(message._1(), new SparkMessagePayload<>(message._2()))));
 
         });
@@ -84,8 +84,14 @@ public final class SparkExecutor {
         final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner().orElse(null);
         current = current.reduceByKey((payloadA, payloadB) -> {
             if (payloadA.isVertex()) {
-                payloadA.addMessages(payloadB.getMessages(), messageCombiner);
-                return payloadA;
+                if (payloadB.isVertex()) {  // TODO: total hack cause of something weird with recursive RDDs
+                    final int sizeA = payloadA.getMessages().size();
+                    final int sizeB = payloadB.getMessages().size();
+                    return sizeA >= sizeB ? payloadA : payloadB;
+                } else {
+                    payloadA.addMessages(payloadB.getMessages(), messageCombiner);
+                    return payloadA;
+                }
             } else {
                 payloadB.addMessages(payloadA.getMessages(), messageCombiner);
                 return payloadB;

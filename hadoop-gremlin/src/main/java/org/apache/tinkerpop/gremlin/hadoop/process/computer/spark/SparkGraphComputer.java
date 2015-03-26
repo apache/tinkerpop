@@ -208,7 +208,7 @@ public final class SparkGraphComputer implements GraphComputer {
                                 vertex.asVertexPayload().getOutgoingMessages().clear();
                                 vertex.asVertexPayload().getVertex().edges(Direction.BOTH).forEachRemaining(Edge::remove);
                                 return vertex;
-                            });
+                            });   // todo: cache()?
                             for (final MapReduce mapReduce : this.mapReducers) {
                                 // execute the map reduce job
                                 final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
