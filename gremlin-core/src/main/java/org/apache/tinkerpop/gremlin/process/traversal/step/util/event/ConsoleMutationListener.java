@@ -86,4 +86,9 @@ public class ConsoleMutationListener implements MutationListener {
     public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
         System.out.println("Vertex [" + element.toString() + "] property [" + oldValue + "] change to [" + setValue + "] in graph [" + graph.toString() + "]");
     }
+
+    @Override
+    public String toString() {
+        return MutationListener.class.getSimpleName() + "[" + graph + "]";
+    }
 }
