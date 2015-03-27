@@ -1661,6 +1661,24 @@ ReadOnlyStrategy
 
 `ReadOnlyStrategy` is largely self-explanatory.  A `Traversal` that has this strategy applied will throw an `IllegalStateException` if the `Traversal` has any mutating steps within it.
 
+SubgraphStrategy
+================
+
+`SubgraphStrategy` is quite similar to `PartitionStrategy` in that it restrains a `Traversal` to certain vertices and edges as determined by a `Predicate` defined individually for each.
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createModern()
+vertexCriterion = { vertex -> true }
+edgeCriterion = { edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10}
+strategy = SubgraphStrategy.build().vertexPredicate(vertexCriterion).edgePredicate(edgeCriterion).create()
+g = GraphTraversalSource.build().with(strategy).create(graph)
+g.V() //// shows all vertices as they all pass the vertexCriterion
+g.E() //// shows only the edges defined in the edgeCriterion
+----
+
+Note that `SubgraphStrategy` directly passes the edge and vertex criterion `Predicate` objects  to an injected `filter` step and as such may not take advantage of important optimizations provided by the various `Graph` implementations (given the use of lambda expressions).
+
 Domain Specific Languages
 -------------------------
 
