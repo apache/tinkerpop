@@ -98,7 +98,6 @@ TinkerPop3 uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TI
 * An issue's "status" should be in one of two states: `open` or `closed`.
 ** An `open` issue is newly created, under consideration or otherwise in progress.
 ** A `closed` issue is completed for purposes of release (i.e. code, testing, and documentation complete).
-* When marking an issue as `closed`, its "resolution" field should always be set to `done`.  This single resolution simply means that the issue is complete, purposely does not convey the manner in which it was completed.  Consult the comments for information on the circumstances representing how the issue was resolved.  Taking this approach gives "resolution" only two status: `unresolved` and `done`.
 * An issue's "type" should be one of two options: `bug` or `improvement`.  A `bug` has a very specific meaning, referring to an error that prevents usage of TinkerPop AND does not have a reasonable workaround.  Given that definition, a `bug` should generally have very high priority for a fix.  Everything else is an `improvement` in the sense that any other work is an enhancement to the current codebase.
 * The "component" should be representative of the primary area of code that it applies to and all issues should have this property set.
 * The "priority" of an issue is represented by two states `critical` and `major`.  It should be assigned as follows:
