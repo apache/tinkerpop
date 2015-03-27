@@ -18,34 +18,38 @@ limitations under the License.
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
         <version>3.0.0-SNAPSHOT</version>
     </parent>
+
     <artifactId>gremlin-server</artifactId>
-    <name>Gremlin Server: Gremlin on the Server</name>
+
+    <name>Apache TinkerPop :: Gremlin Server</name>
+    <description>Gremlin Server: Gremlin on the Server</description>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>tinkergraph-gremlin</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-driver</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-groovy</artifactId>
-            <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
             <version>3.2.1</version>
         </dependency>
+
         <!-- METRICS -->
         <dependency>
             <groupId>com.codahale.metrics</groupId>
@@ -59,17 +63,15 @@ limitations under the License.
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-ganglia</artifactId>
         </dependency>
+
         <!-- TESTING -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>neo4j-gremlin</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -96,27 +98,18 @@ limitations under the License.
             <version>4.3.5</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
     <build>
-        <directory>${basedir}/target</directory>
-        <finalName>${project.artifactId}-${project.version}</finalName>
-        <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
-        <resources>
-            <resource>
-                <directory>${basedir}/src/main/resources
-                </directory>
-            </resource>
-        </resources>
-        <testResources>
-            <testResource>
-                <directory>${basedir}/src/test/resources
-                </directory>
-            </testResource>
-        </testResources>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.4</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -142,14 +135,6 @@ limitations under the License.
                     </archive>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-            </plugin>
         </plugins>
     </build>
 
@@ -163,12 +148,6 @@ limitations under the License.
                 </property>
             </activation>
 
-            <properties>
-                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-                <gatling.io.version>2.0.0-RC2</gatling.io.version>
-                <scala.version>2.10</scala.version>
-            </properties>
-
             <dependencies>
                 <!-- include to resolve conflicts within gatling -->
                 <dependency>
@@ -181,7 +160,6 @@ limitations under the License.
                 <dependency>
                     <groupId>org.scala-lang</groupId>
                     <artifactId>scala-reflect</artifactId>
-                    <version>2.10.2</version>
                     <scope>test</scope>
                 </dependency>
                 <dependency>
@@ -195,31 +173,20 @@ limitations under the License.
                             <groupId>com.typesafe</groupId>
                             <artifactId>config</artifactId>
                         </exclusion>
-                        <!-- conflict with tinkerpop -->
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-api</artifactId>
-                        </exclusion>
-                        <!-- self-conflict -->
-                        <exclusion>
-                            <groupId>org.scala-lang</groupId>
-                            <artifactId>scala-library</artifactId>
-                        </exclusion>
-                        <!-- self-conflict -->
-                        <exclusion>
-                            <groupId>org.scala-lang</groupId>
-                            <artifactId>scala-reflect</artifactId>
-                        </exclusion>
                         <!-- conflict with tinkerpop slf4j -->
                         <exclusion>
                             <groupId>ch.qos.logback</groupId>
                             <artifactId>logback-classic</artifactId>
                         </exclusion>
+                        <exclusion>
+                            <groupId>io.netty</groupId>
+                            <artifactId>netty</artifactId>
+                        </exclusion>
                     </exclusions>
                 </dependency>
                 <dependency>
                     <groupId>org.scalaj</groupId>
-                    <artifactId>scalaj-collection_${scala.version}</artifactId>
+                    <artifactId>scalaj-collection_${scala.main.version}</artifactId>
                     <version>1.5</version>
                     <scope>test</scope>
                 </dependency>
@@ -234,21 +201,6 @@ limitations under the License.
                             <groupId>ch.qos.logback</groupId>
                             <artifactId>logback-classic</artifactId>
                         </exclusion>
-                        <!-- conflict with tinkerpop -->
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-api</artifactId>
-                        </exclusion>
-                        <!-- self-conflict -->
-                        <exclusion>
-                            <groupId>org.scala-lang</groupId>
-                            <artifactId>scala-library</artifactId>
-                        </exclusion>
-                        <!-- self-conflict -->
-                        <exclusion>
-                            <groupId>io.netty</groupId>
-                            <artifactId>netty</artifactId>
-                        </exclusion>
                     </exclusions>
                 </dependency>
                 <dependency>
@@ -257,26 +209,6 @@ limitations under the License.
                     <version>${gatling.io.version}</version>
                     <scope>test</scope>
                     <exclusions>
-                        <!-- conflict with tinkerpop -->
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-api</artifactId>
-                        </exclusion>
-                        <!-- self-conflict -->
-                        <exclusion>
-                            <groupId>org.scala-lang</groupId>
-                            <artifactId>scala-library</artifactId>
-                        </exclusion>
-                        <!-- self-conflict -->
-                        <exclusion>
-                            <groupId>org.scala-lang</groupId>
-                            <artifactId>scala-compiler</artifactId>
-                        </exclusion>
-                        <!-- self-conflict -->
-                        <exclusion>
-                            <groupId>org.scala-lang</groupId>
-                            <artifactId>scala-reflect</artifactId>
-                        </exclusion>
                         <!-- conflict with gatling-core -->
                         <exclusion>
                             <groupId>com.typesafe.akka</groupId>
@@ -291,7 +223,7 @@ limitations under the License.
                     <plugin>
                         <groupId>io.gatling</groupId>
                         <artifactId>gatling-maven-plugin</artifactId>
-                        <version>${gatling.io.version}</version>
+                        <version>2.0.0</version>
                         <executions>
                             <execution>
                                 <phase>test</phase>

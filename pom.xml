@@ -27,8 +27,10 @@ limitations under the License.
     <artifactId>tinkerpop</artifactId>
     <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+
     <name>Apache TinkerPop: A Graph Computing Framework</name>
     <url>http://tinkerpop.incubator.apache.org/</url>
+
     <mailingLists>
         <mailingList>
             <name>Users</name>
@@ -43,6 +45,7 @@ limitations under the License.
             <archive>dev-digest-subscribe@tinkerpop.incubator.apache.org</archive>
         </mailingList>
     </mailingLists>
+
     <inceptionYear>2013</inceptionYear>
     <licenses>
         <license>
@@ -50,10 +53,12 @@ limitations under the License.
             <url>http://www.opensource.org/licenses/Apache-2.0</url>
         </license>
     </licenses>
+
     <organization>
         <name>Apache Software Foundation</name>
         <url>http://www.apache.org/</url>
     </organization>
+
     <developers>
         <developer>
             <name>Marko A. Rodriguez</name>
@@ -66,6 +71,7 @@ limitations under the License.
             <url>http://stephen.genoprime.com</url>
         </developer>
     </developers>
+
     <contributors>
         <contributor>
             <name>Joshua Shinavier</name>
@@ -73,6 +79,7 @@ limitations under the License.
             <url>http://fortytwo.net</url>
         </contributor>
     </contributors>
+
     <modules>
         <module>gremlin-shaded</module>
         <module>gremlin-core</module>
@@ -87,35 +94,409 @@ limitations under the License.
         <module>gremlin-console</module>
         <module>gremlin-server</module>
     </modules>
+
     <scm>
         <connection>scm:git:git@git-wip-us.apache.org:repos/asf/incubator-tinkerpop.git</connection>
         <developerConnection>scm:git:git@git-wip-us.apache.org:repos/asf/incubator-tinkerpop.git</developerConnection>
         <url>https://git-wip-us.apache.org/repos/asf?p=incubator-tinkerpop.git</url>
     </scm>
+
     <properties>
-        <groovy.version>2.4.1</groovy.version>
-        <junit.version>4.11</junit.version>
-        <kuali.s3.wagon.version>1.1.20</kuali.s3.wagon.version>
-        <!-- Directory containing the file ${log4j.properties} defined
-             above.  Maven interpolates ${project.basedir} in the
-             context of child modules, so path this relative to one of
-             the modules under the root directory, not the root
-             directory itself. -->
-        <log4j.properties.dir>${project.basedir}/../gremlin-server/conf/</log4j.properties.dir>
-        <log4j.properties>log4j-server.properties</log4j.properties>
-        <metrics.version>3.0.2</metrics.version>
+        <!-- Main build settings -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+
+        <!-- Dependency versions -->
+        <commons-configuration.version>1.10</commons-configuration.version>
+        <commons-httpclient.version>3.1</commons-httpclient.version>
+        <commons-logging.version>1.2</commons-logging.version>
+        <concurrentlinkedhashmap.version>1.4.2</concurrentlinkedhashmap.version>
+
+        <gatling.io.version>2.0.3</gatling.io.version>
+        <groovy.version>2.4.1</groovy.version>
+        <guava.version>18.0</guava.version>
+        <hadoop.version>1.2.1</hadoop.version>
+        <hamcrest.version>1.3</hamcrest.version>
+        <jackson.version>2.3.0</jackson.version>
+        <jline.version>2.11</jline.version>
+        <junit.version>4.11</junit.version>
+        <kryo.version>2.24.0</kryo.version>
+        <log4j.version>1.2.17</log4j.version>
+        <minlog.version>1.2</minlog.version>
+        <metrics.version>3.0.2</metrics.version>
+        <mockito.version>1.9.5</mockito.version>
+        <netty.version>4.0.25.Final</netty.version>
+        <slf4j.version>1.7.7</slf4j.version>
+        <scala.version>2.10.2</scala.version>
+        <scala.main.version>2.10</scala.main.version>
+        <neo4j.version>2.1.6</neo4j.version>
+        <objenesis.version>2.1</objenesis.version>
+
+        <!-- plugin versions -->
+        <kuali.s3.wagon.version>1.1.20</kuali.s3.wagon.version>
+        <maven-javadoc-plugin.version>2.10.1</maven-javadoc-plugin.version>
+
+        <!-- Directory containing the file ${log4j.properties} defined
+         above.  Maven interpolates ${project.basedir} in the
+         context of child modules, so path this relative to one of
+         the modules under the root directory, not the root
+         directory itself. -->
+        <log4j.properties.dir>${project.basedir}/../gremlin-server/conf/</log4j.properties.dir>
+        <log4j.properties>log4j-server.properties</log4j.properties>
         <skipIntegrationTests>true</skipIntegrationTests>
         <skipPerformanceTests>true</skipPerformanceTests>
-        <slf4j.version>1.7.7</slf4j.version>
-        <hadoop.version>1.2.1</hadoop.version>
-        <javadoc-plugin.version>2.10.1</javadoc-plugin.version>
+
         <muteTestLogs>false</muteTestLogs>
     </properties>
-    <build>
-        <directory>${basedir}/target</directory>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.apache.tinkerpop</groupId>
+                <artifactId>gremlin-algorithm</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tinkerpop</groupId>
+                <artifactId>gremlin-console</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tinkerpop</groupId>
+                <artifactId>gremlin-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tinkerpop</groupId>
+                <artifactId>gremlin-driver</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tinkerpop</groupId>
+                <artifactId>gremlin-groovy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tinkerpop</groupId>
+                <artifactId>gremlin-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tinkerpop</groupId>
+                <artifactId>gremlin-shaded</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tinkerpop</groupId>
+                <artifactId>hadoop-gremlin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tinkerpop</groupId>
+                <artifactId>neo4j-gremlin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tinkerpop</groupId>
+                <artifactId>tinkergraph-gremlin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <!-- test scope -->
+            <dependency>
+                <groupId>org.apache.tinkerpop</groupId>
+                <artifactId>gremlin-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tinkerpop</groupId>
+                <artifactId>gremlin-groovy-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Logging is important -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-configuration</groupId>
+                <artifactId>commons-configuration</artifactId>
+                <version>${commons-configuration.version}</version>
+                <exclusions>
+                    <!-- self-conflict -->
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>${commons-logging.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
+                <artifactId>concurrentlinkedhashmap-lru</artifactId>
+                <version>${concurrentlinkedhashmap.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy</artifactId>
+                <version>${groovy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-all</artifactId>
+                <version>${groovy.version}</version>
+                <classifier>indy</classifier>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-core</artifactId>
+                <version>${hadoop.version}</version>
+                <exclusions>
+                    <!-- self-conflicts -->
+                    <exclusion>
+                        <groupId>commons-codec</groupId>
+                        <artifactId>commons-codec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-httpclient</groupId>
+                        <artifactId>commons-httpclient</artifactId>
+                    </exclusion>
+                    <!-- conflict with commons-configuration -->
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <!-- conflicts with giraph-core (which appears to have more consistent dependencies) -->
+                    <exclusion>
+                        <groupId>org.codehaus.jackson</groupId>
+                        <artifactId>jackson-core-asl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.jackson</groupId>
+                        <artifactId>jackson-mapper-asl</artifactId>
+                    </exclusion>
+                    <!-- conflict with TinkerPop tests -->
+                    <exclusion>
+                        <groupId>junit</groupId>
+                        <artifactId>junit</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jline</groupId>
+                <artifactId>jline</artifactId>
+                <version>${jline.version}</version>
+            </dependency>
+
+            <!-- This is managed version of netty used by dependencies -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty</artifactId>
+                <version>3.10.0.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.neo4j</groupId>
+                <artifactId>neo4j</artifactId>
+                <version>${neo4j.version}</version>
+                <exclusions>
+                    <!-- neo4j self-conflicts -->
+                    <exclusion>
+                        <groupId>org.neo4j</groupId>
+                        <artifactId>neo4j-lucene-index</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.neo4j</groupId>
+                        <artifactId>neo4j-kernel</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>net.sf.opencsv</groupId>
+                        <artifactId>opencsv</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.neo4j</groupId>
+                        <artifactId>neo4j-graph-matching</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.neo4j</groupId>
+                        <artifactId>neo4j-graph-algo</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.neo4j</groupId>
+                <artifactId>neo4j-ha</artifactId>
+                <version>${neo4j.version}</version>
+                <exclusions>
+                    <!-- conflicts with gremlin-core -->
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.neo4j</groupId>
+                <artifactId>neo4j-management</artifactId>
+                <version>${neo4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.neo4j</groupId>
+                <artifactId>neo4j-graph-matching</artifactId>
+                <version>${neo4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.neo4j</groupId>
+                <artifactId>neo4j-graph-algo</artifactId>
+                <version>${neo4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.codahale.metrics</groupId>
+                <artifactId>metrics-core</artifactId>
+                <version>${metrics.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codahale.metrics</groupId>
+                <artifactId>metrics-graphite</artifactId>
+                <version>${metrics.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codahale.metrics</groupId>
+                <artifactId>metrics-ganglia</artifactId>
+                <version>${metrics.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-httpclient</groupId>
+                <artifactId>commons-httpclient</artifactId>
+                <version>${commons-httpclient.version}</version>
+                <exclusions>
+                    <!-- exclude commons-logging in favor of slf4j via jcl-over-slf4j -->
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.esotericsoftware.kryo</groupId>
+                <artifactId>kryo</artifactId>
+                <version>${kryo.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.esotericsoftware.minlog</groupId>
+                <artifactId>minlog</artifactId>
+                <version>${minlog.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.objenesis</groupId>
+                <artifactId>objenesis</artifactId>
+                <version>${objenesis.version}</version>
+            </dependency>
+
+            <!-- Scala dependency management section -->
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-compiler</artifactId>
+                <version>${scala.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+                <version>${scala.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-reflect</artifactId>
+                <version>${scala.version}</version>
+            </dependency>
+
+            <!-- Test scope dependencies -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-core</artifactId>
+                <version>${hamcrest.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-all</artifactId>
+                <version>${hamcrest.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
         <!-- Used to upload docs to S3 -->
         <extensions>
             <extension>
@@ -124,8 +505,10 @@ limitations under the License.
                 <version>${kuali.s3.wagon.version}</version>
             </extension>
         </extensions>
+
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>1.3.1</version>
                 <executions>
@@ -269,17 +652,23 @@ limitations under the License.
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>2.4</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.1</version>
-                    <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
                     <version>2.8.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.gmavenplus</groupId>
+                    <artifactId>gmavenplus-plugin</artifactId>
+                    <version>1.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -379,6 +768,7 @@ limitations under the License.
                     <version>0.1.4</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>2.6</version>
                 </plugin>
@@ -388,8 +778,9 @@ limitations under the License.
                     <version>1.0</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>${javadoc-plugin.version}</version>
+                    <version>${maven-javadoc-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -405,7 +796,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${javadoc-plugin.version}</version>
+                <version>${maven-javadoc-plugin.version}</version>
                 <configuration>
                     <additionalparam>-Xdoclint:none</additionalparam>
                 </configuration>
@@ -419,7 +810,7 @@ limitations under the License.
                                 <additionalDependency>
                                     <groupId>org.apache.hadoop</groupId>
                                     <artifactId>hadoop-core</artifactId>
-                                    <version>1.2.1</version>
+                                    <version>${hadoop.version}</version>
                                 </additionalDependency>
                             </additionalDependencies>
                         </configuration>
@@ -436,7 +827,7 @@ limitations under the License.
                                 <additionalDependency>
                                     <groupId>org.apache.hadoop</groupId>
                                     <artifactId>hadoop-core</artifactId>
-                                    <version>1.2.1</version>
+                                    <version>${hadoop.version}</version>
                                 </additionalDependency>
                             </additionalDependencies>
                         </configuration>
@@ -448,106 +839,6 @@ limitations under the License.
             </plugin>
         </plugins>
     </reporting>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>commons-configuration</groupId>
-                <artifactId>commons-configuration</artifactId>
-                <version>1.10</version>
-                <exclusions>
-                    <!-- self-conflict -->
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-core</artifactId>
-                <version>1.2.1</version>
-                <exclusions>
-                    <!-- self-conflicts -->
-                    <exclusion>
-                        <groupId>commons-codec</groupId>
-                        <artifactId>commons-codec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-httpclient</groupId>
-                        <artifactId>commons-httpclient</artifactId>
-                    </exclusion>
-                    <!-- conflict with commons-configuration -->
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <!-- conflicts with giraph-core (which appears to have more consistent dependencies) -->
-                    <exclusion>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-core-asl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-mapper-asl</artifactId>
-                    </exclusion>
-                    <!-- conflict with TinkerPop tests -->
-                    <exclusion>
-                        <groupId>junit</groupId>
-                        <artifactId>junit</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>com.codahale.metrics</groupId>
-                <artifactId>metrics-core</artifactId>
-                <version>${metrics.version}</version>
-                <exclusions>
-                    <!-- conflict with jcl-over-slf4j-->
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>com.codahale.metrics</groupId>
-                <artifactId>metrics-graphite</artifactId>
-                <version>${metrics.version}</version>
-                <exclusions>
-                    <!-- conflict with jcl-over-slf4j-->
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>com.codahale.metrics</groupId>
-                <artifactId>metrics-ganglia</artifactId>
-                <version>${metrics.version}</version>
-                <exclusions>
-                    <!-- conflict with jcl-over-slf4j-->
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>commons-httpclient</groupId>
-                <artifactId>commons-httpclient</artifactId>
-                <version>3.1</version>
-                <exclusions>
-                    <!-- exclude commons-logging in favor of slf4j via jcl-over-slf4j -->
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <profiles>
 
@@ -565,25 +856,15 @@ limitations under the License.
                 <asciidoc.input.dir>${project.basedir}/target/doc-source</asciidoc.input.dir>
                 <asciidoctor.style.dir>${asciidoc.input.dir}/stylesheets</asciidoctor.style.dir>
                 <htmlsingle.output.dir>${project.basedir}/target/docs/htmlsingle</htmlsingle.output.dir>
+
+                <maven.deploy.skip>true</maven.deploy.skip>
+                <maven.test.skip>true</maven.test.skip>
             </properties>
 
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
-                    <plugin>
                         <artifactId>maven-resources-plugin</artifactId>
                         <inherited>false</inherited>
                         <executions>
@@ -718,24 +999,13 @@ limitations under the License.
 
             <properties>
                 <javadoc.dir>${project.build.directory}/site/apidocs</javadoc.dir>
+
+                <maven.deploy.skip>true</maven.deploy.skip>
+                <maven.test.skip>true</maven.test.skip>
             </properties>
 
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
                     <!-- There's a maven-javadoc-plugin:aggregate execution above,
                          but it's bound to the site lifecycle, so we can't rely on it.
                          This execution binds to the default lifecycle. -->
@@ -762,7 +1032,7 @@ limitations under the License.
                                         <additionalDependency>
                                             <groupId>org.apache.hadoop</groupId>
                                             <artifactId>hadoop-core</artifactId>
-                                            <version>1.2.1</version>
+                                            <version>${hadoop.version}</version>
                                         </additionalDependency>
                                     </additionalDependencies>
                                 </configuration>
@@ -805,7 +1075,7 @@ limitations under the License.
                                         <additionalDependency>
                                             <groupId>org.apache.hadoop</groupId>
                                             <artifactId>hadoop-core</artifactId>
-                                            <version>1.2.1</version>
+                                            <version>${hadoop.version}</version>
                                         </additionalDependency>
                                     </additionalDependencies>
                                 </configuration>
@@ -917,17 +1187,12 @@ limitations under the License.
                 </server.artifact>
                 <console.artifact>gremlin-console/target/gremlin-console-${project.version}-distribution.zip
                 </console.artifact>
+
+                <maven.deploy.skip>true</maven.deploy.skip>
             </properties>
 
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>wagon-maven-plugin</artifactId>
