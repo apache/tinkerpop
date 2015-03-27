@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import scala.Tuple2;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -49,16 +50,15 @@ public final class SparkExecutor {
     private SparkExecutor() {
     }
 
-    // TODO: use SparkVertexPayload typing to be super clean
-    public static <M> JavaPairRDD<Object, SparkPayload<M>> executeVertexProgramIteration(final JavaPairRDD<Object, SparkPayload<M>> graphRDD, final SparkMemory memory, final Configuration apacheConfiguration) {
+    public static <M> JavaPairRDD<Object, SparkVertexPayload<M>> executeVertexProgramIteration(final JavaPairRDD<Object, SparkVertexPayload<M>> graphRDD, final SparkMemory memory, final Configuration apacheConfiguration) {
         // execute vertex program iteration
-        JavaPairRDD<Object, SparkPayload<M>> current = graphRDD.mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
+        final JavaPairRDD<Object, SparkVertexPayload<M>> verticesHoldingOutgoingMessages = graphRDD.mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
             final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration);
             final Set<String> elementComputeKeys = workerVertexProgram.getElementComputeKeys();
             workerVertexProgram.workerIterationStart(memory);
             return () -> IteratorUtils.map(partitionIterator, vertex -> {
-                vertex._2().asVertexPayload().getOutgoingMessages().clear(); // there should be no outgoing messages at this point
-                workerVertexProgram.execute(ComputerGraph.of(vertex._2().asVertexPayload().getVertex(), elementComputeKeys), vertex._2().asVertexPayload(), memory);
+                vertex._2().getOutgoingMessages().clear(); // there should be no outgoing messages at this point
+                workerVertexProgram.execute(ComputerGraph.of(vertex._2().getVertex(), elementComputeKeys), vertex._2(), memory);
                 if (!partitionIterator.hasNext())
                     workerVertexProgram.workerIterationEnd(memory);
                 vertex._2().getMessages().clear(); // there should be no incoming messages at this point (only outgoing messages)
@@ -67,15 +67,15 @@ public final class SparkExecutor {
         });
 
         // emit messages by appending them to the graph as message payloads
-        current = current.<Object, SparkPayload<M>>flatMapToPair(vertex -> () ->
-                IteratorUtils.concat(
-                        IteratorUtils.of(vertex),
-                        IteratorUtils.map(vertex._2().asVertexPayload().detachOutgoingMessages(),
+        final JavaPairRDD<Object, SparkPayload<M>> verticesAndOutgoingMessages = verticesHoldingOutgoingMessages.flatMapToPair(vertex -> () ->
+                IteratorUtils.<Tuple2<Object, SparkPayload<M>>>concat(
+                        (Iterator) IteratorUtils.of(vertex),
+                        (Iterator) IteratorUtils.map(vertex._2().detachOutgoingMessages(), // this removes all outgoing messages once they have been iterated by this step
                                 message -> new Tuple2<>(message._1(), new SparkMessagePayload<>(message._2())))));
 
         // "message pass" by merging the message payloads with the vertex payloads
         final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner().orElse(null);
-        current = current.reduceByKey((payloadA, payloadB) -> {
+        final JavaPairRDD<Object, SparkVertexPayload<M>> verticesHoldingIncomingMessages = (JavaPairRDD) verticesAndOutgoingMessages.reduceByKey((payloadA, payloadB) -> {
             if (payloadA.isVertex()) {
                 if (payloadB.isVertex())
                     throw new IllegalStateException("It should not be the case that two vertices reduce to the same key: " + payloadA.asVertexPayload().getVertex() + "==" + payloadB.asVertexPayload().getVertex());
@@ -88,9 +88,9 @@ public final class SparkExecutor {
                 return payloadB;
             }
         });
-        current.foreachPartition(partitionIterator -> {
+        verticesHoldingIncomingMessages.foreachPartition(partitionIterator -> {
         }); // need to complete a task so its BSP.
-        return current;
+        return verticesHoldingIncomingMessages;
     }
 
     public static <K, V, M> JavaPairRDD<K, V> executeMap(final JavaPairRDD<Object, SparkVertexPayload<M>> graphRDD, final MapReduce<K, V, ?, ?, ?> mapReduce, final Configuration apacheConfiguration) {
@@ -148,11 +148,11 @@ public final class SparkExecutor {
         }
     }
 
-    public static <M> void saveGraphRDD(final JavaPairRDD<Object, SparkPayload<M>> graphRDD, final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
+    public static <M> void saveGraphRDD(final JavaPairRDD<Object, SparkVertexPayload<M>> graphRDD, final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
         final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         if (null != outputLocation) {
             // map back to a <nullwritable,vertexwritable> stream for output
-            graphRDD.mapToPair(tuple -> new Tuple2<>(NullWritable.get(), tuple._2().asVertexPayload().getVertexWritable()))
+            graphRDD.mapToPair(tuple -> new Tuple2<>(NullWritable.get(), tuple._2().getVertexWritable()))
                     .saveAsNewAPIHadoopFile(outputLocation + "/" + Constants.HIDDEN_G,
                             NullWritable.class,
                             VertexWritable.class,
