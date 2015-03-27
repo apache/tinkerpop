@@ -1626,6 +1626,36 @@ The example above uses TinkerGraph which does not support transactions.  As ment
 
 CAUTION: `EventStrategy` is not meant for usage in tracking global mutations across separate processes.  In other words, an mutation in what JVM process is not raised as an event in a different JVM process.  In addition, events are not raised when mutations occur outside of the `Traversal` context.
 
+PartitionStrategy
+=================
+
+image::partition-graph.png[width=650]
+
+`PartitionStrategy` partitions the vertices and edges of a graph into `String` named partitions (i.e. buckets, subgraphs, etc.). The idea behind `PartitionStrategy` is presented in the image above where each element is in a single partition (represented by its color). Partitions can be read from, written to, and linked/joined by edges that span one or two partitions (e.g. a tail vertex in one partition and a head vertex in another).
+
+There are three primary variables in `PartitionStrategy`:
+
+. Partition Key - The property key that denotes a String value representing a partition.
+. Write Partition - A `String` denoting what partition all future written elements will be in.
+. Read Partitions - A `Set<String>` of partitions that can be read from.
+
+The best way to understand `PartitionStrategy` is via example.
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createModern()
+strategyA = PartitionStrategy.build().partitionKey("_partition").writePartition("a").addReadPartition("a").create()
+strategyB = PartitionStrategy.build().partitionKey("_partition").writePartition("b").addReadPartition("b").create()
+gA = GraphTraversalSource.build().with(strategyA).create(graph)
+gA.addV() // this vertex has a property of {_partition:"a"}
+gB = GraphTraversalSource.build().with(strategyB).create(graph)
+gB.addV() // this vertex has a property of {_partition:"b"}
+gA.V()
+gB.V()
+----
+
+By writing elements to particular partitions and then restricting read partitions, the developer is able to create multiple graphs within a single address space. Moreover, by supporting references between partitions, it is possible to merge those multiple graphs (i.e. join partitions).
+
 Domain Specific Languages
 -------------------------
 
