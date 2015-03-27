@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Contains;
@@ -90,6 +91,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(GraphTraversal.class.getPackage().getName() + DOT_STAR);
         imports.add(ComputerTraversalEngine.class.getPackage().getName() + DOT_STAR);
         imports.add(PartitionStrategy.class.getPackage().getName() + DOT_STAR);       // decoration strategies
+        imports.add(ReadOnlyStrategy.class.getPackage().getName() + DOT_STAR);        // verification strategies
         imports.add(Event.class.getPackage().getName() + DOT_STAR);                   // eventing
         staticImports.add(__.class.getCanonicalName() + DOT_STAR);
         staticImports.add(TraversalOptionParent.Pick.class.getCanonicalName() + DOT_STAR);
