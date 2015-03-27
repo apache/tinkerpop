@@ -1582,7 +1582,6 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
 }
 ----
 
-
 The traversal is redefined by simply taking a chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
 
 [gremlin-groovy,modern]
@@ -1593,7 +1592,7 @@ t.iterate(); null
 t.toString()
 ----
 
-TinkerPop3 has a number of type-3 strategies distributed as part of its core library.  These strategies add generalized features to a traversal that are typically useful to end-users.  The following sections detail these strategies:
+TinkerPop has a number of type-3 strategies distributed as part of its core library.  These strategies add generalized features to a traversal that are typically useful to end-users.  The following sections detail these strategies:
 
 EventStrategy
 =============
@@ -1611,10 +1610,21 @@ The following events are raised to the `MutationListener`:
 * Vertex removed
 * Edge removed
 
-To start processing events from a `Traversal` first implement the `MutationListener` interface. An example of this implementation is the `ConsoleMutationListener` which writes output to the console for each event.
+To start processing events from a `Traversal` first implement the `MutationListener` interface. An example of this implementation is the `ConsoleMutationListener` which writes output to the console for each event.  The following console session displays the basic usage:
 
+[gremlin-groovy]
+----
+graph = TinkerFactory.createModern()
+l = new ConsoleMutationListener(graph)
+strategy = EventStrategy.build().addListener(l).create()
+g = GraphTraversalSource.build().with(strategy).create(graph)
+g.addV("name","stephen")
+g.E().drop()
+----
 
-CAUTION: `EventStrategy` is not meant for usage in tracking global mutations across separate processes.  In other words, an mutation in what JVM process is not raised as an event in a different JVM process.  In addition, events are not raised when mutations occur as part of side-effect steps (i.e. a lambda).
+The example above uses TinkerGraph which does not support transactions.  As mentioned previously, for these types of graph implementations events are raised as they occur within execution of a `Step`.  As such, the final line of Gremlin execution that drops all edges shows a bit of an inconsistent count, where the removed edge count is accounted for after the event is raised.
+
+CAUTION: `EventStrategy` is not meant for usage in tracking global mutations across separate processes.  In other words, an mutation in what JVM process is not raised as an event in a different JVM process.  In addition, events are not raised when mutations occur outside of the `Traversal` context.
 
 Domain Specific Languages
 -------------------------
