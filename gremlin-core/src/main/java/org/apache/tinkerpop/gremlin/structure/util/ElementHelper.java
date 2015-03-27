@@ -182,6 +182,19 @@ public final class ElementHelper {
         }
     }
 
+    public static Object[] replaceKey(final Object[] keyValues, final Object oldKey, final Object newKey) {
+        final Object[] kvs = new Object[keyValues.length];
+        for (int i = 0; i < keyValues.length; i = i + 2) {
+            if (keyValues[i].equals(oldKey))
+                kvs[i] = newKey;
+            else
+                kvs[i] = keyValues[i];
+            kvs[i + 1] = keyValues[i + 1];
+        }
+
+        return kvs;
+    }
+
     /**
      * Converts a set of key values to a Map.  Assumes that validations have already taken place to
      * assure that key positions contain strings and that there are an even number of elements.
