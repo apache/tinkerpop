@@ -34,6 +34,4 @@ include::implementations.asciidoc[]
 
 include::conclusion.asciidoc[]
 
-include::tinkerpop-contributors.asciidoc[]
-
 include::acknowledgements.asciidoc[]
