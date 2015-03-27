@@ -47,7 +47,7 @@ public class SubgraphStrategyProcessTest  extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void testVertexCriterion() throws Exception {
+    public void shouldFilterVertexCriterion() throws Exception {
         final Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         final Predicate<Edge> edgeCriterion = edge -> true;
 
