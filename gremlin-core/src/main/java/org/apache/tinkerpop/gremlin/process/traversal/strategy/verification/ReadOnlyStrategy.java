@@ -19,11 +19,13 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeByPathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
+ * Detects steps marked with {@link Mutating} and throw an {@link IllegalStateException} if one is found.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class ReadOnlyStrategy extends AbstractTraversalStrategy {
@@ -35,7 +37,7 @@ public final class ReadOnlyStrategy extends AbstractTraversalStrategy {
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getSteps().stream().filter(step -> step instanceof AddEdgeByPathStep).findAny().isPresent())
+        if (traversal.getSteps().stream().anyMatch(step -> step instanceof Mutating))
             throw new IllegalStateException("The provided traversal has a mutating step and thus is not read only");
     }
 

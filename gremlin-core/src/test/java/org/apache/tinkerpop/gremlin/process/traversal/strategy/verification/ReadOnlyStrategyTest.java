@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -46,7 +47,13 @@ public class ReadOnlyStrategyTest {
                 {"addE(IN)", __.addE(Direction.IN, "test", "test")},
                 {"addE(IN,args)", __.addE(Direction.IN, "test", "test", "this", "that")},
                 {"addE(OUT)", __.addE(Direction.OUT, "test", "test")},
-                {"addE(OUT,args)", __.addE(Direction.OUT, "test", "test", "this", "that")}});
+                {"addE(OUT,args)", __.addE(Direction.OUT, "test", "test", "this", "that")},
+                {"outE().property(k,v)", __.outE().property("test", "test")},
+                {"out().properties(k).property(k,v)", __.out().properties("test").property("test", "that")},
+                {"out().property(k,v)", __.out().property("test", "test")},
+                {"out().property(Cardinality,k,v)", __.out().property(VertexProperty.Cardinality.list, "test", "test")},
+                {"addV(args)", __.addV("test", "test", "this", "that")},
+                {"addV()", __.addV()}});
     }
 
     @Parameterized.Parameter(value = 0)
