@@ -21,14 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EdgePropertyRemovedEvent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EdgeRemovedEvent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ElementPropertyEvent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.VertexPropertyPropertyRemovedEvent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.VertexPropertyRemovedEvent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.VertexRemovedEvent;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -60,11 +54,11 @@ public final class DropStep<S> extends FilterStep<S> implements Mutating<EventCa
             if (callbacks != null) {
                 final Event removeEvent;
                 if (s instanceof Vertex)
-                    removeEvent = new VertexRemovedEvent(DetachedFactory.detach((Vertex) s, true));
+                    removeEvent = new Event.VertexRemovedEvent(DetachedFactory.detach((Vertex) s, true));
                 else if (s instanceof Edge)
-                    removeEvent = new EdgeRemovedEvent(DetachedFactory.detach((Edge) s, true));
+                    removeEvent = new Event.EdgeRemovedEvent(DetachedFactory.detach((Edge) s, true));
                 else if (s instanceof VertexProperty)
-                    removeEvent = new VertexPropertyRemovedEvent(DetachedFactory.detach((VertexProperty) s, true));
+                    removeEvent = new Event.VertexPropertyRemovedEvent(DetachedFactory.detach((VertexProperty) s, true));
                 else
                     throw new IllegalStateException("The incoming object is not removable: " + s);
 
@@ -75,11 +69,11 @@ public final class DropStep<S> extends FilterStep<S> implements Mutating<EventCa
         } else if (s instanceof Property) {
             final Property toRemove = ((Property) s);
             if (callbacks != null) {
-                final ElementPropertyEvent removeEvent;
+                final Event.ElementPropertyEvent removeEvent;
                 if (toRemove.element() instanceof Edge)
-                    removeEvent = new EdgePropertyRemovedEvent((Edge) toRemove.element(), DetachedFactory.detach(toRemove));
+                    removeEvent = new Event.EdgePropertyRemovedEvent((Edge) toRemove.element(), DetachedFactory.detach(toRemove));
                 else if (toRemove.element() instanceof VertexProperty)
-                    removeEvent = new VertexPropertyPropertyRemovedEvent((VertexProperty) toRemove.element(), DetachedFactory.detach(toRemove));
+                    removeEvent = new Event.VertexPropertyPropertyRemovedEvent((VertexProperty) toRemove.element(), DetachedFactory.detach(toRemove));
                 else
                     throw new IllegalStateException("The incoming object is not removable: " + s);
 
