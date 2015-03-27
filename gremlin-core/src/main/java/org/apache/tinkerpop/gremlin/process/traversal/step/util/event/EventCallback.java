@@ -18,9 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util.event;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+
 import java.util.function.Consumer;
 
 /**
+ * A {@link Consumer} function definition for consuming {@link Event} objects raised from {@link Step} objects at
+ * the time of execution.  It allows for actions to be triggered on each {@link Step} execution.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @FunctionalInterface
