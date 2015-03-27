@@ -65,7 +65,9 @@ public class Neo4jGraphStep<S extends Element> extends GraphStep<S> {
         super(originalGraphStep.getTraversal(), originalGraphStep.getReturnClass(), originalGraphStep.getIds());
         if (originalGraphStep.getLabel().isPresent())
             this.setLabel(originalGraphStep.getLabel().get());
-        this.setIteratorSupplier(() -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
+        //No need to do anything if the first element is an Element, all elements are guaranteed to be an element and will be return as is
+        if ((this.ids.length == 0 || !(this.ids[0] instanceof Element)))
+            this.setIteratorSupplier(() -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
     }
 
     private Iterator<? extends Edge> edges() {

@@ -158,13 +158,13 @@ public final class SparkGraphComputer implements GraphComputer {
                     try (final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration)) {
                         // add the project jars to the cluster
                         SparkGraphComputer.loadJars(sparkContext, hadoopConfiguration);
-
                         // create a message-passing friendly rdd from the hadoop input format
                         JavaPairRDD<Object, SparkPayload<Object>> graphRDD = sparkContext.newAPIHadoopRDD(hadoopConfiguration,
                                 (Class<InputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class),
                                 NullWritable.class,
                                 VertexWritable.class)
-                                .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new SparkVertexPayload<>(tuple._2().get())));
+                                .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), (SparkPayload<Object>) new SparkVertexPayload<>(tuple._2().get())))
+                                .reduceByKey((a, b) -> a); // partition the graph across the cluster  // todo: cache?
 
                         ////////////////////////////////
                         // process the vertex program //
@@ -182,7 +182,7 @@ public final class SparkGraphComputer implements GraphComputer {
                             // execute the vertex program
                             while (true) {
                                 memory.setInTask(true);
-                                graphRDD = SparkExecutor.executeStep(graphRDD, memory, vertexProgramConfiguration);
+                                graphRDD = SparkExecutor.executeVertexProgramIteration(graphRDD, memory, vertexProgramConfiguration);
                                 memory.setInTask(false);
                                 if (this.vertexProgram.terminate(memory))
                                     break;

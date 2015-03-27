@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Pieter Martin
  */
 public class TinkerGraphStep<S extends Element> extends GraphStep<S> implements HasContainerHolder {
 
@@ -47,7 +48,9 @@ public class TinkerGraphStep<S extends Element> extends GraphStep<S> implements 
         super(originalGraphStep.getTraversal(), originalGraphStep.getReturnClass(), originalGraphStep.getIds());
         if (originalGraphStep.getLabel().isPresent())
             this.setLabel(originalGraphStep.getLabel().get());
-        this.setIteratorSupplier(() -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
+        //No need to do anything if the first element is an Element, all elements are guaranteed to be an element and will be return as is
+        if ((this.ids.length == 0 || !(this.ids[0] instanceof Element)))
+            this.setIteratorSupplier(() -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
     }
 
     private Iterator<? extends Edge> edges() {

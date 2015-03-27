@@ -50,10 +50,9 @@ public final class SparkExecutor {
     }
 
     // TODO: use SparkVertexPayload typing to be super clean
-    public static <M> JavaPairRDD<Object, SparkPayload<M>> executeStep(final JavaPairRDD<Object, SparkPayload<M>> graphRDD, final SparkMemory memory, final Configuration apacheConfiguration) {
-        JavaPairRDD<Object, SparkPayload<M>> current = graphRDD.reduceByKey((payloadA, payloadB) -> payloadA); // TODO: total hack cause of something weird with recursive RDDs
-        // execute vertex program
-        current = current.mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
+    public static <M> JavaPairRDD<Object, SparkPayload<M>> executeVertexProgramIteration(final JavaPairRDD<Object, SparkPayload<M>> graphRDD, final SparkMemory memory, final Configuration apacheConfiguration) {
+        // execute vertex program iteration
+        JavaPairRDD<Object, SparkPayload<M>> current = graphRDD.mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
             final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration);
             final Set<String> elementComputeKeys = workerVertexProgram.getElementComputeKeys();
             workerVertexProgram.workerIterationStart(memory);
