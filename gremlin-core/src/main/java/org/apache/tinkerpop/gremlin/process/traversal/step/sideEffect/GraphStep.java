@@ -25,16 +25,20 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Pieter Martin
  */
 public class GraphStep<S extends Element> extends StartStep<S> implements EngineDependent {
 
@@ -46,13 +50,24 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
         super(traversal);
         this.returnClass = returnClass;
         this.ids = ids;
-        for (int i = 0; i < this.ids.length; i++) {
-            if (this.ids[i] instanceof Element)
-                this.ids[i] = ((Element) this.ids[i]).id();
+        //validate that all elements are either ids or elements. mixed is not supported.
+        boolean foundElements = false;
+        for (Object id : this.ids) {
+            boolean idIsElement = id instanceof Element;
+            if (foundElements && !idIsElement) {
+                throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
+            } else {
+                foundElements = foundElements || idIsElement;
+            }
         }
-        this.iteratorSupplier = () -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ?
-                this.getTraversal().getGraph().get().vertices(this.ids) :
-                this.getTraversal().getGraph().get().edges(this.ids));
+        if (foundElements) {
+            List<S> elementList = Arrays.asList(this.ids).stream().map(id->(S)id).collect(Collectors.toList());
+            this.iteratorSupplier = elementList::iterator;
+        } else {
+            this.iteratorSupplier = () -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ?
+                    this.getTraversal().getGraph().get().vertices(this.ids) :
+                    this.getTraversal().getGraph().get().edges(this.ids));
+        }
     }
 
     public String toString() {
