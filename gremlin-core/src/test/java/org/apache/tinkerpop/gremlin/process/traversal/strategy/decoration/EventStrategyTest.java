@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ConsoleGraphChangedListener;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.GraphChangedListener;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ConsoleMutationListener;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
@@ -73,7 +73,7 @@ public class EventStrategyTest {
 
     @Test
     public void shouldEventOnMutatingSteps() {
-        final GraphChangedListener listener1 = new ConsoleGraphChangedListener(EmptyGraph.instance());
+        final MutationListener listener1 = new ConsoleMutationListener(EmptyGraph.instance());
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1).create();
 

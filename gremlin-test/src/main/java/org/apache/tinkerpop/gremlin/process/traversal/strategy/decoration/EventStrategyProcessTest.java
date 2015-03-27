@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.GraphChangedListener;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -50,8 +50,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldTriggerAddVertex() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -68,8 +68,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldTriggerAddVertexFromStart() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -86,8 +86,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldTriggerAddEdge() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -110,8 +110,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldTriggerAddEdgeByPath() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -134,8 +134,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldTriggerAddVertexPropertyAdded() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -156,8 +156,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldTriggerAddVertexPropertyChanged() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -180,8 +180,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldTriggerAddVertexPropertyPropertyChanged() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -203,8 +203,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldTriggerAddEdgePropertyAdded() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -231,8 +231,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldTriggerEdgePropertyChanged() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -259,8 +259,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldTriggerRemoveVertex() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -278,8 +278,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldTriggerRemoveEdge() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -298,8 +298,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldTriggerRemoveVertexProperty() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -317,8 +317,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldTriggerRemoveEdgeProperty() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -338,8 +338,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldTriggerAddVertexPropertyPropertyRemoved() {
-        final StubGraphChangedListener listener1 = new StubGraphChangedListener();
-        final StubGraphChangedListener listener2 = new StubGraphChangedListener();
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1)
                 .addListener(listener2).create();
@@ -365,7 +365,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         return graphProvider.traversal(graph, strategy);
     }
 
-    public static class StubGraphChangedListener implements GraphChangedListener {
+    public static class StubMutationListener implements MutationListener {
         private final AtomicLong addEdgeEvent = new AtomicLong(0);
         private final AtomicLong addVertexEvent = new AtomicLong(0);
         private final AtomicLong vertexRemovedEvent = new AtomicLong(0);

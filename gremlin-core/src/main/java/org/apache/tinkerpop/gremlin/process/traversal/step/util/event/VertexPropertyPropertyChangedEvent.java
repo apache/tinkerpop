@@ -32,7 +32,7 @@ public class VertexPropertyPropertyChangedEvent extends ElementPropertyChangedEv
     }
 
     @Override
-    void fire(final GraphChangedListener listener, final Element element, final Property oldValue, final Object newValue, final Object... vertexPropertyKeyValues) {
+    void fire(final MutationListener listener, final Element element, final Property oldValue, final Object newValue, final Object... vertexPropertyKeyValues) {
         listener.vertexPropertyPropertyChanged((VertexProperty) element, oldValue, newValue);
     }
 }

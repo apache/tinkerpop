@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util.event;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -35,7 +34,7 @@ public class VertexRemovedEvent implements Event {
     }
 
     @Override
-    public void fireEvent(final Iterator<GraphChangedListener> eventListeners) {
+    public void fireEvent(final Iterator<MutationListener> eventListeners) {
         while (eventListeners.hasNext()) {
             eventListeners.next().vertexRemoved(vertex);
         }

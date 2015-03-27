@@ -25,6 +25,6 @@ import java.util.Iterator;
  */
 public interface Event {
 
-    public void fireEvent(final Iterator<GraphChangedListener> eventListeners);
+    public void fireEvent(final Iterator<MutationListener> eventListeners);
 
 }

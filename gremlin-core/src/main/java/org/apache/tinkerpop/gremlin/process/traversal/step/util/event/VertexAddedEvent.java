@@ -34,7 +34,7 @@ public class VertexAddedEvent implements Event {
     }
 
     @Override
-    public void fireEvent(final Iterator<GraphChangedListener> eventListeners) {
+    public void fireEvent(final Iterator<MutationListener> eventListeners) {
         while (eventListeners.hasNext()) {
             eventListeners.next().vertexAdded(vertex);
         }

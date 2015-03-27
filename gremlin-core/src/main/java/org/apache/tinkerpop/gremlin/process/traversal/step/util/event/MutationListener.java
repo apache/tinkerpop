@@ -33,7 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface GraphChangedListener {
+public interface MutationListener {
 
     /**
      * Raised when a new {@link Vertex} is added.

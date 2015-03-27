@@ -40,10 +40,10 @@ public abstract class ElementPropertyEvent implements Event {
         this.vertexPropertyKeyValues = vertexPropertyKeyValues;
     }
 
-    abstract void fire(final GraphChangedListener listener, final Element element, final Property oldValue, final Object newValue, final Object... vertexPropertyKeyValues);
+    abstract void fire(final MutationListener listener, final Element element, final Property oldValue, final Object newValue, final Object... vertexPropertyKeyValues);
 
     @Override
-    public void fireEvent(final Iterator<GraphChangedListener> eventListeners) {
+    public void fireEvent(final Iterator<MutationListener> eventListeners) {
         while (eventListeners.hasNext()) {
             fire(eventListeners.next(), element, oldValue, newValue, vertexPropertyKeyValues);
         }

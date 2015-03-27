@@ -32,7 +32,7 @@ public class EdgePropertyChangedEvent extends ElementPropertyChangedEvent {
     }
 
     @Override
-    void fire(final GraphChangedListener listener, final Element element, final Property oldValue, final Object newValue, final Object... vertexPropertyKeyValues) {
+    void fire(final MutationListener listener, final Element element, final Property oldValue, final Object newValue, final Object... vertexPropertyKeyValues) {
         listener.edgePropertyChanged((Edge) element, oldValue, newValue);
     }
 }

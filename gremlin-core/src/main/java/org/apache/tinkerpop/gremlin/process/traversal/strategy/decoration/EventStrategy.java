@@ -20,15 +20,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeByPathStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.GraphChangedListener;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -51,9 +45,9 @@ import java.util.List;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class EventStrategy extends AbstractTraversalStrategy {
-    private final List<GraphChangedListener> listeners = new ArrayList<>();
+    private final List<MutationListener> listeners = new ArrayList<>();
 
-    private EventStrategy(final GraphChangedListener... listeners) {
+    private EventStrategy(final MutationListener... listeners) {
         this.listeners.addAll(Arrays.asList(listeners));
     }
 
@@ -86,17 +80,17 @@ public class EventStrategy extends AbstractTraversalStrategy {
     }
 
     public static class Builder {
-        private final List<GraphChangedListener> listeners = new ArrayList<>();
+        private final List<MutationListener> listeners = new ArrayList<>();
 
         Builder() {}
 
-        public Builder addListener(GraphChangedListener listener) {
+        public Builder addListener(MutationListener listener) {
             this.listeners.add(listener);
             return this;
         }
 
         public EventStrategy create() {
-            return new EventStrategy(this.listeners.toArray(new GraphChangedListener[this.listeners.size()]));
+            return new EventStrategy(this.listeners.toArray(new MutationListener[this.listeners.size()]));
         }
     }
 

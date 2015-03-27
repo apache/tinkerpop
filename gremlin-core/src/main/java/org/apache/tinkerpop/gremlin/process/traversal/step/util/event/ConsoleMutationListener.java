@@ -29,11 +29,11 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ConsoleGraphChangedListener implements GraphChangedListener {
+public class ConsoleMutationListener implements MutationListener {
 
     private final Graph graph;
 
-    public ConsoleGraphChangedListener(final Graph graph) {
+    public ConsoleMutationListener(final Graph graph) {
         this.graph = graph;
     }
 

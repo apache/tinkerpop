@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util.event;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Event fired when an edge is removed.
@@ -37,7 +36,7 @@ public class EdgeRemovedEvent implements Event {
     }
 
     @Override
-    public void fireEvent(final Iterator<GraphChangedListener> eventListeners) {
+    public void fireEvent(final Iterator<MutationListener> eventListeners) {
         while (eventListeners.hasNext()) {
             eventListeners.next().edgeRemoved(edge);
         }
