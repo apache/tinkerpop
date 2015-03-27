@@ -1491,10 +1491,11 @@ g.V().out().out().path().by('name').
 TraversalStrategy
 -----------------
 
-image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in two situations:
+image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in multiple situations:
 
  * There is a more efficient way to express the traversal at the TinkerPop3 level.
  * There is a more efficient way to express the traversal at the graph vendor level.
+ * There are generally useful features that can be automatically embedded into the traversal logic and tend to be applicable to end-users.
 
 A simple TraversalStrategy is the `IdentityRemovalStrategy` and it is a type-1 strategy defined as follows:
 
@@ -1591,6 +1592,29 @@ t.toString()
 t.iterate(); null
 t.toString()
 ----
+
+TinkerPop3 has a number of type-3 strategies distributed as part of its core library.  These strategies add generalized features to a traversal that are typically useful to end-users.  The following sections detail these strategies:
+
+EventStrategy
+=============
+
+The purpose of the `EventStrategy` is to raise events to one or more `MutationListener` objects as changes to the underlying `Graph` occur within a `Traversal`. Such a strategy is useful for logging changes, triggering certain actions based on change, or any application that needs notification of some mutating operation during a `Traversal`.  Graphs that do not support transactions will generate events immediately upon mutation, while those graphs that support transactions will queue the mutations until that transaction is committed and will then raise the events.  If the transaction is rolled back, the event queue is reset.
+
+The following events are raised to the `MutationListener`:
+
+* New vertex
+* New edge
+* Vertex property changed
+* Edge property changed
+* Vertex property removed
+* Edge property removed
+* Vertex removed
+* Edge removed
+
+To start processing events from a `Traversal` first implement the `MutationListener` interface. An example of this implementation is the `ConsoleMutationListener` which writes output to the console for each event.
+
+
+CAUTION: `EventStrategy` is not meant for usage in tracking global mutations across separate processes.  In other words, an mutation in what JVM process is not raised as an event in a different JVM process.  In addition, events are not raised when mutations occur as part of side-effect steps (i.e. a lambda).
 
 Domain Specific Languages
 -------------------------
