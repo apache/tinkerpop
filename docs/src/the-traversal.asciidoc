@@ -1656,6 +1656,11 @@ gB.V()
 
 By writing elements to particular partitions and then restricting read partitions, the developer is able to create multiple graphs within a single address space. Moreover, by supporting references between partitions, it is possible to merge those multiple graphs (i.e. join partitions).
 
+ReadOnlyStrategy
+================
+
+`ReadOnlyStrategy` is largely self-explanatory.  A `Traversal` that has this strategy applied will throw an `IllegalStateException` if the `Traversal` has any mutating steps within it.
+
 Domain Specific Languages
 -------------------------
 
