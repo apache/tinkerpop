@@ -25,18 +25,12 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
-import org.apache.tinkerpop.gremlin.structure.Contains;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
@@ -45,12 +39,65 @@ import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Pieter Martin
  */
 @ExceptionCoverage(exceptionClass = Traversal.Exceptions.class, methods = {
         "traversalIsLocked"
 })
+@ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
+        "idArgsMustBeEitherIdOrElement"
+})
 @UseEngine(TraversalEngine.Type.STANDARD)
 public class CoreTraversalTest extends AbstractGremlinProcessTest {
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldLoadVerticesViaIds() {
+        List<Vertex> vertices = g.V().toList();
+        List<Object> ids = vertices.stream().map(v->v.id()).collect(Collectors.toList());
+        List<Vertex> verticesReloaded = g.V(ids.toArray()).toList();
+        assertEquals(vertices.size(), verticesReloaded.size());
+        assertEquals(new HashSet<>(vertices), new HashSet<>(verticesReloaded));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldLoadEdgesViaIds() {
+        List<Edge> edges = g.E().toList();
+        List<Object> ids = edges.stream().map(e->e.id()).collect(Collectors.toList());
+        List<Edge> edgesReloaded = g.E(ids.toArray()).toList();
+        assertEquals(edges.size(), edgesReloaded.size());
+        assertEquals(new HashSet<>(edges), new HashSet<>(edgesReloaded));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldLoadVerticesViaVertices() {
+        List<Vertex> vertices = g.V().toList();
+        List<Vertex> verticesReloaded = g.V(vertices.toArray()).toList();
+        assertEquals(vertices.size(), verticesReloaded.size());
+        assertEquals(new HashSet<>(vertices), new HashSet<>(verticesReloaded));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldLoadEdgesViaVertices() {
+        List<Edge> edges = g.E().toList();
+        List<Edge> edgesReloaded = g.E(edges.toArray()).toList();
+        assertEquals(edges.size(), edgesReloaded.size());
+        assertEquals(new HashSet<>(edges), new HashSet<>(edgesReloaded));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldThrowExceptionWhenIdsMixed() {
+        List<Vertex> vertices = g.V().toList();
+        try {
+            g.V(vertices.get(0), vertices.get(1).id()).toList();
+        } catch (Exception ex) {
+            validateException(Graph.Exceptions.idArgsMustBeEitherIdOrElement(), ex);
+        }
+    }
 
     @Test
     @LoadGraphWith(MODERN)

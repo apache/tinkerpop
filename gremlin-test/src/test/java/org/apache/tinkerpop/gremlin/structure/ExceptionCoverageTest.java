@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest;
+import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -38,6 +39,7 @@ import static org.junit.Assert.assertTrue;
  * A set of tests that ensure that the {@link ExceptionCoverageTest} covers all defined TinkerPop exceptions.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Pieter Martin
  */
 public class ExceptionCoverageTest {
 
@@ -83,6 +85,7 @@ public class ExceptionCoverageTest {
         testClassesThatContainConsistencyChecks.add(TransactionTest.class);
         testClassesThatContainConsistencyChecks.addAll(Arrays.asList(VertexTest.class.getDeclaredClasses()));
         testClassesThatContainConsistencyChecks.add(VertexPropertyTest.class);
+        testClassesThatContainConsistencyChecks.add(CoreTraversalTest.class);
 
         // implemented exceptions are the classes that potentially contains exception consistency checks.
         final Set<String> implementedExceptions = testClassesThatContainConsistencyChecks.stream()

@@ -59,6 +59,7 @@ import java.util.stream.Collectors;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Pieter Martin
  */
 public interface Graph extends AutoCloseable {
 
@@ -1041,6 +1042,10 @@ public interface Graph extends AutoCloseable {
 
         public static IllegalArgumentException edgeWithIdAlreadyExists(final Object id) {
             return new IllegalArgumentException(String.format("Edge with id already exists: %s", id));
+        }
+
+        public static IllegalArgumentException idArgsMustBeEitherIdOrElement() {
+            return new IllegalArgumentException("id arguments must be either ids or Elements");
         }
 
         public static IllegalArgumentException argumentCanNotBeNull(final String argument) {
