@@ -437,7 +437,7 @@ Neo4j-Gremlin
 </dependency>
 ----
 
-image:neotechnology-logo.png[width=150,float=left] link:http://neotechnology.com[Neo Technology] are the developers of the OLTP-based link:http://neo4j.org[Neo4j graph database].
+link:http://neotechnology.com[Neo Technology] are the developers of the OLTP-based link:http://neo4j.org[Neo4j graph database].
 
 CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licensed as link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. Thus, `gremlin-neo4j` (source and binaries) are licensed as such due to their dependency on the Neo4j library. Note that neither the <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j binaries. To access the Neo4j binaries, use the `:install` command to download binaries from link:http://search.maven.org/[Maven Central Repository].
 
