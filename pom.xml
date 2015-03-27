@@ -561,7 +561,7 @@ limitations under the License.
             </activation>
 
             <properties>
-                <asciidoc.source.dir>${project.basedir}/docs</asciidoc.source.dir>
+                <asciidoc.source.dir>${project.basedir}/target/postprocess-asciidoc</asciidoc.source.dir>
                 <asciidoc.input.dir>${project.basedir}/target/doc-source</asciidoc.input.dir>
                 <asciidoctor.style.dir>${asciidoc.input.dir}/stylesheets</asciidoctor.style.dir>
                 <htmlsingle.output.dir>${project.basedir}/target/docs/htmlsingle</htmlsingle.output.dir>
