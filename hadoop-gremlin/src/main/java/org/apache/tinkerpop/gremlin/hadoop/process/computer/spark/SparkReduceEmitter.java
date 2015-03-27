@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import scala.Tuple2;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -29,14 +30,16 @@ import java.util.List;
  */
 public final class SparkReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
 
-    private final List<Tuple2<OK, OV>> emissions = new ArrayList<>();
+    private List<Tuple2<OK, OV>> emissions = new ArrayList<>();
 
     @Override
     public void emit(final OK key, final OV value) {
         this.emissions.add(new Tuple2<>(key, value));
     }
 
-    public List<Tuple2<OK, OV>> getEmissions() {
-        return this.emissions;
+    public Iterator<Tuple2<OK, OV>> getEmissions() {
+        final Iterator<Tuple2<OK, OV>> iterator = this.emissions.iterator();
+        this.emissions = new ArrayList<>();
+        return iterator;
     }
 }

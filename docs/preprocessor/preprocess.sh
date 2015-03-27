@@ -27,10 +27,15 @@ if [ ! -f bin/gremlin.sh ]; then
   exit 1
 fi
 
+mkdir -p target/postprocess-asciidoc
+
+rm -rf target/postprocess-asciidoc/*
+cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
+
 for input in $(find docs/src/ -name "*.asciidoc")
 do
   name=`basename $input`
-  output="docs/${name}"
+  output="target/postprocess-asciidoc/${name}"
   echo "${input} > ${output}"
   if [ $(grep -c '^\[gremlin' $input) -gt 0 ]; then
     bin/gremlin.sh -e docs/preprocessor/processor.groovy $input > $output
