@@ -49,7 +49,6 @@ public class HadoopRemoteAcceptor implements RemoteAcceptor {
     private HadoopGraph hadoopGraph;
     private Groovysh shell;
     private boolean useSugarPlugin = false;
-    private String graphVariable = "g";
 
     public HadoopRemoteAcceptor(final Groovysh shell) {
         this.shell = shell;
@@ -59,14 +58,14 @@ public class HadoopRemoteAcceptor implements RemoteAcceptor {
     public Object connect(final List<String> args) throws RemoteException {
         if (args.size() == 0) {
             this.hadoopGraph = HadoopGraph.open(new BaseConfiguration());
-            this.shell.getInterp().getContext().setProperty("g", this.hadoopGraph);
+            this.shell.getInterp().getContext().setProperty("graph", this.hadoopGraph);
         }
         if (args.size() == 1) {
             try {
                 final FileConfiguration configuration = new PropertiesConfiguration();
                 configuration.load(new File(args.get(0)));
                 this.hadoopGraph = HadoopGraph.open(configuration);
-                this.shell.getInterp().getContext().setProperty("g", this.hadoopGraph);
+                this.shell.getInterp().getContext().setProperty("graph", this.hadoopGraph);
             } catch (final Exception e) {
                 throw new RemoteException(e.getMessage(), e);
             }
@@ -75,7 +74,6 @@ public class HadoopRemoteAcceptor implements RemoteAcceptor {
                 final FileConfiguration configuration = new PropertiesConfiguration();
                 configuration.load(new File(args.get(0)));
                 this.hadoopGraph = HadoopGraph.open(configuration);
-                this.graphVariable = args.get(1);
                 this.shell.getInterp().getContext().setProperty(args.get(1), this.hadoopGraph);
             } catch (final Exception e) {
                 throw new RemoteException(e.getMessage(), e);
@@ -102,14 +100,13 @@ public class HadoopRemoteAcceptor implements RemoteAcceptor {
             String script = RemoteAcceptor.getScript(String.join(SPACE, args), this.shell);
             if (this.useSugarPlugin)
                 script = SugarLoader.class.getPackage() + ".SugarLoader.load()\n" + script;
-            final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(this.hadoopGraph.getClass(), GraphTraversalSource.build().engine(ComputerTraversalEngine.build()), "gremlin-groovy", script).create();
+            final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(this.hadoopGraph.getClass(), GraphTraversalSource.computer(), "gremlin-groovy", script).create();
             final ComputerResult computerResult = this.hadoopGraph.compute().program(program).submit().get();
             this.shell.getInterp().getContext().setProperty(RESULT, computerResult);
 
-            final GraphTraversal.Admin<?, ?> traversal2 = new DefaultGraphTraversal<>(computerResult.graph());
-            traversal2.addStep(new ComputerResultStep<>(traversal2, computerResult, false));
-            traversal2.range(0, 19);
-            return traversal2;
+            final GraphTraversal.Admin<?, ?> traversal = new DefaultGraphTraversal<>(computerResult.graph());
+            traversal.addStep(new ComputerResultStep<>(traversal, computerResult, false));
+            return traversal;
         } catch (Exception e) {
             throw new RemoteException(e);
         }

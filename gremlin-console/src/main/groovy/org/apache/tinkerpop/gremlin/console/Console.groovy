@@ -41,12 +41,15 @@ class Console {
         System.setProperty("java.awt.headless", "true")
     }
 
+    private static final int ITERATION_MAX = 100;  // TODO: make this configurable using the :set command
+
     private static final String HISTORY_FILE = ".gremlin_groovy_history"
     private static final String STANDARD_INPUT_PROMPT = "gremlin> "
     private static final String STANDARD_RESULT_PROMPT = "==>"
     private static final String IMPORT_SPACE = "import "
     private static final String IMPORT_STATIC_SPACE = "import static "
     private static final String NULL = "null"
+    private static final String ELLIPSIS = "...";
 
     private Iterator tempIterator = Collections.emptyIterator()
 
@@ -147,10 +150,15 @@ class Console {
 
         while (true) {
             if (this.tempIterator.hasNext()) {
-                while (this.tempIterator.hasNext()) {
+                int counter = 0;
+                while (this.tempIterator.hasNext() && (ITERATION_MAX == -1 || counter < ITERATION_MAX)) {
                     final Object object = this.tempIterator.next()
                     io.out.println(buildResultPrompt() + ((null == object) ? NULL : object.toString()))
+                    counter++;
                 }
+                if(this.tempIterator.hasNext())
+                    io.out.println(ELLIPSIS);
+                this.tempIterator = Collections.emptyIterator();
                 return null
             } else {
                 try {
