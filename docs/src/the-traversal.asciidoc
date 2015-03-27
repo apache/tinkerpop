@@ -1647,9 +1647,9 @@ graph = TinkerFactory.createModern()
 strategyA = PartitionStrategy.build().partitionKey("_partition").writePartition("a").addReadPartition("a").create()
 strategyB = PartitionStrategy.build().partitionKey("_partition").writePartition("b").addReadPartition("b").create()
 gA = GraphTraversalSource.build().with(strategyA).create(graph)
-gA.addV() // this vertex has a property of {_partition:"a"}
+gA.addV() //// this vertex has a property of {_partition:"a"}
 gB = GraphTraversalSource.build().with(strategyB).create(graph)
-gB.addV() // this vertex has a property of {_partition:"b"}
+gB.addV() //// this vertex has a property of {_partition:"b"}
 gA.V()
 gB.V()
 ----
