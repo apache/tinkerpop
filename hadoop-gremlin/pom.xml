@@ -18,28 +18,30 @@ limitations under the License.
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
         <version>3.0.0-SNAPSHOT</version>
     </parent>
+
     <artifactId>hadoop-gremlin</artifactId>
-    <name>Hadoop Gremlin: An Implementation of TinkerPop3 for Hadoop</name>
+
+    <name>Apache TinkerPop :: Hadoop Gremlin</name>
+    <description>Hadoop Gremlin: An Implementation of TinkerPop3 for Hadoop</description>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-groovy</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>tinkergraph-gremlin</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -75,26 +77,6 @@ limitations under the License.
             <artifactId>giraph-core</artifactId>
             <version>1.0.0</version>
             <exclusions>
-                <!-- self conflicts -->
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-                <!-- conflicts with gremlin-core -->
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-                <!-- gremlin-groovy conflicts -->
-                <exclusion>
-                    <groupId>jline</groupId>
-                    <artifactId>jline</artifactId>
-                </exclusion>
-                <!-- spark conflicts -->
                 <exclusion>
                     <groupId>io.netty</groupId>
                     <artifactId>netty</artifactId>
@@ -115,19 +97,6 @@ limitations under the License.
             <artifactId>spark-core_2.10</artifactId>
             <version>1.2.1</version>
             <exclusions>
-                <!-- self conflicts -->
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
                 <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
@@ -140,19 +109,6 @@ limitations under the License.
                     <groupId>commons-codec</groupId>
                     <artifactId>commons-codec</artifactId>
                 </exclusion>
-                <!-- gremlin-core conflicts -->
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>jcl-over-slf4j</artifactId>
-                </exclusion>
                 <!-- gremlin-groovy conflicts -->
                 <exclusion>
                     <groupId>jline</groupId>
@@ -163,65 +119,39 @@ limitations under the License.
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>hadoop-client</artifactId>
                 </exclusion>
-                <!-- giraph conflicts -->
-                <exclusion>
-                    <groupId>io.netty</groupId>
-                    <artifactId>netty</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <!-- consistent dependencies -->
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
-            <version>2.10.3</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
-            <artifactId>netty</artifactId>
-            <version>3.5.13.Final</version>
+            <artifactId>netty-all</artifactId>
         </dependency>
         <!-- TEST -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-groovy-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
+
     <repositories>
         <repository>
             <id>hyracks-releases</id>
             <url>http://obelix.ics.uci.edu/nexus/content/groups/hyracks-public-releases/</url>
         </repository>
     </repositories>
+
     <build>
-        <directory>${basedir}/target</directory>
-        <finalName>${project.artifactId}-${project.version}</finalName>
-        <resources>
-            <resource>
-                <directory>${basedir}/src/main/resources</directory>
-            </resource>
-        </resources>
-        <testResources>
-            <testResource>
-                <directory>${basedir}/src/test/resources</directory>
-            </testResource>
-        </testResources>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.4</version>
                 <executions>
@@ -243,21 +173,8 @@ limitations under the License.
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <!-- <log4j.configuration>log4j-core.properties</log4j.configuration> -->
-                    <!--<argLine>-Xmx2048M</argLine>-->
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
-                <version>1.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -283,7 +200,7 @@ limitations under the License.
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-core:1.2.1
+                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-core:${hadoop.version}
                             </Gremlin-Plugin-Dependencies>
                         </manifestEntries>
                     </archive>

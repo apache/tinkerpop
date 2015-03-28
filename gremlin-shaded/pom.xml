@@ -17,41 +17,40 @@ limitations under the License.
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
         <version>3.0.0-SNAPSHOT</version>
     </parent>
+
     <artifactId>gremlin-shaded</artifactId>
-    <name>Gremlin Shaded: Shades of Commonly Used Dependencies</name>
+
+    <name>Apache TinkerPop :: Gremlin Shaded</name>
+    <description>Gremlin Shaded: Shades of Commonly Used Dependencies</description>
+
     <dependencies>
         <dependency>
             <groupId>com.esotericsoftware.kryo</groupId>
             <artifactId>kryo</artifactId>
-            <!-- Update the shade plugin config whenever you change this version -->
-            <version>2.24.0</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.esotericsoftware.minlog</groupId>
             <artifactId>minlog</artifactId>
-            <!-- Update the shade plugin config whenever you change this version -->
-            <version>1.2</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.objenesis</groupId>
             <artifactId>objenesis</artifactId>
-            <!-- Update the shade plugin config whenever you change this version -->
-            <version>2.1</version>
             <optional>true</optional>
         </dependency>
     </dependencies>
+
     <build>
-        <directory>${basedir}/target</directory>
-        <finalName>${project.artifactId}-${project.version}</finalName>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.3</version>
                 <executions>
