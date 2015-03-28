@@ -205,8 +205,8 @@ public final class SparkGraphComputer implements GraphComputer {
                             // drop all edges and messages in the graphRDD as they are no longer needed for the map reduce jobs
                             graphRDD = graphRDD.mapValues(vertex -> {
                                 vertex.getMessages().clear();
-                                vertex.asVertexPayload().getOutgoingMessages().clear();
-                                vertex.asVertexPayload().getVertex().edges(Direction.BOTH).forEachRemaining(Edge::remove);
+                                vertex.getOutgoingMessages().clear();
+                                vertex.getVertex().edges(Direction.BOTH).forEachRemaining(Edge::remove);
                                 return vertex;
                             });   // todo: cache()?
                             for (final MapReduce mapReduce : this.mapReducers) {

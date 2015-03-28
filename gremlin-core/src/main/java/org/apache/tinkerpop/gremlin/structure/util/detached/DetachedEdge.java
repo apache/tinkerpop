@@ -97,13 +97,16 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     public Edge attach(final Vertex hostVertex) {
         final Iterator<Edge> edges = IteratorUtils.filter(hostVertex.edges(Direction.OUT, this.label), edge -> edge.equals(this));
         if (!edges.hasNext())
-            throw new IllegalStateException("The detached edge could not be be found incident to the provided vertex: " + this);
+            throw new IllegalStateException("The detached edge could not be found incident to the provided vertex: " + this);
         return edges.next();
     }
 
     @Override
     public Edge attach(final Graph hostGraph) {
-        return hostGraph.edges(this.id).next();
+        final Iterator<Edge> edges = hostGraph.edges(this.id);
+        if (!edges.hasNext())
+            throw new IllegalStateException("The detached edge could not be found in the provided graph: " + this);
+        return edges.next();
     }
 
     public static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
