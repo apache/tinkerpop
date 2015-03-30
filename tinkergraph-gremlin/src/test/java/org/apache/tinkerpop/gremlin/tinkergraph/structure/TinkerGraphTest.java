@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -56,19 +57,14 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class TinkerGraphTest {
 
     private static String tempPath;
 
     static {
-        final String temp = System.getProperty("java.io.tmpdir", File.separator + "tmp").trim();
-        if (!temp.endsWith(File.separator))
-            tempPath = temp + File.separator;
-        else
-            tempPath = temp;
-
-        tempPath = tempPath + "tinkerpop-io/";
+        tempPath = TestHelper.makeTestDataPath(TinkerGraphTest.class, "tinkerpop-io").getPath() + File.separator;
     }
 
     @BeforeClass
