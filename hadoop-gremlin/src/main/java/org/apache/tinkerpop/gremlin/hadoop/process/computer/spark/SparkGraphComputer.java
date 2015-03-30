@@ -164,7 +164,7 @@ public final class SparkGraphComputer implements GraphComputer {
                                 NullWritable.class,
                                 VertexWritable.class)
                                 .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new SparkVertexPayload<>(tuple._2().get())))
-                                .reduceByKey((a, b) -> a); // partition the graph across the cluster  // todo: cache?
+                                .reduceByKey((a, b) -> a).cache(); // partition the graph across the cluster  // todo: cache?
 
                         ////////////////////////////////
                         // process the vertex program //
@@ -182,7 +182,7 @@ public final class SparkGraphComputer implements GraphComputer {
                             // execute the vertex program
                             while (true) {
                                 memory.setInTask(true);
-                                graphRDD = SparkExecutor.executeVertexProgramIteration(graphRDD, memory, vertexProgramConfiguration);
+                                graphRDD = SparkExecutor.executeVertexProgramIteration(graphRDD, memory, vertexProgramConfiguration).cache();
                                 memory.setInTask(false);
                                 if (this.vertexProgram.terminate(memory))
                                     break;
@@ -208,7 +208,7 @@ public final class SparkGraphComputer implements GraphComputer {
                                 vertex.getOutgoingMessages().clear();
                                 vertex.getVertex().edges(Direction.BOTH).forEachRemaining(Edge::remove);
                                 return vertex;
-                            });   // todo: cache()?
+                            }).cache();
                             for (final MapReduce mapReduce : this.mapReducers) {
                                 // execute the map reduce job
                                 final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
