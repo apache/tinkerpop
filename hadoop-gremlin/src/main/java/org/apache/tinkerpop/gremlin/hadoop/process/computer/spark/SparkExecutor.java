@@ -84,19 +84,22 @@ public final class SparkExecutor {
 
         // "message pass" by merging the message payloads with the vertex payloads
         final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner().orElse(null);
-        final JavaPairRDD<Object, SparkVertexPayload<M>> verticesHoldingIncomingMessages = (JavaPairRDD) verticesAndOutgoingMessages.reduceByKey((payloadA, payloadB) -> {
-            if (payloadA.isVertex()) {
-                if (payloadB.isVertex())
-                    throw new IllegalStateException("It should not be the case that two vertices reduce to the same key: " + payloadA.asVertexPayload().getVertex() + "==" + payloadB.asVertexPayload().getVertex());
-                else {
-                    payloadA.addMessages(payloadB.getMessages(), messageCombiner);
-                    return payloadA;
-                }
-            } else {
-                payloadB.addMessages(payloadA.getMessages(), messageCombiner);
-                return payloadB;
-            }
-        });
+        final JavaPairRDD<Object, SparkVertexPayload<M>> verticesHoldingIncomingMessages = (JavaPairRDD) verticesAndOutgoingMessages
+                .reduceByKey((payloadA, payloadB) -> {
+                    if (payloadA.isVertex()) {
+                        if (payloadB.isVertex())
+                            throw new IllegalStateException("It should not be the case that two vertices reduce to the same key: " + payloadA.asVertexPayload().getVertex() + "==" + payloadB.asVertexPayload().getVertex());
+                        else {
+                            payloadA.addMessages(payloadB.getMessages(), messageCombiner);
+                            return payloadA;
+                        }
+                    } else {
+                        payloadB.addMessages(payloadA.getMessages(), messageCombiner);
+                        return payloadB;
+                    }
+                })
+                .filter(payload -> payload._2().isVertex());  // just in case there are messages sent to vertices that do not exist
+
         verticesHoldingIncomingMessages.foreachPartition(partitionIterator -> {
         }); // need to complete a task so its BSP.
         return verticesHoldingIncomingMessages;
@@ -107,8 +110,8 @@ public final class SparkExecutor {
     /////////////////////////////
     /////////////////////////////
 
-    public static <M> JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<M>>> executeVertexProgramIteration2(final JavaPairRDD<Object, VertexWritable> graphRDD, final JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>,List<M>>> viewMessageRDD, final SparkMemory memory, final Configuration apacheConfiguration) {
-        final JavaPairRDD<Object, Tuple2<VertexWritable, Optional<Tuple2<List<DetachedVertexProperty<Object>>,List<M>>>>> graphViewMessagesRDD = graphRDD.leftOuterJoin(viewMessageRDD);
+    public static <M> JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<M>>> executeVertexProgramIteration2(final JavaPairRDD<Object, VertexWritable> graphRDD, final JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<M>>> viewMessageRDD, final SparkMemory memory, final Configuration apacheConfiguration) {
+        final JavaPairRDD<Object, Tuple2<VertexWritable, Optional<Tuple2<List<DetachedVertexProperty<Object>>, List<M>>>>> graphViewMessagesRDD = graphRDD.leftOuterJoin(viewMessageRDD);
 
         final JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<Tuple2<Object, M>>>> viewAndMessagesRDD = graphViewMessagesRDD.mapPartitionsToPair(partitions -> {
             final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration);
