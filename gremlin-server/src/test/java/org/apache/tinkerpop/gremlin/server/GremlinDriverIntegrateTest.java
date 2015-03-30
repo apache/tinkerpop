@@ -173,7 +173,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
-        final ResultSet results = client.submit("h=g.traversal();h.V().remove()");
+        final ResultSet results = client.submit("h=g.traversal();h.V().drop().iterate();null");
         assertNull(results.all().get().get(0).getObject());
 
         cluster.close();
