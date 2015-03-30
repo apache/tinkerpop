@@ -164,7 +164,7 @@ public final class SparkGraphComputer implements GraphComputer {
                                 NullWritable.class,
                                 VertexWritable.class)
                                 .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new SparkVertexPayload<>(tuple._2().get())))
-                                .reduceByKey((a, b) -> a); // partition the graph across the cluster  // todo: cache?
+                                .reduceByKey((a, b) -> a).cache(); // partition the graph across the cluster  // todo: cache?
 
                         ////////////////////////////////
                         // process the vertex program //
