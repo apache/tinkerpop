@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Gremlin Console accepts a `max-iteration` configuration via the standard `:set` command to limit result iteration.
 * `Vertex.property()` default behavior is now `Cardinality.single`.
 * Added `ElementIdStrategy` as a `TraversalStrategy`.
 * Introduce `AbstractTransaction` to simplify implementation of standard transactional features for vendors.

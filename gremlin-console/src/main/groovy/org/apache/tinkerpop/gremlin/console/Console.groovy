@@ -28,9 +28,13 @@ import org.codehaus.groovy.tools.shell.ExitNotification
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 import org.codehaus.groovy.tools.shell.InteractiveShellRunner
+import org.codehaus.groovy.tools.shell.commands.SetCommand
+import org.codehaus.groovy.tools.shell.util.Preferences
 
 import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
+import java.util.prefs.PreferenceChangeEvent
+import java.util.prefs.PreferenceChangeListener
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -41,7 +45,9 @@ class Console {
         System.setProperty("java.awt.headless", "true")
     }
 
-    private static final int ITERATION_MAX = 100;  // TODO: make this configurable using the :set command
+    public static final String PREFERENCE_ITERATION_MAX = "max-iteration"
+    private static final int DEFAULT_ITERATION_MAX = 100
+    private static int maxIteration = DEFAULT_ITERATION_MAX
 
     private static final String HISTORY_FILE = ".gremlin_groovy_history"
     private static final String STANDARD_INPUT_PROMPT = "gremlin> "
@@ -49,7 +55,7 @@ class Console {
     private static final String IMPORT_SPACE = "import "
     private static final String IMPORT_STATIC_SPACE = "import static "
     private static final String NULL = "null"
-    private static final String ELLIPSIS = "...";
+    private static final String ELLIPSIS = "..."
 
     private Iterator tempIterator = Collections.emptyIterator()
 
@@ -62,7 +68,19 @@ class Console {
         io.out.println("         (o o)")
         io.out.println("-----oOOo-(3)-oOOo-----")
 
+        maxIteration = Integer.parseInt(Preferences.get(PREFERENCE_ITERATION_MAX, Integer.toString(DEFAULT_ITERATION_MAX)))
+        Preferences.addChangeListener(new PreferenceChangeListener() {
+            @Override
+            void preferenceChange(PreferenceChangeEvent evt) {
+                if (evt.key == PREFERENCE_ITERATION_MAX)
+                    maxIteration = Integer.parseInt(evt.newValue)
+            }
+        })
+
         final Mediator mediator = new Mediator(this)
+        def commandsToRemove = groovy.getRegistry().commands().findAll{it instanceof SetCommand}
+        commandsToRemove.each {groovy.getRegistry().remove(it)}
+        groovy.register(new GremlinSetCommand(groovy))
         groovy.register(new UninstallCommand(groovy, mediator))
         groovy.register(new InstallCommand(groovy, mediator))
         groovy.register(new PluginCommand(groovy, mediator))
@@ -151,7 +169,7 @@ class Console {
         while (true) {
             if (this.tempIterator.hasNext()) {
                 int counter = 0;
-                while (this.tempIterator.hasNext() && (ITERATION_MAX == -1 || counter < ITERATION_MAX)) {
+                while (this.tempIterator.hasNext() && (maxIteration == -1 || counter < maxIteration)) {
                     final Object object = this.tempIterator.next()
                     io.out.println(buildResultPrompt() + ((null == object) ? NULL : object.toString()))
                     counter++;
