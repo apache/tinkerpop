@@ -42,12 +42,6 @@ limitations under the License.
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.4</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>
