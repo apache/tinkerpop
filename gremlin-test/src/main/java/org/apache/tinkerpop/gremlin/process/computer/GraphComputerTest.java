@@ -597,7 +597,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public Set<String> getElementComputeKeys() {
-            return null;
+            return Collections.emptySet();
         }
 
         @Override

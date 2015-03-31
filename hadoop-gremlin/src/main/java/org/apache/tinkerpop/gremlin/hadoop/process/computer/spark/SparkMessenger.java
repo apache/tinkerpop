@@ -39,19 +39,17 @@ import java.util.List;
 public class SparkMessenger<M> implements Messenger<M> {
 
     private Vertex vertex;
-    private Iterable<M> incomingMessages = new ArrayList<>();
+    private Iterable<M> incomingMessages;
     private final List<Tuple2<Object, M>> outgoingMessages = new ArrayList<>();
 
-    public void setVertexAndMessages(final Vertex vertex, final Iterable<M> incomingMessages) {
+    public SparkMessenger(final Vertex vertex, final Iterable<M> incomingMessages) {
         this.vertex = vertex;
         this.incomingMessages = incomingMessages;
-        this.outgoingMessages.clear();
     }
 
     public List<Tuple2<Object, M>> getOutgoingMessages() {
         return this.outgoingMessages;
     }
-
 
     @Override
     public Iterator<M> receiveMessages(final MessageScope messageScope) {

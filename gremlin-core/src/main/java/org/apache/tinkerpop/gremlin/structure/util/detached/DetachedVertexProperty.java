@@ -126,4 +126,10 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
         return (Iterator) super.properties(propertyKeys);
     }
+
+    public static <V> VertexProperty<V> addTo(final Vertex vertex, final DetachedVertexProperty<V> detachedVertexProperty) {
+        final VertexProperty<V> vertexProperty = vertex.property(detachedVertexProperty.key(), detachedVertexProperty.value());
+        detachedVertexProperty.properties().forEachRemaining(property -> vertexProperty.property(property.key(), property.value()));
+        return vertexProperty;
+    }
 }

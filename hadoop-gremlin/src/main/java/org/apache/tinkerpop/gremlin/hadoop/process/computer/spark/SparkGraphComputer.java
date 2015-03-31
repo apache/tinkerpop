@@ -44,13 +44,17 @@ import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -159,12 +163,14 @@ public final class SparkGraphComputer implements GraphComputer {
                         // add the project jars to the cluster
                         SparkGraphComputer.loadJars(sparkContext, hadoopConfiguration);
                         // create a message-passing friendly rdd from the hadoop input format
-                        JavaPairRDD<Object, SparkVertexPayload<Object>> graphRDD = sparkContext.newAPIHadoopRDD(hadoopConfiguration,
+                        final JavaPairRDD<Object, VertexWritable> graphRDD = sparkContext.newAPIHadoopRDD(hadoopConfiguration,
                                 (Class<InputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class),
                                 NullWritable.class,
                                 VertexWritable.class)
-                                .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new SparkVertexPayload<>(tuple._2().get())))
-                                .reduceByKey((a, b) -> a); // partition the graph across the cluster
+                                .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new VertexWritable(tuple._2().get())))
+                                .reduceByKey((a, b) -> a) // TODO: test without doing this reduce
+                                .cache(); // partition the graph across the cluster
+                        JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<Object>>> viewAndMessageRDD = null;
 
                         ////////////////////////////////
                         // process the vertex program //
@@ -182,7 +188,7 @@ public final class SparkGraphComputer implements GraphComputer {
                             // execute the vertex program
                             while (true) {
                                 memory.setInTask(true);
-                                graphRDD = SparkExecutor.executeVertexProgramIteration(graphRDD, memory, vertexProgramConfiguration);
+                                viewAndMessageRDD = SparkExecutor.executeVertexProgramIteration(graphRDD, viewAndMessageRDD, memory, vertexProgramConfiguration);
                                 memory.setInTask(false);
                                 if (this.vertexProgram.terminate(memory))
                                     break;
@@ -203,18 +209,28 @@ public final class SparkGraphComputer implements GraphComputer {
                         //////////////////////////////
                         if (!this.mapReducers.isEmpty()) {
                             // drop all edges and messages in the graphRDD as they are no longer needed for the map reduce jobs
-                            graphRDD = graphRDD.mapValues(vertex -> {
-                                vertex.getMessages().clear();
-                                vertex.getOutgoingMessages().clear();
-                                vertex.getVertex().edges(Direction.BOTH).forEachRemaining(Edge::remove);
-                                return vertex;
-                            }).cache();
+                            final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = null == viewAndMessageRDD ?
+                                    graphRDD.mapValues(vertexWritable -> {
+                                        vertexWritable.get().edges(Direction.BOTH).forEachRemaining(Edge::remove);
+                                        return vertexWritable;
+                                    })
+                                            .cache() :
+                                    graphRDD.leftOuterJoin(viewAndMessageRDD)
+                                            .mapValues(tuple -> {
+                                                final Vertex vertex = tuple._1().get();
+                                                vertex.edges(Direction.BOTH).forEachRemaining(Edge::remove);
+                                                final List<DetachedVertexProperty<Object>> view = tuple._2().isPresent() ? tuple._2().get()._1() : Collections.emptyList();
+                                                view.forEach(property -> DetachedVertexProperty.addTo(vertex, property));
+                                                return tuple._1();
+                                            })
+                                            .cache();
+
                             for (final MapReduce mapReduce : this.mapReducers) {
                                 // execute the map reduce job
                                 final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
                                 mapReduce.storeState(newApacheConfiguration);
                                 // map
-                                final JavaPairRDD mapRDD = SparkExecutor.executeMap((JavaPairRDD) graphRDD, mapReduce, newApacheConfiguration);
+                                final JavaPairRDD mapRDD = SparkExecutor.executeMap((JavaPairRDD) mapReduceGraphRDD, mapReduce, newApacheConfiguration);
                                 // combine TODO? is this really needed
                                 // reduce
                                 final JavaPairRDD reduceRDD = (mapReduce.doStage(MapReduce.Stage.REDUCE)) ? SparkExecutor.executeReduce(mapRDD, mapReduce, newApacheConfiguration) : null;
