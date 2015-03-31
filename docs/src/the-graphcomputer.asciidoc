@@ -106,67 +106,6 @@ TinkerPop3 provides a collection of VertexPrograms that implement common algorit
 
 IMPORTANT: The vertex programs presented are what are provided as of TinkerPop x.y.z. Over time, with future releases, more algorithms will be added.
 
-[[lambdavertexprogram]]
-LambdaVertexProgram
-~~~~~~~~~~~~~~~~~~~
-
-image:lambda-vertex-program.png[width=200,float=left] `LambdaVertexProgram` is the most generic of all vertex programs as it requires the user to define, by way of lambdas, the meaning of `setup`, `execute`, and `terminate`. This vertex program is convenient for:
-
-* Creating "one line" vertex programs
-* Submitting a "one off" vertex program without having to build a class and distribute jars
-* Testing for vendors of `GraphComputer` implementations
-
-[gremlin-groovy,modern]
-----
-result = graph.compute().program(LambdaVertexProgram.build().
-           execute("a.property(single, 'counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
-           terminate('a.iteration > 9').
-           elementComputeKeys('counter').create()).submit().get()
-g = result.graph().traversal(standard())
-g.V().values('counter')
-----
-
-NOTE: If a single string is provided to the LambdaVertexProgram's builder methods, then it is assumed to be a Gremlin-Groovy script. It is possible to use other Gremlin `ScriptEngine` implementations (e.g. Gremlin-Scala, Gremlin-JavaScript, etc.) by ensuring 1.) the script engine is registered in the `META-INF/services` of the application and 2.) it is declared as such `build().execute('gremlin-scala','a.property(single, …')`.
-
-The same example is presented below in Java8 using native lambda syntax.
-
-[source,java]
-ComputerResult result = graph.compute().program(LambdaVertexProgram.build().
-                        execute((vertex, messenger, memory) -> vertex.<Integer>property(single, "counter", memory.isInitialIteration() ? 0 : vertex.<Integer>value("counter") + 1)).
-                        terminate(memory -> memory.getIteration() > 9).
-                        elementComputeKeys("counter").create()).submit().get();
-GraphTraversalContext g = result.graph().traversal(standard());
-g.V().values("counter").forEach(System.out::println);
-// 10
-// 10
-// 10
-// 10
-// 10
-// 10
-
-WARNING: Java8 lambdas are not serializable unless they are static classes. As such, for the last example to execute on a multi-machine GraphComputer a `Class` can be provided denoting the static lambda classes: `build().execute(MyCounterTriConsumer.class)`. It is important that that class be on the class path of all machines in the GraphComputer cluster.
-
-Finally, there also exists `LambdaMapReduce` to compliment `LambdaVertexProgram`. In essence, the `map`, `combine`, `reduce`, etc. methods of <<mapreduce,MapReduce>> can be described by lambdas. An example is provided below in Gremlin-Groovy that expands on the example previous that simply sums up all the counters on the vertices and stores them into a graph computer memory called `counter`.
-
-[gremlin-groovy,modern]
-----
-result = graph.compute().
-           program(LambdaVertexProgram.build().
-               execute("a.property(single, 'counter', c.isInitialIteration() ? 0 : ++a.value('counter'))").
-               terminate('a.iteration > 9').
-               elementComputeKeys('counter').create()).
-           mapReduce(LambdaMapReduce.build().
-               map("b.emit(a.value('counter'))").
-               reduce("c.emit(a,b.sum())").
-               memory('a.next()').
-               memoryKey('sum').create()).submit().get()
-result.memory().sum
-----
-
-TIP: In the last example, the `map()` emits a single value with no key. `MapEmitter.emit(value)` is a default method that assumes the key is the `MapReduce.NullObject` singleton. This method is useful when all values need to be aggregated to a single key -- e.g., when a global sum is needed.
-
-NOTE: The examples presented are simple. For more complex uses within Gremlin Console, it may be important to either develop a `VertexProgram` class or make use of Groovy link:http://groovy.codehaus.org/Strings+and+GString[multi-line strings].
-
 [[pagerankvertexprogram]]
 PageRankVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~
