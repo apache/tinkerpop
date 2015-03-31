@@ -131,7 +131,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public void g_V_hasXage_gt_30X() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXage_gt_30X();
         printTraversalForm(traversal);
-        final List<Element> list = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<Vertex> list = traversal.toList();
         assertEquals(2, list.size());
         for (final Element v : list) {
             assertTrue(v.<Integer>value("age") > 30);

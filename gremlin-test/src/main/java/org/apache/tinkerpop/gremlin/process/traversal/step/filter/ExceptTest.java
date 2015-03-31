@@ -107,7 +107,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
     public void g_V_exceptXg_V_toListX() {
         Traversal<Vertex, Vertex> traversal = get_g_V_exceptXg_V_toListX();
         printTraversalForm(traversal);
-        final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<Vertex> vertices = traversal.toList();
         assertEquals(0, vertices.size());
         assertFalse(traversal.hasNext());
     }
@@ -118,7 +118,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
     public void g_V_exceptXX() {
         Traversal<Vertex, Vertex> traversal = get_g_V_exceptXX();
         printTraversalForm(traversal);
-        final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<Vertex> vertices = traversal.toList();
         assertEquals(6, vertices.size());
         assertFalse(traversal.hasNext());
     }
@@ -128,7 +128,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
     public void g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path() {
         Traversal<Vertex, Path> traversal = get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(convertToVertexId("marko"));
         printTraversalForm(traversal);
-        final List<Path> paths = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<Path> paths = traversal.toList();
         assertEquals(4, paths.size());
         assertEquals(1, paths.stream().filter(path -> path.size() == 3).count());
         assertEquals(2, paths.stream().filter(path -> path.size() == 5).count());

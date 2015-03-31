@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -102,18 +103,18 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
             if (detached.value().equals("san diego")) {
                 assertEquals(1997, (int) detached.value("startTime"));
                 assertEquals(2001, (int) detached.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(detached.properties()).count());
+                assertEquals(2, (int) IteratorUtils.count(detached.properties()));
             } else if (vp.value().equals("santa cruz")) {
                 assertEquals(2001, (int) detached.value("startTime"));
                 assertEquals(2004, (int) detached.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(detached.properties()).count());
+                assertEquals(2, (int) IteratorUtils.count(detached.properties()));
             } else if (detached.value().equals("brussels")) {
                 assertEquals(2004, (int) vp.value("startTime"));
                 assertEquals(2005, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(detached.properties()).count());
+                assertEquals(2, (int) IteratorUtils.count(detached.properties()));
             } else if (detached.value().equals("santa fe")) {
                 assertEquals(2005, (int) detached.value("startTime"));
-                assertEquals(1, (int) StreamFactory.stream(detached.properties()).count());
+                assertEquals(1, (int) IteratorUtils.count(detached.properties()));
             } else {
                 fail("Found a value that should be there");
             }

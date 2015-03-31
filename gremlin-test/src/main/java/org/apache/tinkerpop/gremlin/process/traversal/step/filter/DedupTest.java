@@ -63,7 +63,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
     public void g_V_both_dedup_name() {
         final Traversal<Vertex, String> traversal = get_g_V_both_dedup_name();
         printTraversalForm(traversal);
-        final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<String> names = traversal.toList();
         assertEquals(6, names.size());
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("vadas"));
@@ -80,7 +80,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
     public void g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name();
         printTraversalForm(traversal);
-        final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<String> names = traversal.toList();
         assertEquals(1, names.size());
         assertTrue(names.contains("lop") || names.contains("ripple"));
         assertFalse(traversal.hasNext());
@@ -92,7 +92,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
     public void g_V_both_name_orderXa_bX_dedup() {
         final Traversal<Vertex, String> traversal = get_g_V_both_name_orderXa_bX_dedup();
         printTraversalForm(traversal);
-        final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<String> names = traversal.toList();
         assertEquals(6, names.size());
         assertEquals("josh", names.get(0));
         assertEquals("lop", names.get(1));

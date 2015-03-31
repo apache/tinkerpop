@@ -18,14 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
+import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
+import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
-import org.apache.tinkerpop.gremlin.process.computer.Messenger;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,7 +46,7 @@ public final class TraverserExecutor {
         final TraverserSet<Object> aliveTraversers = new TraverserSet<>();
         // gather incoming traversers into a traverser set and gain the 'weighted-set' optimization
         final TraversalSideEffects traversalSideEffects = traversalMatrix.getTraversal().getSideEffects();
-        messenger.receiveMessages(MessageScope.Global.instance()).forEach(traverserSet -> {
+        messenger.receiveMessages(MessageScope.Global.instance()).forEachRemaining(traverserSet -> {
             traverserSet.forEach(traverser -> {
                 traverser.setSideEffects(traversalSideEffects);
                 traverser.attach(vertex);

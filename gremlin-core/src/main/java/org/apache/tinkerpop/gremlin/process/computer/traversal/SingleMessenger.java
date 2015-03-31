@@ -20,8 +20,9 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -37,8 +38,8 @@ public final class SingleMessenger<M> implements Messenger<M> {
     }
 
     @Override
-    public Iterable<M> receiveMessages(final MessageScope messageScope) {
-        return Arrays.asList(this.message);
+    public Iterator<M> receiveMessages(final MessageScope messageScope) {
+        return IteratorUtils.of(this.message);
     }
 
     @Override

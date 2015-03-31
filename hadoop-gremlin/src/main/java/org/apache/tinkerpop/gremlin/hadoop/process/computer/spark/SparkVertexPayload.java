@@ -92,8 +92,8 @@ public final class SparkVertexPayload<M> implements SparkPayload<M>, Messenger<M
     ///////////
 
     @Override
-    public Iterable<M> receiveMessages(final MessageScope messageScope) {
-        return this.incoming;
+    public Iterator<M> receiveMessages(final MessageScope messageScope) {
+        return this.incoming.iterator();
     }
 
     @Override

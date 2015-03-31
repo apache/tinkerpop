@@ -25,10 +25,13 @@ import io.netty.channel.Channel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * A {@code ResultSet} is returned from the submission of a Gremlin script to the server and represents the
@@ -127,7 +130,7 @@ public class ResultSet implements Iterable<Result> {
      * Stream items with a blocking iterator.
      */
     public Stream<Result> stream() {
-        return StreamFactory.stream(iterator());
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(), Spliterator.IMMUTABLE | Spliterator.SIZED), false);
     }
 
     @Override

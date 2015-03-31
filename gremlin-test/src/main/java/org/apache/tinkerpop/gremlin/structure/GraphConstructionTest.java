@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -76,6 +77,6 @@ public class GraphConstructionTest extends AbstractGremlinTest {
 
         // need some keys in the originalConfig for this test to be meaningful
         assertTrue(keyCount.get() > 0);
-        assertEquals(keyCount.get(), StreamFactory.stream(configInGraph.getKeys()).count());
+        assertEquals(keyCount.get(), IteratorUtils.count(configInGraph.getKeys()));
     }
 }

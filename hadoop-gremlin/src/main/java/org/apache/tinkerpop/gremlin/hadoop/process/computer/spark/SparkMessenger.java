@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import scala.Tuple2;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -38,8 +39,8 @@ import java.util.List;
 public class SparkMessenger<M> implements Messenger<M> {
 
     private Vertex vertex;
-    private  Iterable<M> incomingMessages = new ArrayList<>();
-    private final List<Tuple2<Object,M>> outgoingMessages = new ArrayList<>();
+    private Iterable<M> incomingMessages = new ArrayList<>();
+    private final List<Tuple2<Object, M>> outgoingMessages = new ArrayList<>();
 
     public void setVertexAndMessages(final Vertex vertex, final Iterable<M> incomingMessages) {
         this.vertex = vertex;
@@ -47,14 +48,14 @@ public class SparkMessenger<M> implements Messenger<M> {
         this.outgoingMessages.clear();
     }
 
-    public List<Tuple2<Object,M>> getOutgoingMessages() {
+    public List<Tuple2<Object, M>> getOutgoingMessages() {
         return this.outgoingMessages;
     }
 
 
     @Override
-    public Iterable<M> receiveMessages(final MessageScope messageScope) {
-        return this.incomingMessages;
+    public Iterator<M> receiveMessages(final MessageScope messageScope) {
+        return this.incomingMessages.iterator();
     }
 
     @Override

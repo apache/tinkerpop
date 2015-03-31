@@ -29,14 +29,14 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 public interface ComputerResult extends AutoCloseable {
 
     /**
-     * Get the view of the original {@link Graph} computed on by the GraphComputer.
+     * Get the {@link Graph} computed as determined by {@link GraphComputer.Persist} and {@link GraphComputer.ResultGraph}.
      *
      * @return The computed graph
      */
     public Graph graph();
 
     /**
-     * Get the computational sideEffects called {@link Memory} of the GraphComputer.
+     * Get the GraphComputer's computational sideEffects known as {@link Memory}.
      *
      * @return the computed memory
      */

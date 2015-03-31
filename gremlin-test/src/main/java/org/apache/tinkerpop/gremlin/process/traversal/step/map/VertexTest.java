@@ -20,14 +20,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -35,7 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
@@ -319,7 +317,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     public void g_VX1X_outEXknowsX_bothV_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_outEXknowsX_bothV_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
-        List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
+        List<String> names = traversal.toList();
         assertEquals(4, names.size());
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("josh"));
@@ -358,7 +356,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     public void g_VX4X_bothE_otherV() {
         final Traversal<Vertex, Vertex> traversal = get_g_VX4X_bothE_otherV(convertToVertexId("josh"));
         printTraversalForm(traversal);
-        final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<Vertex> vertices = traversal.toList();
         assertEquals(3, vertices.size());
         assertTrue(vertices.stream().anyMatch(v -> v.value("name").equals("marko")));
         assertTrue(vertices.stream().anyMatch(v -> v.value("name").equals("ripple")));
@@ -371,7 +369,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     public void g_VX4X_bothE_hasXweight_lt_1X_otherV() {
         final Traversal<Vertex, Vertex> traversal = get_g_VX4X_bothE_hasXweight_lt_1X_otherV(convertToVertexId("josh"));
         printTraversalForm(traversal);
-        final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<Vertex> vertices = traversal.toList();
         assertEquals(1, vertices.size());
         assertEquals(vertices.get(0).value("name"), "lop");
         assertFalse(traversal.hasNext());

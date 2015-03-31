@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 import org.junit.Test;
 
@@ -66,8 +67,8 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         assertEquals(convertToVertexId("vadas"), detachedEdge.vertices(Direction.IN).next().id());
         assertEquals("person", detachedEdge.vertices(Direction.IN).next().label());
 
-        assertEquals(2, StreamFactory.stream(detachedEdge.properties()).count());
-        assertEquals(1, StreamFactory.stream(detachedEdge.properties("year")).count());
+        assertEquals(2, IteratorUtils.count(detachedEdge.properties()));
+        assertEquals(1, IteratorUtils.count(detachedEdge.properties("year")));
         assertEquals(0.5d, detachedEdge.properties("weight").next().value());
     }
 
@@ -87,7 +88,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         assertEquals(convertToVertexId("vadas"), detachedEdge.vertices(Direction.IN).next().id());
         assertEquals("person", detachedEdge.vertices(Direction.IN).next().label());
 
-        assertEquals(0, StreamFactory.stream(detachedEdge.properties()).count());
+        assertEquals(0, IteratorUtils.count(detachedEdge.properties()));
     }
 
     @Test
@@ -153,7 +154,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         assertEquals(2, de.vertices(Direction.IN).next().id());
 
         assertEquals("a", de.properties("x").next().value());
-        assertEquals(1, StreamFactory.stream(de.properties("x")).count());
+        assertEquals(1, IteratorUtils.count(de.properties("x")));
 
         assertEquals("a", de.property("x").value());
         assertEquals("x", de.property("x").key());

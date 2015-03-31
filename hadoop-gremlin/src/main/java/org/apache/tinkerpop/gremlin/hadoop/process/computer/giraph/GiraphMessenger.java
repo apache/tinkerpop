@@ -30,21 +30,23 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Iterator;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GiraphMessenger<M> implements Messenger<M> {
 
     private GiraphComputeVertex giraphComputeVertex;
-    private Iterable<ObjectWritable<M>> messages;
+    private Iterator<ObjectWritable<M>> messages;
 
-    public GiraphMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterable<ObjectWritable<M>> messages) {
+    public GiraphMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterator<ObjectWritable<M>> messages) {
         this.giraphComputeVertex = giraphComputeVertex;
         this.messages = messages;
     }
 
     @Override
-    public Iterable<M> receiveMessages(final MessageScope messageScope) {
+    public Iterator<M> receiveMessages(final MessageScope messageScope) {
         return IteratorUtils.map(this.messages, ObjectWritable::get);
     }
 

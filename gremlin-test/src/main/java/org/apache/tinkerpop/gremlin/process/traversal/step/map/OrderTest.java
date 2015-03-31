@@ -21,13 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Order;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -35,7 +34,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
@@ -88,7 +86,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_name_order_byXa1_b1X_byXb2_a2X() {
         final Traversal<Vertex, String> traversal = get_g_V_name_order_byXa1_b1X_byXb2_a2X();
         printTraversalForm(traversal);
-        final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<String> names = traversal.toList();
         assertEquals(names.size(), 6);
         assertEquals("marko", names.get(0));
         assertEquals("vadas", names.get(1));
@@ -104,7 +102,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_order_byXname_incrX_name() {
         Arrays.asList(get_g_V_order_byXname_incrX_name(), get_g_V_order_byXnameX_name()).forEach(traversal -> {
             printTraversalForm(traversal);
-            final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
+            final List<String> names = traversal.toList();
             assertEquals(names.size(), 6);
             assertEquals("josh", names.get(0));
             assertEquals("lop", names.get(1));
@@ -121,7 +119,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_outE_order_byXweight_decrX_weight() {
         final Traversal<Vertex, Double> traversal = get_g_V_outE_order_byXweight_decrX_weight();
         printTraversalForm(traversal);
-        final List<Double> weights = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<Double> weights = traversal.toList();
         assertEquals(6, weights.size());
         assertEquals(Double.valueOf(1.0d), weights.get(0));
         assertEquals(Double.valueOf(1.0d), weights.get(1));
@@ -138,7 +136,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
         final Traversal<Vertex, String> traversal = get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name();
         printTraversalForm(traversal);
-        final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<String> names = traversal.toList();
         assertEquals(names.size(), 6);
         assertEquals("marko", names.get(0));
         assertEquals("vadas", names.get(1));
@@ -215,7 +213,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_order_byXoutE_count__decrX() {
         Arrays.asList(get_g_V_order_byXoutE_count__decrX()).forEach(traversal -> {
             printTraversalForm(traversal);
-            final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
+            final List<Vertex> vertices = traversal.toList();
             assertEquals(vertices.size(), 6);
             assertEquals("marko", vertices.get(0).value("name"));
             assertEquals("josh", vertices.get(1).value("name"));

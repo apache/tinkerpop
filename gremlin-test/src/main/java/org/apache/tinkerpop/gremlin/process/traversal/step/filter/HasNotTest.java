@@ -20,18 +20,15 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
@@ -65,7 +62,7 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
     public void g_V_hasNotXprop() {
         Traversal<Vertex, Vertex> traversal = get_g_V_hasNotXprop("circumference");
         printTraversalForm(traversal);
-        final List<Element> list = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<Vertex> list = traversal.toList();
         assertEquals(6, list.size());
     }
 

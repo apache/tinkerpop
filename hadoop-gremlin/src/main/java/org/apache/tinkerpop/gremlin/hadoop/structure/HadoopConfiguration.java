@@ -25,7 +25,7 @@ import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
@@ -111,6 +111,6 @@ public class HadoopConfiguration extends AbstractConfiguration implements Serial
 
     @Override
     public Iterator iterator() {
-        return StreamFactory.stream(this.getKeys()).map(k -> new Pair<>(k, this.getProperty(k))).iterator();
+        return IteratorUtils.map(this.getKeys(), k -> new Pair<>(k, this.getProperty(k)));
     }
 }

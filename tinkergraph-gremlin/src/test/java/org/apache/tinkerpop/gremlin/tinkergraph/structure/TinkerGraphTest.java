@@ -482,10 +482,10 @@ public class TinkerGraphTest {
         // is used because only "stephen" ages should pass through the pipeline due to the inclusion of the
         // key index lookup on "name".  If there's an age of something other than 35 in the pipeline being evaluated
         // then something is wrong.
-        assertEquals(1, StreamFactory.stream(g.traversal().V().has("age", (t, u) -> {
+        assertEquals(new Long(1), g.traversal().V().has("age", (t, u) -> {
             assertEquals(35, t);
             return true;
-        }, 35).has("name", "stephen")).count());
+        }, 35).has("name", "stephen").count().next());
     }
 
     @Ignore
@@ -503,16 +503,16 @@ public class TinkerGraphTest {
         // is used because only "stephen" ages should pass through the pipeline due to the inclusion of the
         // key index lookup on "name".  If there's an age of something other than 35 in the pipeline being evaluated
         // then something is wrong.
-        assertEquals(2, StreamFactory.stream(g.traversal().V().has("age", (t, u) -> {
+        assertEquals(new Long(2), g.traversal().V().has("age", (t, u) -> {
             assertEquals(35, t);
             return true;
-        }, 35).has("name", "stephen")).count());
+        }, 35).has("name", "stephen").count().next());
 
         v.remove();
-        assertEquals(1, StreamFactory.stream(g.traversal().V().has("age", (t, u) -> {
+        assertEquals(new Long(1), g.traversal().V().has("age", (t, u) -> {
             assertEquals(35, t);
             return true;
-        }, 35).has("name", "stephen")).count());
+        }, 35).has("name", "stephen").count().next());
     }
 
     @Ignore
@@ -526,10 +526,10 @@ public class TinkerGraphTest {
         // a tricky way to evaluate if indices are actually being used is to pass a fake BiPredicate to has()
         // to get into the Pipeline and evaluate what's going through it.  in this case, we know that at index
         // is not used because "stephen" and "marko" ages both pass through the pipeline.
-        assertEquals(1, StreamFactory.stream(g.traversal().V().has("age", (t, u) -> {
+        assertEquals(new Long(1), g.traversal().V().has("age", (t, u) -> {
             assertTrue(t.equals(35) || t.equals(29));
             return true;
-        }, 35).has("name", "stephen")).count());
+        }, 35).has("name", "stephen").count().next());
 
         g.createIndex("name", Vertex.class);
 
@@ -537,10 +537,10 @@ public class TinkerGraphTest {
         // is used because only "stephen" ages should pass through the pipeline due to the inclusion of the
         // key index lookup on "name".  If there's an age of something other than 35 in the pipeline being evaluated
         // then something is wrong.
-        assertEquals(1, StreamFactory.stream(g.traversal().V().has("age", (t, u) -> {
+        assertEquals(new Long(1), g.traversal().V().has("age", (t, u) -> {
             assertEquals(35, t);
             return true;
-        }, 35).has("name", "stephen")).count());
+        }, 35).has("name", "stephen").count().next());
     }
 
     @Ignore
@@ -558,10 +558,10 @@ public class TinkerGraphTest {
         // is used because only oid 1 should pass through the pipeline due to the inclusion of the
         // key index lookup on "oid".  If there's an weight of something other than 0.5f in the pipeline being
         // evaluated then something is wrong.
-        assertEquals(1, StreamFactory.stream(g.traversal().E().has("weight", (t, u) -> {
+        assertEquals(new Long(1), g.traversal().E().has("weight", (t, u) -> {
             assertEquals(0.5f, t);
             return true;
-        }, 0.5).has("oid", "1")).count());
+        }, 0.5).has("oid", "1").count().next());
     }
 
     @Ignore
@@ -580,16 +580,16 @@ public class TinkerGraphTest {
         // is used because only oid 1 should pass through the pipeline due to the inclusion of the
         // key index lookup on "oid".  If there's an weight of something other than 0.5f in the pipeline being
         // evaluated then something is wrong.
-        assertEquals(2, StreamFactory.stream(g.traversal().E().has("weight", (t, u) -> {
+        assertEquals(new Long(2), g.traversal().E().has("weight", (t, u) -> {
             assertEquals(0.5f, t);
             return true;
-        }, 0.5).has("oid", "1")).count());
+        }, 0.5).has("oid", "1").count().next());
 
         e.remove();
-        assertEquals(1, StreamFactory.stream(g.traversal().E().has("weight", (t, u) -> {
+        assertEquals(new Long(1), g.traversal().E().has("weight", (t, u) -> {
             assertEquals(0.5f, t);
             return true;
-        }, 0.5).has("oid", "1")).count());
+        }, 0.5).has("oid", "1").count().next());
     }
 
     @Ignore
@@ -604,10 +604,10 @@ public class TinkerGraphTest {
         // a tricky way to evaluate if indices are actually being used is to pass a fake BiPredicate to has()
         // to get into the Pipeline and evaluate what's going through it.  in this case, we know that at index
         // is not used because "1" and "2" weights both pass through the pipeline.
-        assertEquals(1, StreamFactory.stream(g.traversal().E().has("weight", (t, u) -> {
+        assertEquals(new Long(1), g.traversal().E().has("weight", (t, u) -> {
             assertTrue(t.equals(0.5f) || t.equals(0.6f));
             return true;
-        }, 0.5).has("oid", "1")).count());
+        }, 0.5).has("oid", "1").count().next());
 
         g.createIndex("oid", Edge.class);
 
@@ -615,10 +615,10 @@ public class TinkerGraphTest {
         // is used because only oid 1 should pass through the pipeline due to the inclusion of the
         // key index lookup on "oid".  If there's an weight of something other than 0.5f in the pipeline being
         // evaluated then something is wrong.
-        assertEquals(1, StreamFactory.stream(g.traversal().E().has("weight", (t, u) -> {
+        assertEquals(new Long(1), g.traversal().E().has("weight", (t, u) -> {
             assertEquals(0.5f, t);
             return true;
-        }, 0.5).has("oid", "1")).count());
+        }, 0.5).has("oid", "1").count().next());
     }
 
     /**

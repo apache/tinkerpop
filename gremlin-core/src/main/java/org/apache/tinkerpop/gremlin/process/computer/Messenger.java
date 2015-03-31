@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer;
 
+import java.util.Iterator;
+
 /**
  * The {@link Messenger} serves as the routing system for messages between vertices. For distributed systems,
  * the messenger can implement a "message passing" engine (distributed memory). For single machine systems, the
@@ -35,7 +37,7 @@ public interface Messenger<M> {
      * @param messageScope the message scope of the messages to receive
      * @return the messages for that vertex
      */
-    public Iterable<M> receiveMessages(final MessageScope messageScope);
+    public Iterator<M> receiveMessages(final MessageScope messageScope);
 
     /**
      * The currently executing vertex can send a message with provided {@link MessageScope}.

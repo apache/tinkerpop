@@ -51,7 +51,7 @@ public final class GiraphComputeVertex extends Vertex<ObjectWritable, VertexWrit
         final GiraphWorkerContext workerContext = (GiraphWorkerContext) this.getWorkerContext();
         final VertexProgram<?> vertexProgram = workerContext.getVertexProgramPool().take();
         final GiraphMemory memory = workerContext.getMemory();
-        final GiraphMessenger messenger = workerContext.getMessenger(this, messages);
+        final GiraphMessenger messenger = workerContext.getMessenger(this, messages.iterator());
         final org.apache.tinkerpop.gremlin.structure.Vertex wrappedVertex = ComputerGraph.of(this.getValue().get(), vertexProgram.getElementComputeKeys());
         ///////////
         if (!(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HADOOP_HALT)).getObject()) {

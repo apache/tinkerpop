@@ -466,8 +466,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals("rdf-xml", graph.variables().get("namespace").get());
             assertEquals(0, graph.traversal().V().count().next().intValue());
             assertEquals(0, graph.traversal().E().count().next().intValue());
-            assertEquals(0, StreamFactory.stream(GlobalGraphOperations.at(graph.getBaseGraph()).getAllNodes()).count());
-            assertEquals(0, StreamFactory.stream(GlobalGraphOperations.at(graph.getBaseGraph()).getAllRelationships()).count());
+            assertEquals(0, IteratorUtils.count(GlobalGraphOperations.at(graph.getBaseGraph()).getAllNodes().iterator()));
+            assertEquals(0, IteratorUtils.count(GlobalGraphOperations.at(graph.getBaseGraph()).getAllRelationships().iterator()));
         });
     }
 

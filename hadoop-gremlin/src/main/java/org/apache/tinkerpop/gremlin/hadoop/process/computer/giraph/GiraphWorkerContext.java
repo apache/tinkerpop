@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramPool;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 
+import java.util.Iterator;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -68,7 +70,7 @@ public final class GiraphWorkerContext extends WorkerContext {
         return this.memory;
     }
 
-    public GiraphMessenger getMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterable<ObjectWritable> messages) {
+    public GiraphMessenger getMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterator<ObjectWritable> messages) {
         return new GiraphMessenger(giraphComputeVertex, messages);
     }
 

@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
@@ -136,7 +136,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
                 memory.and(VOTE_TO_HALT, false);
             }
         } else if (1 == memory.getIteration() && this.distributeVote) {
-            double voteStrength = 1.0d / StreamFactory.stream(messenger.receiveMessages(this.countScope)).map(Pair::getValue1).reduce(0.0d, (a, b) -> a + b);
+            double voteStrength = 1.0d / IteratorUtils.reduce(IteratorUtils.map(messenger.receiveMessages(this.countScope), Pair::getValue1), 0.0d, (a, b) -> a + b);
             vertex.property(CLUSTER, vertex.id());
             vertex.property(VOTE_STRENGTH, voteStrength);
             messenger.sendMessage(this.voteScope, new Pair<>((Serializable) vertex.id(), voteStrength));
@@ -144,7 +144,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
         } else {
             final Map<Serializable, Double> votes = new HashMap<>();
             votes.put(vertex.value(CLUSTER), vertex.<Double>value(VOTE_STRENGTH));
-            messenger.receiveMessages(this.voteScope).forEach(message -> MapHelper.incr(votes, message.getValue0(), message.getValue1()));
+            messenger.receiveMessages(this.voteScope).forEachRemaining(message -> MapHelper.incr(votes, message.getValue0(), message.getValue1()));
             Serializable cluster = PeerPressureVertexProgram.largestCount(votes);
             if (null == cluster) cluster = (Serializable) vertex.id();
             memory.and(VOTE_TO_HALT, vertex.value(CLUSTER).equals(cluster));

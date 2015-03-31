@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.computer;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
 
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -53,23 +54,25 @@ public class TinkerMessenger<M> implements Messenger<M> {
     }
 
     @Override
-    public Iterable<M> receiveMessages(final MessageScope messageScope) {
+    public Iterator<M> receiveMessages(final MessageScope messageScope) {
         if (messageScope instanceof MessageScope.Local) {
             final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
             final Traversal.Admin<Vertex, Edge> incidentTraversal = TinkerMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get().asAdmin(), this.vertex);
             final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
             final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
-            return StreamFactory.iterable(StreamFactory.stream(VertexProgramHelper.reverse(incidentTraversal.asAdmin()))
+            return StreamFactory.stream(VertexProgramHelper.reverse(incidentTraversal.asAdmin()))
                     .map(e -> this.messageBoard.receiveMessages.get((edge[0] = e).vertices(direction).next()))
                     .filter(q -> null != q)
                     .flatMap(q -> q.stream())
-                    .map(message -> localMessageScope.getEdgeFunction().apply(message, edge[0])));
+                    .map(message -> localMessageScope.getEdgeFunction().apply(message, edge[0]))
+                    .iterator();
 
         } else {
-            return StreamFactory.iterable(Stream.of(this.vertex)
+            return Stream.of(this.vertex)
                     .map(this.messageBoard.receiveMessages::get)
                     .filter(q -> null != q)
-                    .flatMap(q -> q.stream()));
+                    .flatMap(q -> q.stream())
+                    .iterator();
         }
     }
 
@@ -93,7 +96,7 @@ public class TinkerMessenger<M> implements Messenger<M> {
 
     private static <T extends Traversal.Admin<Vertex, Edge>> T setVertexStart(final Traversal.Admin<Vertex, Edge> incidentTraversal, final Vertex vertex) {
         final Traversal.Admin<Vertex, Edge> traversal = incidentTraversal;
-        traversal.addStep(0,new StartStep<>(traversal, vertex));
+        traversal.addStep(0, new StartStep<>(traversal, vertex));
         return (T) traversal;
     }
 
