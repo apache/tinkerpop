@@ -32,11 +32,6 @@ limitations under the License.
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-algorithm</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.ivy</groupId>
             <artifactId>ivy</artifactId>
             <version>2.3.0</version>

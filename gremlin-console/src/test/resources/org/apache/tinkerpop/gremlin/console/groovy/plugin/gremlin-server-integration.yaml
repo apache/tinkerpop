@@ -28,8 +28,7 @@ plugins:
 scriptEngines: {
   gremlin-groovy: {
     imports: [java.lang.Math],
-    staticImports: [java.lang.Math.PI],
-    scripts: [scripts/sample.groovy]},
+    staticImports: [java.lang.Math.PI]},
   nashorn: {
       imports: [java.lang.Math],
       staticImports: [java.lang.Math.PI]}}

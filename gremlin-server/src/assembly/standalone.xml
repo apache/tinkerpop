@@ -52,6 +52,10 @@ limitations under the License.
             <outputDirectory>/lib</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>data</directory>
+            <outputDirectory>/data</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>../data</directory>
             <outputDirectory>/data</outputDirectory>
         </fileSet>

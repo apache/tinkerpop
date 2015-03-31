@@ -61,21 +61,4 @@ public abstract class AbstractGremlinServerIntegrationTest {
     public void stopServer() throws Exception {
         server.stop().join();
     }
-
-    public static boolean deleteDirectory(final File directory) {
-        if (directory.exists()) {
-            final File[] files = directory.listFiles();
-            if (null != files) {
-                for (int i = 0; i < files.length; i++) {
-                    if (files[i].isDirectory()) {
-                        deleteDirectory(files[i]);
-                    } else {
-                        files[i].delete();
-                    }
-                }
-            }
-        }
-
-        return (directory.delete());
-    }
 }

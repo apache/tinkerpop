@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.groovy;
 import groovy.grape.Grape;
 import groovy.json.JsonBuilder;
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.algorithm.generator.AbstractGenerator;
 import org.apache.tinkerpop.gremlin.groovy.function.GFunction;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
@@ -112,7 +111,6 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(GryoReader.class.getPackage().getName() + DOT_STAR);
 
         // algorithms
-        imports.add(AbstractGenerator.class.getPackage().getName() + DOT_STAR);
         imports.add(PeerPressureVertexProgram.class.getPackage().getName() + DOT_STAR);
         imports.add(PageRankVertexProgram.class.getPackage().getName() + DOT_STAR);
         imports.add(TraversalVertexProgram.class.getPackage().getName() + DOT_STAR);

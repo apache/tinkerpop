@@ -29,7 +29,7 @@ scriptEngines: {
   gremlin-groovy: {
     imports: [java.lang.Math],
     staticImports: [java.lang.Math.PI],
-    scripts: [scripts/sample.groovy]},
+    scripts: [scripts/empty-sample.groovy]},
   nashorn: {
       imports: [java.lang.Math],
       staticImports: [java.lang.Math.PI]}}
