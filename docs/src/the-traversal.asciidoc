@@ -1595,7 +1595,7 @@ t.toString()
 TinkerPop has a number of type-3 strategies distributed as part of its core library.  These strategies add generalized features to a traversal that are typically useful to end-users.  The following sections detail these strategies:
 
 ElementIdStrategy
-=================
+~~~~~~~~~~~~~~~~~
 
 `ElementIdStrategy` provides control over element identifiers. Some Graph implementations, such as TinkerGraph, allow specification of custom identifiers when creating elements:
 
@@ -1623,7 +1623,7 @@ gremlin> g.addV(id, "42a").id()
 IMPORTANT: The key that is used to store the assigned identifier should be indexed in the underlying graph database. If it is not indexed, then lookups for the elements that use these identifiers will perform a linear scan.
 
 EventStrategy
-=============
+~~~~~~~~~~~~~
 
 The purpose of the `EventStrategy` is to raise events to one or more `MutationListener` objects as changes to the underlying `Graph` occur within a `Traversal`. Such a strategy is useful for logging changes, triggering certain actions based on change, or any application that needs notification of some mutating operation during a `Traversal`.  Graphs that do not support transactions will generate events immediately upon mutation, while those graphs that support transactions will queue the mutations until that transaction is committed and will then raise the events.  If the transaction is rolled back, the event queue is reset.
 
@@ -1655,9 +1655,9 @@ The example above uses TinkerGraph which does not support transactions.  As ment
 CAUTION: `EventStrategy` is not meant for usage in tracking global mutations across separate processes.  In other words, an mutation in what JVM process is not raised as an event in a different JVM process.  In addition, events are not raised when mutations occur outside of the `Traversal` context.
 
 PartitionStrategy
-=================
+~~~~~~~~~~~~~~~~~
 
-image::partition-graph.png[width=650]
+image::partition-graph.png[width=325]
 
 `PartitionStrategy` partitions the vertices and edges of a graph into `String` named partitions (i.e. buckets, subgraphs, etc.). The idea behind `PartitionStrategy` is presented in the image above where each element is in a single partition (represented by its color). Partitions can be read from, written to, and linked/joined by edges that span one or two partitions (e.g. a tail vertex in one partition and a head vertex in another).
 
@@ -1675,9 +1675,9 @@ graph = TinkerFactory.createModern()
 strategyA = PartitionStrategy.build().partitionKey("_partition").writePartition("a").addReadPartition("a").create()
 strategyB = PartitionStrategy.build().partitionKey("_partition").writePartition("b").addReadPartition("b").create()
 gA = GraphTraversalSource.build().with(strategyA).create(graph)
-gA.addV() //// this vertex has a property of {_partition:"a"}
+gA.addV() // this vertex has a property of {_partition:"a"}
 gB = GraphTraversalSource.build().with(strategyB).create(graph)
-gB.addV() //// this vertex has a property of {_partition:"b"}
+gB.addV() // this vertex has a property of {_partition:"b"}
 gA.V()
 gB.V()
 ----
@@ -1685,12 +1685,12 @@ gB.V()
 By writing elements to particular partitions and then restricting read partitions, the developer is able to create multiple graphs within a single address space. Moreover, by supporting references between partitions, it is possible to merge those multiple graphs (i.e. join partitions).
 
 ReadOnlyStrategy
-================
+~~~~~~~~~~~~~~~~
 
 `ReadOnlyStrategy` is largely self-explanatory.  A `Traversal` that has this strategy applied will throw an `IllegalStateException` if the `Traversal` has any mutating steps within it.
 
 SubgraphStrategy
-================
+~~~~~~~~~~~~~~~~
 
 `SubgraphStrategy` is quite similar to `PartitionStrategy` in that it restrains a `Traversal` to certain vertices and edges as determined by a `Predicate` defined individually for each.
 
@@ -1701,8 +1701,8 @@ vertexCriterion = { vertex -> true }
 edgeCriterion = { edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10}
 strategy = SubgraphStrategy.build().vertexPredicate(vertexCriterion).edgePredicate(edgeCriterion).create()
 g = GraphTraversalSource.build().with(strategy).create(graph)
-g.V() //// shows all vertices as they all pass the vertexCriterion
-g.E() //// shows only the edges defined in the edgeCriterion
+g.V() // shows all vertices as they all pass the vertexCriterion
+g.E() // shows only the edges defined in the edgeCriterion
 ----
 
 Note that `SubgraphStrategy` directly passes the edge and vertex criterion `Predicate` objects  to an injected `filter` step and as such may not take advantage of important optimizations provided by the various `Graph` implementations (given the use of lambda expressions).
