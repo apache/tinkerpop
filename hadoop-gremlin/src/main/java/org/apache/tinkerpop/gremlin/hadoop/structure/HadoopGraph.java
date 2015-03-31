@@ -100,17 +100,17 @@ import java.util.Optional;
         method = "g_V_repeatXoutX_timesX8X_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTraversals",
+        test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
         method = "shouldNotAllowNullMemoryKeys",
-        reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTraversals",
+        test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
         method = "shouldNotAllowSettingUndeclaredMemoryKeys",
-        reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTraversals",
+        test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
         method = "shouldHaveConsistentMemoryVertexPropertiesAndExceptions",
-        reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileTest$Traversals",
         method = "g_V_out_out_grateful_profile",

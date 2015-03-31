@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public final class VertexProgramPool {
 
     private final LinkedBlockingQueue<VertexProgram<?>> pool;
-    private static final int TIMEOUT_MS = 2500;
+    private static final int TIMEOUT_MS = 10000;
 
     public VertexProgramPool(final VertexProgram vertexProgram, final int poolSize) {
         this.pool = new LinkedBlockingQueue<>(poolSize);

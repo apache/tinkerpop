@@ -23,19 +23,18 @@ import groovy.json.JsonBuilder;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.groovy.function.GFunction;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
@@ -55,8 +54,8 @@ import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
-import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
+import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
@@ -114,7 +113,6 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(PeerPressureVertexProgram.class.getPackage().getName() + DOT_STAR);
         imports.add(PageRankVertexProgram.class.getPackage().getName() + DOT_STAR);
         imports.add(TraversalVertexProgram.class.getPackage().getName() + DOT_STAR);
-        imports.add(LambdaVertexProgram.class.getPackage().getName() + DOT_STAR);
 
         // groovy extras
         imports.add(Grape.class.getCanonicalName());

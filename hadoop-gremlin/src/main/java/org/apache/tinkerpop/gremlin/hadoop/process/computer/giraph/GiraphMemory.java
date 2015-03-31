@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public class GiraphMemory extends MasterCompute implements Memory {
 
-    private VertexProgram vertexProgram;
+    private VertexProgram<?> vertexProgram;
     private GiraphWorkerContext worker;
     private Set<String> memoryKeys;
     private boolean isMasterCompute = true;
@@ -46,10 +46,10 @@ public class GiraphMemory extends MasterCompute implements Memory {
         // Giraph ReflectionUtils requires this to be public at minimum
     }
 
-    public GiraphMemory(final GiraphWorkerContext worker, final VertexProgram vertexProgram) {
+    public GiraphMemory(final GiraphWorkerContext worker, final VertexProgram<?> vertexProgram) {
         this.worker = worker;
         this.vertexProgram = vertexProgram;
-        this.memoryKeys = new HashSet<String>(this.vertexProgram.getMemoryComputeKeys());
+        this.memoryKeys = new HashSet<>(this.vertexProgram.getMemoryComputeKeys());
         this.isMasterCompute = false;
     }
 
@@ -65,7 +65,7 @@ public class GiraphMemory extends MasterCompute implements Memory {
         this.isMasterCompute = true;
         if (0 == this.getSuperstep()) { // setup
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
-            this.memoryKeys = new HashSet<String>(this.vertexProgram.getMemoryComputeKeys());
+            this.memoryKeys = new HashSet<>(this.vertexProgram.getMemoryComputeKeys());
             try {
                 for (final String key : this.memoryKeys) {
                     MemoryHelper.validateKey(key);

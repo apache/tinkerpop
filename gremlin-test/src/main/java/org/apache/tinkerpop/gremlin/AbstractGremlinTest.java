@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -54,6 +56,7 @@ import static org.junit.Assume.assumeThat;
 public abstract class AbstractGremlinTest {
     protected Graph graph;
     protected GraphTraversalSource g;
+    protected Optional<Class<? extends GraphComputer>> graphComputerClass;
     protected Configuration config;
     protected GraphProvider graphProvider;
 
@@ -72,6 +75,7 @@ public abstract class AbstractGremlinTest {
         // not sure how the strategy can ever be null, but it seems to happen in the performance tests
         graph = graphProvider.openTestGraph(config);
         g = graphProvider.traversal(graph);
+        graphComputerClass = g.getGraphComputer().isPresent() ? Optional.of(g.getGraphComputer().get().getClass()) : Optional.empty();
 
         final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
 

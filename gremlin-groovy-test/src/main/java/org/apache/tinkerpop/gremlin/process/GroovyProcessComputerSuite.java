@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
-import org.apache.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyBranchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyChooseTest;
@@ -80,8 +79,6 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-
-            GroovyGraphComputerTest.ComputerTraversals.class,
 
             //branch
             GroovyBranchTest.ComputerTraversals.class,

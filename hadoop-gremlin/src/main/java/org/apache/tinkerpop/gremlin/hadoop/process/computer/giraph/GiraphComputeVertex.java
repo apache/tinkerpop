@@ -55,12 +55,12 @@ public final class GiraphComputeVertex extends Vertex<ObjectWritable, VertexWrit
         final org.apache.tinkerpop.gremlin.structure.Vertex wrappedVertex = ComputerGraph.of(this.getValue().get(), vertexProgram.getElementComputeKeys());
         ///////////
         if (!(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HADOOP_HALT)).getObject()) {
-            vertexProgram.execute(wrappedVertex, messenger, memory);  // TODO provide a wrapper around TinkerVertex for Edge and non-ComputeKeys manipulation
+            vertexProgram.execute(wrappedVertex, messenger, memory);
         } else if (workerContext.deriveMemory()) {
             final MapMemory mapMemory = new MapMemory();
             memory.asMap().forEach(mapMemory::set);
             mapMemory.setIteration(memory.getIteration() - 1);
-            wrappedVertex.property(VertexProperty.Cardinality.single, Constants.GREMLIN_HADOOP_MAP_MEMORY, mapMemory);  // TODO: this is a "computer key"
+            this.getValue().get().property(VertexProperty.Cardinality.single, Constants.GREMLIN_HADOOP_MAP_MEMORY, mapMemory);  // TODO: this is a "computer key"
         }
         workerContext.getVertexProgramPool().offer(vertexProgram);
     }

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -110,6 +111,9 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] allTests = new Class<?>[]{
+
+            // computer, vertex program, and map/reduce semantics
+            GraphComputerTest.class,
 
             // branch
             BranchTest.Traversals.class,

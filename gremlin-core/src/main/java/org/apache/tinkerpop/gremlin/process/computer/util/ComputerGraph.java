@@ -210,16 +210,22 @@ public class ComputerGraph implements Graph {
 
         @Override
         public <V> VertexProperty<V> property(final String key, final V value) {
+            if(!computeKeys.contains(key))
+                throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
             return new ComputerVertexProperty<>(this.asVertex().property(key, value));
         }
 
         @Override
         public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
+            if(!computeKeys.contains(key))
+                throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
             return new ComputerVertexProperty<>(this.asVertex().property(key, value, keyValues));
         }
 
         @Override
         public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
+            if(!computeKeys.contains(key))
+                throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
             return new ComputerVertexProperty<>(this.asVertex().property(cardinality, key, value, keyValues));
         }
 

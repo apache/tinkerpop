@@ -25,6 +25,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M8 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `GraphComputerTest` is now Java8 specific and much easier to extend with new test cases.
+* Removed `LambdaVertexProgram` and `LambdaMapReduce` as it will be one less thing to maintain.
 * Gremlin Console accepts a `max-iteration` configuration via the standard `:set` command to limit result iteration.
 * `Vertex.property()` default behavior is now `Cardinality.single`.
 * Added `ElementIdStrategy` as a `TraversalStrategy`.
