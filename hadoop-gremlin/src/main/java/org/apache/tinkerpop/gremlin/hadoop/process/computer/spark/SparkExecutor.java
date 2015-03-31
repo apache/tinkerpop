@@ -105,16 +105,17 @@ public final class SparkExecutor {
         // "message pass" by reducing on the vertex object id of the message payloads
         final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner().orElse(null);
         final JavaPairRDD<Object, List<M>> incomingMessages = viewAndOutgoingMessagesRDD
-                .flatMapToPair(tuple -> () -> IteratorUtils.map(tuple._2()._2().iterator(), x -> {
+                .mapValues(Tuple2::_2)
+                .flatMapToPair(tuple -> () -> IteratorUtils.map(tuple._2().iterator(), message -> {
                     final List<M> list = new ArrayList<>();
-                    list.add(x._2());
-                    return new Tuple2<>(x._1(), list);
+                    list.add(message._2());
+                    return new Tuple2<>(message._1(), list);
                 })).reduceByKey((a, b) -> {
                     if (null == messageCombiner) {
                         a.addAll(b);
                         return a;
                     } else {
-                        final M m = messageCombiner.combine(a.get(0),b.get(0));
+                        final M m = messageCombiner.combine(a.get(0), b.get(0));
                         a.clear();
                         b.clear();
                         a.add(m);
