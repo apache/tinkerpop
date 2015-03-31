@@ -46,7 +46,6 @@ import scala.Tuple2;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -61,48 +60,50 @@ public final class SparkExecutor {
 
     public static <M> JavaPairRDD<Object, SparkVertexPayload<M>> executeVertexProgramIteration(final JavaPairRDD<Object, SparkVertexPayload<M>> graphRDD, final SparkMemory memory, final Configuration apacheConfiguration) {
         // execute vertex program iteration
-        final JavaPairRDD<Object, SparkVertexPayload<M>> verticesHoldingOutgoingMessages = graphRDD.mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
-            final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration);
-            final Set<String> elementComputeKeys = workerVertexProgram.getElementComputeKeys();
-            workerVertexProgram.workerIterationStart(memory);
-            return () -> IteratorUtils.map(partitionIterator, vertex -> {
-                vertex._2().getOutgoingMessages().clear(); // there should be no outgoing messages at this point
-                workerVertexProgram.execute(ComputerGraph.of(vertex._2().getVertex(), elementComputeKeys), vertex._2(), memory);
-                if (!partitionIterator.hasNext())
-                    workerVertexProgram.workerIterationEnd(memory);
-                vertex._2().getMessages().clear(); // there should be no incoming messages at this point (only outgoing messages)
-                return vertex;
-            });
-        });
+        final JavaPairRDD<Object, SparkVertexPayload<M>> verticesWithOutgoingMessages = graphRDD
+                .mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
+                    final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration);
+                    final Set<String> elementComputeKeys = workerVertexProgram.getElementComputeKeys();
+                    workerVertexProgram.workerIterationStart(memory);
+                    return () -> IteratorUtils.map(partitionIterator, vertex -> {
+                        vertex._2().getOutgoingMessages().clear(); // there should be no outgoing messages at this point
+                        workerVertexProgram.execute(ComputerGraph.of(vertex._2().getVertex(), elementComputeKeys), vertex._2(), memory);
+                        if (!partitionIterator.hasNext())
+                            workerVertexProgram.workerIterationEnd(memory);
+                        vertex._2().getMessages().clear(); // there should be no incoming messages at this point (only outgoing messages)
+                        return vertex;
+                    });
+                }).cache();
 
-        // emit messages by appending them to the graph as message payloads
-        final JavaPairRDD<Object, SparkPayload<M>> verticesAndOutgoingMessages = verticesHoldingOutgoingMessages.flatMapToPair(vertex -> () ->
-                IteratorUtils.<Tuple2<Object, SparkPayload<M>>>concat(
-                        (Iterator) IteratorUtils.of(vertex),
-                        (Iterator) IteratorUtils.map(vertex._2().detachOutgoingMessages(), // this removes all outgoing messages once they have been iterated by this step
-                                message -> new Tuple2<>(message._1(), new SparkMessagePayload<>(message._2())))));
-
-        // "message pass" by merging the message payloads with the vertex payloads
+        // "message pass" by reducing on the vertex object id of the message payloads
         final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner().orElse(null);
-        final JavaPairRDD<Object, SparkVertexPayload<M>> verticesHoldingIncomingMessages = (JavaPairRDD) verticesAndOutgoingMessages
-                .reduceByKey((payloadA, payloadB) -> {
-                    if (payloadA.isVertex()) {
-                        if (payloadB.isVertex())
-                            throw new IllegalStateException("It should not be the case that two vertices reduce to the same key: " + payloadA.asVertexPayload().getVertex() + "==" + payloadB.asVertexPayload().getVertex());
-                        else {
-                            payloadA.addMessages(payloadB.getMessages(), messageCombiner);
-                            return payloadA;
-                        }
-                    } else {
-                        payloadB.addMessages(payloadA.getMessages(), messageCombiner);
-                        return payloadB;
-                    }
-                })
-                .filter(payload -> payload._2().isVertex());  // just in case there are messages sent to vertices that do not exist
+        final JavaPairRDD<Object, SparkMessagePayload<M>> incomingMessages = verticesWithOutgoingMessages
+                .flatMapToPair(vertexPayload -> () ->
+                        IteratorUtils.map(vertexPayload._2().detachOutgoingMessages(), // this removes all outgoing messages once they have been iterated by this step
+                                message -> new Tuple2<>(message._1(), new SparkMessagePayload<>(message._2()))))
+                .reduceByKey((messagePayloadA, messagePayloadB) -> {
+                    messagePayloadA.addMessages(messagePayloadB.getMessages(), messageCombiner);
+                    return messagePayloadA;
+                });
 
-        verticesHoldingIncomingMessages.foreachPartition(partitionIterator -> {
+        // join the incoming messages with the vertices
+        final JavaPairRDD<Object, SparkVertexPayload<M>> verticesWithIncomingMessages = verticesWithOutgoingMessages
+                .leftOuterJoin(incomingMessages)
+                .mapValues(tuple -> {
+                    final SparkVertexPayload<M> vertexPayload = tuple._1();
+                    final SparkMessagePayload<M> messagePayload = tuple._2().orNull();
+                    if (null != messagePayload) {
+                        vertexPayload.getOutgoingMessages().clear();  // there should be no outgoing messages at this point (just to be safe)
+                        vertexPayload.getMessages().clear();          // there should be no incoming messages at this point (just to be safe)
+                        vertexPayload.getMessages().addAll(messagePayload.getMessages());
+                    }
+                    return vertexPayload;
+                });
+
+
+        verticesWithIncomingMessages.foreachPartition(partitionIterator -> {
         }); // need to complete a task so its BSP.
-        return verticesHoldingIncomingMessages;
+        return verticesWithIncomingMessages;
     }
 
     //////////////////////////////
