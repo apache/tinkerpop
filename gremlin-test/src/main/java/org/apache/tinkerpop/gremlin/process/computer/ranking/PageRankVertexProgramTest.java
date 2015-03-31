@@ -38,7 +38,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldExecutePageRank() throws Exception {
-        final ComputerResult result = graph.compute().program(PageRankVertexProgram.build().create()).submit().get();
+        final ComputerResult result = graph.compute(g.getGraphComputer().get().getClass()).program(PageRankVertexProgram.build().create()).submit().get();
         result.graph().traversal().V().forEachRemaining(v -> {
             assertTrue(v.keys().contains("name"));
             assertTrue(v.keys().contains(PageRankVertexProgram.PAGE_RANK));
