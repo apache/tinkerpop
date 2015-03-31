@@ -209,7 +209,7 @@ public final class SparkGraphComputer implements GraphComputer {
                         //////////////////////////////
                         if (!this.mapReducers.isEmpty()) {
                             // drop all edges and messages in the graphRDD as they are no longer needed for the map reduce jobs
-                            final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = null == viewAndMessageRDD ?
+                            final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = null == viewAndMessageRDD ?  // TODO: move to SparkExecutor
                                     graphRDD.mapValues(vertexWritable -> {
                                         vertexWritable.get().edges(Direction.BOTH).forEachRemaining(Edge::remove);
                                         return vertexWritable;
@@ -238,8 +238,6 @@ public final class SparkGraphComputer implements GraphComputer {
                                 SparkExecutor.saveMapReduceRDD(null == reduceRDD ? mapRDD : reduceRDD, mapReduce, finalMemory, hadoopConfiguration);
                             }
                         }
-                        // close the context or else bad things happen // TODO: does this happen automatically cause of the try(resource) {} block?
-                        sparkContext.close();
                         // update runtime and return the newly computed graph
                         finalMemory.setRuntime(System.currentTimeMillis() - startTime);
                         return new DefaultComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph, this.resultGraph.get(), this.persist.get()), finalMemory.asImmutable());
