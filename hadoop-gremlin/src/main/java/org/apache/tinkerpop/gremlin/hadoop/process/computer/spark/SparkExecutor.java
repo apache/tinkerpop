@@ -77,22 +77,23 @@ public final class SparkExecutor {
                     final Set<String> elementComputeKeys = workerVertexProgram.getElementComputeKeys(); // the compute keys as a set
                     final String[] elementComputeKeysArray = elementComputeKeys.size() == 0 ? null : elementComputeKeys.toArray(new String[elementComputeKeys.size()]); // the compute keys as an array
                     workerVertexProgram.workerIterationStart(memory); // start the worker
-                    return () -> IteratorUtils.map(partitionIterator, vertexWritableAndIncomingMessages -> {
-                        final Vertex vertex = vertexWritableAndIncomingMessages._2()._1().get();
-                        final boolean hasViewAndMessages = vertexWritableAndIncomingMessages._2()._2().isPresent();
-                        final List<M> incomingMessages = hasViewAndMessages ? vertexWritableAndIncomingMessages._2()._2().get()._2() : Collections.emptyList();
-                        final List<DetachedVertexProperty<Object>> view = hasViewAndMessages ? vertexWritableAndIncomingMessages._2()._2().get()._1() : Collections.emptyList();
+                    return () -> IteratorUtils.map(partitionIterator, vertexViewAndMessages -> {
+                        final Vertex vertex = vertexViewAndMessages._2()._1().get();
+                        final boolean hasViewAndMessages = vertexViewAndMessages._2()._2().isPresent();
+                        final List<DetachedVertexProperty<Object>> previousView = hasViewAndMessages ? vertexViewAndMessages._2()._2().get()._1() : Collections.emptyList();
+                        final List<M> incomingMessages = hasViewAndMessages ? vertexViewAndMessages._2()._2().get()._2() : Collections.emptyList();
+                        previousView.forEach(property -> DetachedVertexProperty.addTo(vertex, property));  // attach the view to the vertex
                         ///
-                        view.forEach(property -> DetachedVertexProperty.addTo(vertex, property));  // attach the view to the vertex
                         final SparkMessenger<M> messenger = new SparkMessenger<>(vertex, incomingMessages); // create the messenger with the incoming messages
                         workerVertexProgram.execute(ComputerGraph.of(vertex, elementComputeKeys), messenger, memory); // execute the vertex program on this vertex
-                        final List<Tuple2<Object, M>> outgoingMessages = messenger.getOutgoingMessages(); // get the outgoing messages
-                        final List<DetachedVertexProperty<Object>> newView = null == elementComputeKeysArray ?  // not all vertex programs have compute keys
+                        ///
+                        final List<DetachedVertexProperty<Object>> nextView = null == elementComputeKeysArray ?  // not all vertex programs have compute keys
                                 Collections.emptyList() :
                                 IteratorUtils.list(IteratorUtils.map(vertex.properties(elementComputeKeysArray), property -> DetachedFactory.detach(property, true)));
+                        final List<Tuple2<Object, M>> outgoingMessages = messenger.getOutgoingMessages(); // get the outgoing messages
                         if (!partitionIterator.hasNext())
                             workerVertexProgram.workerIterationEnd(memory); // if no more vertices in the partition, end the worker's iteration
-                        return new Tuple2<>(vertex.id(), new Tuple2<>(newView, outgoingMessages));
+                        return new Tuple2<>(vertex.id(), new Tuple2<>(nextView, outgoingMessages));
                     });
                 });
 
