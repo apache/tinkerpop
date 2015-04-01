@@ -65,12 +65,16 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Override
     public Settings overrideSettings(final Settings settings) {
         final String nameOfTest = name.getMethodName();
+
+        // todo: how do we do transactional testing?
+        /** removed neo4j - how do we test transactions now??
         switch (nameOfTest) {
             case "shouldExecuteScriptInSessionOnTransactionalGraph":
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("g", "conf/neo4j-empty.properties");
                 break;
         }
+         */
 
         return settings;
     }
@@ -333,6 +337,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    @org.junit.Ignore("Dropping neo4j prevents us from doing transactional tests")
     public void shouldExecuteScriptInSessionOnTransactionalGraph() throws Exception {
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect(name.getMethodName());
