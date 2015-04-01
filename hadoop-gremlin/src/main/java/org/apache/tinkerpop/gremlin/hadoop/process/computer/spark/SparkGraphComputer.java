@@ -206,7 +206,7 @@ public final class SparkGraphComputer implements GraphComputer {
                         if (!this.mapReducers.isEmpty()) {
                             // drop all edges and messages in the graphRDD as they are no longer needed for the map reduce jobs
                             final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = SparkExecutor.prepareGraphRDDForMapReduce(graphRDD, viewAndMessagesRDD).cache();
-                            graphRDD.unpersist(); // the original graphRDD is no longer needed so free up its memory
+                            // graphRDD.unpersist(); // the original graphRDD is no longer needed so free up its memory
 
                             for (final MapReduce mapReduce : this.mapReducers) {
                                 // execute the map reduce job
