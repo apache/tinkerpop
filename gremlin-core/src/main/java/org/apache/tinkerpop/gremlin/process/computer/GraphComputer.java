@@ -129,9 +129,6 @@ public interface GraphComputer {
     }
 
     public interface Features {
-        public default boolean supportsWorkerPersistenceBetweenIterations() {
-            return true;
-        }
 
         public default boolean supportsGlobalMessageScopes() {
             return true;
@@ -170,6 +167,10 @@ public interface GraphComputer {
         }
 
         public default boolean supportsEdgePropertyRemoval() {
+            return true;
+        }
+
+        public default boolean supportsResultGraphPersistCombination(final ResultGraph resultGraph, final Persist persist) {
             return true;
         }
 
