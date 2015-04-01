@@ -202,6 +202,111 @@
    limitations under the License.
 
 ========================================================================
+Apache 2.0 licenses
+========================================================================
+
+The following components are provided under a Apache 2.0 license. See project link for details.
+
+     Jackson-annotations (com.fasterxml.jackson.core:jackson-annotations - http://wiki.fasterxml.com/JacksonHome)
+     Jackson-core (com.fasterxml.jackson.core:jackson-core - http://wiki.fasterxml.com/JacksonHome)
+     jackson-databind (com.fasterxml.jackson.core:jackson-databind - http://wiki.fasterxml.com/JacksonHome)
+     HPPC Collections (com.carrotsearch:hppc - http://labs.carrotsearch.com/hppc.html/hppc)
+     JUnitBenchmarks (com.carrotsearch:junit-benchmarks - http://labs.carrotsearch.com/junit-benchmarks.html)
+     FindBugs-jsr305 (com.google.code.findbugs:jsr305 - http://findbugs.sourceforge.net/)
+     Guava: Google Core Libraries for Java (com.google.guava:guava - http://code.google.com/p/guava-libraries/guava)
+     ant (ant:ant - http://www.apache.org/ant/)
+     stream-lib (com.clearspring.analytics:stream - https://github.com/addthis/stream-lib)
+     Metrics Core (com.codahale.metrics:metrics-core - http://metrics.codahale.com/metrics-core/)
+     Ganglia Integration for Metrics (com.codahale.metrics:metrics-ganglia - http://metrics.codahale.com/metrics-ganglia/)
+     Graphite Integration for Metrics (com.codahale.metrics:metrics-graphite - http://metrics.codahale.com/metrics-graphite/)
+     Jackson Integration for Metrics (com.codahale.metrics:metrics-json - http://metrics.codahale.com/metrics-json/)
+     JVM Integration for Metrics (com.codahale.metrics:metrics-jvm - http://metrics.codahale.com/metrics-jvm/)
+     Ning-compress-LZF (com.ning:compress-lzf - http://github.com/ning/compress)
+     chill-java (com.twitter:chill-java - https://github.com/twitter/chill)
+     chill (com.twitter:chill_2.10 - https://github.com/twitter/chill)
+     config (com.typesafe:config - https://github.com/typesafehub/config)
+     Metrics Core Library (com.yammer.metrics:metrics-core - http://metrics.codahale.com/metrics-core/)
+     Commons BeanUtils (commons-beanutils:commons-beanutils - http://commons.apache.org/beanutils/)
+     Commons CLI (commons-cli:commons-cli - http://commons.apache.org/cli/)
+     Commons Codec (commons-codec:commons-codec - http://commons.apache.org/codec/)
+     Commons Collections (commons-collections:commons-collections - http://commons.apache.org/collections/)
+     Apache Commons Configuration (commons-configuration:commons-configuration - http://commons.apache.org/configuration/)
+     HttpClient (commons-httpclient:commons-httpclient - http://jakarta.apache.org/httpcomponents/httpclient-3.x/)
+     Commons IO (commons-io:commons-io - http://commons.apache.org/io/)
+     Commons Lang (commons-lang:commons-lang - http://commons.apache.org/lang/)
+     Commons Logging (commons-logging:commons-logging - http://commons.apache.org/proper/commons-logging/)
+     Commons Net (commons-net:commons-net - http://commons.apache.org/net/)
+     Netty/All-in-One (io.netty:netty-all:4.0.23.Final - http://netty.io/netty-all/)
+     fastutil (it.unimi.dsi:fastutil - http://fasutil.dsi.unimi.it/)
+     Apache Log4j (log4j:log4j - http://logging.apache.org/log4j/1.2/)
+     An open source Java toolkit for Amazon S3 (net.java.dev.jets3t:jets3t - http://jets3t.s3.amazonaws.com/index.html)
+     LZ4 and xxHash (net.jpountz.lz4:lz4 - https://github.com/jpountz/lz4-java)
+     ezmorph (net.sf.ezmorph:ezmorph - http://ezmorph.sourceforge.net)
+     json-lib (net.sf.json-lib:json-lib - http://json-lib.sourceforge.net)
+     Neko HTML (net.sourceforge.nekohtml:nekohtml - http://nekohtml.sourceforge.net/)
+     Apache Commons Lang (org.apache.commons:commons-lang3 - http://commons.apache.org/proper/commons-lang/)
+     Commons Math (org.apache.commons:commons-math - http://commons.apache.org/math/)
+     Commons Math (org.apache.commons:commons-math3 - http://commons.apache.org/math/)
+     Curator Client (org.apache.curator:curator-client - http://curator.apache.org/curator-client)
+     Curator Framework (org.apache.curator:curator-framework - http://curator.apache.org/curator-framework)
+     Curator Recipes (org.apache.curator:curator-recipes - http://curator.apache.org/curator-recipes)
+     Apache Giraph Core (org.apache.giraph:giraph-core - http://giraph.apache.org/giraph-core/)
+     HttpClient (org.apache.httpcomponents:httpclient - http://hc.apache.org/httpcomponents-client)
+     Apache HttpClient (org.apache.httpcomponents:httpclient - http://hc.apache.org/httpcomponents-client)
+     HttpCore (org.apache.httpcomponents:httpcore - http://hc.apache.org/httpcomponents-core-ga)
+     Apache HttpCore (org.apache.httpcomponents:httpcore - http://hc.apache.org/httpcomponents-core-ga)
+     Apache Ivy (org.apache.ivy:ivy - http://ant.apache.org/ivy/)
+     mesos (org.apache.mesos:mesos - http://mesos.apache.org)
+     Spark Project Core (org.apache.spark:spark-core_2.10 - http://spark.apache.org/)
+     Spark Project Networking (org.apache.spark:spark-network-common_2.10 - http://spark.apache.org/)
+     Spark Project Shuffle Streaming Service (org.apache.spark:spark-network-shuffle_2.10 - http://spark.apache.org/)
+     Groovy (org.codehaus.groovy:groovy-all - http://groovy.codehaus.org/)
+     HTTP client framework for Groovy (org.codehaus.groovy.modules.http-builder:http-builder - http://groovy.codehaus.org/modules/http-builder/)
+     Jackson (org.codehaus.jackson:jackson-core-asl - http://jackson.codehaus.org)
+     JAX-RS provider for JSON content type (org.codehaus.jackson:jackson-jaxrs - http://jackson.codehaus.org)
+     Data Mapper for Jackson (org.codehaus.jackson:jackson-mapper-asl - http://jackson.codehaus.org)
+     Xml Compatibility extensions for Jackson (org.codehaus.jackson:jackson-xc - http://jackson.codehaus.org)
+     Jetty :: Continuation (org.eclipse.jetty:jetty-continuation - http://www.eclipse.org/jetty)
+     Jetty :: Http Utility (org.eclipse.jetty:jetty-http - http://www.eclipse.org/jetty)
+     Jetty :: IO Utility (org.eclipse.jetty:jetty-io - http://www.eclipse.org/jetty)
+     Jetty :: JNDI Naming (org.eclipse.jetty:jetty-jndi - http://www.eclipse.org/jetty)
+     Jetty :: Plus (org.eclipse.jetty:jetty-plus - http://www.eclipse.org/jetty)
+     Jetty :: Security (org.eclipse.jetty:jetty-security - http://www.eclipse.org/jetty)
+     Jetty :: Server Core (org.eclipse.jetty:jetty-server - http://www.eclipse.org/jetty)
+     Jetty :: Servlet Handling (org.eclipse.jetty:jetty-servlet - http://www.eclipse.org/jetty)
+     Jetty :: Utilities (org.eclipse.jetty:jetty-util - http://www.eclipse.org/jetty)
+     Jetty :: Webapp Application Support (org.eclipse.jetty:jetty-webapp - http://www.eclipse.org/jetty)
+     Jetty :: XML utilities (org.eclipse.jetty:jetty-xml - http://www.eclipse.org/jetty)
+     Jetty Orbit :: Activation (org.eclipse.jetty.orbit:javax.activation - http://www.eclipse.org/jetty/jetty-orbit/javax.activation)
+     Jetty Orbit :: Glassfish Mail (org.eclipse.jetty.orbit:javax.mail.glassfish - http://www.eclipse.org/jetty/jetty-orbit/javax.mail.glassfish)
+     Jetty Orbit :: Servlet API (org.eclipse.jetty.orbit:javax.servlet - http://www.eclipse.org/jetty/jetty-orbit/javax.servlet)
+     Jetty Orbit :: Transaction API (org.eclipse.jetty.orbit:javax.transaction - http://www.eclipse.org/jetty/jetty-orbit/javax.transaction)
+     GBench (org.gperfutils:gbench - https://github.com/gperfutils/gbench)
+     GProf (org.gperfutils:gprof - https://github.com/gperfutils/gprof)
+     javatuples (org.javatuples:javatuples - http://www.javatuples.org)
+     json4s-ast (org.json4s:json4s-ast_2.10 - https://github.com/json4s/json4s)
+     json4s-core (org.json4s:json4s-core_2.10 - https://github.com/json4s/json4s)
+     json4s-jackson (org.json4s:json4s-jackson_2.10 - https://github.com/json4s/json4s)
+     Jetty Utilities (org.mortbay.jetty:jetty-util - http://www.eclipse.org/jetty/jetty-parent/project/jetty-util)
+     Objenesis (org.objenesis:objenesis - http://objenesis.googlecode.com/svn/docs/index.html)
+     Objenesis (org.objenesis:objenesis - http://objenesis.org)
+     RoaringBitmap (org.roaringbitmap:RoaringBitmap - https://github.com/lemire/RoaringBitmap)
+     akka-actor (org.spark-project.akka:akka-actor_2.10 - http://akka.io/)
+     akka-remote (org.spark-project.akka:akka-remote_2.10 - http://akka.io/)
+     akka-slf4j (org.spark-project.akka:akka-slf4j_2.10 - http://akka.io/)
+     empty (org.spark-project.spark:unused - http://nexus.sonatype.org/oss-repository-hosting.html/unused)
+     Tachyon Project Core (org.tachyonproject:tachyon - http://tachyonproject.org/tachyon/)
+     Tachyon Project Client (org.tachyonproject:tachyon-client - http://tachyonproject.org/tachyon-client/)
+     Uncommons Maths (org.uncommons.maths:uncommons-maths - http://maths.uncommons.org/)
+     snappy-java (org.xerial.snappy:snappy-java - https://github.comm/xerial/snappy-java)
+     SnakeYAML (org.yaml:snakeyaml - http://www.snakeyaml.org)
+     StAX API (stax:stax-api - http://stax.codehaus.org/)
+     Xerces2 Java Parser (xerces:xercesImpl - http://xerces.apache.org/xerces2-j)
+     XML Commons External Components XML APIs (xml-apis:xml-apis - http://xml.apache.org/commons/components/external/)
+     XML Commons Resolver Component (xml-resolver:xml-resolver - http://xml.apache.org/commons/components/resolver/)
+     
+
+========================================================================
 BSD-style licenses
 ========================================================================
 
@@ -219,10 +324,10 @@ The following components are provided under a BSD-style license. See project lin
 
      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
      -------------------------------------------------------------------
-     (New BSD License) Kryo (com.esotericsoftware.kryo:kryo:2.21 - http://code.google.com/p/kryo/)
-     (New BSD License) Kryo (com.esotericsoftware.kryo:kryo:2.24.0 - https://github.com/EsotericSoftware/kryo)
-     (New BSD License) MinLog (com.esotericsoftware.minlog:minlog:1.2 - http://code.google.com/p/minlog/)
-     (New BSD License) ReflectASM (com.esotericsoftware.reflectasm:reflectasm:1.07 - http://code.google.com/p/reflectasm/)
+     Kryo (com.esotericsoftware.kryo:kryo - http://code.google.com/p/kryo/)
+     Kryo (com.esotericsoftware.kryo:kryo - https://github.com/EsotericSoftware/kryo)
+     MinLog (com.esotericsoftware.minlog:minlog - http://code.google.com/p/minlog/)
+     ReflectASM (com.esotericsoftware.reflectasm:reflectasm - http://code.google.com/p/reflectasm/)
 
      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      Copyright (c) 2012-2014, jcabi.com
@@ -253,7 +358,7 @@ The following components are provided under a BSD-style license. See project lin
      ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
      OF THE POSSIBILITY OF SUCH DAMAGE.
      -------------------------------------------------------------------
-     (BSD) jcabi-log (com.jcabi:jcabi-log:0.14 - http://www.jcabi.com/jcabi-log)
+     jcabi-log (com.jcabi:jcabi-log - http://www.jcabi.com/jcabi-log)
 
      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      Copyright (c) 2012-2015, jcabi.com
@@ -284,7 +389,7 @@ The following components are provided under a BSD-style license. See project lin
      ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
      OF THE POSSIBILITY OF SUCH DAMAGE.
      -------------------------------------------------------------------
-     (BSD) jcabi-manifests (com.jcabi:jcabi-manifests:1.0 - http://www.jcabi.com/jcabi-manifests)
+     jcabi-manifests (com.jcabi:jcabi-manifests - http://www.jcabi.com/jcabi-manifests)
 
      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      [ ParaNamer used to be 'Pubic Domain', but since it includes a small piece of ASM it is now the same license as that: BSD ]
@@ -316,7 +421,7 @@ The following components are provided under a BSD-style license. See project lin
       ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
       THE POSSIBILITY OF SUCH DAMAGE.
      -------------------------------------------------------------------
-     (BSD) ParaNamer Core (com.thoughtworks.paranamer:paranamer:2.6 - http://paranamer.codehaus.org/paranamer)
+     ParaNamer Core (com.thoughtworks.paranamer:paranamer - http://paranamer.codehaus.org/paranamer)
 
      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      Copyright (c) 2002-2012, the original author or authors.
@@ -354,7 +459,7 @@ The following components are provided under a BSD-style license. See project lin
      IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
      OF THE POSSIBILITY OF SUCH DAMAGE.
      -------------------------------------------------------------------
-     (The BSD License) JLine (jline:jline:2.11 - http://nexus.sonatype.org/oss-repository-hosting.html/jline)
+     JLine (jline:jline - http://nexus.sonatype.org/oss-repository-hosting.html/jline)
 
      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      BSD License
@@ -385,8 +490,8 @@ The following components are provided under a BSD-style license. See project lin
      WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
      DAMAGE.
      -------------------------------------------------------------------
-     (New BSD License) Hamcrest All (org.hamcrest:hamcrest-all:1.3 - https://github.com/hamcrest/JavaHamcrest/hamcrest-all)
-     (New BSD License) Hamcrest Core (org.hamcrest:hamcrest-core:1.3 - https://github.com/hamcrest/JavaHamcrest/hamcrest-core)
+     Hamcrest All (org.hamcrest:hamcrest-all - https://github.com/hamcrest/JavaHamcrest/hamcrest-all)
+     Hamcrest Core (org.hamcrest:hamcrest-core - https://github.com/hamcrest/JavaHamcrest/hamcrest-core)
 
      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      Copyright (c) 2002-2015 EPFL
@@ -401,10 +506,10 @@ The following components are provided under a BSD-style license. See project lin
      Neither the name of the EPFL nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
      -------------------------------------------------------------------
-     (BSD-like) Scala Compiler (org.scala-lang:scala-compiler:2.10.0 - http://www.scala-lang.org/)
-     (BSD-like) Scala Library (org.scala-lang:scala-library:2.10.3 - http://www.scala-lang.org/)
-     (BSD-like) Scala Compiler (org.scala-lang:scala-reflect:2.10.0 - http://www.scala-lang.org/)
-     (BSD-like) Scalap (org.scala-lang:scalap:2.10.0 - http://www.scala-lang.org/)
+     Scala Compiler (org.scala-lang:scala-compiler - http://www.scala-lang.org/)
+     Scala Library (org.scala-lang:scala-library - http://www.scala-lang.org/)
+     Scala Compiler (org.scala-lang:scala-reflect - http://www.scala-lang.org/)
+     Scalap (org.scala-lang:scalap - http://www.scala-lang.org/)
 
      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      Copyright (c) 2013 Benoist
@@ -478,7 +583,37 @@ The following components are provided under a BSD-style license. See project lin
      standalone and requires a support library to be linked with it.  This
      support library is itself covered by the above license.
      -------------------------------------------------------------------
-     (New BSD license) Protocol Buffer Java API (org.spark-project.protobuf:protobuf-java:2.5.0-spark - http://code.google.com/p/protobuf)
+     Protocol Buffer Java API (org.spark-project.protobuf:protobuf-java - http://code.google.com/p/protobuf)
+
+     +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     Copyright (c) 2009-2011, Barthelemy Dagenais All rights reserved.
+
+     Redistribution and use in source and binary forms, with or without
+     modification, are permitted provided that the following conditions are met:
+
+     - Redistributions of source code must retain the above copyright notice, this
+     list of conditions and the following disclaimer.
+
+     - Redistributions in binary form must reproduce the above copyright notice,
+     this list of conditions and the following disclaimer in the documentation
+     and/or other materials provided with the distribution.
+
+     - The name of the author may not be used to endorse or promote products
+     derived from this software without specific prior written permission.
+
+     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+     AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+     IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+     ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+     LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+     CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+     SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+     INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+     POSSIBILITY OF SUCH DAMAGE.
+     -------------------------------------------------------------------
+     (The New BSD License) Py4J (net.sf.py4j:py4j:0.8.2.1 - http://py4j.sourceforge.net/)
 
 ========================================================================
 Common Development and Distribution License 1.0
