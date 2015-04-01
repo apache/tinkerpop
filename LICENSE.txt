@@ -230,6 +230,8 @@ The following components are provided under a Apache 2.0 license. See project li
      chill (com.twitter:chill_2.10 - https://github.com/twitter/chill)
      config (com.typesafe:config - https://github.com/typesafehub/config)
      Metrics Core Library (com.yammer.metrics:metrics-core - http://metrics.codahale.com/metrics-core/)
+     jasper-compiler (tomcat:jasper-compiler - http://tomcat.apache.org/)
+     jasper-runtime (tomcat:jasper-runtime - http://tomcat.apache.org/)
      Commons BeanUtils (commons-beanutils:commons-beanutils - http://commons.apache.org/beanutils/)
      Commons CLI (commons-cli:commons-cli - http://commons.apache.org/cli/)
      Commons Codec (commons-codec:commons-codec - http://commons.apache.org/codec/)
@@ -287,6 +289,7 @@ The following components are provided under a Apache 2.0 license. See project li
      Jetty Orbit :: Transaction API (org.eclipse.jetty.orbit:javax.transaction - http://www.eclipse.org/jetty/jetty-orbit/javax.transaction)
      GBench (org.gperfutils:gbench - https://github.com/gperfutils/gbench)
      GProf (org.gperfutils:gprof - https://github.com/gperfutils/gprof)
+     EL (commons-el:commons-el - http://jakarta.apache.org/commons/el/)
      javatuples (org.javatuples:javatuples - http://www.javatuples.org)
      json4s-ast (org.json4s:json4s-ast_2.10 - https://github.com/json4s/json4s)
      json4s-core (org.json4s:json4s-core_2.10 - https://github.com/json4s/json4s)
@@ -616,7 +619,108 @@ The following components are provided under a BSD-style license. See project lin
      ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
      POSSIBILITY OF SUCH DAMAGE.
      -------------------------------------------------------------------
-     (The New BSD License) Py4J (net.sf.py4j:py4j:0.8.2.1 - http://py4j.sourceforge.net/)
+     Py4J (net.sf.py4j:py4j - http://py4j.sourceforge.net/)
+
+     +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     For work developed by the HSQL Development Group:
+
+     Copyright (c) 2001-2010, The HSQL Development Group
+     All rights reserved.
+
+     Redistribution and use in source and binary forms, with or without
+     modification, are permitted provided that the following conditions are met:
+
+     Redistributions of source code must retain the above copyright notice, this
+     list of conditions and the following disclaimer.
+
+     Redistributions in binary form must reproduce the above copyright notice,
+     this list of conditions and the following disclaimer in the documentation
+     and/or other materials provided with the distribution.
+
+     Neither the name of the HSQL Development Group nor the names of its
+     contributors may be used to endorse or promote products derived from this
+     software without specific prior written permission.
+
+     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+     AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+     IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+     ARE DISCLAIMED. IN NO EVENT SHALL HSQL DEVELOPMENT GROUP, HSQLDB.ORG,
+     OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+     EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+     PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+     For work originally developed by the Hypersonic SQL Group:
+
+     Copyright (c) 1995-2000 by the Hypersonic SQL Group.
+     All rights reserved.
+     Redistribution and use in source and binary forms, with or without
+     modification, are permitted provided that the following conditions are met:
+
+     Redistributions of source code must retain the above copyright notice, this
+     list of conditions and the following disclaimer.
+
+     Redistributions in binary form must reproduce the above copyright notice,
+     this list of conditions and the following disclaimer in the documentation
+     and/or other materials provided with the distribution.
+
+     Neither the name of the Hypersonic SQL Group nor the names of its
+     contributors may be used to endorse or promote products derived from this
+     software without specific prior written permission.
+
+     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+     AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+     IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+     ARE DISCLAIMED. IN NO EVENT SHALL THE HYPERSONIC SQL GROUP,
+     OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+     EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+     PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+     This software consists of voluntary contributions made by many individuals on behalf of the
+     Hypersonic SQL Group.
+     -------------------------------------------------------------------
+     HSQLDB (hsqldb:hsqldb - http://hsqldb.org/)
+
+     +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     Copyright (c) 2000-2011 INRIA, France Telecom
+     All rights reserved.
+
+     Redistribution and use in source and binary forms, with or without
+     modification, are permitted provided that the following conditions
+     are met:
+
+     1. Redistributions of source code must retain the above copyright
+        notice, this list of conditions and the following disclaimer.
+
+     2. Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
+
+     3. Neither the name of the copyright holders nor the names of its
+        contributors may be used to endorse or promote products derived from
+        this software without specific prior written permission.
+
+     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+     AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+     IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+     ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+     LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+     CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+     SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+     INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+     THE POSSIBILITY OF SUCH DAMAGE.
+     -------------------------------------------------------------------
+     ASM Core (asm:asm - http://asm.objectweb.org/asm/)
 
 ========================================================================
 Common Development and Distribution License 1.0
@@ -1553,3 +1657,23 @@ The following components are provided under the Eclipse Public License. See proj
      This Agreement is governed by the laws of the State of New York and the intellectual property laws of the United States of America. No party to this Agreement will bring a legal action under this Agreement more than one year after the cause of action arose. Each party waives its rights to a jury trial in any resulting litigation.
      -------------------------------------------------------------------
      Eclipse JDT Core (org.eclipse.jdt:core - http://www.eclipse.org/jdt/)
+     H2 Database Engine (com.h2database:h2 - http://www.h2database.com)
+
+========================================================================
+The JSON License
+========================================================================
+
+The following components are provided under the JSON License. See project link for details.
+
+     +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     Copyright (c) 2002 JSON.org
+
+     Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+     The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+     The Software shall be used for Good, not Evil.
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+     -------------------------------------------------------------------
+     JSON in Java (org.json:json - https://github.com/douglascrockford/JSON-java)
