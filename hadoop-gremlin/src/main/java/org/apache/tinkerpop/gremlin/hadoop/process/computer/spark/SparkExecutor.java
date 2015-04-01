@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
+import com.google.common.base.Optional;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -26,7 +27,6 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -68,49 +68,33 @@ public final class SparkExecutor {
             final SparkMemory memory,
             final Configuration apacheConfiguration) {
 
-        final JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<Tuple2<Object, M>>>> viewAndOutgoingMessagesRDD = null == viewAndMessagesRDD ?
-                // if this is the first iteration, there are now views or incoming messages
-                graphRDD.mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
-                    final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration);
-                    final Set<String> elementComputeKeys = workerVertexProgram.getElementComputeKeys();  // the compute keys as a set
+        final JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<Tuple2<Object, M>>>> viewAndOutgoingMessagesRDD = ((null == viewAndMessagesRDD) ?
+                graphRDD.mapValues(vertexWritable -> new Tuple2<>(vertexWritable, Optional.<Tuple2<List<DetachedVertexProperty<Object>>, List<M>>>absent())) : // first iteration will not have any views or messages
+                graphRDD.leftOuterJoin(viewAndMessagesRDD))                                                                                                    // every other iteration may have views and messages
+                // for each partition of vertices
+                .mapPartitionsToPair(partitionIterator -> {
+                    final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration); // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
+                    final Set<String> elementComputeKeys = workerVertexProgram.getElementComputeKeys(); // the compute keys as a set
                     final String[] elementComputeKeysArray = elementComputeKeys.size() == 0 ? null : elementComputeKeys.toArray(new String[elementComputeKeys.size()]); // the compute keys as an array
                     workerVertexProgram.workerIterationStart(memory); // start the worker
-                    return () -> IteratorUtils.map(partitionIterator, vertexWritable -> {
-                        final Vertex vertex = vertexWritable._2().get();
-                        final SparkMessenger<M> messenger = new SparkMessenger<>(vertex, Collections.emptyList());  // create the messenger with no incoming messages
+                    return () -> IteratorUtils.map(partitionIterator, vertexWritableAndIncomingMessages -> {
+                        final Vertex vertex = vertexWritableAndIncomingMessages._2()._1().get();
+                        final boolean hasViewAndMessages = vertexWritableAndIncomingMessages._2()._2().isPresent();
+                        final List<M> incomingMessages = hasViewAndMessages ? vertexWritableAndIncomingMessages._2()._2().get()._2() : Collections.emptyList();
+                        final List<DetachedVertexProperty<Object>> view = hasViewAndMessages ? vertexWritableAndIncomingMessages._2()._2().get()._1() : Collections.emptyList();
+                        ///
+                        view.forEach(property -> DetachedVertexProperty.addTo(vertex, property));  // attach the view to the vertex
+                        final SparkMessenger<M> messenger = new SparkMessenger<>(vertex, incomingMessages); // create the messenger with the incoming messages
                         workerVertexProgram.execute(ComputerGraph.of(vertex, elementComputeKeys), messenger, memory); // execute the vertex program on this vertex
                         final List<Tuple2<Object, M>> outgoingMessages = messenger.getOutgoingMessages(); // get the outgoing messages
-                        final List<DetachedVertexProperty<Object>> newView = new ArrayList<>(); // get the computed view
-                        if (null != elementComputeKeysArray) // not all vertex programs have compute keys
-                            vertex.properties(elementComputeKeysArray).forEachRemaining(property -> newView.add(DetachedFactory.detach(property, true)));
+                        final List<DetachedVertexProperty<Object>> newView = null == elementComputeKeysArray ?  // not all vertex programs have compute keys
+                                Collections.emptyList() :
+                                IteratorUtils.list(IteratorUtils.map(vertex.properties(elementComputeKeysArray), property -> DetachedFactory.detach(property, true)));
                         if (!partitionIterator.hasNext())
-                            workerVertexProgram.workerIterationEnd(memory);  // if no more vertices in the partition, end the worker's iteration
+                            workerVertexProgram.workerIterationEnd(memory); // if no more vertices in the partition, end the worker's iteration
                         return new Tuple2<>(vertex.id(), new Tuple2<>(newView, outgoingMessages));
                     });
-                }) :
-                // join the view/messages to the graph
-                graphRDD.leftOuterJoin(viewAndMessagesRDD)
-                        .mapPartitionsToPair(partitionIterator -> {     // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
-                            final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration);
-                            final Set<String> elementComputeKeys = workerVertexProgram.getElementComputeKeys(); // the compute keys as a set
-                            final String[] elementComputeKeysArray = elementComputeKeys.size() == 0 ? null : elementComputeKeys.toArray(new String[elementComputeKeys.size()]); // the compute keys as an array
-                            workerVertexProgram.workerIterationStart(memory); // start the worker
-                            return () -> IteratorUtils.map(partitionIterator, vertexWritableAndIncomingMessages -> {
-                                final Vertex vertex = vertexWritableAndIncomingMessages._2()._1().get();
-                                final List<M> incomingMessages = vertexWritableAndIncomingMessages._2()._2().isPresent() ? vertexWritableAndIncomingMessages._2()._2().get()._2() : Collections.emptyList();
-                                final List<DetachedVertexProperty<Object>> view = vertexWritableAndIncomingMessages._2()._2().isPresent() ? vertexWritableAndIncomingMessages._2()._2().get()._1() : Collections.emptyList();
-                                view.forEach(property -> DetachedVertexProperty.addTo(vertex, property));  // attach the view to the vertex
-                                final SparkMessenger<M> messenger = new SparkMessenger<>(vertex, incomingMessages); // create the messenger with the incoming messages
-                                workerVertexProgram.execute(ComputerGraph.of(vertex, elementComputeKeys), messenger, memory); // execute the vertex program on this vertex
-                                final List<Tuple2<Object, M>> outgoingMessages = messenger.getOutgoingMessages(); // get the outgoing messages
-                                final List<DetachedVertexProperty<Object>> newView = new ArrayList<>(); // get the computed view
-                                if (null != elementComputeKeysArray)  // not all vertex programs have compute keys
-                                    vertex.properties(elementComputeKeysArray).forEachRemaining(property -> newView.add(DetachedFactory.detach(property, true)));
-                                if (!partitionIterator.hasNext())
-                                    workerVertexProgram.workerIterationEnd(memory); // if no more vertices in the partition, end the worker's iteration
-                                return new Tuple2<>(vertex.id(), new Tuple2<>(newView, outgoingMessages));
-                            });
-                        });
+                });
 
         viewAndOutgoingMessagesRDD.cache();  // will use twice (once for message passing and once for view isolation)
 
