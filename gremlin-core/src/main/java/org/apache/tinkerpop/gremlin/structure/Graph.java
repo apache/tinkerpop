@@ -1109,7 +1109,9 @@ public interface Graph extends AutoCloseable {
     @Inherited
     public @interface OptOut {
         /**
-         * The test class to opt out of.
+         * The test class to opt out of. This may be set to a base class of a test as in the case of the Gremlin
+         * process class of tests from which Gremlin flavors extend.  If the actual test class is an inner class
+         * of then use a "$" as a separator between the outer class and inner class.
          */
         public String test();
 

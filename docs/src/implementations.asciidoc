@@ -306,7 +306,12 @@ There are times when there may be a specific test in the suite that the implemen
 public class HadoopGraph implements Graph {
 ----
 
-The above examples show how to ignore individual tests.  It is also possible to ignore an entire test case (i.e. all the methods within the test) by setting the `method` to "*".  Also note that some of the tests in the Gremlin Test Suite are parameterized tests and require an additional level of specificity to be properly ignored.  To ignore these types of tests, examine the name template of the parameterized tests.  It is defined by a Java annotation that looks like this:
+The above examples show how to ignore individual tests.  It is also possible to:
+
+* Ignore an entire test case (i.e. all the methods within the test) by setting the `method` to "*".
+* Ignore a "base" test class such that test that extend from those classes will all be ignored.  This style of ignoring is useful for Gremlin "process" tests that have bases classes that are extended by various Gremlin flavors (e.g. groovy).
+
+Also note that some of the tests in the Gremlin Test Suite are parameterized tests and require an additional level of specificity to be properly ignored.  To ignore these types of tests, examine the name template of the parameterized tests.  It is defined by a Java annotation that looks like this:
 
 [source, java]
 @Parameterized.Parameters(name = "expect({0})")
