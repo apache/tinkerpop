@@ -71,8 +71,8 @@ public class ViewIncomingPayload<M> implements Payload {
     }
 
     private void mergeViewIncomingPayload(final ViewIncomingPayload<M> viewIncomingPayload, final MessageCombiner<M> messageCombiner) {
-        if (this.view == null && !viewIncomingPayload.getView().isEmpty())
-            this.view = viewIncomingPayload.getView();
+        if (this.view == null)
+            this.view = viewIncomingPayload.view;
         else
             this.view.addAll(viewIncomingPayload.getView());
 
