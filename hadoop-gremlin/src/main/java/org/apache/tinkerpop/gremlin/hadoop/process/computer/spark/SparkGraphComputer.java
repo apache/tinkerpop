@@ -29,6 +29,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.payload.ViewIncomingPayload;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -166,7 +167,7 @@ public final class SparkGraphComputer implements GraphComputer {
                                 .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new VertexWritable(tuple._2().get()))) // TODO: use DetachedVertex?
                                 .reduceByKey((a, b) -> a) // TODO: test without doing this reduce
                                 .cache(); // partition the graph across the cluster
-                        JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<Object>>> viewAndMessagesRDD = null;
+                        JavaPairRDD<Object, ViewIncomingPayload<Object>> viewIncomingRDD = null;
 
                         ////////////////////////////////
                         // process the vertex program //
@@ -184,7 +185,7 @@ public final class SparkGraphComputer implements GraphComputer {
                             // execute the vertex program
                             while (true) {
                                 memory.setInTask(true);
-                                viewAndMessagesRDD = SparkExecutor.executeVertexProgramIteration(graphRDD, viewAndMessagesRDD, memory, vertexProgramConfiguration);
+                                viewIncomingRDD = SparkExecutor.executeVertexProgramIteration(graphRDD, viewIncomingRDD, memory, vertexProgramConfiguration);
                                 memory.setInTask(false);
                                 if (this.vertexProgram.terminate(memory))
                                     break;
@@ -205,7 +206,7 @@ public final class SparkGraphComputer implements GraphComputer {
                         //////////////////////////////
                         if (!this.mapReducers.isEmpty()) {
                             // drop all edges and messages in the graphRDD as they are no longer needed for the map reduce jobs
-                            final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = SparkExecutor.prepareGraphRDDForMapReduce(graphRDD, viewAndMessagesRDD).cache();
+                            final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = SparkExecutor.prepareGraphRDDForMapReduce(graphRDD, viewIncomingRDD).cache();
                             // graphRDD.unpersist(); // the original graphRDD is no longer needed so free up its memory
 
                             for (final MapReduce mapReduce : this.mapReducers) {

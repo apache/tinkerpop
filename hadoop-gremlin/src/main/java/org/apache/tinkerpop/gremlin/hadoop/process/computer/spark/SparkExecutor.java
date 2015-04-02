@@ -27,6 +27,11 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.payload.MessagePayload;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.payload.Payload;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.payload.ViewIncomingPayload;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.payload.ViewOutgoingPayload;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.payload.ViewPayload;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -45,7 +50,6 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import scala.Tuple2;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -62,26 +66,26 @@ public final class SparkExecutor {
     // VERTEX PROGRAM //
     ////////////////////
 
-    public static <M> JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<M>>> executeVertexProgramIteration(
+    public static <M> JavaPairRDD<Object, ViewIncomingPayload<M>> executeVertexProgramIteration(
             final JavaPairRDD<Object, VertexWritable> graphRDD,
-            final JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<M>>> viewAndMessagesRDD,
+            final JavaPairRDD<Object, ViewIncomingPayload<M>> viewIncomingRDD,
             final SparkMemory memory,
             final Configuration apacheConfiguration) {
 
-        final JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<Tuple2<Object, M>>>> viewAndOutgoingMessagesRDD = ((null == viewAndMessagesRDD) ?
-                graphRDD.mapValues(vertexWritable -> new Tuple2<>(vertexWritable, Optional.<Tuple2<List<DetachedVertexProperty<Object>>, List<M>>>absent())) : // first iteration will not have any views or messages
-                graphRDD.leftOuterJoin(viewAndMessagesRDD))                                                                                                    // every other iteration may have views and messages
+        final JavaPairRDD<Object, ViewOutgoingPayload<M>> viewOutgoingRDD = ((null == viewIncomingRDD) ?
+                graphRDD.mapValues(vertexWritable -> new Tuple2<>(vertexWritable, Optional.<ViewIncomingPayload<M>>absent())) : // first iteration will not have any views or messages
+                graphRDD.leftOuterJoin(viewIncomingRDD))                                                                                                    // every other iteration may have views and messages
                 // for each partition of vertices
                 .mapPartitionsToPair(partitionIterator -> {
                     final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration); // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
                     final Set<String> elementComputeKeys = workerVertexProgram.getElementComputeKeys(); // the compute keys as a set
                     final String[] elementComputeKeysArray = elementComputeKeys.size() == 0 ? null : elementComputeKeys.toArray(new String[elementComputeKeys.size()]); // the compute keys as an array
                     workerVertexProgram.workerIterationStart(memory); // start the worker
-                    return () -> IteratorUtils.map(partitionIterator, vertexViewAndMessages -> {
-                        final Vertex vertex = vertexViewAndMessages._2()._1().get();
-                        final boolean hasViewAndMessages = vertexViewAndMessages._2()._2().isPresent(); // if this is the first iteration, then there are no views or messages
-                        final List<DetachedVertexProperty<Object>> previousView = hasViewAndMessages ? vertexViewAndMessages._2()._2().get()._1() : Collections.emptyList();
-                        final List<M> incomingMessages = hasViewAndMessages ? vertexViewAndMessages._2()._2().get()._2() : Collections.emptyList();
+                    return () -> IteratorUtils.map(partitionIterator, vertexViewIncoming -> {
+                        final Vertex vertex = vertexViewIncoming._2()._1().get();
+                        final boolean hasViewAndMessages = vertexViewIncoming._2()._2().isPresent(); // if this is the first iteration, then there are no views or messages
+                        final List<DetachedVertexProperty<Object>> previousView = hasViewAndMessages ? vertexViewIncoming._2()._2().get().getView() : Collections.emptyList();
+                        final List<M> incomingMessages = hasViewAndMessages ? vertexViewIncoming._2()._2().get().getIncomingMessages() : Collections.emptyList();
                         previousView.forEach(property -> DetachedVertexProperty.addTo(vertex, property));  // attach the view to the vertex
                         ///
                         final SparkMessenger<M> messenger = new SparkMessenger<>(vertex, incomingMessages); // create the messenger with the incoming messages
@@ -93,56 +97,79 @@ public final class SparkExecutor {
                         final List<Tuple2<Object, M>> outgoingMessages = messenger.getOutgoingMessages(); // get the outgoing messages
                         if (!partitionIterator.hasNext())
                             workerVertexProgram.workerIterationEnd(memory); // if no more vertices in the partition, end the worker's iteration
-                        return new Tuple2<>(vertex.id(), new Tuple2<>(nextView, outgoingMessages));
+                        return new Tuple2<>(vertex.id(), new ViewOutgoingPayload<>(nextView, outgoingMessages));
                     });
                 });
 
-        viewAndOutgoingMessagesRDD.cache();  // will use twice (once for message passing and once for view isolation)
-
         // "message pass" by reducing on the vertex object id of the message payloads
         final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner().orElse(null);
-        final JavaPairRDD<Object, List<M>> incomingMessagesRDD = viewAndOutgoingMessagesRDD
-                .mapValues(Tuple2::_2)
-                .flatMapToPair(tuple -> () -> IteratorUtils.map(tuple._2().iterator(), message -> {
-                    final List<M> list = (null == messageCombiner) ? new ArrayList<>() : new ArrayList<>(1);
-                    list.add(message._2());
-                    return new Tuple2<>(message._1(), list);
-                })).reduceByKey((a, b) -> {
-                    if (null == messageCombiner) {
-                        a.addAll(b);
+        final JavaPairRDD<Object, Payload> newViewIncomingRDD = viewOutgoingRDD
+                .flatMapToPair(tuple -> () -> IteratorUtils.<Tuple2<Object, Payload>>concat(
+                        IteratorUtils.of(new Tuple2<>(tuple._1(), tuple._2().getView())),
+                        IteratorUtils.map(tuple._2().getOutgoingMessages().iterator(), message -> new Tuple2<>(message._1(), new MessagePayload<>(message._2())))))
+                .reduceByKey((a, b) -> {
+                    if (a instanceof ViewIncomingPayload) {
+                        if (b instanceof MessagePayload)
+                            ((ViewIncomingPayload<M>) a).addIncomingMessage(((MessagePayload<M>) b).getMessage(), messageCombiner);
+                        else if (b instanceof ViewPayload)
+                            ((ViewIncomingPayload<M>) a).setView(((ViewPayload) b).getView());
+                        else if (b instanceof ViewIncomingPayload)
+                            throw new IllegalStateException("It should never be the case that two views reduce to the same key");
                         return a;
+                    } else if (b instanceof ViewIncomingPayload) {
+                        if (a instanceof MessagePayload)
+                            ((ViewIncomingPayload<M>) b).addIncomingMessage(((MessagePayload<M>) a).getMessage(), messageCombiner);
+                        else if (a instanceof ViewPayload)
+                            ((ViewIncomingPayload<M>) b).setView(((ViewPayload) a).getView());
+                        else if (a instanceof ViewIncomingPayload)
+                            throw new IllegalStateException("It should never be the case that two views reduce to the same key");
+                        return b;
                     } else {
-                        a.set(0, messageCombiner.combine(a.get(0), b.get(0)));
-                        return a;
+                        final ViewIncomingPayload<M> c = new ViewIncomingPayload<>();
+                        if (a instanceof MessagePayload)
+                            c.addIncomingMessage(((MessagePayload<M>) a).getMessage(), messageCombiner);
+                        else if (a instanceof ViewPayload)
+                            c.setView(((ViewPayload) a).getView());
+                        if (b instanceof MessagePayload)
+                            c.addIncomingMessage(((MessagePayload<M>) b).getMessage(), messageCombiner);
+                        else if (b instanceof ViewPayload)
+                            c.setView(((ViewPayload) b).getView());
+                        return c;
+                    }
+                })
+                .mapValues(payload -> {
+                    if (payload instanceof ViewIncomingPayload)
+                        return payload;
+                    else {
+                        final ViewIncomingPayload<M> viewIncomingPayload = new ViewIncomingPayload<>();
+                        if (payload instanceof ViewPayload)
+                            viewIncomingPayload.setView(((ViewPayload) payload).getView());
+                        else
+                            throw new IllegalStateException("It should never be the case that a view is not emitted");
+                        return viewIncomingPayload;
                     }
                 });
 
-        // isolate the views and then join the incoming messages
-        final JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<M>>> viewAndIncomingMessagesRDD = viewAndOutgoingMessagesRDD
-                .mapValues(Tuple2::_1)
-                .leftOuterJoin(incomingMessagesRDD) // there will always be views (even if empty), but there will not always be incoming messages
-                .mapValues(tuple -> new Tuple2<>(tuple._1(), tuple._2().or(Collections.emptyList())));
-
-        viewAndIncomingMessagesRDD.foreachPartition(partitionIterator -> {
+        newViewIncomingRDD.foreachPartition(partitionIterator -> {
         }); // need to complete a task so its BSP and the memory for this iteration is updated
-        return viewAndIncomingMessagesRDD;
+        return (JavaPairRDD) newViewIncomingRDD;
     }
 
     /////////////////
     // MAP REDUCE //
     ////////////////
 
-    public static <M> JavaPairRDD<Object, VertexWritable> prepareGraphRDDForMapReduce(final JavaPairRDD<Object, VertexWritable> graphRDD, final JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<M>>> viewAndMessagesRDD) {
-        return (null == viewAndMessagesRDD) ?
+    public static <M> JavaPairRDD<Object, VertexWritable> prepareGraphRDDForMapReduce(final JavaPairRDD<Object, VertexWritable> graphRDD, final JavaPairRDD<Object, ViewIncomingPayload<M>> viewIncomingRDD) {
+        return (null == viewIncomingRDD) ?
                 graphRDD.mapValues(vertexWritable -> {
                     vertexWritable.get().edges(Direction.BOTH).forEachRemaining(Edge::remove);
                     return vertexWritable;
                 }) :
-                graphRDD.leftOuterJoin(viewAndMessagesRDD)
+                graphRDD.leftOuterJoin(viewIncomingRDD)
                         .mapValues(tuple -> {
                             final Vertex vertex = tuple._1().get();
                             vertex.edges(Direction.BOTH).forEachRemaining(Edge::remove);
-                            final List<DetachedVertexProperty<Object>> view = tuple._2().isPresent() ? tuple._2().get()._1() : Collections.emptyList();
+                            final List<DetachedVertexProperty<Object>> view = tuple._2().isPresent() ? tuple._2().get().getView() : Collections.emptyList();
                             view.forEach(property -> DetachedVertexProperty.addTo(vertex, property));
                             return tuple._1();
                         });
