@@ -139,16 +139,16 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         // Grab the second (sideEffect{sleep}) step and check the times.
         Metrics metrics = traversalMetrics.getMetrics(1);
-        // 6 elements w/ a 10ms sleep each = 60ms with 10ms for other computation
-        assertTrue("Duration should be at least the length of the sleep: " + metrics.getDuration(TimeUnit.MILLISECONDS),
-                metrics.getDuration(TimeUnit.MILLISECONDS) >= 60);
+        // 6 elements w/ a 10ms sleep each = 60ms with 10ms for other computation.
+        assertTrue("Duration should be at least the length of the sleep (59ms): " + metrics.getDuration(TimeUnit.MILLISECONDS),
+                metrics.getDuration(TimeUnit.MILLISECONDS) >= 59);
         assertTrue("Check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MILLISECONDS),
                 metrics.getDuration(TimeUnit.MILLISECONDS) < 100);
 
         // 6 elements w/ a 5ms sleep each = 30ms plus 20ms for other computation
         metrics = traversalMetrics.getMetrics(2);
-        assertTrue("Duration should be at least the length of the sleep: " + metrics.getDuration(TimeUnit.MILLISECONDS),
-                metrics.getDuration(TimeUnit.MILLISECONDS) >= 30);
+        assertTrue("Duration should be at least the length of the sleep (29ms): " + metrics.getDuration(TimeUnit.MILLISECONDS),
+                metrics.getDuration(TimeUnit.MILLISECONDS) >= 29);
         assertTrue("Check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MILLISECONDS),
                 metrics.getDuration(TimeUnit.MILLISECONDS) < 100);
 
