@@ -79,7 +79,7 @@ public final class SparkExecutor {
                     workerVertexProgram.workerIterationStart(memory); // start the worker
                     return () -> IteratorUtils.map(partitionIterator, vertexViewAndMessages -> {
                         final Vertex vertex = vertexViewAndMessages._2()._1().get();
-                        final boolean hasViewAndMessages = vertexViewAndMessages._2()._2().isPresent();
+                        final boolean hasViewAndMessages = vertexViewAndMessages._2()._2().isPresent(); // if this is the first iteration, then there are no views or messages
                         final List<DetachedVertexProperty<Object>> previousView = hasViewAndMessages ? vertexViewAndMessages._2()._2().get()._1() : Collections.emptyList();
                         final List<M> incomingMessages = hasViewAndMessages ? vertexViewAndMessages._2()._2().get()._2() : Collections.emptyList();
                         previousView.forEach(property -> DetachedVertexProperty.addTo(vertex, property));  // attach the view to the vertex
@@ -120,8 +120,8 @@ public final class SparkExecutor {
         // isolate the views and then join the incoming messages
         final JavaPairRDD<Object, Tuple2<List<DetachedVertexProperty<Object>>, List<M>>> viewAndIncomingMessagesRDD = viewAndOutgoingMessagesRDD
                 .mapValues(Tuple2::_1)
-                .fullOuterJoin(incomingMessagesRDD)
-                .mapValues(tuple -> new Tuple2<>(tuple._1().or(Collections.emptyList()), tuple._2().or(Collections.emptyList())));
+                .leftOuterJoin(incomingMessagesRDD) // there will always be views (even if empty), but there will not always be incoming messages
+                .mapValues(tuple -> new Tuple2<>(tuple._1(), tuple._2().or(Collections.emptyList())));
 
         viewAndIncomingMessagesRDD.foreachPartition(partitionIterator -> {
         }); // need to complete a task so its BSP and the memory for this iteration is updated
