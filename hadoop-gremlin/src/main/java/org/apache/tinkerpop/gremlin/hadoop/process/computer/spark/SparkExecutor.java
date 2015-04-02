@@ -113,16 +113,16 @@ public final class SparkExecutor {
                             ((ViewIncomingPayload<M>) a).addIncomingMessage(((MessagePayload<M>) b).getMessage(), messageCombiner);
                         else if (b instanceof ViewPayload)
                             ((ViewIncomingPayload<M>) a).setView(((ViewPayload) b).getView());
-                        else if (b instanceof ViewIncomingPayload)
-                            throw new IllegalStateException("It should never be the case that two views reduce to the same key");
+                        //else if (b instanceof ViewIncomingPayload)
+                        //    throw new IllegalStateException("It should never be the case that two views reduce to the same key");
                         return a;
                     } else if (b instanceof ViewIncomingPayload) {
                         if (a instanceof MessagePayload)
                             ((ViewIncomingPayload<M>) b).addIncomingMessage(((MessagePayload<M>) a).getMessage(), messageCombiner);
                         else if (a instanceof ViewPayload)
                             ((ViewIncomingPayload<M>) b).setView(((ViewPayload) a).getView());
-                        else if (a instanceof ViewIncomingPayload)
-                            throw new IllegalStateException("It should never be the case that two views reduce to the same key");
+                        //else if (a instanceof ViewIncomingPayload)
+                        //    throw new IllegalStateException("It should never be the case that two views reduce to the same key");
                         return b;
                     } else {
                         final ViewIncomingPayload<M> c = new ViewIncomingPayload<>(messageCombiner);
