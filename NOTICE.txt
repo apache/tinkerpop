@@ -160,6 +160,12 @@ This product depends on:
      Copyright (c) 2008 Alexander Beider & Stephen P. Morse.
 
 This product depends on:
+     gmetric4j (info.ganglia.gmetric4j:gmetric4j - http://github.com/ganglia/gmetric4j)
+
+     Copyright (C) 2012 Daniel Pocock <daniel@pocock.com.au>
+     Copyright (c) 2008-2011 Jasper Humphrey <jasper521@gmail.com>
+
+This product depends on:
      HttpClient (commons-httpclient:commons-httpclient - http://jakarta.apache.org/httpcomponents/httpclient-3.x/)
 
      Apache HttpComponents Client
