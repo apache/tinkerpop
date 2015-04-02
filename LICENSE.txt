@@ -215,7 +215,6 @@ The following components are provided under a Apache 2.0 license. See project li
      zookeeper (org.apache.zookeeper:zookeeper - https://zookeeper.apache.org/)
      HPPC Collections (com.carrotsearch:hppc - http://labs.carrotsearch.com/hppc.html/hppc)
      JUnitBenchmarks (com.carrotsearch:junit-benchmarks - http://labs.carrotsearch.com/junit-benchmarks.html)
-     FindBugs-jsr305 (com.google.code.findbugs:jsr305 - http://findbugs.sourceforge.net/)
      Guava: Google Core Libraries for Java (com.google.guava:guava - http://code.google.com/p/guava-libraries/guava)
      oro (oro:oro - http://www.jajakarta.org/oro/index.html)
      ant (ant:ant - http://www.apache.org/ant/)
@@ -229,7 +228,6 @@ The following components are provided under a Apache 2.0 license. See project li
      chill-java (com.twitter:chill-java - https://github.com/twitter/chill)
      chill (com.twitter:chill_2.10 - https://github.com/twitter/chill)
      config (com.typesafe:config - https://github.com/typesafehub/config)
-     Metrics Core Library (com.yammer.metrics:metrics-core - http://metrics.codahale.com/metrics-core/)
      jasper-compiler (tomcat:jasper-compiler - http://tomcat.apache.org/)
      jasper-runtime (tomcat:jasper-runtime - http://tomcat.apache.org/)
      Commons BeanUtils (commons-beanutils:commons-beanutils - http://commons.apache.org/beanutils/)
@@ -242,7 +240,7 @@ The following components are provided under a Apache 2.0 license. See project li
      Commons Lang (commons-lang:commons-lang - http://commons.apache.org/lang/)
      Commons Logging (commons-logging:commons-logging - http://commons.apache.org/proper/commons-logging/)
      Commons Net (commons-net:commons-net - http://commons.apache.org/net/)
-     Netty/All-in-One (io.netty:netty-all:4.0.23.Final - http://netty.io/netty-all/)
+     Netty/All-in-One (io.netty:netty-all - http://netty.io/netty-all/)
      fastutil (it.unimi.dsi:fastutil - http://fasutil.dsi.unimi.it/)
      Apache Log4j (log4j:log4j - http://logging.apache.org/log4j/1.2/)
      An open source Java toolkit for Amazon S3 (net.java.dev.jets3t:jets3t - http://jets3t.s3.amazonaws.com/index.html)
@@ -541,7 +539,7 @@ The following components are provided under a BSD-style license. See project lin
      OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
      WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      -------------------------------------------------------------------
-     (The BSD License) xmlenc Library (xmlenc:xmlenc:0.52 - http://xmlenc.sourceforge.net)
+     xmlenc Library (xmlenc:xmlenc - http://xmlenc.sourceforge.net)
 
      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      This license applies to all parts of Protocol Buffers except the following:
