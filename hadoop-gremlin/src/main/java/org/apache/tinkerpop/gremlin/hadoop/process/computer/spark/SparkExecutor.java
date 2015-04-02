@@ -109,43 +109,21 @@ public final class SparkExecutor {
                         IteratorUtils.map(tuple._2().getOutgoingMessages().iterator(), message -> new Tuple2<>(message._1(), new MessagePayload<>(message._2())))))
                 .reduceByKey((a, b) -> {
                     if (a instanceof ViewIncomingPayload) {
-                        if (b instanceof MessagePayload)
-                            ((ViewIncomingPayload<M>) a).addIncomingMessage(((MessagePayload<M>) b).getMessage(), messageCombiner);
-                        else if (b instanceof ViewPayload)
-                            ((ViewIncomingPayload<M>) a).setView(((ViewPayload) b).getView());
-                        //else if (b instanceof ViewIncomingPayload)
-                        //    throw new IllegalStateException("It should never be the case that two views reduce to the same key");
+                        ((ViewIncomingPayload<M>) a).mergePayload(b, messageCombiner);
                         return a;
                     } else if (b instanceof ViewIncomingPayload) {
-                        if (a instanceof MessagePayload)
-                            ((ViewIncomingPayload<M>) b).addIncomingMessage(((MessagePayload<M>) a).getMessage(), messageCombiner);
-                        else if (a instanceof ViewPayload)
-                            ((ViewIncomingPayload<M>) b).setView(((ViewPayload) a).getView());
-                        //else if (a instanceof ViewIncomingPayload)
-                        //    throw new IllegalStateException("It should never be the case that two views reduce to the same key");
+                        ((ViewIncomingPayload<M>) b).mergePayload(a, messageCombiner);
                         return b;
                     } else {
                         final ViewIncomingPayload<M> c = new ViewIncomingPayload<>(messageCombiner);
-                        if (a instanceof MessagePayload)
-                            c.addIncomingMessage(((MessagePayload<M>) a).getMessage(), messageCombiner);
-                        else if (a instanceof ViewPayload)
-                            c.setView(((ViewPayload) a).getView());
-                        if (b instanceof MessagePayload)
-                            c.addIncomingMessage(((MessagePayload<M>) b).getMessage(), messageCombiner);
-                        else if (b instanceof ViewPayload)
-                            c.setView(((ViewPayload) b).getView());
+                        c.mergePayload(a, messageCombiner);
+                        c.mergePayload(b, messageCombiner);
                         return c;
                     }
                 })
-                .mapValues(payload -> {
-                    if (payload instanceof ViewIncomingPayload)
-                        return (ViewIncomingPayload<M>) payload;
-                    else {  // this means the vertex has no incoming messages
-                        final ViewIncomingPayload<M> viewIncomingPayload = new ViewIncomingPayload<>();
-                        viewIncomingPayload.setView(((ViewPayload) payload).getView());
-                        return viewIncomingPayload;
-                    }
-                });
+                .mapValues(payload -> payload instanceof ViewIncomingPayload ?
+                        (ViewIncomingPayload<M>) payload :
+                        new ViewIncomingPayload<>((ViewPayload) payload));
 
         newViewIncomingRDD.foreachPartition(partitionIterator -> {
         }); // need to complete a task so its BSP and the memory for this iteration is updated

@@ -36,30 +36,59 @@ public class ViewIncomingPayload<M> implements Payload {
     private List<DetachedVertexProperty<Object>> view = null;
     private final List<M> incomingMessages;
 
+
+    public ViewIncomingPayload() {
+        this.incomingMessages = null;
+    }
+
     public ViewIncomingPayload(final MessageCombiner<M> messageCombiner) {
         this.incomingMessages = null == messageCombiner ? new ArrayList<>() : new ArrayList<>(1);
     }
 
-    public ViewIncomingPayload()  {
+    public ViewIncomingPayload(final ViewPayload viewPayload) {
         this.incomingMessages = null;
+        this.view = viewPayload.getView();
     }
+
 
     public List<DetachedVertexProperty<Object>> getView() {
         return null == this.view ? Collections.emptyList() : this.view;
     }
 
-    public void setView(final List<DetachedVertexProperty<Object>> view) {
-        this.view = view;
-    }
 
     public List<M> getIncomingMessages() {
         return null == this.incomingMessages ? Collections.emptyList() : this.incomingMessages;
     }
 
-    public void addIncomingMessage(final M message, final MessageCombiner<M> messageCombiner) {
+    ////////////////////
+
+
+    private void mergeMessage(final M message, final MessageCombiner<M> messageCombiner) {
         if (this.incomingMessages.isEmpty() || null == messageCombiner)
             this.incomingMessages.add(message);
         else
             this.incomingMessages.set(0, messageCombiner.combine(this.incomingMessages.get(0), message));
+    }
+
+    private void mergeViewIncomingPayload(final ViewIncomingPayload<M> viewIncomingPayload, final MessageCombiner<M> messageCombiner) {
+        if (this.view == null && !viewIncomingPayload.getView().isEmpty())
+            this.view = viewIncomingPayload.getView();
+        else
+            this.view.addAll(viewIncomingPayload.getView());
+
+        for (final M message : viewIncomingPayload.getIncomingMessages()) {
+            this.mergeMessage(message, messageCombiner);
+        }
+    }
+
+    public void mergePayload(final Payload payload, final MessageCombiner<M> messageCombiner) {
+        if (payload instanceof ViewPayload)
+            this.view = ((ViewPayload) payload).getView();
+        else if (payload instanceof MessagePayload)
+            this.mergeMessage(((MessagePayload<M>) payload).getMessage(), messageCombiner);
+        else if (payload instanceof ViewIncomingPayload)
+            this.mergeViewIncomingPayload((ViewIncomingPayload<M>) payload, messageCombiner);
+        else
+            throw new IllegalArgumentException("The provided payload is an unsupported merge payload: " + payload);
     }
 }
