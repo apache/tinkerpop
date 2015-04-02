@@ -511,6 +511,8 @@ The following table describes the various configuration options that Gremlin Ser
 |threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
 |=========================================================
 
+NOTE: Configuration of link:http://ganglia.sourceforge.net/[Ganglia] requires an additional library that is not packaged with Gremlin Server due to its LGPL licensing that conflicts with the TinkerPop's Apache 2.0 License.  To run Gremlin Server with Ganglia monitoring, download the `org.acplt:oncrpc` jar from link:http://repo1.maven.org/maven2/org/acplt/oncrpc/1.0.7/[here] and copy it to the Gremlin Server `/lib` directory before starting the server.
+
 Tuning
 ~~~~~~
 

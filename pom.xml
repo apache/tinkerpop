@@ -530,6 +530,11 @@ limitations under the License.
                         <groupId>org.slf4j</groupId>
                         <artifactId>slf4j-api</artifactId>
                     </exclusion>
+                    <!-- LGPL licensed - users will need to install this jar manually -->
+                    <exclusion>
+                        <groupId>org.acplt</groupId>
+                        <artifactId>oncrpc</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
