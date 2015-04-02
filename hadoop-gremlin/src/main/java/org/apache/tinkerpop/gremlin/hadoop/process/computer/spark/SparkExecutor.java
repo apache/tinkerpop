@@ -121,6 +121,7 @@ public final class SparkExecutor {
                         return c;
                     }
                 })
+                .filter(payload -> !(payload._2() instanceof MessagePayload)) // this happens if there is a message to a vertex that doesn't exist
                 .mapValues(payload -> payload instanceof ViewIncomingPayload ?
                         (ViewIncomingPayload<M>) payload :
                         new ViewIncomingPayload<>((ViewPayload) payload));
