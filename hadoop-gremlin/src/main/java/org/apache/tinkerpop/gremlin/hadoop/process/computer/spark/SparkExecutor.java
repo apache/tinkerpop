@@ -74,7 +74,7 @@ public final class SparkExecutor {
 
         final JavaPairRDD<Object, ViewOutgoingPayload<M>> viewOutgoingRDD = ((null == viewIncomingRDD) ?
                 graphRDD.mapValues(vertexWritable -> new Tuple2<>(vertexWritable, Optional.<ViewIncomingPayload<M>>absent())) : // first iteration will not have any views or messages
-                graphRDD.leftOuterJoin(viewIncomingRDD))                                                                                                    // every other iteration may have views and messages
+                graphRDD.leftOuterJoin(viewIncomingRDD))                                                                        // every other iteration may have views and messages
                 // for each partition of vertices
                 .mapPartitionsToPair(partitionIterator -> {
                     final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration); // each partition(Spark)/worker(TP3) has a local copy of the vertex program to reduce object creation
@@ -103,7 +103,7 @@ public final class SparkExecutor {
 
         // "message pass" by reducing on the vertex object id of the message payloads
         final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner().orElse(null);
-        final JavaPairRDD<Object, Payload> newViewIncomingRDD = viewOutgoingRDD
+        final JavaPairRDD<Object, ViewIncomingPayload<M>> newViewIncomingRDD = viewOutgoingRDD
                 .flatMapToPair(tuple -> () -> IteratorUtils.<Tuple2<Object, Payload>>concat(
                         IteratorUtils.of(new Tuple2<>(tuple._1(), tuple._2().getView())),
                         IteratorUtils.map(tuple._2().getOutgoingMessages().iterator(), message -> new Tuple2<>(message._1(), new MessagePayload<>(message._2())))))
@@ -125,7 +125,7 @@ public final class SparkExecutor {
                             throw new IllegalStateException("It should never be the case that two views reduce to the same key");
                         return b;
                     } else {
-                        final ViewIncomingPayload<M> c = new ViewIncomingPayload<>();
+                        final ViewIncomingPayload<M> c = new ViewIncomingPayload<>(messageCombiner);
                         if (a instanceof MessagePayload)
                             c.addIncomingMessage(((MessagePayload<M>) a).getMessage(), messageCombiner);
                         else if (a instanceof ViewPayload)
@@ -139,20 +139,17 @@ public final class SparkExecutor {
                 })
                 .mapValues(payload -> {
                     if (payload instanceof ViewIncomingPayload)
-                        return payload;
-                    else {
+                        return (ViewIncomingPayload<M>) payload;
+                    else {  // this means the vertex has no incoming messages
                         final ViewIncomingPayload<M> viewIncomingPayload = new ViewIncomingPayload<>();
-                        if (payload instanceof ViewPayload)
-                            viewIncomingPayload.setView(((ViewPayload) payload).getView());
-                        else
-                            throw new IllegalStateException("It should never be the case that a view is not emitted");
+                        viewIncomingPayload.setView(((ViewPayload) payload).getView());
                         return viewIncomingPayload;
                     }
                 });
 
         newViewIncomingRDD.foreachPartition(partitionIterator -> {
         }); // need to complete a task so its BSP and the memory for this iteration is updated
-        return (JavaPairRDD) newViewIncomingRDD;
+        return newViewIncomingRDD;
     }
 
     /////////////////

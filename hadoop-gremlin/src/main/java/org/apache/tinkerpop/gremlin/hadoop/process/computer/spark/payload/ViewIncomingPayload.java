@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,13 +34,18 @@ import java.util.List;
 public class ViewIncomingPayload<M> implements Payload {
 
     private List<DetachedVertexProperty<Object>> view = null;
-    private final List<M> incomingMessages = new ArrayList<>();
+    private final List<M> incomingMessages;
 
-    public ViewIncomingPayload() {
+    public ViewIncomingPayload(final MessageCombiner<M> messageCombiner) {
+        this.incomingMessages = null == messageCombiner ? new ArrayList<>() : new ArrayList<>(1);
+    }
+
+    public ViewIncomingPayload()  {
+        this.incomingMessages = null;
     }
 
     public List<DetachedVertexProperty<Object>> getView() {
-        return this.view;
+        return null == this.view ? Collections.emptyList() : this.view;
     }
 
     public void setView(final List<DetachedVertexProperty<Object>> view) {
@@ -47,7 +53,7 @@ public class ViewIncomingPayload<M> implements Payload {
     }
 
     public List<M> getIncomingMessages() {
-        return incomingMessages;
+        return null == this.incomingMessages ? Collections.emptyList() : this.incomingMessages;
     }
 
     public void addIncomingMessage(final M message, final MessageCombiner<M> messageCombiner) {
