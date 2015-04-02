@@ -21,8 +21,10 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.payload;
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Payload {
+public interface Payload extends Serializable {
 }
