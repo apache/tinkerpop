@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -188,6 +189,24 @@ public class SerializationTest {
             // this is a SimpleTraverser so no properties are present in detachment
             assertFalse(detachedVIn.properties().hasNext());
         }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeTraversalMetrics() throws Exception {
+            final GryoWriter gryoWriter = graph.io().gryoWriter().create();
+            final GryoReader gryoReader = graph.io().gryoReader().create();
+
+            final TraversalMetrics before = (TraversalMetrics) g.V().both().profile().cap(TraversalMetrics.METRICS_KEY).next();
+            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gryoWriter.writeObject(outputStream, before);
+
+            final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            final TraversalMetrics after = gryoReader.readObject(inputStream);
+            assertNotNull(after);
+            assertEquals(before.getMetrics().size(), after.getMetrics().size());
+            assertEquals(before.getDuration(TimeUnit.MILLISECONDS), after.getDuration(TimeUnit.MILLISECONDS));
+            assertEquals(before.getMetrics(0).getCounts(), after.getMetrics(0).getCounts());
+        }
     }
 
     public static class GraphSONTest extends AbstractGremlinTest {
@@ -308,7 +327,6 @@ public class SerializationTest {
             assertTrue(metrics0.containsKey(GraphSONTokens.NAME));
             assertTrue(metrics0.containsKey(GraphSONTokens.COUNTS));
             assertTrue(metrics0.containsKey(GraphSONTokens.DURATION));
-
         }
     }
 }
