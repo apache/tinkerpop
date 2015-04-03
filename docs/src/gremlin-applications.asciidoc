@@ -47,7 +47,7 @@ The process of plugin installation is handled by link:http://groovy.codehaus.org
 Note that if the intention is to work with TinkerPop snapshots then the file should also include:
 
 [source,xml]
-<ibiblio name="sonatype-snapshots" root="https://oss.sonatype.org/content/repositories/snapshots/" m2compatible="true"/>
+<ibiblio name="apache-snapshots" root="http://repository.apache.org/snapshots/" m2compatible="true"/>
 
 Additionally, the Graph configuration can also be modified to include the local system's Maven `.m2` directory by including:
 
