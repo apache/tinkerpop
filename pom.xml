@@ -572,6 +572,92 @@ limitations under the License.
     <profiles>
 
         <profile>
+            <id>apache-release</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>apache</name>
+                </property>
+            </activation>
+
+            <properties>
+                <server.artifact>gremlin-server/target/gremlin-server-${project.version}-distribution.zip
+                </server.artifact>
+                <console.artifact>gremlin-console/target/gremlin-console-${project.version}-distribution.zip
+                </console.artifact>
+            </properties>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <version>2.4</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <attach>false</attach>
+                            <descriptors>
+                                <descriptor>assembly.xml</descriptor>
+                            </descriptors>
+                            <finalName>${project.artifactId}-${project.version}</finalName>
+                            <outputDirectory>target/dist</outputDirectory>
+                            <workDirectory>target/assembly/work</workDirectory>
+                            <tarLongFileMode>warn</tarLongFileMode>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.8</version>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <!-- make sure this runs after the package phase -->
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <copy todir="target/dist" flatten="true">
+                                            <fileset dir="${basedir}">
+                                                <include name="${server.artifact}" />
+                                                <include name="${console.artifact}" />
+                                            </fileset>
+                                        </copy>
+                                        <checksum algorithm="MD5" fileext=".md5">
+                                            <fileset dir="target/dist">
+                                                <include name="*.zip" />
+                                            </fileset>
+                                        </checksum>
+                                        <checksum algorithm="SHA1" fileext=".sha">
+                                            <fileset dir="target/dist">
+                                                <include name="*.zip" />
+                                            </fileset>
+                                        </checksum>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.ant</groupId>
+                                <artifactId>ant-nodeps</artifactId>
+                                <version>1.8.1</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>asciidoc</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
