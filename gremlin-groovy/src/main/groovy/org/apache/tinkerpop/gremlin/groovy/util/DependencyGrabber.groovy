@@ -46,15 +46,20 @@ class DependencyGrabber {
     def void copyDependenciesToPath(final Artifact artifact) {
         final def dep = makeDepsMap(artifact)
         final String extClassPath = getPathFromDependency(dep)
+        final String extLibPath = extClassPath + fileSep + "lib"
+        final String extPluginPath = extClassPath + fileSep + "plugin"
         final File f = new File(extClassPath)
 
         if (f.exists()) throw new IllegalStateException("a module with the name ${dep.module} is already installed")
         if (!f.mkdirs()) throw new IOException("could not create directory at ${f}")
+        if (!new File(extLibPath).mkdirs()) throw new IOException("could not create directory at ${extLibPath}")
+        if (!new File(extPluginPath).mkdirs()) throw new IOException("could not create directory at ${extPluginPath}")
 
         new File(extClassPath + fileSep + "plugin-info.txt").withWriter { out -> out << [artifact.group, artifact.artifact, artifact.version].join(":") }
 
         def fs = FileSystems.default
-        def target = fs.getPath(extClassPath)
+        def targetPluginPath = fs.getPath(extPluginPath)
+        def targetLibPath = fs.getPath(extLibPath)
 
         def filesAlreadyInPath = []
         def libClassPath
@@ -74,29 +79,41 @@ class DependencyGrabber {
         // if windows then the path contains a starting forward slash that prevents it from being
         // recognized by FileSystem - strip it off
         dependencyLocations.collect {
-            def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
-            return fs.getPath(p)
-        }
-        .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
-                .findAll {
-            !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
-        }.each {
-            def copying = target.resolve(it.fileName)
-            Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
-            println "Copying - $copying"
-        }
+                    def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
+                    return fs.getPath(p)
+                }.findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
+                .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
+                .each {
+                    def copying = targetPluginPath.resolve(it.fileName)
+                    Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
+                    println "Copying - $copying"
+                }
 
-        getAdditionalDependencies(target, artifact).collect { fs.getPath(it.path) }
+        dependencyLocations.collect {
+                    def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
+                    return fs.getPath(p)
+                }.each {
+                    def copying = targetLibPath.resolve(it.fileName)
+                    Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
+                    println "Copying - $copying"
+                }
+
+        getAdditionalDependencies(targetPluginPath, artifact).collect { fs.getPath(it.path) }
                 .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
-                .findAll {
-            !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
-        }.each {
-            def copying = target.resolve(it.fileName)
+                .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
+                .each {
+                    def copying = targetPluginPath.resolve(it.fileName)
+                    Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
+                    println "Copying - $copying"
+                }
+
+        getAdditionalDependencies(targetLibPath, artifact).collect { fs.getPath(it.path) }.each {
+            def copying = targetLibPath.resolve(it.fileName)
             Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
             println "Copying - $copying"
         }
 
-        alterPaths(target, artifact)
+        alterPaths(targetPluginPath, artifact)
     }
 
     private Set<URI> getAdditionalDependencies(final Path extPath, final Artifact artifact) {

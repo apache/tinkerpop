@@ -26,7 +26,8 @@ TinkerPop 3.0.0.M8 (Release Date: April 6, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Removed Neo4j-Gremlin from this distribution due to GPL licensing. Working with Neo4j team to reintroduce by M9.
-* Improved `OptOut` to allow for exlcusion of a group of tests by specifying a base test class.
+* Altered structure of plugin directories for Gremlin Server and Gremlin Console to allow for the full `lib` directory with all dependencies and the lighter `plugin` directory which contains filtered dependencies given the path.
+* Improved `OptOut` to allow for exclusion of a group of tests by specifying a base test class.
 * `GraphComputerTest` is now Java8 specific and much easier to extend with new test cases.
 * Merged the `gremlin-algorithm` module into `gremlin-test`.
 * Removed `LambdaVertexProgram` and `LambdaMapReduce` as it will be one less thing to maintain.

@@ -52,18 +52,23 @@ class InstallCommand extends CommandSupport {
         final def pluginsThatNeedRestart = grabDeps(dep)
 
         final String extClassPath = getPathFromDependency(dep)
+        final String extLibPath = extClassPath + fileSep + "lib"
+        final String extPluginPath = extClassPath + fileSep + "plugin"
         final File f = new File(extClassPath)
         if (f.exists())
             return "A module with the name ${dep.module} is already installed"
         else {
             f.mkdirs()
+            new File(extLibPath).mkdirs()
+            new File(extPluginPath).mkdirs()
             new File(extClassPath + fileSep + "plugin-info.txt").withWriter { out -> out << arguments.join(":") }
         }
 
         final def dependencyLocations = Grape.resolve([classLoader: shell.getInterp().getClassLoader()], null, dep)
 
         def fs = FileSystems.default
-        def target = fs.getPath(extClassPath)
+        def targetPluginPath = fs.getPath(extPluginPath)
+        def targetLibPath = fs.getPath(extLibPath)
 
         // collect the files already on the path in /lib. making some unfortunate assumptions about what the path
         // looks like for the gremlin distribution
@@ -82,25 +87,29 @@ class InstallCommand extends CommandSupport {
                     "structure can lead to unexpected behavior."
         }
 
-        // ignore slf4j related jars.  they are already in the path and will create duplicate bindings which
-        // generate annoying log messages that make you think stuff is wrong.  also, don't bring over files
-        // that are already on the path
+        // for the "plugin" path ignore slf4j related jars.  they are already in the path and will create duplicate
+        // bindings which generate annoying log messages that make you think stuff is wrong.  also, don't bring
+        // over files that are already on the path
         dependencyLocations.collect { fs.getPath(it.path) }
                 .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
-                .findAll {
-            !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
-        }
-                .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
+                .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name) }
+                .each { Files.copy(it, targetPluginPath.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
+
+        // for the "lib" path include all dependencies
+        dependencyLocations.collect { fs.getPath(it.path) }
+                .each { Files.copy(it, targetLibPath.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
 
         // additional dependencies are outside those pulled by grape and are defined in the manifest of the plugin jar.
         // if a plugin uses that setting, it should force "restart" when the plugin is activated.  right now,
         // it is up to the plugin developer to enforce that setting.
-        getAdditionalDependencies(target, artifact).collect { fs.getPath(it.path) }
+        getAdditionalDependencies(targetPluginPath, artifact).collect { fs.getPath(it.path) }
                 .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
-                .findAll {
-            !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
-        }
-                .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
+                .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
+                .each { Files.copy(it, targetPluginPath.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
+
+        // for the "lib" path include all dependencies
+        getAdditionalDependencies(targetLibPath, artifact).collect { fs.getPath(it.path) }
+                .each { Files.copy(it, targetLibPath.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
 
         // the ordering of jars seems to matter in some cases (e.g. neo4j).  the plugin system allows the plugin
         // to place a Gremlin-Plugin entry in the jar manifest file to define where specific jar files should
@@ -113,7 +122,7 @@ class InstallCommand extends CommandSupport {
         // because you can't just delete the plugin director as one or more of the jars might have been moved.
         // unsure of what the long term effects of this is.  at the end of the day, users may simply need to
         // know something about their dependencies in order to have lots of "installed" plugins/dependencies.
-        alterPaths(target, artifact)
+        alterPaths(targetPluginPath, artifact)
 
         return "Loaded: " + arguments + (pluginsThatNeedRestart.size() == 0 ? "" : " - restart the console to use $pluginsThatNeedRestart")
     }

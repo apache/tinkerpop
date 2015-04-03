@@ -40,7 +40,7 @@ while [ -h "$SOURCE" ]; do
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 CP=$CP:$( find -L "$DIR"/../ext -mindepth 1 -maxdepth 1 -type d | \
-          sort | sed 's/$/\/*/' | tr '\n' ':' )
+          sort | sed 's/$/\/plugin\/*/' | tr '\n' ':' )
 
 export CLASSPATH="${CLASSPATH:-}:$CP"
 
