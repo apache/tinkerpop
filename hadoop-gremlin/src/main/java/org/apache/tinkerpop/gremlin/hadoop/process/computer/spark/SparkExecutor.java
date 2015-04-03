@@ -101,13 +101,13 @@ public final class SparkExecutor {
                     });
                 });
 
-        // "message pass" by reducing on the vertex object id of the message payloads
+        // "message pass" by reducing on the vertex object id of the view and message payloads
         final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner().orElse(null);
         final JavaPairRDD<Object, ViewIncomingPayload<M>> newViewIncomingRDD = viewOutgoingRDD
                 .flatMapToPair(tuple -> () -> IteratorUtils.<Tuple2<Object, Payload>>concat(
-                        IteratorUtils.of(new Tuple2<>(tuple._1(), tuple._2().getView())),
-                        IteratorUtils.map(tuple._2().getOutgoingMessages().iterator(), message -> new Tuple2<>(message._1(), new MessagePayload<>(message._2())))))
-                .reduceByKey((a, b) -> {
+                        IteratorUtils.of(new Tuple2<>(tuple._1(), tuple._2().getView())),      // emit the view payload
+                        IteratorUtils.map(tuple._2().getOutgoingMessages().iterator(), message -> new Tuple2<>(message._1(), new MessagePayload<>(message._2())))))  // emit the outgoing message payloads one by one
+                .reduceByKey((a, b) -> {      // reduce the view and incoming messages into a single payload object representing the new view and incoming messages for a vertex
                     if (a instanceof ViewIncomingPayload) {
                         ((ViewIncomingPayload<M>) a).mergePayload(b, messageCombiner);
                         return a;
@@ -121,13 +121,16 @@ public final class SparkExecutor {
                         return c;
                     }
                 })
-                .filter(payload -> !(payload._2() instanceof MessagePayload)) // this happens if there is a message to a vertex that doesn't exist
+                .filter(payload -> !(payload._2() instanceof MessagePayload)) // this happens if there is a message to a vertex that does not exist
+                .filter(payload -> !((payload._2() instanceof ViewIncomingPayload) && !((ViewIncomingPayload<M>)payload._2()).hasView())) // this happens if there are many messages to a vertex that does not exist
                 .mapValues(payload -> payload instanceof ViewIncomingPayload ?
-                        (ViewIncomingPayload<M>) payload :
-                        new ViewIncomingPayload<>((ViewPayload) payload));
+                        (ViewIncomingPayload<M>) payload :                    // this happens if there is a vertex with incoming messages
+                        new ViewIncomingPayload<>((ViewPayload) payload));    // this happens if there is a vertex with no incoming messages
 
-        newViewIncomingRDD.foreachPartition(partitionIterator -> {
-        }); // need to complete a task so its BSP and the memory for this iteration is updated
+        newViewIncomingRDD // TODO? .cache() // cache so there is no history recomputation which can effect the computer memory
+                .foreachPartition(partitionIterator -> {
+                }); // need to complete a task so its BSP and the memory for this iteration is updated
+        // TODO? if(null != viewIncomingRDD) viewIncomingRDD.unpersist(); // unpersist the previous view and messages at this point because they are no longer needed
         return newViewIncomingRDD;
     }
 
