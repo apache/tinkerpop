@@ -61,5 +61,13 @@ limitations under the License.
             <source>pom.xml</source>
             <outputDirectory>src</outputDirectory>
         </file>
+        <file>
+            <source>src/main/LICENSE</source>
+            <outputDirectory></outputDirectory>
+        </file>
+        <file>
+            <source>src/main/NOTICE</source>
+            <outputDirectory></outputDirectory>
+        </file>
     </files>
 </assembly>
