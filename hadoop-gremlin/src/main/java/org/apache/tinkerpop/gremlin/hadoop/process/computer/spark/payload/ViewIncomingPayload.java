@@ -60,6 +60,10 @@ public class ViewIncomingPayload<M> implements Payload {
         return null == this.incomingMessages ? Collections.emptyList() : this.incomingMessages;
     }
 
+    public boolean hasView() {
+        return null != view;
+    }
+
     ////////////////////
 
 
