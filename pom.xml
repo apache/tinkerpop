@@ -124,23 +124,6 @@ limitations under the License.
         </extensions>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>1.3.1</version>
                 <executions>
@@ -581,10 +564,12 @@ limitations under the License.
             </activation>
 
             <properties>
-                <server.artifact>gremlin-server/target/gremlin-server-${project.version}-distribution.zip
+                <server.artifact>gremlin-server-${project.version}-distribution.zip
                 </server.artifact>
-                <console.artifact>gremlin-console/target/gremlin-console-${project.version}-distribution.zip
+                <console.artifact>gremlin-console-${project.version}-distribution.zip
                 </console.artifact>
+                <tinkerpop.artifact>tinkerpop-${project.version}-src.zip
+                </tinkerpop.artifact>
             </properties>
 
             <build>
@@ -602,12 +587,12 @@ limitations under the License.
                         </executions>
                         <inherited>false</inherited>
                         <configuration>
-                            <attach>false</attach>
+                            <attach>true</attach>
                             <descriptors>
                                 <descriptor>assembly.xml</descriptor>
                             </descriptors>
                             <finalName>${project.artifactId}-${project.version}</finalName>
-                            <outputDirectory>target/dist</outputDirectory>
+                            <outputDirectory>target</outputDirectory>
                             <workDirectory>target/assembly/work</workDirectory>
                             <tarLongFileMode>warn</tarLongFileMode>
                         </configuration>
@@ -615,43 +600,94 @@ limitations under the License.
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <version>1.8</version>
-                        <inherited>false</inherited>
                         <executions>
                             <execution>
-                                <!-- make sure this runs after the package phase -->
-                                <phase>verify</phase>
+                                <phase>install</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
+                                <inherited>true</inherited>
                                 <configuration>
                                     <tasks>
-                                        <copy todir="target/dist" flatten="true">
-                                            <fileset dir="${basedir}">
-                                                <include name="${server.artifact}" />
-                                                <include name="${console.artifact}" />
-                                            </fileset>
-                                        </copy>
-                                        <checksum algorithm="MD5" fileext=".md5">
-                                            <fileset dir="target/dist">
-                                                <include name="*.zip" />
-                                            </fileset>
-                                        </checksum>
-                                        <checksum algorithm="SHA1" fileext=".sha">
-                                            <fileset dir="target/dist">
-                                                <include name="*.zip" />
-                                            </fileset>
-                                        </checksum>
+                                        <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+                                        <if>
+                                          <available file="target/${server.artifact}"/>
+                                            <then>
+                                                <checksum algorithm="MD5" fileext=".md5">
+                                                    <fileset dir="target">
+                                                        <include name="*.zip" />
+                                                    </fileset>
+                                                </checksum>
+                                                <checksum algorithm="SHA1" fileext=".sha">
+                                                    <fileset dir="target">
+                                                        <include name="*.zip" />
+                                                    </fileset>
+                                                </checksum>
+                                            </then>
+                                        </if>
+                                        <if>
+                                            <available file="target/${console.artifact}"/>
+                                            <then>
+                                                <checksum algorithm="MD5" fileext=".md5">
+                                                    <fileset dir="target">
+                                                        <include name="*.zip" />
+                                                    </fileset>
+                                                </checksum>
+                                                <checksum algorithm="SHA1" fileext=".sha">
+                                                    <fileset dir="target">
+                                                        <include name="*.zip" />
+                                                    </fileset>
+                                                </checksum>
+                                            </then>
+                                        </if>
+                                        <if>
+                                            <available file="target/${tinkerpop.artifact}"/>
+                                            <then>
+                                                <checksum algorithm="MD5" fileext=".md5">
+                                                    <fileset dir="target">
+                                                        <include name="*.zip" />
+                                                    </fileset>
+                                                </checksum>
+                                                <checksum algorithm="SHA1" fileext=".sha">
+                                                    <fileset dir="target">
+                                                        <include name="*.zip" />
+                                                    </fileset>
+                                                </checksum>
+                                            </then>
+                                        </if>
                                     </tasks>
                                 </configuration>
                             </execution>
                         </executions>
                         <dependencies>
                             <dependency>
+                                <groupId>ant-contrib</groupId>
+                                <artifactId>ant-contrib</artifactId>
+                                <version>20020829</version>
+                            </dependency>
+                            <dependency>
                                 <groupId>org.apache.ant</groupId>
                                 <artifactId>ant-nodeps</artifactId>
                                 <version>1.8.1</version>
                             </dependency>
                         </dependencies>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-attached-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <ascDirectory>target</ascDirectory>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

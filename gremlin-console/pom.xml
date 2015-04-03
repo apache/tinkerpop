@@ -118,7 +118,7 @@ limitations under the License.
                     </execution>
                 </executions>
                 <configuration>
-                    <attach>false</attach>
+                    <attach>true</attach>
                     <descriptors>
                         <descriptor>src/assembly/standalone.xml</descriptor>
                         <descriptor>src/assembly/distribution.xml</descriptor>

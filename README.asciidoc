@@ -43,7 +43,7 @@ Building and Testing
 * Integration Tests: `mvn verify -DskipIntegrationTests=false`
 * Performance Tests: `mvn verify -DskipPerformanceTests=false`
 * Gatling Load Tests: `mvn test -Pgatling -Dhost={hostname}`
-* Generate "Apache Release" artifacts to the root `target/dist` directory: `mvn clean install -Dapache`
+* Generate "Apache Release" artifacts (signed with associated MD5/SHA1 checksum) to the root `target/dist` directory: `mvn clean install -Dapache`
 
 IDE Setup
 ^^^^^^^^^
