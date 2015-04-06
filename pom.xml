@@ -832,26 +832,6 @@ limitations under the License.
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>wagon-maven-plugin</artifactId>
-                        <inherited>false</inherited>
-                        <executions>
-                            <execution>
-                                <id>upload-asciidocs-to-s3-versioned</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>upload</goal>
-                                </goals>
-                                <configuration>
-                                    <fromDir>${htmlsingle.output.dir}</fromDir>
-                                    <serverId>tinkerpop.s3</serverId>
-                                    <!-- your ~/.m2/settings.xml must match -->
-                                    <url>s3://www.tinkerpop.com/docs/${project.version}</url>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
                 </plugins>
             </build>
         </profile>
