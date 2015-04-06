@@ -30,9 +30,6 @@ limitations under the License.
             </includes>
         </fileSet>
         <fileSet>
-            <directory>src</directory>
-        </fileSet>
-        <fileSet>
             <directory>conf</directory>
         </fileSet>
         <fileSet>
@@ -57,10 +54,6 @@ limitations under the License.
         </fileSet>
     </fileSets>
     <files>
-        <file>
-            <source>pom.xml</source>
-            <outputDirectory>src</outputDirectory>
-        </file>
         <file>
             <source>src/main/LICENSE</source>
             <outputDirectory></outputDirectory>
