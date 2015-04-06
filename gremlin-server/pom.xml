@@ -114,7 +114,7 @@ limitations under the License.
                     </execution>
                 </executions>
                 <configuration>
-                    <attach>${attach-archives}</attach>
+                    <attach>true</attach>
                     <descriptors>
                         <descriptor>src/assembly/standalone.xml</descriptor>
                         <descriptor>src/assembly/distribution.xml</descriptor>

@@ -32,15 +32,12 @@ Building and Testing
 
 * Build Project: `mvn clean install`
 ** Specify specific tests in a TinkerPop Suite to run: `mvn test -Dgremlin.tests={test class 1, test class 2...}` - note that including a specific test may require its inner class implementation (e.g. `org.apache.tinkerpop.gremlin....UnionTest$ComputerTest`)
-** Fast-build (does not run `neo4j-gremlin` tests - use with caution): `mvn clean install -DfeelingLucky`
 ** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 * Build AsciiDocs: `docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc`
 * Build JavaDocs: `mvn process-resources -Djavadoc`
 * Check for Apache License headers: `mvn apache-rat:check`
 * Deploy JavaDocs/AsciiDocs: `bin/publish-docs.sh svn-username`
-* Generate signed binary distribution zip archives with checksums: `mvn clean install -Darchives -Pchecksum`
-* Generate signed source distribution zip archive (standard Apache configuration) with checksums: `mvn clean install -Papache-release -Pchecksum`
 * Integration Tests: `mvn verify -DskipIntegrationTests=false`
 * Performance Tests: `mvn verify -DskipPerformanceTests=false`
 * Gatling Load Tests: `mvn test -Pgatling -Dhost={hostname}`
@@ -82,15 +79,17 @@ Release Process
 . `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
-. `mvn clean install -Papache-release -Pchecksum`- generate signed source distribution with checksums for upload to Apache release voting
-. `find . -name "*maven*" |xargs rm; scp -r . <username>@people.apache.org:~/public_html/tinkerpop-<version>/`
+. `bin/publish-docs.sh <username>`
+. `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to Apache Nexus for release voting
+. Close the staging repository
+. Upload zip distributions to: `https://dist.apache.org/repos/dist/dev/tinkerpop/`
 . Submit for `[VOTE]` at `general@incubator.apache.org`
 
 After a positive community "vote":
 
-. `git checkout `tags/x.y.z release"
-. `bin/publish-docs.sh <username>`
-. `mvn install -Parchives -Pchecksum -Dmaven.test.skip=true` - generate distributions for the release version with documentation included
+. Promote release in Nexus.
+. Remove previous release from `https://dist.apache.org/repos/dist/release/tinkerpop/`
+. Upload new zip distributions to `https://dist.apache.org/repos/dist/release/tinkerpop/`
 
 Issue Tracker Conventions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
