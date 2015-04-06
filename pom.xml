@@ -580,29 +580,6 @@ limitations under the License.
                         </configuration>
                     </plugin>
                     <plugin>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <version>2.4</version>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <inherited>false</inherited>
-                        <configuration>
-                            <attach>true</attach>
-                            <descriptors>
-                                <descriptor>assembly.xml</descriptor>
-                            </descriptors>
-                            <finalName>${project.artifactId}-${project.version}</finalName>
-                            <outputDirectory>target</outputDirectory>
-                            <workDirectory>target/assembly/work</workDirectory>
-                            <tarLongFileMode>warn</tarLongFileMode>
-                        </configuration>
-                    </plugin>
-                    <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <version>1.8</version>
                         <executions>
