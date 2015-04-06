@@ -71,6 +71,8 @@ public interface MapReduce<MK, MV, RK, RV, R> {
   // there are more methods
 }
 
+IMPORTANT: The vertex that is passed into the `MapReduce.map()` method does not contain edges. The vertex only contains original and computed vertex properties. This reduces the amount of data required to be loaded and ensures that MapReduce is used for post-processing computed results. All edge-based computing should be accomplished in the `VertexProgram`.
+
 image::mapreduce.png[width=650]
 
 The `MapReduce` extension to GraphComputer is made explicit when examining the <<peerpressurevertexprogram,`PeerPressureVertexProgram`>> and corresponding `ClusterPopulationMapReduce`. In the code below, the GraphComputer result returns the computed on `Graph` as well as the `Memory` of the computation (`ComputerResult`). The memory maintain the results of any MapReduce jobs. The cluster population MapReduce result states that there are 5 vertices in cluster 1 and 1 vertex in cluster 6. This can be verified (in a serial manner) by looking at the `PeerPressureVertexProgram.CLUSTER` property of the resultant graph. Notice that the property is "hidden" unless it is directly accessed via name.
