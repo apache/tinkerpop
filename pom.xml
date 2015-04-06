@@ -605,6 +605,8 @@ limitations under the License.
         </profile>
 
         <profile>
+            <!-- Generates sha1/md5 checksums for all zips.  This profile can be applied whether the
+                 zips are actually present or not (i.e. should not break anything if the files aren't present) -->
             <id>checksum</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
