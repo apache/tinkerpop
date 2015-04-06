@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.console.plugin
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -184,8 +186,9 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         final Object o = shell.execute(line)
         if (o instanceof Graph) {
             clearGraph()
-            def g = (Graph) o
-            g.V().sideEffect { addVertexToGephi(it.get()) }.iterate()
+            def graph = (Graph) o
+            def g = graph.traversal()
+            g.V().sideEffect { addVertexToGephi(g, it.get()) }.iterate()
         } else if (o instanceof Traversal.Admin) {
             fadingVertexColors = [:]
             def traversal = (Traversal.Admin) o
@@ -249,9 +252,9 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             return 2
     }
 
-    def addVertexToGephi(def Vertex v, def boolean ignoreEdges = false) {
+    def addVertexToGephi(def GraphTraversalSource g, def Vertex v, def boolean ignoreEdges = false) {
         // grab the first property value from the strategies of values
-        def props = v.valueMap().next().collectEntries { kv -> [(kv.key): kv.value[0]] }
+        def props = g.V(v).valueMap().next().collectEntries { kv -> [(kv.key): kv.value[0]] }
         props << [label: v.label()]
 
         // only add if it does not exist in graph already
@@ -259,22 +262,22 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             updateGephiGraph([an: [(v.id().toString()): props]])
 
         if (!ignoreEdges) {
-            v.outE().sideEffect {
-                addEdgeToGephi(it.get())
+            g.V(v).outE().sideEffect {
+                addEdgeToGephi(g, it.get())
             }.iterate()
         }
     }
 
-    def addEdgeToGephi(def Edge e) {
-        def props = e.valueMap().next()
+    def addEdgeToGephi(def GraphTraversalSource g, def Edge e) {
+        def props = g.E(e).valueMap().next()
         props.put('label', e.label())
-        props.put('source', e.outV().id().next().toString())
-        props.put('target', e.inV().id().next().toString())
+        props.put('source', e.outVertex().id().toString())
+        props.put('target', e.inVertex().id().toString())
         props.put('directed', true)
 
         // make sure the in vertex is there but don't add its edges - that will happen later as we are looping
         // all vertices in the graph
-        addVertexToGephi(e.inV().next(), true)
+        addVertexToGephi(g, e.inVertex(), true)
 
         // both vertices are definitely there now, so add the edge
         updateGephiGraph([ae: [(e.id().toString()): props]])

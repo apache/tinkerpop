@@ -766,28 +766,34 @@ NOTE: It's recommended to choose a continuously running layout algorithm like Fr
 Consider the following traversal:
 
 [source,groovy]
+----
+g = graph.traversal()
 g.V(2).in().out('knows').
       has('age',gt,30).outE('created').
-      has('weight',gt,0.5f).inV()
+      has('weight',gt,0.5d).inV()
+----
 
 To visualize it insert the appropriately named `store('n')` steps where `n` is an integer, and the vertices will be highlighted in ascending store step order.
 
 [source,groovy]
+----
+gremlin> g = graph.traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
 gremlin> g.V(2).in('knows').out('knows').has('age',gt,30).
-               outE('created').has('weight',gt,0.5f).inV().values('name')
+               outE('created').has('weight',gt,0.5d).inV().values('name')
 ==>ripple
 gremlin> traversal = g.V(2).store('1').
                            in('knows').store('2').
                            out('knows').has('age',gt,30).store('3').
-                           outE('created').has('weight',gt,0.5f).inV().store('4')
+                           outE('created').has('weight',gt,0.5d).inV().store('4')
 ==>{v[5]=1}
-gremlin> traversal.sideEffects().get('1')
+gremlin> traversal.getSideEffects().get('1')
 ==>v[2]
-gremlin> traversal.sideEffects().get('2')
+gremlin> traversal.getSideEffects().get('2')
 ==>v[1]
-gremlin> traversal.sideEffects().get('3')
+gremlin> traversal.getSideEffects().get('3')
 ==>v[4]
-gremlin> traversal.sideEffects().get('4')
+gremlin> traversal.getSideEffects().get('4')
 ==>v[5]
 gremlin> 
 gremlin> :> traversal
@@ -796,6 +802,7 @@ Visualizing vertices at step: 2... visited: 1
 Visualizing vertices at step: 3... visited: 1
 Visualizing vertices at step: 4... visited: 1
 gremlin>
+----
 
 When `:> traversal` is called, it iterates through the sideEffects of the traversal accessing the vertices stored at each corresponding step. It then updates the vertices' color with `startRGBColor`, which in this case is a lime-green blue: [0.0,1.0,0.5]. After the first step visualization, it sleeps for the configured `stepDelay` in milliseconds. On the second step, it decays the configured `colorToFade` of all the previously visited vertices in prior steps, by multiplying the current `colorToFade` value for each vertex with the `colorFadeRate`.  To avoid color decay on prior steps, then provide a `colorFadeRate` value of `1.0`.  The screenshots below show how the visualization evolves over the 4 steps:
 
