@@ -24,7 +24,7 @@ limitations under the License.
         <version>3.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-driver</artifactId>
-    <name>Gremlin Driver: Connect to Gremlin Server with Java</name>
+    <name>Apache TinkerPop :: Gremlin Driver</name>
     <properties>
         <netty.version>4.0.25.Final</netty.version>
     </properties>

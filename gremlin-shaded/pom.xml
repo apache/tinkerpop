@@ -23,7 +23,7 @@ limitations under the License.
         <version>3.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-shaded</artifactId>
-    <name>Gremlin Shaded: Shades of Commonly Used Dependencies</name>
+    <name>Apache TinkerPop :: Gremlin Shaded</name>
     <dependencies>
         <dependency>
             <groupId>com.esotericsoftware.kryo</groupId>

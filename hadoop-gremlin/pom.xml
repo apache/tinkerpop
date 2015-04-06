@@ -24,7 +24,7 @@ limitations under the License.
         <version>3.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>hadoop-gremlin</artifactId>
-    <name>Hadoop Gremlin: An Implementation of TinkerPop3 for Hadoop</name>
+    <name>Apache TinkerPop :: Hadoop Gremlin</name>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
