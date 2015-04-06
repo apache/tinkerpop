@@ -127,10 +127,9 @@ public final class SparkExecutor {
                         (ViewIncomingPayload<M>) payload :                    // this happens if there is a vertex with incoming messages
                         new ViewIncomingPayload<>((ViewPayload) payload));    // this happens if there is a vertex with no incoming messages
 
-        newViewIncomingRDD // TODO? .cache() // cache so there is no history recomputation which can effect the computer memory
+        newViewIncomingRDD
                 .foreachPartition(partitionIterator -> {
                 }); // need to complete a task so its BSP and the memory for this iteration is updated
-        // TODO? if(null != viewIncomingRDD) viewIncomingRDD.unpersist(); // unpersist the previous view and messages at this point because they are no longer needed
         return newViewIncomingRDD;
     }
 

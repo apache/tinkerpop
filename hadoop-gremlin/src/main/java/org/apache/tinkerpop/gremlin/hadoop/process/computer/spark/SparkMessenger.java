@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SparkMessenger<M> implements Messenger<M> {
+public final class SparkMessenger<M> implements Messenger<M> {
 
     private Vertex vertex;
     private Iterable<M> incomingMessages;

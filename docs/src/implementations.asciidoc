@@ -452,9 +452,9 @@ Installing Hadoop-Gremlin
 To the `.bash_profile` file, add the following environmental variable (of course, be sure the directories are respective of the local machine locations). The `HADOOP_GREMLIN_LIBS` is the location of all the Hadoop-Gremlin jars. It is possible to place developer jars into this directory for loading into the Hadoop job's classpath. Or, better yet, note that `HADOOP_GREMLIN_LIBS` can be a colon-separated (`:`) list of locations and thus will load all jars into the cluster at all provided locations.
 
 [source,shell]
-export HADOOP_GREMLIN_LIBS=/usr/local/gremlin-console/ext/hadoop-gremlin:/usr/local/gremlin-console/lib
+export HADOOP_GREMLIN_LIBS=/usr/local/gremlin-console/ext/hadoop-gremlin/lib
 
-If using <<gremlin-console,Gremlin Console>>, it is important to install the Hadoop-Gremlin plugin. Note that Hadoop-Gremlin requires a Gremlin Console restart after installing,
+If using <<gremlin-console,Gremlin Console>>, it is important to install the Hadoop-Gremlin plugin. Note that Hadoop-Gremlin requires a Gremlin Console restart after installing.
 
 [source,text]
 ----
@@ -525,7 +525,7 @@ A review of the Hadoop-Gremlin specific properties are provided in the table bel
 |gremlin.hadoop.graphInputFormat |The format that the graph input file(s) are represented in.
 |gremlin.hadoop.outputLocation |The location to write the computed HadoopGraph to.
 |gremlin.hadoop.graphOutputFormat |The format that the output file(s) should be represented in.
-|gremlin.hadoop.memoryOutputFormat |The format of any resultant GraphComputer Memory.
+|gremlin.hadoop.memoryOutputFormat |The format of any resultant GraphComputer Memory (best to always have this be `SequenceFileOutputFormat`).
 |gremlin.hadoop.jarsInDistributedCache |Whether to upload the Hadoop-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
 |=========================================================
 
@@ -572,7 +572,7 @@ A `Graph` in TinkerPop3 can support any number of `GraphComputer` implementation
 * <<giraphgraphcomputer,`GiraphGraphComputer`>>: Leverages Giraph to execute TinkerPop3 OLAP computations.
 ** The graph should fit within the total RAM of the Hadoop cluster (graph size restriction), though "out-of-core" processing is possible. Messages passing is coordinated via ZooKeeper for the in-memory graph (speedy traversals).
 * <<sparkgraphcomputer,`SparkGraphComputer`>>: Leverages Spark to execute TinkerPop3 OLAP computations.
-** The graph may fit within the total RAM of the cluster (supports larger graphs). Message passing is coordinated via Spark map/reduce operations on in-memory and disk-cached data (middle speed traversals).
+** The graph may fit within the total RAM of the cluster (supports larger graphs). Message passing is coordinated via Spark map/reduce/join operations on in-memory and disk-cached data (average speed traversals).
 * <<mapreducegraphcomputer,`MapReduceGraphComputer`>>: Leverages Hadoop's MapReduce to execute TinkerPop3 OLAP computations. (*coming soon*)
 ** The graph must fit within the total disk space of the Hadoop cluster (supports massive graphs). Message passing is coordinated via MapReduce jobs over the on-disk graph (slow traversals).
 
