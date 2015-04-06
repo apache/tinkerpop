@@ -555,11 +555,11 @@ limitations under the License.
     <profiles>
 
         <profile>
-            <id>apache-release</id>
+            <id>archives</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <property>
-                    <name>apache</name>
+                    <name>archives</name>
                 </property>
             </activation>
 
@@ -574,6 +574,13 @@ limitations under the License.
 
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <version>2.4</version>
@@ -1037,73 +1044,6 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <executable>${basedir}/bin/clean-grapes.sh</executable>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>archives</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>archives</name>
-                </property>
-            </activation>
-
-            <properties>
-                <server.artifact>gremlin-server/target/gremlin-server-${project.version}-distribution.zip
-                </server.artifact>
-                <console.artifact>gremlin-console/target/gremlin-console-${project.version}-distribution.zip
-                </console.artifact>
-            </properties>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>wagon-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>upload-gremlin-server-to-s3-versioned</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>upload-single</goal>
-                                </goals>
-                                <inherited>false</inherited>
-                                <configuration>
-                                    <fromFile>${server.artifact}</fromFile>
-                                    <toFile>gremlin-server-${project.version}.zip</toFile>
-                                    <serverId>tinkerpop.s3</serverId>
-                                    <!-- your ~/.m2/settings.xml must match -->
-                                    <!-- <optimize>true</optimize> --> <!-- not supported by the S3 wagon -->
-                                    <url>s3://www.tinkerpop.com/downloads/${project.version}</url>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>upload-gremlin-console-to-s3-versioned</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>upload-single</goal>
-                                </goals>
-                                <inherited>false</inherited>
-                                <configuration>
-                                    <fromFile>${console.artifact}</fromFile>
-                                    <toFile>gremlin-console-${project.version}.zip</toFile>
-                                    <serverId>tinkerpop.s3</serverId>
-                                    <!-- your ~/.m2/settings.xml must match -->
-                                    <!-- <optimize>true</optimize> --> <!-- not supported by the S3 wagon -->
-                                    <url>s3://www.tinkerpop.com/downloads/${project.version}</url>
                                 </configuration>
                             </execution>
                         </executions>
