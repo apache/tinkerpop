@@ -27,7 +27,8 @@ limitations under the License.
     <artifactId>tinkerpop</artifactId>
     <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Apache TinkerPop: A Graph Computing Framework</name>
+    <name>Apache TinkerPop</name>
+    <description>A Graph Computing Framework</description>
     <url>http://tinkerpop.incubator.apache.org/</url>
     <mailingLists>
         <mailingList>
@@ -141,7 +142,7 @@ limitations under the License.
                             <rules>
                                 <DependencyConvergence/>
                                 <requireJavaVersion>
-                                    <version>[1.8,)</version>
+                                    <version>[1.8.0-40,)</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>

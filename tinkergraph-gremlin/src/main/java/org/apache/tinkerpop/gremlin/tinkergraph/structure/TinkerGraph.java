@@ -81,7 +81,7 @@ public class TinkerGraph implements Graph {
     private final static TinkerGraph EMPTY_GRAPH = new TinkerGraph();
 
     /**
-     * An empty private constructor that initializes {@link TinkerGraph} with no {@link org.apache.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
+     * An empty private constructor that initializes {@link TinkerGraph}.
      */
     private TinkerGraph() {
     }
@@ -107,7 +107,7 @@ public class TinkerGraph implements Graph {
      * <p/>
      * <b>Reference Implementation Help:</b> This method is the one use by the
      * {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory} to instantiate
-     * {@link org.apache.tinkerpop.gremlin.structure.Graph} instances.  This method must be overridden for the Blueprint Test
+     * {@link org.apache.tinkerpop.gremlin.structure.Graph} instances.  This method must be overridden for the Structure Test
      * Suite to pass. Implementers have latitude in terms of how exceptions are handled within this method.  Such
      * exceptions will be considered implementation specific by the test suite as all test generate graph instances
      * by way of {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}. As such, the exceptions get generalized
