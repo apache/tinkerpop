@@ -34,6 +34,7 @@ Building and Testing
 ** Specify specific tests in a TinkerPop Suite to run: `mvn test -Dgremlin.tests={test class 1, test class 2...}` - note that including a specific test may require its inner class implementation (e.g. `org.apache.tinkerpop.gremlin....UnionTest$ComputerTest`)
 ** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
+* Check license headers are present: `mvn apache-rat:check`
 * Build AsciiDocs: `docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc`
 * Build JavaDocs: `mvn process-resources -Djavadoc`
 * Check for Apache License headers: `mvn apache-rat:check`
@@ -70,7 +71,6 @@ gremlin>
 Release Process
 ~~~~~~~~~~~~~~~
 
-. `mvn apache-rat:check` - ensure license headers are present
 . `mvn clean install`
 .. `mvn verify -DskipIntegrationTests=false`
 .. `mvn verify -DskipPerformanceTests=false`
