@@ -39,7 +39,8 @@ Building and Testing
 * Build JavaDocs: `mvn process-resources -Djavadoc`
 * Check for Apache License headers: `mvn apache-rat:check`
 * Deploy JavaDocs/AsciiDocs: `bin/publish-docs.sh svn-username`
-* Generate signed zip archives: `mvn install -Darchives`
+* Generate signed binary distribution zip archives: `mvn install -Darchives`
+* Generate signed source distribution zip archive (standard Apache configuration): `mvn clean install -Papache-release`
 * Integration Tests: `mvn verify -DskipIntegrationTests=false`
 * Performance Tests: `mvn verify -DskipPerformanceTests=false`
 * Gatling Load Tests: `mvn test -Pgatling -Dhost={hostname}`

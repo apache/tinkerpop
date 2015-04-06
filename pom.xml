@@ -568,8 +568,6 @@ limitations under the License.
                 </server.artifact>
                 <console.artifact>gremlin-console-${project.version}-distribution.zip
                 </console.artifact>
-                <tinkerpop.artifact>tinkerpop-${project.version}-src.zip
-                </tinkerpop.artifact>
             </properties>
 
             <build>
@@ -634,21 +632,6 @@ limitations under the License.
                                         </if>
                                         <if>
                                             <available file="target/${console.artifact}"/>
-                                            <then>
-                                                <checksum algorithm="MD5" fileext=".md5">
-                                                    <fileset dir="target">
-                                                        <include name="*.zip" />
-                                                    </fileset>
-                                                </checksum>
-                                                <checksum algorithm="SHA1" fileext=".sha">
-                                                    <fileset dir="target">
-                                                        <include name="*.zip" />
-                                                    </fileset>
-                                                </checksum>
-                                            </then>
-                                        </if>
-                                        <if>
-                                            <available file="target/${tinkerpop.artifact}"/>
                                             <then>
                                                 <checksum algorithm="MD5" fileext=".md5">
                                                     <fileset dir="target">
