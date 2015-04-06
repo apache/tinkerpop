@@ -183,20 +183,20 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 
     }
 
-    @Override
+   @Override
     public void execute(final Vertex vertex, Messenger<Double> messenger, final Memory memory) { <6>
-        if (memory.isInitialIteration()) { <7>
+        if (memory.isInitialIteration()) {  <7>
             messenger.sendMessage(this.countMessageScope, 1.0d);
-        } else if (1 == memory.getIteration()) { <8>
+        } else if (1 == memory.getIteration()) {  <8>
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
-            double edgeCount = StreamFactory.stream(messenger.receiveMessages(this.countMessageScope)).reduce(0.0d, (a, b) -> a + b);
-            vertex.property(single, PAGE_RANK, initialPageRank);
-            vertex.property(single, EDGE_COUNT, edgeCount);
+            double edgeCount = IteratorUtils.reduce(messenger.receiveMessages(this.countMessageScope), 0.0d, (a, b) -> a + b);
+            vertex.property(PAGE_RANK, initialPageRank);
+            vertex.property(EDGE_COUNT, edgeCount);
             messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
         } else { <9>
-            double newPageRank = StreamFactory.stream(messenger.receiveMessages(this.incidentMessageScope)).reduce(0.0d, (a, b) -> a + b);
+            double newPageRank = IteratorUtils.reduce(messenger.receiveMessages(this.incidentMessageScope), 0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
-            vertex.property(single, PAGE_RANK, newPageRank);
+            vertex.property(PAGE_RANK, newPageRank);
             messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
         }
     }
