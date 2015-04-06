@@ -21,39 +21,41 @@ limitations under the License.
     </formats>
     <fileSets>
         <fileSet>
-            <fileMode>0775</fileMode>
-            <directory>target/${project.artifactId}-${project.version}-standalone/bin</directory>
-            <outputDirectory>bin</outputDirectory>
-            <includes>
-                <include>*.sh</include>
-                <include>*.bat</include>
-            </includes>
+            <directory>src/main/bin</directory>
+            <outputDirectory>/bin</outputDirectory>
+            <fileMode>0755</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/ext</directory>
+            <outputDirectory>/ext</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>conf</directory>
-        </fileSet>
-        <fileSet>
-            <directory>target/${project.artifactId}-${project.version}-standalone/data</directory>
-            <outputDirectory>data</outputDirectory>
+            <outputDirectory>/conf</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>scripts</directory>
+            <outputDirectory>/scripts</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>target/${project.artifactId}-${project.version}-standalone/ext</directory>
-            <outputDirectory>ext</outputDirectory>
+            <directory>../target/docs/htmlsingle</directory>
+            <outputDirectory>/docs</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>target/${project.artifactId}-${project.version}-standalone/docs</directory>
-            <outputDirectory>docs</outputDirectory>
+            <directory>../target/site/apidocs</directory>
+            <outputDirectory>/javadocs</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>target/${project.artifactId}-${project.version}-standalone/javadocs</directory>
-            <outputDirectory>javadocs</outputDirectory>
+            <directory>target/*.jar</directory>
+            <outputDirectory>/lib</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>target/${project.artifactId}-${project.version}-standalone/lib</directory>
-            <outputDirectory>lib</outputDirectory>
+            <directory>data</directory>
+            <outputDirectory>/data</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>../data</directory>
+            <outputDirectory>/data</outputDirectory>
         </fileSet>
     </fileSets>
     <files>
