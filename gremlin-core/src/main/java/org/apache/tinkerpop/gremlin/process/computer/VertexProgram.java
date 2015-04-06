@@ -45,8 +45,6 @@ public interface VertexProgram<M> extends Cloneable {
 
     public static final String VERTEX_PROGRAM = "gremlin.vertexProgram";
 
-    public enum Status {SUCCESS, FAILURE}
-
     /**
      * When it is necessary to store the state of the VertexProgram, this method is called.
      * This is typically required when the VertexProgram needs to be serialized to another machine.
