@@ -110,6 +110,11 @@ limitations under the License.
         <hadoop.version>1.2.1</hadoop.version>
         <javadoc-plugin.version>2.10.1</javadoc-plugin.version>
         <muteTestLogs>false</muteTestLogs>
+
+        <!-- By default zip archives in gremlin-console/server are not attached and thus not subject to deployment.
+             When running the "archives" profile, deployment is disabled but zips are attached so they become
+             subject to gpg and other plugin actions -->
+        <attach-archives>false</attach-archives>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -568,6 +573,7 @@ limitations under the License.
                 </server.artifact>
                 <console.artifact>gremlin-console-${project.version}-distribution.zip
                 </console.artifact>
+                <attach-archives>true</attach-archives>
             </properties>
 
             <build>
