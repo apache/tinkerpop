@@ -82,11 +82,11 @@ Release Process
 . `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
-. `bin/publish-docs.sh <username>`
-. `mvn install -Dasciidoc -Djavadoc -Dmaven.test.skip=true` - generate distributions for the release version with documentation included
-. `mvn install -Dgpg.skip=false -DcreateChecksum=true`- generate checksums for upload to Apache Incubator release voting
+. `mvn clean install -Papache-release -Pchecksum`- generate signed source distribution with checksums for upload to Apache release voting
 . `find . -name "*maven*" |xargs rm; scp -r . <username>@people.apache.org:~/public_html/tinkerpop-<version>/`
 . Submit for `[VOTE]` at `general@incubator.apache.org`.
+. `bin/publish-docs.sh <username>`
+. `mvn install -Dasciidoc -Djavadoc -Dmaven.test.skip=true` - generate distributions for the release version with documentation included
 
 Issue Tracker Conventions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
