@@ -71,6 +71,8 @@ public interface MapReduce<MK, MV, RK, RV, R> {
   // there are more methods
 }
 
+IMPORTANT: The vertex that is passed into the `MapReduce.map()` method does not contain edges. The vertex only contains original and computed vertex properties. This reduces the amount of data required to be loaded and ensures that MapReduce is used for post-processing computed results. All edge-based computing should be accomplished in the `VertexProgram`.
+
 image::mapreduce.png[width=650]
 
 The `MapReduce` extension to GraphComputer is made explicit when examining the <<peerpressurevertexprogram,`PeerPressureVertexProgram`>> and corresponding `ClusterPopulationMapReduce`. In the code below, the GraphComputer result returns the computed on `Graph` as well as the `Memory` of the computation (`ComputerResult`). The memory maintain the results of any MapReduce jobs. The cluster population MapReduce result states that there are 5 vertices in cluster 1 and 1 vertex in cluster 6. This can be verified (in a serial manner) by looking at the `PeerPressureVertexProgram.CLUSTER` property of the resultant graph. Notice that the property is "hidden" unless it is directly accessed via name.
@@ -181,20 +183,20 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 
     }
 
-    @Override
+   @Override
     public void execute(final Vertex vertex, Messenger<Double> messenger, final Memory memory) { <6>
-        if (memory.isInitialIteration()) { <7>
+        if (memory.isInitialIteration()) {  <7>
             messenger.sendMessage(this.countMessageScope, 1.0d);
-        } else if (1 == memory.getIteration()) { <8>
+        } else if (1 == memory.getIteration()) {  <8>
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
-            double edgeCount = StreamFactory.stream(messenger.receiveMessages(this.countMessageScope)).reduce(0.0d, (a, b) -> a + b);
-            vertex.property(single, PAGE_RANK, initialPageRank);
-            vertex.property(single, EDGE_COUNT, edgeCount);
+            double edgeCount = IteratorUtils.reduce(messenger.receiveMessages(this.countMessageScope), 0.0d, (a, b) -> a + b);
+            vertex.property(PAGE_RANK, initialPageRank);
+            vertex.property(EDGE_COUNT, edgeCount);
             messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
         } else { <9>
-            double newPageRank = StreamFactory.stream(messenger.receiveMessages(this.incidentMessageScope)).reduce(0.0d, (a, b) -> a + b);
+            double newPageRank = IteratorUtils.reduce(messenger.receiveMessages(this.incidentMessageScope), 0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
-            vertex.property(single, PAGE_RANK, newPageRank);
+            vertex.property(PAGE_RANK, newPageRank);
             messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
         }
     }
