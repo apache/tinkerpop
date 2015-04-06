@@ -560,6 +560,8 @@ limitations under the License.
     <profiles>
 
         <profile>
+            <!-- This profile will force a signature of the gremlin-server/console zip files, but will prevent
+                 them from being deployed to a maven repo. -->
             <id>archives</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
@@ -569,10 +571,6 @@ limitations under the License.
             </activation>
 
             <properties>
-                <server.artifact>gremlin-server-${project.version}-distribution.zip
-                </server.artifact>
-                <console.artifact>gremlin-console-${project.version}-distribution.zip
-                </console.artifact>
                 <attach-archives>true</attach-archives>
             </properties>
 
@@ -585,6 +583,43 @@ limitations under the License.
                             <skip>true</skip>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-attached-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <ascDirectory>target</ascDirectory>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>checksum</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+
+            <properties>
+                <server.artifact>gremlin-server-${project.version}-distribution.zip
+                </server.artifact>
+                <console.artifact>gremlin-console-${project.version}-distribution.zip
+                </console.artifact>
+                <tinkerpop.artifact>tinkerpop-${project.version}-source-release.zip
+                </tinkerpop.artifact>
+            </properties>
+            <build>
+                <plugins>
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <version>1.8</version>
@@ -599,7 +634,7 @@ limitations under the License.
                                     <tasks>
                                         <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
                                         <if>
-                                          <available file="target/${server.artifact}"/>
+                                            <available file="target/${server.artifact}"/>
                                             <then>
                                                 <checksum algorithm="MD5" fileext=".md5">
                                                     <fileset dir="target">
@@ -615,6 +650,21 @@ limitations under the License.
                                         </if>
                                         <if>
                                             <available file="target/${console.artifact}"/>
+                                            <then>
+                                                <checksum algorithm="MD5" fileext=".md5">
+                                                    <fileset dir="target">
+                                                        <include name="*.zip" />
+                                                    </fileset>
+                                                </checksum>
+                                                <checksum algorithm="SHA1" fileext=".sha">
+                                                    <fileset dir="target">
+                                                        <include name="*.zip" />
+                                                    </fileset>
+                                                </checksum>
+                                            </then>
+                                        </if>
+                                        <if>
+                                            <available file="target/${tinkerpop.artifact}"/>
                                             <then>
                                                 <checksum algorithm="MD5" fileext=".md5">
                                                     <fileset dir="target">
@@ -644,23 +694,6 @@ limitations under the License.
                                 <version>1.8.1</version>
                             </dependency>
                         </dependencies>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
-                        <executions>
-                            <execution>
-                                <id>sign-attached-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <ascDirectory>target</ascDirectory>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
