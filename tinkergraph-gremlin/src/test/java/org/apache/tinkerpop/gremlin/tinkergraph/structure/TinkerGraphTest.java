@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.process.computer.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -141,14 +142,10 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay3() throws Exception {
-        Graph graph = TinkerGraph.open();
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
-        final Vertex marko = graph.addVertex("name", "marko", "name", "marko a. rodriguez");
-        marko.property(VertexProperty.Cardinality.list, "location", "san diego", "startTime", 1997, "endTime", 2001);
-        marko.property(VertexProperty.Cardinality.list, "location", "santa cruz", "startTime", 2001, "endTime", 2004);
-        marko.property(VertexProperty.Cardinality.list, "location", "brussels", "startTime", 2004, "endTime", 2005);
-        marko.property(VertexProperty.Cardinality.list, "location", "santa fe", "startTime", 2005);
-        g.V().valueMap().forEachRemaining(System.out::println);
+        StarGraph graph = StarGraph.open();
+        Vertex a = graph.addVertex(T.id,1,"name","marko");
+        Vertex b = graph.addVertex(T.id,2,"firstname","stephen");
+        graph.vertices().forEachRemaining(System.out::println);
     }
 
     @Test

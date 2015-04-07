@@ -25,6 +25,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.computer.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -63,9 +64,9 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWrita
         if (!this.lineRecordReader.nextKeyValue())
             return false;
 
-        final TinkerGraph gLocal = TinkerGraph.open();
-        final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
-        final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
+        final StarGraph gLocal = StarGraph.open();
+        final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> StarGraph.addTo(gLocal, detachedVertex);
+        final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> StarGraph.addTo(gLocal, detachedEdge);
         try (InputStream in = new ByteArrayInputStream(this.lineRecordReader.getCurrentValue().getBytes())) {
             this.vertexWritable.set(this.hasEdges ?
                     this.graphsonReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker) :
