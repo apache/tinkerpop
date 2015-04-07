@@ -44,11 +44,12 @@ public class StarVertexProperty<V> implements VertexProperty<V> {
     private Map<String, Object> properties = null;
     private final StarVertex starVertex;
 
-    public StarVertexProperty(final Object id, final String key, final V value, final StarVertex starVertex) {
+    public StarVertexProperty(final Object id, final String key, final V value, final StarVertex starVertex, final Object... keyValues) {
         this.id = null == id ? StarGraph.randomId() : id;
         this.key = key;
         this.value = value;
         this.starVertex = starVertex;
+        ElementHelper.attachProperties(this,keyValues);
     }
 
     @Override

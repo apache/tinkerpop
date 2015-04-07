@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.Collections;
@@ -94,5 +95,10 @@ public abstract class StarAdjacentVertex implements Vertex {
     @Override
     public int hashCode() {
         return ElementHelper.hashCode(this);
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.vertexString(this);
     }
 }

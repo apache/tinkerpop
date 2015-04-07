@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -67,15 +66,22 @@ public class StarGraph implements Graph {
 
     @Override
     public Iterator<Vertex> vertices(final Object... vertexIds) {
+        System.out.println(this.starVertex.outEdges);
         return null == this.starVertex ?
                 Collections.emptyIterator() :
                 Stream.concat(
                         Stream.of(this.starVertex),
-                        this.starVertex.outEdges.values()
-                                .stream()
-                                .flatMap(List::stream)
-                                .map(Edge::inVertex))
-                        .filter(vertex -> ElementHelper.idExists(vertex.id(), vertexIds)).iterator();
+                        Stream.concat(
+                                this.starVertex.outEdges.values()
+                                        .stream()
+                                        .flatMap(List::stream)
+                                        .map(Edge::inVertex),
+                                this.starVertex.inEdges.values()
+                                        .stream()
+                                        .flatMap(List::stream)
+                                        .map(Edge::outVertex)))
+                        .filter(vertex -> ElementHelper.idExists(vertex.id(), vertexIds))
+                        .iterator();
     }
 
     @Override
@@ -129,20 +135,20 @@ public class StarGraph implements Graph {
     }
 
     public static Edge addTo(final StarGraph graph, final DetachedEdge edge) {
-         final Object id = edge.inVertex().id();
-        if(graph.starVertex.id().equals(id)) {
-            final Edge outEdge = graph.starVertex.addEdge(edge.label(),new StarInVertex(edge.inVertex().id(),graph.starVertex),new Object[]{T.id,edge.id()});
-            edge.properties().forEachRemaining(property -> outEdge.property(property.key(),property.value()));
+        final Object id = edge.inVertex().id();
+        if (!graph.starVertex.id().equals(id)) {
+            final Edge outEdge = graph.starVertex.addEdge(edge.label(), new StarInVertex(edge.inVertex().id(), graph.starVertex), new Object[]{T.id, edge.id()});
+            edge.properties().forEachRemaining(property -> outEdge.property(property.key(), property.value()));
             return outEdge;
         } else {
-            final Edge inEdge = new StarOutVertex(edge.outVertex().id(),graph.starVertex).addEdge(edge.label(),graph.starVertex,new Object[]{T.id,edge.id()});
-            edge.properties().forEachRemaining(property -> inEdge.property(property.key(),property.value()));
+            final Edge inEdge = new StarOutVertex(edge.outVertex().id(), graph.starVertex).addEdge(edge.label(), graph.starVertex, new Object[]{T.id, edge.id()});
+            edge.properties().forEachRemaining(property -> inEdge.property(property.key(), property.value()));
             return inEdge;
         }
     }
 
     protected static Long randomId() {
-        return new Random().nextLong();
+        return new Random().nextLong(); // TODO: you shouldn't need this!
     }
 
 }

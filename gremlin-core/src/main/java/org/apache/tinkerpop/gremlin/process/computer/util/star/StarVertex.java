@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,7 +67,7 @@ public class StarVertex extends StarElement implements Vertex {
             this.properties = new HashMap<>();
 
         final List<VertexProperty<?>> list = cardinality.equals(VertexProperty.Cardinality.single) ? new ArrayList<>(1) : this.properties.getOrDefault(key, new ArrayList<>());
-        final VertexProperty<V> vertexProperty = new StarVertexProperty<>(ElementHelper.getIdValue(keyValues).orElse(null), key, value, this);
+        final VertexProperty<V> vertexProperty = new StarVertexProperty<>(ElementHelper.getIdValue(keyValues).orElse(null), key, value, this, keyValues);
         list.add(vertexProperty);
         this.properties.put(key, list);
         return vertexProperty;
@@ -119,6 +120,11 @@ public class StarVertex extends StarElement implements Vertex {
     @Override
     public void remove() {
 
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.vertexString(this);
     }
 
     @Override

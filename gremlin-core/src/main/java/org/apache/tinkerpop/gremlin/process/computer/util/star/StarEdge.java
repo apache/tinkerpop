@@ -24,6 +24,7 @@ package org.apache.tinkerpop.gremlin.process.computer.util.star;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -63,5 +64,20 @@ public abstract class StarEdge extends StarElement implements Edge {
     @Override
     public void remove() {
         //TODO: throw Edge.Exceptions.edgeRemovalNotSupported();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return ElementHelper.areEqual(this, other);
+    }
+
+    @Override
+    public int hashCode() {
+        return ElementHelper.hashCode(this);
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.edgeString(this);
     }
 }

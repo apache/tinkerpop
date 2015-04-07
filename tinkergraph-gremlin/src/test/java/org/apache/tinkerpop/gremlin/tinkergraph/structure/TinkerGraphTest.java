@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -142,10 +143,11 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay3() throws Exception {
-        StarGraph graph = StarGraph.open();
-        Vertex a = graph.addVertex(T.id,1,"name","marko");
-        Vertex b = graph.addVertex(T.id,2,"firstname","stephen");
-        graph.vertices().forEachRemaining(System.out::println);
+        TinkerGraph tg = TinkerFactory.createModern();
+        StarGraph sg = StarGraph.open();
+        tg.vertices().forEachRemaining(v -> StarGraph.addTo(sg, DetachedFactory.detach(v,true)));
+        tg.vertices(1).next().edges(Direction.BOTH).forEachRemaining(e -> StarGraph.addTo(sg,DetachedFactory.detach(e,true)));
+        sg.vertices().forEachRemaining(System.out::println);
     }
 
     @Test
