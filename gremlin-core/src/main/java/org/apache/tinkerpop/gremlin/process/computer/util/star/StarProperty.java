@@ -29,7 +29,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StarProperty<V> implements Property<V> {
+public final class StarProperty<V> implements Property<V> {
 
     private final String key;
     private final V value;

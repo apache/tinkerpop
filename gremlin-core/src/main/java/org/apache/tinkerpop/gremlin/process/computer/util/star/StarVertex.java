@@ -39,7 +39,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StarVertex extends StarElement implements Vertex {
+public final class StarVertex extends StarElement implements Vertex {
 
     protected Map<String, List<VertexProperty<?>>> properties = null;
     protected Map<String, List<Edge>> outEdges = new HashMap<>();
@@ -113,7 +113,12 @@ public class StarVertex extends StarElement implements Vertex {
                     .map(Edge::outVertex)
                     .iterator();
         } else {
-            return null;
+            return Stream.concat(this.outEdges.entrySet().stream(), this.inEdges.entrySet().stream())
+                    .filter(entry -> ElementHelper.keyExists(entry.getKey(), edgeLabels))
+                    .map(Map.Entry::getValue)
+                    .flatMap(List::stream)
+                    .map(Edge::outVertex)
+                    .iterator();
         }
     }
 

@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StarInVertex extends StarAdjacentVertex {
+public final class StarInVertex extends StarAdjacentVertex {
 
     public StarInVertex(final Object id, final StarVertex starVertex) {
         super(id, starVertex);

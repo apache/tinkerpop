@@ -30,7 +30,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StarInEdge extends StarEdge {
+public final class StarInEdge extends StarEdge {
 
     private final StarOutVertex starOutVertex;
     private final StarVertex starVertex;

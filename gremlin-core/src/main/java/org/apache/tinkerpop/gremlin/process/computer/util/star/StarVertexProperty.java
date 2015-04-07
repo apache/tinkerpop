@@ -36,7 +36,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StarVertexProperty<V> implements VertexProperty<V> {
+public final class StarVertexProperty<V> implements VertexProperty<V> {
 
     private final Object id;
     private final String key;

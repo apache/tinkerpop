@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
@@ -43,7 +44,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StarGraph implements Graph {
+public final class StarGraph implements Graph {
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration();
 
@@ -66,7 +67,6 @@ public class StarGraph implements Graph {
 
     @Override
     public Iterator<Vertex> vertices(final Object... vertexIds) {
-        System.out.println(this.starVertex.outEdges);
         return null == this.starVertex ?
                 Collections.emptyIterator() :
                 Stream.concat(
@@ -116,6 +116,11 @@ public class StarGraph implements Graph {
 
     }
 
+    @Override
+    public String toString() {
+        return StringFactory.graphString(this, "starOf:" + this.starVertex);
+    }
+
     public static StarGraph open() {
         return new StarGraph();
     }
@@ -129,6 +134,7 @@ public class StarGraph implements Graph {
             final VertexProperty<?> vertexProperty = graph.starVertex.property(VertexProperty.Cardinality.list, detachedVertexProperty.key(), detachedVertexProperty.value());
             detachedVertexProperty.properties().forEachRemaining(detachedVertexPropertyProperty -> {
                 vertexProperty.property(detachedVertexPropertyProperty.key(), detachedVertexPropertyProperty.value());
+                // todo: id of vertex property
             });
         });
         return graph.starVertex;
@@ -150,5 +156,4 @@ public class StarGraph implements Graph {
     protected static Long randomId() {
         return new Random().nextLong(); // TODO: you shouldn't need this!
     }
-
 }
