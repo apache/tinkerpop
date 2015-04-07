@@ -159,7 +159,7 @@ graph.variables().remove('systemAdmins')
 graph.variables().keys()
 ----
 
-:IMPORTANT Graph variables are not intended to be subject to heavy, concurrent mutation nor to be used in complex computations. The intention is to have a location to store data about the graph for administrative purposes.
+IMPORTANT: Graph variables are not intended to be subject to heavy, concurrent mutation nor to be used in complex computations. The intention is to have a location to store data about the graph for administrative purposes.
 
 [[transactions]]
 Graph Transactions
