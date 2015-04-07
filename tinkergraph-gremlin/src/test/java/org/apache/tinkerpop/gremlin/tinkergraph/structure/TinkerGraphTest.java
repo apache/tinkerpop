@@ -187,7 +187,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlayDK() throws Exception {
         GraphTraversalSource g = TinkerFactory.createModern().traversal();
-        Traversal t = g.V().hasLabel("person").as("person").local(bothE().label().groupCount().cap()).as("relations").select().by("name").by();
+        Traversal t = g.V().hasLabel("person").as("person").local(bothE().label().groupCount("x").cap("x")).as("relations").select().by("name").by();
         t.forEachRemaining(System.out::println);
         System.out.println("--");
 

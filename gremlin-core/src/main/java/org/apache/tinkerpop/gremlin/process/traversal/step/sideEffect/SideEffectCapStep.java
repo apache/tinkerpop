@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrier
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -42,11 +43,11 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
 
     private List<String> sideEffectKeys;
 
-    public SideEffectCapStep(final Traversal.Admin traversal, final String... sideEffectKeys) {
+    public SideEffectCapStep(final Traversal.Admin traversal, final String sideEffectKey, final String... sideEffectKeys) {
         super(traversal);
-        if (0 == sideEffectKeys.length)
-            throw new IllegalArgumentException("At least one sideEffect key must be provided to " + this.getClass().getSimpleName());
-        this.sideEffectKeys = Arrays.asList(sideEffectKeys);
+        this.sideEffectKeys = new ArrayList(1 + sideEffectKeys.length);
+        this.sideEffectKeys.add(sideEffectKey);
+        this.sideEffectKeys.addAll(Arrays.asList(sideEffectKeys));
     }
 
     @Override
