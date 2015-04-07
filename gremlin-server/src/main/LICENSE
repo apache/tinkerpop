@@ -235,7 +235,7 @@ The Apache TinkerPop project bundles the following components under the Apache 2
 BSD-style Licenses
 ========================================================================
 
-The Apache TinkerPop project bundles the following components under the Apache 2.0 License:
+The Apache TinkerPop project bundles the following components under the BSD License:
 
      Hamcrest All (org.hamcrest:hamcrest-all - https://github.com/hamcrest/JavaHamcrest/hamcrest-all)
      Hamcrest Core (org.hamcrest:hamcrest-core - https://github.com/hamcrest/JavaHamcrest/hamcrest-core)
