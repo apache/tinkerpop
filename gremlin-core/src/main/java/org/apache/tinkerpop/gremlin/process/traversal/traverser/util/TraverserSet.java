@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.traverser.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
 import java.io.Serializable;
@@ -95,7 +96,13 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
 
     @Override
     public Traverser.Admin<S> remove() {  // pop, exception if empty
-        return this.map.remove(this.map.values().iterator().next());
+        final Iterator<Traverser.Admin<S>> iterator = this.map.values().iterator();
+        if (!iterator.hasNext()) {
+            throw FastNoSuchElementException.instance();
+        }
+        Traverser.Admin<S> next = iterator.next();
+        iterator.remove();
+        return next;
     }
 
     @Override
