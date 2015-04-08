@@ -164,6 +164,7 @@ public final class SparkGraphComputer implements GraphComputer {
                                 VertexWritable.class)
                                 .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new VertexWritable(tuple._2().get())))
                                 .reduceByKey((a, b) -> a) // TODO: why is this necessary?
+                                .setName("graphRDD")
                                 .cache(); // partition the graph across the cluster
                         JavaPairRDD<Object, ViewIncomingPayload<Object>> viewIncomingRDD = null;
 
@@ -204,7 +205,7 @@ public final class SparkGraphComputer implements GraphComputer {
                         //////////////////////////////
                         if (!this.mapReducers.isEmpty()) {
                             // drop all edges and messages in the graphRDD as they are no longer needed for the map reduce jobs
-                            final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = SparkExecutor.prepareGraphRDDForMapReduce(graphRDD, viewIncomingRDD).cache();
+                            final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = SparkExecutor.prepareGraphRDDForMapReduce(graphRDD, viewIncomingRDD).setName("mapReduceGraphRDD").cache();
                             // TODO: boolean first = true;
                             for (final MapReduce mapReduce : this.mapReducers) {
                                 // TODO: if (first) first = false;
@@ -213,10 +214,10 @@ public final class SparkGraphComputer implements GraphComputer {
                                 final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
                                 mapReduce.storeState(newApacheConfiguration);
                                 // map
-                                final JavaPairRDD mapRDD = SparkExecutor.executeMap((JavaPairRDD) mapReduceGraphRDD, mapReduce, newApacheConfiguration);
+                                final JavaPairRDD mapRDD = SparkExecutor.executeMap((JavaPairRDD) mapReduceGraphRDD, mapReduce, newApacheConfiguration).setName("mapRDD");
                                 // combine TODO? is this really needed
                                 // reduce
-                                final JavaPairRDD reduceRDD = (mapReduce.doStage(MapReduce.Stage.REDUCE)) ? SparkExecutor.executeReduce(mapRDD, mapReduce, newApacheConfiguration) : null;
+                                final JavaPairRDD reduceRDD = (mapReduce.doStage(MapReduce.Stage.REDUCE)) ? SparkExecutor.executeReduce(mapRDD, mapReduce, newApacheConfiguration).setName("reduceRDD") : null;
                                 // write the map reduce output back to disk (memory)
                                 SparkExecutor.saveMapReduceRDD(null == reduceRDD ? mapRDD : reduceRDD, mapReduce, finalMemory, hadoopConfiguration);
                             }
