@@ -46,7 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.Random;
 import java.util.stream.Stream;
 
 /**
@@ -56,6 +56,7 @@ public final class StarGraph implements Graph {
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration();
     private StarVertex starVertex = null;
+    private Long nextId = 0l;
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
@@ -172,6 +173,10 @@ public final class StarGraph implements Graph {
                 graph.starVertex.addInEdge(edge.label(), edge.outVertex(), keyValues.toArray(new Object[keyValues.size()]));
     }
 
+    protected Long generateId() {
+        return this.nextId++;
+    }
+
     ///////////////////////
     //// STAR ELEMENT ////
     //////////////////////
@@ -242,7 +247,7 @@ public final class StarGraph implements Graph {
                 outE = new ArrayList<>();
                 this.outEdges.put(label, outE);
             }
-            final StarEdge outEdge = new StarEdge(ElementHelper.getIdValue(keyValues).orElse(UUID.randomUUID()), label, inVertex.id(), Direction.OUT);
+            final StarEdge outEdge = new StarEdge(ElementHelper.getIdValue(keyValues).orElse(generateId()), label, inVertex.id(), Direction.OUT);
             ElementHelper.attachProperties(outEdge, keyValues);
             outE.add(outEdge);
             return outEdge;
@@ -254,7 +259,7 @@ public final class StarGraph implements Graph {
                 inE = new ArrayList<>();
                 this.inEdges.put(label, inE);
             }
-            final StarEdge inEdge = new StarEdge(ElementHelper.getIdValue(keyValues).orElse(UUID.randomUUID()), label, outVertex.id(), Direction.IN);
+            final StarEdge inEdge = new StarEdge(ElementHelper.getIdValue(keyValues).orElse(generateId()), label, outVertex.id(), Direction.IN);
             ElementHelper.attachProperties(inEdge, keyValues);
             inE.add(inEdge);
             return inEdge;
@@ -263,7 +268,7 @@ public final class StarGraph implements Graph {
         @Override
         public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, V value, final Object... keyValues) {
             final List<VertexProperty> list = cardinality.equals(VertexProperty.Cardinality.single) ? new ArrayList<>(1) : this.vertexProperties.getOrDefault(key, new ArrayList<>());
-            final VertexProperty<V> vertexProperty = new StarVertexProperty<>(ElementHelper.getIdValue(keyValues).orElse(UUID.randomUUID()), key, value);
+            final VertexProperty<V> vertexProperty = new StarVertexProperty<>(ElementHelper.getIdValue(keyValues).orElse(generateId()), key, value);
             ElementHelper.attachProperties(vertexProperty, keyValues);
             list.add(vertexProperty);
             this.vertexProperties.put(key, list);
