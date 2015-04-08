@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -115,10 +115,10 @@ public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritabl
 
     protected class ScriptElementFactory {
 
-        private final TinkerGraph graph;
+        private final StarGraph graph;
 
         public ScriptElementFactory() {
-            this.graph = TinkerGraph.open();
+            this.graph = StarGraph.open();
         }
 
         public Vertex vertex(final Object id) {

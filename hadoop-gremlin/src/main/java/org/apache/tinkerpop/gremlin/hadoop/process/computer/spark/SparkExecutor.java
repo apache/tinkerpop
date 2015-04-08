@@ -41,8 +41,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
@@ -140,13 +139,13 @@ public final class SparkExecutor {
     public static <M> JavaPairRDD<Object, VertexWritable> prepareGraphRDDForMapReduce(final JavaPairRDD<Object, VertexWritable> graphRDD, final JavaPairRDD<Object, ViewIncomingPayload<M>> viewIncomingRDD) {
         return (null == viewIncomingRDD) ?
                 graphRDD.mapValues(vertexWritable -> {
-                    vertexWritable.get().edges(Direction.BOTH).forEachRemaining(Edge::remove);
+                    ((StarGraph.StarVertex)vertexWritable.get()).dropEdges();
                     return vertexWritable;
                 }) :
                 graphRDD.leftOuterJoin(viewIncomingRDD)
                         .mapValues(tuple -> {
                             final Vertex vertex = tuple._1().get();
-                            vertex.edges(Direction.BOTH).forEachRemaining(Edge::remove);
+                            ((StarGraph.StarVertex)vertex).dropEdges();
                             final List<DetachedVertexProperty<Object>> view = tuple._2().isPresent() ? tuple._2().get().getView() : Collections.emptyList();
                             view.forEach(property -> DetachedVertexProperty.addTo(vertex, property));
                             return tuple._1();

@@ -29,15 +29,14 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -130,9 +129,9 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
                 terminatorLocation = 0;
 
             if (terminatorLocation >= TERMINATOR.length) {
-                final Graph gLocal = TinkerGraph.open();
-                final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
-                final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
+                final StarGraph starGraph = StarGraph.open();
+                final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> StarGraph.addTo(starGraph, detachedVertex);
+                final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> StarGraph.addTo(starGraph, detachedEdge);
                 try (InputStream in = new ByteArrayInputStream(output.toByteArray())) {
                     this.vertexWritable.set(this.hasEdges ?
                             this.gryoReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker) :
