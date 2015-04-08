@@ -707,7 +707,7 @@ public class FeatureSupportTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_UUID_IDS, supported = false)
-        public void shouldSupportStringIdsIfUuidIdsAreGeneratedFromTheGraph() throws Exception {
+        public void shouldSupportUuidIdsIfUuidIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
             final VertexProperty p = v.property("name", "stephen");
             if (p.id() instanceof UUID)
@@ -718,7 +718,7 @@ public class FeatureSupportTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_NUMERIC_IDS, supported = false)
-        public void shouldSupportStringIdsIfNumericIdsAreGeneratedFromTheGraph() throws Exception {
+        public void shouldSupportNumericIdsIfNumericIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
             final VertexProperty p = v.property("name", "stephen");
             if (p.id() instanceof Number)
