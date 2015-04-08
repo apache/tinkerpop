@@ -154,7 +154,9 @@ public interface GraphProvider {
 
     /**
      * Converts an identifier from a test to an identifier accepted by the Graph instance.  Test that try to
-     * utilize an Element identifier will pass it to this method before usage.
+     * utilize an Element identifier will pass it to this method before usage.  This method should be sure to
+     * consistent in the return value such that calling it with "x" should always return the same transformed
+     * value.
      */
     default public Object convertId(final Object id) {
         return id;
