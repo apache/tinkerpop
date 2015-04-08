@@ -22,6 +22,12 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 
+TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Added `StarGraph` which is a head efficient representation of a vertex and its incident edges (useful for `GraphComputer` implementations).
+* `TraverserSet` uses a `FastNoSuchElementException` on `remove()` for increased performance.
+
 TinkerPop 3.0.0.M8 (Release Date: April 6, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
