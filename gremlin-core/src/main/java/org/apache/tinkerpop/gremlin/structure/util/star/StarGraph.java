@@ -54,9 +54,11 @@ import java.util.stream.Stream;
 public final class StarGraph implements Graph {
 
     private static final Configuration STAR_GRAPH_CONFIGURATION = new BaseConfiguration();
+
     static {
         STAR_GRAPH_CONFIGURATION.setProperty(Graph.GRAPH, StarGraph.class.getCanonicalName());
     }
+
     private StarVertex starVertex = null;
     private Long nextId = 0l;
 
@@ -283,37 +285,33 @@ public final class StarGraph implements Graph {
         @Override
         public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
             if (direction.equals(Direction.OUT)) {
-                return this.outEdges.entrySet().stream()
-                        .filter(entry -> ElementHelper.keyExists(entry.getKey(), edgeLabels))
-                        .map(Map.Entry::getValue)
-                        .flatMap(List::stream)
-                        .iterator();
+                return edgeLabels.length == 0 ?
+                        IteratorUtils.flatMap(this.outEdges.values().iterator(), List::iterator) :
+                        this.outEdges.entrySet().stream()
+                                .filter(entry -> ElementHelper.keyExists(entry.getKey(), edgeLabels))
+                                .map(Map.Entry::getValue)
+                                .flatMap(List::stream)
+                                .iterator();
             } else if (direction.equals(Direction.IN)) {
-                return this.inEdges.entrySet().stream()
-                        .filter(entry -> ElementHelper.keyExists(entry.getKey(), edgeLabels))
-                        .map(Map.Entry::getValue)
-                        .flatMap(List::stream)
-                        .iterator();
-            } else {
-                return Stream.concat(this.inEdges.entrySet().stream(), this.outEdges.entrySet().stream())
-                        .filter(entry -> ElementHelper.keyExists(entry.getKey(), edgeLabels))
-                        .map(Map.Entry::getValue)
-                        .flatMap(List::stream)
-                        .iterator();
-            }
+                return edgeLabels.length == 0 ?
+                        IteratorUtils.flatMap(this.inEdges.values().iterator(), List::iterator) :
+                        this.inEdges.entrySet().stream()
+                                .filter(entry -> ElementHelper.keyExists(entry.getKey(), edgeLabels))
+                                .map(Map.Entry::getValue)
+                                .flatMap(List::stream)
+                                .iterator();
+            } else
+                return IteratorUtils.concat(this.edges(Direction.IN, edgeLabels), this.edges(Direction.OUT, edgeLabels));
         }
 
         @Override
         public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
-            if (direction.equals(Direction.OUT)) {
+            if (direction.equals(Direction.OUT))
                 return IteratorUtils.map(this.edges(direction, edgeLabels), Edge::inVertex);
-            } else if (direction.equals(Direction.IN)) {
+            else if (direction.equals(Direction.IN))
                 return IteratorUtils.map(this.edges(direction, edgeLabels), Edge::outVertex);
-            } else {
-                return IteratorUtils.<Vertex>concat(
-                        IteratorUtils.map(this.edges(Direction.IN, edgeLabels), Edge::outVertex),
-                        IteratorUtils.map(this.edges(Direction.OUT, edgeLabels), Edge::inVertex));
-            }
+            else
+                return IteratorUtils.concat(this.vertices(Direction.IN, edgeLabels), this.vertices(Direction.OUT, edgeLabels));
         }
 
         @Override
