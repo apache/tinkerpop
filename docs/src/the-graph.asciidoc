@@ -376,12 +376,12 @@ If a custom configuration is required, then have the `Graph` generate a `GraphRe
 ----
 final Graph graph = TinkerFactory.createModern();
 try (final OutputStream os = new FileOutputStream("tinkerpop-modern.xml")) {
-    graph.io().graphMLWriter().normalize(true).create().writeGraph(os);
+    graph.io().graphMLWriter().normalize(true).create().writeGraph(os, graph);
 }
 
 final Graph newGraph = TinkerGraph.open();
 try (final InputStream stream = new FileInputStream("tinkerpop-modern.xml")) {
-    newGraph.io().graphMLReader().vertexIdKey("name").create().readGraph(stream);
+    newGraph.io().graphMLReader().vertexIdKey("name").create().readGraph(stream, newGraph);
 }
 ----
 
@@ -411,27 +411,24 @@ If a custom configuration is required, then have the `Graph` generate a `GraphRe
 final Graph graph = TinkerFactory.createModern();
 try (final OutputStream os = new FileOutputStream("tinkerpop-modern.json")) {
     final GraphSONMapper mapper = graph.io().graphSONMapper().normalize(true).create()
-    graph.io().graphSONWriter().mapper(mapper).create().writeGraph(os, g)
+    graph.io().graphSONWriter().mapper(mapper).create().writeGraph(os, graph)
 }
 
 final Graph newGraph = TinkerGraph.open();
 try (final InputStream stream = new FileInputStream("tinkerpop-modern.json")) {
-    newGraph.io().graphSONReader().vertexIdKey("name").create().readGraph(stream);
+    newGraph.io().graphSONReader().vertexIdKey("name").create().readGraph(stream, newGraph);
 }
 ----
 
 One of the important configuration options of the `GraphSONReader` and `GraphSONWriter` is the ability to embed type information into the output.  By embedding the types, it becomes possible to serialize a graph without losing type information that might be important when being consumed by another source.  The importance of this concept is demonstrated in the following example where a single `Vertex` is written to GraphSON using the Gremlin Console:
 
-[source,groovy]
+[gremlin-groovy]
 ----
-gremlin> graph = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> f = new FileOutputStream("vertex-1.json")
-==>java.io.FileOutputStream@3bbf9027
-gremlin> graph.io().graphSONWriter().create().writeVertex(f, g.V(1).next(), BOTH)
-==>null
-gremlin> f.close()
-==>null
+graph = TinkerFactory.createModern()
+g = graph.traversal()
+f = new FileOutputStream("vertex-1.json")
+graph.io().graphSONWriter().create().writeVertex(f, g.V(1).next(), BOTH)
+f.close()
 ----
 
 The following GraphSON example shows the output of `GraphSonWriter.writeVertex()` with associated edges:
@@ -510,18 +507,14 @@ The vertex properly serializes to valid JSON but note that a consuming applicati
 
 With a minor change to the construction of the `GraphSONWriter` the lossy nature of GraphSON can be avoided:
 
-[source,groovy]
+[gremlin-groovy]
 ----
-gremlin> graph = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> f = new FileOutputStream("vertex-1.json")
-==>java.io.FileOutputStream@3bbf9027
-gremlin> mapper = graph.io().graphSONMapper().embedTypes(true).create()
-==>org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper@2ce45a7b
-gremlin> graph.io().graphSONWriter().mapper(mapper).create().writeVertex(f, g.V(1).next(), BOTH)
-==>null
-gremlin> f.close()
-==>null
+graph = TinkerFactory.createModern()
+g = graph.traversal()
+f = new FileOutputStream("vertex-1.json")
+mapper = graph.io().graphSONMapper().embedTypes(true).create()
+graph.io().graphSONWriter().mapper(mapper).create().writeVertex(f, g.V(1).next(), BOTH)
+f.close()
 ----
 
 In the above code, the `embedTypes` option is set to `true` and the output below shows the difference in the output:
@@ -658,12 +651,12 @@ If a custom configuration is required, then have the `Graph` generate a `GraphRe
 ----
 final Graph graph = TinkerFactory.createModern();
 try (final OutputStream os = new FileOutputStream("tinkerpop-modern.kryo")) {
-    graph.io().gryoWriter().create().writeGraph(os);
+    graph.io().gryoWriter().create().writeGraph(os, graph);
 }
 
 final Graph newGraph = TinkerGraph.open();
 try (final InputStream stream = new FileInputStream("tinkerpop-modern.kryo")) {
-    newGraph.io().gryoReader().vertexIdKey("name").create().readGraph(stream);
+    newGraph.io().gryoReader().vertexIdKey("name").create().readGraph(stream, newGraph);
 }
 ----
 
@@ -698,7 +691,7 @@ gremlin> graph = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
 gremlin> r = LegacyGraphSONReader.build().create()
 ==>org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader@64337702
-gremlin> r.readGraph(new FileInputStream('/tmp/tp2.json'),graph)
+gremlin> r.readGraph(new FileInputStream('/tmp/tp2.json'), graph)
 ==>null
 gremlin> g = graph.traversal(standard())
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
@@ -714,7 +707,7 @@ gremlin> g.E()
 Namespace Conventions
 ---------------------
 
-End users, <<implementations,vendors>>, <<graphstrategy,strategy>> developers, <<graphcomputer,`GraphComputer`>> algorithm designers, <<gremlin-plugins,GremlinPlugin>> creators, etc. all leverage properties on elements to store information. There are a few conventions that should be respected when naming property keys to ensure that conflicts between these stakeholders do not conflict.
+End users, <<implementations,vendors>>, <<graphcomputer,`GraphComputer`>> algorithm designers, <<gremlin-plugins,GremlinPlugin>> creators, etc. all leverage properties on elements to store information. There are a few conventions that should be respected when naming property keys to ensure that conflicts between these stakeholders do not conflict.
 
 * End users are granted the _flat namespace_ (e.g. `name`, `age`, `location`) to key their properties and label their elements.
 * Vendors are granted the _hidden namespace_ (e.g. `~metadata`) to to key their properties and labels. Data key'd as such is only accessible via the vendor implementation code and no other stakeholders are granted read nor write access to data prefixed with "~" (see `Graph.Hidden`). Test coverage and exceptions exist to ensure that vendors respect this hard boundary.
