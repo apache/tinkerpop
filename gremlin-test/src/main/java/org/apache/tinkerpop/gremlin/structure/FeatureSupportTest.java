@@ -254,14 +254,14 @@ public class FeatureSupportTest {
         public void shouldSupportStringIdsIfStringIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
             if (v.id() instanceof String)
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
+                fail(String.format(INVALID_git FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
         }
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_UUID_IDS, supported = false)
-        public void shouldSupportStringIdsIfUuidIdsAreGeneratedFromTheGraph() throws Exception {
+        public void shouldSupportUuidIdsIfUuidIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
             if (v.id() instanceof UUID)
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_UUID_IDS));
@@ -271,7 +271,7 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_NUMERIC_IDS, supported = false)
-        public void shouldSupportStringIdsIfNumericIdsAreGeneratedFromTheGraph() throws Exception {
+        public void shouldSupportNumericIdsIfNumericIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
             if (v.id() instanceof Number)
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
@@ -378,7 +378,7 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_UUID_IDS, supported = false)
-        public void shouldSupportStringIdsIfUuidIdsAreGeneratedFromTheGraph() throws Exception {
+        public void shouldSupportUuidIdsIfUuidIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
             final Edge e = v.addEdge("knows", v);
             if (e.id() instanceof UUID)
@@ -390,7 +390,7 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_NUMERIC_IDS, supported = false)
-        public void shouldSupportStringIdsIfNumericIdsAreGeneratedFromTheGraph() throws Exception {
+        public void shouldSupportNumericIdsIfNumericIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
             final Edge e = v.addEdge("knows", v);
             if (e.id() instanceof Number)
