@@ -158,7 +158,53 @@ public interface Graph extends AutoCloseable {
     }
 
     /**
-     * Get the {@link Vertex} objects in this graph with the provided vertex ids. If no ids are provided, get all vertices.
+     * Get the {@link Vertex} objects in this graph with the provided vertex ids. If no ids are provided, get all
+     * vertices.  Note that a vertex identifier does not need to correspond to the actual id used in the graph.  It
+     * needs to be a bit more flexible than that in that given the {@link Graph.Features} around id support, multiple
+     * arguments might be applicable here.
+     * <br/>
+     * If the graph return {@code true} for {@link Features.VertexFeatures#supportsNumericIds()} then it should support
+     * filters as with:
+     * <ul>
+     *     <li>g.V(v)</li>
+     *     <li>g.V(v.id())</li>
+     *     <li>g.V(1)</li>
+     *     <li>g.V(1L)</li>
+     *     <li>g.V(1.0d)</li>
+     *     <li>g.V(1.0f)</li>
+     *     <li>g.V("1")</li>
+     * </ul>
+     * <br/>
+     * If the graph return {@code true} for {@link Features.VertexFeatures#supportsCustomIds()} ()} then it should support
+     * filters as with:
+     * <ul>
+     *     <li>g.V(v)</li>
+     *     <li>g.V(v.id())</li>
+     *     <li>g.V(v.id().toString())</li>
+     * </ul>
+     * <br/>
+     * If the graph return {@code true} for {@link Features.VertexFeatures#supportsAnyIds()} ()} then it should support
+     * filters as with:
+     * <ul>
+     *     <li>g.V(v)</li>
+     *     <li>g.V(v.id())</li>
+     * </ul>
+     * <br/>
+     * If the graph return {@code true} for {@link Features.VertexFeatures#supportsStringIds()} ()} then it should support
+     * filters as with:
+     * <ul>
+     *     <li>g.V(v)</li>
+     *     <li>g.V(v.id().toString())</li>
+     *     <li>g.V("id")</li>
+     * </ul>
+     * <br/>
+     * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsStringIds()} ()} then it should support
+     * filters as with:
+     * <ul>
+     *     <li>g.V(v)</li>
+     *     <li>g.V(v.id().toString())</li>
+     *     <li>g.V("id")</li>
+     * </ul>
      *
      * @param vertexIds the ids of the vertices to get
      * @return an {@link Iterator} of vertices that match the provided vertex ids
@@ -167,6 +213,43 @@ public interface Graph extends AutoCloseable {
 
     /**
      * Get the {@link Edge} objects in this graph with the provided edge ids. If no ids are provided, get all edges.
+     * Note that an edge identifier does not need to correspond to the actual id used in the graph.  It
+     * needs to be a bit more flexible than that in that given the {@link Graph.Features} around id support, multiple
+     * arguments might be applicable here.
+     * <br/>
+     * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsNumericIds()} then it should support
+     * filters as with:
+     * <ul>
+     *     <li>g.E(e)</li>
+     *     <li>g.E(1)</li>
+     *     <li>g.E(1L)</li>
+     *     <li>g.E(1.0d)</li>
+     *     <li>g.E(1.0f)</li>
+     *     <li>g.E("1")</li>
+     * </ul>
+     * <br/>
+     * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsCustomIds()} ()} then it should support
+     * filters as with:
+     * <ul>
+     *     <li>g.E(e)</li>
+     *     <li>g.E(e.id())</li>
+     *     <li>g.E(e.id().toString())</li>
+     * </ul>
+     * <br/>
+     * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsAnyIds()} ()} then it should support
+     * filters as with:
+     * <ul>
+     *     <li>g.E(e)</li>
+     *     <li>g.E(e.id())</li>
+     * </ul>
+     * <br/>
+     * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsStringIds()} ()} then it should support
+     * filters as with:
+     * <ul>
+     *     <li>g.E(e)</li>
+     *     <li>g.E(e.id().toString())</li>
+     *     <li>g.E("id")</li>
+     * </ul>
      *
      * @param edgeIds the ids of the edges to get
      * @return an {@link Iterator} of edges that match the provided edge ids
