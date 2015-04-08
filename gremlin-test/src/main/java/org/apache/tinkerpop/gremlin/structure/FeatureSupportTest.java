@@ -254,7 +254,7 @@ public class FeatureSupportTest {
         public void shouldSupportStringIdsIfStringIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
             if (v.id() instanceof String)
-                fail(String.format(INVALID_git FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
         }
 
         @Test
