@@ -39,8 +39,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 /**
@@ -79,6 +83,10 @@ public class TinkerGraph implements Graph {
     protected TinkerIndex<TinkerEdge> edgeIndex = null;
 
     private final static TinkerGraph EMPTY_GRAPH = new TinkerGraph();
+
+    private Class<?> vertexIdClass = null;
+    private Class<?> edgeIdClass = null;
+    private Class<?> vertexPropertyIdClass = null;
 
     /**
      * An empty private constructor that initializes {@link TinkerGraph}.
@@ -136,8 +144,16 @@ public class TinkerGraph implements Graph {
             idValue = TinkerHelper.getNextId(this);
         }
 
+        // todo: enforce vertex id consistency with tests
+        if (vertexIdClass == null)
+            vertexIdClass = idValue.getClass();
+        else if (!idValue.getClass().equals(vertexIdClass)) {
+            throw new IllegalStateException(String.format("Expecting a vertex identifier of %s but was %s", vertexIdClass, idValue.getClass()));
+        }
+
         final Vertex vertex = new TinkerVertex(idValue, label, this);
         this.vertices.put(vertex.id(), vertex);
+
         ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
         return vertex;
     }
@@ -195,10 +211,70 @@ public class TinkerGraph implements Graph {
         if (0 == vertexIds.length) {
             return this.vertices.values().iterator();
         } else if (1 == vertexIds.length) {
-            final Vertex vertex = this.vertices.get(vertexIds[0]);
-            return null == vertex ? Collections.emptyIterator() : IteratorUtils.of(vertex);
-        } else
-            return Stream.of(vertexIds).map(this.vertices::get).filter(Objects::nonNull).iterator();
+            if (vertexIds[0] instanceof Vertex) {
+                // no need to get the vertex again, so just flip it back - some implementation may want to treat this
+                // as a refresh operation. that's not necessary for tinkergraph.
+                return IteratorUtils.of((Vertex) vertexIds[0]);
+            } else {
+                // convert the id to the expected data type and lookup the vertex
+                final UnaryOperator<Object> conversionFunction = convertToId(vertexIds[0], vertexIdClass);
+                final Vertex vertex = this.vertices.get(conversionFunction.apply(vertexIds[0]));
+                return null == vertex ? Collections.emptyIterator() : IteratorUtils.of(vertex);
+            }
+        } else {
+            // base the conversion function on the first item in the id list as the expectation is that these
+            // id values will be a uniform list
+            if (vertexIds[0] instanceof Vertex) {
+                // based on the first item assume all vertices in the argument list
+                if (!Stream.of(vertexIds).allMatch(id -> id instanceof Vertex))
+                    throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
+
+                // no need to get the vertices again, so just flip it back - some implementation may want to treat this
+                // as a refresh operation. that's not necessary for tinkergraph.
+                return Stream.of(vertexIds).map(id -> (Vertex) id).iterator();
+            } else {
+                final Class<?> firstClass = vertexIds[0].getClass();
+                if (!Stream.of(vertexIds).map(Object::getClass).allMatch(firstClass::equals))
+                    throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();     // todo: change exception to be ids of the same type
+                final UnaryOperator<Object> conversionFunction = convertToId(vertexIds[0], vertexIdClass);
+                return Stream.of(vertexIds).map(conversionFunction).map(this.vertices::get).filter(Objects::nonNull).iterator();
+            }
+        }
+    }
+
+    private UnaryOperator<Object> convertToId(final Object id, final Class<?> elementIdClass) {
+        if (id instanceof Number) {
+            if (elementIdClass != null) {
+                if (elementIdClass.equals(Long.class)) {
+                    return o -> ((Number) o).longValue();
+                } else if (elementIdClass.equals(Integer.class)) {
+                    return o -> ((Number) o).intValue();
+                } else if (elementIdClass.equals(Double.class)) {
+                    return o -> ((Number) o).doubleValue();
+                } else if (elementIdClass.equals(Float.class)) {
+                    return o -> ((Number) o).floatValue();
+                } else if (elementIdClass.equals(String.class)) {
+                    return o -> o.toString();
+                }
+            }
+        } else if (id instanceof String) {
+            if (elementIdClass != null) {
+                final String s = (String) id;
+                if (elementIdClass.equals(Long.class)) {
+                    return o -> Long.parseLong(s);
+                } else if (elementIdClass.equals(Integer.class)) {
+                    return o -> Integer.parseInt(s);
+                } else if (elementIdClass.equals(Double.class)) {
+                    return o -> Double.parseDouble(s);
+                } else if (elementIdClass.equals(Float.class)) {
+                    return o -> Float.parseFloat(s);
+                } else if (elementIdClass.equals(UUID.class)) {
+                    return o -> UUID.fromString(s);
+                }
+            }
+        }
+
+        return UnaryOperator.identity();
     }
 
     @Override
