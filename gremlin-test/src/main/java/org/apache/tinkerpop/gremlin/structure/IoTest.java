@@ -20,13 +20,10 @@ package org.apache.tinkerpop.gremlin.structure;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -81,7 +78,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -273,13 +269,12 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
-    public void shouldProperlySerializeDeserializeCustomIdWithGraphSON() throws Exception {
+    public void shouldProperlySerializeCustomIdWithGraphSON() throws Exception {
         final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
         graph.addVertex(T.id, new CustomId("vertex", id));
 
         final SimpleModule module = new SimpleModule();
         module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
-        module.addDeserializer(CustomId.class, new CustomId.CustomIdJacksonDeserializer());
         final GraphWriter writer = graph.io().graphSONWriter().mapper(
                 graph.io().graphSONMapper().addCustomModule(module).embedTypes(true).create()).create();
 
@@ -2559,6 +2554,11 @@ public class IoTest extends AbstractGremlinTest {
             return elementId;
         }
 
+        @Override
+        public String toString() {
+            return cluster + ":" + elementId;
+        }
+
         static class CustomIdJacksonSerializer extends StdSerializer<CustomId> {
             public CustomIdJacksonSerializer() {
                 super(CustomId.class);
@@ -2577,44 +2577,22 @@ public class IoTest extends AbstractGremlinTest {
             }
 
             private void ser(final CustomId customId, final JsonGenerator jsonGenerator, final boolean includeType) throws IOException {
-                jsonGenerator.writeStartObject();
-
-                if (includeType)
+                if (includeType) {
+                    // when the type is included add "class" as a key and then try to utilize as much of the
+                    // default serialization provided by jackson data-bind as possible.  for example, write
+                    // the uuid as an object so that when jackson serializes it, it uses the uuid serializer
+                    // to write it out with the type.  in this way, data-bind should be able to deserialize
+                    // it back when types are embedded.
+                    jsonGenerator.writeStartObject();
                     jsonGenerator.writeStringField(GraphSONTokens.CLASS, CustomId.class.getName());
-
-                jsonGenerator.writeObjectField("cluster", customId.getCluster());
-                jsonGenerator.writeObjectField("elementId", customId.getElementId().toString());
-                jsonGenerator.writeEndObject();
-            }
-        }
-
-        static class CustomIdJacksonDeserializer extends StdDeserializer<CustomId> {
-            public CustomIdJacksonDeserializer() {
-                super(CustomId.class);
-            }
-
-            @Override
-            public CustomId deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-                String cluster = null;
-                UUID id = null;
-
-                while (!jsonParser.getCurrentToken().isStructEnd()) {
-                    if (jsonParser.getText().equals("cluster")) {
-                        jsonParser.nextToken();
-                        cluster = jsonParser.getText();
-                    } else if (jsonParser.getText().equals("elementId")) {
-                        jsonParser.nextToken();
-                        id = UUID.fromString(jsonParser.getText());
-                    } else
-                        jsonParser.nextToken();
+                    jsonGenerator.writeStringField("cluster", customId.getCluster());
+                    jsonGenerator.writeObjectField("elementId", customId.getElementId());
+                    jsonGenerator.writeEndObject();
+                } else {
+                    // when types are not embedded, stringify or resort to JSON primitive representations of the
+                    // type so that non-jvm languages can better interoperate with the TinkerPop stack.
+                    jsonGenerator.writeString(customId.toString());
                 }
-
-                if (!Optional.ofNullable(cluster).isPresent())
-                    throw deserializationContext.mappingException("Could not deserialze CustomId: 'cluster' is required");
-                if (!Optional.ofNullable(id).isPresent())
-                    throw deserializationContext.mappingException("Could not deserialze CustomId: 'id' is required");
-
-                return new CustomId(cluster, id);
             }
         }
     }
