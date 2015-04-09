@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -97,7 +98,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     public Edge attach(final Vertex hostVertex) {
         final Iterator<Edge> edges = IteratorUtils.filter(hostVertex.edges(Direction.OUT, this.label), edge -> edge.equals(this));
         if (!edges.hasNext())
-            throw new IllegalStateException("The detached edge could not be found incident to the provided vertex: " + this);
+            throw Attachable.Exceptions.canNotAttachEdgeToHostVertex(this, hostVertex);
         return edges.next();
     }
 
@@ -105,7 +106,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     public Edge attach(final Graph hostGraph) {
         final Iterator<Edge> edges = hostGraph.edges(this.id);
         if (!edges.hasNext())
-            throw new IllegalStateException("The detached edge could not be found in the provided graph: " + this);
+            throw Attachable.Exceptions.canNotAttachEdgeToHostGraph(this, hostGraph);
         return edges.next();
     }
 
@@ -148,6 +149,11 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
             default:
                 return IteratorUtils.of(this.outVertex, this.inVertex);
         }
+    }
+
+    @Override
+    public void remove() {
+        throw Edge.Exceptions.edgeRemovalNotSupported();
     }
 
     @Override

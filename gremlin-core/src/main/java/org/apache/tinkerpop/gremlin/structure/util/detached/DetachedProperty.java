@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -31,7 +32,7 @@ import java.io.Serializable;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DetachedProperty<V> implements Property, Serializable, Attachable<Property<V>> {
+public class DetachedProperty<V> implements Property, Serializable, Attachable<Property> {
 
     private String key;
     private V value;
@@ -51,7 +52,6 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
         this.value = value;
         this.element = DetachedFactory.detach(element, false);
     }
-
 
     @Override
     public boolean isPresent() {
@@ -75,7 +75,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
     @Override
     public void remove() {
-        throw new UnsupportedOperationException("Detached properties are readonly: " + this.toString());
+        throw Element.Exceptions.propertyRemovalNotSupported();
     }
 
     @Override
@@ -98,19 +98,19 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     public Property<V> attach(final Vertex hostVertex) {
         final Element element = (Element) this.element.attach(hostVertex);
         final Property<V> property = element.property(this.key);
-        if (property.isPresent())
+        if (property.isPresent() && property.value().equals(this.value))
             return property;
         else
-            throw new IllegalStateException("The detached property could not be be found at the provided vertex: " + this);
+            throw Attachable.Exceptions.canNotAttachPropertyToHostVertex(this, hostVertex);
     }
 
     @Override
     public Property<V> attach(final Graph hostGraph) {
         final Element hostElement = (Element) this.element.attach(hostGraph);
         final Property<V> property = hostElement.property(this.key);
-        if (property.isPresent())
+        if (property.isPresent() && property.value().equals(this.value))
             return property;
         else
-            throw new IllegalStateException("The detached property could not be be found at the provided vertex: " + this);
+            throw Attachable.Exceptions.canNotAttachPropertyToHostGraph(this, hostGraph);
     }
 }

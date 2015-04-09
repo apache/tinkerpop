@@ -146,6 +146,10 @@ public interface Vertex extends Element {
      * Common exceptions to use with a vertex.
      */
     public static class Exceptions {
+
+        private Exceptions() {
+        }
+
         public static UnsupportedOperationException userSuppliedIdsNotSupported() {
             return new UnsupportedOperationException("Vertex does not support user supplied identifiers");
         }

@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -64,6 +65,10 @@ public final class StarGraph implements Graph {
 
     private final Map<Object, Map<String, Object>> edgeProperties = new HashMap<>();
     private final Map<Object, Map<String, Object>> metaProperties = new HashMap<>();
+
+    public StarVertex getStarVertex() {
+        return this.starVertex;
+    }
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
@@ -147,6 +152,13 @@ public final class StarGraph implements Graph {
 
     public static StarGraph open() {
         return new StarGraph();
+    }
+
+    public static StarGraph of(final Vertex vertex) {
+        final StarGraph starGraph = new StarGraph();
+        StarGraph.addTo(starGraph, DetachedFactory.detach(vertex, true));
+        vertex.edges(Direction.BOTH).forEachRemaining(edge -> StarGraph.addTo(starGraph, DetachedFactory.detach(edge, true)));
+        return starGraph;
     }
 
     public static Vertex addTo(final StarGraph graph, final DetachedVertex detachedVertex) {
@@ -414,13 +426,8 @@ public final class StarGraph implements Graph {
         }
 
         @Override
-        public boolean equals(final Object other) {
-            return ElementHelper.areEqual(this, other);
-        }
-
-        @Override
-        public int hashCode() {
-            return ElementHelper.hashCode((Element) this);
+        public String toString() {
+            return StringFactory.propertyString(this);
         }
     }
 
@@ -439,7 +446,7 @@ public final class StarGraph implements Graph {
 
         @Override
         public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
-            if (!ElementHelper.areEqual(starVertex, inVertex))
+            if (!starVertex.equals(inVertex))
                 throw new IllegalStateException("An adjacent vertex can only connect to the star vertex: " + starVertex);
             return starVertex.addInEdge(label, this, keyValues);
         }
@@ -559,16 +566,6 @@ public final class StarGraph implements Graph {
         @Override
         public void remove() {
             throw Edge.Exceptions.edgeRemovalNotSupported();
-        }
-
-        @Override
-        public boolean equals(final Object other) {
-            return ElementHelper.areEqual(this, other);
-        }
-
-        @Override
-        public int hashCode() {
-            return ElementHelper.hashCode(this);
         }
 
         @Override

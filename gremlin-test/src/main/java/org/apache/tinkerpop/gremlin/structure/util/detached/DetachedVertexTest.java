@@ -33,7 +33,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -107,12 +106,14 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldEvaluateToEqual() {
         assertTrue(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true).equals(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true)));
+        assertTrue(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true).equals(g.V(convertToVertexId("marko")).next()));
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldHaveSameHashCode() {
         assertEquals(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true).hashCode(), DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true).hashCode());
+        assertEquals(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true).hashCode(), g.V(convertToVertexId("marko")).next().hashCode());
     }
 
     @Test
@@ -231,7 +232,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     }
 
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalStateException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowAddEdge() {
         final Vertex v = graph.addVertex();
@@ -239,7 +240,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         detachedVertex.addEdge("test", null);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalStateException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowSetProperty() {
         final Vertex v = graph.addVertex();
@@ -247,7 +248,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         detachedVertex.property("test", "test");
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalStateException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowRemove() {
         final Vertex v = graph.addVertex();

@@ -120,6 +120,9 @@ public abstract interface Element {
      */
     public static class Exceptions {
 
+        protected Exceptions() {
+        }
+
         public static IllegalArgumentException providedKeyValuesMustBeAMultipleOfTwo() {
             return new IllegalArgumentException("The provided key/value array must be a multiple of two");
         }

@@ -24,9 +24,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -67,6 +69,10 @@ public final class IteratorUtils {
 
     public static <S> List<S> list(final Iterator<S> iterator) {
         return fill(iterator, new ArrayList<>());
+    }
+
+    public static <S> Set<S> set(final Iterator<S> iterator) {
+        return fill(iterator, new HashSet<>());
     }
 
     ///////////////////

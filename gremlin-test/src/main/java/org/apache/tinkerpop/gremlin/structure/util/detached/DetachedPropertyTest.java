@@ -54,7 +54,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
         assertEquals(DetachedEdge.class, p.element().getClass());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalStateException.class)
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldNotSupportRemove() {
         DetachedFactory.detach(g.E(convertToEdgeId("josh", "created", "lop")).next().property("weight")).remove();

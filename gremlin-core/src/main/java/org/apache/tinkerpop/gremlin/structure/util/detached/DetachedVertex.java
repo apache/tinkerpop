@@ -19,16 +19,18 @@
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
 import org.apache.tinkerpop.gremlin.process.traversal.T;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -88,12 +90,12 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     @Override
     public <V> VertexProperty<V> property(final String key, final V value) {
-        throw new UnsupportedOperationException("Detached vertices are readonly: " + this);
+        throw Element.Exceptions.propertyAdditionNotSupported();
     }
 
     @Override
     public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
-        throw new UnsupportedOperationException("Detached vertices are readonly: " + this);
+        throw Element.Exceptions.propertyAdditionNotSupported();
     }
 
     @Override
@@ -110,7 +112,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     @Override
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
-        throw new UnsupportedOperationException("Detached vertices do not store edges: " + this);
+        throw Vertex.Exceptions.edgeAdditionsNotSupported();
     }
 
     @Override
@@ -123,12 +125,16 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         if (hostVertex.equals(this))
             return hostVertex;
         else
-            throw new IllegalStateException("The host vertex must be the detached vertex to attach: " + this + "!=" + hostVertex);
+            throw Attachable.Exceptions.canNotAttachVertexToHostVertex(this, hostVertex);
     }
 
     @Override
     public Vertex attach(final Graph hostGraph) {
-        return hostGraph.vertices(this.id).next();
+        final Iterator<Vertex> iterator = hostGraph.vertices(this.id);
+        if(iterator.hasNext())
+            return iterator.next();
+        else
+            throw Attachable.Exceptions.canNotAttachVertexToHostGraph(this, hostGraph);
     }
 
     public static Vertex addTo(final Graph graph, final DetachedVertex detachedVertex) {
@@ -161,12 +167,17 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     }
 
     @Override
-    public GraphTraversal<Vertex, Edge> edges(final Direction direction, final String... edgeLabels) {
-        throw new UnsupportedOperationException("Detached vertices do not have edges");
+    public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
+        return Collections.emptyIterator();
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> vertices(final Direction direction, final String... labels) {
-        throw new UnsupportedOperationException("Detached vertices do not have edges and thus, adjacent vertices can not be accessed");
+    public Iterator<Vertex> vertices(final Direction direction, final String... labels) {
+      return Collections.emptyIterator();
+    }
+
+    @Override
+    public void remove() {
+        throw Vertex.Exceptions.vertexRemovalNotSupported();
     }
 }

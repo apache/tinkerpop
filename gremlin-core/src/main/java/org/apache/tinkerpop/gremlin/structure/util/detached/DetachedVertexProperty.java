@@ -18,10 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -95,7 +97,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
     @Override
     public void remove() {
-        throw new UnsupportedOperationException("Detached properties are readonly: " + this.toString());
+        throw Element.Exceptions.propertyRemovalNotSupported();
     }
 
     @Override
@@ -113,7 +115,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     public VertexProperty<V> attach(final Vertex hostVertex) {
         final Iterator<VertexProperty<V>> vertexPropertyIterator = IteratorUtils.filter(hostVertex.<V>properties(this.label), vp -> ElementHelper.areEqual(this, vp));
         if (!vertexPropertyIterator.hasNext())
-            throw new IllegalStateException("The detached vertex property could not be be found at the provided vertex: " + this);
+            throw Attachable.Exceptions.canNotAttachVertexPropertyToHostVertex((Attachable) this, hostVertex);
         return vertexPropertyIterator.next();
     }
 

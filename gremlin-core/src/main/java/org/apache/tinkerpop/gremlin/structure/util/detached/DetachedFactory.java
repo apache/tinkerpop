@@ -29,6 +29,10 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class DetachedFactory {
+
+    private DetachedFactory() {
+    }
+
     public static DetachedVertex detach(final Vertex vertex, final boolean withProperties) {
         return vertex instanceof DetachedVertex ? (DetachedVertex) vertex : new DetachedVertex(vertex, withProperties);
     }

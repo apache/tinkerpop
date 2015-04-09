@@ -132,6 +132,9 @@ public interface Property<V> {
      */
     public static class Exceptions {
 
+        private Exceptions() {
+        }
+
         public static IllegalArgumentException propertyKeyCanNotBeEmpty() {
             return new IllegalArgumentException("Property key can not be the empty string");
         }

@@ -93,6 +93,9 @@ public interface Edge extends Element {
      */
     public static class Exceptions extends Element.Exceptions {
 
+        private Exceptions() {
+        }
+
         public static UnsupportedOperationException userSuppliedIdsNotSupported() {
             return new UnsupportedOperationException("Edge does not support user supplied identifiers");
         }

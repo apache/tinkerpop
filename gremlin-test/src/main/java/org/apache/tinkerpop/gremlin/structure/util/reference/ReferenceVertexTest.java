@@ -1,0 +1,159 @@
+/*
+ *
+ *  * Licensed to the Apache Software Foundation (ASF) under one
+ *  * or more contributor license agreements.  See the NOTICE file
+ *  * distributed with this work for additional information
+ *  * regarding copyright ownership.  The ASF licenses this file
+ *  * to you under the Apache License, Version 2.0 (the
+ *  * "License"); you may not use this file except in compliance
+ *  * with the License.  You may obtain a copy of the License at
+ *  *
+ *  * http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing,
+ *  * software distributed under the License is distributed on an
+ *  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  * KIND, either express or implied.  See the License for the
+ *  * specific language governing permissions and limitations
+ *  * under the License.
+ *
+ */
+
+package org.apache.tinkerpop.gremlin.structure.util.reference;
+
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
+import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
+import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+/**
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ */
+public class ReferenceVertexTest extends AbstractGremlinTest {
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldNotConstructNewWithSomethingAlreadyDetached() {
+        final Vertex v = graph.addVertex();
+        final ReferenceVertex referenceVertex = ReferenceFactory.detach(v);
+        assertSame(referenceVertex, ReferenceFactory.detach(referenceVertex));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldConstructReferenceVertex() {
+        final Vertex v = graph.addVertex("test", "123");
+        final ReferenceVertex referenceVertex = ReferenceFactory.detach(v);
+
+        assertEquals(v.id(), referenceVertex.id());
+        assertEquals(0, IteratorUtils.count(referenceVertex.properties()));
+    }
+
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldEvaluateToEqualForVerticesAndDetachments() {
+        assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next())));
+        assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).equals(g.V(convertToVertexId("marko")).next()));
+        assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).equals(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), false)));
+        // reverse
+        assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next().equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()))));
+        assertTrue(g.V(convertToVertexId("marko")).next().equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next())));
+        assertTrue(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), false).equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next())));
+
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldHaveSameHashCode() {
+        assertEquals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).hashCode(), ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).hashCode());
+        assertEquals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).hashCode(), g.V(convertToVertexId("marko")).next().hashCode());
+        assertEquals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).hashCode(), DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), false).hashCode());
+        assertEquals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).hashCode(), DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true).hashCode());
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldAttachToGraph() {
+        final Vertex v = g.V(convertToVertexId("josh")).next();
+        final ReferenceVertex referenceVertex = ReferenceFactory.detach(v);
+        final Vertex attachedV = referenceVertex.attach(graph);
+
+        assertEquals(v, attachedV);
+        assertFalse(attachedV instanceof ReferenceVertex);
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldAttachToVertex() {
+        final Vertex v = g.V(convertToVertexId("josh")).next();
+        final ReferenceVertex referenceVertex = ReferenceFactory.detach(v);
+        final Vertex attachedV = referenceVertex.attach(v);
+
+        assertEquals(v, attachedV);
+        assertFalse(attachedV instanceof ReferenceVertex);
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_INTEGER_VALUES)
+    public void shouldNotEvaluateToEqualDifferentId() {
+        final ReferenceVertex originalMarko = ReferenceFactory.detach(g.V(convertToVertexId("marko")).next());
+        final Vertex secondMarko = graph.addVertex("name", "marko", "age", 29);
+        assertFalse(ReferenceFactory.detach(secondMarko).equals(originalMarko));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldNotAllowAddEdge() {
+        final Vertex v = graph.addVertex();
+        final ReferenceVertex rv = ReferenceFactory.detach(v);
+        rv.addEdge("test", null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldNotAllowSetProperty() {
+        final Vertex v = graph.addVertex();
+        final ReferenceVertex rv = ReferenceFactory.detach(v);
+        rv.property("test", "test");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldNotAllowRemove() {
+        final Vertex v = graph.addVertex();
+        final ReferenceVertex rv = ReferenceFactory.detach(v);
+        rv.remove();
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldNotHaveAnyProperties() {
+        final ReferenceVertex rv = ReferenceFactory.detach(g.V(convertToVertexId("marko")).next());
+        assertFalse(rv.properties().hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldNotHaveAnyEdges() {
+        final ReferenceVertex rv = ReferenceFactory.detach(g.V(convertToVertexId("marko")).next());
+        assertFalse(rv.edges(Direction.BOTH).hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldNotHaveAnyVertices() {
+        final ReferenceVertex rv = ReferenceFactory.detach(g.V(convertToVertexId("marko")).next());
+        assertFalse(rv.vertices(Direction.BOTH).hasNext());
+    }
+}

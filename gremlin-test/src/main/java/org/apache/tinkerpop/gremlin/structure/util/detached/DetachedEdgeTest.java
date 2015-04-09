@@ -163,7 +163,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         assertEquals("y", de.property("y").key());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalStateException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotAllowSetProperty() {
         final Vertex v = graph.addVertex();
@@ -172,7 +172,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         detachedEdge.property("test", "test");
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalStateException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotAllowRemove() {
         final Vertex v = graph.addVertex();
