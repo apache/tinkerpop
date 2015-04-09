@@ -45,9 +45,4 @@ public abstract class ReferenceElement<E extends Element> implements Serializabl
     public int hashCode() {
         return this.id.hashCode();
     }
-
-    @Override
-    public boolean equals(final Object object) {
-        return object instanceof ReferenceElement && this.id.equals(((ReferenceElement) object).id);
-    }
 }

@@ -23,10 +23,6 @@ package org.apache.tinkerpop.gremlin.structure.util.reference;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-
-import java.util.Collections;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -57,5 +53,13 @@ public class ReferenceVertex extends ReferenceElement<Vertex> {
     @Override
     public String toString() {
         return "v*[" + this.id + "]";
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (object instanceof ReferenceVertex)
+            return this.id.equals(((ReferenceVertex) object).id);
+        else
+            return object instanceof Vertex && this.id.equals(((Vertex) object).id());
     }
 }

@@ -98,9 +98,7 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
     public Traverser.Admin<S> remove() {  // pop, exception if empty
         final Iterator<Traverser.Admin<S>> iterator = this.map.values().iterator();
         if (!iterator.hasNext()) throw FastNoSuchElementException.instance();
-        Traverser.Admin<S> next = iterator.next();
-        this.map.remove(next);
-        return next;
+        return this.map.remove(iterator.next());
     }
 
     @Override

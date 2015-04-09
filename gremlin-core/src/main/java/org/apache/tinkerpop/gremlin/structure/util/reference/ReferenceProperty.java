@@ -35,6 +35,7 @@ public class ReferenceProperty<V> implements Attachable<Property<V>>, Serializab
 
     private ReferenceElement<?> element;
     private String key;
+    private Object value;
 
     private ReferenceProperty() {
 
@@ -57,16 +58,19 @@ public class ReferenceProperty<V> implements Attachable<Property<V>>, Serializab
 
     @Override
     public int hashCode() {
-        return this.element.hashCode() + this.key.hashCode();
-    }
-
-    @Override
-    public boolean equals(final Object object) {
-        return object instanceof ReferenceProperty && object.hashCode() == this.hashCode();
+        return this.value.hashCode() + this.key.hashCode();
     }
 
     @Override
     public String toString() {
-        return "p*[" + this.element.id + ":" + this.key + "]";
+        return "p*[" + this.key + "->" + this.value.toString().substring(0, Math.min(this.value.toString().length(), 20)) + "]";
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (object instanceof ReferenceProperty)
+            return ((ReferenceProperty) object).element.equals(this.element) && this.key.equals(((ReferenceProperty) object).key) && this.value.equals(((ReferenceProperty) object).value);
+        else
+            return object instanceof Property && this.element.equals(((Property) object).element()) && this.key.equals(((Property) object).key()) && this.value.equals(((Property) object).value());
     }
 }

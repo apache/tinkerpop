@@ -58,4 +58,12 @@ public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty>
     public String toString() {
         return "vp*[" + this.id + "]";
     }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (object instanceof ReferenceVertexProperty)
+            return this.id.equals(((ReferenceVertexProperty) object).id);
+        else
+            return object instanceof VertexProperty && this.id.equals(((VertexProperty) object).id());
+    }
 }

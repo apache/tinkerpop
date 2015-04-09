@@ -63,4 +63,12 @@ public class ReferenceEdge extends ReferenceElement<Edge> {
         return "e*[" + this.id + "]";
     }
 
+    @Override
+    public boolean equals(final Object object) {
+        if (object instanceof ReferenceEdge)
+            return this.id.equals(((ReferenceEdge) object).id);
+        else
+            return object instanceof Edge && this.id.equals(((Edge) object).id());
+    }
+
 }
