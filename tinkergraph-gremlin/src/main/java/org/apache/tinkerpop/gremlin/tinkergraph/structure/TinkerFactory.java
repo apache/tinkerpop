@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
@@ -35,7 +37,12 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
  */
 public class TinkerFactory {
     public static TinkerGraph createClassic() {
-        final TinkerGraph g = TinkerGraph.open();
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.CONFIG_VERTEX_ID, TinkerGraph.DefaultIdManager.INTEGER);
+        conf.setProperty(TinkerGraph.CONFIG_EDGE_ID, TinkerGraph.DefaultIdManager.INTEGER);
+        conf.setProperty(TinkerGraph.CONFIG_VERTEX_PROPERTY_ID, TinkerGraph.DefaultIdManager.INTEGER);
+
+        final TinkerGraph g = TinkerGraph.open(conf);
         generateClassic(g);
         return g;
     }
