@@ -32,12 +32,27 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class ReferenceVertexTest extends AbstractGremlinTest {
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldHashAndEqualCorrectly() {
+        final Vertex v = graph.addVertex();
+        final Set<Vertex> set = new HashSet<>();
+        for (int i = 0; i < 100; i++) {
+            set.add(ReferenceFactory.detach(v));
+            set.add(v);
+        }
+        assertEquals(1, set.size());
+    }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
@@ -63,12 +78,13 @@ public class ReferenceVertexTest extends AbstractGremlinTest {
     public void shouldEvaluateToEqualForVerticesAndDetachments() {
         assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next())));
         assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).equals(g.V(convertToVertexId("marko")).next()));
+        assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).equals(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true)));
         assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).equals(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), false)));
         // reverse
         assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next().equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()))));
         assertTrue(g.V(convertToVertexId("marko")).next().equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next())));
+        assertTrue(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true).equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next())));
         assertTrue(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), false).equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next())));
-
     }
 
     @Test

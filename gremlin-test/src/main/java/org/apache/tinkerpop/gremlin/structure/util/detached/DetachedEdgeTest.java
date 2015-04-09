@@ -26,13 +26,16 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 import static org.junit.Assert.*;
@@ -41,6 +44,20 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DetachedEdgeTest extends AbstractGremlinTest {
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldHashAndEqualCorrectly() {
+        final Vertex v = graph.addVertex();
+        final Edge e = v.addEdge("test", v);
+        final Set<Edge> set = new HashSet<>();
+        for (int i = 0; i < 100; i++) {
+            set.add(DetachedFactory.detach(e,true));
+            set.add(DetachedFactory.detach(e,false));
+            set.add(e);
+        }
+        assertEquals(1, set.size());
+    }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
