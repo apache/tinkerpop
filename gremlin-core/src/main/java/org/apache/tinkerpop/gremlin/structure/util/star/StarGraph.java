@@ -91,6 +91,8 @@ public final class StarGraph implements Graph {
     public Iterator<Vertex> vertices(final Object... vertexIds) {
         if (null == this.starVertex)
             return Collections.emptyIterator();
+        else if (vertexIds.length > 0 && vertexIds[0] instanceof StarVertex)
+            return Stream.of(vertexIds).map(v -> (Vertex) v).iterator();  // todo: maybe do this better - not sure of star semantics here
         else if (ElementHelper.idExists(this.starVertex.id(), vertexIds))
             return IteratorUtils.of(this.starVertex);
         else
@@ -121,7 +123,13 @@ public final class StarGraph implements Graph {
                         this.starVertex.inEdges.values().stream(),
                         this.starVertex.outEdges.values().stream())
                         .flatMap(List::stream)
-                        .filter(edge -> ElementHelper.idExists(edge.id(), edgeIds))
+                        .filter(edge -> {
+                            // todo: kinda fishy - need to better nail down how stuff should work here - none of these feel consistent right now.
+                            if (edgeIds.length > 0 && edgeIds[0] instanceof Edge)
+                                return ElementHelper.idExists(edge.id(), Stream.of(edgeIds).map(e -> ((Edge) e).id()).toArray());
+                            else
+                                return ElementHelper.idExists(edge.id(), edgeIds);
+                        })
                         .iterator();
     }
 
