@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -67,9 +68,5 @@ public class DetachedPath extends MutablePath implements Attachable<Path> {
         final Path path = MutablePath.make();  // TODO: Use ImmutablePath?
         this.forEach((object, labels) -> path.extend(object instanceof Attachable ? ((Attachable) object).attach(hostVertex) : object, labels.toArray(new String[labels.size()])));
         return path;
-    }
-
-    public String toString() {
-        return this.objects.toString();
     }
 }

@@ -120,7 +120,7 @@ public final class GryoMapper implements Mapper<Kryo> {
 
     @Override
     public Kryo createMapper() {
-        final Kryo kryo = new Kryo(new GremlinClassResolver(), new MapReferenceResolver(), new DefaultStreamFactory());
+        final Kryo kryo = new Kryo(new GryoClassResolver(), new MapReferenceResolver(), new DefaultStreamFactory());
         kryo.addDefaultSerializer(Map.Entry.class, new EntrySerializer());
         kryo.setRegistrationRequired(true);
         serializationList.forEach(p -> {

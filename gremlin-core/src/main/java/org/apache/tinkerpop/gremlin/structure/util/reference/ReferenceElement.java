@@ -22,14 +22,19 @@
 package org.apache.tinkerpop.gremlin.structure.util.reference;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.util.detached.Attachable;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ReferenceElement<E extends Element> implements Serializable, Attachable<E> {
+public abstract class ReferenceElement<E extends Element> implements Element, Serializable, Attachable<E> {
+
+    protected static final String EMPTY_STRING = "";
 
     protected Object id;
 
@@ -42,7 +47,28 @@ public abstract class ReferenceElement<E extends Element> implements Serializabl
     }
 
     @Override
+    public Object id() {
+        return this.id;
+    }
+
+    @Override
+    public String label() {
+        return EMPTY_STRING;
+    }
+
+    @Override
+    public Graph graph() {
+        return EmptyGraph.instance();
+    }
+
+    @Override
     public int hashCode() {
-        return this.id.hashCode();
+        return ElementHelper.hashCode(this);
+    }
+
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    @Override
+    public boolean equals(final Object other) {
+        return ElementHelper.areEqual(this, other);
     }
 }

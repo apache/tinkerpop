@@ -21,21 +21,25 @@
 
 package org.apache.tinkerpop.gremlin.structure.util.reference;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.detached.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
 import java.io.Serializable;
+import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferenceProperty<V> implements Attachable<Property<V>>, Serializable {
+public class ReferenceProperty<V> implements Attachable<Property>, Serializable, Property<V> {
 
     private ReferenceElement<?> element;
     private String key;
-    private Object value;
+    private V value;
 
     private ReferenceProperty() {
 
@@ -44,33 +48,64 @@ public class ReferenceProperty<V> implements Attachable<Property<V>>, Serializab
     public ReferenceProperty(final Property<V> property) {
         this.element = ReferenceFactory.detach(property.element());
         this.key = property.key();
+        this.value = property.value();
     }
 
     @Override
     public Property<V> attach(final Vertex hostVertex) throws IllegalStateException {
-        return this.element.attach(hostVertex).property(this.key);
+        final Property<V> property = this.element.attach(hostVertex).property(this.key);
+        if (property.isPresent() && property.value().equals(this.value))
+            return property;
+        else
+            throw Attachable.Exceptions.canNotAttachPropertyToHostVertex(this, hostVertex);
     }
 
     @Override
     public Property<V> attach(final Graph hostGraph) throws IllegalStateException {
-        return this.element.attach(hostGraph).property(this.key);
+        final Property<V> property = this.element.attach(hostGraph).property(this.key);
+        if (property.isPresent() && property.value().equals(this.value))
+            return property;
+        else
+            throw Attachable.Exceptions.canNotAttachPropertyToHostGraph(this, hostGraph);
     }
 
     @Override
     public int hashCode() {
-        return this.value.hashCode() + this.key.hashCode();
+        return ElementHelper.hashCode(this);
     }
 
     @Override
     public String toString() {
-        return "p*[" + this.key + "->" + this.value.toString().substring(0, Math.min(this.value.toString().length(), 20)) + "]";
+        return StringFactory.propertyString(this);
     }
 
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof ReferenceProperty)
-            return ((ReferenceProperty) object).element.equals(this.element) && this.key.equals(((ReferenceProperty) object).key) && this.value.equals(((ReferenceProperty) object).value);
-        else
-            return object instanceof Property && this.element.equals(((Property) object).element()) && this.key.equals(((Property) object).key()) && this.value.equals(((Property) object).value());
+        return ElementHelper.areEqual(this, object);
+    }
+
+    @Override
+    public String key() {
+        return this.key;
+    }
+
+    @Override
+    public V value() throws NoSuchElementException {
+        return this.value;
+    }
+
+    @Override
+    public boolean isPresent() {
+        return true;
+    }
+
+    @Override
+    public Element element() {
+        return this.element;
+    }
+
+    @Override
+    public void remove() {
+        throw Element.Exceptions.propertyRemovalNotSupported();
     }
 }

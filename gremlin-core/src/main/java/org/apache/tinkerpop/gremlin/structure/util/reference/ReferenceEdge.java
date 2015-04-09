@@ -23,16 +23,20 @@ package org.apache.tinkerpop.gremlin.structure.util.reference;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferenceEdge extends ReferenceElement<Edge> {
+public class ReferenceEdge extends ReferenceElement<Edge> implements Edge {
 
     private ReferenceEdge() {
 
@@ -46,7 +50,7 @@ public class ReferenceEdge extends ReferenceElement<Edge> {
     public Edge attach(final Vertex hostVertex) {
         final Iterator<Edge> edges = IteratorUtils.filter(hostVertex.edges(Direction.OUT), edge -> edge.id().equals(this.id));
         if (!edges.hasNext())
-            throw new IllegalStateException("The reference edge could not be found incident to the provided vertex: " + this);
+            throw Attachable.Exceptions.canNotAttachEdgeToHostVertex(this, hostVertex);
         return edges.next();
     }
 
@@ -54,21 +58,32 @@ public class ReferenceEdge extends ReferenceElement<Edge> {
     public Edge attach(final Graph hostGraph) {
         final Iterator<Edge> edges = hostGraph.edges(this.id);
         if (!edges.hasNext())
-            throw new IllegalStateException("The reference edge could not be found in the provided graph: " + this);
+            throw Attachable.Exceptions.canNotAttachEdgeToHostGraph(this, hostGraph);
         return edges.next();
     }
 
     @Override
-    public String toString() {
-        return "e*[" + this.id + "]";
+    public <V> Property<V> property(final String key, final V value) {
+        throw Element.Exceptions.propertyAdditionNotSupported();
     }
 
     @Override
-    public boolean equals(final Object object) {
-        if (object instanceof ReferenceEdge)
-            return this.id.equals(((ReferenceEdge) object).id);
-        else
-            return object instanceof Edge && this.id.equals(((Edge) object).id());
+    public void remove() {
+        throw Edge.Exceptions.edgeRemovalNotSupported();
     }
 
+    @Override
+    public Iterator<Vertex> vertices(final Direction direction) {
+        return Collections.emptyIterator();
+    }
+
+    @Override
+    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+        return Collections.emptyIterator();
+    }
+
+    @Override
+    public String toString() {
+        return "e[" + this.id + "]";
+    }
 }

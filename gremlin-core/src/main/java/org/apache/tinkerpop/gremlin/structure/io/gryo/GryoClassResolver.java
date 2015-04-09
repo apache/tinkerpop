@@ -28,6 +28,11 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.KryoException;
@@ -47,7 +52,7 @@ import static org.apache.tinkerpop.shaded.kryo.util.Util.getWrapperClass;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class GremlinClassResolver implements ClassResolver {
+class GryoClassResolver implements ClassResolver {
     static public final byte NAME = -1;
 
     protected Kryo kryo;
@@ -90,15 +95,15 @@ class GremlinClassResolver implements ClassResolver {
     public Registration getRegistration(final Class clazz) {
         // force all instances of Vertex, Edge, VertexProperty, etc. to their respective interface
         final Class type;
-        if (!DetachedVertex.class.isAssignableFrom(clazz) && Vertex.class.isAssignableFrom(clazz))
+        if (!ReferenceVertex.class.isAssignableFrom(clazz) && !DetachedVertex.class.isAssignableFrom(clazz) && Vertex.class.isAssignableFrom(clazz))
             type = Vertex.class;
-        else if (!DetachedEdge.class.isAssignableFrom(clazz) && Edge.class.isAssignableFrom(clazz))
+        else if (!ReferenceEdge.class.isAssignableFrom(clazz) && !DetachedEdge.class.isAssignableFrom(clazz) && Edge.class.isAssignableFrom(clazz))
             type = Edge.class;
-        else if (!DetachedVertexProperty.class.isAssignableFrom(clazz) && VertexProperty.class.isAssignableFrom(clazz))
+        else if (!ReferenceVertexProperty.class.isAssignableFrom(clazz) && !DetachedVertexProperty.class.isAssignableFrom(clazz) && VertexProperty.class.isAssignableFrom(clazz))
             type = VertexProperty.class;
-        else if (!DetachedProperty.class.isAssignableFrom(clazz) && !DetachedVertexProperty.class.isAssignableFrom(clazz) && Property.class.isAssignableFrom(clazz))
+        else if (!ReferenceProperty.class.isAssignableFrom(clazz) && !DetachedProperty.class.isAssignableFrom(clazz) && !DetachedVertexProperty.class.isAssignableFrom(clazz) && Property.class.isAssignableFrom(clazz))
             type = Property.class;
-        else if (!DetachedPath.class.isAssignableFrom(clazz) && Path.class.isAssignableFrom(clazz))
+        else if (!ReferencePath.class.isAssignableFrom(clazz) && !DetachedPath.class.isAssignableFrom(clazz) && Path.class.isAssignableFrom(clazz))
             type = Path.class;
         else
             type = clazz;

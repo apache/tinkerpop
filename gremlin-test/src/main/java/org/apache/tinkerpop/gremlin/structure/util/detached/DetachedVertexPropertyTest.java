@@ -65,7 +65,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
         assertEquals(DetachedVertex.class, mp.element().getClass());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalStateException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotSupportRemove() {
         final Vertex v = graph.addVertex();

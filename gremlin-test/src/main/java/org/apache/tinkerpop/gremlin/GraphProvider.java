@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 
 import java.util.Collections;
@@ -218,7 +219,7 @@ public interface GraphProvider {
      * When serializing a mapper identifier type to GraphSON an implementer will typically specify a mapper serializer
      * in {@link org.apache.tinkerpop.gremlin.structure.Graph.Io}.  That will serialize the identifier to a GraphSON representation.
      * When the GraphSON is deserialized, the identifier is written to an
-     * {@link org.apache.tinkerpop.gremlin.structure.util.detached.Attachable} object where it is passed to a user supplied
+     * {@link Attachable} object where it is passed to a user supplied
      * conversion {@link java.util.function.Function} that ultimately processes it.  It is in this conversion process
      * that vendor specific identifier conversion would occur (if desired).  This method mimics that conversion by
      * providing the mechanism that a test can use to do the conversion.

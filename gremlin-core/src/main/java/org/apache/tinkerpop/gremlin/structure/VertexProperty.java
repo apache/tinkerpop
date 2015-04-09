@@ -85,6 +85,10 @@ public interface VertexProperty<V> extends Property<V>, Element {
      * Common exceptions to use with a property.
      */
     public static class Exceptions {
+
+        private Exceptions() {
+        }
+
         public static UnsupportedOperationException userSuppliedIdsNotSupported() {
             return new UnsupportedOperationException("VertexProperty does not support user supplied identifiers");
         }

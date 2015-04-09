@@ -188,6 +188,10 @@ public interface GraphComputer {
     }
 
     public static class Exceptions {
+
+        private Exceptions() {
+        }
+
         public static IllegalStateException adjacentElementPropertiesCanNotBeRead() {
             return new IllegalStateException("The properties of an adjacent element can not be read, only its id");
         }

@@ -153,6 +153,9 @@ public interface Memory {
 
     public static class Exceptions {
 
+        private Exceptions() {
+        }
+
         public static IllegalArgumentException memoryKeyCanNotBeEmpty() {
             return new IllegalArgumentException("Graph computer memory key can not be the empty string");
         }

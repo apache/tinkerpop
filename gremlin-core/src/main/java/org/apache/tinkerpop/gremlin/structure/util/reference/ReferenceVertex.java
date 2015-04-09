@@ -21,13 +21,23 @@
 
 package org.apache.tinkerpop.gremlin.structure.util.reference;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+
+import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferenceVertex extends ReferenceElement<Vertex> {
+public class ReferenceVertex extends ReferenceElement<Vertex> implements Vertex {
 
     private ReferenceVertex() {
 
@@ -39,27 +49,53 @@ public class ReferenceVertex extends ReferenceElement<Vertex> {
 
     @Override
     public Vertex attach(final Vertex hostVertex) {
-        if (hostVertex.id().equals(this.id))
+        if (ElementHelper.areEqual(this,hostVertex))
             return hostVertex;
         else
-            throw new IllegalStateException("The host vertex must be the reference vertex to attach: " + this + "!=" + hostVertex);
+            throw Attachable.Exceptions.canNotAttachVertexToHostVertex(this, hostVertex);
     }
 
     @Override
     public Vertex attach(final Graph hostGraph) {
-        return hostGraph.vertices(this.id).next();
+        final Iterator<Vertex> iterator = hostGraph.vertices(this.id);
+        if (iterator.hasNext())
+            return iterator.next();
+        else
+            throw Attachable.Exceptions.canNotAttachVertexToHostGraph(this, hostGraph);
+    }
+
+    @Override
+    public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
+        throw Vertex.Exceptions.edgeAdditionsNotSupported();
+    }
+
+    @Override
+    public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
+        throw Element.Exceptions.propertyAdditionNotSupported();
+    }
+
+    @Override
+    public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
+        return Collections.emptyIterator();
+    }
+
+    @Override
+    public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
+        return Collections.emptyIterator();
+    }
+
+    @Override
+    public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
+        return Collections.emptyIterator();
+    }
+
+    @Override
+    public void remove() {
+        throw Vertex.Exceptions.vertexRemovalNotSupported();
     }
 
     @Override
     public String toString() {
-        return "v*[" + this.id + "]";
-    }
-
-    @Override
-    public boolean equals(final Object object) {
-        if (object instanceof ReferenceVertex)
-            return this.id.equals(((ReferenceVertex) object).id);
-        else
-            return object instanceof Vertex && this.id.equals(((Vertex) object).id());
+        return StringFactory.vertexString(this);
     }
 }

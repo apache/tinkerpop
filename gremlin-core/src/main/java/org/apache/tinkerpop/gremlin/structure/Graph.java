@@ -19,10 +19,10 @@
 package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.traversal.T;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.T;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.io.DefaultIo;
@@ -382,6 +382,9 @@ public interface Graph extends AutoCloseable {
         }
 
         public static class Exceptions {
+
+            private Exceptions() {
+            }
 
             public static IllegalArgumentException variableKeyCanNotBeEmpty() {
                 return new IllegalArgumentException("Graph variable key can not be the empty string");

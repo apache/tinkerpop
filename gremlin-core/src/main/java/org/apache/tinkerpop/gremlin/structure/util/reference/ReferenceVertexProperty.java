@@ -21,17 +21,22 @@
 
 package org.apache.tinkerpop.gremlin.structure.util.reference;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty> {
+public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty> implements VertexProperty<V> {
 
     private ReferenceVertexProperty() {
 
@@ -45,7 +50,7 @@ public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty>
     public VertexProperty<V> attach(final Vertex hostVertex) {
         final Iterator<VertexProperty<V>> vertexPropertyIterator = IteratorUtils.filter(hostVertex.<V>properties(), vp -> vp.id().equals(this.id));
         if (!vertexPropertyIterator.hasNext())
-            throw new IllegalStateException("The reference vertex property could not be be found at the provided vertex: " + this);
+            throw Attachable.Exceptions.canNotAttachVertexPropertyToHostVertex(this, hostVertex);
         return vertexPropertyIterator.next();
     }
 
@@ -56,14 +61,41 @@ public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty>
 
     @Override
     public String toString() {
-        return "vp*[" + this.id + "]";
+        return "vp[" + this.id + "]";
     }
 
     @Override
-    public boolean equals(final Object object) {
-        if (object instanceof ReferenceVertexProperty)
-            return this.id.equals(((ReferenceVertexProperty) object).id);
-        else
-            return object instanceof VertexProperty && this.id.equals(((VertexProperty) object).id());
+    public String key() {
+        return EMPTY_STRING;
+    }
+
+    @Override
+    public V value() throws NoSuchElementException {
+        return null;
+    }
+
+    @Override
+    public boolean isPresent() {
+        return true;
+    }
+
+    @Override
+    public Vertex element() {
+        return null;
+    }
+
+    @Override
+    public <U> Property<U> property(final String key, final U value) {
+        throw Element.Exceptions.propertyAdditionNotSupported();
+    }
+
+    @Override
+    public void remove() {
+        throw Element.Exceptions.propertyRemovalNotSupported();
+    }
+
+    @Override
+    public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
+        return Collections.emptyIterator();
     }
 }

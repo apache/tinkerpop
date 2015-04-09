@@ -231,7 +231,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     }
 
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalStateException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowAddEdge() {
         final Vertex v = graph.addVertex();
@@ -239,7 +239,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         detachedVertex.addEdge("test", null);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalStateException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowSetProperty() {
         final Vertex v = graph.addVertex();
@@ -247,7 +247,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         detachedVertex.property("test", "test");
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalStateException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowRemove() {
         final Vertex v = graph.addVertex();

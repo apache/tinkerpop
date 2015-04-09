@@ -121,6 +121,10 @@ public interface Transaction extends Closeable {
     }
 
     public static class Exceptions {
+
+        private Exceptions() {
+        }
+
         public static IllegalStateException transactionAlreadyOpen() {
             return new IllegalStateException("Stop the current transaction before opening another");
         }
