@@ -38,9 +38,9 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 public class TinkerFactory {
     public static TinkerGraph createClassic() {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.CONFIG_VERTEX_ID, TinkerGraph.DefaultIdManager.INTEGER);
-        conf.setProperty(TinkerGraph.CONFIG_EDGE_ID, TinkerGraph.DefaultIdManager.INTEGER);
-        conf.setProperty(TinkerGraph.CONFIG_VERTEX_PROPERTY_ID, TinkerGraph.DefaultIdManager.INTEGER);
+        conf.setProperty(TinkerGraph.CONFIG_VERTEX_ID, TinkerGraph.DefaultIdManager.INTEGER.name());
+        conf.setProperty(TinkerGraph.CONFIG_EDGE_ID, TinkerGraph.DefaultIdManager.INTEGER.name());
+        conf.setProperty(TinkerGraph.CONFIG_VERTEX_PROPERTY_ID, TinkerGraph.DefaultIdManager.INTEGER.name());
 
         final TinkerGraph g = TinkerGraph.open(conf);
         generateClassic(g);
