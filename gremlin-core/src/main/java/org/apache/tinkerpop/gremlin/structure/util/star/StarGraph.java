@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -64,6 +65,10 @@ public final class StarGraph implements Graph {
 
     private final Map<Object, Map<String, Object>> edgeProperties = new HashMap<>();
     private final Map<Object, Map<String, Object>> metaProperties = new HashMap<>();
+
+    public StarVertex getStarVertex() {
+        return this.starVertex;
+    }
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
@@ -147,6 +152,13 @@ public final class StarGraph implements Graph {
 
     public static StarGraph open() {
         return new StarGraph();
+    }
+
+    public static StarGraph of(final Vertex vertex) {
+        final StarGraph starGraph = new StarGraph();
+        StarGraph.addTo(starGraph, DetachedFactory.detach(vertex, true));
+        vertex.edges(Direction.BOTH).forEachRemaining(edge -> StarGraph.addTo(starGraph, DetachedFactory.detach(edge, true)));
+        return starGraph;
     }
 
     public static Vertex addTo(final StarGraph graph, final DetachedVertex detachedVertex) {
