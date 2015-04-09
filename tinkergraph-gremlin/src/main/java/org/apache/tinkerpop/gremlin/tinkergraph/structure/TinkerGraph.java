@@ -491,9 +491,25 @@ public class TinkerGraph implements Graph {
         return UnaryOperator.identity();
     }
 
+    /**
+     * TinkerGraph will use an implementation of this interface to generate identifiers when a user does not supply
+     * them and to handle identifier conversions when querying to provide better flexibility with respect to
+     * handling different data types that mean the same thing.  For example, the
+     * {@link DefaultIdManager#LONG} implementation will allow {@code g.vertices(1l, 2l)} and
+     * {@code g.vertices(1, 2)} to both return values.
+     *
+     * @param <T> the id type
+     */
     public interface IdManager<T> {
+        /**
+         * Generate an identifier which should be unique to the {@link TinkerGraph} instance.
+         */
         T getNextId(final TinkerGraph graph);
-        T convert(final Object o);
+
+        /**
+         * Convert an identifier to the type required by the manager.
+         */
+        T convert(final Object id);
     }
 
     public enum DefaultIdManager implements IdManager {
@@ -505,11 +521,11 @@ public class TinkerGraph implements Graph {
             }
 
             @Override
-            public Object convert(final Object o) {
-                if (o instanceof Number)
-                    return ((Number) o).longValue();
-                else if (o instanceof String)
-                    return Long.parseLong((String) o);
+            public Object convert(final Object id) {
+                if (id instanceof Number)
+                    return ((Number) id).longValue();
+                else if (id instanceof String)
+                    return Long.parseLong((String) id);
                 else
                     throw new IllegalArgumentException("Expected an id that is convertible to Long");
             }
@@ -522,11 +538,11 @@ public class TinkerGraph implements Graph {
             }
 
             @Override
-            public Object convert(final Object o) {
-                if (o instanceof Number)
-                    return ((Number) o).intValue();
-                else if (o instanceof String)
-                    return Integer.parseInt((String) o);
+            public Object convert(final Object id) {
+                if (id instanceof Number)
+                    return ((Number) id).intValue();
+                else if (id instanceof String)
+                    return Integer.parseInt((String) id);
                 else
                     throw new IllegalArgumentException("Expected an id that is convertible to Integer");
             }
@@ -538,11 +554,11 @@ public class TinkerGraph implements Graph {
             }
 
             @Override
-            public Object convert(final Object o) {
-                if (o instanceof java.util.UUID)
-                    return o;
-                else if (o instanceof String)
-                    return java.util.UUID.fromString((String) o);
+            public Object convert(final Object id) {
+                if (id instanceof java.util.UUID)
+                    return id;
+                else if (id instanceof String)
+                    return java.util.UUID.fromString((String) id);
                 else
                     throw new IllegalArgumentException("Expected an id that is convertible to UUID");
             }
@@ -555,8 +571,8 @@ public class TinkerGraph implements Graph {
             }
 
             @Override
-            public Object convert(final Object o) {
-                return o;
+            public Object convert(final Object id) {
+                return id;
             }
         }
     }
