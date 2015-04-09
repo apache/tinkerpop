@@ -171,14 +171,14 @@ public class GryoMessageSerializerV1D0Test {
         assertEquals(1, edgeList.size());
 
         final DetachedEdge deserializedEdge = edgeList.get(0);
-        assertEquals(2l, deserializedEdge.id());
+        assertEquals(e.id(), deserializedEdge.id());
         assertEquals("test", deserializedEdge.label());
 
         assertEquals(123, deserializedEdge.values("abc").next());
         assertEquals(1, IteratorUtils.count(deserializedEdge.properties()));
-        assertEquals(0l, deserializedEdge.outVertex().id());
+        assertEquals(v1.id(), deserializedEdge.outVertex().id());
         assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.outVertex().label());
-        assertEquals(1l, deserializedEdge.inVertex().id());
+        assertEquals(v2.id(), deserializedEdge.inVertex().id());
         assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.inVertex().label());
     }
 
