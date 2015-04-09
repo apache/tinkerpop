@@ -164,32 +164,20 @@ public final class StarGraph implements Graph {
     public static Vertex addTo(final StarGraph graph, final DetachedVertex detachedVertex) {
         if (null != graph.starVertex)
             return null;
-
         graph.addVertex(T.id, detachedVertex.id(), T.label, detachedVertex.label());
         detachedVertex.properties().forEachRemaining(detachedVertexProperty -> {
-            final List<Object> keyValues = new ArrayList<>();
-            keyValues.add(T.id);
-            keyValues.add(detachedVertexProperty.id());
-            detachedVertexProperty.properties().forEachRemaining(detachedVertexPropertyProperty -> {
-                keyValues.add(detachedVertexPropertyProperty.key());
-                keyValues.add(detachedVertexPropertyProperty.value());
-            });
-            graph.starVertex.property(VertexProperty.Cardinality.list, detachedVertexProperty.key(), detachedVertexProperty.value(), keyValues.toArray());
+            final VertexProperty<?> starVertexProperty = graph.starVertex.property(VertexProperty.Cardinality.list, detachedVertexProperty.key(), detachedVertexProperty.value(), T.id, detachedVertexProperty.id());
+            detachedVertexProperty.properties().forEachRemaining(detachedVertexPropertyProperty -> starVertexProperty.property(detachedVertexPropertyProperty.key(), detachedVertexPropertyProperty.value()));
         });
         return graph.starVertex;
     }
 
     public static Edge addTo(final StarGraph graph, final DetachedEdge edge) {
-        final List<Object> keyValues = new ArrayList<>();
-        keyValues.add(T.id);
-        keyValues.add(edge.id());
-        edge.properties().forEachRemaining(property -> {
-            keyValues.add(property.key());
-            keyValues.add(property.value());
-        });
-        return !graph.starVertex.id().equals(edge.inVertex().id()) ?
-                graph.starVertex.addOutEdge(edge.label(), edge.inVertex(), keyValues.toArray()) :
-                graph.starVertex.addInEdge(edge.label(), edge.outVertex(), keyValues.toArray());
+        final Edge starEdge = !graph.starVertex.id().equals(edge.inVertex().id()) ?
+                graph.starVertex.addOutEdge(edge.label(), edge.inVertex(), T.id, edge.id()) :
+                graph.starVertex.addInEdge(edge.label(), edge.outVertex(), T.id, edge.id());
+        edge.properties().forEachRemaining(property -> starEdge.property(property.key(), property.value()));
+        return starEdge;
     }
 
     protected Long generateId() {

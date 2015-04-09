@@ -42,9 +42,10 @@ public final class SparkMessenger<M> implements Messenger<M> {
     private Iterable<M> incomingMessages;
     private final List<Tuple2<Object, M>> outgoingMessages = new ArrayList<>();
 
-    public SparkMessenger(final Vertex vertex, final Iterable<M> incomingMessages) {
+    public void setVertexAndIncomingMessages(final Vertex vertex, final Iterable<M> incomingMessages) {
         this.vertex = vertex;
         this.incomingMessages = incomingMessages;
+        this.outgoingMessages.clear();
     }
 
     public List<Tuple2<Object, M>> getOutgoingMessages() {
