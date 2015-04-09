@@ -414,13 +414,8 @@ public final class StarGraph implements Graph {
         }
 
         @Override
-        public boolean equals(final Object other) {
-            return ElementHelper.areEqual(this, other);
-        }
-
-        @Override
-        public int hashCode() {
-            return ElementHelper.hashCode((Element) this);
+        public String toString() {
+            return StringFactory.propertyString(this);
         }
     }
 
@@ -439,7 +434,7 @@ public final class StarGraph implements Graph {
 
         @Override
         public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
-            if (!ElementHelper.areEqual(starVertex, inVertex))
+            if (!starVertex.equals(inVertex))
                 throw new IllegalStateException("An adjacent vertex can only connect to the star vertex: " + starVertex);
             return starVertex.addInEdge(label, this, keyValues);
         }
@@ -559,16 +554,6 @@ public final class StarGraph implements Graph {
         @Override
         public void remove() {
             throw Edge.Exceptions.edgeRemovalNotSupported();
-        }
-
-        @Override
-        public boolean equals(final Object other) {
-            return ElementHelper.areEqual(this, other);
-        }
-
-        @Override
-        public int hashCode() {
-            return ElementHelper.hashCode(this);
         }
 
         @Override

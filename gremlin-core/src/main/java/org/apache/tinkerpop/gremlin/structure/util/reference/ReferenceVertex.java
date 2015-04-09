@@ -21,63 +21,29 @@
 
 package org.apache.tinkerpop.gremlin.structure.util.reference;
 
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
 import java.util.Collections;
-import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferenceVertex extends ReferenceElement<Vertex> implements Vertex {
+public class ReferenceVertex extends ReferenceElement<Vertex> {
+
+    private ReferenceVertex() {
+        super();
+    }
 
     public ReferenceVertex(final Vertex vertex) {
         super(vertex);
     }
 
     @Override
-    public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
-        throw Vertex.Exceptions.edgeAdditionsNotSupported();
-    }
-
-    @Override
-    public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
-        throw Element.Exceptions.propertyAdditionNotSupported();
-    }
-
-    @Override
-    public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
-        return Collections.emptyIterator();
-    }
-
-    @Override
-    public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
-        return Collections.emptyIterator();
-    }
-
-    @Override
-    public void remove() {
-        throw Vertex.Exceptions.vertexRemovalNotSupported();
-    }
-
-    @Override
-    public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-        return Collections.emptyIterator();
-    }
-
-    @Override
-    public <V> VertexProperty<V> property(final String key, final V value) {
-        throw Element.Exceptions.propertyAdditionNotSupported();
-    }
-
-    @Override
     public Vertex attach(final Vertex hostVertex) {
-        if (hostVertex.equals(this))
+        if (hostVertex.id().equals(this.id))
             return hostVertex;
         else
             throw new IllegalStateException("The host vertex must be the reference vertex to attach: " + this + "!=" + hostVertex);
@@ -86,5 +52,10 @@ public class ReferenceVertex extends ReferenceElement<Vertex> implements Vertex 
     @Override
     public Vertex attach(final Graph hostGraph) {
         return hostGraph.vertices(this.id).next();
+    }
+
+    @Override
+    public String toString() {
+        return "v*[" + this.id + "]";
     }
 }

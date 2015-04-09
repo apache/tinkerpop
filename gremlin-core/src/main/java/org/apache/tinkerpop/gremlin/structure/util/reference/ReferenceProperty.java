@@ -21,24 +21,26 @@
 
 package org.apache.tinkerpop.gremlin.structure.util.reference;
 
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.Attachable;
 
 import java.io.Serializable;
-import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferenceProperty<V> implements Property, Attachable<Property<V>>, Serializable {
+public class ReferenceProperty<V> implements Attachable<Property<V>>, Serializable {
 
     private ReferenceElement<?> element;
     private String key;
 
-    public ReferenceProperty(final String key,final ReferenceElement<?> element) {
+    private ReferenceProperty() {
+
+    }
+
+    public ReferenceProperty(final String key, final ReferenceElement<?> element) {
         this.element = element;
         this.key = key;
     }
@@ -54,27 +56,17 @@ public class ReferenceProperty<V> implements Property, Attachable<Property<V>>, 
     }
 
     @Override
-    public String key() {
-        return this.key;
+    public int hashCode() {
+        return this.element.hashCode() + this.key.hashCode();
     }
 
     @Override
-    public Object value() throws NoSuchElementException {
-        return null;
+    public boolean equals(final Object object) {
+        return object instanceof ReferenceProperty && object.hashCode() == this.hashCode();
     }
 
     @Override
-    public boolean isPresent() {
-        return false;
-    }
-
-    @Override
-    public Element element() {
-        return this.element;
-    }
-
-    @Override
-    public void remove() {
-        throw Element.Exceptions.propertyRemovalNotSupported();
+    public String toString() {
+        return "p*[" + this.element.id + ":" + this.key + "]";
     }
 }

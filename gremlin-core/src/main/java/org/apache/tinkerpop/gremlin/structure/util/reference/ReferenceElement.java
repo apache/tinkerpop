@@ -22,43 +22,32 @@
 package org.apache.tinkerpop.gremlin.structure.util.reference;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.detached.Attachable;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ReferenceElement<E extends Element> implements Element, Serializable, Attachable<E> {
+public abstract class ReferenceElement<E extends Element> implements Serializable, Attachable<E> {
 
-    private static final String EMPTY_STRING = "";
+    protected Object id;
 
-    protected final Object id;
+    protected ReferenceElement() {
+         this.id = null;
+    }
 
     public ReferenceElement(final Element element) {
         this.id = element.id();
     }
 
     @Override
-    public Object id() {
-        return this.id;
+    public int hashCode() {
+        return this.id.hashCode();
     }
 
     @Override
-    public String label() {
-        return EMPTY_STRING;
-    }
-
-    @Override
-    public Graph graph() {
-        return EmptyGraph.instance();
-    }
-
-    @Override
-    public <V> Property<V> property(final String key, final V value) {
-        throw Element.Exceptions.propertyAdditionNotSupported();
+    public boolean equals(final Object object) {
+        return object instanceof ReferenceElement && this.id.equals(((ReferenceElement) object).id);
     }
 }
