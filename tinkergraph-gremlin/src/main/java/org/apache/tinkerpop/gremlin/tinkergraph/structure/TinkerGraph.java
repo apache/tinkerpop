@@ -450,47 +450,6 @@ public class TinkerGraph implements Graph {
         }
     }
 
-    ///////////// HELPERS METHODS ///////////////
-
-    /**
-     * Function to coerce a provided identifier to a different type given the expected id type of an element.
-     * This allows something like {@code g.V(1,2,3)} and {@code g.V(1l,2l,3l)} to both mean the same thing.
-     */
-    private UnaryOperator<Object> convertToId(final Object id, final Class<?> elementIdClass) {
-        if (id instanceof Number) {
-            if (elementIdClass != null) {
-                if (elementIdClass.equals(Long.class)) {
-                    return o -> ((Number) o).longValue();
-                } else if (elementIdClass.equals(Integer.class)) {
-                    return o -> ((Number) o).intValue();
-                } else if (elementIdClass.equals(Double.class)) {
-                    return o -> ((Number) o).doubleValue();
-                } else if (elementIdClass.equals(Float.class)) {
-                    return o -> ((Number) o).floatValue();
-                } else if (elementIdClass.equals(String.class)) {
-                    return o -> o.toString();
-                }
-            }
-        } else if (id instanceof String) {
-            if (elementIdClass != null) {
-                final String s = (String) id;
-                if (elementIdClass.equals(Long.class)) {
-                    return o -> Long.parseLong(s);
-                } else if (elementIdClass.equals(Integer.class)) {
-                    return o -> Integer.parseInt(s);
-                } else if (elementIdClass.equals(Double.class)) {
-                    return o -> Double.parseDouble(s);
-                } else if (elementIdClass.equals(Float.class)) {
-                    return o -> Float.parseFloat(s);
-                } else if (elementIdClass.equals(UUID.class)) {
-                    return o -> UUID.fromString(s);
-                }
-            }
-        }
-
-        return UnaryOperator.identity();
-    }
-
     /**
      * TinkerGraph will use an implementation of this interface to generate identifiers when a user does not supply
      * them and to handle identifier conversions when querying to provide better flexibility with respect to
@@ -512,7 +471,14 @@ public class TinkerGraph implements Graph {
         T convert(final Object id);
     }
 
+    /**
+     * A default set of {@link IdManager} implementations for common identifier types.
+     */
     public enum DefaultIdManager implements IdManager {
+        /**
+         * Manages identifiers of type {@code Long}. Will convert any class that extends from {@link Number} to a
+         * {@link Long} and will also attempt to convert {@code String} values
+         */
         LONG {
             private long currentId = -1l;
             @Override
@@ -530,6 +496,11 @@ public class TinkerGraph implements Graph {
                     throw new IllegalArgumentException("Expected an id that is convertible to Long");
             }
         },
+
+        /**
+         * Manages identifiers of type {@code Integer}. Will convert any class that extends from {@link Number} to a
+         * {@link Integer} and will also attempt to convert {@code String} values
+         */
         INTEGER {
             private int currentId = -1;
             @Override
@@ -547,6 +518,11 @@ public class TinkerGraph implements Graph {
                     throw new IllegalArgumentException("Expected an id that is convertible to Integer");
             }
         },
+
+        /**
+         * Manages identifiers of type {@link java.util.UUID}. Will convert {@code String} values to
+         * {@link java.util.UUID}.
+         */
         UUID {
             @Override
             public UUID getNextId(final TinkerGraph graph) {
@@ -563,6 +539,13 @@ public class TinkerGraph implements Graph {
                     throw new IllegalArgumentException("Expected an id that is convertible to UUID");
             }
         },
+
+        /**
+         * Manages identifiers of any type.  This represents the default way {@link TinkerGraph} has always worked.
+         * In other words, there is no identifier conversion so if the identifier of a vertex is a {@code Long}, then
+         * trying to request it with an {@code Integer} will have no effect. Also, like the original
+         * {@link TinkerGraph}, it will generate {@link Long} values for identifiers.
+         */
         ANY {
             private long currentId = -1l;
             @Override
