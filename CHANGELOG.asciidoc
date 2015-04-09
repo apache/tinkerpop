@@ -25,7 +25,11 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Added `StarGraph` which is a head efficient representation of a vertex and its incident edges (useful for `GraphComputer` implementations).
+* `DetachedXXX` use the standard `structure/` exceptions for unsupported operations.
+* Added private constructors to all `Exceptions` inner classes in the respective `structure/` interfaces.
+* Re-introduced `ReferenceXXX` to ensure a smaller data footprint in OLAP situation (`DetachedXXX` uses too much data).
+* `Attachable` now has set of static exceptions messages in an `Exceptions` inner class.
+* Added `StarGraph` which is a heap efficient representation of a vertex and its incident edges (useful for `GraphComputer` implementations).
 * `TraverserSet` uses a `FastNoSuchElementException` on `remove()` for increased performance.
 
 TinkerPop 3.0.0.M8 (Release Date: April 6, 2015)
