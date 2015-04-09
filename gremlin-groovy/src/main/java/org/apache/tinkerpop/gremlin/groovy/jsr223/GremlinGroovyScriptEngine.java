@@ -334,12 +334,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     @Override
-    public Object invokeFunction(final String name, final Object args[]) throws ScriptException, NoSuchMethodException {
+    public Object invokeFunction(final String name, final Object... args) throws ScriptException, NoSuchMethodException {
         return invokeImpl(null, name, args);
     }
 
     @Override
-    public Object invokeMethod(final Object thiz, final String name, final Object args[]) throws ScriptException, NoSuchMethodException {
+    public Object invokeMethod(final Object thiz, final String name, final Object... args) throws ScriptException, NoSuchMethodException {
         if (thiz == null) {
             throw new IllegalArgumentException("Script object can not be null");
         } else {
