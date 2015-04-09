@@ -40,8 +40,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -201,7 +204,26 @@ public class HadoopGraph implements Graph {
     @Override
     public Iterator<Vertex> vertices(final Object... vertexIds) {
         try {
-            return 0 == vertexIds.length ? new HadoopVertexIterator(this) : IteratorUtils.filter(new HadoopVertexIterator(this), vertex -> ElementHelper.idExists(vertex.id(), vertexIds));
+            if (0 == vertexIds.length) {
+                return new HadoopVertexIterator(this);
+            } else {
+                // base the conversion function on the first item in the id list as the expectation is that these
+                // id values will be a uniform list
+                if (vertexIds[0] instanceof Vertex) {
+                    // based on the first item assume all vertices in the argument list
+                    if (!Stream.of(vertexIds).allMatch(id -> id instanceof Vertex))
+                        throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
+
+                    // no need to get the vertices again, so just flip it back - some implementation may want to treat this
+                    // as a refresh operation. that's not necessary for hadoopgraph.
+                    return Stream.of(vertexIds).map(id -> (Vertex) id).iterator();
+                } else {
+                    final Class<?> firstClass = vertexIds[0].getClass();
+                    if (!Stream.of(vertexIds).map(Object::getClass).allMatch(firstClass::equals))
+                        throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();     // todo: change exception to be ids of the same type
+                    return IteratorUtils.filter(new HadoopVertexIterator(this), vertex -> ElementHelper.idExists(vertex.id(), vertexIds));
+                }
+            }
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -210,7 +232,26 @@ public class HadoopGraph implements Graph {
     @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
         try {
-            return 0 == edgeIds.length ? new HadoopEdgeIterator(this) : IteratorUtils.filter(new HadoopEdgeIterator(this), edge -> ElementHelper.idExists(edge.id(), edgeIds));
+            if (0 == edgeIds.length) {
+                return new HadoopEdgeIterator(this);
+            } else {
+                // base the conversion function on the first item in the id list as the expectation is that these
+                // id values will be a uniform list
+                if (edgeIds[0] instanceof Edge) {
+                    // based on the first item assume all Edges in the argument list
+                    if (!Stream.of(edgeIds).allMatch(id -> id instanceof Edge))
+                        throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
+
+                    // no need to get the vertices again, so just flip it back - some implementation may want to treat this
+                    // as a refresh operation. that's not necessary for hadoopgraph.
+                    return Stream.of(edgeIds).map(id -> (Edge) id).iterator();
+                } else {
+                    final Class<?> firstClass = edgeIds[0].getClass();
+                    if (!Stream.of(edgeIds).map(Object::getClass).allMatch(firstClass::equals))
+                        throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();     // todo: change exception to be ids of the same type
+                    return IteratorUtils.filter(new HadoopEdgeIterator(this), vertex -> ElementHelper.idExists(vertex.id(), edgeIds));
+                }
+            }
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

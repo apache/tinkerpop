@@ -75,10 +75,10 @@ public class DistributionGeneratorTest {
             // try this a few times because it's possible that the distribution generator is not random enough.
             // if it doesn't generate a random one after 5 times then there must be a problem
             do {
-                final Configuration configuration1 = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName());
+                final Configuration configuration1 = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName(), null);
                 final Graph g1 = graphProvider.openTestGraph(configuration1);
 
-                final Configuration configuration2 = graphProvider.newGraphConfiguration("g2", this.getClass(), name.getMethodName());
+                final Configuration configuration2 = graphProvider.newGraphConfiguration("g2", this.getClass(), name.getMethodName(), null);
                 final Graph g2 = graphProvider.openTestGraph(configuration2);
 
                 try {
@@ -112,7 +112,7 @@ public class DistributionGeneratorTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldGenerateSameGraph() throws Exception {
-            final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName());
+            final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName(), null);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             try {
                 final Iterable<Vertex> vordered = verticesByOid(graph);

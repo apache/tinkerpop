@@ -104,17 +104,17 @@ public interface GraphProvider {
 
     /**
      * Creates a new {@link org.apache.tinkerpop.gremlin.structure.Graph} instance using the default
-     * {@link org.apache.commons.configuration.Configuration} from {@link #standardGraphConfiguration(Class, String)}.
+     * {@link org.apache.commons.configuration.Configuration} from {@link #standardGraphConfiguration(Class, String, LoadGraphWith.GraphData)}.
      * The default implementation converts the passes the
      */
-    default public Graph standardTestGraph(final Class<?> test, final String testMethodName) {
-        return GraphFactory.open(standardGraphConfiguration(test, testMethodName));
+    default public Graph standardTestGraph(final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
+        return GraphFactory.open(standardGraphConfiguration(test, testMethodName, loadGraphWith));
     }
 
     /**
      * Creates a new {@link org.apache.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using
      * {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}. The assumption here is that the {@code Configuration}
-     * has been created by one of the {@link #newGraphConfiguration(String, Class, String)} methods and has therefore
+     * has been created by one of the {@link #newGraphConfiguration(String, Class, String, LoadGraphWith.GraphData)} methods and has therefore
      * already been modified by the implementation as necessary for {@link Graph} creation.
      */
     default public Graph openTestGraph(final Configuration config) {
@@ -127,8 +127,8 @@ public interface GraphProvider {
      * should always return a configuration instance that generates the same {@link org.apache.tinkerpop.gremlin.structure.Graph} from the
      * {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}.
      */
-    default public Configuration standardGraphConfiguration(final Class<?> test, final String testMethodName) {
-        return newGraphConfiguration("standard", test, testMethodName, Collections.<String, Object>emptyMap());
+    default public Configuration standardGraphConfiguration(final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
+        return newGraphConfiguration("standard", test, testMethodName, Collections.<String, Object>emptyMap(), loadGraphWith);
     }
 
     /**
@@ -179,11 +179,13 @@ public interface GraphProvider {
      * @param test                   the test class
      * @param testMethodName         the name of the test
      * @param configurationOverrides settings to override defaults with.
+     * @param loadGraphWith  the data set to load and will be null if no data is to be loaded
      */
     public Configuration newGraphConfiguration(final String graphName,
                                                final Class<?> test,
                                                final String testMethodName,
-                                               final Map<String, Object> configurationOverrides);
+                                               final Map<String, Object> configurationOverrides,
+                                               final LoadGraphWith.GraphData loadGraphWith);
 
     /**
      * When implementing this method ensure that a test suite can override any settings EXCEPT the
@@ -193,11 +195,13 @@ public interface GraphProvider {
      * @param graphName      a unique test graph name
      * @param test           the test class
      * @param testMethodName the name of the test
+     * @param loadGraphWith  the data set to load and will be null if no data is to be loaded
      */
     default public Configuration newGraphConfiguration(final String graphName,
                                                        final Class<?> test,
-                                                       final String testMethodName) {
-        return newGraphConfiguration(graphName, test, testMethodName, new HashMap<>());
+                                                       final String testMethodName,
+                                                       final LoadGraphWith.GraphData loadGraphWith) {
+        return newGraphConfiguration(graphName, test, testMethodName, new HashMap<>(), loadGraphWith);
     }
 
     /**
@@ -231,6 +235,7 @@ public interface GraphProvider {
      * @return The reconstituted identifier.
      */
     public default <ID> ID reconstituteGraphSONIdentifier(final Class<? extends Element> clazz, final Object id) {
+        // todo: do we still need this?
         return (ID) id;
     }
 

@@ -55,7 +55,7 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void g_V_withSideEffectXsgX_outEXknowsX_subgraphXsgX_name_capXsgX() throws Exception {
-        final Configuration config = graphProvider.newGraphConfiguration("subgraph", this.getClass(), name.getMethodName());
+        final Configuration config = graphProvider.newGraphConfiguration("subgraph", this.getClass(), name.getMethodName(), MODERN);
         graphProvider.clear(config);
         Graph subgraph = graphProvider.openTestGraph(config);
         /////
@@ -87,7 +87,7 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void g_V_withSideEffectXsgX_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup() throws Exception {
-        final Configuration config = graphProvider.newGraphConfiguration("subgraph", this.getClass(), name.getMethodName());
+        final Configuration config = graphProvider.newGraphConfiguration("subgraph", this.getClass(), name.getMethodName(), MODERN);
         graphProvider.clear(config);
         final Graph subgraph = graphProvider.openTestGraph(config);
         /////

@@ -145,7 +145,7 @@ public abstract class AbstractGremlinSuite extends Suite {
         final Set<Class> implementations = graphProvider.getImplementations();
         final Set<Class> noImplementationRegistered = new HashSet<>();
 
-        final Configuration conf = graphProvider.newGraphConfiguration("prototype", AbstractGremlinSuite.class, "validateStructureInterfacesRegistered");
+        final Configuration conf = graphProvider.newGraphConfiguration("prototype", AbstractGremlinSuite.class, "validateStructureInterfacesRegistered", null);
         final Graph graph = graphProvider.openTestGraph(conf);
         final Set<Class> structureInterfaces = new HashSet<>(STRUCTURE_INTERFACES);
 

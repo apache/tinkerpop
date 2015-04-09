@@ -96,15 +96,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
             ElementHelper.attachProperties(vertexProperty, keyValues);
             return vertexProperty;
         } else {
-            final Object idValue = optionalId.isPresent() ? optionalId.get() : TinkerHelper.getNextId(graph, VertexProperty.class);
-
-            // todo: enforce vertexproperty id consistency with tests
-            // if no value is defined on the graph for the expected id type then use whatever is currently set, otherwise
-            // if there is a value, ensure that the expected type matches what was provided.
-            if (null == graph.vertexPropertyIdClass)
-                graph.vertexPropertyIdClass = idValue.getClass();
-            else if (!idValue.getClass().equals(graph.vertexPropertyIdClass))
-                throw new IllegalStateException(String.format("Expecting a vertex identifier of %s but was %s", graph.vertexPropertyIdClass, idValue.getClass()));
+            final Object idValue = optionalId.isPresent() ? optionalId.get() : graph.vertexPropertyIdManager.getNextId(graph);
 
             final VertexProperty<V> vertexProperty = new TinkerVertexProperty<V>(idValue, this, key, value);
 

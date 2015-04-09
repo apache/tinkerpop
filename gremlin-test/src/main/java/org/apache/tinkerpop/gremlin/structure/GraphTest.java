@@ -1011,7 +1011,7 @@ public class GraphTest extends AbstractGremlinTest {
         tryCommit(graph, assertVertexEdgeCounts(2, 1));
         graph.close();
 
-        final Graph reopenedGraph = graphProvider.standardTestGraph(this.getClass(), name.getMethodName());
+        final Graph reopenedGraph = graphProvider.standardTestGraph(this.getClass(), name.getMethodName(), null);
         assertVertexEdgeCounts(2, 1).accept(reopenedGraph);
 
         if (graph.features().vertex().properties().supportsStringValues()) {
@@ -1026,6 +1026,6 @@ public class GraphTest extends AbstractGremlinTest {
                 assertEquals("internet", edge.property("location").value());
         });
 
-        graphProvider.clear(reopenedGraph, graphProvider.standardGraphConfiguration(this.getClass(), name.getMethodName()));
+        graphProvider.clear(reopenedGraph, graphProvider.standardGraphConfiguration(this.getClass(), name.getMethodName(), null));
     }
 }

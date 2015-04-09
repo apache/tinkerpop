@@ -82,7 +82,7 @@ public class CommunityGeneratorTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldGenerateDifferentGraph() throws Exception {
-            final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName());
+            final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName(), null);
             final Graph graph1 = graphProvider.openTestGraph(configuration);
 
             try {
@@ -111,7 +111,7 @@ public class CommunityGeneratorTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldGenerateSameGraph() throws Exception {
-            final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName());
+            final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName(), null);
             final Graph graph1 = graphProvider.openTestGraph(configuration);
 
             try {

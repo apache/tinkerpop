@@ -68,7 +68,7 @@ public class GremlinExecutorPerformanceTest extends AbstractGremlinTest {
     public void setup() throws Exception {
         super.setup();
         syntaxGraphConfig = graphProvider.newGraphConfiguration("gremlin-executor-test",
-                GremlinExecutorPerformanceTest.class, testName.getMethodName());
+                GremlinExecutorPerformanceTest.class, testName.getMethodName(), null);
         syntaxGraph = graphProvider.openTestGraph(syntaxGraphConfig);
         generator = new GremlinGenerator(syntaxGraph, rand);
     }

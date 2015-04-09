@@ -76,6 +76,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -160,7 +161,7 @@ public class IoTest extends AbstractGremlinTest {
         try {
             graph.io().writeGraphML(f.getAbsolutePath());
 
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.CLASSIC);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             g1.io().readGraphML(f.getAbsolutePath());
 
@@ -245,8 +246,7 @@ public class IoTest extends AbstractGremlinTest {
         validateXmlAgainstGraphMLXsd(f);
 
         // reusing the same config used for creation of "g".
-        final Configuration configuration = graphProvider.newGraphConfiguration(
-                "g2", this.getClass(), name.getMethodName());
+        final Configuration configuration = graphProvider.newGraphConfiguration("g2", this.getClass(), name.getMethodName(), null);
         graphProvider.clear(configuration);
         final Graph g2 = graphProvider.openTestGraph(configuration);
         final GraphMLReader r = GraphMLReader.build().create();
@@ -290,8 +290,7 @@ public class IoTest extends AbstractGremlinTest {
             assertEquals("AF4B5965-B176-4552-B3C1-FBBE2F52C305".toLowerCase(), idValue.get("elementId").asText());
 
             // reusing the same config used for creation of "g".
-            final Configuration configuration = graphProvider.newGraphConfiguration(
-                    "g2", this.getClass(), name.getMethodName());
+            final Configuration configuration = graphProvider.newGraphConfiguration("g2", this.getClass(), name.getMethodName(), null);
             graphProvider.clear(configuration);
             final Graph g2 = graphProvider.openTestGraph(configuration);
 
@@ -322,7 +321,7 @@ public class IoTest extends AbstractGremlinTest {
         final GryoWriter writer = GryoWriter.build().mapper(gryo).create();
         final GryoReader reader = GryoReader.build().workingDirectory(tempPath).mapper(gryo).create();
 
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), null);
         graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
@@ -342,7 +341,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldMigrateGraphWithFloat() throws Exception {
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), null);
         graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
@@ -362,7 +361,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldMigrateGraph() throws Exception {
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
         graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
@@ -389,7 +388,7 @@ public class IoTest extends AbstractGremlinTest {
             final GryoWriter writer = graph.io().gryoWriter().create();
             writer.writeGraph(os, graph);
 
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final GryoReader reader = graph.io().gryoReader().workingDirectory(tempPath).create();
@@ -416,7 +415,7 @@ public class IoTest extends AbstractGremlinTest {
         try {
             graph.io().writeGryo(f.getAbsolutePath());
 
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             g1.io().readGryo(f.getAbsolutePath());
 
@@ -443,7 +442,7 @@ public class IoTest extends AbstractGremlinTest {
             final GryoWriter writer = graph.io().gryoWriter().create();
             writer.writeGraph(os, graph);
 
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.CREW);
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final GryoReader reader = GryoReader.build()
@@ -473,7 +472,7 @@ public class IoTest extends AbstractGremlinTest {
             final GryoWriter writer = graph.io().gryoWriter().create();
             writer.writeGraph(os, graph);
 
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.CLASSIC);
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final GryoReader reader = graph.io().gryoReader().workingDirectory(tempPath).create();
@@ -497,7 +496,7 @@ public class IoTest extends AbstractGremlinTest {
             final GraphSONWriter writer = graph.io().graphSONWriter().create();
             writer.writeGraph(os, graph);
 
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.CLASSIC);
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final GraphSONReader reader = graph.io().graphSONReader().create();
@@ -521,7 +520,7 @@ public class IoTest extends AbstractGremlinTest {
             final GraphSONWriter writer = graph.io().graphSONWriter().create();
             writer.writeGraph(os, graph);
 
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final GraphSONReader reader = graph.io().graphSONReader().create();
@@ -545,7 +544,7 @@ public class IoTest extends AbstractGremlinTest {
         try {
             graph.io().writeGraphSON(f.getAbsolutePath());
 
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             g1.io().readGraphSON(f.getAbsolutePath());
@@ -571,7 +570,7 @@ public class IoTest extends AbstractGremlinTest {
             final GraphSONWriter writer = graph.io().graphSONWriter().create();
             writer.writeGraph(os, graph);
 
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.CREW);
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final GraphSONReader reader = graph.io().graphSONReader().create();

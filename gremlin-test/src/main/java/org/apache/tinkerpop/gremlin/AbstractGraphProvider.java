@@ -52,17 +52,19 @@ public abstract class AbstractGraphProvider implements GraphProvider {
      * @param graphName      a value that represents a unique configuration for a graph
      * @param test           the test class
      * @param testMethodName the name of the test method
+     * @param loadGraphWith  the data set to load and will be null if no data is to be loaded
      * @return a configuration {@link java.util.Map} that should be unique per the {@code graphName}
      */
     public abstract Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test,
-                                                             final String testMethodName);
+                                                             final String testMethodName, final LoadGraphWith.GraphData loadGraphWith);
 
     @Override
     public Configuration newGraphConfiguration(final String graphName, final Class<?> test,
                                                final String testMethodName,
-                                               final Map<String, Object> configurationOverrides) {
+                                               final Map<String, Object> configurationOverrides,
+                                               final LoadGraphWith.GraphData loadGraphWith) {
         final Configuration conf = new BaseConfiguration();
-        getBaseConfiguration(graphName, test, testMethodName).entrySet().stream()
+        getBaseConfiguration(graphName, test, testMethodName, loadGraphWith).entrySet().stream()
                 .forEach(e -> conf.setProperty(e.getKey(), e.getValue()));
 
         // assign overrides but don't allow gremlin.graph setting to be overridden.  the test suite should
@@ -84,6 +86,7 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         }
     }
 
+    // todo: these aren't used - remove???
     protected static void deleteDirectory(final File directory) {
         if (directory.exists()) {
             for (File file : directory.listFiles()) {

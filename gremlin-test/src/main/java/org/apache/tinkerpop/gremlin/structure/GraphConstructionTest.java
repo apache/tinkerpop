@@ -43,7 +43,7 @@ public class GraphConstructionTest extends AbstractGremlinTest {
     @Test
     public void shouldOpenGraphThroughGraphFactoryViaApacheConfig() throws Exception {
         final Graph expectedGraph = graph;
-        final Configuration c = graphProvider.newGraphConfiguration("temp1", this.getClass(), name.getMethodName());
+        final Configuration c = graphProvider.newGraphConfiguration("temp1", this.getClass(), name.getMethodName(), null);
         final Graph createdGraph = GraphFactory.open(c);
 
         assertNotNull(createdGraph);
@@ -65,7 +65,7 @@ public class GraphConstructionTest extends AbstractGremlinTest {
      */
     @Test
     public void shouldMaintainOriginalConfigurationObjectGivenToFactory() {
-        final Configuration originalConfig = graphProvider.newGraphConfiguration("temp2", this.getClass(), name.getMethodName());
+        final Configuration originalConfig = graphProvider.newGraphConfiguration("temp2", this.getClass(), name.getMethodName(), null);
         final Graph createdGraph = GraphFactory.open(originalConfig);
 
         final Configuration configInGraph = createdGraph.configuration();

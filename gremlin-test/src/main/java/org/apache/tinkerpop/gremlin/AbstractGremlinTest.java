@@ -65,21 +65,21 @@ public abstract class AbstractGremlinTest {
 
     @Before
     public void setup() throws Exception {
+        final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
+        final LoadGraphWith[] loadGraphWiths = testMethod.getAnnotationsByType(LoadGraphWith.class);
+        final LoadGraphWith loadGraphWith = loadGraphWiths.length == 0 ? null : loadGraphWiths[0];
+        final LoadGraphWith.GraphData loadGraphWithData = null == loadGraphWith ? null : loadGraphWith.value();
+
         graphProvider = GraphManager.getGraphProvider();
-        config = graphProvider.standardGraphConfiguration(this.getClass(), name.getMethodName());
+        config = graphProvider.standardGraphConfiguration(this.getClass(), name.getMethodName(), loadGraphWithData);
 
         // this should clear state from a previously unfinished test. since the graph does not yet exist,
         // persisted graphs will likely just have their directories removed
         graphProvider.clear(config);
 
-        // not sure how the strategy can ever be null, but it seems to happen in the performance tests
         graph = graphProvider.openTestGraph(config);
         g = graphProvider.traversal(graph);
         graphComputerClass = g.getGraphComputer().isPresent() ? Optional.of(g.getGraphComputer().get().getClass()) : Optional.empty();
-
-        final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
-
-        final LoadGraphWith[] loadGraphWiths = testMethod.getAnnotationsByType(LoadGraphWith.class);
 
         // get feature requirements on the test method and add them to the list of ones to check
         final FeatureRequirement[] featureRequirement = testMethod.getAnnotationsByType(FeatureRequirement.class);
@@ -110,7 +110,6 @@ public abstract class AbstractGremlinTest {
         beforeLoadGraphWith(graph);
 
         // load a graph with sample data if the annotation is present on the test
-        final LoadGraphWith loadGraphWith = loadGraphWiths.length == 0 ? null : loadGraphWiths[0];
         graphProvider.loadGraphData(graph, loadGraphWith, this.getClass(), name.getMethodName());
 
         afterLoadGraphWith(graph);

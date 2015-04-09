@@ -80,13 +80,11 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy {
             // note that it is then only necessary to replace the step if the id is a non-element.  other tests
             // in the suite validate that items in getIds() is uniform so it is ok to just test the first item
             // in the list.
-            if (graphStep.getIds().length > 0) {
+            if (graphStep.getIds().length > 0 && !(graphStep.getIds()[0] instanceof Element)) {
                 if (graphStep instanceof HasContainerHolder) {
-                    if (!(graphStep.getIds()[0] instanceof Element))
-                        ((HasContainerHolder) graphStep).addHasContainer(new HasContainer(this.idPropertyKey, Contains.within, Arrays.asList(graphStep.getIds())));
+                    ((HasContainerHolder) graphStep).addHasContainer(new HasContainer(this.idPropertyKey, Contains.within, Arrays.asList(graphStep.getIds())));
                 } else {
-                    if (!(graphStep.getIds()[0] instanceof Element))
-                        TraversalHelper.insertAfterStep(new HasStep(traversal, new HasContainer(this.idPropertyKey, Contains.within, Arrays.asList(graphStep.getIds()))), graphStep, traversal);
+                    TraversalHelper.insertAfterStep(new HasStep(traversal, new HasContainer(this.idPropertyKey, Contains.within, Arrays.asList(graphStep.getIds()))), graphStep, traversal);
                 }
                 graphStep.clearIds();
             }
