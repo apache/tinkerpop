@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -29,14 +30,13 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Operator;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -141,14 +141,12 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay3() throws Exception {
-        Graph graph = TinkerGraph.open();
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
-        final Vertex marko = graph.addVertex("name", "marko", "name", "marko a. rodriguez");
-        marko.property(VertexProperty.Cardinality.list, "location", "san diego", "startTime", 1997, "endTime", 2001);
-        marko.property(VertexProperty.Cardinality.list, "location", "santa cruz", "startTime", 2001, "endTime", 2004);
-        marko.property(VertexProperty.Cardinality.list, "location", "brussels", "startTime", 2004, "endTime", 2005);
-        marko.property(VertexProperty.Cardinality.list, "location", "santa fe", "startTime", 2005);
-        g.V().valueMap().forEachRemaining(System.out::println);
+        TinkerGraph tg = TinkerFactory.createModern();
+        StarGraph sg = StarGraph.open();
+        tg.vertices().forEachRemaining(v -> StarGraph.addTo(sg, DetachedFactory.detach(v,true)));
+        tg.vertices(1).next().edges(Direction.BOTH).forEachRemaining(e -> StarGraph.addTo(sg, DetachedFactory.detach(e, true)));
+        sg.vertices().forEachRemaining(System.out::println);
+        sg.edges().forEachRemaining(System.out::println);
     }
 
     @Test
@@ -187,7 +185,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlayDK() throws Exception {
         GraphTraversalSource g = TinkerFactory.createModern().traversal();
-        Traversal t = g.V().hasLabel("person").as("person").local(bothE().label().groupCount().cap()).as("relations").select().by("name").by();
+        Traversal t = g.V().hasLabel("person").as("person").local(bothE().label().groupCount("x").cap("x")).as("relations").select().by("name").by();
         t.forEachRemaining(System.out::println);
         System.out.println("--");
 

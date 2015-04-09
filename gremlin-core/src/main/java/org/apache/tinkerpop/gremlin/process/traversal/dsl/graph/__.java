@@ -449,8 +449,8 @@ public class __ {
         return __.<A>start().sideEffect(consumer);
     }
 
-    public static <A, E2> GraphTraversal<A, E2> cap(final String... sideEffectKeys) {
-        return __.<A>start().cap(sideEffectKeys);
+    public static <A, E2> GraphTraversal<A, E2> cap(final String sideEffectKey, String... sideEffectKeys) {
+        return __.<A>start().cap(sideEffectKey, sideEffectKeys);
     }
 
     public static <A> GraphTraversal<A, Edge> subgraph(final String sideEffectKey) {

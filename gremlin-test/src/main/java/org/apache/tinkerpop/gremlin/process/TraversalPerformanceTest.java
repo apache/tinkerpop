@@ -108,7 +108,7 @@ public class TraversalPerformanceTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
     @Test
     public void g_V_label_groupCount_cap() throws Exception {
-        g.V().label().groupCount().cap().iterate();
+        g.V().label().groupCount("x").cap("x").iterate();
     }
 
     @BenchmarkOptions(benchmarkRounds = DEFAULT_BENCHMARK_ROUNDS, warmupRounds = DEFAULT_WARMUP_ROUNDS, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
