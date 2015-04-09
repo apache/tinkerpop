@@ -141,6 +141,10 @@ public final class GryoMapper implements Mapper<Kryo> {
         return headerReader;
     }
 
+    public List<Class> getRegisteredClasses() {
+        return this.serializationList.stream().map(Triplet::getValue0).collect(Collectors.toList());
+    }
+
     /**
      * Gets the header for a Gremlin Kryo file, which is based on the version of Gremlin Kryo that is constructed
      * via the builder classes.
