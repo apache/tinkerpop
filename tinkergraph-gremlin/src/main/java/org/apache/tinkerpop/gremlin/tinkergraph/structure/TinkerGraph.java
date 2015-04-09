@@ -42,6 +42,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -75,7 +76,7 @@ public class TinkerGraph implements Graph {
     public static final String CONFIG_EDGE_ID = "tinkergraph.edge.id";
     public static final String CONFIG_VERTEX_PROPERTY_ID = "tinkergraph.vertex-property.id";
 
-    protected Long currentId = -1l;
+    protected AtomicLong currentId = new AtomicLong(-1l);
     protected Map<Object, Vertex> vertices = new ConcurrentHashMap<>();
     protected Map<Object, Edge> edges = new ConcurrentHashMap<>();
 
@@ -217,7 +218,7 @@ public class TinkerGraph implements Graph {
         this.vertices.clear();
         this.edges.clear();
         this.variables = null;
-        this.currentId = 0l;
+        this.currentId.set(-1l);
         this.vertexIndex = null;
         this.edgeIndex = null;
     }
@@ -480,10 +481,9 @@ public class TinkerGraph implements Graph {
          * {@link Long} and will also attempt to convert {@code String} values
          */
         LONG {
-            private long currentId = -1l;
             @Override
             public Long getNextId(final TinkerGraph graph) {
-                return Stream.generate(() -> (++currentId)).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findAny().get();
+                return Stream.generate(() -> (graph.currentId.incrementAndGet())).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findAny().get();
             }
 
             @Override
@@ -502,10 +502,9 @@ public class TinkerGraph implements Graph {
          * {@link Integer} and will also attempt to convert {@code String} values
          */
         INTEGER {
-            private int currentId = -1;
             @Override
             public Integer getNextId(final TinkerGraph graph) {
-                return Stream.generate(() -> (++currentId)).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findAny().get();
+                return Stream.generate(() -> (graph.currentId.incrementAndGet())).map(Long::intValue).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findAny().get();
             }
 
             @Override
@@ -547,10 +546,9 @@ public class TinkerGraph implements Graph {
          * {@link TinkerGraph}, it will generate {@link Long} values for identifiers.
          */
         ANY {
-            private long currentId = -1l;
             @Override
             public Long getNextId(final TinkerGraph graph) {
-                return Stream.generate(() -> (++currentId)).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findAny().get();
+                return Stream.generate(() -> (graph.currentId.incrementAndGet())).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findAny().get();
             }
 
             @Override
