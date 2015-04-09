@@ -34,7 +34,7 @@ import java.util.Collections;
 public class ReferenceVertex extends ReferenceElement<Vertex> {
 
     private ReferenceVertex() {
-        super();
+
     }
 
     public ReferenceVertex(final Vertex vertex) {

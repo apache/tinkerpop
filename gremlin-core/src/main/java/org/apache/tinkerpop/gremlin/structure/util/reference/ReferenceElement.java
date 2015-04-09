@@ -34,7 +34,7 @@ public abstract class ReferenceElement<E extends Element> implements Serializabl
     protected Object id;
 
     protected ReferenceElement() {
-         this.id = null;
+
     }
 
     public ReferenceElement(final Element element) {

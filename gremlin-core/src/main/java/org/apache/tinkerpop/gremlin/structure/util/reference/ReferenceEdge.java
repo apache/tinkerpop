@@ -35,7 +35,7 @@ import java.util.Iterator;
 public class ReferenceEdge extends ReferenceElement<Edge> {
 
     private ReferenceEdge() {
-         super();
+
     }
 
     public ReferenceEdge(final Edge edge) {

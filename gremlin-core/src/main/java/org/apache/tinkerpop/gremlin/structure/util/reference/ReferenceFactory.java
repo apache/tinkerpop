@@ -49,7 +49,7 @@ public class ReferenceFactory {
     }
 
     public static <V> ReferenceProperty<V> detach(final Property<V> property) {
-        return property instanceof ReferenceProperty ? (ReferenceProperty<V>) property : new ReferenceProperty<>(property.key(), ReferenceFactory.detach(property.element()));
+        return property instanceof ReferenceProperty ? (ReferenceProperty) property : new ReferenceProperty<>(property);
     }
 
     public static ReferencePath detach(final Path path) {

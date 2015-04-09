@@ -40,9 +40,9 @@ public class ReferenceProperty<V> implements Attachable<Property<V>>, Serializab
 
     }
 
-    public ReferenceProperty(final String key, final ReferenceElement<?> element) {
-        this.element = element;
-        this.key = key;
+    public ReferenceProperty(final Property<V> property) {
+        this.element = ReferenceFactory.detach(property.element());
+        this.key = property.key();
     }
 
     @Override

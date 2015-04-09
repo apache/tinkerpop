@@ -34,7 +34,7 @@ import java.util.Iterator;
 public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty> {
 
     private ReferenceVertexProperty() {
-        super();
+
     }
 
     public ReferenceVertexProperty(final VertexProperty vertexProperty) {
