@@ -493,7 +493,6 @@ public class TinkerGraph implements Graph {
 
     public interface IdManager<T> {
         T getNextId(final TinkerGraph graph);
-        Class<? extends T> getIdClass();
         T convert(final Object o);
     }
 
@@ -503,11 +502,6 @@ public class TinkerGraph implements Graph {
             @Override
             public Long getNextId(final TinkerGraph graph) {
                 return Stream.generate(() -> (++currentId)).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findAny().get();
-            }
-
-            @Override
-            public Class<? extends Long> getIdClass() {
-                return Long.class;
             }
 
             @Override
@@ -528,11 +522,6 @@ public class TinkerGraph implements Graph {
             }
 
             @Override
-            public Class<? extends Integer> getIdClass() {
-                return Integer.class;
-            }
-
-            @Override
             public Object convert(final Object o) {
                 if (o instanceof Number)
                     return ((Number) o).intValue();
@@ -546,11 +535,6 @@ public class TinkerGraph implements Graph {
             @Override
             public UUID getNextId(final TinkerGraph graph) {
                 return java.util.UUID.randomUUID();
-            }
-
-            @Override
-            public Class<? extends UUID> getIdClass() {
-                return java.util.UUID.class;
             }
 
             @Override
@@ -568,11 +552,6 @@ public class TinkerGraph implements Graph {
             @Override
             public Long getNextId(final TinkerGraph graph) {
                 return Stream.generate(() -> (++currentId)).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findAny().get();
-            }
-
-            @Override
-            public Class<? extends Object> getIdClass() {
-                return Object.class;
             }
 
             @Override
