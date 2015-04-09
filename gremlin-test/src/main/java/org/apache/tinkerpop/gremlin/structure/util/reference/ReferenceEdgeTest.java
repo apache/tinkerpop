@@ -33,12 +33,28 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class ReferenceEdgeTest extends AbstractGremlinTest {
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldHashAndEqualCorrectly() {
+        final Vertex v = graph.addVertex();
+        final Edge e = v.addEdge("test", v);
+        final Set<Edge> set = new HashSet<>();
+        for (int i = 0; i < 100; i++) {
+            set.add(ReferenceFactory.detach(e));
+            set.add(e);
+        }
+        assertEquals(1, set.size());
+    }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)

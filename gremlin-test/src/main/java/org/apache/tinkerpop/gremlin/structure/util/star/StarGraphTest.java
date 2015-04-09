@@ -26,11 +26,14 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
@@ -39,6 +42,21 @@ import static org.junit.Assert.assertEquals;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class StarGraphTest extends AbstractGremlinTest {
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CREW)
+    public void shouldHashAndEqualsCorrectly() {
+        final Vertex gremlin = g.V(convertToVertexId("gremlin")).next();
+        final StarGraph starGraph = StarGraph.of(gremlin);
+        final StarGraph.StarVertex gremlinStar = starGraph.getStarVertex();
+        final Set<Vertex> set = new HashSet<>();
+        for (int i = 0; i < 100; i++) {
+            set.add(gremlin);
+            set.add(gremlinStar);
+        }
+        assertEquals(1, set.size());
+    }
+
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)

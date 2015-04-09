@@ -31,8 +31,10 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -40,6 +42,19 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DetachedVertexTest extends AbstractGremlinTest {
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldHashAndEqualCorrectly() {
+        final Vertex v = graph.addVertex();
+        final Set<Vertex> set = new HashSet<>();
+        for (int i = 0; i < 100; i++) {
+            set.add(DetachedFactory.detach(v, true));
+            set.add(DetachedFactory.detach(v, false));
+            set.add(v);
+        }
+        assertEquals(1, set.size());
+    }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
