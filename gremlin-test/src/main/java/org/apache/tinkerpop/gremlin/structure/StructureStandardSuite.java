@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdgeTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPropertyTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexPropertyTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexTest;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdgeTest;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexTest;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphTest;
 import org.junit.runners.model.InitializationError;
@@ -46,6 +47,8 @@ import java.util.stream.Stream;
  * "Suite" implements {@link org.apache.tinkerpop.gremlin.GraphProvider} as a convenience only. It could be implemented in a
  * separate class file):
  * <code>
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(StructureStandardSuite.class)
  * @StructureStandardSuite.GraphProviderClass(TinkerGraphStructureStandardTest.class) public class TinkerGraphStructureStandardTest implements GraphProvider {
  * }
@@ -58,8 +61,6 @@ import java.util.stream.Stream;
  * Set the {@code gremlin.structure.tests} environment variable to a comma separated list of test classes to execute.
  * This setting can be helpful to restrict execution of tests to specific ones being focused on during development.
  * <br/>
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StructureStandardSuite extends AbstractGremlinSuite {
 
@@ -79,6 +80,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             VertexPropertyTest.class,
             VariablesTest.class,
             PropertyTest.class,
+            ReferenceEdgeTest.class,
             ReferenceVertexTest.class,
             SerializationTest.class,
             StarGraphTest.class,

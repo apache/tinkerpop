@@ -101,7 +101,7 @@ public class StarGraphTest extends AbstractGremlinTest {
         final AtomicInteger originalPropertyCounter = new AtomicInteger(0);
         final AtomicInteger starCounter = new AtomicInteger(0);
         matthias.properties().forEachRemaining(vertexProperty -> {
-            starCounter.incrementAndGet();
+            originalCounter.incrementAndGet();
             matthiasStar.properties(vertexProperty.label()).forEachRemaining(starVertexProperty -> {
                 if (starVertexProperty.equals(vertexProperty)) {
                     assertEquals(starVertexProperty.id(), vertexProperty.id());
@@ -109,12 +109,39 @@ public class StarGraphTest extends AbstractGremlinTest {
                     assertEquals(starVertexProperty.value(), vertexProperty.value());
                     assertEquals(starVertexProperty.key(), vertexProperty.key());
                     assertEquals(starVertexProperty.element(), vertexProperty.element());
-                    originalCounter.incrementAndGet();
+                    starCounter.incrementAndGet();
                     vertexProperty.properties().forEachRemaining(p -> {
                         originalPropertyCounter.incrementAndGet();
                         assertEquals(p.value(), starVertexProperty.property(p.key()).value());
                         assertEquals(p.key(), starVertexProperty.property(p.key()).key());
                         assertEquals(p.element(), starVertexProperty.property(p.key()).element());
+                    });
+                }
+            });
+        });
+        assertEquals(5, originalCounter.get());
+        assertEquals(5, starCounter.get());
+        assertEquals(7, originalPropertyCounter.get());
+
+        originalCounter.set(0);
+        starCounter.set(0);
+        originalPropertyCounter.set(0);
+
+        matthiasStar.properties().forEachRemaining(starVertexProperty -> {
+            starCounter.incrementAndGet();
+            matthias.properties(starVertexProperty.label()).forEachRemaining(vertexProperty -> {
+                if (starVertexProperty.equals(vertexProperty)) {
+                    assertEquals(vertexProperty.id(), starVertexProperty.id());
+                    assertEquals(vertexProperty.label(), starVertexProperty.label());
+                    assertEquals(vertexProperty.value(), starVertexProperty.value());
+                    assertEquals(vertexProperty.key(), starVertexProperty.key());
+                    assertEquals(vertexProperty.element(), starVertexProperty.element());
+                    originalCounter.incrementAndGet();
+                    starVertexProperty.properties().forEachRemaining(p -> {
+                        originalPropertyCounter.incrementAndGet();
+                        assertEquals(p.value(), vertexProperty.property(p.key()).value());
+                        assertEquals(p.key(), vertexProperty.property(p.key()).key());
+                        assertEquals(p.element(), vertexProperty.property(p.key()).element());
                     });
                 }
             });

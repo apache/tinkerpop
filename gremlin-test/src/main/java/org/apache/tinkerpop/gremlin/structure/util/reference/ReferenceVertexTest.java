@@ -63,12 +63,13 @@ public class ReferenceVertexTest extends AbstractGremlinTest {
     public void shouldEvaluateToEqualForVerticesAndDetachments() {
         assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next())));
         assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).equals(g.V(convertToVertexId("marko")).next()));
+        assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).equals(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true)));
         assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()).equals(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), false)));
         // reverse
         assertTrue(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next().equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next()))));
         assertTrue(g.V(convertToVertexId("marko")).next().equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next())));
+        assertTrue(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true).equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next())));
         assertTrue(DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), false).equals(ReferenceFactory.detach(g.V(convertToVertexId("marko")).next())));
-
     }
 
     @Test
