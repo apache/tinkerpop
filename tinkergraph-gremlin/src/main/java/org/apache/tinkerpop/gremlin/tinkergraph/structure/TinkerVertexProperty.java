@@ -19,11 +19,13 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
@@ -44,8 +46,13 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     private final String key;
     private final V value;
 
+    /**
+     * This constructor will not validate the ID type against the {@link Graph}.  It will always just use a
+     * {@code Long} for its identifier.  This is useful for constructing a {@link VertexProperty} for usage
+     * with {@link TinkerGraphView}.
+     */
     public TinkerVertexProperty(final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
-        super(TinkerHelper.getNextId((TinkerGraph) vertex.graph()), key);
+        super(TinkerHelper.getNextId((TinkerGraph) vertex.graph(), VertexProperty.class), key);
         this.vertex = vertex;
         this.key = key;
         this.value = value;
@@ -53,6 +60,10 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
         ElementHelper.attachProperties(this, propertyKeyValues);
     }
 
+    /**
+     * Use this constructor to construct {@link VertexProperty} instances for {@link TinkerGraph} where the {@code id}
+     * can be explicitly set and validated against the expected data type.
+     */
     public TinkerVertexProperty(final Object id, final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
         super(id, key);
         this.vertex = vertex;

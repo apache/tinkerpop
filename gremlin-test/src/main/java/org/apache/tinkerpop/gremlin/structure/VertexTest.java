@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.process.traversal.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
@@ -136,14 +137,8 @@ public class VertexTest {
 
         @Test(expected = NoSuchElementException.class)
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldThrowNoSuchElementExceptionIfVertexWithIdNotPresentViaTraversal() {
-            graph.vertices("this-id-should-not-be-in-the-modern-graph").next();
-        }
-
-        @Test(expected = NoSuchElementException.class)
-        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldThrowNoSuchElementExceptionIfVertexWithIdNotPresentViaIterators() {
-            graph.vertices("this-id-should-not-be-in-the-modern-graph").next();
+        public void shouldThrowNoSuchElementExceptionIfVertexWithIdNotPresent() {
+            graph.vertices(graphProvider.convertId(100)).next();
         }
 
         @Test

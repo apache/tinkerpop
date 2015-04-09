@@ -93,7 +93,7 @@ public @interface LoadGraphWith {
             add(FeatureRequirement.Factory.create(FEATURE_MULTI_PROPERTIES, Graph.Features.VertexFeatures.class));
         }};
 
-        private static final List<FeatureRequirement> featuresRequiredByClassicDouble = new ArrayList<FeatureRequirement>() {{
+        private static final List<FeatureRequirement> featuresRequiredByModern = new ArrayList<FeatureRequirement>() {{
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_DOUBLE_VALUES, EdgePropertyFeatures.class));
@@ -126,7 +126,7 @@ public @interface LoadGraphWith {
                 case CREW:
                     return featuresRequiredByCrew;
                 case MODERN:
-                    return featuresRequiredByClassicDouble;
+                    return featuresRequiredByModern;
                 case GRATEFUL:
                     return featuresRequiredByGrateful;
             }

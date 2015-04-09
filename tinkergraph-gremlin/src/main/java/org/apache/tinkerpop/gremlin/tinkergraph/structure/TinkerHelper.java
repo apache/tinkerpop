@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -46,8 +47,35 @@ public final class TinkerHelper {
     private TinkerHelper() {
     }
 
-    protected final synchronized static long getNextId(final TinkerGraph graph) {
-        return Stream.generate(() -> (++graph.currentId)).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findAny().get();
+    protected final synchronized static Number getNextId(final TinkerGraph graph, final Class<? extends Element> element) {
+        final Class<?> idClass;
+        if (Vertex.class.isAssignableFrom(element))
+            idClass = graph.vertexIdClass;
+        else if (Edge.class.isAssignableFrom(element))
+            idClass = graph.edgeIdClass;
+        else if (VertexProperty.class.isAssignableFrom(element))
+            idClass = graph.vertexPropertyIdClass;
+        else
+            throw new IllegalArgumentException(String.format("Unexpected request for id for %s", element));
+
+        final Number next = Stream.generate(() -> (++graph.currentId)).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findAny().get();
+
+        // the class hasn't been set yet so assume Long - the class should be set by the caller after this
+        // value is returned
+        if (null == idClass)
+            return next.longValue();
+
+        if (idClass.equals(Long.class))
+            return next.longValue();
+        else if (idClass.equals(Integer.class))
+            return next.intValue();
+        else if (idClass.equals(Double.class))
+            return next.doubleValue();
+        else if (idClass.equals(Float.class))
+            return next.floatValue();
+        else
+            throw new IllegalStateException(String.format("TinkerGraph generates numeric identifiers, but this instance has already been initialized a identifier of type %s for %s", idClass, element));
+
     }
 
     protected static Edge addEdge(final TinkerGraph graph, final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
@@ -61,7 +89,16 @@ public final class TinkerHelper {
             if (graph.edges.containsKey(idValue))
                 throw Graph.Exceptions.edgeWithIdAlreadyExists(idValue);
         } else {
-            idValue = TinkerHelper.getNextId(graph);
+            idValue = TinkerHelper.getNextId(graph, Edge.class);
+        }
+
+        // todo: enforce edge id consistency with tests
+        // if no value is defined on the graph for the expected id type then use whatever is currently set, otherwise
+        // if there is a value, ensure that the expected type matches what was provided.
+        if (null == graph.edgeIdClass)
+            graph.edgeIdClass = idValue.getClass();
+        else if (!idValue.getClass().equals(graph.edgeIdClass)) {
+            throw new IllegalStateException(String.format("Expecting a edge identifier of %s but was %s", graph.edgeIdClass, idValue.getClass()));
         }
 
         edge = new TinkerEdge(idValue, outVertex, label, inVertex);

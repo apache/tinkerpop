@@ -81,7 +81,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldLoadEdgesViaVertices() {
+    public void shouldLoadEdgesViaEdges() {
         List<Edge> edges = g.E().toList();
         List<Edge> edgesReloaded = g.E(edges.toArray()).toList();
         assertEquals(edges.size(), edgesReloaded.size());

@@ -50,24 +50,10 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
         super(traversal);
         this.returnClass = returnClass;
         this.ids = ids;
-        //validate that all elements are either ids or elements. mixed is not supported.
-        boolean foundElements = false;
-        for (Object id : this.ids) {
-            boolean idIsElement = id instanceof Element;
-            if (foundElements && !idIsElement) {
-                throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
-            } else {
-                foundElements = foundElements || idIsElement;
-            }
-        }
-        if (foundElements) {
-            List<S> elementList = Arrays.asList(this.ids).stream().map(id->(S)id).collect(Collectors.toList());
-            this.iteratorSupplier = elementList::iterator;
-        } else {
-            this.iteratorSupplier = () -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ?
+
+        this.iteratorSupplier = () -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ?
                     this.getTraversal().getGraph().get().vertices(this.ids) :
                     this.getTraversal().getGraph().get().edges(this.ids));
-        }
     }
 
     public String toString() {

@@ -84,9 +84,9 @@ public class TinkerGraph implements Graph {
 
     private final static TinkerGraph EMPTY_GRAPH = new TinkerGraph();
 
-    private Class<?> vertexIdClass = null;
-    private Class<?> edgeIdClass = null;
-    private Class<?> vertexPropertyIdClass = null;
+    protected Class<?> vertexIdClass = null;
+    protected Class<?> edgeIdClass = null;
+    protected Class<?> vertexPropertyIdClass = null;
 
     /**
      * An empty private constructor that initializes {@link TinkerGraph}.
@@ -141,11 +141,13 @@ public class TinkerGraph implements Graph {
             if (this.vertices.containsKey(idValue))
                 throw Exceptions.vertexWithIdAlreadyExists(idValue);
         } else {
-            idValue = TinkerHelper.getNextId(this);
+            idValue = TinkerHelper.getNextId(this, Vertex.class);
         }
 
         // todo: enforce vertex id consistency with tests
-        if (vertexIdClass == null)
+        // if no value is defined on the graph for the expected id type then use whatever is currently set, otherwise
+        // if there is a value, ensure that the expected type matches what was provided.
+        if (null == vertexIdClass)
             vertexIdClass = idValue.getClass();
         else if (!idValue.getClass().equals(vertexIdClass)) {
             throw new IllegalStateException(String.format("Expecting a vertex identifier of %s but was %s", vertexIdClass, idValue.getClass()));
@@ -208,6 +210,7 @@ public class TinkerGraph implements Graph {
 
     @Override
     public Iterator<Vertex> vertices(final Object... vertexIds) {
+        // todo: this code looks a lot like edges() code - better reuse here somewhere?
         if (0 == vertexIds.length) {
             return this.vertices.values().iterator();
         } else if (1 == vertexIds.length) {
@@ -242,50 +245,40 @@ public class TinkerGraph implements Graph {
         }
     }
 
-    private UnaryOperator<Object> convertToId(final Object id, final Class<?> elementIdClass) {
-        if (id instanceof Number) {
-            if (elementIdClass != null) {
-                if (elementIdClass.equals(Long.class)) {
-                    return o -> ((Number) o).longValue();
-                } else if (elementIdClass.equals(Integer.class)) {
-                    return o -> ((Number) o).intValue();
-                } else if (elementIdClass.equals(Double.class)) {
-                    return o -> ((Number) o).doubleValue();
-                } else if (elementIdClass.equals(Float.class)) {
-                    return o -> ((Number) o).floatValue();
-                } else if (elementIdClass.equals(String.class)) {
-                    return o -> o.toString();
-                }
-            }
-        } else if (id instanceof String) {
-            if (elementIdClass != null) {
-                final String s = (String) id;
-                if (elementIdClass.equals(Long.class)) {
-                    return o -> Long.parseLong(s);
-                } else if (elementIdClass.equals(Integer.class)) {
-                    return o -> Integer.parseInt(s);
-                } else if (elementIdClass.equals(Double.class)) {
-                    return o -> Double.parseDouble(s);
-                } else if (elementIdClass.equals(Float.class)) {
-                    return o -> Float.parseFloat(s);
-                } else if (elementIdClass.equals(UUID.class)) {
-                    return o -> UUID.fromString(s);
-                }
-            }
-        }
-
-        return UnaryOperator.identity();
-    }
-
     @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
         if (0 == edgeIds.length) {
             return this.edges.values().iterator();
         } else if (1 == edgeIds.length) {
-            final Edge edge = this.edges.get(edgeIds[0]);
-            return null == edge ? Collections.emptyIterator() : IteratorUtils.of(edge);
-        } else
-            return Stream.of(edgeIds).map(this.edges::get).filter(Objects::nonNull).iterator();
+            if (edgeIds[0] instanceof Edge) {
+                // no need to get the edge again, so just flip it back - some implementation may want to treat this
+                // as a refresh operation. that's not necessary for tinkergraph.
+                return IteratorUtils.of((Edge) edgeIds[0]);
+            } else {
+                // convert the id to the expected data type and lookup the vertex
+                final UnaryOperator<Object> conversionFunction = convertToId(edgeIds[0], edgeIdClass);
+                final Edge edge = this.edges.get(conversionFunction.apply(edgeIds[0]));
+                return null == edge ? Collections.emptyIterator() : IteratorUtils.of(edge);
+            }
+        } else {
+            // base the conversion function on the first item in the id list as the expectation is that these
+            // id values will be a uniform list
+            if (edgeIds[0] instanceof Edge) {
+                // based on the first item assume all vertices in the argument list
+                if (!Stream.of(edgeIds).allMatch(id -> id instanceof Edge))
+                    throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
+
+                // no need to get the vertices again, so just flip it back - some implementation may want to treat this
+                // as a refresh operation. that's not necessary for tinkergraph.
+                return Stream.of(edgeIds).map(id -> (Edge) id).iterator();
+            } else {
+                final Class<?> firstClass = edgeIds[0].getClass();
+                if (!Stream.of(edgeIds).map(Object::getClass).allMatch(firstClass::equals))
+                    throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();     // todo: change exception to be ids of the same type
+                final UnaryOperator<Object> conversionFunction = convertToId(edgeIds[0], vertexIdClass);
+                return Stream.of(edgeIds).map(conversionFunction).map(this.edges::get).filter(Objects::nonNull).iterator();
+            }
+        }
     }
 
     /**
@@ -325,11 +318,11 @@ public class TinkerGraph implements Graph {
         public String toString() {
             return StringFactory.featureString(this);
         }
+
     }
-
     public static class TinkerGraphVertexFeatures implements Features.VertexFeatures {
-        static final TinkerGraphVertexFeatures INSTANCE = new TinkerGraphVertexFeatures();
 
+        static final TinkerGraphVertexFeatures INSTANCE = new TinkerGraphVertexFeatures();
         private TinkerGraphVertexFeatures() {
         }
 
@@ -337,11 +330,11 @@ public class TinkerGraph implements Graph {
         public boolean supportsCustomIds() {
             return false;
         }
+
     }
-
     public static class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {
-        static final TinkerGraphEdgeFeatures INSTANCE = new TinkerGraphEdgeFeatures();
 
+        static final TinkerGraphEdgeFeatures INSTANCE = new TinkerGraphEdgeFeatures();
         private TinkerGraphEdgeFeatures() {
         }
 
@@ -349,11 +342,11 @@ public class TinkerGraph implements Graph {
         public boolean supportsCustomIds() {
             return false;
         }
+
     }
-
     public static class TinkerGraphGraphFeatures implements Features.GraphFeatures {
-        static final TinkerGraphGraphFeatures INSTANCE = new TinkerGraphGraphFeatures();
 
+        static final TinkerGraphGraphFeatures INSTANCE = new TinkerGraphGraphFeatures();
         private TinkerGraphGraphFeatures() {
         }
 
@@ -371,6 +364,7 @@ public class TinkerGraph implements Graph {
         public boolean supportsThreadedTransactions() {
             return false;
         }
+
     }
 
     ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
@@ -428,5 +422,46 @@ public class TinkerGraph implements Graph {
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
+    }
+
+    ///////////// HELPERS METHODS ///////////////
+
+    /**
+     * Function to coerce a provided identifier to a different type given the expected id type of an element.
+     * This allows something like {@code g.V(1,2,3)} and {@code g.V(1l,2l,3l)} to both mean the same thing.
+     */
+    private UnaryOperator<Object> convertToId(final Object id, final Class<?> elementIdClass) {
+        if (id instanceof Number) {
+            if (elementIdClass != null) {
+                if (elementIdClass.equals(Long.class)) {
+                    return o -> ((Number) o).longValue();
+                } else if (elementIdClass.equals(Integer.class)) {
+                    return o -> ((Number) o).intValue();
+                } else if (elementIdClass.equals(Double.class)) {
+                    return o -> ((Number) o).doubleValue();
+                } else if (elementIdClass.equals(Float.class)) {
+                    return o -> ((Number) o).floatValue();
+                } else if (elementIdClass.equals(String.class)) {
+                    return o -> o.toString();
+                }
+            }
+        } else if (id instanceof String) {
+            if (elementIdClass != null) {
+                final String s = (String) id;
+                if (elementIdClass.equals(Long.class)) {
+                    return o -> Long.parseLong(s);
+                } else if (elementIdClass.equals(Integer.class)) {
+                    return o -> Integer.parseInt(s);
+                } else if (elementIdClass.equals(Double.class)) {
+                    return o -> Double.parseDouble(s);
+                } else if (elementIdClass.equals(Float.class)) {
+                    return o -> Float.parseFloat(s);
+                } else if (elementIdClass.equals(UUID.class)) {
+                    return o -> UUID.fromString(s);
+                }
+            }
+        }
+
+        return UnaryOperator.identity();
     }
 }

@@ -120,7 +120,7 @@ public class EdgeTest {
         @Test(expected = NoSuchElementException.class)
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldThrowNoSuchElementExceptionIfEdgeWithIdNotPresent() {
-            g.E("this-id-should-not-be-in-the-modern-graph").next();
+            g.E(graphProvider.convertId(100)).next();
         }
 
         @Test
