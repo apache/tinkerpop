@@ -152,8 +152,8 @@ public final class SparkGraphComputer implements GraphComputer {
                     // wire up a spark context
                     final SparkConf sparkConfiguration = new SparkConf();
                     sparkConfiguration.setAppName(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + (null == this.vertexProgram ? "No VertexProgram" : this.vertexProgram) + "[" + this.mapReducers + "]");
-                    final List<Class> classes = GryoMapper.build().create().getRegisteredClasses();
-                    sparkConfiguration.registerKryoClasses(classes.toArray(new Class[classes.size()]));
+                    //final List<Class> classes = GryoMapper.build().create().getRegisteredClasses();
+                    //sparkConfiguration.registerKryoClasses(classes.toArray(new Class[classes.size()]));     //TODO
 
                     hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
                     if (FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class)))
