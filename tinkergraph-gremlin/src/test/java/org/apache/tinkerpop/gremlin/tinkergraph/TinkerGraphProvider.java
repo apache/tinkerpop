@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.GraphTest;
+import org.apache.tinkerpop.gremlin.structure.IoTest;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -110,6 +111,24 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
                 return TinkerGraph.DefaultIdManager.LONG;
             else if (testsThatNeedUuidIdManager.contains(testMethodName))
                 return TinkerGraph.DefaultIdManager.UUID;
+        } else if (test.equals(IoTest.class)) {
+            final Set<String> testsThatNeedLongIdManager = new HashSet<String>(){{
+                add("shouldReadWriteEdgeToGraphSON");
+                add("shouldReadWriteDetachedEdgeAsReferenceToGraphSON");
+                add("shouldReadWriteDetachedEdgeToGraphSON");
+                add("shouldReadWriteVertexNoEdgesToGraphSON");
+                add("shouldReadWriteDetachedVertexNoEdgesToGraphSON");
+                add("shouldReadWriteDetachedVertexAsReferenceNoEdgesToGraphSON");
+                add("shouldReadWriteVertexMultiPropsNoEdgesToGraphSON");
+                add("shouldReadWriteVertexWithOUTOUTEdgesToGraphSON");
+                add("shouldReadWriteVertexWithININEdgesToGraphSON");
+                add("shouldReadWriteVertexWithBOTHBOTHEdgesToGraphSON");
+                add("shouldReadWriteVertexWithBOTHINEdgesToGraphSON");
+                add("shouldReadWriteVertexWithBOTHOUTEdgesToGraphSON");
+            }};
+
+            if (testsThatNeedLongIdManager.contains(testMethodName))
+                return TinkerGraph.DefaultIdManager.LONG;
         }
 
         return TinkerGraph.DefaultIdManager.ANY;
