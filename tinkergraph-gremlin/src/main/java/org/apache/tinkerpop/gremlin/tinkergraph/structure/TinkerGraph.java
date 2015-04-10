@@ -495,7 +495,7 @@ public class TinkerGraph implements Graph {
                 else if (id instanceof String)
                     return Long.parseLong((String) id);
                 else
-                    throw new IllegalArgumentException("Expected an id that is convertible to Long");
+                    throw new IllegalArgumentException(String.format("Expected an id that is convertible to Long but received %s", id.getClass()));
             }
         },
 
@@ -518,7 +518,7 @@ public class TinkerGraph implements Graph {
                 else if (id instanceof String)
                     return Integer.parseInt((String) id);
                 else
-                    throw new IllegalArgumentException("Expected an id that is convertible to Integer");
+                    throw new IllegalArgumentException(String.format("Expected an id that is convertible to Integer but received %s", id.getClass()));
             }
         },
 
@@ -539,7 +539,7 @@ public class TinkerGraph implements Graph {
                 else if (id instanceof String)
                     return java.util.UUID.fromString((String) id);
                 else
-                    throw new IllegalArgumentException("Expected an id that is convertible to UUID");
+                    throw new IllegalArgumentException(String.format("Expected an id that is convertible to UUID but received %s", id.getClass()));
             }
         },
 
