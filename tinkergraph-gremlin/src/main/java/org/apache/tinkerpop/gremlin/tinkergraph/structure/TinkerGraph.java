@@ -276,7 +276,7 @@ public class TinkerGraph implements Graph {
             } else {
                 final Class<?> firstClass = ids[0].getClass();
                 if (!Stream.of(ids).map(Object::getClass).allMatch(firstClass::equals))
-                    throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();     // todo: change exception to be ids of the same type
+                    throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
                 return Stream.of(ids).map(id -> idManager.convert(id)).map(elements::get).filter(Objects::nonNull).iterator();
             }
         }
