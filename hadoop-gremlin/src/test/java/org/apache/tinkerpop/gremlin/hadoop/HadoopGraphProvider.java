@@ -120,6 +120,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             /// spark configuration
             put("spark.master", "local[4]");
             put("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
+            // put("spark.kryo.registrationRequired",true);
         }};
     }
 
