@@ -239,70 +239,47 @@ public class TinkerGraph implements Graph {
 
     @Override
     public Iterator<Vertex> vertices(final Object... vertexIds) {
-        // todo: this code looks a lot like edges() code - better reuse here somewhere?
         // todo: what if we have Reference/DetachedVertex???????????????????????????
-        if (0 == vertexIds.length) {
-            return this.vertices.values().iterator();
-        } else if (1 == vertexIds.length) {
-            if (vertexIds[0] instanceof Vertex) {
-                // no need to get the vertex again, so just flip it back - some implementation may want to treat this
-                // as a refresh operation. that's not necessary for tinkergraph.
-                return IteratorUtils.of((Vertex) vertexIds[0]);
-            } else {
-                // convert the id to the expected data type and lookup the vertex
-                final Vertex vertex = this.vertices.get(vertexIdManager.convert(vertexIds[0]));
-                return null == vertex ? Collections.emptyIterator() : IteratorUtils.of(vertex);
-            }
-        } else {
-            // base the conversion function on the first item in the id list as the expectation is that these
-            // id values will be a uniform list
-            if (vertexIds[0] instanceof Vertex) {
-                // based on the first item assume all vertices in the argument list
-                if (!Stream.of(vertexIds).allMatch(id -> id instanceof Vertex))
-                    throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
-
-                // no need to get the vertices again, so just flip it back - some implementation may want to treat this
-                // as a refresh operation. that's not necessary for tinkergraph.
-                return Stream.of(vertexIds).map(id -> (Vertex) id).iterator();
-            } else {
-                final Class<?> firstClass = vertexIds[0].getClass();
-                if (!Stream.of(vertexIds).map(Object::getClass).allMatch(firstClass::equals))
-                    throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();     // todo: change exception to be ids of the same type
-                return Stream.of(vertexIds).map(vertexIdManager::convert).map(this.vertices::get).filter(Objects::nonNull).iterator();
-            }
-        }
+        return createElementIterator(Vertex.class, vertices, vertexIdManager, vertexIds);
     }
 
     @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
-        if (0 == edgeIds.length) {
-            return this.edges.values().iterator();
-        } else if (1 == edgeIds.length) {
-            if (edgeIds[0] instanceof Edge) {
+        // todo: what if we have Reference/DetachedVertex???????????????????????????
+        return createElementIterator(Edge.class, edges, edgeIdManager, edgeIds);
+    }
+
+    private <T extends Element> Iterator<T> createElementIterator(final Class<T> clazz, final Map<Object, T> elements,
+                                                                  final IdManager idManager,
+                                                                  final Object... ids) {
+        if (0 == ids.length) {
+            return elements.values().iterator();
+        } else if (1 == ids.length) {
+            if (clazz.isAssignableFrom(ids[0].getClass())) {
                 // no need to get the edge again, so just flip it back - some implementation may want to treat this
                 // as a refresh operation. that's not necessary for tinkergraph.
-                return IteratorUtils.of((Edge) edgeIds[0]);
+                return IteratorUtils.of((T) ids[0]);
             } else {
                 // convert the id to the expected data type and lookup the vertex
-                final Edge edge = this.edges.get(edgeIdManager.convert(edgeIds[0]));
-                return null == edge ? Collections.emptyIterator() : IteratorUtils.of(edge);
+                final T element = elements.get(idManager.convert(ids[0]));
+                return null == element ? Collections.emptyIterator() : IteratorUtils.of(element);
             }
         } else {
             // base the conversion function on the first item in the id list as the expectation is that these
             // id values will be a uniform list
-            if (edgeIds[0] instanceof Edge) {
+            if (clazz.isAssignableFrom(ids[0].getClass())) {
                 // based on the first item assume all vertices in the argument list
-                if (!Stream.of(edgeIds).allMatch(id -> id instanceof Edge))
+                if (!Stream.of(ids).allMatch(id -> clazz.isAssignableFrom(id.getClass())))
                     throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
 
                 // no need to get the vertices again, so just flip it back - some implementation may want to treat this
                 // as a refresh operation. that's not necessary for tinkergraph.
-                return Stream.of(edgeIds).map(id -> (Edge) id).iterator();
+                return Stream.of(ids).map(id -> (T) id).iterator();
             } else {
-                final Class<?> firstClass = edgeIds[0].getClass();
-                if (!Stream.of(edgeIds).map(Object::getClass).allMatch(firstClass::equals))
+                final Class<?> firstClass = ids[0].getClass();
+                if (!Stream.of(ids).map(Object::getClass).allMatch(firstClass::equals))
                     throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();     // todo: change exception to be ids of the same type
-                return Stream.of(edgeIds).map(edgeIdManager::convert).map(this.edges::get).filter(Objects::nonNull).iterator();
+                return Stream.of(ids).map(id -> idManager.convert(id)).map(elements::get).filter(Objects::nonNull).iterator();
             }
         }
     }
