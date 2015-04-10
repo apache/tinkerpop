@@ -239,13 +239,11 @@ public class TinkerGraph implements Graph {
 
     @Override
     public Iterator<Vertex> vertices(final Object... vertexIds) {
-        // todo: what if we have Reference/DetachedVertex???????????????????????????
         return createElementIterator(Vertex.class, vertices, vertexIdManager, vertexIds);
     }
 
     @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
-        // todo: what if we have Reference/DetachedVertex???????????????????????????
         return createElementIterator(Edge.class, edges, edgeIdManager, edgeIds);
     }
 
