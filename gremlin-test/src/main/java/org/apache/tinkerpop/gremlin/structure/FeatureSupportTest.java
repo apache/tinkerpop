@@ -826,6 +826,24 @@ public class FeatureSupportTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_ANY_IDS)
+        public void shouldNotSupportAnyIdsUnlessUserSuppliedIdsIsSupportedOnVertex() {
+            assertTrue(vertexFeatures.supportsUserSuppliedIds());
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = EdgeFeatures.FEATURE_ANY_IDS)
+        public void shouldNotSupportAnyIdsUnlessUserSuppliedIdsIsSupportedOnEdge() {
+            assertTrue(edgeFeatures.supportsUserSuppliedIds());
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_ANY_IDS)
+        public void shouldNotSupportAnyIdsUnlessUserSuppliedIdsIsSupportedOnVertexProperty() {
+            assertTrue(vertexPropertyFeatures.supportsUserSuppliedIds());
+        }
+
+        @Test
         public void shouldSupportADataTypeIfGraphHasVariablesEnabled() {
             assertEquals(variablesFeatures.supportsVariables(), (variablesFeatures.supportsBooleanValues() || variablesFeatures.supportsDoubleValues()
                     || variablesFeatures.supportsFloatValues() || variablesFeatures.supportsIntegerValues()
