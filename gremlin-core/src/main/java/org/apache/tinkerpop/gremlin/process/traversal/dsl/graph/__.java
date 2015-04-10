@@ -176,10 +176,6 @@ public class __ {
         return __.<A>start().path();
     }
 
-    public static <A, E2> GraphTraversal<A, E2> back(final String stepLabel) {
-        return __.<A>start().back(stepLabel);
-    }
-
     public static <A, E2> GraphTraversal<A, Map<String, E2>> match(final String startLabel, final Traversal... traversals) {
         return __.<A>start().match(startLabel, traversals);
     }

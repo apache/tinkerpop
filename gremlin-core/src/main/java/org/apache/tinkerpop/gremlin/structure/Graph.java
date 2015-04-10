@@ -149,8 +149,8 @@ public interface Graph extends AutoCloseable {
 
     public GraphComputer compute() throws IllegalArgumentException;
 
-    public default <C extends TraversalSource> C traversal(final TraversalSource.Builder<C> contextBuilder) {
-        return contextBuilder.create(this);
+    public default <C extends TraversalSource> C traversal(final TraversalSource.Builder<C> sourceBuilder) {
+        return sourceBuilder.create(this);
     }
 
     public default GraphTraversalSource traversal() {

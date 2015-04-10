@@ -68,16 +68,6 @@ public abstract class GroovyRangeTest {
         public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X() {
             g.V().repeat(__.both).times(3)[5..11];
         }
-
-        @Override
-        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_limitXlocal_1XX_asXwX_select_byXnameX_by() {
-            g.V().hasLabel('software').as('s').local(__.inE('created').values('weight').fold().limit(Scope.local, 1)).as('w').select().by('name').by()
-        }
-
-        @Override
-        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by() {
-            g.V().hasLabel('software').as('s').local(__.inE('created').values('weight').fold().range(Scope.local, 1, 3)).as('w').select().by('name').by()
-        }
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
@@ -126,20 +116,6 @@ public abstract class GroovyRangeTest {
         }
 
         @Override
-        @Test
-        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        void g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_limitXlocal_1XX_asXwX_select_byXnameX_by() {
-
-        }
-
-        @Override
-        @Test
-        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        void g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by() {
-            // TODO: the traversal should work in computer mode, but throws a ClassCastException
-        }
-
-        @Override
         Traversal<Vertex, Vertex> get_g_VX1X_out_limitX2X(Object v1Id) {
             // override with nothing until the test itself is supported
             return null
@@ -177,18 +153,6 @@ public abstract class GroovyRangeTest {
 
         @Override
         Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X() {
-            // override with nothing until the test itself is supported
-            return null
-        }
-
-        @Override
-        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_limitXlocal_1XX_asXwX_select_byXnameX_by() {
-            // override with nothing until the test itself is supported
-            return null
-        }
-
-        @Override
-        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXsX_localXinEXcreatedX_valuesXweightX_fold_rangeXlocal_1_3XX_asXwX_select_byXnameX_by() {
             // override with nothing until the test itself is supported
             return null
         }

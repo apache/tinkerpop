@@ -25,10 +25,11 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* `DetachedXXX` use the standard `structure/` exceptions for unsupported operations.
+* Removed `back()`-step as `select()`-step provides the same behavior with more intelligent optimizations and `by()`-modulation.
+* `DetachedXXX` now uses the standard `structure/` exceptions for unsupported operations.
 * Added private constructors to all `Exceptions` inner classes in the respective `structure/` interfaces.
 * Re-introduced `ReferenceXXX` to ensure a smaller data footprint in OLAP situation (`DetachedXXX` uses too much data).
-* `Attachable` now has set of static exceptions messages in an `Exceptions` inner class.
+* `Attachable` now has a set of static exception messages in an `Exceptions` inner class.
 * Added `StarGraph` which is a heap efficient representation of a vertex and its incident edges (useful for `GraphComputer` implementations).
 * `TraverserSet` uses a `FastNoSuchElementException` on `remove()` for increased performance.
 

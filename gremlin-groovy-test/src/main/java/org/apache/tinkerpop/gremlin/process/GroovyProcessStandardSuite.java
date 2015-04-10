@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyAndTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyCoinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyCyclicPathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyDedupTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyDropTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyExceptTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyFilterTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyHasNotTest;
@@ -45,10 +46,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovySimplePa
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyWhereTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyAddEdgeTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyAddVertexTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyBackTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyCoalesceTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyCountTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyDropTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyFoldTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMapTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest;
@@ -115,7 +114,6 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             // map
             GroovyAddEdgeTest.StandardTraversals.class,
             GroovyAddVertexTest.StandardTraversals.class,
-            GroovyBackTest.StandardTraversals.class,
             GroovyCoalesceTest.StandardTraversals.class,
             GroovyCountTest.StandardTraversals.class,
             GroovyFoldTest.StandardTraversals.class,

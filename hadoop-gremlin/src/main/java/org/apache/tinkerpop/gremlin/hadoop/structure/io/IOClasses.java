@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IOClasses {
+public final class IOClasses {
 
     public static List<Class> getGryoClasses(final GryoMapper mapper) {
         return mapper.getRegisteredClasses();

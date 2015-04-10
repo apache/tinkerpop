@@ -73,12 +73,12 @@ image:map-lambda.png[width=150,float=right]
 ----
 g.V(1).as('a').out() <1>
 g.V(1).as('a').out().map {it.path('a')} <2>
-g.V(1).as('a').out().back('a') <3>
+g.V(1).as('a').out().select('a') <3>
 ----
 
 <1> A standard outgoing traversal from vertex 1.
 <2> For each vertex outgoing adjacent to vertex 1, get the vertex at `a` (which is vertex 1).
-<3> The <<back-step,`back()`>>-step is implemented as a `map()`-step that accesses data in the historic path.
+<3> The <<select-step,`select()`>>-step is implemented as a `map()`-step that accesses data in the historic path.
 
 image:filter-lambda.png[width=160,float=right]
 [gremlin-groovy,modern]
@@ -251,21 +251,6 @@ g.V().as('a').out('created').as('b').select().by('name') <2>
 
 <1> Select the objects labeled "a" and "b" from the path.
 <2> Select the objects labeled "a" and "b" from the path and, for each object, project its name value.
-
-[[back-step]]
-Back Step
-~~~~~~~~~
-
-link:http://en.wikipedia.org/wiki/Functional_programming[Functional languages] make use of function composition and lazy evaluation to create complex computations from primitive operations. This is exactly what Gremlin `GraphTraversal` does. One of the differentiating aspects of Gremlin's data flow approach to graph processing is that the flow need not always go "forward," but in fact, can go back to a previously seen area of computation. Examples include <<repeat-step,`repeat()`>> as well as the `back()`-step (*map*).
-
-[gremlin-groovy,modern]
-----
-g.V().out().out()
-g.V().out().out().path()
-g.V().as('x').out().out().back('x')
-g.V().out().as('x').out().back('x')
-g.V().out().out().as('x').back('x') // pointless
-----
 
 [[by-step]]
 By Step
@@ -1139,7 +1124,7 @@ g.V(1).repeat(local(
 Select Step
 ~~~~~~~~~~~
 
-There are two use cases for `select()`-step (*map*).
+link:http://en.wikipedia.org/wiki/Functional_programming[Functional languages] make use of function composition and lazy evaluation to create complex computations from primitive operations. This is exactly what `Traversal` does. One of the differentiating aspects of Gremlin's data flow approach to graph processing is that the flow need not always go "forward," but in fact, can go back to a previously seen area of computation. Examples include <<path-step,`path()`>> as well as the `select()`-step (*map*). There are two general ways to use `select()`-step.
 
 . Select labeled steps within a path (as defined by `as()` in a traversal).
 . Select objects out of a `Map<String,Object>` flow (i.e. a sub-map).
@@ -1157,6 +1142,17 @@ g.V().as('a').out().as('b').out().as('c').select('a') <1>
 
 <1> If the selection is one step, no map is returned.
 
+When there is only one label selected, then a single object is returned. This is useful for stepping back in a computation and easily moving forward again on the object reverted to.
+
+[gremlin-groovy,modern]
+----
+g.V().out().out()
+g.V().out().out().path()
+g.V().as('x').out().out().select('x')
+g.V().out().as('x').out().select('x')
+g.V().out().out().as('x').select('x') // pointless
+----
+
 The second use case is best understood in terms of <<match-step,`match()`>>-step where the result of `match()` is a `Map<String,Object>` of variable bindings. However, any step that emits a `Map<String,Object>` can be selected. A contrived example is presented below.
 
 [gremlin-groovy,modern]
@@ -1171,6 +1167,8 @@ g.V().range(0, 2).as('a').map {[b:1,c:2]}.select('c') <4>
 <2> Select will grab both labeled steps and `Map<String,Object>` entries.
 <3> The same `List<String>` selectivity can be used as demonstrated in the previous example.
 <4> If a single selection is used, then the object is emitted not wrapped in a map. Useful for continuing the traversal process without having to do a map projection.
+
+NOTE: When executing a traversal with `select()` on a standard traversal engine (i.e. OLTP), `select()` will do its best to avoid calculating the path history and instead, will rely on a global data structure for storing the currently selected object. As such, if only a subset of the path walked is required, `select()` should be used over the more resource intensive <<path-step,`path()`>>-step.
 
 [[using-where-with-select]]
 Using Where with Select
