@@ -79,6 +79,7 @@ public final class SparkExecutor {
                     final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration); // each partition(Spark)/worker(TP3) has a local copy of the vertex program (a worker's task)
                     final Set<String> elementComputeKeys = workerVertexProgram.getElementComputeKeys(); // the compute keys as a set
                     final String[] elementComputeKeysArray = elementComputeKeys.size() == 0 ? null : elementComputeKeys.toArray(new String[elementComputeKeys.size()]); // the compute keys as an array
+                    final SparkMessenger<M> messenger = new SparkMessenger<>();
                     workerVertexProgram.workerIterationStart(memory); // start the worker
                     return () -> IteratorUtils.map(partitionIterator, vertexViewIncoming -> {
                         final Vertex vertex = vertexViewIncoming._2()._1().get(); // get the vertex from the vertex writable
@@ -87,7 +88,7 @@ public final class SparkExecutor {
                         final List<M> incomingMessages = hasViewAndMessages ? vertexViewIncoming._2()._2().get().getIncomingMessages() : Collections.emptyList();
                         previousView.forEach(property -> DetachedVertexProperty.addTo(vertex, property));  // attach the view to the vertex
                         ///
-                        final SparkMessenger<M> messenger = new SparkMessenger<>(vertex, incomingMessages); // create the messenger with the incoming messages
+                        messenger.setVertexAndIncomingMessages(vertex, incomingMessages); // set the messenger with the incoming messages
                         workerVertexProgram.execute(ComputerGraph.of(vertex, elementComputeKeys), messenger, memory); // execute the vertex program on this vertex for this iteration
                         ///
                         final List<DetachedVertexProperty<Object>> nextView = null == elementComputeKeysArray ?  // not all vertex programs have compute keys
@@ -98,7 +99,7 @@ public final class SparkExecutor {
                             workerVertexProgram.workerIterationEnd(memory); // if no more vertices in the partition, end the worker's iteration
                         return new Tuple2<>(vertex.id(), new ViewOutgoingPayload<>(nextView, outgoingMessages));
                     });
-                })).setName("viewOutgoingRDD");
+                }));
 
         // "message pass" by reducing on the vertex object id of the view and message payloads
         final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(apacheConfiguration).getMessageCombiner().orElse(null);
@@ -126,7 +127,7 @@ public final class SparkExecutor {
                         (ViewIncomingPayload<M>) payload :                    // this happens if there is a vertex with incoming messages
                         new ViewIncomingPayload<>((ViewPayload) payload));    // this happens if there is a vertex with no incoming messages
 
-        newViewIncomingRDD.setName("viewIncomingRDD")
+        newViewIncomingRDD
                 .foreachPartition(partitionIterator -> {
                 }); // need to complete a task so its BSP and the memory for this iteration is updated
         return newViewIncomingRDD;

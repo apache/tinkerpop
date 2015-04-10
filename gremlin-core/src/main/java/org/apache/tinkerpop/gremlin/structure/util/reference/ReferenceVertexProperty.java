@@ -38,16 +38,21 @@ import java.util.NoSuchElementException;
  */
 public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty> implements VertexProperty<V> {
 
+    private ReferenceVertex vertex;
+
     private ReferenceVertexProperty() {
 
     }
 
     public ReferenceVertexProperty(final VertexProperty vertexProperty) {
         super(vertexProperty);
+        this.vertex = ReferenceFactory.detach(vertexProperty.element());
     }
 
     @Override
     public VertexProperty<V> attach(final Vertex hostVertex) {
+        if (!hostVertex.equals(this.vertex))
+            throw Attachable.Exceptions.canNotAttachVertexPropertyToHostVertex(this, hostVertex);
         final Iterator<VertexProperty<V>> vertexPropertyIterator = IteratorUtils.filter(hostVertex.<V>properties(), vp -> vp.id().equals(this.id));
         if (!vertexPropertyIterator.hasNext())
             throw Attachable.Exceptions.canNotAttachVertexPropertyToHostVertex(this, hostVertex);
@@ -56,7 +61,7 @@ public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty>
 
     @Override
     public VertexProperty<V> attach(final Graph hostGraph) {
-        throw new UnsupportedOperationException();
+        return this.attach(this.vertex.attach(hostGraph));
     }
 
     @Override
@@ -81,7 +86,7 @@ public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty>
 
     @Override
     public Vertex element() {
-        return null;
+        return this.vertex;
     }
 
     @Override
