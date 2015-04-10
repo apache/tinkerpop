@@ -86,9 +86,9 @@ public class TinkerGraph implements Graph {
 
     private final static TinkerGraph EMPTY_GRAPH = new TinkerGraph(EMPTY_CONFIGURATION);
 
-    protected IdManager<?> vertexIdManager;
-    protected IdManager<?> edgeIdManager;
-    protected IdManager<?> vertexPropertyIdManager;
+    protected final IdManager<?> vertexIdManager;
+    protected final IdManager<?> edgeIdManager;
+    protected final IdManager<?> vertexPropertyIdManager;
 
     private final Configuration configuration;
 
@@ -97,39 +97,9 @@ public class TinkerGraph implements Graph {
      */
     private TinkerGraph(final Configuration configuration) {
         this.configuration = configuration;
-
-        final String vertexIdManagerConfigValue = configuration.getString(CONFIG_VERTEX_ID, DefaultIdManager.ANY.name());
-        try {
-            vertexIdManager = DefaultIdManager.valueOf(vertexIdManagerConfigValue);
-        } catch (IllegalArgumentException iae) {
-            try {
-                vertexIdManager = (IdManager) Class.forName(vertexIdManagerConfigValue).newInstance();
-            } catch (Exception ex) {
-                throw new IllegalStateException(String.format("Could not configure TinkerGraph vertex id manager with %s", vertexIdManagerConfigValue));
-            }
-        }
-
-        final String edgeIdManagerConfigValue = configuration.getString(CONFIG_EDGE_ID, DefaultIdManager.ANY.name());
-        try {
-            edgeIdManager = DefaultIdManager.valueOf(edgeIdManagerConfigValue);
-        } catch (IllegalArgumentException iae) {
-            try {
-                edgeIdManager = (IdManager) Class.forName(edgeIdManagerConfigValue).newInstance();
-            } catch (Exception ex) {
-                throw new IllegalStateException(String.format("Could not configure TinkerGraph edge id manager with %s", edgeIdManagerConfigValue));
-            }
-        }
-
-        final String vertexPropIdManagerConfigValue = configuration.getString(CONFIG_VERTEX_PROPERTY_ID, DefaultIdManager.ANY.name());
-        try {
-            vertexPropertyIdManager = DefaultIdManager.valueOf(vertexPropIdManagerConfigValue);
-        } catch (IllegalArgumentException iae) {
-            try {
-                vertexPropertyIdManager = (IdManager) Class.forName(vertexPropIdManagerConfigValue).newInstance();
-            } catch (Exception ex) {
-                throw new IllegalStateException(String.format("Could not configure TinkerGraph vertex property id manager with %s", vertexPropIdManagerConfigValue));
-            }
-        }
+        vertexIdManager = selectIdManager(configuration, CONFIG_VERTEX_ID, Vertex.class);
+        edgeIdManager = selectIdManager(configuration, CONFIG_EDGE_ID, Edge.class);
+        vertexPropertyIdManager = selectIdManager(configuration, CONFIG_VERTEX_PROPERTY_ID, VertexProperty.class);
     }
 
     public static TinkerGraph empty() {
@@ -422,6 +392,22 @@ public class TinkerGraph implements Graph {
             return null == this.edgeIndex ? Collections.emptySet() : this.edgeIndex.getIndexedKeys();
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
+        }
+    }
+
+    /**
+     * Construct an {@link TinkerGraph.IdManager} from the TinkerGraph {@link Configuration}.
+     */
+    private static IdManager<?> selectIdManager(final Configuration config, final String configKey, final Class<? extends Element> clazz) {
+        final String vertexIdManagerConfigValue = config.getString(configKey, DefaultIdManager.ANY.name());
+        try {
+            return DefaultIdManager.valueOf(vertexIdManagerConfigValue);
+        } catch (IllegalArgumentException iae) {
+            try {
+                return (IdManager) Class.forName(vertexIdManagerConfigValue).newInstance();
+            } catch (Exception ex) {
+                throw new IllegalStateException(String.format("Could not configure TinkerGraph %s id manager with %s", clazz.getSimpleName(), vertexIdManagerConfigValue));
+            }
         }
     }
 
