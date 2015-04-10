@@ -221,26 +221,6 @@ public interface GraphProvider {
     public void loadGraphData(final Graph graph, final LoadGraphWith loadGraphWith, final Class testClass, final String testName);
 
     /**
-     * Converts the GraphSON representation of an identifier to the implementation's representation of an identifier.
-     * When serializing a mapper identifier type to GraphSON an implementer will typically specify a mapper serializer
-     * in {@link org.apache.tinkerpop.gremlin.structure.Graph.Io}.  That will serialize the identifier to a GraphSON representation.
-     * When the GraphSON is deserialized, the identifier is written to an
-     * {@link Attachable} object where it is passed to a user supplied
-     * conversion {@link java.util.function.Function} that ultimately processes it.  It is in this conversion process
-     * that vendor specific identifier conversion would occur (if desired).  This method mimics that conversion by
-     * providing the mechanism that a test can use to do the conversion.
-     *
-     * @param clazz The {@link Element} class that represents the identifier.
-     * @param id    The identifier to convert.
-     * @param <ID>  The type of the identifier.
-     * @return The reconstituted identifier.
-     */
-    public default <ID> ID reconstituteGraphSONIdentifier(final Class<? extends Element> clazz, final Object id) {
-        // todo: do we still need this?
-        return (ID) id;
-    }
-
-    /**
      * Get the set of concrete implementations of certain classes and interfaces utilized by the test suite. This
      * method should return any implementations or extensions of the following interfaces or classes:
      * <ul>

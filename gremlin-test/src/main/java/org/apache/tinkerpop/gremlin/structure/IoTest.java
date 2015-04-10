@@ -882,9 +882,9 @@ public class IoTest extends AbstractGremlinTest {
             final GraphSONReader reader = graph.io().graphSONReader().mapper(graph.io().graphSONMapper().embedTypes(true).create()).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
-                    assertEquals(e.id(), graphProvider.reconstituteGraphSONIdentifier(Edge.class, detachedEdge.id()));
-                    assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.outVertex().id()));
-                    assertEquals(v2.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.inVertex().id()));
+                    assertEquals(e.id(), graph.edges(detachedEdge.id()).next().id());
+                    assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id()).next().id());
+                    assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id()).next().id());
                     assertEquals(v1.label(), detachedEdge.outVertex().label());
                     assertEquals(v2.label(), detachedEdge.inVertex().label());
                     assertEquals(e.label(), detachedEdge.label());
@@ -1665,25 +1665,25 @@ public class IoTest extends AbstractGremlinTest {
             final GraphSONReader reader = graph.io().graphSONReader().mapper(graph.io().graphSONMapper().embedTypes(true).create()).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.BOTH, detachedVertex -> {
-                    assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedVertex.id()));
+                    assertEquals(v1.id(), graph.vertices(detachedVertex.id()).next().id());
                     assertEquals(v1.label(), detachedVertex.label());
                     assertEquals(1, IteratorUtils.count(detachedVertex.properties()));
                     assertEquals(v1.value("name"), detachedVertex.value("name").toString());
                     vertexCalled.set(true);
                     return null;
                 }, detachedEdge -> {
-                    if (graphProvider.reconstituteGraphSONIdentifier(Edge.class, detachedEdge.id()).equals(e1.id())) {
-                        assertEquals(v2.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.outVertex().id()));
-                        assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.inVertex().id()));
+                    if (graph.edges(detachedEdge.id()).next().id().equals(e1.id())) {
+                        assertEquals(v2.id(), graph.vertices(detachedEdge.outVertex().id()).next().id());
+                        assertEquals(v1.id(), graph.vertices(detachedEdge.inVertex().id()).next().id());
                         assertEquals(v1.label(), detachedEdge.outVertex().label());
                         assertEquals(v2.label(), detachedEdge.inVertex().label());
                         assertEquals(e1.label(), detachedEdge.label());
                         assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
                         assertEquals(0.5f, detachedEdge.value("weight"), 0.00001f);
                         edge1Called.set(true);
-                    } else if (graphProvider.reconstituteGraphSONIdentifier(Edge.class, detachedEdge.id()).equals(e2.id())) {
-                        assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.outVertex().id()));
-                        assertEquals(v2.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.inVertex().id()));
+                    } else if (graph.edges(detachedEdge.id()).next().id().equals(e2.id())) {
+                        assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id()).next().id());
+                        assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id()).next().id());
                         assertEquals(v1.label(), detachedEdge.outVertex().label());
                         assertEquals(v2.label(), detachedEdge.inVertex().label());
                         assertEquals(e1.label(), detachedEdge.label());
