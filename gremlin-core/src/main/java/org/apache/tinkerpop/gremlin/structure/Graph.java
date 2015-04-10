@@ -732,7 +732,6 @@ public interface Graph extends AutoCloseable {
                 return true;
             }
 
-            // todo: need a test to enforce this condition
             /**
              * Determines if an {@link Element} any Java object is a suitable identifier.  Note that this
              * setting can only return true if {@link #supportsUserSuppliedIds()} is true.
