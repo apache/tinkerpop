@@ -101,7 +101,8 @@ public class TraversalPerformanceTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
     @Test
     public void g_V_out_mapXout_out_valuesXnameX_toListX() throws Exception {
-        g.V().out().map(v -> g.V(v).out().out().values("name").toList()).iterate();
+        // todo: this used to be g.V().out().map(v -> g.V(v).out().out().values("name").toList()).iterate(); - should g.V() accept Traverser??
+        g.V().out().map(v -> g.V(v.get()).out().out().values("name").toList()).iterate();
     }
 
     @BenchmarkOptions(benchmarkRounds = DEFAULT_BENCHMARK_ROUNDS, warmupRounds = DEFAULT_WARMUP_ROUNDS, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
