@@ -86,7 +86,10 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         }
     }
 
-    // todo: these aren't used - remove???
+    /**
+     * Helper method for those building {@link GraphProvider} implementations that need to clean directories
+     * between test runs.
+     */
     protected static void deleteDirectory(final File directory) {
         if (directory.exists()) {
             for (File file : directory.listFiles()) {
@@ -107,6 +110,10 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         if (directory.exists()) System.err.println("unable to delete directory " + directory.getAbsolutePath());
     }
 
+    /**
+     * Helper method for those build {@link GraphProvider} implementations that need a standard working directory
+     * for tests (e.g. graphs that persist data to disk).
+     */
     protected String getWorkingDirectory() {
         return TestHelper.makeTestDataPath(this.getClass(), "graph-provider-data").getAbsolutePath();
     }
