@@ -71,9 +71,9 @@ public class TinkerGraph implements Graph {
         this.setProperty(Graph.GRAPH, TinkerGraph.class.getName());
     }};
 
-    public static final String CONFIG_VERTEX_ID = "tinkergraph.vertex.id";
-    public static final String CONFIG_EDGE_ID = "tinkergraph.edge.id";
-    public static final String CONFIG_VERTEX_PROPERTY_ID = "tinkergraph.vertex-property.id";
+    public static final String CONFIG_VERTEX_ID = "gremlin.tinkergraph.vertexIdManager";
+    public static final String CONFIG_EDGE_ID = "gremlin.tinkergraph.edgeIdManager";
+    public static final String CONFIG_VERTEX_PROPERTY_ID = "gremlin.tinkergraph.vertexPropertyIdManager";
 
     protected AtomicLong currentId = new AtomicLong(-1l);
     protected Map<Object, Vertex> vertices = new ConcurrentHashMap<>();
@@ -142,7 +142,7 @@ public class TinkerGraph implements Graph {
     @Override
     public Vertex addVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
-        Object idValue = ElementHelper.getIdValue(keyValues).orElse(null);
+        Object idValue = vertexIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
         final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
 
         if (null != idValue) {
@@ -448,7 +448,9 @@ public class TinkerGraph implements Graph {
 
             @Override
             public Object convert(final Object id) {
-                if (id instanceof Long)
+                if (null == id)
+                    return null;
+                else if (id instanceof Long)
                     return id;
                 else if (id instanceof Number)
                     return ((Number) id).longValue();
@@ -471,7 +473,9 @@ public class TinkerGraph implements Graph {
 
             @Override
             public Object convert(final Object id) {
-                if (id instanceof Integer)
+                if (null == id)
+                    return null;
+                else if (id instanceof Integer)
                     return id;
                 else if (id instanceof Number)
                     return ((Number) id).intValue();
@@ -494,7 +498,9 @@ public class TinkerGraph implements Graph {
 
             @Override
             public Object convert(final Object id) {
-                if (id instanceof java.util.UUID)
+                if (null == id)
+                    return null;
+                else if (id instanceof java.util.UUID)
                     return id;
                 else if (id instanceof String)
                     return java.util.UUID.fromString((String) id);

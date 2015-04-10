@@ -50,7 +50,7 @@ public final class TinkerHelper {
         ElementHelper.validateLabel(label);
         ElementHelper.legalPropertyKeyValueArray(keyValues);
 
-        Object idValue = ElementHelper.getIdValue(keyValues).orElse(null);
+        Object idValue = graph.edgeIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
 
         final Edge edge;
         if (null != idValue) {

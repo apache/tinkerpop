@@ -92,11 +92,13 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         if (optionalVertexProperty.isPresent()) return optionalVertexProperty.get();
 
         if (TinkerHelper.inComputerMode(this.graph)) {
-            VertexProperty<V> vertexProperty = (VertexProperty<V>) this.graph.graphView.addProperty(this, key, value);
+            final VertexProperty<V> vertexProperty = (VertexProperty<V>) this.graph.graphView.addProperty(this, key, value);
             ElementHelper.attachProperties(vertexProperty, keyValues);
             return vertexProperty;
         } else {
-            final Object idValue = optionalId.isPresent() ? optionalId.get() : graph.vertexPropertyIdManager.getNextId(graph);
+            final Object idValue = optionalId.isPresent() ?
+                    graph.vertexPropertyIdManager.convert(optionalId.get()) :
+                    graph.vertexPropertyIdManager.getNextId(graph);
 
             final VertexProperty<V> vertexProperty = new TinkerVertexProperty<V>(idValue, this, key, value);
 
